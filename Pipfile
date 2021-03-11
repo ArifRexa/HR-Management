@@ -7,6 +7,9 @@ name = "pypi"
 django = "3.1"
 mysqlclient = "*"
 python-dotenv = "*"
+djangorestframework = "*"
+markdown = "*"
+django-filter = "*"
 
 [requires]
 python_version = "3.6"
