@@ -2,7 +2,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.db import models
-from .models import Job, JobForm
+from .models import Job, JobForm, JobApply
 
 
 class JobFormInline(admin.TabularInline):
@@ -15,3 +15,4 @@ class JobAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Job, JobAdmin)
+admin.site.register(JobApply)

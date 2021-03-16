@@ -1,0 +1,48 @@
+{% extends 'job/layout.html' %}
+{% block title %}
+Home page
+{% endblock %}
+{% block content %}
+{% load static %}
+<section class="py-5 text-center container">
+    <div class="row py-lg-5">
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <h1 class="fw-light">Jobs Details</h1>
+        </div>
+    </div>
+</section>
+ <div class="container" style="margin-top: 10px">
+        {% for message in messages %}
+            <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+<div class="album py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <div class="span8">
+                <div class="row">
+                    <div class="span8">
+                        <h4><strong><a href="{{ job.get_single_url }}">{{job.title}}</a></strong></h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="span6">
+                        <p>
+                            {{job.description}}
+                        </p>
+                        <p>
+                            {{job.responsibilities}}
+                        </p>
+                        <p><a class="btn" href="{{ job.get_apply_url }}">Apply</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'job/layout.html' %}
+{% block title %}
+Home page
+{% endblock %}
+{% block content %}
+{% load static %}
+<section class="py-5 text-center container">
+    <div class="row py-lg-5">
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <h1 class="fw-light">Jobs Apply</h1>
+        </div>
+    </div>
+</section>
+<hr>
+<div class="album py-5 bg-light">
+    <div class="container">
+
+        <div class="row">
+
+            <div class="col-lg-8 entries">
+
+                <article class="entry entry-single" data-aos="fade-up">
+                    <h2 class="entry-title">
+                        <a href="{{ job.get_single_url }}">{{ job.title }}</a>
+                    </h2>
+
+                    <div class="entry-content">
+                        <form action="" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {% for job_apply in job_form %}
+                            <label> {{ job_apply.label }}
+                                <input name="job_applys[{{ job_apply.label.lower }}]" class="form-control" {% if job_apply.required == 1 %}
+                                       required="required" {% endif %}
+                                       placeholder="{{ job_apply.label }}" type="{{ job_apply.field_type }}">
+                            </label><br>
+                            {% endfor %}
+                            <button class="btn btn-success" type="submit">Submit</button>
+                        </form>
+                    </div>
+
+                </article><!-- End blog entry -->
+
+                <!-- End blog author bio -->
+
+            </div><!-- End blog entries list -->
+
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

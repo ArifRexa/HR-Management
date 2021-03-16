@@ -1,0 +1,48 @@
+{% extends 'job/layout.html' %}
+{% block title %}
+Home page
+{% endblock %}
+{% block content %}
+{% load static %}
+<section class="py-5 text-center container">
+    <div class="row py-lg-5">
+        <div class="col-lg-6 col-md-8 mx-auto">
+            <h1 class="fw-light">Jobs List</h1>
+            <p class="lead text-muted">Something short and leading about the collection below—its contents, the
+                creator, etc. Make it short and sweet, but not too short so folks don’t simply skip over it
+                entirely.</p>
+        </div>
+    </div>
+</section>
+<hr>
+<div class="album py-5 bg-light">
+    <div class="container">
+        {% for job in jobs %}
+        <div class="row">
+            <div class="span8">
+                <div class="row">
+                    <div class="span8">
+                        <h4><strong><a href="{{ job.get_single_url }}">{{job.title}}</a></strong></h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="span2">
+                        <a href="{{ job.get_single_url }}" class="thumbnail">
+                            <img src="http://placehold.it/260x180" alt="">
+                        </a>
+                    </div>
+                    <div class="span6">
+                        <p>
+                            {{job.description}}
+                        </p>
+                        <p><a class="btn" href="{{ job.get_single_url }}">Details</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr>
+        {% endfor % %}
+
+    </div>
+</div>
+{% endblock %}
