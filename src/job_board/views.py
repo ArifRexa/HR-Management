@@ -14,6 +14,10 @@ from .forms import JobApplyForm
 from .models import Job, JobForm, JobApply
 
 
+def home(request):
+    return render(request, 'job/home.html')
+
+
 def jobs(request):
     jobs = Job.objects.all()
     data = {
@@ -43,14 +47,14 @@ class jobApply(View):
 
     def post(self, request, id):
         job = get_object_or_404(Job, pk=id)
-
+        print(request.POST.keys()['job_applys'])
+        return HttpResponse(request.POST.keys()['job_applys'])
         form = JobApplyForm(request.POST or None)
         if form.is_valid():
             instance = form.save(commit=False)
             instance.job = job
             instance.data = "data"
             instance.save()
-
 
         # dict_data = json.loads(data)
         # for dic_single in dict_data:
@@ -63,7 +67,6 @@ class jobApply(View):
         # uploaded_file = request.FILES['file']
         # fs = FileSystemStorage()
         # name = fs.save(uploaded_file.name, uploaded_file)
-
 
         data = {
             'job': job,
