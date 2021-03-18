@@ -13,7 +13,7 @@ class Job(models.Model):
     experience = models.CharField(max_length=255)
     last_date = models.DateField()
     position = models.IntegerField()
-    file = models.ImageField(upload_to="images/", blank=True, null=True)
+    file = models.ImageField(upload_to="images", blank=True, null=True)
     created_at = models.DateField(default=timezone.now)
 
     class Meta:
@@ -44,7 +44,7 @@ class JobForm(models.Model):
 class JobApply(models.Model):
     data = models.TextField(null=True)
     date = models.DateField(auto_now=False, auto_now_add=True, null=True)
-    file = models.ImageField(upload_to="cv/", blank=True, null=True)
+    file = models.ImageField(upload_to="cv", blank=True, null=True)
     job = models.ForeignKey(Job, on_delete=models.CASCADE)
 
     def __str__(self):

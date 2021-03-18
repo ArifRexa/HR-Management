@@ -4,45 +4,44 @@ Home page
 {% endblock %}
 {% block content %}
 {% load static %}
-<section class="py-5 text-center container">
-    <div class="row py-lg-5">
-        <div class="col-lg-6 col-md-8 mx-auto">
-            <h1 class="fw-light">Jobs Details</h1>
-        </div>
-    </div>
-</section>
- <div class="container" style="margin-top: 10px">
-        {% for message in messages %}
-            <div class="alert {{ message.tags }} alert-dismissible" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                {{ message }}
-            </div>
-        {% endfor %}
-    </div>
-<div class="album py-5 bg-light">
-    <div class="container">
-        <div class="row">
-            <div class="span8">
-                <div class="row">
-                    <div class="span8">
-                        <h4><strong><a href="{{ job.get_single_url }}">{{job.title}}</a></strong></h4>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="span6">
-                        <p>
-                            {{job.description}}
-                        </p>
-                        <p>
-                            {{job.responsibilities}}
-                        </p>
-                        <p><a class="btn" href="{{ job.get_apply_url }}">Apply</a></p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div class="p-4 p-md-5 mb-4 text-white rounded bg-dark">
+    <div class="col-md-6 px-0">
+        <h1 class="display-4 fst-italic">Mediusware HR</h1>
+        <p class="lead mb-0"><a href="/jobs" class="text-white fw-bold">Job Lists</a></p>
     </div>
 </div>
+<div class="container" style="margin-top: 10px">
+    {% for message in messages %}
+    <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <h3 class="pb-4 mb-4 fst-italic border-bottom">
+            {{job.title}}
+        </h3>
+        <article class="blog-post">
+            <p class="blog-post-meta">Last Date: {{job.last_date}}</p>
+
+            <p>{{job.description}}</p>
+            <hr>
+            <h2>Responsibilities</h2>
+            <p>{{job.responsibilities}}.</p>
+            <h2>Requirements</h2>
+            <p>{{ job.requirements}}</p>
+            <h3>Experience</h3>
+            <p>{{job.experience}}</p>
+        </article>
+        <nav class="blog-pagination" aria-label="Pagination">
+            <a class="btn btn-outline-primary" href="{{ job.get_apply_url }}">Apply</a>
+        </nav>
+
+    </div>
+
+</div><!-- /.row -->
 {% endblock %}

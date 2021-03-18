@@ -39,37 +39,41 @@ class jobApply(View):
     def get(self, request, id):
         job = get_object_or_404(Job, pk=id)
         job_form = JobForm.objects.filter(job_id=job.id)
+        apply = JobApply.objects.filter(job_id=job.id)
         data = {
             'job': job,
             'job_form': job_form,
+            'apply': apply,
         }
+        Arr = [("Forename", "Paul"), ("Surname", "Dinh")]
+        print(Arr)
+        for appl in apply:
+            print(appl.data)
+            # for Key1, Value1 in appl.data:
+            #     print(Key1, "=", Value1)
+
+        for Key, Value in Arr:
+            print(Key, "=", Value)
+
         return render(request, 'job/job-apply.html', data)
 
     def post(self, request, id):
         job = get_object_or_404(Job, pk=id)
-        print(request.POST.keys()['job_applys'])
-        return HttpResponse(request.POST.keys()['job_applys'])
-        form = JobApplyForm(request.POST or None)
-        if form.is_valid():
-            instance = form.save(commit=False)
-            instance.job = job
-            instance.data = "data"
-            instance.save()
+        form_list = []
 
-        # dict_data = json.loads(data)
-        # for dic_single in dict_data:
-        #     print(dic_single)
-        # return HttpResponse(request.FILES.get('job_applys[file]'))
-        # for key, ob in request.POST:
-        #     print(key)
-        #     print(ob)
+        uploaded_file = request.FILES['cv']
+        fs = FileSystemStorage()
+        file_name = fs.save(uploaded_file.name, uploaded_file)
 
-        # uploaded_file = request.FILES['file']
-        # fs = FileSystemStorage()
-        # name = fs.save(uploaded_file.name, uploaded_file)
+        lists = list(request.POST.items())  # list of key-value tuples
+        for idx, val in enumerate(lists):
+            if (idx > 0):
+                form_list.append(val)
 
-        data = {
-            'job': job,
-        }
+        apply = JobApply()
+        apply.data = form_list
+        apply.file = file_name
+        apply.job_id = job.id
+        apply.save()
         messages.success(request, 'Apply Successfully')
-        return render(request, 'job/job-apply.html', data)
+        return redirect('jobs')
