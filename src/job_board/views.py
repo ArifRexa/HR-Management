@@ -1,38 +1,39 @@
-import datetime
-
 from django.contrib import messages
 
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from rest_framework.response import Response
 
 # Create your views here.
 from django.views import View
-from rest_framework.utils import json
-
-from .forms import JobApplyForm
+from django.core import serializers
 from .models import Job, JobForm, JobApply
+# from .serializers import JobsSerializer
+from .serializers import JobsSerializer
 
 
-def home(request):
-    return render(request, 'job/home.html')
+class Home(View):
+    def get(self, request):
+        return render(request, 'job/home.html')
 
 
-def jobs(request):
-    jobs = Job.objects.all()
-    data = {
-        'jobs': jobs
-    }
-    return render(request, 'job/jobs_list.html', data)
+class JobsList(View):
+    def get(self, request):
+        jobs = Job.objects.all()
+        json_data = serializers.serialize("json", jobs)
+        return HttpResponse(json_data, content_type="application/json")
 
 
-class jobDetails(View):
+class JobDetails(View):
     def get(self, request, id):
-        job = get_object_or_404(Job, pk=id)
-        data = {
-            'job': job,
-        }
-        return render(request, 'job/job-details.html', data)
+        job = self.get_object(pk)
+        serializer = JobsSerializer(job)
+        return Response(serializer.data)
+
+        jobs = Job.objects.get(pk=id)
+        json_data = serializers.serialize("json", jobs)
+        return HttpResponse(json_data, content_type="application/json")
 
 
 class jobApply(View):
