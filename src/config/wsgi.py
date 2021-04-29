@@ -8,6 +8,10 @@ https://docs.djangoproject.com/en/3.1/howto/deployment/wsgi/
 """
 
 import os
+import sys
+
+sys.path.insert(0, "/path/to/venv/lib/python3.8/site-packages")
+
 import dotenv
 
 from django.core.wsgi import get_wsgi_application

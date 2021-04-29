@@ -4,3 +4,7 @@ src/.env.backup
 static/*
 media/*
 *.pyc
+env
+venv
+virtualenv
+.code

@@ -1,0 +1,10 @@
+###### Requirements with Version Specifiers ######`
+django >= "3.1"
+
+###### Requirements without Version Specifiers ######`
+mysqlclient
+python-dotenv
+markdown
+django-filter
+djangorestframework
+django-userforeignkey

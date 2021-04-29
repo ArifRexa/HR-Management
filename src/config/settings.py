@@ -124,16 +124,16 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = os.environ.get('STATIC_URL')
+STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
+STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get('STATIC_URL'))
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')
-]
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static')
+# ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = os.environ.get('MEDIA_URL')
+MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
 
 # alert message here
 from django.contrib.messages import constants as messages
