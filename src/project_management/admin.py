@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from django.db.models import Sum
+from django.contrib.admin.views.main import ChangeList
+from django.db.models import Sum, Q
 
 from project_management.models import Client, Project, ProjectHour
 
@@ -27,11 +28,14 @@ class ProjectHourAdmin(admin.ModelAdmin):
     change_list_template = 'admin/project_management/extras/total.html'
 
     def get_total_hour(self, request):
-        qs = super().get_queryset(request)
-        print(qs)
-        print(request)
-        total = ProjectHour.objects.all().aggregate(tot=Sum('hours'))['tot']
-        return total
+        filters = {
+            'date__lt': request.GET.get('date__lt'),
+            'date__gte': request.GET.get('date__gte'),
+            'manager__id__exact': request.GET.get('manager__id__exact'),
+            'project__id__exact': request.GET.get('project__id__exact')
+        }
+        dataset = ProjectHour.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
+        return dataset.aggregate(tot=Sum('hours'))['tot']
 
     def changelist_view(self, request, extra_context=None):
         my_context = {
