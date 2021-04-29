@@ -12,7 +12,7 @@ make_published.short_description = "Print Appointment Latter"
 
 
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('user', 'designation', 'pay_scale', 'leave', 'created_at')
+    list_display = ('full_name', 'designation', 'pay_scale', 'leave', 'created_at', 'created_by')
     actions = [make_published]
 
 

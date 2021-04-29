@@ -10,6 +10,7 @@ python-dotenv = "*"
 djangorestframework = "*"
 markdown = "*"
 django-filter = "*"
+django-userforeignkey = "*"
 
 [requires]
 python_version = "3.6"
