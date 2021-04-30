@@ -33,7 +33,9 @@ class ProjectHourAdmin(admin.ModelAdmin):
             'date__lt': request.GET.get('date__lt'),
             'date__gte': request.GET.get('date__gte'),
             'manager__id__exact': request.GET.get('manager__id__exact'),
-            'project__id__exact': request.GET.get('project__id__exact')
+            'project__id__exact': request.GET.get('project__id__exact'),
+            'date__month': request.GET.get('date__month'),
+            'date__year': request.GET.get('date__year'),
         }
         dataset = ProjectHour.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         return dataset.aggregate(tot=Sum('hours'))['tot']
