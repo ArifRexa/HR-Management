@@ -24,6 +24,7 @@ admin.site.register(Project, ProjectAdmin)
 class ProjectHourAdmin(admin.ModelAdmin):
     list_display = ('manager', 'project', 'hours', 'date', 'created_by', 'created_at')
     list_filter = ('manager', 'project', 'date')
+    date_hierarchy = 'date'
 
     change_list_template = 'admin/project_management/extras/total.html'
 
