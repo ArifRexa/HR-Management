@@ -32,3 +32,4 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
                                 blank=True)
     date = models.DateField()
     hours = models.FloatField()
+    description = models.TextField(blank=True)
