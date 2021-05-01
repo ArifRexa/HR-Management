@@ -19,7 +19,6 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(ProjectHour)
 class ProjectHourAdmin(admin.ModelAdmin):
     list_display = ('manager', 'project', 'hours', 'date', 'created_by', 'created_at')
-    list_filter = ('manager', 'project', 'date')
     date_hierarchy = 'date'
 
     change_list_template = 'admin/total.html'
@@ -34,6 +33,9 @@ class ProjectHourAdmin(admin.ModelAdmin):
             'date__month': request.GET.get('date__month'),
             'date__year': request.GET.get('date__year'),
         }
+        # only super admin can able to see all
+        if not request.user.is_superuser:
+            filters['manager__id__exact'] = request.user.employee.id
         dataset = ProjectHour.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         return dataset.aggregate(tot=Sum('hours'))['tot']
 
@@ -52,6 +54,18 @@ class ProjectHourAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             fields.remove('manager')
         return fields
+
+    def get_list_filter(self, request):
+        filters = ['manager', 'project', 'date']
+        if not request.user.is_superuser:
+            filters.remove('manager')
+        return filters
+
+    def get_queryset(self, request):
+        query_set = super(ProjectHourAdmin, self).get_queryset(request)
+        if not request.user.is_superuser:
+            return query_set.filter(manager_id=request.user.employee.id)
+        return query_set
 
     # override project hour save
     # manager id will be authenticate user employee id if the user is not super user
