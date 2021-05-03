@@ -1,8 +1,12 @@
+import csv
+
 from django.contrib import admin
 
 # Register your models here.
 from django.db.models import Sum, Q
+from django.http import HttpResponse
 
+from config.admin.ExportCsvMixin import ExportCsvMixin
 from project_management.models import Client, Project, ProjectHour
 
 
@@ -17,9 +21,11 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProjectHour)
-class ProjectHourAdmin(admin.ModelAdmin):
+class ProjectHourAdmin(admin.ModelAdmin, ExportCsvMixin):
     list_display = ('manager', 'project', 'hours', 'date', 'created_by', 'created_at')
     date_hierarchy = 'date'
+    actions = ['export_as_csv']
+    search_fields = ['hours', 'manager__full_name', 'project__title', 'date']
 
     change_list_template = 'admin/total.html'
 
