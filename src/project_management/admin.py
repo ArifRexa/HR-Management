@@ -31,14 +31,9 @@ class ProjectHourAdmin(admin.ModelAdmin, ExportCsvMixin):
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        filters = {
-            'date__lt': request.GET.get('date__lt'),
-            'date__gte': request.GET.get('date__gte'),
-            'manager__id__exact': request.GET.get('manager__id__exact'),
-            'project__id__exact': request.GET.get('project__id__exact'),
-            'date__month': request.GET.get('date__month'),
-            'date__year': request.GET.get('date__year'),
-        }
+        filters = {}
+        for key in dict(request.GET):
+            filters[key] = request.GET.get(key)
         # only super admin can able to see all
         if not request.user.is_superuser:
             filters['manager__id__exact'] = request.user.employee.id
