@@ -22,6 +22,7 @@ class PayScale(TimeStampMixin, AuthorMixin):
     travel_allowance = models.DecimalField(decimal_places=2, max_digits=11)
     house_allowance = models.DecimalField(decimal_places=2, max_digits=11)
     medical_allowance = models.DecimalField(decimal_places=2, max_digits=11)
+    net_payable = models.DecimalField(decimal_places=2, max_digits=11)
     provision_period = models.IntegerField(help_text='Month')
     increment_period = models.IntegerField(help_text='increment month count')
     increment_rate = models.DecimalField(decimal_places=2, help_text='In percentage', max_digits=11)

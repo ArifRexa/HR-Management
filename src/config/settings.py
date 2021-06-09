@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     # 'job_board',
     'settings',
     'employee',
-    'project_management'
+    'project_management',
+    'account'
 ]
 
 MIDDLEWARE = [
