@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
+from django.db.models import Sum
+
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -21,6 +23,3 @@ class EmployeeSalary(TimeStampMixin):
     leave_bonus = models.FloatField(null=True)
     gross_salary = models.FloatField()
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'employee_salary'

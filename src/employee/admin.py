@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Employee, Overtime
+from .models import Employee, Overtime, SalaryHistory
 
 
 def make_published(modeladmin, request, queryset):
@@ -11,10 +11,16 @@ def make_published(modeladmin, request, queryset):
 make_published.short_description = "Print Appointment Latter"
 
 
+class SalaryHistoryInline(admin.StackedInline):
+    model = SalaryHistory
+    extra = 1
+
+
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'designation', 'leave', 'created_at', 'created_by')
     actions = [make_published]
+    inlines = (SalaryHistoryInline,)
 
 
 @admin.register(Overtime)

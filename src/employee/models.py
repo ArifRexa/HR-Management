@@ -15,7 +15,6 @@ class Employee(TimeStampMixin, AuthorMixin):
     address = models.TextField(null=True)
     phone = models.CharField(max_length=60, help_text='Use (,) comma for separate phone numbers')
     joining_date = models.DateField(default=timezone.now())
-    payable_salary = models.DecimalField(decimal_places=2, max_digits=11)
     cv = models.FileField(null=True, validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
                           help_text='*.PDF file only', blank=True)
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
@@ -27,6 +26,13 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     class Meta:
         db_table = 'employees'
+
+
+class SalaryHistory(TimeStampMixin, AuthorMixin):
+    payable_salary = models.FloatField()
+    active_from = models.DateField(default=timezone.now())
+    note = models.TextField()
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
 
 
 class Overtime(TimeStampMixin, AuthorMixin):
