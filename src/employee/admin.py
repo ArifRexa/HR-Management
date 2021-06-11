@@ -1,7 +1,9 @@
 from django.contrib import admin
 
 # Register your models here.
-from .models import Employee, Overtime, SalaryHistory
+from django.db import models
+
+from .models import Employee, Overtime, SalaryHistory, Leave, LeaveAttachment
 
 
 def make_published(modeladmin, request, queryset):
@@ -18,7 +20,7 @@ class SalaryHistoryInline(admin.StackedInline):
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'designation', 'leave', 'created_at', 'created_by')
+    list_display = ('full_name', 'designation', 'created_at', 'created_by')
     actions = [make_published]
     inlines = (SalaryHistoryInline,)
 
@@ -27,3 +29,15 @@ class EmployeeAdmin(admin.ModelAdmin):
 class Overtime(admin.ModelAdmin):
     list_display = ('employee', 'date', 'note')
     date_hierarchy = 'date'
+
+
+class LeaveAttachmentInline(admin.TabularInline):
+    model = LeaveAttachment
+    extra = 0
+
+
+@admin.register(Leave)
+class LeaveManagement(admin.ModelAdmin):
+    list_display = ('employee', 'leave_type', 'total_leave', 'status', 'status_changed_by', 'status_changed_at')
+    readonly_fields = ('note',)
+    inlines = (LeaveAttachmentInline,)

@@ -1,11 +1,14 @@
+import datetime
+
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-from settings.models import Designation, PayScale, Leave
+from settings.models import Designation, PayScale, LeaveManagement
 
 
 class Employee(TimeStampMixin, AuthorMixin):
@@ -18,7 +21,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     cv = models.FileField(null=True, validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
                           help_text='*.PDF file only', blank=True)
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
-    leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
+    leave_management = models.OneToOneField(LeaveManagement, on_delete=models.CASCADE)
     manager = models.BooleanField(default=False)
 
     def __str__(self):
@@ -42,3 +45,44 @@ class Overtime(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.employee.full_name
+
+
+class Leave(TimeStampMixin, AuthorMixin):
+    # class Meta:
+    #     db_table = ''
+
+    LEAVE_CHOICE = (
+        ('casual', 'Casual Leave'),
+        ('medical', 'Medical Leave'),
+        ('non_paid', 'Non Paid Leave')
+    )
+    LEAVE_STATUS = (
+        ('pending', '⏳ Pending'),
+        ('approved', '✔ Approved'),
+        ('rejected', '⛔ Rejected'),
+    )
+    start_date = models.DateField()
+    end_date = models.DateField()
+    total_leave = models.FloatField()
+    message = models.TextField()
+    note = models.TextField(null=True)
+    leave_type = models.CharField(choices=LEAVE_CHOICE, max_length=20)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
+    status_changed_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True,
+                                          on_delete=models.RESTRICT)
+    status_changed_at = models.DateField(null=True)
+
+    def clean_fields(self, exclude=('total_leave',)):
+        super().clean_fields(exclude=exclude)
+        if self.start_date is not None and self.end_date is not None:
+            if datetime.date.today() >= self.start_date:
+                raise ValidationError({'start_date': 'Start date must be greater then today'})
+
+            if self.start_date > self.end_date:
+                raise ValidationError({'end_date': "End date must be greater then or equal {}".format(self.start_date)})
+
+
+class LeaveAttachment(TimeStampMixin, AuthorMixin):
+    leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
+    attachment = models.FileField(help_text='Image , PDF or Docx file ')

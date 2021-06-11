@@ -31,7 +31,7 @@ class PayScale(TimeStampMixin, AuthorMixin):
         return self.title
 
 
-class Leave(TimeStampMixin, AuthorMixin):
+class LeaveManagement(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     casual_leave = models.IntegerField()
     medical_leave = models.IntegerField()
