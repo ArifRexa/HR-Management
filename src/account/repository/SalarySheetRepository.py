@@ -22,7 +22,7 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             defaults={'date': salary_date}
         )
-        employees = Employee.objects.all()
+        employees = Employee.objects.exclude(salaryhistory__isnull=True)
         for employee in employees:
             self.__save_employee_salary(self.__salary_sheet, employee)
 
@@ -34,6 +34,7 @@ class SalarySheetRepository:
         employee_salary.net_salary = self.__employee_current_salary.payable_salary
         employee_salary.overtime = self.__calculate_overtime(salary_sheet, employee)
         employee_salary.leave_bonus = self.__calculate_non_paid_leave(salary_sheet, employee)
+        employee_salary.project_bonus = self.__calculate_project_bonus(salary_sheet, employee)
         employee_salary.gross_salary = employee_salary.net_salary + employee_salary.overtime + \
                                        employee_salary.leave_bonus + employee_salary.leave_bonus
         employee_salary.save()
@@ -45,7 +46,7 @@ class SalarySheetRepository:
             date__year=salary_sheet.date.year).count()
 
     def __calculate_non_paid_leave(self, salary_sheet: SalarySheet, employee: Employee):
-        return -(self.__employee_current_salary.payable_salary / 31) * employee.leave_set.filter(
+        total_non_paid_leave = employee.leave_set.filter(
             start_date__month=salary_sheet.date.month,
             start_date__year=salary_sheet.date.year,
             end_date__year=salary_sheet.date.year,
@@ -53,3 +54,15 @@ class SalarySheetRepository:
             leave_type='non_paid',
             status='approved'
         ).aggregate(total_leave=Sum('total_leave'))['total_leave']
+        if total_non_paid_leave:
+            return -(self.__employee_current_salary.payable_salary / 31) * total_non_paid_leave
+        return 0
+
+    def __calculate_project_bonus(self, salary_sheet: SalarySheet, employee: Employee):
+        project_hours = employee.projecthour_set.filter(
+            date__month=salary_sheet.date.month,
+            date__year=salary_sheet.date.year
+        ).aggregate(total_hour=Sum('hours'))['total_hour']
+        if project_hours:
+            return project_hours * 10
+        return 0
