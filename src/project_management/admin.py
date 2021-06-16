@@ -1,12 +1,11 @@
-import csv
+import json
 
 from django.contrib import admin
 
 # Register your models here.
-from django.db.models import Sum, Q
-from django.http import HttpResponse
+from django.db.models import Sum, Q, F
 
-from config.admin.ExportCsvMixin import ExportCsvMixin
+from config.admin import ExportCsvMixin
 from project_management.models import Client, Project, ProjectHour
 
 
@@ -21,10 +20,9 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(ProjectHour)
-class ProjectHourAdmin(admin.ModelAdmin, ExportCsvMixin):
-    list_display = ('manager', 'project', 'hours', 'date', 'created_by', 'created_at')
+class ProjectHourAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
-    actions = ['export_as_csv']
+    actions = ['export_as_csv', 'enable_payable_status', 'disable_payable_status']
     search_fields = ['hours', 'manager__full_name', 'project__title', 'date']
 
     change_list_template = 'admin/total.html'
@@ -54,6 +52,7 @@ class ProjectHourAdmin(admin.ModelAdmin, ExportCsvMixin):
         fields = super().get_fields(request)
         if not request.user.is_superuser:
             fields.remove('manager')
+            fields.remove('payable')
         return fields
 
     def get_list_filter(self, request):
@@ -61,6 +60,12 @@ class ProjectHourAdmin(admin.ModelAdmin, ExportCsvMixin):
         if not request.user.is_superuser:
             filters.remove('manager')
         return filters
+
+    def get_list_display(self, request):
+        list_display = ['manager', 'project', 'hours', 'date', 'created_by', 'created_at', 'payable']
+        if not request.user.is_superuser:
+            list_display.remove('payable')
+        return list_display
 
     def get_queryset(self, request):
         query_set = super(ProjectHourAdmin, self).get_queryset(request)
@@ -74,3 +79,9 @@ class ProjectHourAdmin(admin.ModelAdmin, ExportCsvMixin):
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
         super().save_model(request, obj, form, change)
+
+    def enable_payable_status(self, request, queryset):
+        queryset.update(payable=True)
+
+    def disable_payable_status(self, request, queryset):
+        queryset.update(payable=False)

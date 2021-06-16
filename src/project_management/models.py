@@ -33,3 +33,4 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     date = models.DateField()
     hours = models.FloatField()
     description = models.TextField(blank=True)
+    payable = models.BooleanField(default=True)

@@ -4,6 +4,9 @@ from django.http import HttpResponse
 
 
 class ExportCsvMixin:
+    def __init__(self):
+        self.model = None
+
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]

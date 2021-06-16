@@ -5,6 +5,7 @@ from django.contrib import admin
 # Register your models here.
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.html import format_html
 
 from .models import Employee, Overtime, SalaryHistory, Leave, LeaveAttachment
 
@@ -23,9 +24,15 @@ class SalaryHistoryInline(admin.StackedInline):
 
 @admin.register(Employee)
 class EmployeeAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'designation', 'created_at', 'created_by')
+    list_display = ('employee_info', 'full_name', 'designation', 'created_at', 'created_by')
     actions = [make_published]
     inlines = (SalaryHistoryInline,)
+
+    def employee_info(self, obj):
+        return format_html(
+            f"Name : {obj.full_name} <br>"
+            f"Designation : {obj.designation}"
+        )
 
 
 @admin.register(Overtime)

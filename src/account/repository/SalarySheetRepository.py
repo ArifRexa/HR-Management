@@ -22,6 +22,7 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             defaults={'date': salary_date}
         )
+        print(EmployeeSalary.objects.filter(salary_sheet=self.__salary_sheet).delete())
         employees = Employee.objects.exclude(salaryhistory__isnull=True)
         for employee in employees:
             self.__save_employee_salary(self.__salary_sheet, employee)
@@ -61,7 +62,8 @@ class SalarySheetRepository:
     def __calculate_project_bonus(self, salary_sheet: SalarySheet, employee: Employee):
         project_hours = employee.projecthour_set.filter(
             date__month=salary_sheet.date.month,
-            date__year=salary_sheet.date.year
+            date__year=salary_sheet.date.year,
+            payable=True
         ).aggregate(total_hour=Sum('hours'))['total_hour']
         if project_hours:
             return project_hours * 10
