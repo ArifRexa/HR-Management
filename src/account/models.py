@@ -3,6 +3,7 @@ from django.db import models
 
 # Create your models here.
 from django.db.models import Sum
+from django.utils import timezone
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -23,3 +24,10 @@ class EmployeeSalary(TimeStampMixin):
     leave_bonus = models.FloatField(null=True)
     gross_salary = models.FloatField()
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
+
+
+class Expense(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=255)
+    note = models.TextField(null=True)
+    amount = models.FloatField()
+    date = models.DateField(default=timezone.now())

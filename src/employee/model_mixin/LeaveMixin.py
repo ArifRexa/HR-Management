@@ -27,8 +27,8 @@ class LeaveMixin(models.Model):
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
         if self.start_date is not None and self.end_date is not None:
-            if datetime.date.today() > self.start_date:
-                raise ValidationError({'start_date': 'Start date must be greater then today'})
+            # if datetime.date.today() > self.start_date:
+            #     raise ValidationError({'start_date': 'Start date must be greater then today'})
 
             if self.start_date > self.end_date:
                 raise ValidationError({'end_date': "End date must be greater then or equal {}".format(self.start_date)})
