@@ -4,6 +4,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.db.models import Sum, Q, F
+from django.template.context_processors import request
 
 from config.admin import ExportCsvMixin
 from project_management.models import Client, Project, ProjectHour
@@ -27,15 +28,14 @@ class ProjectHourAdmin(admin.ModelAdmin):
 
     change_list_template = 'admin/total.html'
 
+    list_per_page = 20
+
     # query for get total hour by query string
     def get_total_hour(self, request):
-        filters = {}
-        for key in dict(request.GET):
-            filters[key] = request.GET.get(key)
-        # only super admin can able to see all
-        if not request.user.is_superuser:
-            filters['manager__id__exact'] = request.user.employee.id
-        dataset = ProjectHour.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
+        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key != 'p'])
+        dataset = super(ProjectHourAdmin, self).get_queryset(request).filter(
+            *[Q(**{key: value}) for key, value in filters.items() if value]
+        )
         return dataset.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view

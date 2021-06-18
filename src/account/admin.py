@@ -70,10 +70,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     change_list_template = 'admin/expense/list.html'
 
     def get_total_hour(self, request):
-        filters = {}
-        for key in dict(request.GET):
-            filters[key] = request.GET.get(key)
-
+        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key != 'p'])
         dataset = Expense.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         return dataset.aggregate(tot=Sum('amount'))['tot']
 

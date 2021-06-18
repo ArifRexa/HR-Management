@@ -1,3 +1,4 @@
+import datetime
 from datetime import date
 
 from django.contrib import admin
@@ -5,7 +6,8 @@ from django.contrib import admin
 from django.db.models import Sum, Case, When, IntegerField, Count
 from django.utils.html import format_html
 
-from .models import Employee, Overtime, SalaryHistory, Leave, LeaveAttachment
+from .admin_mixin.EmployeeAdmin import EmployeeAdmin
+from .models import Employee, Overtime, SalaryHistory, Leave, LeaveAttachment, Resignation
 
 
 class SalaryHistoryInline(admin.StackedInline):
@@ -14,49 +16,12 @@ class SalaryHistoryInline(admin.StackedInline):
 
 
 @admin.register(Employee)
-class EmployeeAdmin(admin.ModelAdmin):
+class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
     list_display = ('employee_info', 'leave_info', 'salary_history', 'created_by')
     actions = ['print_appointment_latter', 'increment_latter']
     inlines = (SalaryHistoryInline,)
 
     change_list_template = 'admin/employee/list.html'
-
-    def employee_info(self, obj):
-        return format_html(
-            f"<dl>"
-            f"<dt>Name</dt>  <dd>: {obj.full_name}</dd>"
-            f"<dt>Designation</dt> <dd>: {obj.designation} {'*' if obj.manager else ''}</dd>"
-            f"<dt>Joining Date</dt> <dd>: {obj.joining_date}</dd>"
-            f"</dl>"
-        )
-
-    def leave_info(self, obj):
-        approved_leave = obj.leave_set.filter(status='approved')
-        return format_html(
-            f"<dl>"
-            f"<dt>Casual</dt>  <dd>{self.sum_total_leave(approved_leave.filter(leave_type='casual'))}/{obj.leave_management.casual_leave}</dd>"
-            f"<dt>Medical</dt>  <dd>{self.sum_total_leave(approved_leave.filter(leave_type='medical'))}/{obj.leave_management.medical_leave}</dd>"
-            f"<dt>Non Paid</dt>  <dd>{self.sum_total_leave(approved_leave.filter(leave_type='non_paid'))}</dd>"
-            f"</dl>"
-        )
-
-    def salary_history(self, obj):
-        history = obj.salaryhistory_set.order_by('-id')[:2]
-        return format_html(
-            f"<dl>"
-            f"<dt>Current Salary</dt>  <dd>{history[0].payable_salary} - {history[0].active_from}</dd>"
-            f"<dt>Last Salary</dt>  <dd>{history[1].payable_salary if len(history) > 1 else '--'}</dd>"
-            f"</dl>"
-        )
-
-    def sum_total_leave(self, obj):
-        return obj.aggregate(total=Sum('total_leave'))['total']
-
-    def print_appointment_latter(self):
-        pass
-
-    def increment_latter(self):
-        pass
 
 
 @admin.register(Overtime)
@@ -116,3 +81,29 @@ class LeaveManagement(admin.ModelAdmin):
         if not request.user.is_superuser:
             list_filter.remove('employee')
         return list_filter
+
+
+@admin.register(Resignation)
+class ResignationAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'message', 'date', 'status', 'approved_at', 'approved_by')
+
+    def get_fields(self, request, obj=None):
+        fields = super(ResignationAdmin, self).get_fields(request)
+        if not request.user.is_superuser:
+            fields.remove('employee')
+            fields.remove('status')
+        return fields
+
+    def get_queryset(self, request):
+        qs = super(ResignationAdmin, self).get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(employee_id=request.user.employee)
+
+    def save_model(self, request, obj, form, change):
+        if request.user.is_superuser and request.POST.get('status') != 'pending':
+            obj.approved_at = date.today()
+            obj.approved_by = request.user
+        else:
+            obj.employee = request.user.employee
+        super().save_model(request, obj, form, change)

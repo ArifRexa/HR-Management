@@ -21,9 +21,16 @@ class Employee(TimeStampMixin, AuthorMixin):
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
     leave_management = models.ForeignKey(LeaveManagement, on_delete=models.CASCADE)
     manager = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.full_name
+
+    def save(self, *args, **kwargs, ):
+        if not self.active:
+            self.user.is_active = False
+            self.user.save()
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'employees'
@@ -32,7 +39,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 class SalaryHistory(TimeStampMixin, AuthorMixin):
     payable_salary = models.FloatField()
     active_from = models.DateField(default=timezone.now())
-    note = models.TextField()
+    note = models.TextField(null=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
 
 
@@ -56,3 +63,18 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     attachment = models.FileField(help_text='Image , PDF or Docx file ')
+
+
+class Resignation(TimeStampMixin, AuthorMixin):
+    STATUS_CHOICE = (
+        ('pending', '⏳ Pending'),
+        ('approved', '✔ Approved'),
+        ('rejected', '⛔ Rejected'),
+    )
+    message = models.TextField(max_length=50)
+    date = models.DateField(default=timezone.now())
+    status = models.CharField(max_length=25, default='pending', choices=STATUS_CHOICE)
+    approved_at = models.DateField(null=True, editable=False)
+    approved_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True, on_delete=models.RESTRICT,
+                                    editable=False)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'user__is_superuser': False})

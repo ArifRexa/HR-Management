@@ -7,7 +7,6 @@ from django.utils.timezone import utc
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('settings', '0007_alter_publicholidaydate_public_holiday'),
         ('employee', '0025_auto_20210614_1452'),
