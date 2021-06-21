@@ -17,7 +17,7 @@ class SalaryHistoryInline(admin.StackedInline):
 
 @admin.register(Employee)
 class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
-    list_display = ('employee_info', 'leave_info', 'salary_history', 'created_by')
+    list_display = ('employee_info', 'leave_info', 'salary_history', 'created_by', 'active')
     actions = ['print_appointment_latter', 'increment_latter']
     inlines = (SalaryHistoryInline,)
 
