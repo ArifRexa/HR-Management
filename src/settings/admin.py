@@ -26,3 +26,4 @@ class PublicHolidayAdmin(admin.ModelAdmin):
         date_list = [dt for dt in obj.public_holiday.values_list('date', flat=True)]
         print(date_list)
         return "({}) \n {}".format(total_days, date_list)
+
