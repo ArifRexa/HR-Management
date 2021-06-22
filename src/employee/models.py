@@ -44,9 +44,15 @@ class SalaryHistory(TimeStampMixin, AuthorMixin):
 
 
 class Overtime(TimeStampMixin, AuthorMixin):
+    STATUS_CHOICE = (
+        ('pending', '⌛ Pending'),
+        ('approved', '👍 Approved'),
+        ('rejected', '⛔ Rejected'),
+    )
     date = models.DateField(null=False, help_text='Date of overtime')
     note = models.TextField(null=True, help_text='Please explain the reason for overtime')
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
 
     def __str__(self):
         return self.employee.full_name

@@ -30,8 +30,8 @@ class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
 
 
 @admin.register(Overtime)
-class Overtime(admin.ModelAdmin):
-    list_display = ('employee', 'date', 'note')
+class OvertimeAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'date', 'note', 'status')
     date_hierarchy = 'date'
 
     def get_queryset(self, request):
@@ -41,10 +41,31 @@ class Overtime(admin.ModelAdmin):
         return qs.filter(employee_id=request.user.employee)
 
     def get_list_filter(self, request):
-        list_filter = ['employee', 'date']
+        list_filter = ['employee', 'date', 'status']
         if not request.user.is_superuser:
             list_filter.remove('employee')
         return list_filter
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request)
+        if not request.user.is_superuser:
+            fields.remove('employee')
+            fields.remove('status')
+        return fields
+
+    def save_model(self, request, obj, form, change):
+        if not obj.employee_id:
+            obj.employee_id = request.user.employee.id
+        super().save_model(request, obj, form, change)
+
+    def change_view(self, request, *args, **kwargs):
+        overtime = Overtime.objects.filter(id=kwargs['object_id']).first()
+        self.readonly_fields = ()
+        if not request.user.is_superuser:
+            if overtime.status != 'pending':
+                print('here')
+                self.readonly_fields = super(OvertimeAdmin, self).get_fields(request)
+        return super(OvertimeAdmin, self).change_view(request, *args, **kwargs)
 
 
 class LeaveAttachmentInline(admin.TabularInline):

@@ -38,17 +38,19 @@ class LeaveMixin(models.Model):
                                                            date__lte=self.end_date).values_list('date', flat=True)
         print(office_holidays)
         delta = self.end_date - self.start_date
+        print(f'hello {delta.days + 1}')
         weekly_holiday, public_holiday = [], []
         self.note = ""
         for i in range(delta.days + 1):
             date = self.start_date + datetime.timedelta(days=i)
+            print(date)
             if date.strftime("%A") in ['Saturday', 'Sunday']:
                 self.note += "The date {} is weekly holiday \n".format(date)
                 weekly_holiday.append(date)
             if date in office_holidays:
                 self.note += "The date {} is public holiday \n".format(date)
                 public_holiday.append(date)
-        self.total_leave = delta.days - (len(weekly_holiday) + len(public_holiday))
+        self.total_leave = (delta.days + 1) - (len(weekly_holiday) + len(public_holiday))
         self.note += "Applied day total {}. chargeable day {}".format(delta.days, self.total_leave)
         super().save(*args, **kwargs)
 

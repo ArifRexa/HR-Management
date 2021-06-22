@@ -104,7 +104,9 @@ class SalarySheetRepository:
         """
         return (self.__employee_current_salary.payable_salary / 15.5) * employee.overtime_set.filter(
             date__month=salary_sheet.date.month,
-            date__year=salary_sheet.date.year).count()
+            date__year=salary_sheet.date.year,
+            status='approved'
+        ).count()
 
     def __calculate_non_paid_leave(self, salary_sheet: SalarySheet, employee: Employee):
         """Calculate Non Paid Leave
