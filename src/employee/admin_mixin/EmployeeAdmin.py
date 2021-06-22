@@ -37,8 +37,8 @@ class EmployeeAdmin:
     def sum_total_leave(self, obj):
         return obj.aggregate(total=Sum('total_leave'))['total']
 
-    def print_appointment_latter(self):
+    def print_appointment_latter(self, request, queryset):
         pass
 
-    def increment_latter(self):
+    def increment_latter(self, request, queryset):
         pass
