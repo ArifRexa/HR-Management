@@ -106,7 +106,7 @@ class ProjectHourAdmin(admin.ModelAdmin):
             id=kwargs['object_id'],
             created_at__gte=three_day_earlier
         ).first()
-        if not project_hour:
+        if not project_hour and not request.user.is_superuser:
             self.readonly_fields = super(ProjectHourAdmin, self).get_fields(request)
         return super(ProjectHourAdmin, self).change_view(request, *args, **kwargs)
 
