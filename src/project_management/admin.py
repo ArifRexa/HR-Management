@@ -1,4 +1,6 @@
+import datetime
 import json
+from datetime import timedelta
 
 from django.contrib import admin
 
@@ -32,7 +34,7 @@ class ProjectHourAdmin(admin.ModelAdmin):
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key != 'p'])
+        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'q']])
         dataset = super(ProjectHourAdmin, self).get_queryset(request).filter(
             *[Q(**{key: value}) for key, value in filters.items() if value]
         )
@@ -62,23 +64,51 @@ class ProjectHourAdmin(admin.ModelAdmin):
         return filters
 
     def get_list_display(self, request):
+        """
+
+        @type request: object
+        """
         list_display = ['manager', 'project', 'hours', 'date', 'created_by', 'created_at', 'payable']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
 
     def get_queryset(self, request):
+        """ Return query_set
+
+        overrides django admin query set
+        allow super admin only to see all project hour
+        manager's will only see theirs
+        @type request: object
+        """
         query_set = super(ProjectHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser:
             return query_set.filter(manager_id=request.user.employee.id)
         return query_set
 
-    # override project hour save
-    # manager id will be authenticate user employee id if the user is not super user
     def save_model(self, request, obj, form, change):
+        """
+        override project hour save
+        manager id will be authenticate user employee id if the user is not super user
+        """
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
         super().save_model(request, obj, form, change)
+
+    def change_view(self, request, *args, **kwargs):
+        """
+        Change view to readonly filed if the project hour created more then 2 days ago
+        """
+        self.readonly_fields = ()
+        three_day_earlier = datetime.datetime.today() - timedelta(days=2)
+        print(three_day_earlier)
+        project_hour = ProjectHour.objects.filter(
+            id=kwargs['object_id'],
+            created_at__gte=three_day_earlier
+        ).first()
+        if not project_hour:
+            self.readonly_fields = super(ProjectHourAdmin, self).get_fields(request)
+        return super(ProjectHourAdmin, self).change_view(request, *args, **kwargs)
 
     def enable_payable_status(self, request, queryset):
         queryset.update(payable=True)

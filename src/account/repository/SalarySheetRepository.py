@@ -14,10 +14,22 @@ class SalarySheetRepository:
     __employee_current_salary = SalaryHistory()
 
     def save(self, date):
+        """Generate and Save Salary Sheet
+
+        @param date:
+        @return:
+        """
         salary_date = datetime.strptime(date, "%Y-%m-%d").date()
         self.__create_unique_sheet(salary_date)
 
     def __create_unique_sheet(self, salary_date: datetime.date):
+        """Create unit salary sheet
+        it will check if any salary sheet has been generated before on the given month
+        it will update the salary sheet if found any
+        otherwise it will create a new salary sheet of given date
+
+        @type salary_date: datetime.date object
+        """
         self.__salary_sheet, created = SalarySheet.objects.get_or_create(
             date__month=salary_date.month,
             date__year=salary_date.year,
@@ -29,6 +41,14 @@ class SalarySheetRepository:
             self.__save_employee_salary(self.__salary_sheet, employee)
 
     def __save_employee_salary(self, salary_sheet: SalarySheet, employee: Employee):
+        """Save Employee Salary to Salary sheet
+        By this time will calculate the overtime, leave bonus, project bonus
+        and make an addition with net salary
+
+        @param salary_sheet:
+        @param employee:
+        @return void:
+        """
         self.__employee_current_salary = employee.salaryhistory_set.latest('id')
         employee_salary = EmployeeSalary()
         employee_salary.employee = employee
@@ -44,6 +64,18 @@ class SalarySheetRepository:
         self.__total_payable += employee_salary.gross_salary
 
     def __calculate_net_salary(self, salary_sheet: SalarySheet, employee: Employee):
+        """
+        it will calculate the net salary of employee
+        there is three kind of logic behind generating net salary
+        1.if the employee join in the middle of the month
+        2.if the employee left in the middle of the month
+        3.if the employee has join and left in a same month of making salary sheet
+
+        @todo : please check line:94 it will be divided by the working days of current month
+        @param salary_sheet:
+        @param employee:
+        @return number:
+        """
         working_days = calendar.monthrange(salary_sheet.date.year, salary_sheet.date.month)[1]
         joining_date = employee.joining_date.day
         resigned = employee.resignation_set.filter(status='approved', date__lte=salary_sheet.date).first()
@@ -60,14 +92,29 @@ class SalarySheetRepository:
         # if employee join or leave or join and leave at salary sheet making month
         if payable_days == 0:
             return employee.salaryhistory_set.order_by('-id').get().payable_salary
-        return (employee.salaryhistory_set.order_by('-id').get().payable_salary / 30) * payable_days
+        return (employee.salaryhistory_set.order_by('-id').get().payable_salary / working_days) * payable_days
 
     def __calculate_overtime(self, salary_sheet: SalarySheet, employee: Employee):
-        return (self.__employee_current_salary.payable_salary / 31) * employee.overtime_set.filter(
+        """Calculate Overtime
+        If employee do overtime in salary sheet making month, and count the total number of overtime
+
+        @param salary_sheet:
+        @param employee:
+        @return number:
+        """
+        return (self.__employee_current_salary.payable_salary / 15.5) * employee.overtime_set.filter(
             date__month=salary_sheet.date.month,
             date__year=salary_sheet.date.year).count()
 
     def __calculate_non_paid_leave(self, salary_sheet: SalarySheet, employee: Employee):
+        """Calculate Non Paid Leave
+        it will calculate non paid leave if the employee tokes any
+        it should always return negative integer
+
+        @param salary_sheet:
+        @param employee:
+        @return negative number:
+        """
         total_non_paid_leave = employee.leave_set.filter(
             start_date__month=salary_sheet.date.month,
             start_date__year=salary_sheet.date.year,
@@ -81,6 +128,14 @@ class SalarySheetRepository:
         return 0
 
     def __calculate_project_bonus(self, salary_sheet: SalarySheet, employee: Employee):
+        """Calculate Project Bonus
+        this method will calculate project bonus if the employee is manager and the he is eligible for project bonus
+        super admin will decide project hour is eligible or not for project bonus
+
+        @param salary_sheet:
+        @param employee:
+        @return number:
+        """
         project_hours = employee.projecthour_set.filter(
             date__month=salary_sheet.date.month,
             date__year=salary_sheet.date.year,

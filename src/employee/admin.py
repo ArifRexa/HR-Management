@@ -17,11 +17,16 @@ class SalaryHistoryInline(admin.StackedInline):
 
 @admin.register(Employee)
 class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
-    list_display = ('employee_info', 'leave_info', 'salary_history', 'created_by', 'active')
     actions = ['print_appointment_latter', 'increment_latter']
     inlines = (SalaryHistoryInline,)
 
     change_list_template = 'admin/employee/list.html'
+
+    def get_list_display(self, request):
+        list_display = ['employee_info', 'leave_info', 'salary_history', 'created_by', 'active']
+        if not request.user.is_superuser:
+            list_display.remove('salary_history')
+        return list_display
 
 
 @admin.register(Overtime)
@@ -61,6 +66,15 @@ class LeaveManagement(admin.ModelAdmin):
             for filed in admin_only:
                 fields.remove(filed)
         return fields
+
+    def change_view(self, request, *args, **kwargs):
+        leave = Leave.objects.filter(id=kwargs['object_id']).first()
+        print(self.readonly_fields)
+        if not leave.status == 'pending' and not request.user.is_superuser:
+            self.readonly_fields = super(LeaveManagement, self).get_fields(request)
+        else:
+            self.readonly_fields = ('note', 'total_leave')
+        return super(LeaveManagement, self).change_view(request, *args, **kwargs)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
