@@ -66,12 +66,14 @@ class SalarySheetAdmin(admin.ModelAdmin):
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('title', 'date', 'amount', 'note', 'created_by')
     date_hierarchy = 'date'
-
+    list_filter = ['created_by']
     change_list_template = 'admin/expense/list.html'
 
     def get_total_hour(self, request):
-        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key != 'p'])
+        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o']])
         dataset = Expense.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
+        if not request.user.is_superuser:
+            dataset = dataset.filter(created_by__id__exact=request.user.employee.id)
         return dataset.aggregate(tot=Sum('amount'))['tot']
 
     def changelist_view(self, request, extra_context=None):
