@@ -35,11 +35,12 @@ class ProjectHourAdmin(admin.ModelAdmin):
     # query for get total hour by query string
     def get_total_hour(self, request):
         filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'q', 'o']])
+        if not request.user.is_superuser:
+            filters['manager__id__exact'] = request.user.employee.id
         dataset = super(ProjectHourAdmin, self).get_queryset(request).filter(
             *[Q(**{key: value}) for key, value in filters.items() if value]
         )
-        if not request.user.is_superuser:
-            dataset = dataset.filter(user__id__exact=request.user.id)
+        print(filters)
         return dataset.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view

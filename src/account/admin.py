@@ -71,9 +71,9 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     def get_total_hour(self, request):
         filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o']])
-        dataset = Expense.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         if not request.user.is_superuser:
-            dataset = dataset.filter(created_by__id__exact=request.user.employee.id)
+            filters['created_by__id__exact'] = request.user.employee.id
+        dataset = Expense.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         return dataset.aggregate(tot=Sum('amount'))['tot']
 
     def changelist_view(self, request, extra_context=None):
