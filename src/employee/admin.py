@@ -75,7 +75,7 @@ class LeaveAttachmentInline(admin.TabularInline):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = ('employee', 'leave_type', 'total_leave', 'status', 'message')
+    list_display = ('employee', 'leave_type', 'total_leave', 'status', 'message', 'start_date', 'end_date')
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
     inlines = (LeaveAttachmentInline,)
