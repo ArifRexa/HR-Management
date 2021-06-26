@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 'gdstorage',
+    'django_extensions',
     'rest_framework',
     'django_userforeignkey',
     'tinymce',

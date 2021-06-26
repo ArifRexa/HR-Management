@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from job_board.models import Job, JobSummery
+from job_board.models import Job, JobSummery, Candidate
 
 
 class JobSummerySerializer(serializers.ModelSerializer):
@@ -18,3 +18,12 @@ class JobSerializer(serializers.ModelSerializer):
         fields = ['title', 'slug', 'job_context', 'job_description', 'job_responsibility',
                   'educational_requirement',
                   'additional_requirement', 'compensation', 'jobsummery']
+
+
+class CandidateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Candidate
+        fields = ('username', 'email', 'phone', 'password', 'avatar', 'cv')
+        action_fields = {
+            'list': {'fields': ('username', 'email', 'phone')}
+        }
