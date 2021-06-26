@@ -31,7 +31,7 @@ class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
 
 @admin.register(Overtime)
 class OvertimeAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'date', 'note', 'status')
+    list_display = ('employee', 'date', 'short_note', 'status')
     date_hierarchy = 'date'
 
     def get_queryset(self, request):
@@ -75,7 +75,7 @@ class LeaveAttachmentInline(admin.TabularInline):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = ('employee', 'leave_type', 'total_leave', 'status', 'message', 'start_date', 'end_date')
+    list_display = ('employee', 'leave_type', 'total_leave', 'status', 'short_message', 'start_date', 'end_date')
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
     inlines = (LeaveAttachmentInline,)
@@ -112,7 +112,7 @@ class LeaveManagement(admin.ModelAdmin):
         return qs.filter(employee_id=request.user.employee)
 
     def get_list_filter(self, request):
-        list_filter = ['status', 'leave_type', 'employee']
+        list_filter = ['status', 'leave_type', 'employee', 'start_date']
         if not request.user.is_superuser:
             list_filter.remove('employee')
         return list_filter
@@ -120,7 +120,7 @@ class LeaveManagement(admin.ModelAdmin):
 
 @admin.register(Resignation)
 class ResignationAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'message', 'date', 'status', 'approved_at', 'approved_by')
+    list_display = ('employee', 'short_message', 'date', 'status', 'approved_at', 'approved_by')
 
     def get_fields(self, request, obj=None):
         fields = super(ResignationAdmin, self).get_fields(request)

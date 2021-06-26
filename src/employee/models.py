@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.template.defaultfilters import truncatewords
 from django.utils import timezone
 
 from employee.model_mixin.LeaveMixin import LeaveMixin
@@ -57,6 +58,9 @@ class Overtime(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.employee.full_name
 
+    def short_note(self):
+        return truncatewords(self.note, 10)
+
 
 class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     message = models.TextField()
@@ -64,6 +68,10 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     status_changed_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True,
                                           on_delete=models.RESTRICT)
     status_changed_at = models.DateField(null=True)
+
+    @property
+    def short_message(self):
+        return truncatewords(self.message, 10)
 
 
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
@@ -77,10 +85,13 @@ class Resignation(TimeStampMixin, AuthorMixin):
         ('approved', '✔ Approved'),
         ('rejected', '⛔ Rejected'),
     )
-    message = models.TextField(max_length=50)
+    message = models.TextField(max_length=1000)
     date = models.DateField(default=timezone.now())
     status = models.CharField(max_length=25, default='pending', choices=STATUS_CHOICE)
     approved_at = models.DateField(null=True, editable=False)
     approved_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True, on_delete=models.RESTRICT,
                                     editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'user__is_superuser': False})
+
+    def short_message(self):
+        return truncatewords(self.message, 20)

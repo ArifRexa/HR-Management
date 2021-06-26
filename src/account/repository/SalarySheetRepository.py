@@ -35,7 +35,7 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             defaults={'date': salary_date}
         )
-        print(EmployeeSalary.objects.filter(salary_sheet=self.__salary_sheet).delete())
+        EmployeeSalary.objects.filter(salary_sheet=self.__salary_sheet).delete()
         employees = Employee.objects.filter(active=True).exclude(salaryhistory__isnull=True)
         for employee in employees:
             self.__save_employee_salary(self.__salary_sheet, employee)
@@ -90,6 +90,7 @@ class SalarySheetRepository:
         payable_days = working_days_after_join - working_days_after_resign
 
         # if employee join or leave or join and leave at salary sheet making month
+        print(f'Employee {employee.full_name} payable days : {payable_days}')
         if payable_days == 0:
             return employee.salaryhistory_set.order_by('-id').get().payable_salary
         return (employee.salaryhistory_set.order_by('-id').get().payable_salary / working_days) * payable_days
