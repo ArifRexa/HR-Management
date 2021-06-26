@@ -1,0 +1,55 @@
+from django.contrib.humanize.templatetags.humanize import naturalday
+from django.db import models
+from django import forms
+from gdstorage.storage import GoogleDriveStorage
+from tinymce.models import HTMLField
+
+from config.model.AuthorMixin import AuthorMixin
+from config.model.TimeStampMixin import TimeStampMixin
+
+
+# Create your models here.
+
+
+class Job(AuthorMixin, TimeStampMixin):
+    title = models.CharField(max_length=155)
+    slug = models.SlugField(max_length=255)
+    job_context = models.TextField(max_length=500)
+    job_description = models.TextField(null=True, blank=True)
+    job_responsibility = models.TextField(null=True, blank=True)
+    educational_requirement = models.TextField(null=True, blank=True)
+    additional_requirement = models.TextField(null=True, blank=True)
+    compensation = models.TextField(null=True, blank=True)
+
+
+class JobSummery(AuthorMixin, TimeStampMixin):
+    JOB_TYPE = (
+        ('full_time', 'Full Time'),
+        ('part_time', 'Part Time'),
+        ('contractual', 'Contractual')
+    )
+    job = models.OneToOneField(Job, on_delete=models.CASCADE)
+    application_deadline = models.DateField()
+    experience = models.IntegerField(help_text='Experience in year')
+    job_type = models.CharField(max_length=22, choices=JOB_TYPE)
+    vacancy = models.IntegerField()
+
+    # def __str__(self):
+    #     return f'{naturalday(self.application_deadline)} | {self.vacancy} | {self.job_type}'
+
+
+# go_storage = GoogleDriveStorage()
+
+
+class Candidate(models.Model):
+    STATUS_CHOICE = (
+        ('active', 'Active'),
+        ('banned', 'Banned')
+    )
+    username = models.CharField(max_length=40, unique=True)
+    email = models.EmailField(max_length=40, unique=True)
+    phone = models.CharField(max_length=11, unique=True)
+    password = models.CharField(max_length=20)
+    avatar = models.ImageField(upload_to='candidate/avatar/')
+    cv = models.FileField(upload_to='hr/%Y/%m/')
+    status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')

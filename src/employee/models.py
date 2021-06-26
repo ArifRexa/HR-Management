@@ -2,12 +2,13 @@ from django.contrib.auth.models import User
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.template.defaultfilters import truncatewords
-from django.utils import timezone
+from django.utils import timezone, timesince
 
 from employee.model_mixin.LeaveMixin import LeaveMixin
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, PayScale, LeaveManagement
+from django.utils.timesince import timesince
 
 
 class Employee(TimeStampMixin, AuthorMixin):
@@ -42,6 +43,10 @@ class SalaryHistory(TimeStampMixin, AuthorMixin):
     active_from = models.DateField(default=timezone.now())
     note = models.TextField(null=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+
+    @property
+    def active_from_human(self):
+        return timesince(self.active_from)
 
 
 class Overtime(TimeStampMixin, AuthorMixin):

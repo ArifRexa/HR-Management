@@ -35,9 +35,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'gdstorage',
     'rest_framework',
     'django_userforeignkey',
-    # 'job_board',
+    'tinymce',
+    'job_board',
     'settings',
     'employee',
     'project_management',
@@ -107,7 +109,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Internationalization
@@ -147,3 +148,6 @@ MESSAGE_TAGS = {
     messages.WARNING: 'alert-warning',
     messages.ERROR: 'alert-danger',
 }
+
+GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.environ.get('GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE')
+GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = os.environ.get('GOOGLE_DRIVE_STORAGE_MEDIA_ROOT ')

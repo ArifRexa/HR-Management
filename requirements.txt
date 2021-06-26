@@ -9,3 +9,6 @@ django-filter
 djangorestframework
 django-userforeignkey
 openpyxl
+django-tinymce
+pillow
+django-googledrive-storage

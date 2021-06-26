@@ -23,5 +23,11 @@ admin.site.site_title = "Mediusware Admin Portal"
 admin.site.index_title = "Welcome to Mediusware Admin Portal"
 
 urlpatterns = [
-    path('admin/', admin.site.urls)
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('api/', include([
+        path('jobs/', include('job_board.urls'))
+    ])),
+    path('admin/', admin.site.urls),
+    path('tinymce/', include('tinymce.urls'))
+]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

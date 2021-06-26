@@ -1,5 +1,6 @@
 from django.db.models import Sum
 from django.utils.html import format_html
+from django.utils.timesince import timesince
 
 
 class EmployeeAdmin:
@@ -28,7 +29,7 @@ class EmployeeAdmin:
             history = obj.salaryhistory_set.order_by('-id')[:2]
             return format_html(
                 f"<dl>"
-                f"<dt>Current Salary</dt>  <dd>{history[0].payable_salary} - {history[0].active_from}</dd>"
+                f"<dt>Current Salary</dt>  <dd>{history[0].payable_salary} - {history[0].active_from_human}</dd>"
                 f"<dt>Last Salary</dt>  <dd>{history[1].payable_salary if len(history) > 1 else '--'}</dd>"
                 f"</dl>"
             )

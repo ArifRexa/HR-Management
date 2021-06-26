@@ -12,8 +12,11 @@ markdown = "*"
 django-filter = "*"
 django-userforeignkey = "*"
 openpyxl = "*"
+django-tinymce = "*"
+pillow = "*"
+django-googledrive-storage = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.9"
 
 [dev-packages]
