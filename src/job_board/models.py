@@ -1,3 +1,4 @@
+from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturalday
 from django.db import models
 from django import forms
@@ -41,7 +42,7 @@ class JobSummery(AuthorMixin, TimeStampMixin):
 # go_storage = GoogleDriveStorage()
 
 
-class Candidate(models.Model):
+class Candidate(TimeStampMixin):
     STATUS_CHOICE = (
         ('active', 'Active'),
         ('banned', 'Banned')
@@ -49,7 +50,19 @@ class Candidate(models.Model):
     username = models.CharField(max_length=40, unique=True)
     email = models.EmailField(max_length=40, unique=True)
     phone = models.CharField(max_length=11, unique=True)
-    password = models.CharField(max_length=20)
+    password = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to='candidate/avatar/')
     cv = models.FileField(upload_to='hr/%Y/%m/')
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
+
+    def save(self, *args, **kwargs):
+        self.password = hashers.make_password(self.password, salt='mediusware_hr')
+        super().save(*args, **kwargs)
+
+
+class CandidateJobs(TimeStampMixin):
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.RESTRICT)
+    mcq_exam_score = models.FloatField(default=0)
+    written_exam_score = models.FloatField(default=0)
+    viva_exam_score = models.FloatField(default=0)

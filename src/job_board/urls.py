@@ -7,6 +7,7 @@ urlpatterns = [
     path('api/', include([
         path('job/', job.JobList.as_view()),
         path('job/<str:slug>/', job.JobRetrieve.as_view()),
+        path('apply/', job.CandidateJobView.as_view()),
         path('register-candidate/', authentication.CandidateRegistration.as_view()),
         path('login/', authentication.Login.as_view())
     ]))
