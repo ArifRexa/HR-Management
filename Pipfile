@@ -15,6 +15,7 @@ openpyxl = "*"
 django-tinymce = "*"
 pillow = "*"
 django-googledrive-storage = "*"
+pyjwt = "*"
 
 [requires]
 python_version = "3.9"

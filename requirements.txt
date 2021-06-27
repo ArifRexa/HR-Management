@@ -12,3 +12,4 @@ openpyxl
 django-tinymce
 pillow
 django-googledrive-storage
+pyjwt
