@@ -34,10 +34,5 @@ class CandidateJobSerializer(ModelSerializer):
     class Meta:
         model = CandidateJobs
         fields = '__all__'
-        read_only_fields = ['candidate', 'mcq_exam_score', 'written_exam_score', 'viva_exam_score']
-        write_only = ['job']
-
-
-class CredentialsSerializer(Serializer):
-    email = EmailField()
-    password = CharField(max_length=40, min_length=5)
+        read_only_fields = ['mcq_exam_score', 'written_exam_score', 'viva_exam_score']
+        write_only = ['job', 'candidate']
