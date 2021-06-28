@@ -98,23 +98,21 @@ class ProjectHourAdmin(admin.ModelAdmin):
             obj.manager_id = request.user.employee.id
         super().save_model(request, obj, form, change)
 
-    def change_view(self, request, *args, **kwargs):
-        """
-        Change view to readonly filed if the project hour created more then 2 days ago
-        """
-        self.readonly_fields = ()
+    def get_readonly_fields(self, request, obj=None):
         three_day_earlier = datetime.datetime.today() - timedelta(days=2)
-        print(three_day_earlier)
-        project_hour = ProjectHour.objects.filter(
-            id=kwargs['object_id'],
-            created_at__gte=three_day_earlier
-        ).first()
-        if not project_hour and not request.user.is_superuser:
-            self.readonly_fields = super(ProjectHourAdmin, self).get_fields(request)
-        return super(ProjectHourAdmin, self).change_view(request, *args, **kwargs)
+        if obj is not None:
+            project_hour = ProjectHour.objects.filter(
+                id=request.resolver_match.kwargs['object_id'],
+                created_at__gte=three_day_earlier,
+            ).first()
+            if project_hour is None and not request.user.is_superuser:
+                return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
+        return ()
 
-    def enable_payable_status(self, request, queryset):
-        queryset.update(payable=True)
 
-    def disable_payable_status(self, request, queryset):
-        queryset.update(payable=False)
+def enable_payable_status(self, request, queryset):
+    queryset.update(payable=True)
+
+
+def disable_payable_status(self, request, queryset):
+    queryset.update(payable=False)

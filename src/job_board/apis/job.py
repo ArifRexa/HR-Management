@@ -3,7 +3,7 @@ import datetime
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, CreateModelMixin
 from job_board.auth.CandidateAuth import CandidateAuth
-from job_board.models import Job, CandidateJobs
+from job_board.models import Job, CandidateJob
 from job_board.serializers import JobSerializer, CandidateJobSerializer
 
 
@@ -29,7 +29,7 @@ class JobRetrieve(RetrieveModelMixin, GenericJobView):
 
 
 class CandidateJobView(CreateModelMixin, ListModelMixin, GenericJobView):
-    queryset = CandidateJobs.objects.all()
+    queryset = CandidateJob.objects.all()
     serializer_class = CandidateJobSerializer
 
     authentication_classes = [CandidateAuth]

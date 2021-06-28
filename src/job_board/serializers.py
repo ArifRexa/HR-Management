@@ -2,7 +2,7 @@ from rest_framework import serializers
 from rest_framework.fields import ReadOnlyField, EmailField, CharField, JSONField, SerializerMethodField
 from rest_framework.serializers import Serializer, ModelSerializer
 
-from job_board.models import Job, JobSummery, Candidate, CandidateJobs
+from job_board.models import Job, JobSummery, Candidate, CandidateJob
 
 
 class JobSummerySerializer(ModelSerializer):
@@ -32,7 +32,7 @@ class CandidateJobSerializer(ModelSerializer):
     job_slug = ReadOnlyField(source="job.slug")
 
     class Meta:
-        model = CandidateJobs
+        model = CandidateJob
         fields = '__all__'
         read_only_fields = ['mcq_exam_score', 'written_exam_score', 'viva_exam_score']
         write_only = ['job', 'candidate']

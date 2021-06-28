@@ -10,7 +10,7 @@ class EmployeeAdmin:
             f"<dt>Name</dt>  <dd>: {obj.full_name}</dd>"
             f"<dt>Designation</dt> <dd>: {obj.designation} {'*' if obj.manager else ''}</dd>"
             f"<dt>Joining Date</dt> <dd>: {obj.joining_date}</dd>"
-            f"<dt>Resigned Date</dt> <dd>: {obj.resignation_set.filter(status='approved').first().date if obj.resignation_set.all() else ''}  "
+            f"<dt>Resigned Date</dt> <dd>: {obj.resignation_set.filter(status='approved').first().date if obj.resignation_set.filter(status='approved').first() else ''}  "
             f"</dl>"
         )
 

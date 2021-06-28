@@ -91,9 +91,10 @@ class SalarySheetRepository:
 
         # if employee join or leave or join and leave at salary sheet making month
         print(f'Employee {employee.full_name} payable days : {payable_days}')
+        latest_salary = employee.salaryhistory_set.order_by('-id').first()
         if payable_days == 0:
-            return employee.salaryhistory_set.order_by('-id').get().payable_salary
-        return (employee.salaryhistory_set.order_by('-id').get().payable_salary / working_days) * payable_days
+            return latest_salary.payable_salary
+        return (latest_salary.payable_salary / working_days) * payable_days
 
     def __calculate_overtime(self, salary_sheet: SalarySheet, employee: Employee):
         """Calculate Overtime

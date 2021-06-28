@@ -58,14 +58,13 @@ class OvertimeAdmin(admin.ModelAdmin):
             obj.employee_id = request.user.employee.id
         super().save_model(request, obj, form, change)
 
-    def change_view(self, request, *args, **kwargs):
-        overtime = Overtime.objects.filter(id=kwargs['object_id']).first()
-        self.readonly_fields = ()
-        if not request.user.is_superuser:
-            if overtime.status != 'pending':
-                print('here')
-                self.readonly_fields = super(OvertimeAdmin, self).get_fields(request)
-        return super(OvertimeAdmin, self).change_view(request, *args, **kwargs)
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            overtime = Overtime.objects.filter(id=request.resolver_match.kwargs['object_id']).first()
+            if not request.user.is_superuser:
+                if overtime.status != 'pending':
+                    return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
+        return ()
 
 
 class LeaveAttachmentInline(admin.TabularInline):
@@ -88,14 +87,12 @@ class LeaveManagement(admin.ModelAdmin):
                 fields.remove(filed)
         return fields
 
-    def change_view(self, request, *args, **kwargs):
-        leave = Leave.objects.filter(id=kwargs['object_id']).first()
-        print(self.readonly_fields)
-        if not leave.status == 'pending' and not request.user.is_superuser:
-            self.readonly_fields = super(LeaveManagement, self).get_fields(request)
-        else:
-            self.readonly_fields = ('note', 'total_leave')
-        return super(LeaveManagement, self).change_view(request, *args, **kwargs)
+    def get_readonly_fields(self, request, obj=None):
+        if obj is not None:
+            leave = Leave.objects.filter(id=request.resolver_match.kwargs['object_id']).first()
+            if not leave.status == 'pending' and not request.user.is_superuser:
+                return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
+        return ['total_leave', 'note']
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:

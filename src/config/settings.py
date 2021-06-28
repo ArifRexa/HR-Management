@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'django_userforeignkey',
+    'nested_inline',
     'tinymce',
     'job_board',
     'settings',
@@ -109,6 +110,8 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+AUTH_PASSWORD_VALIDATORS = []
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
