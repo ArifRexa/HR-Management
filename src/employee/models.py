@@ -29,10 +29,15 @@ class Employee(TimeStampMixin, AuthorMixin):
         return self.full_name
 
     def save(self, *args, **kwargs, ):
+        self.user.is_staff = True
         if not self.active:
             self.user.is_active = False
-            self.user.save()
+        self.user.save()
         super().save(*args, **kwargs)
+
+    @property
+    def joining_date_human(self):
+        return timesince(self.joining_date)
 
     class Meta:
         db_table = 'employees'

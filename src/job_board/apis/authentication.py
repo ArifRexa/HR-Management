@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth
 from job_board.models import Candidate
-from job_board.serializers import CandidateSerializer
+from job_board.serializers.candidate_serializer import CandidateSerializer
 
 
 class Registration(CreateModelMixin, GenericAPIView):

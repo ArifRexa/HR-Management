@@ -4,6 +4,7 @@ from django.db import models
 from django import forms
 from gdstorage.storage import GoogleDriveStorage
 from tinymce.models import HTMLField
+import uuid
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -36,7 +37,7 @@ class AssessmentAnswer(AuthorMixin, TimeStampMixin):
     title = models.TextField()
     score = models.FloatField()
     correct = models.BooleanField(default=False)
-    assessment_question = models.ForeignKey(AssessmentQuestion, on_delete=models.CASCADE)
+    assessment_question = models.ForeignKey(AssessmentQuestion, related_name='answers', on_delete=models.CASCADE)
 
 
 class Job(AuthorMixin, TimeStampMixin):
@@ -48,7 +49,7 @@ class Job(AuthorMixin, TimeStampMixin):
     educational_requirement = models.TextField(null=True, blank=True)
     additional_requirement = models.TextField(null=True, blank=True)
     compensation = models.TextField(null=True, blank=True)
-    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
+    assessment = models.ForeignKey(Assessment, null=True, related_name='assessment', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -60,7 +61,7 @@ class JobSummery(AuthorMixin, TimeStampMixin):
         ('part_time', 'Part Time'),
         ('contractual', 'Contractual')
     )
-    job = models.OneToOneField(Job, on_delete=models.CASCADE)
+    job = models.OneToOneField(Job, on_delete=models.CASCADE, related_name='job_summery')
     application_deadline = models.DateField()
     experience = models.IntegerField(help_text='Experience in year')
     job_type = models.CharField(max_length=22, choices=JOB_TYPE)
@@ -95,6 +96,7 @@ class Candidate(TimeStampMixin):
 
 
 class CandidateJob(TimeStampMixin):
+    unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
     job = models.ForeignKey(Job, on_delete=models.RESTRICT)
     mcq_exam_score = models.FloatField(default=0)

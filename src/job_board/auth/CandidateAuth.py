@@ -8,7 +8,7 @@ from rest_framework.serializers import Serializer
 from rest_framework.status import HTTP_401_UNAUTHORIZED, HTTP_400_BAD_REQUEST
 
 from job_board.models import Candidate
-from job_board.serializers import CandidateSerializer
+from job_board.serializers.candidate_serializer import CandidateSerializer
 
 
 class CredentialsSerializer(Serializer):
@@ -62,7 +62,7 @@ class CandidateAuth(BaseAuthentication):
 
     def __match_credentials(self, serializer: CredentialsSerializer):
         """
-        Match given credentials from serializer
+        Match given credentials from serializers
         @raise error if given username / email is not found
         @raise error if given password is not matched with given email / username
 

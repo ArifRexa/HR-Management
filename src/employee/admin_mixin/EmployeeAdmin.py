@@ -1,3 +1,6 @@
+from datetime import date
+
+from django.contrib.humanize.templatetags.humanize import intcomma, naturalday
 from django.db.models import Sum
 from django.utils.html import format_html
 from django.utils.timesince import timesince
@@ -5,38 +8,39 @@ from django.utils.timesince import timesince
 
 class EmployeeAdmin:
     def employee_info(self, obj):
+        resigned = obj.resignation_set.filter(status='approved')
         return format_html(
-            f"<dl>"
-            f"<dt>Name</dt>  <dd>: {obj.full_name}</dd>"
-            f"<dt>Designation</dt> <dd>: {obj.designation} {'*' if obj.manager else ''}</dd>"
-            f"<dt>Joining Date</dt> <dd>: {obj.joining_date}</dd>"
-            f"<dt>Resigned Date</dt> <dd>: {obj.resignation_set.filter(status='approved').first().date if obj.resignation_set.filter(status='approved').first() else ''}  "
-            f"</dl>"
+            f'<b>Name &emsp; &emsp; &nbsp:  {obj.full_name.capitalize()} </b><br>'
+            f'<b>Designation :</b> {obj.designation} <br>'
+            f'<b>Joined at &emsp;&nbsp;:</b> {naturalday(obj.joining_date)} <br>'
+            f'{"<b>Resign at &emsp;&nbsp;:</b> " + resigned.first().date if resigned.first() else ""}'
         )
 
     def leave_info(self, obj):
         approved_leave = obj.leave_set.filter(status='approved')
         return format_html(
-            f"<dl>"
-            f"<dt>Casual</dt>  <dd>{self.sum_total_leave(approved_leave.filter(leave_type='casual'))}/{obj.leave_management.casual_leave}</dd>"
-            f"<dt>Medical</dt>  <dd>{self.sum_total_leave(approved_leave.filter(leave_type='medical'))}/{obj.leave_management.medical_leave}</dd>"
-            f"<dt>Non Paid</dt>  <dd>{self.sum_total_leave(approved_leave.filter(leave_type='non_paid'))}</dd>"
-            f"</dl>"
+            f"<b>Casual &emsp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='casual'))}</b> out of {obj.leave_management.casual_leave} <br>"
+            f"<b>Medical &ensp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='medical'))}</b> out of {obj.leave_management.medical_leave}<br>"
+            f"<b>Non Paid :</b> {self.sum_total_leave(approved_leave.filter(leave_type='non_paid'))}<br>"
         )
 
     def salary_history(self, obj):
-        if obj.salaryhistory_set.count() > 0:
-            history = obj.salaryhistory_set.order_by('-id')[:2]
-            return format_html(
-                f"<dl>"
-                f"<dt>Current Salary</dt>  <dd>{history[0].payable_salary} - {history[0].active_from_human}</dd>"
-                f"<dt>Last Salary</dt>  <dd>{history[1].payable_salary if len(history) > 1 else '--'}</dd>"
-                f"</dl>"
-            )
-        return 'Salary History Not Found'
+        history = ''
+        for salary in obj.salaryhistory_set.order_by('-active_from').all():
+            history += f'<b>{intcomma(salary.payable_salary)}</b> activated from {naturalday(salary.active_from)} <br>'
+        return format_html(history)
+
+    def permanent_status(self, obj):
+        date_del = date.today() - obj.joining_date
+        if date_del.days > 90:
+            return format_html(f'<img src="/static/admin/img/icon-yes.svg" />')
+        return format_html(f'<img src="/static/admin/img/icon-no.svg" />')
 
     def sum_total_leave(self, obj):
-        return obj.aggregate(total=Sum('total_leave'))['total']
+        total = obj.aggregate(total=Sum('total_leave'))['total']
+        if total is None:
+            return 0
+        return total
 
     def print_appointment_latter(self, request, queryset):
         pass

@@ -4,7 +4,8 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, CreateModelMixin
 from job_board.auth.CandidateAuth import CandidateAuth
 from job_board.models import Job, CandidateJob
-from job_board.serializers import JobSerializer, CandidateJobSerializer
+from job_board.serializers.job_serializer import JobSerializer
+from job_board.serializers.candidate_serializer import CandidateJobSerializer
 
 
 class GenericJobView(GenericAPIView):
@@ -41,7 +42,7 @@ class CandidateJobView(CreateModelMixin, ListModelMixin, GenericJobView):
         return self.create(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        self.queryset.filter(candidate_id=request.user.id)  # TODO : this will be auth id
+        self.queryset.filter(candidate_id=request.user.id)
         return self.list(request, *args, **kwargs)
 
     def __not_allied(self):
