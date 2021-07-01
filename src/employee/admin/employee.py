@@ -1,9 +1,6 @@
-from django.contrib.humanize.templatetags.humanize import intword
-from django.templatetags.static import static
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template.loader import get_template
-from num2words import num2words
 from xhtml2pdf import pisa
 
 from config.helpers import link_callback

@@ -5,6 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
     <title>Document</title>
     <style>
         * {
@@ -40,6 +41,7 @@
 {% load humanize_extra %}
 
 <body>
+<img src="/stationery/logo.png" alt="">
 {% for employee in employees %}
     <p>Ref: Mediusware Ltd./{{ latter_type }} <br>
         Date: {{ employee.joining_date }} <br>
@@ -318,7 +320,7 @@
     <br>
     <table width="100%">
         <tr>
-            <td width="70%">Yours faithfully,</td>
+            <td width="70%">Yours faithfully, <br> <br> <br> MD Shahinur Rahman <br> Managing Director <br> Mediusware Ltd. </td>
             <td>Agreed & Accepted:___________</td>
         </tr>
         <tr>
