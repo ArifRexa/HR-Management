@@ -39,6 +39,10 @@ class Employee(TimeStampMixin, AuthorMixin):
     def joining_date_human(self):
         return timesince(self.joining_date)
 
+    @property
+    def current_salary(self):
+        return self.salaryhistory_set.latest('id')
+
     class Meta:
         db_table = 'employees'
 

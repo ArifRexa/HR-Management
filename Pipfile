@@ -16,9 +16,13 @@ django-tinymce = "*"
 pillow = "*"
 django-googledrive-storage = "*"
 pyjwt = "*"
+django-extensions = "*"
+django-nested-inline = "*"
+xhtml2pdf = "*"
+num2words = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.6"
 
 [dev-packages]
 django-extensions = "*"

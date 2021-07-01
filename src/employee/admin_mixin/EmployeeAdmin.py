@@ -42,8 +42,6 @@ class EmployeeAdmin:
             return 0
         return total
 
-    def print_appointment_latter(self, request, queryset):
-        pass
+    def print_appointment_latter(self):
+        print('hello')
 
-    def increment_latter(self, request, queryset):
-        pass

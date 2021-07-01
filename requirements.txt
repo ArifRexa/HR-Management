@@ -13,3 +13,7 @@ django-tinymce
 pillow
 django-googledrive-storage
 pyjwt
+django-extensions
+django-nested-inline
+xhtml2pdf
+num2words
