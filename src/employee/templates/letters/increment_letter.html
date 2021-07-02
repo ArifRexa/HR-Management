@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include 'letters/extra/header.html' with title='Increment Latter' %}
+</head>
+
+{% load humanize %}
+{% load humanize_extra %}
+
+<body>
+{% for employee in employees %}
+    <p>Ref: Mediusware Ltd./{{ latter_type }} <br>
+        Date: {{ employee.joining_date }} <br>
+        <b>{{ employee.full_name | title }}</b> <br>
+        Email: {{ employee.email }}<br>
+    </p>
+    <p><b>Subject: Increment Letter of {{ employee.full_name | title }}</b></p>
+    <p>Dear {{ employee.full_name | title }},</p>
+    <p><b>Congratulations!</b></p>
+    <p>Based on your performance in Mediusware Ltd, House- 18/5 (3rd Floor), Ring Road, Mohammadpur,
+        Dhaka, we are pleased to inform you that we have decided to increase your salary & it will be effective
+        from {{ employee.current_salary.active_from }}.</p>
+
+    {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary %}
+
+    <p><b>All other terms and conditions stated in the appointment letter will remain unchanged.</b></p>
+    {% include 'letters/extra/footer.html' %}
+{% endfor %}
+</body>
+
+</html>

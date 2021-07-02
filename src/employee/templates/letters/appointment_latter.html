@@ -1,49 +1,15 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-
-    <title>Document</title>
-    <style>
-        * {
-            font-size: 13px;
-        }
-
-        @page {
-            size: a4 portrait;
-            @frame content_frame {
-            left: 40pt;
-            width: 512pt;
-            top: 100pt;
-            height: 670pt;
-
-        }
-
-        @frame logo {
-        -pdf-frame-content:logo;
-        left: 40px;
-        top: 20px;
-        width: 150px;
-        height: 60px;
-        }
-        }
-
-        .page-break {
-            page-break-after: always;
-        }
-    </style>
+    {% include 'letters/extra/header.html' with title='Appointment Latter' %}
 </head>
 
 {% load humanize %}
 {% load humanize_extra %}
 
 <body>
-<img src="/stationery/logo.png" alt="">
 {% for employee in employees %}
-    <p>Ref: Mediusware Ltd./{{ latter_type }} <br>
+    <p>Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.id }} <br>
         Date: {{ employee.joining_date }} <br>
         <b>{{ employee.full_name | title }}</b> <br>
         Email: {{ employee.email }}<br>
@@ -51,11 +17,12 @@
     <p><b>Subject: Appointment Letter of {{ employee.full_name | title }}</b></p>
     <p>Dear {{ employee.full_name | title }},</p>
     <p>Upon reviewing your application and interviewing you in person we are very pleased to appoint you as the
-        <b>{{ employee.designation | title }}</b> for Mediusware. in <b>House- 18/5 (3rd Floor), Ring Road, Mohammadpur,
+        <b>{{ employee.designation | title }}</b> for Mediusware Ltd. in <b>House- 18/5 (3rd Floor), Ring Road,
+            Mohammadpur,
             Dhaka.</b> You are
         expected to
-        perform your duties and exercise your skills as a <b>‘{{ employee.designation | title }}’</b> from
-        ,{{ employee.joining_date }} as per terms and
+        perform your duties and exercise your skills as a <b>‘{{ employee.designation | title }}’</b>
+        from {{ employee.joining_date }} as per terms and
         conditions
         discussed and agreed upon as under:</p>
     <ol style="line-height: 20px">
@@ -66,50 +33,8 @@
             decreased
             based on your performance.
         </li>
-        <li>In your probation period, you will receive a consolidated salary of
-            <b>BDT {{ employee.current_salary.payable_salary | intcomma }}
-                ({{ employee.current_salary.payable_salary | num_to_word }} taka)</b> in
-            the
-            following breakdown: <br> <br>
-            <table width="100%" border="1" cellpadding="5">
-                <tr>
-                    <td width="30%">Basic (55%)</td>
-
-                    <td>{{ employee.current_salary.payable_salary | percentage:55 }}</td>
-                </tr>
-                <tr>
-                    <td>House Allowance (20%)</td>
-
-                    <td>{{ employee.current_salary.payable_salary | percentage:20 }}</td>
-                </tr>
-                <tr>
-                    <td>Conveyance (15%)</td>
-
-                    <td>{{ employee.current_salary.payable_salary | percentage:15 }}</td>
-                </tr>
-                <tr>
-                    <td>Medical Allowance (10%)</td>
-
-                    <td>{{ employee.current_salary.payable_salary | percentage:10 }}</td>
-                </tr>
-                <tfoot style="border-top: 1px solid black;">
-                <tr>
-                    <th align='left'>Gross Salary:</th>
-
-                    <td>{{ employee.current_salary.payable_salary | intcomma }} BDT</td>
-                </tr>
-                </tfoot>
-
-            </table>
-            <br>
-            <ul style="list-style-type:disc">
-                <li>Out of consolidated salary, Travel Allowance (T.A/D. A) will be given if needed for official
-                    purposes.
-                </li>
-                <li>Mobile allowance (at actual or slot provided by the organization) will be approved by the management
-                    following the official communication needs.
-                </li>
-            </ul>
+        <li>
+            {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary %}
         </li>
         <li>If the organization thinks that you are not well-suited for the assigned tasks or you are not performing
             well as
@@ -118,222 +43,10 @@
             depending on the circumstances.
         </li>
         <div class="page-break"></div>
-        <li>Office time:
-            <ul style="list-style-type: lower-alpha">
-                <li>Your normal working day is <b>Monday to Friday; 5 days per week</b> and <b>weekend is Saturday and
-                    Sunday.</b></li>
-                <li>Your working time is <b>8:00 hours/day with 1 (One) hour Lunchtime + Other Break (Office Starts at
-                    10:00 am).</b> If
-                    required,
-                    you will
-                    have to stay and work for a longer period.
-                </li>
-            </ul>
-        </li>
-        <li>You will be on probation for 3 (Three) months, a period, which may be extended at the discretion of the
-            Company.
-        </li>
-        <li>Upon completion of the period of probation to the satisfaction of the Company, your service may be placed in
-            the
-            regular payroll of the Company or on contract for a specific term as decided by the Company. During this
-            probation period, either party can nullify this contract by giving a notice of 7 days.
-        </li>
-        <li>The increment process will depend on the performance of the employee. Mostly, it will increase after
-            completing
-            6 months employment (will be made effective from the joining date) with our organization.
-            The salary increment policy is given bellow :
-
-            <table id="salary_table" border="1" cellpadding="5">
-                <thead>
-                <tr>
-                    <th>Salary Range</th>
-                    <th>6 Month</th>
-                    <th>12 Month</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>< 20,000</td>
-                    <td>20% from joining salary</td>
-                    <td>20% from joining salary</td>
-                </tr>
-                <tr>
-                    <td>20,000 to < 30,000</td>
-                    <td>15% from joining salary <br> or 12 month's incremented salary</td>
-                    <td>15% from joining salary <br> or 12 month's incremented salary</td>
-                </tr>
-                <tr>
-                    <td>30,000 to < 50,000</td>
-                    <td>10% from joining salary <br> or 12 month's incremented salary</td>
-                    <td>10% from joining salary <br> or 12 month's incremented salary</td>
-                </tr>
-                <tr>
-                    <td>50,000 to < 70,000</td>
-                    <td>7.5% from joining salary <br> or 12 month's incremented salary</td>
-                    <td>7.5% from joining salary <br> or 12 month's incremented salary</td>
-                </tr>
-                <tr>
-                    <td>70,000 to infinity</td>
-                    <td>5% from joining salary <br> or 12 month's incremented salary</td>
-                    <td>5% from joining salary <br> or 12 month's incremented salary</td>
-                </tr>
-                </tbody>
-            </table>
-        </li>
-        <br>
-        <li>Your future increments or promotion or any other salary increase shall be based on merit considering your
-            periodic and consistent overall performance, business conditions, and other parameters fixed from time to
-            time
-            at the judgment of the management and shall not be considered merely as a matter of right.
-        </li>
-        <li><b>Leave policy:</b> After probation period, an employee will be entitled to the following leave structure:
-            <ul style="list-style-type: lower-alpha">
-                <li>You will get a total of <b>21 (Twenty-One) days of leaves annually</b>; among which <b>13 (Twelve)
-                    days
-                    of casual leave (CL)</b> and <b>08 (Eight Days) of Medical Leave (ML)</b> every year.
-                </li>
-                <li>You are not entitled to any leave during the probation period.</li>
-                <li>If anyone runs out of all leaves and asks for extra leave, then without proper documentation his
-                    salary
-                    will be deducted two days for 1-day leave. (with proper documents it will be considered.)
-                </li>
-                <li>For sick leave, you must have to submit Medical certificates or Prescriptions from an MBBS doctor
-                    with
-                    proper description. Otherwise, it will be considered as casual leave.
-                </li>
-            </ul>
-        </li>
-        <li>All documents, codes, business plans, Product Plans, Project Document, Sales documents, Buyer/ Seller Legal
-            documentation, Vendor/ Supplier list, Techno-Commercial Proposals, Trade Secrets, Technical Information,
-            Reports, Statements, correspondence, etc., Written or unwritten and also information and instructions that
-            pass
-            through you or come to your knowledge shall be treated as confidential. You shall not utilize them for your
-            use
-            or disclose to other persons during or after your employment.
-        </li>
-
-        <li>During the tenure of your service, you will wholly devote yourself to the work assigned to you and will not
-            undertake any other employment/engagement, directly or indirectly, with or without monetary considerations,
-            and/or benefits without prior permission of the Company in writing. Any breaking of this condition will
-            require
-            termination of your services from the Company.
-        </li>
-        <li>In the event, you are absent from duty without information or permission of leave or you overstay your
-            sanctioned leave, the Management will treat you as having voluntarily abandoned the services of the Company.
-        </li>
-        <li>If you are absent from the workplace for a continuous period of 5 working days without informing the
-            management
-            and without showing a valid reason for your absence, you will be deemed to have abandoned your employment.
-        </li>
-        <li>If you want to leave the job you must inform the company 01 (one) months before in writing. You have to hand
-            over your responsibilities to the company assigned employees within the notice period. Similarly, if the
-            company
-            shuts down its operation/ business for any reason or your performance in the company is not up to the mark,
-            it
-            will give you 01 month notice of leaving.
-        </li>
-        <li>If the organization dismisses someone for misconduct or any offensive work, he or she will be penalized and
-            won’t get any amount or any other benefit from the organization.
-        </li>
-        <li>Your services are liable to be terminated at any time due to the following reason:
-            <ul style="list-style-type: lower-alpha">
-                <li>During probation or after confirmation, in case you are found to be medically unfit by the Company’s
-                    Authorized Medical practitioner, on examination
-                </li>
-                <li>When the Company comes to know of any conviction by the Court of Law during the tenure of your
-                    service
-                    with us or conviction and/or any bad record in the past under the previous employer, or because of
-                    your
-                    giving false information at the time of your appointment or concealed any material information or
-                    given
-                    any false details in the application form.
-                </li>
-            </ul>
-        </li>
-        <li>At the time of resignation, you will have to hand over the projects’ files that were assigned to you to the
-            other nominated person of the company and until he or she receives all the necessary and updated files of
-            your
-            assigned projects from you, you will not be released from the company.
-        </li>
-        <li>You will keep the company informed of any change in your residential address that may happen during the
-            employment of your service with the company. Also, to check your academic qualification, the company
-            preserves
-            all the right to see your necessary documents.
-        </li>
-        <li>During the period of service with the company, you shall not take part in any activity of the formation of
-            the
-            council or association or become a member being part of management staff which is found to be harmful in the
-            interest of the company in any way. Such an action shall be considered a violation of service conditions of
-            the
-            company and amount to causing damage to its interest and shall call for disciplinary action being taken
-            against
-            you.
-        </li>
-        <li>You will be liable for prosecution for damages for divulgence, sharing, or parting any of such information
-            during employment and on cessation for at least 2 years period. Otherwise, the company has all the right to
-            take
-            legal action against you.
-        </li>
-        <li>On leaving the employment of the Company, any amount due from the Employee shall be recovered by the Company
-            from Employee’s final payment and in the event, there be any amount due from the Employee after such
-            deduction/
-            adjustment the Employee shall make good the same by payment to the Company. The company will not be liable
-            for
-            your loan taken from the bank, other financial institution, or even any other company or individual.
-        </li>
-        <li>While you are in the employment of the company, you may be given or handed over the company’s property
-            and/or
-            equipment for official use and you will take care of them including their upkeep. On cessation of employment
-            with the Company, you will return all documents, books, papers relating to the affairs of the Company,
-            purchased
-            with the company’s money, which may have come to you, and also any property of the company in your
-            possession.
-            If you do not abide by this rule or misuse the company’s property intentionally, you will be charged for
-            this
-            after verifying the issue.
-        </li>
-        <li>All disputes arising out of this letter will be subject to the jurisdiction of the Supreme Court. And that
-            the
-            courts, tribunals and/or authorities at SC only shall have jurisdiction to entertain, try and decide such
-            disputes or differences arising out of or about this contract of employment, irrespective of your working HQ
-            being elsewhere at that time.
-        </li>
-        <li>The employee will abide by the general rules and regulations of the company, which may be changed by the
-            company
-            from time to time.
-        </li>
-        <li>The terms and conditions herein contained may be amended according to changes in the company’s policy or the
-            company’s general rules on employment at any time at the discretion of the company.
-        </li>
-        <li>Every year you will receive 2 (two) festival bonus after 6 (Six) months after joining. The festival bonus
-            will be exact amount of your basic salary
-        </li>
-        <li>This Agreement is being executed in two identical originals, one to be retained by the employee and the
-            other by
-            the company.
-        </li>
-        <li>This employee accepts employment under the terms and conditions mentioned above.</li>
+        {% include 'letters/extra/terms_conditions.html' %}
     </ol>
     <p>I hope that this will be the beginning of a long and successful career with us</p>
-    <br>
-    <br>
-    <br>
-    <table width="100%">
-        <tr>
-            <td width="70%">Yours faithfully, <br> <br> <br> MD Shahinur Rahman <br> Managing Director <br> Mediusware
-                Ltd.
-            </td>
-            <td>Agreed & Accepted:___________</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>Name:</td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>Date:</td>
-        </tr>
-    </table>
+    {% include 'letters/extra/footer.html' %}
 {% endfor %}
 </body>
 

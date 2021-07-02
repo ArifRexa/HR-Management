@@ -24,7 +24,7 @@ class AttachmentInline(admin.TabularInline):
 @admin.register(Employee)
 class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
     inlines = (AttachmentInline, SalaryHistoryInline)
-    actions = ['print_appointment_latter']
+    actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter']
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
 
     # change_list_template = 'admin/employee/list.html'
@@ -35,20 +35,14 @@ class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
             list_display.remove('salary_history')
         return list_display
 
-    @admin.action(description='Print Appointment Latter')
-    def print_appointment_latter(self, request, queryset):
-        template_path = 'appointment_latter.html'
-        context = {'employees': queryset, 'latter_type': 'EAL'}
-        # Create a Django response object, and specify content_type as pdf
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="report.pdf"'
-        # find the template and render it.
-        template = get_template(template_path)
-        html = template.render(context)
+    @admin.action(description='Print Appointment Letter')
+    def print_appointment_letter(self, request, queryset):
+        return self.print_pdf(queryset, 'EAL')
 
-        try:
-            pisa_status = pisa.CreatePDF(html.encode('UTF-8'), dest=response, encoding='UTF-8',
-                                         link_callback=link_callback)
-            return response
-        except Exception:
-            raise Exception
+    @admin.action(description='Print Permanent Letter')
+    def print_permanent_letter(self, request, queryset):
+        return self.print_pdf(queryset, 'EPL')
+
+    @admin.action(description='Print Increment Letter')
+    def print_increment_letter(self, request, queryset):
+        return self.print_pdf(queryset, 'EIL')
