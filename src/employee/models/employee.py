@@ -47,6 +47,10 @@ class Employee(TimeStampMixin, AuthorMixin):
         return self.salaryhistory_set.latest('id')
 
     @property
+    def joining_salary(self):
+        return self.salaryhistory_set.first()
+
+    @property
     def permanent_salary(self):
         salary = self.salaryhistory_set.filter(active_from=self.permanent_date).first()
         if salary:
