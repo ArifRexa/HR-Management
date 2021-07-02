@@ -6,6 +6,7 @@ from xhtml2pdf import pisa
 from config.helpers import link_callback
 from employee.admin_mixin.EmployeeAdmin import EmployeeAdmin
 from employee.models import SalaryHistory, Employee
+from employee.models.attachment import Attachment
 
 
 class SalaryHistoryInline(admin.StackedInline):
@@ -15,9 +16,14 @@ class SalaryHistoryInline(admin.StackedInline):
         return 1 if not obj else 0
 
 
+class AttachmentInline(admin.TabularInline):
+    model = Attachment
+    extra = 0
+
+
 @admin.register(Employee)
 class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
-    inlines = (SalaryHistoryInline,)
+    inlines = (AttachmentInline, SalaryHistoryInline)
     actions = ['print_appointment_latter']
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
 

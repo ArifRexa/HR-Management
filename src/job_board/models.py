@@ -2,7 +2,7 @@ from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturalday
 from django.db import models
 from django import forms
-from gdstorage.storage import GoogleDriveStorage
+# from gdstorage.storage import GoogleDriveStorage
 from tinymce.models import HTMLField
 import uuid
 
