@@ -1,4 +1,6 @@
 import os
+
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
 
@@ -16,7 +18,12 @@ def user_directory_path(instance, filename):
 class Attachment(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     file_name = models.CharField(null=True, blank=True, max_length=155)
-    file = models.FileField(upload_to=user_directory_path)
+    file = models.FileField(
+        help_text='*.pdf, *.doc, *.png, *.jpeg',
+        upload_to=user_directory_path,
+        validators=[
+            FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'png', 'jpeg', 'jpg'])
+        ])
 
 
 def get_file_name(given_name, filename):

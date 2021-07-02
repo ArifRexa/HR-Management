@@ -36,8 +36,7 @@ class EmployeeAdmin:
         return format_html(history)
 
     def permanent_status(self, obj):
-        date_del = date.today() - obj.joining_date
-        if date_del.days > 90:
+        if obj.permanent_date:
             return format_html(f'<img src="/static/admin/img/icon-yes.svg" />')
         return format_html(f'<img src="/static/admin/img/icon-no.svg" />')
 

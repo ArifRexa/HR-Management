@@ -17,8 +17,6 @@ class Employee(TimeStampMixin, AuthorMixin):
     phone = models.CharField(max_length=60, help_text='Use (,) comma for separate phone numbers')
     joining_date = models.DateField(default=timezone.now())
     permanent_date = models.DateField(null=True, blank=True)
-    cv = models.FileField(null=True, validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
-                          help_text='*.PDF file only', blank=True)
     designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
     leave_management = models.ForeignKey(LeaveManagement, on_delete=models.CASCADE)
     manager = models.BooleanField(default=False)
