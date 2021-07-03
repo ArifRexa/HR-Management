@@ -4,6 +4,7 @@ from io import BytesIO
 from django.contrib.staticfiles import finders
 from django.http import HttpResponse
 from django.template.loader import get_template
+from django.utils.crypto import get_random_string
 from xhtml2pdf import pisa
 
 import config.settings
@@ -42,7 +43,7 @@ def link_callback(uri, rel):
     return path
 
 
-def render_to_pdf(template_path, context):
+def render_to_pdf(template_path, context, filename=get_random_string(length=10)):
     context['watermark'] = f"{config.settings.STATIC_ROOT}/stationary/letter_head.jpeg"
     template = get_template(template_path)
     html = template.render(context)
@@ -50,6 +51,6 @@ def render_to_pdf(template_path, context):
     pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
     if not pdf.err:
         response = HttpResponse(result.getvalue(), content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{context["latter_type"]}.pdf"'
+        response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
         return response
     return None
