@@ -1,7 +1,12 @@
 import os
+from io import BytesIO
 
 from django.contrib.staticfiles import finders
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
+import config.settings
 from config import settings
 
 
@@ -35,3 +40,14 @@ def link_callback(uri, rel):
             'media URI must start with %s or %s' % (static_url, media_url)
         )
     return path
+
+
+def render_to_pdf(template_path, context):
+    context['watermark'] = f"{config.settings.STATIC_ROOT}/stationary/letter_head.jpeg"
+    template = get_template(template_path)
+    html = template.render(context)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
+    if not pdf.err:
+        return HttpResponse(result.getvalue(), content_type='application/pdf')
+    return None

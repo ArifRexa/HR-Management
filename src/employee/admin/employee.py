@@ -3,7 +3,8 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from xhtml2pdf import pisa
 
-from config.helpers import link_callback
+from config.utils import link_callback
+from config.utils.link_callback import render_to_pdf
 from employee.admin_mixin.EmployeeAdmin import EmployeeAdmin
 from employee.models import SalaryHistory, Employee
 from employee.models.attachment import Attachment
@@ -37,12 +38,18 @@ class EmployeeAdmin(EmployeeAdmin, admin.ModelAdmin):
 
     @admin.action(description='Print Appointment Letter')
     def print_appointment_letter(self, request, queryset):
-        return self.print_pdf(queryset, 'EAL')
+        context = {'employees': queryset, 'latter_type': 'EAL'}
+        return render_to_pdf(self.get_letter_type('EAL'), context)
+        # return self.print_pdf(queryset, 'EAL')
 
     @admin.action(description='Print Permanent Letter')
     def print_permanent_letter(self, request, queryset):
-        return self.print_pdf(queryset, 'EPL')
+        context = {'employees': queryset, 'latter_type': 'EPL'}
+        return render_to_pdf(self.get_letter_type('EPL'), context)
+        # return self.print_pdf(queryset, 'EPL')
 
     @admin.action(description='Print Increment Letter')
     def print_increment_letter(self, request, queryset):
-        return self.print_pdf(queryset, 'EIL')
+        context = {'employees': queryset, 'latter_type': 'EIL'}
+        return render_to_pdf(self.get_letter_type('EIL'), context)
+        # return self.print_pdf(queryset, 'EIL')

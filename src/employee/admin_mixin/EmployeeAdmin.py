@@ -8,7 +8,7 @@ from django.utils.html import format_html
 from django.utils.timesince import timesince
 from xhtml2pdf import pisa
 
-from config.helpers import link_callback
+from config.utils import link_callback
 
 
 class EmployeeAdmin:
