@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+from django.conf.global_settings import EMAIL_HOST_USER
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -156,6 +158,11 @@ MESSAGE_TAGS = {
 
 GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.environ.get('GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE')
 GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = os.environ.get('GOOGLE_DRIVE_STORAGE_MEDIA_ROOT ')
+
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
 # GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.path.join(os.getcwd(), 'mediusware-erp-1b1e4ddb35a5.json')
 # GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = 'AUTOMATED_HR'

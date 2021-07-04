@@ -8,10 +8,10 @@ from django.utils.html import format_html
 from django.utils.timesince import timesince
 from xhtml2pdf import pisa
 
-from config.utils import link_callback
+from config.utils import pdf
 
 
-class EmployeeAdmin:
+class EmployeeAdminListView:
     def employee_info(self, obj):
         resigned = obj.resignation_set.filter(status='approved')
         return format_html(
@@ -46,29 +46,4 @@ class EmployeeAdmin:
             return 0
         return total
 
-    def print_pdf(self, queryset, letter_type):
-        template_path = self.get_letter_type(letter_type)
-        context = {'employees': queryset, 'latter_type': letter_type}
-        # Create a Django response object, and specify content_type as pdf
-        response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="{letter_type}.pdf"'
-        # find the template and render it.
-        template = get_template(template_path)
-        html = template.render(context)
-        try:
-            pisa_status = pisa.CreatePDF(html.encode('UTF-8'),
-                                         dest=response,
-                                         encoding='UTF-8',
-                                         link_callback=link_callback
-                                         )
-            return response
-        except Exception:
-            raise Exception
 
-    def get_letter_type(self, letter_type):
-        switcher = {
-            'EAL': 'letters/appointment_latter.html',
-            'EPL': 'letters/permanent_letter.html',
-            'EIL': 'letters/increment_latter.html',
-        }
-        return switcher.get(letter_type, '')
