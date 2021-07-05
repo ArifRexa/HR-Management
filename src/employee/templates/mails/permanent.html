@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% load humanize_extra %}
+<h3>Dear {{ employee.full_name | title }},</h3>
+<p>
+    Congratulations! We are glad to inform you that you are permanent employee
+    from {{ employee.permanent_date }} as <br>
+    '{{ employee.designation }}’ at Mediusware Ltd. Your permanent letter is attached below.
+</p>
+
+<p>
+    Please Sign the permanent letter under "Agreed and Accepted" section as per your NID signature. <br>
+    Put your full name
+    (as per NID) and mail us back with the signed permanent letter & the scanned copy of your NID.
+</p>
+</body>
+</html>

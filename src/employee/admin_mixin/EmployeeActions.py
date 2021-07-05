@@ -14,7 +14,7 @@ from employee.tasks import send_mail_to_employee
 
 class EmployeeActions:
     actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter',
-               'mail_appointment_letter']
+               'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter']
 
     @admin.action(description='Print Appointment Letter')
     def print_appointment_letter(self, request, queryset):
@@ -36,11 +36,25 @@ class EmployeeActions:
             mail_template='mails/appointment.html'
         )
 
+    @admin.action()
+    def mail_permanent_letter(self, request, queryset):
+        self.__send_mail(
+            queryset,
+            letter_type='EPL', subject='Permanent letter',
+            mail_template='mails/permanent.html'
+        )
+
+    def mail_increment_letter(self, request, queryset):
+        self.__send_mail(
+            queryset,
+            letter_type='EIL', subject='Increment letter',
+            mail_template='mails/increment.html'
+        )
+
     def __send_mail(self, queryset, letter_type, subject, mail_template):
         for employee in queryset:
             pdf = self.generate_pdf(queryset=(employee,), letter_type=letter_type).create()
             html_body = loader.render_to_string(mail_template, context={'employee': employee})
-            print(html_body)
             async_task('employee.tasks.send_mail_to_employee', employee, pdf, html_body, subject)
 
     # Download generated pdf ile
