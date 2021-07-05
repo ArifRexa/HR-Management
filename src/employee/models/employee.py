@@ -1,4 +1,4 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone
@@ -26,11 +26,23 @@ class Employee(TimeStampMixin, AuthorMixin):
         return self.full_name
 
     def save(self, *args, **kwargs, ):
+        self.save_user()
+        super().save(*args, **kwargs)
+
+    def save_user(self):
+        name_array = self.full_name.split()
         self.user.is_staff = True
+        self.user.first_name = name_array[0]
+        self.user.last_name = name_array[1] if len(name_array) > 1 else ''
+        self.user.email = self.email
+        self.set_in_employee_group()
         if not self.active:
             self.user.is_active = False
         self.user.save()
-        super().save(*args, **kwargs)
+
+    def set_in_employee_group(self):
+        group = Group.objects.get(name='Employee')
+        group.user_set.add(self.user)
 
     @property
     def joining_date_human(self):
