@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-from django.conf.global_settings import EMAIL_HOST_USER
+from django.conf.global_settings import EMAIL_HOST_USER, EMAIL_USE_TLS
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_userforeignkey',
     'nested_inline',
+    'django_q',
     'tinymce',
     'job_board',
     'settings',
@@ -163,6 +164,23 @@ EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = os.environ.get('EMAIL_PORT')
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = True
 
 # GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.path.join(os.getcwd(), 'mediusware-erp-1b1e4ddb35a5.json')
 # GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = 'AUTOMATED_HR'
+Q_CLUSTER = {
+    'name': 'mediusware_erp',
+    'workers': 8,
+    'recycle': 500,
+    'timeout': 60,
+    'compress': True,
+    'save_limit': 250,
+    'queue_limit': 500,
+    'cpu_affinity': 1,
+    'label': 'Django Q',
+    'redis': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 0,
+    }
+}

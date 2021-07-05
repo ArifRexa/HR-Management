@@ -30,3 +30,8 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, admin.ModelAdmin):
         if not request.user.is_superuser:
             list_display.remove('salary_history')
         return list_display
+
+    def get_list_filter(self, request):
+        if request.user.is_superuser:
+            return ['active', 'permanent_date']
+        return []

@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,8 +5,17 @@
     <title>Title</title>
 </head>
 <body>
-<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Assumenda, minus veniam! Amet aspernatur blanditiis dolore
-    dolorem dolorum fugiat, fugit illo, laborum minus possimus quam quisquam, ut vitae voluptatem voluptatibus
-    voluptatum?</p>
+{% load humanize_extra %}
+<h3>Dear {{ employee.full_name | title }},</h3>
+<p>
+    Congratulations! We are glad to inform you that you are selected for the position of <br>
+    '{{ employee.designation }}’ at Mediusware Ltd. Your appointment letter is attached below.
+</p>
+<p>
+    Please Sign the appointment letter, on each page as per your NID signature
+    as well as beside "Agreed and Accepted" on the last page . Put your full name
+    (as per NID) on the last page of the appointment letter (beside the "Name" field)
+    and mail us back with the signed appointment letter & the scanned copy of your NID.
+</p>
 </body>
 </html>

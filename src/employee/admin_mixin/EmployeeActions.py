@@ -1,13 +1,15 @@
 from time import sleep
 
 from django.contrib import admin
-from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mass_mail, send_mail
 from django.http import QueryDict
 from django.template import loader
 from django.template.loader import get_template
 from django.utils.text import slugify
+from django_q.tasks import async_task
 
 from config.utils.pdf import PDF
+from employee.tasks import send_mail_to_employee
 
 
 class EmployeeActions:
@@ -28,16 +30,18 @@ class EmployeeActions:
 
     @admin.action(description='Mail Appointment Letter')
     def mail_appointment_letter(self, request, queryset):
+        self.__send_mail(
+            queryset,
+            letter_type='EAL', subject='Appointment letter',
+            mail_template='mails/appointment.html'
+        )
+
+    def __send_mail(self, queryset, letter_type, subject, mail_template):
         for employee in queryset:
-            pdf = self.generate_pdf(queryset=(employee,), letter_type='EAL')
-            html_mail = loader.render_to_string('mails/appointment.html')
-            email = EmailMultiAlternatives()
-            email.subject = 'DD'
-            email.attach_alternative(html_mail, 'text/html')
-            email.to = ['kmrifat@gmail.com']
-            email.attach_file(pdf.create())
-            email.send()
-            pdf.delete()
+            pdf = self.generate_pdf(queryset=(employee,), letter_type=letter_type).create()
+            html_body = loader.render_to_string(mail_template, context={'employee': employee})
+            print(html_body)
+            async_task('employee.tasks.send_mail_to_employee', employee, pdf, html_body, subject)
 
     # Download generated pdf ile
     def generate_pdf(self, queryset, letter_type='EAL'):

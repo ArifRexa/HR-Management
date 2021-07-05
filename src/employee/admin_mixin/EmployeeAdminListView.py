@@ -24,15 +24,15 @@ class EmployeeAdminListView:
     def leave_info(self, obj):
         approved_leave = obj.leave_set.filter(status='approved')
         return format_html(
-            f"<b>Casual &emsp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='casual'))}</b> out of {obj.leave_management.casual_leave} <br>"
-            f"<b>Medical &ensp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='medical'))}</b> out of {obj.leave_management.medical_leave}<br>"
+            f"<b>Casual &emsp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='casual'))}</b> / {obj.leave_management.casual_leave} <br>"
+            f"<b>Medical &ensp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='medical'))}</b> / {obj.leave_management.medical_leave}<br>"
             f"<b>Non Paid :</b> {self.sum_total_leave(approved_leave.filter(leave_type='non_paid'))}<br>"
         )
 
     def salary_history(self, obj):
         history = ''
         for salary in obj.salaryhistory_set.order_by('-active_from').all():
-            history += f'<b>{intcomma(salary.payable_salary)}</b> activated from {naturalday(salary.active_from)} <br>'
+            history += f'<b>{intcomma(salary.payable_salary)}</b> ({naturalday(salary.active_from)}) <br>'
         return format_html(history)
 
     def permanent_status(self, obj):
@@ -45,5 +45,3 @@ class EmployeeAdminListView:
         if total is None:
             return 0
         return total
-
-
