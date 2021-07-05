@@ -22,7 +22,6 @@ class AttachmentInline(admin.TabularInline):
 @admin.register(Employee)
 class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, admin.ModelAdmin):
     inlines = (AttachmentInline, SalaryHistoryInline)
-
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
 
     def get_list_display(self, request):
@@ -31,7 +30,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, admin.ModelAdmin):
             list_display.remove('salary_history')
         return list_display
 
-    def get_list_filter(self, request):
-        if request.user.is_superuser:
-            return ['active', 'permanent_date']
-        return []
+    # def get_list_filter(self, request):
+    #     if request.user.is_superuser:
+    #         return ['active', 'permanent_date']
+    #     return []
