@@ -1,11 +1,12 @@
 from time import sleep
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mass_mail, send_mail
 from django.http import QueryDict
 from django.template import loader
 from django.template.loader import get_template
 from django.utils.text import slugify
+from django.utils.translation import ngettext
 from django_q.tasks import async_task
 
 from config.utils.pdf import PDF
@@ -33,7 +34,8 @@ class EmployeeActions:
         self.__send_mail(
             queryset,
             letter_type='EAL', subject='Appointment letter',
-            mail_template='mails/appointment.html'
+            mail_template='mails/appointment.html',
+            request=request
         )
 
     @admin.action()
@@ -41,21 +43,24 @@ class EmployeeActions:
         self.__send_mail(
             queryset,
             letter_type='EPL', subject='Permanent letter',
-            mail_template='mails/permanent.html'
+            mail_template='mails/permanent.html',
+            request=request
         )
 
     def mail_increment_letter(self, request, queryset):
         self.__send_mail(
             queryset,
             letter_type='EIL', subject='Increment letter',
-            mail_template='mails/increment.html'
+            mail_template='mails/increment.html',
+            request=request
         )
 
-    def __send_mail(self, queryset, letter_type, subject, mail_template):
+    def __send_mail(self, queryset, letter_type, subject, mail_template, request):
         for employee in queryset:
             pdf = self.generate_pdf(queryset=(employee,), letter_type=letter_type).create()
             html_body = loader.render_to_string(mail_template, context={'employee': employee})
             async_task('employee.tasks.send_mail_to_employee', employee, pdf, html_body, subject)
+        self.message_user(request, 'Mail sent successfully', messages.SUCCESS)
 
     # Download generated pdf ile
     def generate_pdf(self, queryset, letter_type='EAL'):

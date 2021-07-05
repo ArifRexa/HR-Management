@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib import admin
+from django_q.tasks import async_task
 
 from employee.models import LeaveAttachment, Leave
 
@@ -39,6 +40,7 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
+        self.__send_leave_mail(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -51,3 +53,9 @@ class LeaveManagement(admin.ModelAdmin):
         if not request.user.is_superuser:
             list_filter.remove('employee')
         return list_filter
+
+    def __send_leave_mail(self, request, obj, form, change):
+        if len(form.changed_data) > 0 and 'status' in form.changed_data:
+            async_task('employee.tasks.leave_mail', obj)
+        elif not change:
+            async_task('employee.tasks.leave_mail', obj)

@@ -21,9 +21,6 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     def short_message(self):
         return truncatewords(self.message, 10)
 
-    def save(self, *args, **kwargs):
-        super(Leave, self).save(*args, **kwargs)
-
 
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
