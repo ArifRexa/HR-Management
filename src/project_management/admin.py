@@ -109,10 +109,10 @@ class ProjectHourAdmin(admin.ModelAdmin):
                 return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
         return ()
 
+    @admin.action()
+    def enable_payable_status(self, request, queryset):
+        queryset.update(payable=True)
 
-def enable_payable_status(self, request, queryset):
-    queryset.update(payable=True)
-
-
-def disable_payable_status(self, request, queryset):
-    queryset.update(payable=False)
+    @admin.action()
+    def disable_payable_status(self, request, queryset):
+        queryset.update(payable=False)

@@ -1,4 +1,6 @@
 from datetime import datetime
+from math import floor
+
 from django.contrib import admin
 from django.db.models import Sum, Q
 from django.http import HttpResponse
@@ -32,7 +34,8 @@ class SalarySheetAdmin(admin.ModelAdmin):
         salary.save(request.POST['date'])
 
     def total(self, obj):
-        return EmployeeSalary.objects.filter(salary_sheet_id=obj.id).aggregate(Sum('gross_salary'))['gross_salary__sum']
+        return floor(
+            EmployeeSalary.objects.filter(salary_sheet_id=obj.id).aggregate(Sum('gross_salary'))['gross_salary__sum'])
 
     @admin.action(description='Export XL')
     def export_xl(self, request, queryset):
@@ -43,14 +46,14 @@ class SalarySheetAdmin(admin.ModelAdmin):
             work_sheet = wb.create_sheet(title=str(salary_sheet.date))
             work_sheet.append(['Name', 'Net Salary', 'Overtime', 'Project Bonus', 'Leave Bonus', 'Gross Salary'])
             for employee_salary in salary_sheet.employeesalary_set.all():
-                salary_sheet.total_value += employee_salary.gross_salary
+                salary_sheet.total_value += floor(employee_salary.gross_salary)
                 work_sheet.append([
                     employee_salary.employee.full_name,
                     employee_salary.net_salary,
                     employee_salary.overtime,
                     employee_salary.project_bonus,
                     employee_salary.leave_bonus,
-                    employee_salary.gross_salary,
+                    floor(employee_salary.gross_salary),
                 ])
                 print(employee_salary)
             work_sheet.append(['', '', '', '', 'Total', salary_sheet.total_value])

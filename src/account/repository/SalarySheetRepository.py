@@ -36,7 +36,8 @@ class SalarySheetRepository:
             defaults={'date': salary_date}
         )
         EmployeeSalary.objects.filter(salary_sheet=self.__salary_sheet).delete()
-        employees = Employee.objects.filter(active=True).exclude(salaryhistory__isnull=True)
+        employees = Employee.objects.filter(active=True, joining_date__lt=salary_date).exclude(
+            salaryhistory__isnull=True)
         for employee in employees:
             self.__save_employee_salary(self.__salary_sheet, employee)
 
@@ -49,7 +50,8 @@ class SalarySheetRepository:
         @param employee:
         @return void:
         """
-        self.__employee_current_salary = employee.salaryhistory_set.latest('id')
+        # self.__employee_current_salary = employee.salaryhistory_set.latest('id')
+        self.__employee_current_salary = employee.salaryhistory_set.filter(active_from__lte=salary_sheet.date).last()
         employee_salary = EmployeeSalary()
         employee_salary.employee = employee
         employee_salary.salary_sheet = salary_sheet
@@ -80,21 +82,24 @@ class SalarySheetRepository:
         joining_date = employee.joining_date.day
         resigned = employee.resignation_set.filter(status='approved', date__lte=salary_sheet.date).first()
         payable_days, working_days_after_join, working_days_after_resign = 0, 0, 0
-
+        print(working_days)
         # if employee join at salary sheet making month
         if employee.joining_date.strftime('%Y-%m') == salary_sheet.date.strftime('%Y-%m'):
             working_days_after_join = working_days - joining_date
         # if employee resigned at salary sheet making month
         if resigned:
             working_days_after_resign = working_days - resigned.date.day
+        # if employee join before salary month but resigned at the salarysheet making month
+        if employee.joining_date.strftime('%Y-%m') < salary_sheet.date.strftime('%Y-%m') and resigned:
+            working_days_after_join = working_days
         payable_days = working_days_after_join - working_days_after_resign
 
         # if employee join or leave or join and leave at salary sheet making month
-        print(f'Employee {employee.full_name} payable days : {payable_days}')
-        latest_salary = employee.salaryhistory_set.order_by('-id').first()
+        print(f'Employee {employee.full_name} payable days : {payable_days + 1}')
+        latest_salary = self.__employee_current_salary
         if payable_days == 0:
             return latest_salary.payable_salary
-        return (latest_salary.payable_salary / working_days) * payable_days
+        return (latest_salary.payable_salary / working_days) * (payable_days + 1)
 
     def __calculate_overtime(self, salary_sheet: SalarySheet, employee: Employee):
         """Calculate Overtime

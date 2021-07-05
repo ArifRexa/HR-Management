@@ -18,7 +18,7 @@ class EmployeeAdminListView:
             f'<b>Name &emsp; &emsp; &nbsp:  {obj.full_name.capitalize()} </b><br>'
             f'<b>Designation :</b> {obj.designation} <br>'
             f'<b>Joined at &emsp;&nbsp;:</b> {naturalday(obj.joining_date)} <br>'
-            f'{"<b>Resign at &emsp;&nbsp;:</b> " + resigned.first().date if resigned.first() else ""}'
+            f'{"<b>Resign at &emsp;&nbsp;:</b> " + str(resigned.first().date) if resigned.first() else ""}'
         )
 
     def leave_info(self, obj):
