@@ -1,0 +1,25 @@
+{% extends "letters/base/base.html" %}
+
+{% load salary_sheet_util %}
+{% block salary_table %}
+    <table width="100%" border="1" cellpadding="2">
+        <thead>
+        <tr>
+            <th width="40">Serial</th>
+            <th>Name</th>
+            <th>Account No.</th>
+            <th width="150">Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for employee_salary in employee_salary_set %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ employee_salary.employee }}</td>
+                <td>{{ employee_salary.employee | get_account_number }}</td>
+                <td>{{ employee_salary.gross_salary | to_floor }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

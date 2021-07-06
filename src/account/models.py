@@ -1,3 +1,5 @@
+from math import floor
+
 from django.contrib.auth.models import User
 from django.db import models
 
@@ -15,6 +17,10 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
     festival_bonus = models.BooleanField(default=False)
     total_value = models.FloatField(null=True)
     approved_by = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+
+    @property
+    def total(self):
+        return floor(self.employeesalary_set.aggregate(Sum('gross_salary'))['gross_salary__sum'])
 
 
 class EmployeeSalary(TimeStampMixin):

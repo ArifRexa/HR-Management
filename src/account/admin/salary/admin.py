@@ -45,37 +45,3 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
             f'<b>{intcomma(floor(total_value))}</b> <br>'
             f'{num2words(floor(total_value)).capitalize()}'
         )
-
-    # @admin.action(description='Export XL')
-    # def export_xl(self, request, queryset):
-    #     wb = Workbook()
-    #     work_sheets = {}
-    #     for salary_sheet in queryset:
-    #         salary_sheet.total_value = 0
-    #         work_sheet = wb.create_sheet(title=str(salary_sheet.date))
-    #         work_sheet.append(
-    #             ['Name', 'Net Salary', 'Overtime', 'Project Bonus', 'Leave Bonus', 'Festival Bonus', 'Gross Salary',
-    #              'Bank Name', 'Bank Number'])
-    #         for employee_salary in salary_sheet.employeesalary_set.all():
-    #             salary_sheet.total_value += floor(employee_salary.gross_salary)
-    #             bank_account = employee_salary.employee.bankaccount_set.filter(default=True).first()
-    #             print(bank_account)
-    #             work_sheet.append([
-    #                 employee_salary.employee.full_name,
-    #                 employee_salary.net_salary,
-    #                 employee_salary.overtime,
-    #                 employee_salary.project_bonus,
-    #                 employee_salary.leave_bonus,
-    #                 employee_salary.festival_bonus,
-    #                 floor(employee_salary.gross_salary),
-    #                 bank_account.bank.name if bank_account else '',
-    #                 bank_account.account_number if bank_account else ''
-    #             ])
-    #             print(employee_salary)
-    #         work_sheet.append(['', '', '', '', '', 'Total', salary_sheet.total_value])
-    #         work_sheets[str(salary_sheet.id)] = work_sheet
-    #
-    #     wb.remove(wb['Sheet'])
-    #     response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
-    #     response['Content-Disposition'] = 'attachment; filename=SalarySheet.xlsx'
-    #     return response

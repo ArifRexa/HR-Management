@@ -2,24 +2,37 @@ from math import floor
 
 from django.contrib import admin
 from django.http import HttpResponse
+from django.template.loader import get_template
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 from account.models import EmployeeSalary, SalarySheet, SalaryDisbursement
+from config.utils.pdf import PDF
 
 
 class SalarySheetAction(admin.ModelAdmin):
-    actions = ('export_excel', 'export_personal_account_dis', 'export_salary_account_dis')
+    actions = ('export_excel', 'export_personal_account_dis', 'export_salary_account_dis',
+               'export_salary_account_dis_pdf')
 
     @admin.action(description='Export Personal Account Disbursements (Excel)')
     def export_personal_account_dis(self, request, queryset):
         salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='personal_account').first()
         return self.export_in_xl(queryset, ('employee__in', salary_disbursement.employee.all()))
 
-    @admin.action(description='Export Salary Account Disbursements (PDF)')
+    @admin.action(description='Export Salary Account Disbursements (Excel)')
     def export_salary_account_dis(self, request, queryset):
         salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='salary_account').first()
         return self.export_in_xl(queryset, ('employee__in', salary_disbursement.employee.all()))
+
+    @admin.action(description='Export Salary Account Disbursements (PDF)')
+    def export_salary_account_dis_pdf(self, request, queryset):
+        pdf = PDF()
+        pdf.context = {
+            'salary_sheet': queryset.first(),
+            'employee_salary_set': queryset.first().employeesalary_set.all()
+        }
+        pdf.template_path = 'letters/bank_salary.html'
+        return pdf.render_to_pdf(download=False)
 
     @admin.action(description='Export in Excel')
     def export_excel(self, request, queryset):

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Mediusware Ltd - Salary Account</title>
+    {% load static %}
+    <style>
+        * {
+            font-size: 13px;
+        }
+
+        @page {
+            size: a4 portrait;
+        {#background-image: url("/home/rifat/Programming/django/django-queue/src/static/letter_head.jpeg");#}
+            background-image: url("{{ watermark }}");
+            @frame content_frame {
+            left: 40pt;
+            width: 512pt;
+            top: 100pt;
+            height: 670pt;
+        }
+
+        @frame logo {
+        -pdf-frame-content:logo;
+        left: 40px;
+        top: 20px;
+        width: 150px;
+        height: 60px;
+        }
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>
+<body>
+{% include 'letters/base/header.html' %}
+{% block salary_table %} {% endblock %}
+{% include 'letters/base/footer.html' %}
+</body>
+</html>
