@@ -51,3 +51,12 @@ class PublicHoliday(TimeStampMixin, AuthorMixin):
 class PublicHolidayDate(TimeStampMixin):
     public_holiday = models.ForeignKey(PublicHoliday, on_delete=models.CASCADE, related_name='public_holiday')
     date = models.DateField()
+
+
+class Bank(TimeStampMixin, AuthorMixin):
+    name = models.CharField(max_length=200)
+    address = models.TextField(null=True, blank=True)
+    default = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name

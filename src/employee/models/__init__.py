@@ -4,3 +4,4 @@ from .leave import Leave, LeaveAttachment
 from .overtime import Overtime
 from .resignation import Resignation
 from .attachment import Attachment
+from .bank_account import BankAccount

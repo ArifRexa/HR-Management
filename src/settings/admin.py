@@ -4,7 +4,7 @@ from django.contrib import admin
 
 # Register your models here.
 from employee.models import Employee
-from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate
+from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank
 
 admin.site.register(Designation)
 admin.site.register(PayScale)
@@ -27,3 +27,7 @@ class PublicHolidayAdmin(admin.ModelAdmin):
         print(date_list)
         return "({}) \n {}".format(total_days, date_list)
 
+
+@admin.register(Bank)
+class BankAdmin(admin.ModelAdmin):
+    list_display = ('name', 'address', 'default')
