@@ -35,7 +35,7 @@ class SalarySheetAction(admin.ModelAdmin):
             ).all()
         }
         pdf.template_path = 'letters/bank_salary.html'
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf()
 
     @admin.action(description='Export in Excel')
     def export_excel(self, request, queryset):
