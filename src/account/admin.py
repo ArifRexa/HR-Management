@@ -1,14 +1,18 @@
 from datetime import datetime
 from math import floor
 
+from django import forms
 from django.contrib import admin
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.humanize.templatetags.humanize import intcomma, intword
 from django.db.models import Sum, Q
 from django.http import HttpResponse
+from django.utils.html import format_html
+from num2words import num2words
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
-from account.models import SalarySheet, EmployeeSalary, Expense
+from account.models import SalarySheet, EmployeeSalary, Expense, SalaryDisbursement
 from account.repository.SalarySheetRepository import SalarySheetRepository
 from employee.models import Employee
 
@@ -41,7 +45,10 @@ class SalarySheetAdmin(admin.ModelAdmin):
     def total(self, obj):
         total_value = EmployeeSalary.objects.filter(salary_sheet_id=obj.id).aggregate(Sum('gross_salary'))[
             'gross_salary__sum']
-        return intcomma(floor(total_value))
+        return format_html(
+            f'<b>{intcomma(floor(total_value))}</b> <br>'
+            f'{num2words(floor(total_value)).capitalize()}'
+        )
 
     @admin.action(description='Export XL')
     def export_xl(self, request, queryset):
@@ -51,9 +58,12 @@ class SalarySheetAdmin(admin.ModelAdmin):
             salary_sheet.total_value = 0
             work_sheet = wb.create_sheet(title=str(salary_sheet.date))
             work_sheet.append(
-                ['Name', 'Net Salary', 'Overtime', 'Project Bonus', 'Leave Bonus', 'Festival Bonus', 'Gross Salary'])
+                ['Name', 'Net Salary', 'Overtime', 'Project Bonus', 'Leave Bonus', 'Festival Bonus', 'Gross Salary',
+                 'Bank Name', 'Bank Number'])
             for employee_salary in salary_sheet.employeesalary_set.all():
                 salary_sheet.total_value += floor(employee_salary.gross_salary)
+                bank_account = employee_salary.employee.bankaccount_set.filter(default=True).first()
+                print(bank_account)
                 work_sheet.append([
                     employee_salary.employee.full_name,
                     employee_salary.net_salary,
@@ -62,6 +72,8 @@ class SalarySheetAdmin(admin.ModelAdmin):
                     employee_salary.leave_bonus,
                     employee_salary.festival_bonus,
                     floor(employee_salary.gross_salary),
+                    bank_account.bank.name if bank_account else '',
+                    bank_account.account_number if bank_account else ''
                 ])
                 print(employee_salary)
             work_sheet.append(['', '', '', '', '', 'Total', salary_sheet.total_value])
@@ -94,3 +106,20 @@ class ExpenseAdmin(admin.ModelAdmin):
         return super().changelist_view(request, extra_context=my_context)
     # TODO : Export to excel
     # TODO : Credit feature
+
+
+class SalaryDisbursementForm(forms.ModelForm):
+    employee = forms.ModelMultipleChoiceField(
+        queryset=Employee.objects.filter(active=True).all(),
+        widget=FilteredSelectMultiple("employee", is_stacked=False)
+    )
+
+    class Meta:
+        model = SalaryDisbursement
+        fields = '__all__'
+
+
+@admin.register(SalaryDisbursement)
+class SalaryDisbursementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'disbursement_type')
+    form = SalaryDisbursementForm

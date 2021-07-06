@@ -28,6 +28,16 @@ class EmployeeSalary(TimeStampMixin):
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
 
 
+class SalaryDisbursement(TimeStampMixin, AuthorMixin):
+    disbursement_choice = (
+        ('salary_account', 'Salary Account'),
+        ('personal_account', 'Personal Account')
+    )
+    title = models.CharField(max_length=100)
+    employee = models.ManyToManyField(Employee)
+    disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
+
+
 class Expense(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True)
