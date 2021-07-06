@@ -15,7 +15,8 @@ from employee.models import Employee
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
     extra = 0
-    readonly_fields = ('employee', 'net_salary', 'overtime', 'project_bonus', 'leave_bonus', 'gross_salary',)
+    readonly_fields = ('employee', 'net_salary', 'overtime',
+                       'project_bonus', 'leave_bonus', 'festival_bonus', 'gross_salary')
     can_delete = False
 
     def has_add_permission(self, request, obj):
@@ -25,13 +26,16 @@ class EmployeeSalaryInline(admin.TabularInline):
 @admin.register(SalarySheet)
 class SalarySheetAdmin(admin.ModelAdmin):
     list_display = ('date', 'created_at', 'total')
-    fields = ('date',)
+    fields = ('date', 'festival_bonus')
     inlines = (EmployeeSalaryInline,)
     actions = ('export_xl',)
 
     def save_model(self, request, salary_sheet, form, change):
-        salary = SalarySheetRepository()
-        salary.save(request.POST['date'])
+        # TODO : add festival bonus
+        salary = SalarySheetRepository(request.POST['date'])
+        if 'festival_bonus' in request.POST and request.POST['festival_bonus'] == 'on':
+            salary.festival_bonus = True
+        salary.save()
 
     def total(self, obj):
         return floor(
@@ -84,3 +88,5 @@ class ExpenseAdmin(admin.ModelAdmin):
             'total': self.get_total_hour(request),
         }
         return super().changelist_view(request, extra_context=my_context)
+    # TODO : Export to excel
+    # TODO : Credit feature

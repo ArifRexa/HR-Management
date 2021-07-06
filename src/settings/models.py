@@ -18,14 +18,14 @@ class Designation(TimeStampMixin, AuthorMixin):
 
 class PayScale(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
-    basic = models.DecimalField(decimal_places=2, max_digits=11)
-    travel_allowance = models.DecimalField(decimal_places=2, max_digits=11)
-    house_allowance = models.DecimalField(decimal_places=2, max_digits=11)
-    medical_allowance = models.DecimalField(decimal_places=2, max_digits=11)
-    net_payable = models.DecimalField(decimal_places=2, max_digits=11)
+    basic = models.FloatField()
+    travel_allowance = models.FloatField()
+    house_allowance = models.FloatField()
+    medical_allowance = models.FloatField()
+    net_payable = models.FloatField()
     provision_period = models.IntegerField(help_text='Month')
     increment_period = models.IntegerField(help_text='increment month count')
-    increment_rate = models.DecimalField(decimal_places=2, help_text='In percentage', max_digits=11)
+    increment_rate = models.FloatField(help_text='In percentage')
 
     def __str__(self):
         return self.title

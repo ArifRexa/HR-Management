@@ -10,6 +10,8 @@ from employee.model_mixin.LeaveMixin import LeaveMixin
 from employee.models.employee import Employee
 
 
+# TODO : leave calculation by permanent date
+# TODO : leave in cash in every january
 class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     message = models.TextField()
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)

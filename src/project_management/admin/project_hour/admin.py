@@ -9,23 +9,14 @@ from django.db.models import Sum, Q, F
 from django.template.context_processors import request
 
 from config.admin import ExportCsvMixin
+from project_management.admin.project_hour.actions import ProjectHourAction
+from project_management.admin.project_hour.options import ProjectHourOptions
 from project_management.models import Client, Project, ProjectHour
 
 
-@admin.register(Client)
-class ClientAdmin(admin.ModelAdmin):
-    list_display = ('name', 'country')
-
-
-@admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client', 'active')
-
-
 @admin.register(ProjectHour)
-class ProjectHourAdmin(admin.ModelAdmin):
+class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, admin.ModelAdmin):
     date_hierarchy = 'date'
-    actions = ['export_as_csv', 'enable_payable_status', 'disable_payable_status']
     search_fields = ['hours', 'manager__full_name', 'project__title', 'date']
 
     change_list_template = 'admin/total.html'
@@ -51,31 +42,6 @@ class ProjectHourAdmin(admin.ModelAdmin):
         }
         return super(ProjectHourAdmin, self).changelist_view(request, extra_context=my_context)
 
-    # override create / edit fields
-    # manager filed will not appear if the authenticate user is not super user
-    def get_fields(self, request, obj=None):
-        fields = super().get_fields(request)
-        if not request.user.is_superuser:
-            fields.remove('manager')
-            fields.remove('payable')
-        return fields
-
-    def get_list_filter(self, request):
-        filters = ['manager', 'project', 'date']
-        if not request.user.is_superuser:
-            filters.remove('manager')
-        return filters
-
-    def get_list_display(self, request):
-        """
-
-        @type request: object
-        """
-        list_display = ['manager', 'project', 'hours', 'date', 'created_by', 'created_at', 'payable']
-        if not request.user.is_superuser:
-            list_display.remove('payable')
-        return list_display
-
     def get_queryset(self, request):
         """ Return query_set
 
@@ -97,22 +63,3 @@ class ProjectHourAdmin(admin.ModelAdmin):
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
         super().save_model(request, obj, form, change)
-
-    def get_readonly_fields(self, request, obj=None):
-        three_day_earlier = datetime.datetime.today() - timedelta(days=2)
-        if obj is not None:
-            project_hour = ProjectHour.objects.filter(
-                id=request.resolver_match.kwargs['object_id'],
-                created_at__gte=three_day_earlier,
-            ).first()
-            if project_hour is None and not request.user.is_superuser:
-                return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
-        return ()
-
-    @admin.action()
-    def enable_payable_status(self, request, queryset):
-        queryset.update(payable=True)
-
-    @admin.action()
-    def disable_payable_status(self, request, queryset):
-        queryset.update(payable=False)

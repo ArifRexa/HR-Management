@@ -34,3 +34,5 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     hours = models.FloatField()
     description = models.TextField(blank=True)
     payable = models.BooleanField(default=True)
+
+# TODO : Employee project hour

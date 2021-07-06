@@ -6,7 +6,7 @@ from django.utils.timesince import timesince
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-from settings.models import Designation, LeaveManagement
+from settings.models import Designation, LeaveManagement, PayScale
 
 
 class Employee(TimeStampMixin, AuthorMixin):
@@ -17,8 +17,9 @@ class Employee(TimeStampMixin, AuthorMixin):
     phone = models.CharField(max_length=60, help_text='Use (,) comma for separate phone numbers')
     joining_date = models.DateField(default=timezone.now())
     permanent_date = models.DateField(null=True, blank=True)
-    designation = models.ForeignKey(Designation, on_delete=models.CASCADE)
-    leave_management = models.ForeignKey(LeaveManagement, on_delete=models.CASCADE)
+    designation = models.ForeignKey(Designation, on_delete=models.RESTRICT)
+    leave_management = models.ForeignKey(LeaveManagement, on_delete=models.RESTRICT)
+    pay_scale = models.ForeignKey(PayScale, on_delete=models.RESTRICT)
     manager = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
 
