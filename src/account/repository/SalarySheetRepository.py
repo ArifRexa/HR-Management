@@ -105,7 +105,7 @@ class SalarySheetRepository:
         latest_salary = self.__employee_current_salary
         if payable_days == 0:
             return latest_salary.payable_salary
-        return (latest_salary.payable_salary / working_days) * (payable_days + 1)
+        return (latest_salary.payable_salary / working_days) * payable_days
 
     def __calculate_overtime(self, salary_sheet: SalarySheet, employee: Employee):
         """Calculate Overtime
