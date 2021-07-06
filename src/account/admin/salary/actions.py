@@ -26,10 +26,13 @@ class SalarySheetAction(admin.ModelAdmin):
 
     @admin.action(description='Export Salary Account Disbursements (PDF)')
     def export_salary_account_dis_pdf(self, request, queryset):
+        salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='salary_account').first()
         pdf = PDF()
         pdf.context = {
             'salary_sheet': queryset.first(),
-            'employee_salary_set': queryset.first().employeesalary_set.all()
+            'employee_salary_set': queryset.first().employeesalary_set.filter(
+                employee__in=salary_disbursement.employee.all()
+            ).all()
         }
         pdf.template_path = 'letters/bank_salary.html'
         return pdf.render_to_pdf(download=False)
