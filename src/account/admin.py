@@ -2,6 +2,7 @@ from datetime import datetime
 from math import floor
 
 from django.contrib import admin
+from django.contrib.humanize.templatetags.humanize import intcomma, intword
 from django.db.models import Sum, Q
 from django.http import HttpResponse
 from openpyxl import Workbook
@@ -25,7 +26,7 @@ class EmployeeSalaryInline(admin.TabularInline):
 
 @admin.register(SalarySheet)
 class SalarySheetAdmin(admin.ModelAdmin):
-    list_display = ('date', 'created_at', 'total')
+    list_display = ('date', 'created_at', 'total', 'festival_bonus')
     fields = ('date', 'festival_bonus')
     inlines = (EmployeeSalaryInline,)
     actions = ('export_xl',)
@@ -38,8 +39,9 @@ class SalarySheetAdmin(admin.ModelAdmin):
         salary.save()
 
     def total(self, obj):
-        return floor(
-            EmployeeSalary.objects.filter(salary_sheet_id=obj.id).aggregate(Sum('gross_salary'))['gross_salary__sum'])
+        total_value = EmployeeSalary.objects.filter(salary_sheet_id=obj.id).aggregate(Sum('gross_salary'))[
+            'gross_salary__sum']
+        return intcomma(floor(total_value))
 
     @admin.action(description='Export XL')
     def export_xl(self, request, queryset):
@@ -48,7 +50,8 @@ class SalarySheetAdmin(admin.ModelAdmin):
         for salary_sheet in queryset:
             salary_sheet.total_value = 0
             work_sheet = wb.create_sheet(title=str(salary_sheet.date))
-            work_sheet.append(['Name', 'Net Salary', 'Overtime', 'Project Bonus', 'Leave Bonus', 'Gross Salary'])
+            work_sheet.append(
+                ['Name', 'Net Salary', 'Overtime', 'Project Bonus', 'Leave Bonus', 'Festival Bonus', 'Gross Salary'])
             for employee_salary in salary_sheet.employeesalary_set.all():
                 salary_sheet.total_value += floor(employee_salary.gross_salary)
                 work_sheet.append([
@@ -57,10 +60,11 @@ class SalarySheetAdmin(admin.ModelAdmin):
                     employee_salary.overtime,
                     employee_salary.project_bonus,
                     employee_salary.leave_bonus,
+                    employee_salary.festival_bonus,
                     floor(employee_salary.gross_salary),
                 ])
                 print(employee_salary)
-            work_sheet.append(['', '', '', '', 'Total', salary_sheet.total_value])
+            work_sheet.append(['', '', '', '', '', 'Total', salary_sheet.total_value])
             work_sheets[str(salary_sheet.id)] = work_sheet
 
         wb.remove(wb['Sheet'])

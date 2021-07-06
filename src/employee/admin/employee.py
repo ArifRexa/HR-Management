@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+from django.forms import Textarea
 from django.utils.text import slugify
 from config.utils.pdf import PDF
 from employee.admin_mixin.EmployeeActions import EmployeeActions
@@ -7,8 +9,12 @@ from employee.models import SalaryHistory, Employee, BankAccount
 from employee.models.attachment import Attachment
 
 
-class SalaryHistoryInline(admin.StackedInline):
+class SalaryHistoryInline(admin.TabularInline):
     model = SalaryHistory
+
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={'rows': 2, 'cols': 60})}
+    }
 
     def get_extra(self, request, obj=None, **kwargs):
         return 1 if not obj else 0
