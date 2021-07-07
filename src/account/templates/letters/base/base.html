@@ -14,13 +14,18 @@
 
         @page {
             size: a4 portrait;
-        {#background-image: url("/home/rifat/Programming/django/django-queue/src/static/letter_head.jpeg");#}
             background-image: url("{{ watermark }}");
             @frame content_frame {
             left: 40pt;
             width: 512pt;
             top: 100pt;
-            height: 670pt;
+            height: 570pt;
+        }
+
+        @frame footer_frame {
+            /* Another static Frame */
+        -pdf-frame-content:footer_content;
+        left: 50pt; width: 512pt; top: 680pt; height: 120pt;
         }
 
         @frame logo {
@@ -39,7 +44,20 @@
 </head>
 <body>
 {% include 'letters/base/header.html' %}
+{#{% include 'letters/base/footer.html' %}#}
+
+<div id="footer_content">
+    <p>Yours Sincerely,</p>
+    <br>
+    <p>
+        Md. Shahinur Rahman <br>
+        Managing Director <br>
+        Mediusware Ltd. <br>
+        Phone: +8801715712931
+    </p>
+</div>
+
 {% block salary_table %} {% endblock %}
-{% include 'letters/base/footer.html' %}
+
 </body>
 </html>

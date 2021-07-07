@@ -1,3 +1,4 @@
+from datetime import datetime
 from math import floor
 
 from django import template
@@ -17,3 +18,12 @@ def get_account_number(employee: Employee):
     if bank_account:
         return bank_account.account_number
     return 'bank account number not found'
+
+
+@register.filter
+def _total_by_des_type(employee_salary_set):
+    total = 0
+    for employee_salary in employee_salary_set:
+        print(employee_salary.gross_salary)
+        total += employee_salary.gross_salary
+    return floor(total)

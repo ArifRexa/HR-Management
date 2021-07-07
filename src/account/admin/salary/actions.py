@@ -12,7 +12,11 @@ from config.utils.pdf import PDF
 
 class SalarySheetAction(admin.ModelAdmin):
     actions = ('export_excel', 'export_personal_account_dis', 'export_salary_account_dis',
-               'export_salary_account_dis_pdf')
+               'export_salary_account_dis_pdf', 'export_personal_account_dis_pdf')
+
+    @admin.action(description='Export in Excel')
+    def export_excel(self, request, queryset):
+        return self.export_in_xl(queryset)
 
     @admin.action(description='Export Personal Account Disbursements (Excel)')
     def export_personal_account_dis(self, request, queryset):
@@ -24,22 +28,42 @@ class SalarySheetAction(admin.ModelAdmin):
         salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='salary_account').first()
         return self.export_in_xl(queryset, ('employee__in', salary_disbursement.employee.all()))
 
+    @admin.action(description='Export Personal Account Disbursements (PDF)')
+    def export_personal_account_dis_pdf(self, request, queryset):
+        return self.export_in_pdf(
+            queryset=queryset,
+            filter=('disbursement_type', 'personal_account'),
+            bank={
+                'ref': 'Mediusware',
+                'account_name': 'Md. Shahinur Rahman',
+                'account_number': '1481510160023'
+            }
+        )
+
     @admin.action(description='Export Salary Account Disbursements (PDF)')
     def export_salary_account_dis_pdf(self, request, queryset):
-        salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='salary_account').first()
+        return self.export_in_pdf(
+            queryset=queryset,
+            filter=('disbursement_type', 'salary_account'),
+            bank={
+                'ref': 'Mediuswareltd',
+                'account_name': 'Mediusware Ltd.',
+                'account_number': '1481100038741'
+            }
+        )
+
+    def export_in_pdf(self, queryset, filter=None, bank=None):
+        salary_disbursement = SalaryDisbursement.objects.filter(filter).first()
         pdf = PDF()
         pdf.context = {
             'salary_sheet': queryset.first(),
             'employee_salary_set': queryset.first().employeesalary_set.filter(
                 employee__in=salary_disbursement.employee.all()
-            ).all()
+            ).all(),
+            'bank': bank
         }
         pdf.template_path = 'letters/bank_salary.html'
-        return pdf.render_to_pdf()
-
-    @admin.action(description='Export in Excel')
-    def export_excel(self, request, queryset):
-        return self.export_in_xl(queryset)
+        return pdf.render_to_pdf(download=False)
 
     def export_in_xl(self, queryset, query_filter=None):
         """

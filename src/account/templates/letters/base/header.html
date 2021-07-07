@@ -1,14 +1,18 @@
+{% load salary_sheet_util %}
 <p>
-    Ref: Mediuswareltd/SD/{{ salary_sheet.date | date:'Ym' }}{{ salary_sheet.id }} <br>
-    Date: {{ salary_sheet.date }} <br>
+    Ref: {{ bank.ref }}/SD/{{ salary_sheet.date | date:'Ym' }}{{ salary_sheet.id }} <br>
+    Date: {{ salary_sheet.updated_at.date }} <br>
     To, <br>
     Dutch Bangla Bank <br>
     Ring Road Branch, Dhaka <br>
     <br>
-    Subject: <b>Application for Salary Disbursement of May 2021 </b> <br>
+    Subject: <b>Application for Salary Disbursement of {{ salary_sheet.date | date:'M Y' }} </b> <br>
     Dear Sir, <br>
-    On behalf of Mediusware Ltd., I request you to distribute the total salary BDT [{{ salary_sheet.total }}] of the
-    month, {{ salary_sheet.date | date:'M Y' }} May 2021, to
+    {% if bank.ref == 'Mediuswareltd' %} On behalf of {{ bank.account_name }}, {% endif %} I request you to distribute
+    the total salary BDT [{{ employee_salary_set | _total_by_des_type }}] of
+    the
+    month, {{ salary_sheet.date | date:'M Y' }}, to
     our employees from the bank account
-    Mediusware Ltd. [1481100038741]. Employees account name, account number and the amount have given below:
+    {{ bank.account_name }} [{{ bank.account_number }}]. Employees account name, account number and the amount have
+    given below:
 </p>
