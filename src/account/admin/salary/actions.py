@@ -32,7 +32,7 @@ class SalarySheetAction(admin.ModelAdmin):
     def export_personal_account_dis_pdf(self, request, queryset):
         return self.export_in_pdf(
             queryset=queryset,
-            filter=('disbursement_type', 'personal_account'),
+            filter=('disbursement_type', 'salary_account'),
             bank={
                 'ref': 'Mediusware',
                 'account_name': 'Md. Shahinur Rahman',
