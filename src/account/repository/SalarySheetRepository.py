@@ -41,8 +41,11 @@ class SalarySheetRepository:
         )
         self.__salary_sheet.festival_bonus = self.festival_bonus
         self.__salary_sheet.save()
-        employees = Employee.objects.filter(active=True, joining_date__lte=salary_date).exclude(
-            salaryhistory__isnull=True)
+        employees = Employee.objects.filter(
+            active=True,
+            joining_date__month=salary_date.month,
+            joining_date__year=salary_date.year
+        ).exclude(salaryhistory__isnull=True)
         for employee in employees:
             self.__save_employee_salary(self.__salary_sheet, employee)
 
