@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.db.models import Value
+from django.db.models import Value, CharField
 from django.db.models.functions import Concat
 
 from account.models import SalaryDisbursement
@@ -13,12 +13,16 @@ def get_choices(instance):
 
 
 class SalaryDisbursementForm(forms.ModelForm):
-    queryset = Employee.objects.filter(active=True, bankaccount=True).values_list(
-        'full_name', 'bankaccount__bank__name')
+    queryset = Employee.objects.filter(active=True).annotate(
+        summery=Concat(
+            'full_name', Value(' | '),
+            'bankaccount__bank__name'
+        )).values_list('summery')
+
     print(queryset)
     employee = forms.ModelMultipleChoiceField(
         queryset=queryset,
-        widget=FilteredSelectMultiple("full_name", is_stacked=False)
+        widget=FilteredSelectMultiple(verbose_name='employee', is_stacked=False)
     )
 
     class Meta:
