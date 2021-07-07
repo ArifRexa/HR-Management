@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from tinymce import models as tinymce_models
 
 # Create your models here.
 from django.utils import timezone
@@ -60,3 +61,11 @@ class Bank(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.name
+
+
+class Letter(TimeStampMixin, AuthorMixin):
+    header = tinymce_models.HTMLField()
+    sticky_header = models.BooleanField(default=False)
+    body = tinymce_models.HTMLField()
+    footer = tinymce_models.HTMLField()
+    sticky_footer = models.BooleanField(default=False)

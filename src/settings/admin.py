@@ -3,8 +3,9 @@ import datetime
 from django.contrib import admin
 
 # Register your models here.
+from config.utils.pdf import PDF
 from employee.models import Employee
-from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank
+from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter
 
 admin.site.register(Designation)
 admin.site.register(PayScale)
@@ -31,3 +32,19 @@ class PublicHolidayAdmin(admin.ModelAdmin):
 @admin.register(Bank)
 class BankAdmin(admin.ModelAdmin):
     list_display = ('name', 'address', 'default')
+
+
+@admin.register(Letter)
+class LetterAdmin(admin.ModelAdmin):
+    list_display = ('header', 'body', 'footer')
+    actions = ('download_pdf',)
+
+    @admin.action(description='Print PDF')
+    def download_pdf(self, request, queryset):
+        pdf = PDF()
+        pdf.template_path = 'letter.html'
+        pdf.context = {'letters': queryset}
+        return pdf.render_to_pdf()
+
+    def print_pdf(self, request, queryset):
+        pass
