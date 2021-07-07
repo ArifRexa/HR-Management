@@ -13,13 +13,7 @@ def get_choices(instance):
 
 
 class SalaryDisbursementForm(forms.ModelForm):
-    queryset = Employee.objects.filter(active=True).annotate(
-        summery=Concat(
-            'full_name', Value(' | '),
-            'bankaccount__bank__name'
-        )).values_list('summery')
-
-    print(queryset)
+    queryset = Employee.objects.filter(active=True).all()
     employee = forms.ModelMultipleChoiceField(
         queryset=queryset,
         widget=FilteredSelectMultiple(verbose_name='employee', is_stacked=False)
