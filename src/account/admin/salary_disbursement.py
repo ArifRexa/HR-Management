@@ -1,15 +1,9 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from django.db.models import Value, CharField
-from django.db.models.functions import Concat
 
 from account.models import SalaryDisbursement
 from employee.models import Employee
-
-
-def get_choices(instance):
-    return 'ok'
 
 
 class SalaryDisbursementForm(forms.ModelForm):
