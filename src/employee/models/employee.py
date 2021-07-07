@@ -24,7 +24,15 @@ class Employee(TimeStampMixin, AuthorMixin):
     active = models.BooleanField(default=True)
 
     def __str__(self):
+        bank = self.bankaccount_set.filter(default=True).first()
         return self.full_name
+
+    @property
+    def default_bank(self):
+        bank = self.bankaccount_set.filter(default=True).first()
+        if bank:
+            return bank.bank.name
+        return ''
 
     def save(self, *args, **kwargs, ):
         self.save_user()
