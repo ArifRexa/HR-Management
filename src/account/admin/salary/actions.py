@@ -32,6 +32,8 @@ class SalarySheetAction(admin.ModelAdmin):
     def export_personal_account_dis_pdf(self, request, queryset):
         return self.export_in_pdf(
             queryset=queryset,
+            # TODO : i don't know whey it's salary account it's suppose
+            # to personal account. as shahin vai asked to change so i change
             filter=('disbursement_type', 'salary_account'),
             bank={
                 'ref': 'Mediusware',

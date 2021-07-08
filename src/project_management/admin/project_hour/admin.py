@@ -7,18 +7,32 @@ from django.contrib import admin
 # Register your models here.
 from django.db.models import Sum, Q, F
 from django.template.context_processors import request
+from django.utils import timezone
 
-from config.admin import ExportCsvMixin
+from config.admin import ExportCsvMixin, RecentEdit
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
-from project_management.models import Client, Project, ProjectHour
+from project_management.models import Client, Project, ProjectHour, EmployeeProjectHour
+
+
+class EmployeeHourAdmin(admin.TabularInline):
+    model = EmployeeProjectHour
+    extra = 1
+
+    def get_readonly_fields(self, request, obj=None):
+        print(obj._meta.fields)
+        three_day_earlier = timezone.now() - timedelta(days=2)
+        if obj is not None:
+            if obj.created_at <= three_day_earlier and not request.user.is_superuser:
+                return ('hours', 'employee')
+        return ()
 
 
 @admin.register(ProjectHour)
-class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, admin.ModelAdmin):
+class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin):
     date_hierarchy = 'date'
     search_fields = ['hours', 'manager__full_name', 'project__title', 'date']
-
+    inlines = (EmployeeHourAdmin,)
     change_list_template = 'admin/total.html'
 
     list_per_page = 20
@@ -31,7 +45,6 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, admin.ModelAdmin):
         dataset = super(ProjectHourAdmin, self).get_queryset(request).filter(
             *[Q(**{key: value}) for key, value in filters.items() if value]
         )
-        print(filters)
         return dataset.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view

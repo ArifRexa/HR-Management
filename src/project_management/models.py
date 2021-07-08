@@ -35,4 +35,17 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     description = models.TextField(blank=True)
     payable = models.BooleanField(default=True)
 
+    def __str__(self):
+        return f"{self.project} | {self.manager}"
+
+
 # TODO : Employee project hour
+class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
+    project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
+    hours = models.FloatField()
+    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'manager': False})
+
+    class Meta:
+        permissions = [
+            ("change_recent_activity", "Can change if inserted recently (3days)")
+        ]
