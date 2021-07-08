@@ -20,7 +20,6 @@ class EmployeeHourAdmin(admin.TabularInline):
     extra = 1
 
     def get_readonly_fields(self, request, obj=None):
-        print(obj._meta.fields)
         three_day_earlier = timezone.now() - timedelta(days=2)
         if obj is not None:
             if obj.created_at <= three_day_earlier and not request.user.is_superuser:
