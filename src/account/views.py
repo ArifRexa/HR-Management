@@ -23,14 +23,13 @@ class BalanceSummery(AdminOnly, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        today = datetime.date.today()
-        current = today - timedelta(days=356)
+        end_date = datetime.date.today()
+        start_date = end_date - timedelta(days=356)
         result = []
-        while current <= today:
-            result.append(self._get_pl(current))
-            current += relativedelta(months=1)
+        while start_date < end_date + relativedelta(months=1):
+            result.append(self._get_pl(start_date))
+            start_date += relativedelta(months=1)
         context['month_list'] = result[::-1]
-        context['opts'] = Expense._meta
         return context
 
     def _get_pl(self, date: date):
@@ -40,8 +39,8 @@ class BalanceSummery(AdminOnly, TemplateView):
         }
         salary = SalarySheet.objects.filter(**filter).first()
         salary = salary.total if salary else 0
-        expense = self.__sum_total(Expense.objects.filter(**filter), 'amount')
-        income = self.__sum_total(Income.objects.filter(**filter), 'payment')
+        expense = self.__sum_total(Expense.objects.filter(**filter).all(), 'amount')
+        income = self.__sum_total(Income.objects.filter(**filter).all(), 'payment')
         return {
             'expense': expense,
             'salary': salary,
@@ -54,4 +53,4 @@ class BalanceSummery(AdminOnly, TemplateView):
         total = queryset.aggregate(total=Sum(column))['total']
         if total is None:
             return 0
-        return 0
+        return total
