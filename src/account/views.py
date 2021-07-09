@@ -46,7 +46,7 @@ class BalanceSummery(AdminOnly, TemplateView):
             'salary': salary,
             'income': income,
             'date': date,
-            'pl': (expense + salary) - income
+            'pl': income - (expense + salary)
         }
 
     def __sum_total(self, queryset, column):

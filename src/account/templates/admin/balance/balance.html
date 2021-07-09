@@ -8,26 +8,29 @@
 
 {% block content %}
     <h1>Hello world</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>Month</th>
-            <th>Salary</th>
-            <th>Other Expense</th>
-            <th>Income</th>
-            <th>P/L</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for month in month_list %}
+    <div class="results">
+        <table>
+            <thead>
             <tr>
-                <td>{{ month.date }}</td>
-                <td>{{ month.salary }}</td>
-                <td>{{ month.expense }}</td>
-                <td>{{ month.income }}</td>
-                <td>{{ month.pl }}</td>
+                <th>Month</th>
+                <th>Salary</th>
+                <th>Other Expense</th>
+                <th>Income</th>
+                <th>P/L</th>
             </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+            {% for month in month_list %}
+                <tr>
+                    <td>{{ month.date }}</td>
+                    <td>{{ month.salary }}</td>
+                    <td>{{ month.expense }}</td>
+                    <td>{{ month.income }}</td>
+                    <td>{{ month.pl }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
 {% endblock %}
