@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NOC</title>
+</head>
+<body>
+{% load humanize_extra %}
+<h3>Dear {{ employee.full_name | title }},</h3>
+<p>This is to certify that {{ employee.full_name | title }}, who was working as {{ employee.designation }} at
+    Mediusware Ltd
+    since {{ employee.joining_date }}
+    to {{ employee.resignation_date }}. He was a sincere employee of our company.
+</p>
+<p> This certificate is presented to claim completed No Objection upon {{ employee.full_name | title }}, if any
+    organization hires him
+    and he provides his services to any other firm as his employment period with our organization is over. This
+    certificate is issued on the request of employee and therefore we hold no further responsibility. During his
+    working span with us he proves to be sincere. We wish him good luck. </p>
+
+</body>
+</html>

@@ -14,8 +14,8 @@ from employee.tasks import send_mail_to_employee
 
 
 class EmployeeActions:
-    actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter',
-               'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter']
+    actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter', 'print_noc_letter',
+               'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter', 'mail_noc_letter']
 
     @admin.action(description='Print Appointment Letter')
     def print_appointment_letter(self, request, queryset):
@@ -28,6 +28,10 @@ class EmployeeActions:
     @admin.action(description='Print Increment Letter')
     def print_increment_letter(self, request, queryset):
         return self.generate_pdf(queryset=queryset, letter_type='EIL').render_to_pdf()
+
+    @admin.action(description='Print NOC Letter')
+    def print_noc_letter(self, request, queryset):
+        return self.generate_pdf(queryset=queryset, letter_type='NOC').render_to_pdf()
 
     @admin.action(description='Mail Appointment Letter')
     def mail_appointment_letter(self, request, queryset):
@@ -47,11 +51,21 @@ class EmployeeActions:
             request=request
         )
 
+    @admin.action
     def mail_increment_letter(self, request, queryset):
         self.__send_mail(
             queryset,
             letter_type='EIL', subject='Increment letter',
             mail_template='mails/increment.html',
+            request=request
+        )
+
+    @admin.action(description="Mail NOC letter")
+    def mail_noc_letter(self, request, queryset):
+        self.__send_mail(
+            queryset,
+            letter_type='NOC', subject='No objection certificate (NOC)',
+            mail_template='mails/noc.html',
             request=request
         )
 
@@ -82,5 +96,6 @@ class EmployeeActions:
             'EAL': 'letters/appointment_latter.html',
             'EPL': 'letters/permanent_letter.html',
             'EIL': 'letters/increment_latter.html',
+            'NOC': 'letters/noc_letter.html',
         }
         return switcher.get(letter_type, '')

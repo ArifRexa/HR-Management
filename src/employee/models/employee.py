@@ -62,6 +62,13 @@ class Employee(TimeStampMixin, AuthorMixin):
         return timesince(self.permanent_date)
 
     @property
+    def resignation_date(self):
+        is_resigned = self.resignation_set.filter(status='approved').first()
+        if is_resigned:
+            return is_resigned.date
+        return None
+
+    @property
     def current_salary(self):
         return self.salaryhistory_set.latest('id')
 

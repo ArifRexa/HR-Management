@@ -1,0 +1,37 @@
+{% extends 'letters/extra/base.html' %}
+
+{% block content %}
+    <style>
+        p, b {
+            font-size: 16px;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+    </style>
+    {% for employee in employees %}
+        <p>Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.resignation_date | date:'Ym' }}{{ employee.id }} <br>
+            Date: {{ employee.joining_date }} <br>
+            <b>{{ employee.full_name | title }}</b> <br>
+            Email: {{ employee.email }}<br>
+        </p>
+        <br>
+        <br>
+        <br>
+        <center><h2>To Whom It May Concern</h2></center>
+
+        <p>This is to certify that {{ employee.full_name | title }}, who was working as {{ employee.designation }} at
+            Mediusware Ltd
+            since {{ employee.joining_date }}
+            to {{ employee.resignation_date }}. He was a sincere employee of our company.
+        </p>
+        <p> This certificate is presented to claim completed No Objection upon {{ employee.full_name | title }}, if any
+            organization hires him
+            and he provides his services to any other firm as his employment period with our organization is over. This
+            certificate is issued on the request of employee and therefore we hold no further responsibility. During his
+            working span with us he proves to be sincere. We wish him good luck. </p>
+        {% include 'letters/extra/footer.html' %}
+        <div class="page-break"></div>
+    {% endfor %}
+{% endblock %}
