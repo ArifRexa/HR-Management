@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.admin import AdminSite
 from django.db.models import Sum, Q
 
 from account.models import Expense, ExpenseCategory
@@ -11,9 +12,9 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'amount', 'note', 'created_by')
+    list_display = ('date', 'expense_category', 'amount', 'note', 'created_by')
     date_hierarchy = 'date'
-    list_filter = ['created_by']
+    list_filter = ['expense_category__title', 'date']
     change_list_template = 'admin/expense/list.html'
 
     def get_total_hour(self, request):

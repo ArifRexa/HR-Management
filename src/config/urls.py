@@ -25,6 +25,7 @@ admin.site.index_title = "Welcome to Mediusware Admin Portal"
 
 urlpatterns = [
     path('', include('job_board.urls')),
+    path('admin/account/', include('account.urls')),
     path('admin/', admin.site.urls),
     path('tinymce/', include('tinymce.urls')),
     path('', lambda request: redirect('/admin')),
