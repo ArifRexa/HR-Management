@@ -1,12 +1,17 @@
 from django.contrib import admin
 from django.db.models import Sum, Q
 
-from account.models import Expense
+from account.models import Expense, ExpenseCategory
+
+
+@admin.register(ExpenseCategory)
+class ExpenseCategoryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'note')
 
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('title', 'date', 'amount', 'note', 'created_by')
+    list_display = ('date', 'amount', 'note', 'created_by')
     date_hierarchy = 'date'
     list_filter = ['created_by']
     change_list_template = 'admin/expense/list.html'

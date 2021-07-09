@@ -10,6 +10,7 @@ from django.utils import timezone
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
+from project_management.models import Project
 
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
@@ -44,8 +45,29 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
 
 
-class Expense(TimeStampMixin, AuthorMixin):
+class ExpenseCategory(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
-    note = models.TextField(null=True)
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Expense(TimeStampMixin, AuthorMixin):
+    expense_category = models.ForeignKey(ExpenseCategory, on_delete=models.RESTRICT)
+    note = models.TextField(null=True, blank=True)
     amount = models.FloatField()
     date = models.DateField(default=timezone.now())
+
+
+class Income(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.RESTRICT)
+    hours = models.FloatField()
+    hour_rate = models.FloatField()
+    payment = models.FloatField()
+    date = models.DateField(default=timezone.now())
+    note = models.TextField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        self.payment = self.hours * (self.hour_rate * 80)
+        super(Income, self).save(*args, **kwargs)
