@@ -65,7 +65,7 @@ class Income(TimeStampMixin, AuthorMixin):
         ('pending', '⌛ Pending'),
         ('approved', '✔ Approved')
     )
-    project = models.ForeignKey(Project, on_delete=models.RESTRICT)
+    project = models.ForeignKey(Project, on_delete=models.RESTRICT, limit_choices_to={'active': True})
     hours = models.FloatField()
     hour_rate = models.FloatField(default=10.0)
     payment = models.FloatField()
