@@ -71,7 +71,7 @@ class Income(TimeStampMixin, AuthorMixin):
     payment = models.FloatField()
     date = models.DateField(default=timezone.now())
     note = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='approved')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
 
     def save(self, *args, **kwargs):
         self.payment = self.hours * (self.hour_rate * 80)

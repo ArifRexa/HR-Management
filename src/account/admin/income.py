@@ -8,12 +8,20 @@ from account.models import Income
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'hours', 'hour_rate', 'payment_details', 'date', 'status')
+    list_display = ('project', 'hours', 'hour_rate', 'payment_details', 'date', 'status_col')
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'hour_rate', 'date')
 
     change_list_template = 'admin/income/list.html'
+
+    def status_col(self, obj):
+        color = 'red'
+        if obj.status == 'approved':
+            color = 'green'
+        return format_html(
+            f'<b style="color: {color}">{obj.get_status_display()}</b>'
+        )
 
     def payment_details(self, obj):
         return format_html(
