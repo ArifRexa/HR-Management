@@ -13,9 +13,10 @@
         </div>
         <div style="flex: 1 1 auto">
             Total &emsp;&nbsp; : <b style="color: green">${{ result.total_paid | _in_dollar }}</b>
-            / {{ result.total_paid }}
-            TK <br>
-            Pending : <b style="color: red">${{ result.total_pending | _in_dollar }}</b> / {{ result.total_pending }} TK <small>({{ result.pending_hour }})</small>
+            / {{ result.total_paid }}TK <small>({{ result.approved_hour }})</small>
+            <br>
+            Pending : <b style="color: red">${{ result.total_pending | _in_dollar }}</b> / {{ result.total_pending }} TK
+            <small>({{ result.pending_hour }})</small>
         </div>
     </div>
 {% endblock %}
