@@ -40,7 +40,7 @@ class BalanceSummery(AdminOnly, TemplateView):
         salary = SalarySheet.objects.filter(**filter).first()
         salary = salary.total if salary else 0
         expense = self.__sum_total(Expense.objects.filter(**filter).all(), 'amount')
-        income = self.__sum_total(Income.objects.filter(**filter).all(), 'payment')
+        income = self.__sum_total(Income.objects.filter(**filter).filter(status='approved').all(), 'payment')
         return {
             'expense': expense,
             'salary': salary,
