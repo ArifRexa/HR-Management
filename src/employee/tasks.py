@@ -1,4 +1,5 @@
 from django.core.mail import EmailMultiAlternatives, EmailMessage
+from django.template import loader
 
 from employee.models import Employee, Leave
 
@@ -26,3 +27,9 @@ def leave_mail(leave: Leave):
     email.subject = f"Leave application {leave.leave_type}, {leave.status}"
     email.body = message_body
     email.send()
+
+
+def permanent_notifi(employee):
+    email = EmailMultiAlternatives()
+    email.subject = "Permanent Notification there are 5 employee in the list of permanent"
+    # email.body = loader.render_to_string('')

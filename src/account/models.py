@@ -62,8 +62,8 @@ class Expense(TimeStampMixin, AuthorMixin):
 
 class Income(TimeStampMixin, AuthorMixin):
     STATUS_CHOICE = (
-        ('pending', 'Pending'),
-        ('approved', 'Approved')
+        ('pending', '⌛ Pending'),
+        ('approved', '✔ Approved')
     )
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)
     hours = models.FloatField()
