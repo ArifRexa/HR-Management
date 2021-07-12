@@ -67,7 +67,7 @@ class Income(TimeStampMixin, AuthorMixin):
     )
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)
     hours = models.FloatField()
-    hour_rate = models.FloatField()
+    hour_rate = models.FloatField(default=10.0)
     payment = models.FloatField()
     date = models.DateField(default=timezone.now())
     note = models.TextField(null=True, blank=True)
