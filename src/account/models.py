@@ -61,12 +61,17 @@ class Expense(TimeStampMixin, AuthorMixin):
 
 
 class Income(TimeStampMixin, AuthorMixin):
+    STATUS_CHOICE = (
+        ('pending', 'Pending'),
+        ('approved', 'Approved')
+    )
     project = models.ForeignKey(Project, on_delete=models.RESTRICT)
     hours = models.FloatField()
     hour_rate = models.FloatField()
     payment = models.FloatField()
     date = models.DateField(default=timezone.now())
     note = models.TextField(null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='approved')
 
     def save(self, *args, **kwargs):
         self.payment = self.hours * (self.hour_rate * 80)
