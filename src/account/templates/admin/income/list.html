@@ -7,8 +7,15 @@
 {% load salary_sheet_util %}
 
 {% block content_title %}
-    <div style="width: 70%">
-        <h1> Income <span style="float: right">Total : <b
-                style="color: green">${{ total | _in_dollar }}</b> / {{ total }} TK</span></h1>
+    <div style="display: flex; align-items: flex-start; justify-content: space-between">
+        <div style="flex: 3 1 auto">
+            <h1>Income</h1>
+        </div>
+        <div style="flex: 1 1 auto">
+            Total &emsp;&nbsp; : <b style="color: green">${{ result.total_paid | _in_dollar }}</b>
+            / {{ result.total_paid }}
+            TK <br>
+            Pending : <b style="color: red">${{ result.total_pending | _in_dollar }}</b> / {{ result.total_pending }} TK
+        </div>
     </div>
 {% endblock %}

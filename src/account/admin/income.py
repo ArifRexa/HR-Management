@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import Q, Sum
+from django.db.models.functions import Coalesce
 from django.utils.html import format_html
 
 from account.models import Income
@@ -22,14 +23,16 @@ class IncomeAdmin(admin.ModelAdmin):
 
     def get_total_hour(self, request):
         filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o']])
-        filters['status'] = 'approved'
         if not request.user.is_superuser:
             filters['created_by__id__exact'] = request.user.employee.id
         dataset = Income.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
-        return dataset.aggregate(tot=Sum('payment'))['tot']
+        return {
+            'total_pending': dataset.filter(status='pending').aggregate(total=Coalesce(Sum('payment'), 0.0))['total'],
+            'total_paid': dataset.filter(status='approved').aggregate(total=Coalesce(Sum('payment'), 0.0))['total']
+        }
 
     def changelist_view(self, request, extra_context=None):
         my_context = {
-            'total': self.get_total_hour(request),
+            'result': self.get_total_hour(request),
         }
         return super().changelist_view(request, extra_context=my_context)
