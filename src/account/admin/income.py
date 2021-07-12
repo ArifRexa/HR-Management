@@ -36,7 +36,8 @@ class IncomeAdmin(admin.ModelAdmin):
         dataset = Income.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         return {
             'total_pending': dataset.filter(status='pending').aggregate(total=Coalesce(Sum('payment'), 0.0))['total'],
-            'total_paid': dataset.filter(status='approved').aggregate(total=Coalesce(Sum('payment'), 0.0))['total']
+            'total_paid': dataset.filter(status='approved').aggregate(total=Coalesce(Sum('payment'), 0.0))['total'],
+            'pending_hour': dataset.filter(status='pending').aggregate(total=Coalesce(Sum('hours'), 0.0))['total']
         }
 
     def changelist_view(self, request, extra_context=None):
