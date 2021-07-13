@@ -18,3 +18,4 @@ django-nested-inline
 xhtml2pdf
 num2words
 django-q
+django-cors-headers
