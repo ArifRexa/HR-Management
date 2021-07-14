@@ -73,6 +73,9 @@ class JobSummery(AuthorMixin, TimeStampMixin):
 
 # go_storage = GoogleDriveStorage()
 
+def candidate_email_path(instance, filename):
+    return 'hr/candidate/{0}/{1}'.format(instance.email, filename)
+
 
 class Candidate(TimeStampMixin):
     STATUS_CHOICE = (
@@ -81,10 +84,12 @@ class Candidate(TimeStampMixin):
     )
     full_name = models.CharField(max_length=150)
     email = models.EmailField(max_length=40, unique=True)
+    email_otp = models.CharField(max_length=10, null=True, blank=True)
+    email_verified_at = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=11, unique=True)
     password = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to='candidate/avatar/', null=True, blank=True)
-    cv = models.FileField(upload_to='hr/%Y/%m/')
+    cv = models.FileField(upload_to=candidate_email_path)
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
 
     def save(self, *args, **kwargs):
@@ -98,6 +103,8 @@ class Candidate(TimeStampMixin):
 class CandidateJob(TimeStampMixin):
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    expected_salary = models.FloatField()
+    additional_message = models.TextField(null=True, blank=True)
     job = models.ForeignKey(Job, on_delete=models.RESTRICT)
     mcq_exam_score = models.FloatField(default=0)
     written_exam_score = models.FloatField(default=0)

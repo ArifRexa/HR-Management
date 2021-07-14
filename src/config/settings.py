@@ -169,13 +169,9 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 EMAIL_USE_TLS = True
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:8080'
-]
+CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(' ')
 
-CSRF_TRUSTED_ORIGINS = [
-    '127.0.0.1:8080',
-]
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(' ')
 
 # GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.path.join(os.getcwd(), 'mediusware-erp-1b1e4ddb35a5.json')
 # GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = 'AUTOMATED_HR'

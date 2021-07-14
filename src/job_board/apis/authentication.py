@@ -32,3 +32,11 @@ class Login(APIView):
     def post(self, request, format=None):
         auth = CandidateAuth()
         return auth.auth_token(request)
+
+
+class User(APIView):
+    authentication_classes = [CandidateAuth]
+
+    def get(self, request, format=None):
+        serialize = CandidateSerializer(request.user, context={"request": request})
+        return Response(serialize.data)
