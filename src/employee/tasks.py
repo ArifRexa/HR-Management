@@ -1,5 +1,6 @@
 from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.template import loader
+from django.template import Context, loader
+from django.template.loader import get_template
 
 from employee.models import Employee, Leave
 
@@ -29,7 +30,23 @@ def leave_mail(leave: Leave):
     email.send()
 
 
-def permanent_notifi(employee):
+def permanent_notification(employees):
+    html_body = loader.render_to_string('mails/permanent_notification.html',
+                                        context={'employees': employees, 'total_emp': len(employees)})
     email = EmailMultiAlternatives()
-    email.subject = "Permanent Notification there are 5 employee in the list of permanent"
-    # email.body = loader.render_to_string('')
+    email.subject = f"Permanent Notification there are {len(employees)} employee in the list of permanent"
+    email.attach_alternative(html_body, 'text/html')
+    email.to = ['hr@mediusware.com']
+    email.from_email = 'no-reply@mediusware.com'
+    email.send()
+
+
+def increment_notification(employees):
+    html_body = loader.render_to_string('mails/increment_notification.html',
+                                        context={'employees': employees, 'total_emp': len(employees)})
+    email = EmailMultiAlternatives()
+    email.subject = f"Increment Notification there are {len(employees)} employee(s) in the lis of increment"
+    email.attach_alternative(html_body, 'text/html')
+    email.to = ['hr@mediusware.com']
+    email.from_email = 'no-reply@mediusware.com'
+    email.send()
