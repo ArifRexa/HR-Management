@@ -1,8 +1,13 @@
+import random
+from datetime import timedelta
+
 from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturalday
+from django.core.exceptions import ValidationError
 from django.db import models
 from django import forms
 # from gdstorage.storage import GoogleDriveStorage
+from django.utils import timezone
 from tinymce.models import HTMLField
 import uuid
 
@@ -109,3 +114,21 @@ class CandidateJob(TimeStampMixin):
     mcq_exam_score = models.FloatField(default=0)
     written_exam_score = models.FloatField(default=0)
     viva_exam_score = models.FloatField(default=0)
+
+
+class ResetPassword(TimeStampMixin):
+    email = models.EmailField()
+    otp = models.CharField(max_length=10)
+    otp_expire_at = models.DateTimeField()
+    otp_used_at = models.DateTimeField(null=True, blank=True)
+
+    def clean_fields(self, exclude=None):
+        super(ResetPassword, self).clean_fields(exclude=['otp', 'otp_expire_at'])
+        if not Candidate.objects.filter(email__exact=self.email).first():
+            raise ValidationError(
+                {'email': 'Your given email is not found in candidate list, please insert a valid email address'})
+
+    def save(self, *args, **kwargs):
+        self.otp = random.randrange(1000, 9999, 6)
+        self.otp_expire_at = timezone.now() + timedelta(minutes=15)
+        super(ResetPassword, self).save(*args, **kwargs)

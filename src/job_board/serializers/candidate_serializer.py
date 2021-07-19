@@ -10,7 +10,7 @@ from job_board.serializers.job_serializer import JobSerializer
 class CandidateSerializer(ModelSerializer):
     class Meta:
         model = Candidate
-        fields = ('id', 'email', 'password', 'phone', 'avatar', 'cv')
+        fields = ('id', 'full_name', 'email', 'password', 'phone', 'avatar', 'cv')
         write_only_fields = ['password']
 
     def get_cv_url(self, candidate):

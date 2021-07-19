@@ -1,13 +1,13 @@
 from django.contrib import admin
 
-from job_board.models import Candidate, CandidateJob
+from job_board.models import Candidate, CandidateJob, ResetPassword
 
 
 @admin.register(Candidate)
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
 
-    list_display = ('email', 'phone')
+    list_display = ('full_name', 'email', 'phone')
 
 
 @admin.register(CandidateJob)
@@ -17,3 +17,9 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
     def get_job(self, obj):
         return obj.job.title
+
+
+@admin.register(ResetPassword)
+class CandidateResetPasswordAdmin(admin.ModelAdmin):
+    list_display = ('email', 'otp', 'otp_expire_at', 'otp_used_at')
+    readonly_fields = ('otp', 'otp_expire_at', 'otp_used_at')

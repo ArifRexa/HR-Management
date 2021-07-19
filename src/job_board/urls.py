@@ -9,6 +9,8 @@ urlpatterns = [
         path('register-candidate/', authentication.Registration.as_view()),
         path('login/', authentication.Login.as_view()),
         path('candidate/', authentication.User.as_view()),
+        path('send-otp/', authentication.SendOTP.as_view()),
+        path('reset-password/', authentication.ResetPasswordView.as_view()),
         path('jobs/', job.JobList.as_view()),
         path('job/<str:slug>/', job.JobRetrieve.as_view()),
         path('apply/', job.CandidateJobView.as_view()),
