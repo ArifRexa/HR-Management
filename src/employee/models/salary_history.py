@@ -9,7 +9,7 @@ from employee.models.employee import Employee
 
 class SalaryHistory(TimeStampMixin, AuthorMixin):
     payable_salary = models.FloatField()
-    active_from = models.DateField(default=timezone.now())
+    active_from = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
 

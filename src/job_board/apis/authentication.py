@@ -66,11 +66,5 @@ class ResetPasswordView(GenericAPIView, CreateModelMixin):
     serializer_class = ResetPasswordSerializer
 
     def post(self, request, *args, **kwargs):
-        candidate = Candidate.objects.filter(email__exact=request.POST['email']).first()
-        candidate.password = request.POST['password']
-        candidate.save()
-
-        pass_reset = ResetPassword.objects.filter(otp__exact=request.POST['otp']).last()
-        pass_reset.otp_used_at = timezone.now()
-        pass_reset.save()
+        self.create(request, *args, **kwargs)
         return Response({'message': 'Candidate password has been updated successfully'})

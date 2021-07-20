@@ -57,7 +57,7 @@ class Expense(TimeStampMixin, AuthorMixin):
     expense_category = models.ForeignKey(ExpenseCategory, on_delete=models.RESTRICT)
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField()
-    date = models.DateField(default=timezone.now())
+    date = models.DateField(default=timezone.now)
 
 
 class Income(TimeStampMixin, AuthorMixin):
@@ -69,7 +69,7 @@ class Income(TimeStampMixin, AuthorMixin):
     hours = models.FloatField()
     hour_rate = models.FloatField(default=10.0)
     payment = models.FloatField()
-    date = models.DateField(default=timezone.now())
+    date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
 

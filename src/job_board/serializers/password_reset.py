@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -7,24 +5,24 @@ from job_board.models import ResetPassword, Candidate
 
 
 class ValidCandidateEmail:
-    def __call__(self, value: OrderedDict):
-        print(*value.items())
-        if not Candidate.objects.filter(*value.items()).first():
+    def __call__(self, value):
+        if not Candidate.objects.filter(email=value).first():
             raise serializers.ValidationError(
-                {'email': 'Your given email is not found in candidate list, please insert a valid email address'})
+                'Your given email is not found in candidate list, please insert a valid email address')
 
 
 class SendOTPSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(validators=[ValidCandidateEmail()])
+
     class Meta:
         model = ResetPassword
         fields = ['email']
-        validators = [ValidCandidateEmail()]
 
 
 class ResetPasswordSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    otp = serializers.CharField()
-    password = serializers.CharField(min_length=6)
+    email = serializers.EmailField(validators=[ValidCandidateEmail()])
+    otp = serializers.CharField(min_length=6, max_length=6)
+    password = serializers.CharField(min_length=6, max_length=40)
 
     def validate(self, data):
         if ResetPassword.objects.filter(
@@ -42,4 +40,8 @@ class ResetPasswordSerializer(serializers.Serializer):
         candidate = Candidate.objects.filter(email__exact=validated_data['email']).first()
         candidate.password = validated_data['password']
         candidate.save()
-        return candidate
+
+        pass_reset = ResetPassword.objects.filter(otp__exact=validated_data['otp']).last()
+        pass_reset.otp_used_at = timezone.now()
+        pass_reset.save()
+        return validated_data

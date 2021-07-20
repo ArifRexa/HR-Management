@@ -15,7 +15,7 @@ class Resignation(TimeStampMixin, AuthorMixin):
         ('rejected', '⛔ Rejected'),
     )
     message = models.TextField(max_length=1000)
-    date = models.DateField(default=timezone.now())
+    date = models.DateField(default=timezone.now)
     status = models.CharField(max_length=25, default='pending', choices=STATUS_CHOICE)
     approved_at = models.DateField(null=True, editable=False)
     approved_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True, on_delete=models.RESTRICT,

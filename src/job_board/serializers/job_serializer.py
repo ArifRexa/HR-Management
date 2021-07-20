@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from job_board.models import JobSummery, Job
+from job_board.models import JobSummery, Job, JobAdditionalField
 
 
 class JobSummerySerializer(serializers.ModelSerializer):
@@ -13,8 +13,15 @@ class JobSummerySerializer(serializers.ModelSerializer):
         fields = ['application_deadline', 'experience', 'job_type', 'vacancy']
 
 
+class AdditionalFieldsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobAdditionalField
+        fields = ['title', 'required', 'validation_regx']
+
+
 class JobSerializer(serializers.ModelSerializer):
     job_summery = JobSummerySerializer(many=False)
+    additional_fields = AdditionalFieldsSerializer(many=True)
     updated_at = serializers.DateTimeField(format="%B %d %Y")
 
     # assessment = AssessmentSerializer(many=False)
@@ -22,5 +29,5 @@ class JobSerializer(serializers.ModelSerializer):
     class Meta:
         model = Job
         fields = ['title', 'slug', 'job_context', 'job_description', 'job_responsibility',
-                  'educational_requirement', 'additional_requirement', 'compensation', 'job_summery', 'assessment',
-                  'updated_at']
+                  'educational_requirement', 'additional_requirement', 'compensation', 'assessment',
+                  'updated_at', 'job_summery', 'additional_fields']

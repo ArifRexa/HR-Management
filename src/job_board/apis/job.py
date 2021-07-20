@@ -1,6 +1,8 @@
 import datetime
+from datetime import timedelta
 
 from django.http import Http404
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import RetrieveModelMixin, ListModelMixin, CreateModelMixin
@@ -8,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth
-from job_board.models import Job, CandidateJob
+from job_board.models import Job, CandidateJob, Candidate
 from job_board.serializers.job_serializer import JobSerializer
 from job_board.serializers.candidate_serializer import CandidateJobSerializer, CandidateJobApplySerializer
 
@@ -46,8 +48,12 @@ class CandidateJobView(APIView):
         if serializer.is_valid():
             serializer.validated_data['candidate'] = request.user
             serializer.validated_data['job'] = self.get_object(serializer.validated_data['job_slug'])
-            serializer.save()
-            return Response({'success': 'You job application has been submitted successfully'})
+            if not self.__applied_before_90(serializer.validated_data['candidate'], serializer.validated_data['job']):
+                serializer.save()
+                return Response({'success': 'You job application has been submitted successfully'})
+            return Response({'message': 'You applied for the same position less then 90 days before, '
+                                        'unfortunately you cannot re-apply before 90 days of your last application'},
+                            status=status.HTTP_403_FORBIDDEN)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
@@ -61,6 +67,8 @@ class CandidateJobView(APIView):
         except Job.DoesNotExist:
             raise Http404
 
-    def __not_allied(self):
-        pass
-        # CandidateJobs.objects.filter(created_at__gt=)
+    def __applied_before_90(self, candidate: Candidate, job: Job):
+        days_before_90 = timezone.now() - timedelta(days=90)
+        if CandidateJob.objects.filter(candidate=candidate, job=job, created_at__gte=days_before_90):
+            return True
+        return False

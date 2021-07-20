@@ -14,8 +14,8 @@ urlpatterns = [
         path('jobs/', job.JobList.as_view()),
         path('job/<str:slug>/', job.JobRetrieve.as_view()),
         path('apply/', job.CandidateJobView.as_view()),
+        path('assessment/save-answer/', assessment.SaveAnswerView.as_view()),
         path('assessment/<str:unique_id>/', assessment.AssessmentRetrieve.as_view()),
-        path('assessment/<str:slug>/<int:pk>', assessment.AssessmentQuestionRetrieve.as_view())
     ]))
 ]
 

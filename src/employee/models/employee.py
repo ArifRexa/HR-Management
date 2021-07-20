@@ -15,7 +15,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     email = models.EmailField(max_length=255, null=True)
     address = models.TextField(null=True)
     phone = models.CharField(max_length=60, help_text='Use (,) comma for separate phone numbers')
-    joining_date = models.DateField(default=timezone.now())
+    joining_date = models.DateField(default=timezone.now)
     permanent_date = models.DateField(null=True, blank=True)
     designation = models.ForeignKey(Designation, on_delete=models.RESTRICT)
     leave_management = models.ForeignKey(LeaveManagement, on_delete=models.RESTRICT)

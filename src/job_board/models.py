@@ -48,12 +48,12 @@ class AssessmentAnswer(AuthorMixin, TimeStampMixin):
 class Job(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=155)
     slug = models.SlugField(max_length=255)
-    job_context = models.TextField(max_length=500)
-    job_description = models.TextField(null=True, blank=True)
-    job_responsibility = models.TextField(null=True, blank=True)
-    educational_requirement = models.TextField(null=True, blank=True)
-    additional_requirement = models.TextField(null=True, blank=True)
-    compensation = models.TextField(null=True, blank=True)
+    job_context = HTMLField(max_length=500)
+    job_description = HTMLField(null=True, blank=True)
+    job_responsibility = HTMLField(null=True, blank=True)
+    educational_requirement = HTMLField(null=True, blank=True)
+    additional_requirement = HTMLField(null=True, blank=True)
+    compensation = HTMLField(null=True, blank=True)
     assessment = models.ForeignKey(Assessment, null=True, related_name='assessment', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -74,6 +74,13 @@ class JobSummery(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return f'{naturalday(self.application_deadline)} | {self.vacancy} | {self.job_type}'
+
+
+class JobAdditionalField(TimeStampMixin, AuthorMixin):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='additional_fields')
+    title = models.CharField(max_length=255)
+    required = models.BooleanField(default=True)
+    validation_regx = models.CharField(max_length=255, null=True, blank=True)
 
 
 # go_storage = GoogleDriveStorage()
@@ -108,12 +115,25 @@ class Candidate(TimeStampMixin):
 class CandidateJob(TimeStampMixin):
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.RESTRICT)
+
     expected_salary = models.FloatField()
     additional_message = models.TextField(null=True, blank=True)
-    job = models.ForeignKey(Job, on_delete=models.RESTRICT)
+
     mcq_exam_score = models.FloatField(default=0)
     written_exam_score = models.FloatField(default=0)
     viva_exam_score = models.FloatField(default=0)
+
+    mcq_exam_started_at = models.DateTimeField(null=True, blank=True)
+    step = models.JSONField(null=True, blank=True)
+
+
+class CandidateAssessmentAnswer(TimeStampMixin):
+    candidate_job = models.ForeignKey(CandidateJob, on_delete=models.CASCADE)
+    question = models.ForeignKey(AssessmentQuestion, on_delete=models.CASCADE)
+    total_score = models.FloatField()
+    answers = models.JSONField()
+    score_achieve = models.FloatField()
 
 
 class ResetPassword(TimeStampMixin):
@@ -129,6 +149,6 @@ class ResetPassword(TimeStampMixin):
                 {'email': 'Your given email is not found in candidate list, please insert a valid email address'})
 
     def save(self, *args, **kwargs):
-        self.otp = random.randrange(1000, 9999, 6)
+        self.otp = random.randrange(100000, 999999, 6)
         self.otp_expire_at = timezone.now() + timedelta(minutes=15)
         super(ResetPassword, self).save(*args, **kwargs)
