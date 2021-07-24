@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from job_board.models import JobSummery, Job, JobAdditionalField
+from job_board.serializers.assessment_serializer import AssessmentSerializer
 
 
 class JobSummerySerializer(serializers.ModelSerializer):
@@ -31,3 +32,11 @@ class JobSerializer(serializers.ModelSerializer):
         fields = ['title', 'slug', 'job_context', 'job_description', 'job_responsibility',
                   'educational_requirement', 'additional_requirement', 'compensation', 'assessment',
                   'updated_at', 'job_summery', 'additional_fields']
+
+
+class JobSerializerSimple(serializers.ModelSerializer):
+    assessment = AssessmentSerializer(many=False)
+
+    class Meta:
+        model = Job
+        fields = ['title', 'assessment']

@@ -57,7 +57,7 @@ class CandidateJobView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):
-        candidate_jobs = CandidateJob.objects.filter(candidate_id=request.user.id).all()
+        candidate_jobs = CandidateJob.objects.filter(candidate_id=request.user.id).order_by('-id').all()
         candidate_job_serialize = CandidateJobSerializer(candidate_jobs, many=True)
         return Response(candidate_job_serialize.data)
 

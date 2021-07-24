@@ -1,0 +1,38 @@
+{% extends 'admin/base.html' %}
+
+{% block breadcrumbs %}
+    <div class="breadcrumbs">
+        <a href="{% url 'admin:index' %}">Home</a>>
+        <a href="/admin/job_board">Job Board</a>>
+        <a href="{% url 'admin:job_board_assessment_changelist' %}">Assessment</a>
+    </div>
+{% endblock %}
+
+{% block content_title %}
+    <h1>Hello world</h1>
+{% endblock %}
+
+{% block content_subtitle %}
+    <h1>Hello world</h1>
+{% endblock %}
+
+{% block content %}
+
+    {{ assessment }} | Score : {{ assessment.score }} | {{ assessment.duration }} Minutes | Total Question :
+    {{ assessment.assessmentquestion_set.count }}
+    <ol>
+        {% for assessment_question in assessment.assessmentquestion_set.all %}
+            <li>
+                {{ assessment_question.title }} | {{ assessment_question.score }}
+                | {{ assessment_question.get_type_display }}
+                <ol>
+                    {% for assessment_answer in assessment_question.answers.all %}
+                        <li>{{ assessment_answer.title }} | {{ assessment_answer.score }}
+                            | {{ assessment_answer.correct }}</li>
+                    {% endfor %}
+                </ol>
+            </li>
+        {% endfor %}
+    </ol>
+
+{% endblock %}

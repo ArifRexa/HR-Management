@@ -4,14 +4,19 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
 from job_board.models import Candidate, CandidateJob, Job
-from job_board.serializers.job_serializer import JobSerializer
+from job_board.serializers.job_serializer import JobSerializer, JobSerializerSimple
 
 
 class CandidateSerializer(ModelSerializer):
+    """
+    Candidate serializer has been used in registration and fetch candidate
+    this serializer is based on Candidate Model
+    """
+
     class Meta:
         model = Candidate
         fields = ('id', 'full_name', 'email', 'password', 'phone', 'avatar', 'cv')
-        write_only_fields = ['password']
+        extra_kwargs = {'password': {"write_only": True}}
 
     def get_cv_url(self, candidate):
         request = self.context.get('request')
@@ -37,6 +42,11 @@ class CandidateJobApplySerializer(serializers.Serializer):
 
 
 class CandidateJobSerializer(serializers.ModelSerializer):
+    job = JobSerializerSimple(many=False)
+    created_at = serializers.DateTimeField(format='%d %B, %Y', read_only=True, required=False)
+    mcq_exam_started_at = serializers.DateTimeField(format='%d %B, %Y', read_only=True, required=False)
+
     class Meta:
         model = CandidateJob
-        fields = '__all__'
+        fields = ('unique_id', 'job', 'expected_salary', 'additional_message',
+                  'mcq_exam_score', 'written_exam_score', 'viva_exam_score', 'created_at', 'mcq_exam_started_at')

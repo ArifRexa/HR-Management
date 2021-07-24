@@ -12,7 +12,7 @@ from job_board.models import Assessment, AssessmentAnswer, AssessmentQuestion, C
 class AssessmentSerializer(ModelSerializer):
     class Meta:
         model = Assessment
-        fields = '__all__'
+        fields = ['title', 'slug', 'description', 'score', 'duration']
 
 
 class AssessmentAnswerSerializer(ModelSerializer):

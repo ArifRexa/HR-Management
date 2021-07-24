@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import format_html
 
-from job_board.models import Candidate, CandidateJob, ResetPassword
+from job_board.models import Candidate, CandidateJob, ResetPassword, CandidateAssessment
 
 
 @admin.register(Candidate)
@@ -22,12 +22,8 @@ class CandidateAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateJob)
 class CandidateJobAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_job', 'get_assessment',
-                    'mcq_exam_score', 'written_exam_score', 'viva_exam_score',
-                    'unique_id', 'mcq_exam_started_at', 'step')
+    list_display = ('candidate', 'get_job', 'get_assessment', 'unique_id')
     list_display_links = ('get_job', 'candidate')
-    readonly_fields = ('mcq_exam_score', 'written_exam_score', 'viva_exam_score')
-    list_editable = ('mcq_exam_started_at', 'step')
 
     @admin.display(description='Job', ordering='job')
     def get_job(self, obj):
@@ -40,6 +36,14 @@ class CandidateJobAdmin(admin.ModelAdmin):
         return format_html(
             f'<a href="{url}">{obj.job.assessment}</a>'
         )
+
+
+@admin.register(CandidateAssessment)
+class CandidateAssessment(admin.ModelAdmin):
+    list_display = ('candidate_job', 'assessment', 'exam_started_at', 'exam_type', 'score', 'step')
+    search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
+    list_filter = ('assessment', 'exam_type', 'candidate_job__job')
+    readonly_fields = ['step']
 
 
 @admin.register(ResetPassword)
