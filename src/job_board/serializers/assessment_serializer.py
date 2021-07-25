@@ -1,18 +1,18 @@
 from collections import OrderedDict
 
 from django.db.models import Sum
-from django.utils import timezone
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
 from rest_framework.serializers import ModelSerializer
 
-from job_board.models import Assessment, AssessmentAnswer, AssessmentQuestion, CandidateJob, CandidateAssessmentAnswer
+from job_board.models import Assessment, AssessmentAnswer, AssessmentQuestion, CandidateJob, CandidateAssessmentAnswer, \
+    CandidateAssessment
+from job_board.serializers.candidate_serializer import CandidateJobSerializer
 
 
 class AssessmentSerializer(ModelSerializer):
     class Meta:
         model = Assessment
-        fields = ['title', 'slug', 'description', 'score', 'duration']
+        fields = ['title', 'slug', 'description', 'score', 'duration', 'type']
 
 
 class AssessmentAnswerSerializer(ModelSerializer):
@@ -27,6 +27,17 @@ class AssessmentQuestionSerializer(ModelSerializer):
     class Meta:
         model = AssessmentQuestion
         fields = ('id', 'title', 'type', 'answers')
+
+
+class CandidateAssessmentSerializer(serializers.ModelSerializer):
+    assessment = AssessmentSerializer(many=False)
+    created_at = serializers.DateTimeField(format='%B %d, %Y')
+    updated_at = serializers.DateTimeField(format='%B %d, %Y')
+    candidate_job = CandidateJobSerializer(many=False)
+
+    class Meta:
+        model = CandidateAssessment
+        fields = '__all__'
 
 
 def valid_uuid(value):

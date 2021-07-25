@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from rest_framework import status
+from rest_framework import status, mixins
 from rest_framework.decorators import api_view
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
 from job_board.models import Candidate, ResetPassword
-from job_board.serializers.candidate_serializer import CandidateSerializer
+from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer
 
 
@@ -52,6 +52,13 @@ class User(APIView):
         serialize = CandidateSerializer(request.user, context={"request": request})
         return Response(serialize.data)
 
+    def post(self, request, format=None):
+        serialize = CandidateUpdateSerializer(data=request.data)
+        if serialize.is_valid():
+            serialize.update(instance=request.user, validated_data=serialize.validated_data)
+            return Response(serialize.data)
+        return Response(serialize.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class SendOTP(GenericAPIView, CreateModelMixin):
     serializer_class = SendOTPSerializer
@@ -68,3 +75,7 @@ class ResetPasswordView(GenericAPIView, CreateModelMixin):
     def post(self, request, *args, **kwargs):
         self.create(request, *args, **kwargs)
         return Response({'message': 'Candidate password has been updated successfully'})
+
+
+class ChangeCandidatePassword(GenericAPIView):
+    authentication_classes = [CandidateAuth]

@@ -64,6 +64,7 @@ class Bank(TimeStampMixin, AuthorMixin):
 
 
 class Letter(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=250)
     header = tinymce_models.HTMLField()
     sticky_header = models.BooleanField(default=False)
     body = tinymce_models.HTMLField()

@@ -15,6 +15,8 @@ class IncomeAdmin(admin.ModelAdmin):
 
     change_list_template = 'admin/income/list.html'
 
+    list_per_page = 20
+
     def status_col(self, obj):
         color = 'red'
         if obj.status == 'approved':

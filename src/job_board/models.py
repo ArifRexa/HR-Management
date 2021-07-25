@@ -17,11 +17,19 @@ from config.model.TimeStampMixin import TimeStampMixin
 
 # Create your models here.
 class Assessment(AuthorMixin, TimeStampMixin):
+    TYPE_CHOICE = (
+        ('mcq', 'MCQ Examination'),
+        ('written', 'Written Examination'),
+        ('viva', 'Viva/Oral Examination'),
+    )
+
     title = models.CharField(max_length=255)
     slug = models.SlugField()
     score = models.FloatField(help_text='This will auto')
+    pass_score = models.FloatField()
     duration = models.FloatField(help_text='This duration will be in minutes')
-    description = models.TextField()
+    description = HTMLField()
+    type = models.CharField(max_length=40, choices=TYPE_CHOICE, default='mcq')
 
     def __str__(self):
         return self.title
@@ -59,7 +67,7 @@ class Job(AuthorMixin, TimeStampMixin):
     educational_requirement = HTMLField(null=True, blank=True)
     additional_requirement = HTMLField(null=True, blank=True)
     compensation = HTMLField(null=True, blank=True)
-    assessment = models.ForeignKey(Assessment, null=True, related_name='assessment', on_delete=models.CASCADE)
+    assessments = models.ManyToManyField(Assessment)
 
     def __str__(self):
         return self.title
@@ -129,7 +137,6 @@ class CandidateJob(TimeStampMixin):
         candidate_assessment = CandidateAssessment()
         candidate_assessment.candidate_job = self
         candidate_assessment.assessment = self.job.assessment
-        candidate_assessment.exam_type = 'mcq'
         candidate_assessment.save()
         # TODO : Schedule mail for assessment
 
@@ -138,21 +145,14 @@ class CandidateJob(TimeStampMixin):
 
 
 class CandidateAssessment(TimeStampMixin):
-    ASSESSMENT_TYPE_CHOICE = (
-        ('mcq', 'MCQ Assessment'),
-        ('written', 'Written Assessment'),
-        ('viva', 'Viva Assessment'),
-    )
-
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    candidate_job = models.ForeignKey(CandidateJob, on_delete=models.CASCADE)
-    assessment = models.ForeignKey(Assessment, on_delete=models.SET_NULL, null=True, blank=True)
+    candidate_job = models.ForeignKey(CandidateJob, on_delete=models.CASCADE, related_name='candidate_job')
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     exam_started_at = models.DateTimeField(null=True, blank=True)
     exam_end_at = models.DateTimeField(null=True, blank=True)
     score = models.FloatField(default=0)
     evaluation_url = models.CharField(null=True, blank=True, max_length=255)
     step = models.JSONField(null=True, blank=True)
-    exam_type = models.CharField(max_length=50, choices=ASSESSMENT_TYPE_CHOICE)
     note = models.TextField(null=True, blank=True)
 
 

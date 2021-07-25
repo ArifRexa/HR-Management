@@ -31,19 +31,23 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
     @admin.display(description='Assessment', ordering='job__assessment')
     def get_assessment(self, obj: CandidateJob):
-        url = reverse(f'admin:{obj.job.assessment._meta.app_label}_{obj.job.assessment._meta.model_name}_change',
-                      args=[obj.job.assessment.id])
-        return format_html(
-            f'<a href="{url}">{obj.job.assessment}</a>'
-        )
+        # url = reverse(f'admin:{obj.job.assessment._meta.app_label}_{obj.job.assessment._meta.model_name}_change',
+        #               args=[obj.job.assessment.id])
+        # return format_html(
+        #     f'<a href="{url}">{obj.job.assessment}</a>'
+        # )
+        return 'ok'
 
 
 @admin.register(CandidateAssessment)
 class CandidateAssessment(admin.ModelAdmin):
-    list_display = ('candidate_job', 'assessment', 'exam_started_at', 'exam_type', 'score', 'step')
+    list_display = ('candidate_job', 'assessment', 'assessment_type', 'exam_started_at', 'score', 'step')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
-    list_filter = ('assessment', 'exam_type', 'candidate_job__job')
+    list_filter = ('assessment', 'assessment__type', 'candidate_job__job')
     readonly_fields = ['step']
+
+    def assessment_type(self, obj):
+        return obj.assessment.get_type_display()
 
 
 @admin.register(ResetPassword)

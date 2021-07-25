@@ -3,6 +3,10 @@ import datetime
 from django.contrib import admin
 
 # Register your models here.
+from django.template.defaultfilters import truncatewords, truncatechars, truncatechars_html
+from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
+
 from config.utils.pdf import PDF
 from employee.models import Employee
 from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter
@@ -36,8 +40,23 @@ class BankAdmin(admin.ModelAdmin):
 
 @admin.register(Letter)
 class LetterAdmin(admin.ModelAdmin):
-    list_display = ('header', 'body', 'footer')
+    list_display = ('title', 'get_header', 'get_body', 'get_footer')
     actions = ('download_pdf',)
+
+    @admin.display(description='Header')
+    def get_header(self, obj):
+        safe_value = strip_tags(truncatechars_html(obj.header, 50))
+        return mark_safe("&nbsp;".join(safe_value.split(' ')))
+
+    @admin.display(description='Body')
+    def get_body(self, obj):
+        safe_value = strip_tags(truncatechars_html(obj.body, 200))
+        return mark_safe("&nbsp;".join(safe_value.split(' ')))
+
+    @admin.display(description='footer')
+    def get_footer(self, obj):
+        safe_value = strip_tags(truncatechars_html(obj.footer, 20))
+        return mark_safe("&nbsp;".join(safe_value.split(' ')))
 
     @admin.action(description='Print PDF')
     def download_pdf(self, request, queryset):

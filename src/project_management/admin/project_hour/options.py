@@ -26,7 +26,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['manager', 'project', 'hours', 'date', 'created_by', 'created_at', 'payable']
+        list_display = ['date', 'project', 'hours', 'manager', 'created_by', 'created_at', 'payable']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display

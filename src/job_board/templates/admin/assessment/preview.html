@@ -20,6 +20,8 @@
 
     {{ assessment }} | Score : {{ assessment.score }} | {{ assessment.duration }} Minutes | Total Question :
     {{ assessment.assessmentquestion_set.count }}
+    <br>
+    {{ assessment.description }}
     <ol>
         {% for assessment_question in assessment.assessmentquestion_set.all %}
             <li>
