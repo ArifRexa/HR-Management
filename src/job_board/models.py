@@ -1,3 +1,4 @@
+import datetime
 import random
 from datetime import timedelta
 
@@ -134,14 +135,15 @@ class CandidateJob(TimeStampMixin):
 
     def save(self, *ages, **kwargs):
         super(CandidateJob, self).save(*ages, **kwargs)
-        candidate_assessment = CandidateAssessment()
-        candidate_assessment.candidate_job = self
-        candidate_assessment.assessment = self.job.assessment
-        candidate_assessment.save()
+        for assessment in self.job.assessments.all():
+            candidate_assessment = CandidateAssessment()
+            candidate_assessment.candidate_job = self
+            candidate_assessment.assessment = assessment
+            candidate_assessment.save()
         # TODO : Schedule mail for assessment
 
     def __str__(self):
-        return f'{self.candidate.full_name} | {self.job.title} | {self.created_at}'
+        return f'{self.candidate.full_name} | {self.job.title}'
 
 
 class CandidateAssessment(TimeStampMixin):
@@ -154,6 +156,15 @@ class CandidateAssessment(TimeStampMixin):
     evaluation_url = models.CharField(null=True, blank=True, max_length=255)
     step = models.JSONField(null=True, blank=True)
     note = models.TextField(null=True, blank=True)
+
+    @property
+    def time_spend(self):
+        if self.exam_end_at is not None:
+            now = timezone.now()
+            if self.exam_end_at >= now:
+                return now - self.exam_started_at
+            return 'time up'
+        return 'exam not started yet'
 
 
 class CandidateAssessmentAnswer(TimeStampMixin):

@@ -4,14 +4,18 @@
     Balance
 {% endblock %}
 
-{% block branding %}Hello world {% endblock %}
+{% block branding %}
+    <h1>Medisuware Ltd</h1>
+{% endblock %}
 
 {% block content %}
-    <h1>Hello world</h1>
+    <h1>Balance</h1>
+    <h3>{{ start_date }} to {{ end_date }}</h3>
     <div class="results">
-        <table>
+        <table width="100%">
             <thead>
             <tr>
+                <th>#</th>
                 <th>Month</th>
                 <th>Salary</th>
                 <th>Other Expense</th>
@@ -22,6 +26,7 @@
             <tbody>
             {% for month in month_list %}
                 <tr>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ month.date }}</td>
                     <td>{{ month.salary }}</td>
                     <td>{{ month.expense }}</td>

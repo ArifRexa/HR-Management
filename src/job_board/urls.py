@@ -16,9 +16,12 @@ urlpatterns = [
         path('job/<str:slug>/', job.JobRetrieve.as_view()),
         path('apply/', job.CandidateJobView.as_view()),
         path('assessment/save-answer/', assessment.SaveAnswerView.as_view()),
-        path('assessment/', assessment.AssessmentRetrieve.as_view()),
+        path('assessment/', assessment.CandidateAssessmentList.as_view()),
+        path('assessment/<str:unique_id>/', assessment.CandidateAssessmentRetrieve.as_view()),
+        path('assessment/<str:unique_id>/question', assessment.CandidateAssessmentQuestion.as_view())
     ])),
-    path('preview-assessment/<int:pk>/', AssessmentPreview.as_view(), name='preview_assessment')
+    path('admin/job-board/assessment/<int:pk>/preview/', AssessmentPreview.as_view(),
+         name='preview_assessment')
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

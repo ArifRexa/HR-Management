@@ -1,27 +1,13 @@
 {% extends 'admin/base.html' %}
-
-{% block breadcrumbs %}
-    <div class="breadcrumbs">
-        <a href="{% url 'admin:index' %}">Home</a>>
-        <a href="/admin/job_board">Job Board</a>>
-        <a href="{% url 'admin:job_board_assessment_changelist' %}">Assessment</a>
-    </div>
-{% endblock %}
-
-{% block content_title %}
-    <h1>Hello world</h1>
-{% endblock %}
-
-{% block content_subtitle %}
-    <h1>Hello world</h1>
+{% block branding %}
+    <h1>Medisuware Ltd</h1>
 {% endblock %}
 
 {% block content %}
-
     {{ assessment }} | Score : {{ assessment.score }} | {{ assessment.duration }} Minutes | Total Question :
     {{ assessment.assessmentquestion_set.count }}
     <br>
-    {{ assessment.description }}
+    {{ assessment.description | safe }}
     <ol>
         {% for assessment_question in assessment.assessmentquestion_set.all %}
             <li>
@@ -36,5 +22,9 @@
             </li>
         {% endfor %}
     </ol>
-
 {% endblock %}
+
+{% block nav-sidebar %}
+    {% include 'admin/nav_sidebar.html' with app_list=available_apps show_changelinks=False %}
+{% endblock %}
+
