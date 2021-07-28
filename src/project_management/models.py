@@ -39,7 +39,6 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         return f"{self.project} | {self.manager}"
 
 
-# TODO : Employee project hour
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
     hours = models.FloatField()

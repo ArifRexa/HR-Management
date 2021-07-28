@@ -1,14 +1,11 @@
-from django.utils import timezone
-from django.views.decorators.http import require_http_methods
-from rest_framework import status, mixins
-from rest_framework.decorators import api_view
+from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
-from job_board.models import Candidate, ResetPassword
+from job_board.models import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer
 

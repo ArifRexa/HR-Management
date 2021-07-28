@@ -8,7 +8,7 @@ class JobSummerySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = JobSummery
-        fields = ['application_deadline', 'experience', 'job_type', 'vacancy']
+        fields = ['application_deadline', 'experience', 'job_type', 'vacancy', 'salary_range']
 
 
 class AdditionalFieldsSerializer(serializers.ModelSerializer):

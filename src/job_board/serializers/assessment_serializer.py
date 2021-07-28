@@ -35,8 +35,6 @@ class CandidateAssessmentSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format='%B %d, %Y')
     updated_at = serializers.DateTimeField(format='%B %d, %Y')
     candidate_job = CandidateJobSerializer(many=False)
-    exam_started_at = serializers.DateTimeField(format='%d-%m-%y %H:%M')
-    exam_end_at = serializers.DateTimeField(format='%d-%m-%y %H:%M')
     time_spend = serializers.CharField()
 
     class Meta:

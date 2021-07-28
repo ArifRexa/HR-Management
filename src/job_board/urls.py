@@ -16,10 +16,10 @@ urlpatterns = [
         path('job/<str:slug>/', job.JobRetrieve.as_view()),
         path('apply/', job.CandidateJobView.as_view()),
         path('assessment/', assessment.CandidateAssessmentList.as_view()),
-        path('assessment/save-answer/', assessment.SaveAnswerView.as_view()),
-        # Support get and put method, put method for start exam
-        path('assessment/<str:unique_id>/', assessment.CandidateAssessmentRetrieve.as_view()),
-        path('assessment/<str:unique_id>/question/', assessment.CandidateAssessmentQuestion.as_view()),
+        path('assessment/save-answer/', assessment.SaveAnswerView.as_view()),  # POST
+        path('assessment/<str:unique_id>/', assessment.CandidateAssessmentView.as_view()),  # GET, POST
+        path('assessment/<str:unique_id>/question/', assessment.CandidateAssessmentQuestion.as_view(),
+             name='fetch_question'),  # GET
 
     ])),
     path('admin/job-board/assessment/<int:pk>/preview/', AssessmentPreview.as_view(),

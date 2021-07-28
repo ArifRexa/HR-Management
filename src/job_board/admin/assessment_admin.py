@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.template.defaultfilters import truncatechars_html
 from django.urls import reverse
 from django.utils.html import format_html, strip_tags
+from django.utils.safestring import mark_safe
 from nested_inline.admin import NestedStackedInline, NestedTabularInline, NestedModelAdmin
 
 from job_board.models import AssessmentAnswer, AssessmentQuestion, Assessment
@@ -34,13 +36,18 @@ class AssessmentAdmin(admin.ModelAdmin):
 
 @admin.register(AssessmentQuestion)
 class AssessmentQuestionAdmin(admin.ModelAdmin):
-    list_display = ('assessment', 'title', 'score', 'type')
+    list_display = ('assessment', 'get_title', 'score', 'type')
     list_filter = ('assessment',)
     inlines = (AssessmentAnswerInline,)
 
     ordering = ['assessment']
 
     change_form_template = 'admin/assessment_question/form.html'
+
+    @admin.display(description='Title')
+    def get_title(self, obj):
+        safe_value = strip_tags(truncatechars_html(obj.title, 200))
+        return mark_safe("&nbsp;".join(safe_value.split(' ')))
 
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)

@@ -41,13 +41,26 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessment(admin.ModelAdmin):
-    list_display = ('candidate_job', 'assessment', 'assessment_type', 'exam_started_at', 'score', 'step')
+    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status', 'result',)
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
-    list_filter = ('assessment', 'assessment__type', 'candidate_job__job')
+    list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
     readonly_fields = ['step']
 
-    def assessment_type(self, obj):
-        return obj.assessment.get_type_display()
+    def candidate(self, obj):
+        return format_html(
+            f'{obj.candidate_job.candidate.full_name}'
+        )
+
+    def get_assessment(self, obj):
+        return format_html(
+            f'{obj.assessment.title} </br>'
+            f'Total Score : {obj.assessment.score} </br>'
+            f'Pass Score : {obj.assessment.pass_score} </br>'
+            f'{obj.assessment.get_type_display()}'
+        )
+
+    def assessment_pass_score(self, obj):
+        return obj.assessment.pass_score
 
 
 @admin.register(ResetPassword)
