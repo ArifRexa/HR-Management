@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils.html import format_html
@@ -8,10 +8,12 @@ from account.models import Income
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'hours', 'hour_rate', 'payment_details', 'date', 'status_col')
+    list_display = ('project', 'hours', 'hour_rate', 'payment_details', 'date', 'status')
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'hour_rate', 'date')
+    actions = ['approve_selected', 'pending_selected']
+    list_editable = ('status',)
 
     change_list_template = 'admin/income/list.html'
 
@@ -48,3 +50,13 @@ class IncomeAdmin(admin.ModelAdmin):
             'result': self.get_total_hour(request),
         }
         return super().changelist_view(request, extra_context=my_context)
+
+    @admin.action()
+    def approve_selected(self, request, queryset):
+        queryset.update(status='approved')
+        # self.message_user(request, f'Status has been updated to approved for {len(queryset)} items', messages.SUCCESS)
+
+    @admin.action()
+    def pending_selected(self, request, queryset):
+        queryset.update(status='pending')
+        # self.message_user(request, f'Status has been updated to pending for {len(queryset)} items', messages.SUCCESS)
