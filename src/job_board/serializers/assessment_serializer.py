@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from django.db.models import Sum
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
@@ -12,7 +13,7 @@ from job_board.serializers.candidate_serializer import CandidateJobSerializer
 class AssessmentSerializer(ModelSerializer):
     class Meta:
         model = Assessment
-        fields = ['title', 'slug', 'description', 'score', 'duration', 'type']
+        fields = ['title', 'slug', 'description', 'score', 'pass_score', 'duration', 'type']
 
 
 class AssessmentAnswerSerializer(ModelSerializer):
@@ -45,8 +46,12 @@ class CandidateAssessmentSerializer(serializers.ModelSerializer):
 
 
 def valid_uuid(value):
-    if not CandidateJob.objects.filter(unique_id=value).first():
-        raise serializers.ValidationError('Your given uuid has been expire')
+    candidate_assessment = CandidateAssessment.objects.filter(unique_id=value).first()
+    if not candidate_assessment:
+        raise serializers.ValidationError('We could not found any assessment in your given uuid')
+    # TODO : this section should uncommented in production
+    # if candidate_assessment.time_spend == 'time up':
+    #     raise serializers.ValidationError(f'{candidate_assessment.assessment} has been expired')
 
 
 class GivenAssessmentAnswerSerializer(serializers.Serializer):
@@ -58,17 +63,22 @@ class GivenAssessmentAnswerSerializer(serializers.Serializer):
     question_id = serializers.IntegerField(min_value=1)
     answers = serializers.ListField(child=serializers.IntegerField(min_value=1), min_length=1)
 
+    candidate_assessment = CandidateAssessment
     candidate_job = CandidateJob
     question = AssessmentQuestion
     candidate_answer = CandidateAssessmentAnswer
 
     def validate(self, data: OrderedDict):
-        self.candidate_job = CandidateJob.objects.filter(unique_id=data['uuid']).first()
+        self.candidate_assessment = CandidateAssessment.objects.filter(unique_id__exact=data['uuid']).first()
+        self.candidate_job = self.candidate_assessment.candidate_job
         self.question = AssessmentQuestion.objects.get(pk=data['question_id'])
         if self.question.type == 'single_choice' and len(data['answers']) > 1:
             raise serializers.ValidationError(
                 {
-                    'answers': f'{self.question.get_type_display()} allow single answer, your answer {len(data["answers"])}'})
+                    'answers':
+                        f'{self.question.get_type_display()} allow single answer, your answer {len(data["answers"])}'
+                }
+            )
         return data
 
     def create(self, validated_data):
@@ -95,9 +105,9 @@ class GivenAssessmentAnswerSerializer(serializers.Serializer):
         self._add_mcq_mark(candidate_answer.score_achieve)
 
     def _step_increment(self):
-        self.candidate_job.step['current_step'] += 1
-        self.candidate_job.save()
+        self.candidate_assessment.step['current_step'] += 1
+        self.candidate_assessment.save()
 
     def _add_mcq_mark(self, score):
-        self.candidate_job.mcq_exam_score += score
-        self.candidate_job.save()
+        self.candidate_assessment.score += score
+        self.candidate_assessment.save()

@@ -191,3 +191,18 @@ Q_CLUSTER = {
         'db': 0,
     }
 }
+
+TINYMCE_DEFAULT_CONFIG = {
+    "theme": "silver",
+    "height": 350,
+    "menubar": False,
+    "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
+               "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
+               "code,help,wordcount,codesample,spellchecker",
+    "toolbar": "undo redo | formatselect | "
+               "bold italic backcolor | alignleft aligncenter "
+               "alignright alignjustify | bullist numlist outdent indent table | "
+               "removeformat codesample | preview fullscreen help",
+}
+
+TINYMCE_SPELLCHECKER = True

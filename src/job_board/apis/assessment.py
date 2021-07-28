@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.core.exceptions import BadRequest
 from django.utils import timezone
 from rest_framework.generics import GenericAPIView
-from rest_framework import mixins, viewsets, status
+from rest_framework import mixins, viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -36,18 +36,23 @@ class CandidateAssessmentRetrieve(CandidateAssessmentView, mixins.RetrieveModelM
     def put(self, request, *args, **kwargs):
         # candidate_assessment = CandidateAssessment()
         candidate_assessment = self.get_object()
-        # if candidate_assessment.exam_started_at is None: # TODO : assessment must not to be updated once it's started
-        candidate_assessment.exam_started_at = timezone.now()
-        candidate_assessment.exam_end_at = timezone.now() + timedelta(
-            minutes=candidate_assessment.assessment.duration)
-        candidate_assessment.step = {
-            'current_step': 0,
-            'question_ids': list(candidate_assessment.assessment.assessmentquestion_set.values_list('id', flat=True))
-        }
-        print(candidate_assessment.exam_started_at)
-        print(candidate_assessment.exam_end_at)
-        candidate_assessment.save()
-        return Response({'message': 'Exam started'})
+        print('hello')
+        if candidate_assessment.assessment.open_to_start:
+            # if candidate_assessment.exam_started_at is None: # TODO : assessment must not to be updated once it's started
+            candidate_assessment.exam_started_at = timezone.now()
+            candidate_assessment.exam_end_at = timezone.now() + timedelta(
+                minutes=candidate_assessment.assessment.duration)
+            candidate_assessment.step = {
+                'current_step': 0,
+                'question_ids': list(
+                    candidate_assessment.assessment.assessmentquestion_set.values_list('id', flat=True))
+            }
+            print(candidate_assessment.exam_started_at)
+            print(candidate_assessment.exam_end_at)
+            candidate_assessment.save()
+            return Response({'message': 'Exam started'})
+        return Response({'admin_only': 'This assessment is not open to start, only admin can able to start exam'},
+                        status=status.HTTP_403_FORBIDDEN)
 
 
 class CandidateAssessmentQuestion(APIView):
@@ -61,8 +66,12 @@ class CandidateAssessmentQuestion(APIView):
             return Response({'message': 'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
 
     def get_question(self, candidate_assessment: CandidateAssessment):
-        question_id = candidate_assessment.step['question_ids'][candidate_assessment.step['current_step']]
-        return candidate_assessment.assessment.assessmentquestion_set.filter(id=question_id).first()
+        try:
+            question_id = candidate_assessment.step['question_ids'][candidate_assessment.step['current_step']]
+            return candidate_assessment.assessment.assessmentquestion_set.filter(id=question_id).first()
+        except:
+            raise serializers.ValidationError(
+                {'out_of_step': f'You have answered all the question we have with {candidate_assessment.assessment}'})
 
 
 class SaveAnswerView(GenericAPIView, mixins.CreateModelMixin):

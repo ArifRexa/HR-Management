@@ -8,17 +8,19 @@ from job_board.models import AssessmentAnswer, AssessmentQuestion, Assessment
 
 class AssessmentAnswerInline(admin.TabularInline):
     model = AssessmentAnswer
-    extra = 2
     fk_name = 'assessment_question'
+
+    # readonly_fields = ['score']
+    # min_num = 2
+
+    def get_extra(self, request, obj=None, **kwargs):
+        return 2 if not obj else 0
 
 
 @admin.register(Assessment)
 class AssessmentAdmin(admin.ModelAdmin):
-    list_display = ('title', 'score', 'duration', 'get_description', 'type', 'show_action')
+    list_display = ('title', 'score', 'duration_display', 'get_description', 'type', 'open_to_start', 'show_action')
 
-    # inlines = [AssessmentQuestionInline]
-
-    # readonly_fields = ['score']
     @admin.display(description='description')
     def get_description(self, obj):
         return strip_tags(obj.description)
@@ -36,5 +38,30 @@ class AssessmentQuestionAdmin(admin.ModelAdmin):
     list_filter = ('assessment',)
     inlines = (AssessmentAnswerInline,)
 
-    def regroup_by(self):
-        return 'assessment'
+    ordering = ['assessment']
+
+    change_form_template = 'admin/assessment_question/form.html'
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        correct_answer = self._correct_answer(formset)
+        for obj in formset.deleted_objects:
+            obj.delete()
+        for instance in instances:
+            if request.POST['type'] == 'single_choice':
+                instance.score = 0
+                if instance.correct:
+                    instance.score = float(request.POST['score']) / correct_answer
+            else:
+                instance.score = - (float(request.POST['score']) / correct_answer)
+                if instance.correct:
+                    instance.score = float(request.POST['score']) / correct_answer
+            instance.save()
+        formset.save_m2m()
+
+    def _correct_answer(self, formset):
+        correct_answer = 0
+        for form in formset:
+            if form.cleaned_data['DELETE'] is False and form.cleaned_data['correct'] is True:
+                correct_answer += 1
+        return correct_answer

@@ -26,14 +26,23 @@ class Assessment(AuthorMixin, TimeStampMixin):
 
     title = models.CharField(max_length=255)
     slug = models.SlugField()
-    score = models.FloatField(help_text='This will auto')
+    score = models.FloatField(help_text='This will auto', default=0)
     pass_score = models.FloatField()
     duration = models.FloatField(help_text='This duration will be in minutes')
     description = HTMLField()
     type = models.CharField(max_length=40, choices=TYPE_CHOICE, default='mcq')
+    open_to_start = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+
+    @property
+    def duration_display(self):
+        to_human = f'{self.duration} Minutes'
+        if self.duration > 60:
+            in_hour = str(round(self.duration / 60, 2)).split(".")
+            to_human = f'{in_hour[0]} Hour {in_hour[1]} Minutes'
+        return to_human
 
     class Meta:
         permissions = [
@@ -47,13 +56,13 @@ class AssessmentQuestion(AuthorMixin, TimeStampMixin):
         ('multiple_choice', 'Multiple Choice'),
     )
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
+    title = HTMLField()
     score = models.FloatField()
     type = models.CharField(max_length=20, choices=TYPE)
 
 
 class AssessmentAnswer(AuthorMixin, TimeStampMixin):
-    title = models.TextField()
+    title = HTMLField()
     score = models.FloatField()
     correct = models.BooleanField(default=False)
     assessment_question = models.ForeignKey(AssessmentQuestion, related_name='answers', on_delete=models.CASCADE)
