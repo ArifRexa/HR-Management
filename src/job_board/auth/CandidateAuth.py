@@ -45,7 +45,7 @@ class CandidateAuth(BaseAuthentication):
             user = jwt.decode(token[1], self.STRONG_SECRET, algorithms=self.ENCRYPT_ALGORITHMS)
             if user:
                 user = Candidate.objects.get(pk=user['id'])
-                return user
+                return user, None
             else:
                 raise serializers.ValidationError({'token': f'your token {token[1]} seems not valid'})
         else:
