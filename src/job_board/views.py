@@ -1,11 +1,7 @@
 from django.contrib.admin import AdminSite
 from django.contrib.auth.mixins import LoginRequiredMixin, AccessMixin
 from django.core.exceptions import PermissionDenied
-
-# Create your views here.
-from django.template.response import TemplateResponse
 from django.views.generic import TemplateView
-
 from job_board.models import Assessment
 
 
@@ -28,3 +24,7 @@ class AssessmentPreview(LoginRequiredMixin, AccessMixin, AdminSite, TemplateView
         if request.user.has_perm('preview_assessment'):
             return super(AssessmentPreview, self).dispatch(request, *args, **kwargs)
         raise PermissionDenied("Permission denied")
+
+
+class WebsiteView(TemplateView):
+    template_name = 'website/index.html'

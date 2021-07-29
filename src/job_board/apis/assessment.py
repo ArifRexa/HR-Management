@@ -28,7 +28,10 @@ class CandidateAssessmentBase(GenericAPIView):
 
 class CandidateAssessmentList(CandidateAssessmentBase, mixins.ListModelMixin):
     """
-    This class will return assessment list by authenticated user
+    This class will return assessment list by authenticated user,
+    You will need postman to submit with authorization header.
+
+    To collect jwt auth token, visit [login](/api/login)
     """
 
     def get(self, request, *args, **kwargs):

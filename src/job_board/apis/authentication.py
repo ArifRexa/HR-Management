@@ -41,7 +41,6 @@ class User(APIView):
     """
     Candidate information
     TODO : update profile update will be in post method
-    TODO : delete account using delete method
     """
     authentication_classes = [CandidateAuth]
 

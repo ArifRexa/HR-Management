@@ -48,7 +48,7 @@ def valid_uuid(value):
     if not candidate_assessment:
         raise serializers.ValidationError('We could not found any assessment in your given uuid')
     # TODO : this section should uncommented in production
-    # if candidate_assessment.time_spend == 'time up':
+    # if candidate_assessment.time_spend == 'time_up':
     #     raise serializers.ValidationError(f'{candidate_assessment.assessment} has been expired')
 
 

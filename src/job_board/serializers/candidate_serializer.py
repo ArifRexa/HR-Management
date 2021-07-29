@@ -39,8 +39,6 @@ class CandidateJobApplySerializer(serializers.Serializer):
     expected_salary = serializers.FloatField()
     additional_message = serializers.CharField(allow_null=True)
 
-    # TODO : additional fields validation
-
     def create(self, validated_data):
         validated_data.pop('job_slug')
         candidate_job = CandidateJob(**validated_data)
