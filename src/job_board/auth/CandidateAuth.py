@@ -1,5 +1,6 @@
 import jwt
 from django.contrib.auth import hashers
+from rest_framework import serializers
 from rest_framework.authentication import BaseAuthentication, get_authorization_header
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.fields import CharField, EmailField
@@ -40,12 +41,15 @@ class CandidateAuth(BaseAuthentication):
         @type request: object
         """
         token = get_authorization_header(request).split()
-        try:
+        if token:
             user = jwt.decode(token[1], self.STRONG_SECRET, algorithms=self.ENCRYPT_ALGORITHMS)
-            user = Candidate.objects.get(pk=user['id'])
-        except:
-            raise AuthenticationFailed('Invalid jwt')
-        return user, None
+            if user:
+                user = Candidate.objects.get(pk=user['id'])
+                return user
+            else:
+                raise serializers.ValidationError({'token': f'your token {token[1]} seems not valid'})
+        else:
+            raise serializers.ValidationError({'token': 'Token Not found'})
 
     def auth_token(self, request):
         """
