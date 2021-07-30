@@ -1,9 +1,14 @@
 from django.contrib import admin, messages
+from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.html import format_html
 
 from account.models import Income
+from account.services.balance import BalanceSummery
 
 
 @admin.register(Income)
@@ -27,6 +32,7 @@ class IncomeAdmin(admin.ModelAdmin):
             f'<b style="color: {color}">{obj.get_status_display()}</b>'
         )
 
+    @admin.display()
     def payment_details(self, obj):
         return format_html(
             f"<b style='color: green; font-size: 16px'>$ {obj.payment / 80}</b> / "
@@ -60,3 +66,21 @@ class IncomeAdmin(admin.ModelAdmin):
     def pending_selected(self, request, queryset):
         queryset.update(status='pending')
         # self.message_user(request, f'Status has been updated to pending for {len(queryset)} items', messages.SUCCESS)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('balance/', self.balance_view, name='account_balance'),
+        ]
+        return my_urls + urls
+
+    def balance_view(self, request):
+        if request.user.is_superuser:
+            balance = (BalanceSummery()).get_context_data()
+            context = dict(
+                self.admin_site.each_context(request),
+                data=balance,
+                title=f'Profit / Loss'
+            )
+            return TemplateResponse(request, "admin/balance/balance.html", context)
+        raise PermissionDenied

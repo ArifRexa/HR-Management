@@ -8,3 +8,6 @@ env
 venv
 virtualenv
 .code
+src/*/node_moduels
+src/*/package.lock
+Pipfile.lock
