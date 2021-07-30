@@ -90,6 +90,7 @@ class Job(AuthorMixin, TimeStampMixin):
     additional_requirement = HTMLField(null=True, blank=True)
     compensation = HTMLField(null=True, blank=True)
     assessments = models.ManyToManyField(Assessment)
+    active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title

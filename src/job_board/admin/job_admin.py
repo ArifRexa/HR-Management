@@ -33,5 +33,5 @@ class JobForm(forms.ModelForm):
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
     inlines = (JobSummeryInline, AdditionalFieldInline)
-    list_display = ('title', 'job_summery',)
+    list_display = ('title', 'job_summery', 'active')
     form = JobForm

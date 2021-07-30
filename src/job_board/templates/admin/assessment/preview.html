@@ -1,8 +1,4 @@
-{% extends 'admin/base.html' %}
-{% block branding %}
-    <h1>Medisuware Ltd</h1>
-{% endblock %}
-
+{% extends "admin/base_site.html" %}
 {% block content %}
     <center>
         <h1> {{ assessment }}
@@ -65,10 +61,4 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-scss.min.js"
             integrity="sha512-lQbJbXcaOvte/zzg18pf9ybI3iKZ2taOu9jE9c2z00Pdt8WiWAi3nFENtn+2aqlWaWkM+g683Wgj0ka/TOLvCw=="
             crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
 {% endblock %}
-
-{% block nav-sidebar %}
-    {% include 'admin/nav_sidebar.html' with app_list=available_apps show_changelinks=False %}
-{% endblock %}
-

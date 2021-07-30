@@ -31,6 +31,7 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
     @admin.display(description='Assessment', ordering='job__assessment')
     def get_assessment(self, obj: CandidateJob):
+        # TODO : need work
         # url = reverse(f'admin:{obj.job.assessment._meta.app_label}_{obj.job.assessment._meta.model_name}_change',
         #               args=[obj.job.assessment.id])
         # return format_html(

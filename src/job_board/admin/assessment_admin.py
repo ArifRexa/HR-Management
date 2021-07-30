@@ -1,9 +1,10 @@
 from django.contrib import admin
+from django.http import HttpResponseForbidden
 from django.template.defaultfilters import truncatechars_html
-from django.urls import reverse
+from django.template.response import TemplateResponse
+from django.urls import reverse, path
 from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
-from nested_inline.admin import NestedStackedInline, NestedTabularInline, NestedModelAdmin
 
 from job_board.models import AssessmentAnswer, AssessmentQuestion, Assessment
 
@@ -23,6 +24,25 @@ class AssessmentAnswerInline(admin.TabularInline):
 class AssessmentAdmin(admin.ModelAdmin):
     list_display = ('title', 'score', 'duration_display', 'get_description', 'type', 'open_to_start', 'show_action')
 
+    def get_urls(self):
+        urls = super().get_urls()
+        additional_urls = [
+            path('<int:pk>/preview/', self.admin_site.admin_view(self.preview, cacheable=True),
+                 name='assessment_preview')
+        ]
+        return additional_urls + urls
+
+    def preview(self, request, pk):
+        if self.has_view_permission(request, None):
+            assessment = self.get_queryset(request).filter(pk=pk).first()
+            context = dict(
+                self.admin_site.each_context(request),
+                assessment=assessment,
+                title=assessment
+            )
+            return TemplateResponse(request, 'admin/assessment/preview.html', context)
+        return HttpResponseForbidden()
+
     @admin.display(description='description')
     def get_description(self, obj):
         return strip_tags(obj.description)
@@ -30,7 +50,7 @@ class AssessmentAdmin(admin.ModelAdmin):
     @admin.display(description='Actions')
     def show_action(self, obj):
         return format_html(
-            f'<a href="{reverse("preview_assessment", kwargs={"pk": obj.pk})}">Preview</a>'
+            f'<a href="{reverse("admin:assessment_preview", kwargs={"pk": obj.pk})}">Preview</a>'
         )
 
 

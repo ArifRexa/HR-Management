@@ -17,7 +17,7 @@ from job_board.serializers.candidate_serializer import CandidateJobSerializer, C
 
 
 class GenericJobView(GenericAPIView):
-    queryset = Job.objects.all()
+    queryset = Job.objects.filter(active=True).all()
     serializer_class = JobSerializer
 
     class Meta:

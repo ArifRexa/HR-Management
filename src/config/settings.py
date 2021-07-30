@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'django_userforeignkey',
-    'nested_inline',
     'django_q',
     'tinymce',
     'job_board',
