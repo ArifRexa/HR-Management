@@ -5,6 +5,7 @@ from django.utils.text import slugify
 from config.utils.pdf import PDF
 from employee.admin_mixin.EmployeeActions import EmployeeActions
 from employee.admin_mixin.EmployeeAdminListView import EmployeeAdminListView
+from employee.admin_mixin.EmployeeExtraUrls import EmployeeExtraUrls
 from employee.models import SalaryHistory, Employee, BankAccount
 from employee.models.attachment import Attachment
 
@@ -33,7 +34,7 @@ class BankAccountInline(admin.TabularInline):
 
 
 @admin.register(Employee)
-class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, admin.ModelAdmin):
+class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, admin.ModelAdmin):
     inlines = (AttachmentInline, SalaryHistoryInline, BankAccountInline)
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
 

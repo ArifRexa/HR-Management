@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.db.models import Sum
 
 from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
@@ -37,6 +38,10 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
+
+    def employee_hour(self, employee_id):
+        total = self.employeeprojecthour_set.aggregate(Sum('hours'))
+        return employee_id, total['hours__sum']
 
 
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):

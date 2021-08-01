@@ -1,14 +1,6 @@
-from datetime import date
-
 from django.contrib.humanize.templatetags.humanize import intcomma, naturalday
 from django.db.models import Sum
-from django.http import HttpResponse
-from django.template.loader import get_template
 from django.utils.html import format_html
-from django.utils.timesince import timesince
-from xhtml2pdf import pisa
-
-from config.utils import pdf
 
 
 class EmployeeAdminListView:

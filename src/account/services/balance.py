@@ -17,11 +17,9 @@ class BalanceSummery:
             result.append(self._get_pl(start_date))
             start_date += relativedelta(months=1)
         context['month_list'] = result[::-1]
-        context['site_title'] = 'Mediusware Ltd'
-        context['is_nav_sidebar_enabled'] = True
-        context['has_permission'] = True
         context['start_date'] = start_date
         context['end_date'] = end_date
+        print(result)
         return context
 
     def _get_pl(self, date: date):
