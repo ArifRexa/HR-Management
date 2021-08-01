@@ -23,22 +23,23 @@
     <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
 
 
-    {% block content_title %}{% endblock %}
+    {% block content_title %}
 
-    {% block title %}
-        <div style="display: flex">
-            <div style="flex: 1 1 auto">
-                <h1>{{ title }}</h1>
-            </div>
-            <div style="flex: 0 0 25vw">
-                <form action="?" method="get">
-                    {{ filter_form.media }}
-                    {{ filter_form }}
-                    <button type="submit" class="default">Filter</button>
-                </form>
-            </div>
-        </div>
     {% endblock %}
+
+
+    <div style="display: flex">
+        <div style="flex: 1 1 auto">
+            <h1>{{ title }}</h1>
+        </div>
+        <div style="flex: 0 0 25vw">
+            <form action="?" method="get">
+                {{ filter_form.media }}
+                {{ filter_form }}
+                <button type="submit" class="default">Filter</button>
+            </form>
+        </div>
+    </div>
 
 
     <div id="main">
