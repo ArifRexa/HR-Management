@@ -4,7 +4,7 @@ import re
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminDateWidget
 from django.core.exceptions import PermissionDenied
-from django.db.models import QuerySet, Sum
+from django.db.models import QuerySet, Sum, Value
 from django import forms
 from django.db.models.functions import Coalesce
 from django.forms import SelectDateWidget
@@ -91,11 +91,16 @@ class EmployeeExtraUrls(admin.ModelAdmin):
             employee_filter['id__in'] = request.GET.getlist('id__in[]')
         employees = Employee.objects.filter(**employee_filter).all()
         dataset = self._get_all_employee_dataset(employees)
+        filter_form = FilterForm(initial={
+            'project_hour__date__gte': request.GET.get('project_hour__date__gte', ''),
+            'project_hour__date__lte': request.GET.get('project_hour__date__lte', '')
+        })
         context = dict(
             self.admin_site.each_context(request),
             employees=employees,
             employees_array=list(employees.values_list('full_name', flat=True)),
-            dataset=dataset
+            dataset=dataset,
+            filter_form=filter_form,
         )
         return TemplateResponse(request, "admin/employee/all_employee_hour_graph.html", context)
 
@@ -126,7 +131,11 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         """
         employee_hours = []
         for employee in employees:
-            total_hour = employee.employeeprojecthour_set.filter(employee=employee).aggregate(Sum('hours'))[
-                'hours__sum']
-            employee_hours.append(total_hour if total_hour is not None else 0)
+            total_hour = employee.employeeprojecthour_set.filter(employee=employee).aggregate(
+                sum_hours=Coalesce(Sum('hours'), Value(0.0))
+            )
+            total_project_manage_hour = employee.projecthour_set.filter(manager=employee).aggregate(
+                sum_hours=Coalesce(Sum('hours'), Value(0.0))
+            )
+            employee_hours.append(total_hour['sum_hours'] + total_project_manage_hour['sum_hours'])
         return employee_hours

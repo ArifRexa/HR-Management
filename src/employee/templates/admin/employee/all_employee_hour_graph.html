@@ -1,11 +1,29 @@
 {% extends 'admin/base_site.html' %}
 
 {% block content %}
+    {% load static %}
+    <style>
+        ul {
+            list-style: none;
+        }
+
+        ul > li {
+            list-style: none !important;
+        }
+    </style>
+    <script src="{% url 'js-catalog' %}"></script>
+    <script src="{% static 'admin/js/core.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+
+
     <div style="display: flex">
         <div style="flex: 1 1 auto">
             <canvas id="myChart"></canvas>
         </div>
         <form style="flex: 0 0 15vw">
+            {{ filter_form.media }}
+            {{ filter_form.as_ul }}
             <ul>
                 <li><a href="?">Clear All</a></li>
                 {% for employee in employees %}
