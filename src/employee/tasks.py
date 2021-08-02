@@ -52,3 +52,5 @@ def increment_notification(employees):
     email.bcc = ['kmrifat@gmail.com', 'coredeveloper.2013@gmail.com']
     email.from_email = 'no-reply@mediusware.com'
     email.send()
+
+# TODO : Resignation notification

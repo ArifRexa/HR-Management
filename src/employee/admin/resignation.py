@@ -2,11 +2,12 @@ from datetime import date
 
 from django.contrib import admin
 
+from config.admin import RecentEdit
 from employee.models import Resignation
 
 
 @admin.register(Resignation)
-class ResignationAdmin(admin.ModelAdmin):
+class ResignationAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ('employee', 'short_message', 'date', 'status', 'approved_at', 'approved_by')
 
     def get_fields(self, request, obj=None):
