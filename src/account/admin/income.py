@@ -1,8 +1,9 @@
 from django.contrib import admin, messages
-from django.contrib.auth.decorators import permission_required
+from django.db import models
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q, Sum
 from django.db.models.functions import Coalesce
+from django.forms import Textarea
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html
@@ -19,6 +20,9 @@ class IncomeAdmin(admin.ModelAdmin):
     list_filter = ('status', 'project', 'hour_rate', 'date')
     actions = ['approve_selected', 'pending_selected']
     list_editable = ('status',)
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={'rows': 2})}
+    }
 
     change_list_template = 'admin/income/list.html'
 
