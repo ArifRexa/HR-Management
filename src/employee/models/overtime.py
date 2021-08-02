@@ -14,7 +14,7 @@ class Overtime(TimeStampMixin, AuthorMixin):
     )
     date = models.DateField(null=False, help_text='Date of overtime')
     note = models.TextField(null=True, help_text='Please explain the reason for overtime')
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, limit_choices_to={'active': True}, on_delete=models.CASCADE)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
 
     def __str__(self):

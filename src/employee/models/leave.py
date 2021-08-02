@@ -14,7 +14,7 @@ from employee.models.employee import Employee
 # TODO : leave in cash in every january
 class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     message = models.TextField()
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, limit_choices_to={'active': True}, on_delete=models.CASCADE)
     status_changed_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True,
                                           on_delete=models.RESTRICT)
     status_changed_at = models.DateField(null=True)
