@@ -131,10 +131,10 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         """
         employee_hours = []
         for employee in employees:
-            total_hour = employee.employeeprojecthour_set.filter(employee=employee).aggregate(
+            total_hour = employee.employeeprojecthour_set.filter(project_hour__project=project).aggregate(
                 sum_hours=Coalesce(Sum('hours'), Value(0.0))
             )
-            total_project_manage_hour = employee.projecthour_set.filter(manager=employee).aggregate(
+            total_project_manage_hour = employee.projecthour_set.filter(project=project).aggregate(
                 sum_hours=Coalesce(Sum('hours'), Value(0.0))
             )
             employee_hours.append(total_hour['sum_hours'] + total_project_manage_hour['sum_hours'])
