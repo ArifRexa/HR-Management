@@ -1,0 +1,61 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+    <div style="display: flex">
+        <div style="flex: 1 1 auto">
+            <canvas id="myChart"></canvas>
+        </div>
+        <form style="flex: 0 0 15vw">
+            <ul>
+                <li><a href="?">Clear All</a></li>
+                {% for employee in employees %}
+                    <li>
+                        <label for="{{ employee.id }}">
+                            <input name="id__in[]" value="{{ employee.id }}" type="checkbox"
+                                   id="{{ employee.id }}"> {{ employee.full_name }}
+                        </label>
+                    </li>
+                {% endfor %}
+            </ul>
+            <button type="submit">Filter</button>
+        </form>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const labels =
+            {{ employees_array | safe }};
+        const data = {
+            labels: labels,
+            datasets: {{ dataset | safe }}
+        };
+        const config = {
+            type: 'bar',
+            data,
+            options: {
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart.js Bar Chart - Stacked'
+                    },
+                },
+                responsive: true,
+                scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true
+                    }
+                }
+            }
+        };
+
+        var myChart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+    </script>
+{% endblock %}
