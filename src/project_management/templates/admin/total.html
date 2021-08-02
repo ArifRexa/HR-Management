@@ -4,9 +4,11 @@
 
 {% load tz %}
 
+{% load humanize %}
+
 {% block content_title %}
     <div style="width: 80%">
-        <h1> Project Hours <span style="float: right">Total Hour {{ total }}</span></h1>
+        <h1> Project Hours <span style="float: right">Total Hour {{ total | intcomma }}</span></h1>
     </div>
 {% endblock %}
 
