@@ -2,12 +2,17 @@ from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.db.models import Sum, Q
 
-from account.models import Expense, ExpenseCategory
+from account.models import Expense, ExpenseCategory, ExpanseAttachment
 
 
 @admin.register(ExpenseCategory)
 class ExpenseCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'note')
+
+
+class ExpanseAttachmentInline(admin.TabularInline):
+    model = ExpanseAttachment
+    extra = 1
 
 
 @admin.register(Expense)
@@ -16,6 +21,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     list_filter = ['expense_category__title', 'date']
     change_list_template = 'admin/expense/list.html'
+    inlines = [ExpanseAttachmentInline]
 
     def get_total_hour(self, request):
         filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o']])

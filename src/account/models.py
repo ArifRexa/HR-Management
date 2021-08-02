@@ -60,6 +60,11 @@ class Expense(TimeStampMixin, AuthorMixin):
     date = models.DateField(default=timezone.now)
 
 
+class ExpanseAttachment(TimeStampMixin, AuthorMixin):
+    expanse = models.ForeignKey(Expense, on_delete=models.CASCADE)
+    attachment = models.FileField(upload_to='uploads/expanse/%y/%m')
+
+
 class Income(TimeStampMixin, AuthorMixin):
     STATUS_CHOICE = (
         ('pending', '⌛ Pending'),
