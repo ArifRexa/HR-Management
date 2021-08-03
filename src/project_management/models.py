@@ -39,6 +39,11 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return f"{self.project} | {self.manager}"
 
+    def save(self, *args, **kwargs):
+        if not self.manager.manager:
+            self.payable = False
+        super(ProjectHour, self).save(*args, **kwargs)
+
     def employee_hour(self, employee_id):
         total = self.employeeprojecthour_set.aggregate(Sum('hours'))
         return employee_id, total['hours__sum']

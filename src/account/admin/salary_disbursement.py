@@ -20,5 +20,8 @@ class SalaryDisbursementForm(forms.ModelForm):
 
 @admin.register(SalaryDisbursement)
 class SalaryDisbursementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'disbursement_type')
+    list_display = ('title', 'disbursement_type', 'total_employee')
     form = SalaryDisbursementForm
+
+    def total_employee(self, obj):
+        return obj.employee.count()

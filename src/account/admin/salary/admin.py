@@ -27,7 +27,7 @@ class EmployeeSalaryInline(admin.TabularInline):
 
 @admin.register(SalarySheet)
 class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
-    list_display = ('date', 'created_at', 'total', 'festival_bonus')
+    list_display = ('date', 'created_at', 'total', 'total_employee', 'festival_bonus')
     fields = ('date', 'festival_bonus')
     inlines = (EmployeeSalaryInline,)
 
@@ -45,3 +45,6 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
             f'<b>{intcomma(floor(total_value))}</b> <br>'
             f'{num2words(floor(total_value)).capitalize()}'
         )
+
+    def total_employee(self, obj):
+        return obj.employeesalary_set.count()
