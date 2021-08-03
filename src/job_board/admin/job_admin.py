@@ -2,7 +2,8 @@ from django.contrib import admin
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
-from job_board.models import JobSummery, Job, JobAdditionalField, Assessment
+from job_board.models.assessment import Assessment
+from job_board.models.job import JobSummery, JobAdditionalField, Job
 
 
 class JobSummeryInline(admin.StackedInline):

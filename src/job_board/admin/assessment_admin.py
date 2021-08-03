@@ -6,7 +6,7 @@ from django.urls import reverse, path
 from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
 
-from job_board.models import AssessmentAnswer, AssessmentQuestion, Assessment
+from job_board.models.assessment import AssessmentAnswer, Assessment, AssessmentQuestion
 
 
 class AssessmentAnswerInline(admin.TabularInline):

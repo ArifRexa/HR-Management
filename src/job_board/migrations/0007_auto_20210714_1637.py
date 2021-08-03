@@ -5,7 +5,6 @@ import job_board.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('job_board', '0006_auto_20210714_1333'),
     ]
@@ -25,6 +24,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='candidate',
             name='cv',
-            field=models.FileField(upload_to=job_board.models.candidate_email_path),
+            field=models.FileField(upload_to='hello'),
         ),
     ]

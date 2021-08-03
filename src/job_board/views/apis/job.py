@@ -11,7 +11,8 @@ from rest_framework.views import APIView
 
 from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth
-from job_board.models import Job, CandidateJob, Candidate
+from job_board.models.job import Job
+from job_board.models.candidate import CandidateJob, Candidate
 from job_board.serializers.job_serializer import JobSerializer
 from job_board.serializers.candidate_serializer import CandidateJobSerializer, CandidateJobApplySerializer
 
@@ -52,9 +53,11 @@ class CandidateJobView(APIView):
             if not self.__applied_before(serializer.validated_data['candidate'], serializer.validated_data['job']):
                 serializer.save()
                 return Response({'success': 'You job application has been submitted successfully'})
-            return Response({'message': 'You applied for the same position less then 90 days before, '
-                                        'unfortunately you cannot re-apply before 90 days of your last application'},
-                            status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {'message': f'You applied for the same position less then {settings.APPLY_SAME_JOB_AFTER} days before, '
+                            f'unfortunately you cannot re-apply before '
+                            f'{settings.APPLY_SAME_JOB_AFTER} days of your last application'},
+                status=status.HTTP_403_FORBIDDEN)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, *args, **kwargs):

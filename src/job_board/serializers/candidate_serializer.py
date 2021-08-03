@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from job_board.models import Candidate, CandidateJob
+from job_board.models.candidate import Candidate, CandidateJob
 from job_board.serializers.job_serializer import JobSerializerSimple
 
 

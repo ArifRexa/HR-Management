@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from job_board.models import ResetPassword, Candidate
+from job_board.models.candidate import ResetPassword, Candidate
 
 
 class ValidCandidateEmail:

@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
-from job_board.models import Candidate
+from job_board.models.candidate import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer
 

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import Serializer
 from rest_framework.status import HTTP_401_UNAUTHORIZED, HTTP_400_BAD_REQUEST
 
-from job_board.models import Candidate
+from job_board.models.candidate import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer
 
 

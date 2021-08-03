@@ -1,0 +1,27 @@
+{% extends 'mail/layout.html' %}
+
+{% block content %}
+    <p>Hello <b>{{ candidate_assessment.candidate_job.candidate.full_name }}</b>, <br>
+        Thank you for apply at <b>Mediusware</b> in the position of
+        <b>{{ candidate_assessment.candidate_job.job.title }}</b>,
+        <br>
+    </p>
+    <p>
+        To join in <b>Mediusware</b> you need to
+        complete <strong>{{ candidate_assessment.candidate_job.job.assessments.count }}</strong> exam which are
+        {% for exam in candidate_assessment.candidate_job.job.assessments.all %}
+            <b>{{ exam.title }}</b>,
+        {% endfor %}
+        <br>
+    </p>
+    <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
+        bellow
+    </p>
+    {% include 'mail/_particals/button.html' with title='Start Exam' url=url %}
+    <p>Wish you good luck</p>
+    <p>Regards, <br>
+        Hr Mediusware, <br>
+        [Phone number] <br>
+        hr@gmail.com</p>
+
+{% endblock %}

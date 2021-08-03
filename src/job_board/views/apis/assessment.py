@@ -8,9 +8,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth
-from job_board.models import CandidateAssessment
+from job_board.models.candidate import CandidateAssessment
 from job_board.serializers.assessment_serializer import GivenAssessmentAnswerSerializer, \
-    CandidateAssessmentSerializer, AssessmentQuestionSerializer
+    CandidateAssessmentSerializer, AssessmentQuestionSerializer, AssessmentEvaluationUrlSerializer
 
 
 class CandidateAssessmentBase(GenericAPIView):
@@ -134,4 +134,25 @@ class SaveAnswerView(GenericAPIView, mixins.CreateModelMixin):
         @return:
         """
         self.create(request, *args, **kwargs)
-        return Response({'d': 'd'})
+        return Response({'answer_save': 'You given answer has been saved'})
+
+
+class SaveEvaluationUrl(GenericAPIView):
+    serializer_class = AssessmentEvaluationUrlSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = AssessmentEvaluationUrlSerializer(data=request.data)
+        if serializer.is_valid():
+            validated_data = serializer.validated_data
+            candidate_assessment = CandidateAssessment.objects.filter(
+                unique_id=validated_data['assessment_uuid'],
+                assessment__open_to_start=False,
+                exam_started_at__isnull=False,
+                exam_end_at__lte=timezone.now()
+            ).first()
+            if candidate_assessment:
+                candidate_assessment.evaluation_url = validated_data['evaluation_url']
+                candidate_assessment.save()
+                return Response({'success': 'Hello world'})
+            return Response({'not_saved': 'Candidate assessment due to this this and this reasone'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

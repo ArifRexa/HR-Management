@@ -5,15 +5,15 @@ from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from job_board.models import Assessment, AssessmentAnswer, AssessmentQuestion, CandidateJob, CandidateAssessmentAnswer, \
-    CandidateAssessment
+from job_board.models.assessment import Assessment, AssessmentAnswer, AssessmentQuestion
+from job_board.models.candidate import CandidateJob, CandidateAssessmentAnswer, CandidateAssessment
 from job_board.serializers.candidate_serializer import CandidateJobSerializer
 
 
 class AssessmentSerializer(ModelSerializer):
     class Meta:
         model = Assessment
-        fields = ['title', 'slug', 'description', 'score', 'pass_score', 'duration', 'type']
+        fields = ['title', 'slug', 'description', 'score', 'pass_score', 'duration', 'type', 'open_to_start']
 
 
 class AssessmentAnswerSerializer(ModelSerializer):
@@ -48,8 +48,8 @@ def valid_uuid(value):
     if not candidate_assessment:
         raise serializers.ValidationError('We could not found any assessment in your given uuid')
     # TODO : this section should uncommented in production
-    # if candidate_assessment.time_spend == 'time_up':
-    #     raise serializers.ValidationError(f'{candidate_assessment.assessment} has been expired')
+    if candidate_assessment.time_spend == 'time_up':
+        raise serializers.ValidationError(f'{candidate_assessment.assessment} has been expired')
 
 
 class GivenAssessmentAnswerSerializer(serializers.Serializer):
@@ -109,3 +109,8 @@ class GivenAssessmentAnswerSerializer(serializers.Serializer):
     def _add_mcq_mark(self, score):
         self.candidate_assessment.score += score
         self.candidate_assessment.save()
+
+
+class AssessmentEvaluationUrlSerializer(serializers.Serializer):
+    evaluation_url = serializers.URLField()
+    assessment_uuid = serializers.UUIDField()

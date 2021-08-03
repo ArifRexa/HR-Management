@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from job_board.models import JobSummery, Job, JobAdditionalField
+from job_board.models.job import JobSummery, Job, JobAdditionalField
 
 
 class JobSummerySerializer(serializers.ModelSerializer):

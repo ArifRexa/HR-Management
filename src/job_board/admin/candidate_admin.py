@@ -1,8 +1,6 @@
 from django.contrib import admin
-from django.urls import reverse
 from django.utils.html import format_html
-
-from job_board.models import Candidate, CandidateJob, ResetPassword, CandidateAssessment
+from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment
 
 
 @admin.register(Candidate)
@@ -41,17 +39,19 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 
 @admin.register(CandidateAssessment)
-class CandidateAssessment(admin.ModelAdmin):
-    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status', 'result',)
+class CandidateAssessmentAdmin(admin.ModelAdmin):
+    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status', 'result', 'preview_assessment')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
     readonly_fields = ['step']
 
+    @admin.display()
     def candidate(self, obj):
         return format_html(
             f'{obj.candidate_job.candidate.full_name}'
         )
 
+    @admin.display()
     def get_assessment(self, obj):
         return format_html(
             f'{obj.assessment.title} </br>'
@@ -60,8 +60,16 @@ class CandidateAssessment(admin.ModelAdmin):
             f'{obj.assessment.get_type_display()}'
         )
 
+    @admin.display()
     def assessment_pass_score(self, obj):
         return obj.assessment.pass_score
+
+    @admin.display(description='👁')
+    def preview_assessment(self, obj):
+        if obj.assessment.open_to_start:
+            return 'own url'
+        else:
+            return obj.evaluation_url
 
 
 @admin.register(ResetPassword)

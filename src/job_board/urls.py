@@ -3,9 +3,10 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
 from job_board.views.apis import job, authentication, assessment
-from job_board.views.webpages.views import WebsiteView
+from job_board.views.webpages.views import WebsiteView, MailView
 
 webview_urls = [
+    path('email-view/', MailView.as_view()),
     path('job-board/', WebsiteView.as_view())
 ]
 
@@ -20,6 +21,7 @@ api_urls = [
     path('apply/', job.CandidateJobView.as_view(), name='jb_job_apply'),
     path('assessment/', assessment.CandidateAssessmentList.as_view(), name='jb_assessments'),
     path('assessment/save-answer/', assessment.SaveAnswerView.as_view(), name='jb_save_answer'),
+    path('assessment/save-evaluation-url/', assessment.SaveEvaluationUrl.as_view(), name='jb_save_evl_url'),
     path('assessment/<str:unique_id>/', assessment.CandidateAssessmentView.as_view(), name='jb_assessment'),
     # GET, POST
     path('assessment/<str:unique_id>/question/', assessment.CandidateAssessmentQuestion.as_view(),
