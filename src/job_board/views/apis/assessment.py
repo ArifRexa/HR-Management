@@ -47,6 +47,10 @@ class CandidateAssessmentView(CandidateAssessmentBase, mixins.RetrieveModelMixin
     if the exam is open_to_start and it's does not started yet
     if the exam is not open_to_start and candidate_assessment can_start_after is less then current date
     """
+    authentication_classes = []
+
+    def get_queryset(self):
+        return CandidateAssessment.objects.all()
 
     def get(self, request, *args, **kwargs):
         return self.retrieve(request, *args, **kwargs)
@@ -118,7 +122,8 @@ class SaveAnswerView(GenericAPIView, mixins.CreateModelMixin):
     Save answer question
     """
     serializer_class = GivenAssessmentAnswerSerializer
-    authentication_classes = [CandidateAuth]
+
+    # authentication_classes = [CandidateAuth]
 
     def post(self, request, *args, **kwargs):
         """

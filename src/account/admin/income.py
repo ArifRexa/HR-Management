@@ -14,12 +14,12 @@ from account.services.balance import BalanceSummery
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'hours', 'hour_rate', 'payment_details', 'date', 'status')
+    list_display = ('project', 'hours', 'hour_rate', 'payment_details', 'date', 'status_col')
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'hour_rate', 'date')
     actions = ['approve_selected', 'pending_selected']
-    list_editable = ('status',)
+    # list_editable = ('status',)
     formfield_overrides = {
         models.TextField: {'widget': Textarea(attrs={'rows': 2})}
     }
@@ -28,6 +28,7 @@ class IncomeAdmin(admin.ModelAdmin):
 
     list_per_page = 20
 
+    @admin.action(description='Status')
     def status_col(self, obj):
         color = 'red'
         if obj.status == 'approved':

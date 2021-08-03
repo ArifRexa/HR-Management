@@ -37,6 +37,7 @@ class BankAccountInline(admin.TabularInline):
 class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, admin.ModelAdmin):
     inlines = (AttachmentInline, SalaryHistoryInline, BankAccountInline)
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
+    list_per_page = 20
 
     def get_list_display(self, request):
         list_display = ['full_name', 'employee_info', 'leave_info', 'salary_history', 'permanent_status', 'active']
