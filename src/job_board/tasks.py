@@ -15,6 +15,7 @@ def send_otp(otp, email_address):
     email = EmailMultiAlternatives(subject='Mediusware Job - Password Reset')
     email.attach_alternative(html_content, 'text/html')
     email.to = [email_address]
+    email.from_email = 'no-reply@mediusware.com'
     email.send()
 
 
@@ -42,6 +43,7 @@ def send_evaluation_url_to_admin(candidate_assessment: CandidateAssessment):
     email = EmailMultiAlternatives(subject=f'Mediusware Job - {candidate_assessment.candidate_job.candidate}')
     email.attach_alternative(html_content, 'text/html')
     email.to = [candidate_assessment.candidate_job.candidate.email]
+    email.from_email = 'no-reply@mediusware.com'
     email.send()
 
 
