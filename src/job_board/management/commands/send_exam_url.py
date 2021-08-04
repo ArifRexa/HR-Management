@@ -1,8 +1,8 @@
 from django.core.management import BaseCommand
 
-from job_board.tasks import send_exam_url_if
+from job_board.tasks import send_exam_url_if, mark_merit
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        send_exam_url_if(3, 4)
+        mark_merit([3, 4])

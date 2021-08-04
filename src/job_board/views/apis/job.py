@@ -66,12 +66,26 @@ class CandidateJobView(APIView):
         return Response(candidate_job_serialize.data)
 
     def get_object(self, slug):
+        """
+        Get job by slug
+        or it will raise 404 not found exception
+        @param slug:
+        @return Job | Http404:
+        """
         try:
             return Job.objects.get(slug__exact=slug)
         except Job.DoesNotExist:
             raise Http404
 
     def __applied_before(self, candidate: Candidate, job: Job):
+        """
+        It will check if the candidate apply for the same position before settings.APPLY_SAME_JOB_AFTER
+        or it will take 90 days as default
+
+        @param candidate:
+        @param job:
+        @return:
+        """
         days_before = timezone.now() - timedelta(days=settings.APPLY_SAME_JOB_AFTER or 90)
         if CandidateJob.objects.filter(candidate=candidate, job=job, created_at__gte=days_before):
             return True

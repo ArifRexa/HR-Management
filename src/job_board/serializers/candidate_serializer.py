@@ -1,7 +1,10 @@
+import re
+
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from job_board.models.candidate import Candidate, CandidateJob
+from job_board.models.job import Job
 from job_board.serializers.job_serializer import JobSerializerSimple
 
 
@@ -38,16 +41,50 @@ class CandidateUpdateSerializer(serializers.ModelSerializer):
 class CandidateJobApplySerializer(serializers.Serializer):
     job_slug = serializers.CharField()
     expected_salary = serializers.FloatField()
-    additional_message = serializers.CharField(allow_null=True)
+    additional_message = serializers.CharField(allow_null=True, allow_blank=True)
+    additional_fields = serializers.ListField()
+
+    next_message = ''
+
+    def validate(self, data):
+        job = Job.objects.filter(slug__exact=data['job_slug']).first()
+        if job:
+            job_additional_fields = job.additional_fields.all()
+            request_additional_fields = data['additional_fields']
+            if self._valid_additional_fields(job_additional_fields, request_additional_fields):
+                return data
+        raise serializers.ValidationError({'job_slug': 'Invalid Job slug, we could not found job by your given slug'})
 
     def create(self, validated_data):
+        message = validated_data['additional_fields']
         validated_data.pop('job_slug')
+        validated_data.pop('additional_fields')
         candidate_job = CandidateJob(**validated_data)
+        candidate_job.additional_message += self.next_message
         candidate_job.save()
         return candidate_job
 
     def update(self, instance, validated_data):
         pass
+
+    def _valid_additional_fields(self, job_additional_fields, request_additional_fields):
+        if self._match_len(job_additional_fields, request_additional_fields):
+            for index, field in enumerate(job_additional_fields):
+                self.next_message += f'{field.title} : {request_additional_fields[index]} \n'
+                if request_additional_fields[index]:
+                    if not re.match(field.validation_regx, request_additional_fields[index]):
+                        msg = f'{request_additional_fields[index]} is not a valid {field.title}'
+                        raise serializers.ValidationError({f'additional_fields.{index}': msg})
+                elif field.required:
+                    raise serializers.ValidationError({f'additional_fields.{index}': f'{field.title} Is required'})
+        return True
+
+    @staticmethod
+    def _match_len(job_additional_fields, request_additional_fields: []):
+        if job_additional_fields.count() == len(request_additional_fields):
+            return True
+        msg = f'We are expecting {job_additional_fields.count()} but given was {len(request_additional_fields)}'
+        raise serializers.ValidationError({'additional_fields': msg})
 
 
 class CandidateJobSerializer(serializers.ModelSerializer):

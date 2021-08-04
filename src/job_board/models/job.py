@@ -44,4 +44,4 @@ class JobAdditionalField(TimeStampMixin, AuthorMixin):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='additional_fields')
     title = models.CharField(max_length=255)
     required = models.BooleanField(default=True)
-    validation_regx = models.CharField(max_length=255, null=True, blank=True)
+    validation_regx = models.CharField(max_length=255, default='(.*)')

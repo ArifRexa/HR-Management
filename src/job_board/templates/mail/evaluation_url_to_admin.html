@@ -1,0 +1,10 @@
+{% extends 'mail/layout.html' %}
+
+{% block content %}
+    <p>Hello Sir,</p>
+    <p>I have finished my {{ candidate_assessment.assessment }} <br> please check the attachment bellow</p>
+    <ol>
+        <li>Evaluation url : {{ candidate_assessment.evaluation_url }}</li>
+        <li>Please Mark me : {{ candidate_assessment.unique_id }}</li>
+    </ol>
+{% endblock %}

@@ -48,14 +48,16 @@ class CandidateJob(TimeStampMixin):
     job = models.ForeignKey(Job, on_delete=models.RESTRICT)
     expected_salary = models.FloatField()
     additional_message = models.TextField(null=True, blank=True)
+    merit = models.BooleanField(null=True, blank=True)
 
     def save(self, *ages, **kwargs):
         super(CandidateJob, self).save(*ages, **kwargs)
-        for assessment in self.job.assessments.all():
-            candidate_assessment = CandidateAssessment()
-            candidate_assessment.candidate_job = self
-            candidate_assessment.assessment = assessment
-            candidate_assessment.save()
+        if self.candidate_assessment.count() == 0:
+            for assessment in self.job.assessments.all():
+                candidate_assessment = CandidateAssessment()
+                candidate_assessment.candidate_job = self
+                candidate_assessment.assessment = assessment
+                candidate_assessment.save()
         # TODO : Schedule mail for assessment
 
     def __str__(self):
@@ -84,7 +86,7 @@ class ResetPassword(TimeStampMixin):
 
 class CandidateAssessment(TimeStampMixin):
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
-    candidate_job = models.ForeignKey(CandidateJob, on_delete=models.CASCADE, related_name='candidate_job')
+    candidate_job = models.ForeignKey(CandidateJob, on_delete=models.CASCADE, related_name='candidate_assessment')
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
     can_start_after = models.DateTimeField(null=True, blank=True)
     exam_started_at = models.DateTimeField(null=True, blank=True)

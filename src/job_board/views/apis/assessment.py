@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.core.exceptions import BadRequest
 from django.utils import timezone
+from django_q.tasks import async_task
 from rest_framework.generics import GenericAPIView
 from rest_framework import mixins, viewsets, status, serializers
 from rest_framework.response import Response
@@ -153,6 +154,7 @@ class SaveEvaluationUrl(GenericAPIView):
             if candidate_assessment:
                 candidate_assessment.evaluation_url = validated_data['evaluation_url']
                 candidate_assessment.save()
+                async_task('job_board.tasks.send_evaluation_url_to_admin', candidate_assessment)
                 return Response({'success': 'Hello world'})
             return Response({'not_saved': 'Candidate assessment due to this this and this reasone'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
