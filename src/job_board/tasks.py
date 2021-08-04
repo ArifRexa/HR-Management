@@ -59,18 +59,12 @@ def send_exam_url_if(passe_exam_id, send_exam_id):
     ).update(can_start_after=timezone.now())
 
 
-def mark_merit(assessments: list):
-    print('hello')
-    candidate_jobs = CandidateJob.objects.filter(merit=None).all()
-    for candidate_job in candidate_jobs:
-        candidate_assessments = candidate_job.candidate_assessment.filter(
-            assessment__id__in=assessments, exam_end_at__lte=timezone.now(),
-        ).all()
-        if candidate_assessments.count() == len(assessments):
-            merit = True
-            for candidate_assessment in candidate_assessments:
-                if candidate_assessment.score < candidate_assessment.assessment.pass_score:
-                    merit = False
-                    break
-            candidate_job.merit = merit
-            candidate_job.save()
+def mark_merit(assessment_id: int):
+    candidate_assessments = CandidateAssessment.objects.filter(assessment_id=assessment_id,
+                                                               exam_end_at__lte=timezone.now(),
+                                                               candidate_job__merit=None).all()
+    for candidate_assessment in candidate_assessments:
+        if candidate_assessment.score >= candidate_assessment.assessment.pass_score:
+            candidate_assessment.candidate_job.merit = True
+            candidate_assessment.candidate_job.save()
+            # TODO : Send email to candidate and admin

@@ -149,12 +149,15 @@ class SaveEvaluationUrl(GenericAPIView):
                 unique_id=validated_data['assessment_uuid'],
                 assessment__open_to_start=False,
                 exam_started_at__isnull=False,
-                exam_end_at__lte=timezone.now()
+                exam_end_at__gte=timezone.now()
             ).first()
             if candidate_assessment:
                 candidate_assessment.evaluation_url = validated_data['evaluation_url']
                 candidate_assessment.save()
                 async_task('job_board.tasks.send_evaluation_url_to_admin', candidate_assessment)
                 return Response({'success': 'Hello world'})
-            return Response({'not_saved': 'Candidate assessment due to this this and this reasone'})
+            return Response({'evaluation_url': 'We cannot save your evaluation url due some reason, '
+                                               'The assessment_uuid might not found. '
+                                               'Your exam time might expire'},
+                            status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
