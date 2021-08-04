@@ -1,3 +1,4 @@
+from django.core import management
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template import Context, loader
 from django.template.loader import get_template
@@ -30,6 +31,8 @@ def leave_mail(leave: Leave):
     email.send()
 
 
+# TODO : Resignation notification
+
 def permanent_notification(employees):
     html_body = loader.render_to_string('mails/permanent_notification.html',
                                         context={'employees': employees, 'total_emp': len(employees)})
@@ -53,4 +56,10 @@ def increment_notification(employees):
     email.from_email = 'no-reply@mediusware.com'
     email.send()
 
-# TODO : Resignation notification
+
+def execute_increment_notification():
+    management.call_command('increment_notifi')
+
+
+def execute_permanent_notification():
+    management.call_command('permanent_notifi')
