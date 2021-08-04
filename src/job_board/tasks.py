@@ -29,8 +29,8 @@ def send_exam_url(candidate_assessment: CandidateAssessment):
 
     email = EmailMultiAlternatives(subject=f'Mediusware Job - {candidate_assessment.assessment.title}')
     email.attach_alternative(html_content, 'text/html')
-    email.to = ['hr@mediusware.com']
-    email.from_email = candidate_assessment.candidate_job.candidate.email
+    email.to = [candidate_assessment.candidate_job.candidate.email]
+    email.from_email = 'hr@mediusware.com'
     email.send()
 
 
@@ -42,8 +42,8 @@ def send_evaluation_url_to_admin(candidate_assessment: CandidateAssessment):
 
     email = EmailMultiAlternatives(subject=f'Mediusware Job - {candidate_assessment.candidate_job.candidate}')
     email.attach_alternative(html_content, 'text/html')
-    email.to = [candidate_assessment.candidate_job.candidate.email]
-    email.from_email = 'no-reply@mediusware.com'
+    email.to = ['hr@mediusware.com']
+    email.from_email = candidate_assessment.candidate_job.candidate.email
     email.send()
 
 
