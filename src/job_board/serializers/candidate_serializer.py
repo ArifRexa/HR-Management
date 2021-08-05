@@ -91,6 +91,10 @@ class CandidateJobSerializer(serializers.ModelSerializer):
     job = JobSerializerSimple(many=False)
     created_at = serializers.DateTimeField(format='%d %B, %Y', read_only=True, required=False)
 
+    # candidate_assessment = "job_board.serializers.assessment_serializer.CandidateAssessmentSerializer"
+
     class Meta:
         model = CandidateJob
-        fields = ('unique_id', 'job', 'expected_salary', 'additional_message', 'created_at')
+        fields = ('unique_id', 'job', 'expected_salary', 'additional_message',
+                  'created_at', 'merit', 'candidate_assessment')
+        depth = 2

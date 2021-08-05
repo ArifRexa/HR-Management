@@ -20,6 +20,7 @@ api_urls = [
     path('job/<str:slug>/', job.JobRetrieve.as_view(), name='jb_job'),
     path('apply/', job.CandidateJobView.as_view(), name='jb_job_apply'),
     path('assessment/', assessment.CandidateAssessmentList.as_view(), name='jb_assessments'),
+    path('assessment/<str:unique_id>/', assessment.CandidateAssessmentRetrieve.as_view(), name='jb_assessment'),
     path('assessment/save-answer/', assessment.SaveAnswerView.as_view(), name='jb_save_answer'),
     path('assessment/save-evaluation-url/', assessment.SaveEvaluationUrl.as_view(), name='jb_save_evl_url'),
     path('assessment/<str:unique_id>/', assessment.CandidateAssessmentView.as_view(), name='jb_assessment'),

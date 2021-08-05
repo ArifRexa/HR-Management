@@ -1,12 +1,12 @@
 from django.core.mail import EmailMultiAlternatives
-from django.db.models import Value
+from django.db.models import Value, Count
 from django.template.loader import get_template
 from django.utils import timezone
 from django_q.tasks import async_task
 
 from job_board.admin.candidate_admin import CandidateAssessment
 from job_board.models.assessment import Assessment
-from job_board.models.candidate import CandidateJob
+from job_board.models.candidate import CandidateJob, candidate_assessment_pre_save
 
 
 def send_otp(otp, email_address):
@@ -72,9 +72,11 @@ def send_exam_url_if(passe_exam_id, send_exam_id):
 
 
 def mark_merit(assessment_id: int):
-    candidate_assessments = CandidateAssessment.objects.filter(assessment_id=assessment_id,
-                                                               exam_end_at__lte=timezone.now(),
-                                                               candidate_job__merit=None).all()
+    candidate_assessments = CandidateAssessment.objects.filter(
+        assessment_id=assessment_id,
+        exam_end_at__lte=timezone.now(),
+        candidate_job__merit=None
+    ).all()
     for candidate_assessment in candidate_assessments:
         if candidate_assessment.score >= candidate_assessment.assessment.pass_score:
             candidate_assessment.candidate_job.merit = True

@@ -9,9 +9,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from job_board.auth.CandidateAuth import CandidateAuth
-from job_board.models.candidate import CandidateAssessment
+from job_board.models.candidate import CandidateAssessment, CandidateJob
 from job_board.serializers.assessment_serializer import GivenAssessmentAnswerSerializer, \
     CandidateAssessmentSerializer, AssessmentQuestionSerializer, AssessmentEvaluationUrlSerializer
+from job_board.serializers.candidate_serializer import CandidateJobSerializer
 
 
 class CandidateAssessmentBase(GenericAPIView):
@@ -37,6 +38,16 @@ class CandidateAssessmentList(CandidateAssessmentBase, mixins.ListModelMixin):
 
     def get(self, request, *args, **kwargs):
         return self.list(request, *args, **kwargs)
+
+
+class CandidateAssessmentRetrieve(GenericAPIView, mixins.RetrieveModelMixin):
+    authentication_classes = [CandidateAuth]
+    serializer_class = CandidateJobSerializer
+    queryset = CandidateJob.objects.all()
+    lookup_field = 'unique_id'
+
+    def get(self, request, *args, **kwargs):
+        return self.retrieve(request, *args, **kwargs)
 
 
 class CandidateAssessmentView(CandidateAssessmentBase, mixins.RetrieveModelMixin, mixins.UpdateModelMixin):
