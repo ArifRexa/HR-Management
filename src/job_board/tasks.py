@@ -2,6 +2,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db.models import Value
 from django.template.loader import get_template
 from django.utils import timezone
+from django_q.tasks import async_task
 
 from job_board.admin.candidate_admin import CandidateAssessment
 from job_board.models.assessment import Assessment
@@ -49,16 +50,25 @@ def send_evaluation_url_to_admin(candidate_assessment: CandidateAssessment):
 
 def send_exam_url_if(passe_exam_id, send_exam_id):
     assessment = Assessment.objects.get(pk=passe_exam_id)
-    candidate_jobs = CandidateAssessment.objects.values_list('candidate_job', flat=True).filter(
+    candidate_assessments = CandidateAssessment.objects.filter(
         assessment_id=passe_exam_id,
-        score__gte=assessment.pass_score
+        score__gte=assessment.pass_score,
+        step__contains={'auto_checked': False}
     ).all()
+    if candidate_assessments.count() > 0:
+        target_candidate_assessment = CandidateAssessment.objects.filter(
+            candidate_job__in=list(candidate_assessments.values_list('candidate_job', flat=True)),
+            assessment_id=send_exam_id,
+            can_start_after__isnull=True
+        ).all()
 
-    CandidateAssessment.objects.filter(
-        candidate_job__in=list(candidate_jobs),
-        assessment_id=send_exam_id,
-        can_start_after__isnull=True
-    ).update(can_start_after=timezone.now())
+        for candidate_assessment in target_candidate_assessment:
+            candidate_assessment.can_start_after = timezone.now()
+            candidate_assessment.save()
+
+        for candidate_job in candidate_assessments:
+            candidate_job.step['auto_checked'] = True
+            candidate_job.save()
 
 
 def mark_merit(assessment_id: int):

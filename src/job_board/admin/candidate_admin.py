@@ -40,7 +40,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status', 'result', 'preview_assessment')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
-    readonly_fields = ['step']
+    # readonly_fields = ['step']
 
     @admin.display()
     def candidate(self, obj):

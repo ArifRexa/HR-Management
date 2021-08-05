@@ -77,7 +77,8 @@ class CandidateAssessmentView(CandidateAssessmentBase, mixins.RetrieveModelMixin
         candidate_assessment.step = {
             'current_step': 0,
             'question_ids': list(
-                candidate_assessment.assessment.assessmentquestion_set.values_list('id', flat=True))
+                candidate_assessment.assessment.assessmentquestion_set.values_list('id', flat=True)),
+            'auto_checked': False
         }
         candidate_assessment.save()
 
