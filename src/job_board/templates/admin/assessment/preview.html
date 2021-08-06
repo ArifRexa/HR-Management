@@ -5,12 +5,10 @@
             <span style="display: block; font-size: 16px">
                 Score : {{ assessment.score }}
                 Duration : {{ assessment.duration }} Minutes
-                Pass Mark : {{ assessment.pass_score_a }}
+                Pass Mark : {{ assessment.pass_score }} | No. Q {{ assessment.assessmentquestion_set.count }}
             </span>
         </h1>
 
-        Score : {{ assessment.score }} | {{ assessment.duration }} Minutes | Total Question :
-        {{ assessment.assessmentquestion_set.count }}
     </center>
 
     <br>

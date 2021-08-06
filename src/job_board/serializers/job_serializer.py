@@ -3,7 +3,7 @@ from job_board.models.job import JobSummery, Job, JobAdditionalField
 
 
 class JobSummerySerializer(serializers.ModelSerializer):
-    application_deadline = serializers.DateField(format="%B %d %Y")
+    application_deadline = serializers.DateField(format="%d %B, %Y")
     job_type = serializers.CharField(source='get_job_type_display')
 
     class Meta:
@@ -20,7 +20,7 @@ class AdditionalFieldsSerializer(serializers.ModelSerializer):
 class JobSerializer(serializers.ModelSerializer):
     job_summery = JobSummerySerializer(many=False)
     additional_fields = AdditionalFieldsSerializer(many=True)
-    updated_at = serializers.DateTimeField(format="%B %d %Y")
+    updated_at = serializers.DateTimeField(format="%d %B, %Y")
 
     # assessment = AssessmentSerializer(many=False)
 

@@ -6,8 +6,9 @@ from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, C
 @admin.register(Candidate)
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
-
+    search_fields = ('full_name', 'email', 'phone')
     list_display = ('full_name', 'email', 'phone', 'applied_job')
+    list_filter = ('candidatejob__merit', 'candidatejob__job')
 
     def applied_job(self, obj: Candidate):
         return obj.candidatejob_set.count()
@@ -22,6 +23,8 @@ class CandidateAdmin(admin.ModelAdmin):
 class CandidateJobAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'get_job', 'get_assessment', 'additional_message', 'merit')
     list_display_links = ('get_job', 'candidate')
+    search_fields = ('candidate__full_name', 'candidate__email', 'candidate__phone')
+    list_filter = ('merit', 'job', 'candidate_assessment__assessment')
 
     @admin.display(description='Job', ordering='job')
     def get_job(self, obj):
@@ -37,9 +40,11 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status', 'result', 'preview_assessment')
+    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status',
+                    'result', 'preview_assessment', 'unique_id')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
+
     # readonly_fields = ['step']
 
     @admin.display()

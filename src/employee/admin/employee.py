@@ -39,9 +39,10 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, a
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
     list_per_page = 20
     ordering = ['-active', 'permanent_date']
+    list_filter = ['active', 'permanent_date']
 
     def get_list_display(self, request):
-        list_display = ['full_name', 'employee_info', 'leave_info', 'salary_history', 'permanent_status', 'active']
+        list_display = ['employee_info', 'leave_info', 'salary_history', 'permanent_status', 'active']
         if not request.user.is_superuser:
             list_display.remove('salary_history')
         return list_display

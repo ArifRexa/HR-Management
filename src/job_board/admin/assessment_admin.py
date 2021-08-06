@@ -57,8 +57,9 @@ class AssessmentAdmin(admin.ModelAdmin):
 @admin.register(AssessmentQuestion)
 class AssessmentQuestionAdmin(admin.ModelAdmin):
     list_display = ('assessment', 'get_title', 'score', 'type')
-    list_filter = ('assessment',)
+    list_filter = ('assessment', 'type')
     inlines = (AssessmentAnswerInline,)
+    search_fields = ('title',)
 
     ordering = ['assessment']
 

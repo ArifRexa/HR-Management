@@ -49,7 +49,7 @@ class User(APIView):
         return Response(serialize.data)
 
     def post(self, request, format=None):
-        serialize = CandidateUpdateSerializer(data=request.data)
+        serialize = CandidateUpdateSerializer(data=request.data, context={'request': request})
         if serialize.is_valid():
             serialize.update(instance=request.user, validated_data=serialize.validated_data)
             return Response(serialize.data)

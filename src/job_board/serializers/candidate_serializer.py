@@ -1,5 +1,6 @@
 import re
 
+from django.contrib.auth import password_validation
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
@@ -31,6 +32,12 @@ class CandidateUpdateSerializer(serializers.ModelSerializer):
     Candidate profile update serializer, this serializer has been used in candidate profile update
     """
     current_password = serializers.CharField()
+
+    def validate(self, data):
+        print(self.context)
+        if self.context['request'].user.check_password(data['current_password']):
+            return data
+        raise serializers.ValidationError({'current_password': 'Current password does not matched'})
 
     class Meta:
         model = Candidate

@@ -38,6 +38,13 @@ class Candidate(TimeStampMixin):
         self.password = hashers.make_password(self.password, salt='mediusware_hr')
         super().save(*args, **kwargs)
 
+    @classmethod
+    def check_password(self, password_to_check):
+        print(self.password)
+        print(hashers.make_password(password_to_check))
+        print(hashers.check_password())
+        return False
+
     def __str__(self):
         return self.full_name
 

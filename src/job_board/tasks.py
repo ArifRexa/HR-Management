@@ -6,7 +6,6 @@ from django_q.tasks import async_task
 
 from job_board.admin.candidate_admin import CandidateAssessment
 from job_board.models.assessment import Assessment
-from job_board.models.candidate import CandidateJob, candidate_assessment_pre_save
 
 
 def send_otp(otp, email_address):
