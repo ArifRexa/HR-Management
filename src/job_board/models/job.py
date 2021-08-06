@@ -11,10 +11,10 @@ class Job(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=155)
     slug = models.SlugField(max_length=255)
     job_context = HTMLField(max_length=500)
-    job_description = HTMLField(null=True, blank=True)
-    job_responsibility = HTMLField(null=True, blank=True)
-    educational_requirement = HTMLField(null=True, blank=True)
-    additional_requirement = HTMLField(null=True, blank=True)
+    job_responsibilities = HTMLField(null=True, blank=True)
+    educational_requirements = HTMLField(null=True, blank=True)
+    experience_requirements = HTMLField(null=True, blank=True)
+    additional_requirements = HTMLField(null=True, blank=True)
     compensation = HTMLField(null=True, blank=True)
     assessments = models.ManyToManyField(Assessment)
     active = models.BooleanField(default=True)
@@ -41,7 +41,18 @@ class JobSummery(AuthorMixin, TimeStampMixin):
 
 
 class JobAdditionalField(TimeStampMixin, AuthorMixin):
+    REGX_CHOICE = (
+        ('(.*)', 'All'),
+        ('(?:git@|https://)github.com[:/](.*)', 'Git Hub'),
+        ('(?:https://www.|https://)linkedin.com[:/](.*)', 'Linkedin'),
+        ('(?:https://www.|https://)figma.com[:/](.*)', 'Figma'),
+        ('(?:https://www.|https://)behance.net[:/](.*)', 'Behance'),
+        ('(?:https://www.|https://)youtube.com[:/](.*)', 'Youtube'),
+        ('(?:https://www.|https://)(?:facebook|fb).com[:/](.*)', 'Facebook'),
+        ('(?:https://www.|https://)twitter.com[:/](.*)', 'Twitter'),
+        ('^[0-9]*$', 'NUmber Only'),
+    )
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='additional_fields')
     title = models.CharField(max_length=255)
     required = models.BooleanField(default=True)
-    validation_regx = models.CharField(max_length=255, default='(.*)')
+    validation_regx = models.CharField(max_length=255, default='(.*)', choices=REGX_CHOICE)
