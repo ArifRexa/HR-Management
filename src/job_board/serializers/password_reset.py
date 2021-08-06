@@ -1,6 +1,8 @@
+from django.contrib.auth import hashers
 from django.utils import timezone
 from rest_framework import serializers
 
+from config import settings
 from job_board.models.candidate import ResetPassword, Candidate
 
 
@@ -45,3 +47,27 @@ class ResetPasswordSerializer(serializers.Serializer):
         pass_reset.otp_used_at = timezone.now()
         pass_reset.save()
         return validated_data
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField()
+    new_password = serializers.CharField()
+    retype_new_password = serializers.CharField()
+
+    given_password = ''
+
+    def validate(self, data):
+        if data['new_password'] != data['retype_new_password']:
+            raise serializers.ValidationError({'new_password': 'Retype password does not match with current password'})
+        user_pass = self.context['request'].user.password
+        given_current_pass = hashers.make_password(data['current_password'], salt=settings.CANDIDATE_PASSWORD_HASH)
+        if user_pass == given_current_pass:
+            self.given_password = given_current_pass
+            return data
+        raise serializers.ValidationError({'current_password': 'Current password does not matched'})
+
+    def update(self, instance, validated_data):
+        instance.password = hashers.make_password(validated_data['new_password'], salt=settings.CANDIDATE_PASSWORD_HASH)
+        instance.save()
+        print(instance.password)
+        return instance

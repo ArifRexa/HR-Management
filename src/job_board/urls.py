@@ -16,11 +16,14 @@ api_urls = [
     path('candidate/', authentication.User.as_view(), name='jb_candidate'),
     path('send-otp/', authentication.SendOTP.as_view(), name='jb_send_otp'),
     path('reset-password/', authentication.ResetPasswordView.as_view(), name='jb_reset_password'),
+    path('change-password/', authentication.ChangeCandidatePassword.as_view(), name='jb_change_password'),
+
     path('jobs/', job.JobList.as_view(), name='jb_jobs'),
     path('job/<str:slug>/', job.JobRetrieve.as_view(), name='jb_job'),
     path('apply/', job.CandidateJobView.as_view(), name='jb_job_apply'),
+    path('candidate-job/<str:unique_id>/', assessment.CandidateJobRetrieve.as_view(), name='jb_candidate_job'),
+
     path('assessment/', assessment.CandidateAssessmentList.as_view(), name='jb_assessments'),
-    # path('assessment/<str:unique_id>/', assessment.CandidateAssessmentRetrieve.as_view(), name='jb_assessment'),
     path('assessment/save-answer/', assessment.SaveAnswerView.as_view(), name='jb_save_answer'),
     path('assessment/save-evaluation-url/', assessment.SaveEvaluationUrl.as_view(), name='jb_save_evl_url'),
     path('assessment/<str:unique_id>/', assessment.CandidateAssessmentView.as_view(), name='jb_assessment'),

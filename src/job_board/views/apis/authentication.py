@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
 from job_board.models.candidate import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
-from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer
+from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -73,5 +73,12 @@ class ResetPasswordView(GenericAPIView, CreateModelMixin):
         return Response({'message': 'Candidate password has been updated successfully'})
 
 
-class ChangeCandidatePassword(GenericAPIView):
+class ChangeCandidatePassword(APIView):
     authentication_classes = [CandidateAuth]
+
+    def post(self, request, format=None):
+        serializer = ChangePasswordSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.update(instance=request.user, validated_data=serializer.validated_data)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -1,6 +1,18 @@
+from django import forms
 from django.contrib import admin
+from django.contrib.auth import hashers
 from django.utils.html import format_html
+
+from config import settings
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment
+
+
+class CandidateForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(), strip=False, required=False)
+
+    class Meta:
+        model = Candidate
+        fields = "__all__"
 
 
 @admin.register(Candidate)
@@ -17,6 +29,14 @@ class CandidateAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['candidate_jobs'] = CandidateJob.objects.filter(candidate_id=object_id).all()
         return super(CandidateAdmin, self).change_view(request, object_id, form_url, extra_context=extra_context)
+
+    def save_model(self, request, obj, form, change):
+        try:
+            print(hashers.identify_hasher(request.POST['password']))
+            super(CandidateAdmin, self).save_model(request, obj, form, change)
+        except:
+            obj.password = hashers.make_password(request.POST['password'], settings.CANDIDATE_PASSWORD_HASH)
+            super(CandidateAdmin, self).save_model(request, obj, form, change)
 
 
 @admin.register(CandidateJob)

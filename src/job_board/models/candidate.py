@@ -2,6 +2,7 @@ import random
 import uuid
 from datetime import timedelta
 
+from django import forms
 from django.contrib.auth import hashers
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -35,15 +36,11 @@ class Candidate(TimeStampMixin):
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
 
     def save(self, *args, **kwargs):
-        self.password = hashers.make_password(self.password, salt='mediusware_hr')
+        # if self.password:
+        #     print('here')
+        #     print(self.password)
+        #     self.password = hashers.make_password(self.password, salt='mediusware_hr')
         super().save(*args, **kwargs)
-
-    @classmethod
-    def check_password(self, password_to_check):
-        print(self.password)
-        print(hashers.make_password(password_to_check))
-        print(hashers.check_password())
-        return False
 
     def __str__(self):
         return self.full_name

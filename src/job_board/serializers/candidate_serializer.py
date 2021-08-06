@@ -1,9 +1,10 @@
 import re
 
-from django.contrib.auth import password_validation
+from django.contrib.auth import password_validation, hashers
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
+from config import settings
 from job_board.models.candidate import Candidate, CandidateJob
 from job_board.models.job import Job
 from job_board.serializers.job_serializer import JobSerializerSimple
@@ -34,8 +35,9 @@ class CandidateUpdateSerializer(serializers.ModelSerializer):
     current_password = serializers.CharField()
 
     def validate(self, data):
-        print(self.context)
-        if self.context['request'].user.check_password(data['current_password']):
+        user_pass = self.context['request'].user.password
+        given_pass = hashers.make_password(data['current_password'], salt=settings.CANDIDATE_PASSWORD_HASH)
+        if user_pass == given_pass:
             return data
         raise serializers.ValidationError({'current_password': 'Current password does not matched'})
 

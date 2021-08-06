@@ -40,7 +40,7 @@ class CandidateAssessmentList(CandidateAssessmentBase, mixins.ListModelMixin):
         return self.list(request, *args, **kwargs)
 
 
-class CandidateAssessmentRetrieve(GenericAPIView, mixins.RetrieveModelMixin):
+class CandidateJobRetrieve(GenericAPIView, mixins.RetrieveModelMixin):
     authentication_classes = [CandidateAuth]
     serializer_class = CandidateJobSerializer
     queryset = CandidateJob.objects.all()
