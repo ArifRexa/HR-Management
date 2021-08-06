@@ -22,10 +22,21 @@ class CandidateSerializer(ModelSerializer):
         fields = ('id', 'full_name', 'email', 'password', 'phone', 'avatar', 'cv')
         extra_kwargs = {'password': {"write_only": True}}
 
+    def create(self, validated_data):
+        candidate = Candidate(**validated_data)
+        candidate.password = hashers.make_password(validated_data['password'], salt=settings.CANDIDATE_PASSWORD_HASH)
+        candidate.save()
+        return candidate
+
     def get_cv_url(self, candidate):
         request = self.context.get('request')
         cv_url = candidate.cv.url
         return request.build_absolute_uri(cv_url)
+
+    def get_avatar_url(self, candidate):
+        request = self.context.get('request')
+        avatar_url = candidate.avatar.url
+        return request.build_absolute_uri(avatar_url)
 
 
 class CandidateUpdateSerializer(serializers.ModelSerializer):

@@ -5,4 +5,5 @@ from job_board.tasks import send_exam_url_if, mark_merit
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        send_exam_url_if(3, 4)
+        # send_exam_url_if(3, 4)
+        mark_merit(3)

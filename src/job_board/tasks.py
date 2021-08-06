@@ -77,7 +77,9 @@ def mark_merit(assessment_id: int):
         candidate_job__merit=None
     ).all()
     for candidate_assessment in candidate_assessments:
+        print('hello', candidate_assessments)
         if candidate_assessment.score >= candidate_assessment.assessment.pass_score:
             candidate_assessment.candidate_job.merit = True
             candidate_assessment.candidate_job.save()
+            print('mark merit', candidate_assessment.candidate_job)
             # TODO : Send email to candidate and admin

@@ -1,9 +1,11 @@
+from django.contrib.auth import hashers
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
 from job_board.models.candidate import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer

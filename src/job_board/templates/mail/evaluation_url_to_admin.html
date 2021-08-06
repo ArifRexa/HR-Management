@@ -5,6 +5,10 @@
     <p>I have finished my {{ candidate_assessment.assessment }} <br> please check the attachment bellow</p>
     <ol>
         <li>Evaluation url : {{ candidate_assessment.evaluation_url }}</li>
-        <li>Please Mark me : {{ candidate_assessment.unique_id }}</li>
+        <li>
+            Please Mark me:
+            <a href="https://hr.mediusware.xyz{% url 'admin:job_board_candidateassessment_change' candidate_assessment.id %}">
+                {{ candidate_assessment.unique_id }}</a>
+        </li>
     </ol>
 {% endblock %}
