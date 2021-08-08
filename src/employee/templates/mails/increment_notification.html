@@ -20,6 +20,7 @@
         <th>#</th>
         <th>Employee Name</th>
         <th>Last Increment Date</th>
+        <th>Note</th>
     </tr>
     </thead>
     <tbody>
@@ -28,6 +29,7 @@
             <td>{{ forloop.counter }}</td>
             <td>{{ employee.full_name }}</td>
             <td>{{ employee.current_salary.active_from }}</td>
+            <td>{{ employee.current_salary.note }}</td>
         </tr>
     {% endfor %}
     </tbody>
