@@ -20,6 +20,12 @@ class SalaryHistoryInline(admin.TabularInline):
     def get_extra(self, request, obj=None, **kwargs):
         return 1 if not obj else 0
 
+    def get_fields(self, request, obj=None):
+        fields = super(SalaryHistoryInline, self).get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields.remove('note')
+        return fields
+
 
 class AttachmentInline(admin.TabularInline):
     model = Attachment
@@ -45,6 +51,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, a
         list_display = ['employee_info', 'leave_info', 'salary_history', 'permanent_status', 'active']
         if not request.user.is_superuser:
             list_display.remove('salary_history')
+            list_display.remove('active')
         return list_display
 
     def get_queryset(self, request):
