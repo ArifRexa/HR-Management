@@ -35,13 +35,6 @@ class Candidate(TimeStampMixin):
     cv = models.FileField(upload_to=candidate_email_path)
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
 
-    def save(self, *args, **kwargs):
-        # if self.password:
-        #     print('here')
-        #     print(self.password)
-        #     self.password = hashers.make_password(self.password, salt='mediusware_hr')
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return self.full_name
 
