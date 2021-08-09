@@ -8,11 +8,13 @@
     </p>
     <p>
         To join in <b>Mediusware</b> you need to
-        complete <strong>{{ candidate_assessment.candidate_job.job.assessments.count }}</strong> exam which are
+        complete <strong>{{ candidate_assessment.candidate_job.job.assessments.count }}</strong> exam which are :
+    <ul>
         {% for exam in candidate_assessment.candidate_job.job.assessments.all %}
-            <b>{{ exam.title }}</b>,
+            <li>{{ exam.title }}</li>
         {% endfor %}
-        <br>
+    </ul>
+    <br>
     </p>
     <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
         bellow

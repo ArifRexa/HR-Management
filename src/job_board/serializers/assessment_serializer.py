@@ -59,7 +59,7 @@ class GivenAssessmentAnswerSerializer(serializers.Serializer):
     """
     uuid = serializers.UUIDField(validators=[valid_uuid])
     question_id = serializers.IntegerField(min_value=1)
-    answers = serializers.ListField(child=serializers.IntegerField(min_value=1), min_length=1)
+    answers = serializers.ListField(child=serializers.IntegerField(min_value=1))
 
     candidate_assessment = CandidateAssessment
     candidate_job = CandidateJob
@@ -97,7 +97,10 @@ class GivenAssessmentAnswerSerializer(serializers.Serializer):
         candidate_answer.question = self.question
         candidate_answer.answers = AssessmentAnswerSerializer(assessment_answer, many=True).data
         candidate_answer.total_score = self.question.score
-        candidate_answer.score_achieve = assessment_answer.aggregate(score_achieve=Sum('score'))['score_achieve']
+        if assessment_answer.aggregate(score_achieve=Sum('score'))['score_achieve']:
+            candidate_answer.score_achieve = assessment_answer.aggregate(score_achieve=Sum('score'))['score_achieve']
+        else:
+            candidate_answer.score_achieve = 0
         candidate_answer.save()
         self._step_increment()
         self._add_mcq_mark(candidate_answer.score_achieve)
