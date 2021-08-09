@@ -52,7 +52,8 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
     hours = models.FloatField()
-    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'manager': False})
+    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT,
+                                 limit_choices_to={'manager': False, 'active': True})
 
     class Meta:
         permissions = [
