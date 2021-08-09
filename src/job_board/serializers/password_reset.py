@@ -40,7 +40,7 @@ class ResetPasswordSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         candidate = Candidate.objects.filter(email__exact=validated_data['email']).first()
-        candidate.password = validated_data['password']
+        candidate.password = hashers.make_password(validated_data['password'], salt=settings.CANDIDATE_PASSWORD_HASH)
         candidate.save()
 
         pass_reset = ResetPassword.objects.filter(otp__exact=validated_data['otp']).last()
