@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.db.models import Q, Sum
 
 from config.admin import RecentEdit
+from config.admin.utils import simple_request_filter
 from project_management.models import EmployeeProjectHour
 
 
@@ -21,13 +22,10 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'q', 'o']])
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
-            filters['project_hour__manager'] = request.user.employee.id
-        dataset = super(EmployeeHourAdmin, self).get_queryset(request).filter(
-            *[Q(**{key: value}) for key, value in filters.items() if value]
-        )
-        return dataset.aggregate(tot=Sum('hours'))['tot']
+            qs.filter(project_hour__manager=request.user.employee.id)
+        return qs.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view
     # return total hour count

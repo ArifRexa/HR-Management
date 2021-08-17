@@ -3,6 +3,7 @@ from django.contrib.admin import AdminSite
 from django.db.models import Sum, Q
 
 from account.models import Expense, ExpenseCategory, ExpanseAttachment
+from config.admin.utils import simple_request_filter
 
 
 @admin.register(ExpenseCategory)
@@ -23,12 +24,17 @@ class ExpenseAdmin(admin.ModelAdmin):
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
 
-    def get_total_hour(self, request):
-        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o']])
+    def get_queryset(self, request):
+        qs = super(ExpenseAdmin, self).get_queryset(request)
         if not request.user.is_superuser:
-            filters['created_by__id__exact'] = request.user.employee.id
-        dataset = Expense.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
-        return dataset.aggregate(tot=Sum('amount'))['tot']
+            return qs.filter(created_by__id=request.user.id)
+        return qs
+
+    def get_total_hour(self, request):
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
+        if not request.user.is_superuser:
+            qs.filter(created_by__id=request.user.id)
+        return qs.aggregate(total=Sum('amount'))['total']
 
     def changelist_view(self, request, extra_context=None):
         my_context = {

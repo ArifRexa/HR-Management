@@ -10,6 +10,7 @@ from django.template.context_processors import request
 from django.utils import timezone
 
 from config.admin import ExportCsvMixin, RecentEdit
+from config.admin.utils import simple_request_filter
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
 from project_management.models import Client, Project, ProjectHour, EmployeeProjectHour
@@ -38,13 +39,10 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'q', 'o']])
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
-            filters['manager__id__exact'] = request.user.employee.id
-        dataset = super(ProjectHourAdmin, self).get_queryset(request).filter(
-            *[Q(**{key: value}) for key, value in filters.items() if value]
-        )
-        return dataset.aggregate(tot=Sum('hours'))['tot']
+            qs.filter(manager__id__exact=request.user.employee.id)
+        return qs.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view
     # return total hour count
