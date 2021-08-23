@@ -43,10 +43,12 @@ class EmployeeExtraUrls(admin.ModelAdmin):
 
         context = dict(
             self.admin_site.each_context(request),
-            birthday=employees.extra(select={'birth_month': 'MONTH(date_of_birth)'}).filter(
+            birthday=employees.extra(
+                select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
                 date_of_birth__month__gte=datetime.date.today().month,
+                date_of_birth__day__gte=datetime.date.today().day,
                 date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(
-                    days=30)).month).order_by('birth_month'),
+                    days=30)).month).order_by('birth_month', 'birth_day'),
             permanent=employees.filter(permanent_date__isnull=True,
                                        active=True,
                                        joining_date__lte=(datetime.date.today() - datetime.timedelta(
