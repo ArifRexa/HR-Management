@@ -39,7 +39,7 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         increment_employee = []
         for inc_employee in employees.all():
             if inc_employee.salaryhistory_set.count() > 0 and inc_employee.current_salary.active_from <= (
-                    datetime.datetime.today() - datetime.timedelta(days=130)).date():
+                    datetime.datetime.today() - datetime.timedelta(days=150)).date():
                 increment_employee.append(inc_employee)
 
         print(f'{timezone.now().date().day}')
