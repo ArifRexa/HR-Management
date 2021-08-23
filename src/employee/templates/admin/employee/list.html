@@ -6,25 +6,17 @@
 
 {% block extrahead %}
     <style>
-        dl {
-            width: 100%;
-            overflow: hidden;
-            padding: 0;
-            margin: 0
-        }
-
-        dt {
-            float: left;
-            width: 50%;
-            padding: 0;
-            margin: 0
-        }
-
-        dd {
-            float: left;
-            width: 50%;
-            padding: 0;
-            margin: 0
+        .d-flex {
+            display: flex;
+        {#padding: 20px 40px;#}
         }
     </style>
+{% endblock %}
+
+{% block content_title %}
+    <div class="d-flex">
+        <h1 style="width: 75%">Select employee to change</h1>
+        <a style="width: 20%" href="{% url 'admin:employee.summery' %}">Summery</a>
+    </div>
+
 {% endblock %}

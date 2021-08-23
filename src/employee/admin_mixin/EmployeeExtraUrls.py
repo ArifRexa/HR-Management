@@ -1,3 +1,5 @@
+import datetime
+import operator
 import random
 import re
 
@@ -11,7 +13,7 @@ from django.forms import SelectDateWidget
 from django.template.response import TemplateResponse
 from django.urls import path
 
-from employee.models import Employee
+from employee.models import Employee, SalaryHistory
 from project_management.models import EmployeeProjectHour, ProjectHour, Project
 
 
@@ -24,11 +26,34 @@ class EmployeeExtraUrls(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         employee_urls = [
-            path('graph/', self.admin_site.admin_view(self.all_employee_hour_graph_view)),
+            path('formal-summery/', self.admin_site.admin_view(self.formal_summery), name='employee.summery'),
+            path('graph/', self.admin_site.admin_view(self.all_employee_hour_graph_view), name='employee.hours.graph'),
             path('<int:employee_id__exact>/graph/', self.admin_site.admin_view(self.hour_graph_view),
                  name='hour_graph'),
         ]
         return employee_urls + urls
+
+    def formal_summery(self, request, *args, **kwargs):
+        employees = Employee.objects.filter(active=True)
+        increment_employee = []
+        for inc_employee in employees.all():
+            if inc_employee.salaryhistory_set.count() > 0 and inc_employee.current_salary.active_from <= (
+                    datetime.datetime.today() - datetime.timedelta(days=130)).date():
+                increment_employee.append(inc_employee)
+
+        context = dict(
+            self.admin_site.each_context(request),
+            birthday=employees.filter(date_of_birth__month__gte=datetime.date.today().month,
+                                      date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(
+                                          days=30)).month).order_by('date_of_birth'),
+            permanent=employees.filter(permanent_date__isnull=True,
+                                       active=True,
+                                       joining_date__lte=(datetime.date.today() - datetime.timedelta(
+                                           days=80))).order_by('joining_date'),
+            increment=increment_employee
+        )
+        print(context['increment'])
+        return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
 
     def hour_graph_view(self, request, *args, **kwargs):
         """

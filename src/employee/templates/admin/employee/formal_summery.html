@@ -1,0 +1,44 @@
+{% extends "admin/base_site.html" %}
+
+{% block extrahead %}
+    <style>
+        .d-flex {
+            display: flex;
+            padding: 20px 40px;
+        }
+
+        .d-flex div {
+            width: 33.33%;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex">
+        <div>
+            <h1>Birthday</h1>
+            <ol>
+                {% for employee_birthday in birthday %}
+                    <li>{{ employee_birthday.full_name }} at <b>{{ employee_birthday.date_of_birth }}</b></li>
+                {% endfor %}
+            </ol>
+        </div>
+        <div>
+            <h1>Increment</h1>
+            <ol>
+                {% for employee_increment in increment %}
+                    <li>{{ employee_increment.full_name }} last incremented at
+                        <b>{{ employee_increment.current_salary.active_from }}</b></li>
+                {% endfor %}
+            </ol>
+        </div>
+        <div>
+            <h1>Permanent</h1>
+            <ol>
+                {% for permanent_employee in permanent %}
+                    <li>{{ permanent_employee.full_name }} Joined At <b>{{ permanent_employee.joining_date }}</b></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+{% endblock %}

@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib import admin
 from django.db import models
 from django.forms import Textarea
@@ -46,6 +48,8 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, a
     list_per_page = 20
     ordering = ['-active', 'permanent_date']
     list_filter = ['active', 'permanent_date']
+
+    change_list_template = 'admin/employee/list.html'
 
     def get_list_display(self, request):
         list_display = ['employee_info', 'leave_info', 'salary_history', 'permanent_status', 'active']

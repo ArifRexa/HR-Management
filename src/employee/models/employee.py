@@ -12,6 +12,7 @@ from settings.models import Designation, LeaveManagement, PayScale
 class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
+    date_of_birth = models.DateField(null=True, blank=True)
     email = models.EmailField(max_length=255, null=True)
     address = models.TextField(null=True)
     phone = models.CharField(max_length=60, help_text='Use (,) comma for separate phone numbers')
