@@ -12,6 +12,7 @@ from django.db.models.functions import Coalesce
 from django.forms import SelectDateWidget
 from django.template.response import TemplateResponse
 from django.urls import path
+from django.utils import timezone
 
 from employee.models import Employee, SalaryHistory
 from project_management.models import EmployeeProjectHour, ProjectHour, Project
@@ -41,13 +42,13 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                     datetime.datetime.today() - datetime.timedelta(days=130)).date():
                 increment_employee.append(inc_employee)
 
+        print(f'{timezone.now().date().day}')
         context = dict(
             self.admin_site.each_context(request),
             title='Employee Calender',
             birthday=employees.extra(
                 select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
-                date_of_birth__month__gte=datetime.date.today().month,
-                date_of_birth__day__gte=datetime.date.today().day,
+                date_of_birth__month__gte=timezone.now().date().month,
                 date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(
                     days=30)).month).order_by('birth_month', 'birth_day'),
             permanent=employees.filter(permanent_date__isnull=True,
