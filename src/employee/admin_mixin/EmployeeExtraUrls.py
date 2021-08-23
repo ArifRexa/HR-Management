@@ -43,6 +43,7 @@ class EmployeeExtraUrls(admin.ModelAdmin):
 
         context = dict(
             self.admin_site.each_context(request),
+            title='Employee Calender',
             birthday=employees.extra(
                 select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
                 date_of_birth__month__gte=datetime.date.today().month,
