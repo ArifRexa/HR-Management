@@ -49,7 +49,8 @@ INSTALLED_APPS = [
     'settings',
     'employee',
     'project_management',
-    'account'
+    'account',
+    'asset_management'
 ]
 
 MIDDLEWARE = [

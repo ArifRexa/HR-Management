@@ -1,3 +1,3 @@
 from .salary import admin
 
-from . import income, expense, salary_disbursement
+from . import income, expense, salary_disbursement, fund
