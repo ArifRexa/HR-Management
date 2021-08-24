@@ -1,7 +1,9 @@
 from django.contrib import admin
 
+from project_management.admin.graph.admin import ExtraUrl
 
-class ProjectHourAction(admin.ModelAdmin):
+
+class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
     actions = ['export_as_csv', 'enable_payable_status', 'disable_payable_status']
 
     def get_actions(self, request):

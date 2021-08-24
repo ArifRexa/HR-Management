@@ -1,0 +1,109 @@
+{% extends "admin/base_site.html" %}
+
+
+
+{% block content %}
+    {#    <script src="https://code.highcharts.com/highcharts.js"></script>#}
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+
+    <div id="graph" style="height: auto; min-width: 310px"></div>
+
+
+
+    <script>
+
+
+        var makeSumSeries = function (chart) {
+            var series = chart.series,
+                each = Highcharts.each,
+                sum,
+                x = [],
+                flag;
+
+            series[series.length - 1].update({
+                data: []
+            }, false);
+            each(series, function (p, z) {
+                if (p.visible === true) {
+                    each(p.data, function (serie, i) {
+                        flag = true;
+                        for (var b = 0; b < x.length; b++) {
+                            if (serie.x === x[b]) {
+                                flag = false;
+                            }
+                        }
+                        if (flag) {
+                            x.push(serie.x);
+                        }
+                    });
+                }
+            });
+            for (var i = 0; i < x.length; i++) {
+                sum = 0;
+                each(series, function (p, k) {
+                    if (p.name !== 'sum' && p.visible === true) {
+                        each(p.data, function (ob, j) {
+                            if (ob.x === x[i]) {
+                                sum += ob.y;
+                            }
+                        });
+                    }
+                });
+                console.log(sum);
+                series[series.length - 1].addPoint({
+                    y: parseFloat(sum.toFixed(2)),
+                    x: x[i]
+                }, false);
+            }
+            chart.redraw();
+            console.log(series[series.length - 1]);
+        };
+
+
+        Highcharts.stockChart('graph', {
+            legend: {
+                enabled: true,
+                navigation: {
+                    enabled: false
+                }
+            },
+            rangeSelector: {
+                selected: 4
+            },
+
+            yAxis: {
+                labels: {
+                    formatter: function () {
+                        return (this.value > 0 ? ' + ' : '') + this.value + '%';
+                    }
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 2,
+                    color: 'silver'
+                }]
+            },
+
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b>',
+                valueDecimals: 2,
+                split: true
+            },
+
+            series: {{ series | safe }}
+
+
+            {#series: [#}
+            {#    {#}
+            {#        name : 'Scorecard',#}
+            {#        data : [#}
+            {#            [1617904800000, 40.0], [1618509600000, 40.0], [1619114400000, 45.0], [1619719200000, 40.0]#}
+            {#        ]#}
+            {#    }#}
+            {#]#}
+        });
+    </script>
+{% endblock %}
