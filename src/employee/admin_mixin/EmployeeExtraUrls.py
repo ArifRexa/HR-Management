@@ -129,15 +129,18 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         date_to_check = datetime.date.today() - datetime.timedelta(days=60)
         for employee in employees:
             data = []
-            employee_hours = employee.employeeprojecthour_set.extra(
-                select={'date_str': "convert(SUBSTRING_INDEX(UNIX_TIMESTAMP(created_at)*1000,'.',1), SIGNED)"}
-            ).order_by('created_at').values(
+            employee_hours = employee.employeeprojecthour_set.order_by('project_hour__date').values(
                 'hours',
-                'date_str',
-                'project_hour'
+                'project_hour',
+                'project_hour__date'
             )
             for employee_hour in employee_hours:
-                data.append([employee_hour['date_str'], employee_hour['hours']])
+                data.append([
+                    datetime.datetime.combine(
+                        employee_hour['project_hour__date'],
+                        datetime.datetime.min.time()
+                    ).timestamp(),
+                    employee_hour['hours']])
             dataset.append({
                 'type': 'spline',
                 'name': employee.full_name,
