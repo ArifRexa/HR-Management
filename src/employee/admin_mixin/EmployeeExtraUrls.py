@@ -13,6 +13,7 @@ from django.forms import SelectDateWidget
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
+from rest_framework.fields import FloatField
 
 from employee.models import Employee, SalaryHistory
 from project_management.models import EmployeeProjectHour, ProjectHour, Project
@@ -37,12 +38,12 @@ class EmployeeExtraUrls(admin.ModelAdmin):
     def formal_summery(self, request, *args, **kwargs):
         employees = Employee.objects.filter(active=True)
         increment_employee = []
+        today = datetime.datetime.today()
         for inc_employee in employees.all():
             if inc_employee.salaryhistory_set.count() > 0 and inc_employee.current_salary.active_from <= (
-                    datetime.datetime.today() - datetime.timedelta(days=150)).date():
+                    today - datetime.timedelta(days=150)).date():
                 increment_employee.append(inc_employee)
 
-        print(f'{timezone.now().date().day}')
         context = dict(
             self.admin_site.each_context(request),
             title='Employee Calender',
@@ -55,7 +56,8 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                                        active=True,
                                        joining_date__lte=(datetime.date.today() - datetime.timedelta(
                                            days=80))).order_by('joining_date'),
-            increment=increment_employee
+            increment=increment_employee,
+            anniversaries=employees.filter(date_of_birth__month__in=[today.month, today.month + 1])
         )
         print(context['increment'])
         return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
@@ -109,47 +111,37 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         @param request:
         @return:
         """
-        if not request.user.is_superuser:
-            raise PermissionDenied
-        print(request.GET.getlist('id__in[]'))
-        employee_filter = {
-            'active': True,
-            'manager': False,
-            'user__is_superuser': False
-        }
-        if len(request.GET.getlist('id__in[]')) > 0:
-            employee_filter['id__in'] = request.GET.getlist('id__in[]')
-        employees = Employee.objects.filter(**employee_filter).all()
-        dataset = self._get_all_employee_dataset(employees)
-        filter_form = FilterForm(initial={
-            'project_hour__date__gte': request.GET.get('project_hour__date__gte', ''),
-            'project_hour__date__lte': request.GET.get('project_hour__date__lte', '')
-        })
         context = dict(
             self.admin_site.each_context(request),
-            employees=employees,
-            employees_array=list(employees.values_list('full_name', flat=True)),
-            dataset=dataset,
-            filter_form=filter_form,
+            series=self._get_all_employee_dataset()
         )
         return TemplateResponse(request, "admin/employee/all_employee_hour_graph.html", context)
 
-    def _get_all_employee_dataset(self, employees):
+    def _get_all_employee_dataset(self):
         """
 
         @param employees:
         @return:
         """
         dataset = []
-        for project in Project.objects.filter(active=True).all():
-            color = f'rgb{(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))}'
-            project_hour = {
-                'label': project.title,
-                'backgroundColor': color,
-                'borderColor': color,
-                'data': self._get_employee_project_hour(project, employees)
-            }
-            dataset.append(project_hour)
+        employees = Employee.objects.filter(active=True, manager=False).all()
+        date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+        for employee in employees:
+            data = []
+            employee_hours = employee.employeeprojecthour_set.extra(
+                select={'date_str': "convert(SUBSTRING_INDEX(UNIX_TIMESTAMP(created_at)*1000,'.',1), SIGNED)"}
+            ).order_by('created_at').values(
+                'hours',
+                'date_str',
+                'project_hour'
+            )
+            for employee_hour in employee_hours:
+                data.append([employee_hour['date_str'], employee_hour['hours']])
+            dataset.append({
+                'type': 'spline',
+                'name': employee.full_name,
+                'data': data
+            })
         return dataset
 
     def _get_employee_project_hour(self, project, employees):

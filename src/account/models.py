@@ -46,6 +46,14 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
 
 
+class ExpenseGroup(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=255)
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+
 class ExpenseCategory(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True, blank=True)
@@ -55,6 +63,7 @@ class ExpenseCategory(TimeStampMixin, AuthorMixin):
 
 
 class Expense(TimeStampMixin, AuthorMixin):
+    expanse_group = models.ForeignKey(ExpenseGroup, on_delete=models.RESTRICT)
     expense_category = models.ForeignKey(ExpenseCategory, on_delete=models.RESTRICT)
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField()

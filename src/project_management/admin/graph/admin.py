@@ -46,7 +46,7 @@ class ExtraUrl(admin.ModelAdmin):
             })
         series.append({
             'type': 'spline',
-            'name': 'SUM',
+            'name': 'sum',
             'data': []
         })
         return series

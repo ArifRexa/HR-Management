@@ -46,7 +46,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, a
     inlines = (AttachmentInline, SalaryHistoryInline, BankAccountInline)
     search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
     list_per_page = 20
-    ordering = ['-active', 'permanent_date']
+    ordering = ['-active']
     list_filter = ['active', 'permanent_date']
 
     change_list_template = 'admin/employee/list.html'

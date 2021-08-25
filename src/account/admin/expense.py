@@ -2,8 +2,13 @@ from django.contrib import admin
 from django.contrib.admin import AdminSite
 from django.db.models import Sum, Q
 
-from account.models import Expense, ExpenseCategory, ExpanseAttachment
+from account.models import Expense, ExpenseCategory, ExpanseAttachment, ExpenseGroup
 from config.admin.utils import simple_request_filter
+
+
+@admin.register(ExpenseGroup)
+class ExpenseGroupAdmin(admin.ModelAdmin):
+    list_display = ('title', 'note')
 
 
 @admin.register(ExpenseCategory)
@@ -18,9 +23,9 @@ class ExpanseAttachmentInline(admin.TabularInline):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'expense_category', 'amount', 'note', 'created_by')
+    list_display = ('date', 'expanse_group', 'expense_category', 'amount', 'note', 'created_by')
     date_hierarchy = 'date'
-    list_filter = ['expense_category__title', 'date']
+    list_filter = ['expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
 

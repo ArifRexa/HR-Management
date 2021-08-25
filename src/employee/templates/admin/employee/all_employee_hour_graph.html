@@ -1,79 +1,27 @@
 {% extends 'admin/base_site.html' %}
 
 {% block content %}
-    {% load static %}
-    <style>
-        ul {
-            list-style: none;
-        }
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
 
-        ul > li {
-            list-style: none !important;
-        }
-    </style>
-    <script src="{% url 'js-catalog' %}"></script>
-    <script src="{% static 'admin/js/core.js' %}"></script>
-    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
-    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
-
-
-    <div style="display: flex">
-        <div style="flex: 1 1 auto">
-            <canvas id="myChart"></canvas>
-        </div>
-        <form style="flex: 0 0 15vw">
-            {{ filter_form.media }}
-            {{ filter_form.as_ul }}
-            <ul>
-                <li><a href="?">Clear All</a></li>
-                {% for employee in employees %}
-                    <li>
-                        <label for="{{ employee.id }}">
-                            <input name="id__in[]" value="{{ employee.id }}" type="checkbox"
-                                   id="{{ employee.id }}"> {{ employee.full_name }}
-                        </label>
-                    </li>
-                {% endfor %}
-            </ul>
-            <button type="submit">Filter</button>
-        </form>
-    </div>
+    <div id="graph" style="height: 80vh; min-width: 310px"></div>
 
 
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const labels =
-            {{ employees_array | safe }};
-        const data = {
-            labels: labels,
-            datasets: {{ dataset | safe }}
-        };
-        const config = {
-            type: 'bar',
-            data,
-            options: {
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Chart.js Bar Chart - Stacked'
-                    },
-                },
-                responsive: true,
-                scales: {
-                    x: {
-                        stacked: true,
-                    },
-                    y: {
-                        stacked: true
-                    }
-                }
-            }
-        };
 
-        var myChart = new Chart(
-            document.getElementById('myChart'),
-            config
-        );
+        const highCharts = Highcharts.stockChart('graph', {
+            legend: {
+                enabled: true,
+                navigation: {
+                    enabled: false
+                }
+            },
+            series: {{ series | safe }}
+        });
+
+
     </script>
 {% endblock %}
