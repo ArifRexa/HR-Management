@@ -135,12 +135,11 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                 'project_hour__date'
             )
             for employee_hour in employee_hours:
-                data.append([
-                    datetime.datetime.combine(
-                        employee_hour['project_hour__date'],
-                        datetime.datetime.min.time()
-                    ).timestamp(),
-                    employee_hour['hours']])
+                timestamp = int(datetime.datetime.combine(
+                    employee_hour['project_hour__date'],
+                    datetime.datetime.min.time()
+                ).timestamp())
+                data.append([timestamp * 1000, employee_hour['hours']])
             dataset.append({
                 'type': 'spline',
                 'name': employee.full_name,
