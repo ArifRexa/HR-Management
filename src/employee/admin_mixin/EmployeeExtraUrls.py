@@ -57,7 +57,7 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                                        joining_date__lte=(datetime.date.today() - datetime.timedelta(
                                            days=80))).order_by('joining_date'),
             increment=increment_employee,
-            anniversaries=employees.filter(date_of_birth__month__in=[today.month, today.month + 1],
+            anniversaries=employees.filter(joining_date__month__in=[today.month, today.month + 1],
                                            permanent_date__isnull=False)
         )
         print(context['increment'])
