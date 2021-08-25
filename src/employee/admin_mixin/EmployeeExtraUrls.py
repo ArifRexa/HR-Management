@@ -129,7 +129,8 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         date_to_check = datetime.date.today() - datetime.timedelta(days=60)
         for employee in employees:
             data = []
-            employee_hours = employee.employeeprojecthour_set.order_by('project_hour__date').values(
+            employee_hours = employee.employeeprojecthour_set.order_by('project_hour__date').filter(
+                project_hour__date__gte=date_to_check).values(
                 'hours',
                 'project_hour',
                 'project_hour__date'
@@ -143,7 +144,7 @@ class EmployeeExtraUrls(admin.ModelAdmin):
             dataset.append({
                 'type': 'spline',
                 'name': employee.full_name,
-                'data': data
+                'data': data,
             })
         return dataset
 

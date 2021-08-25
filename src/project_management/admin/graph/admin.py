@@ -1,7 +1,8 @@
+import datetime
 import itertools
 
 from django.contrib import admin
-from django.db.models import Func, F, Value, CharField
+from django.db.models import Func, F, Value, CharField, Sum
 from django.template.response import TemplateResponse
 from django.urls import path
 
@@ -28,12 +29,11 @@ class ExtraUrl(admin.ModelAdmin):
     def get_data(self, request):
         series = list()
         projects = Project.objects.filter(active=True).all()
+        date_to_check = datetime.date.today() - datetime.timedelta(days=60)
         for project in projects:
-            data = project.projecthour_set.extra(
-                # select={'date_str': "DATE_FORMAT(date, '%%Y-%%m-%%d')"}
+            data = project.projecthour_set.filter(date__gte=date_to_check).extra(
                 select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
             ).order_by('date').values_list('date_str', 'hours')
-            print(list(data))
             # TODO : must be optimize otherwise it will effect the load time
             array_date = []
             for value in data:
@@ -44,9 +44,16 @@ class ExtraUrl(admin.ModelAdmin):
                 'name': project.title,
                 'data': list(array_date)
             })
+
+        sum_hours = ProjectHour.objects.filter(date__gte=date_to_check).extra(
+            select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+        ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+        sum_array = []
+        for sum_hour in sum_hours:
+            sum_array.append(list(sum_hour))
         series.append({
             'type': 'spline',
-            'name': 'sum',
-            'data': []
+            'name': 'Total Project Hours',
+            'data': sum_array
         })
         return series

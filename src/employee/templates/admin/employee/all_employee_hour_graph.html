@@ -12,6 +12,15 @@
 
     <script>
 
+        let series =
+            {{ series | safe }};
+
+        series.map(value => {
+            value['visible'] = false
+            return value
+        });
+
+
         const highCharts = Highcharts.stockChart('graph', {
             legend: {
                 enabled: true,
@@ -19,7 +28,7 @@
                     enabled: false
                 }
             },
-            series: {{ series | safe }}
+            series: series
         });
 
 
