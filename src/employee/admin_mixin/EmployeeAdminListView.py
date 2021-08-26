@@ -3,6 +3,9 @@ from django.db.models import Sum
 from django.urls import reverse
 from django.utils.html import format_html
 
+from django.contrib import admin
+from employee.models import Employee, EmployeeSkill
+
 
 class EmployeeAdminListView:
     def employee_info(self, obj):
@@ -29,10 +32,19 @@ class EmployeeAdminListView:
             history += f'<b>{intcomma(salary.payable_salary)}</b> ({naturalday(salary.active_from)}) <br>'
         return format_html(history)
 
+    @admin.display(ordering='active', description='Status')
     def permanent_status(self, obj):
-        if obj.permanent_date:
-            return format_html(f'<img src="/static/admin/img/icon-yes.svg" />')
-        return format_html(f'<img src="/static/admin/img/icon-no.svg" />')
+        return format_html(
+            f'Active : {"<img src=/static/admin/img/icon-yes.svg />" if obj.active else "<img src=/static/admin/img/icon-no.svg />"} <br>'
+            f'Permanent : {"<img src=/static/admin/img/icon-yes.svg />" if obj.permanent_date else "<img src=/static/admin/img/icon-no.svg />"}'
+        )
+
+    @admin.display(ordering='employeeskill__skill')
+    def skill(self, obj):
+        skill = ''
+        for employee_skill in obj.employeeskill_set.all():
+            skill += f'{employee_skill.skill.title} - {employee_skill.percentage}% </br>'
+        return format_html(skill)
 
     def sum_total_leave(self, obj):
         total = obj.aggregate(total=Sum('total_leave'))['total']

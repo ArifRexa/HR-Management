@@ -8,7 +8,7 @@ from config.utils.pdf import PDF
 from employee.admin_mixin.EmployeeActions import EmployeeActions
 from employee.admin_mixin.EmployeeAdminListView import EmployeeAdminListView
 from employee.admin_mixin.EmployeeExtraUrls import EmployeeExtraUrls
-from employee.models import SalaryHistory, Employee, BankAccount
+from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
 from employee.models.attachment import Attachment
 
 
@@ -41,10 +41,17 @@ class BankAccountInline(admin.TabularInline):
         return 1 if not obj else 0
 
 
+class SkillInline(admin.TabularInline):
+    model = EmployeeSkill
+
+    def get_extra(self, request, obj=None, **kwargs):
+        return 1 if not obj else 0
+
+
 @admin.register(Employee)
 class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, admin.ModelAdmin):
-    inlines = (AttachmentInline, SalaryHistoryInline, BankAccountInline)
-    search_fields = ['full_name', 'email', 'salaryhistory__payable_salary']
+    inlines = (SkillInline, AttachmentInline, SalaryHistoryInline, BankAccountInline)
+    search_fields = ['full_name', 'email', 'salaryhistory__payable_salary', 'employeeskill__skill__title']
     list_per_page = 20
     ordering = ['-active']
     list_filter = ['active', 'permanent_date']
@@ -52,7 +59,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, a
     change_list_template = 'admin/employee/list.html'
 
     def get_list_display(self, request):
-        list_display = ['employee_info', 'leave_info', 'salary_history', 'permanent_status', 'active']
+        list_display = ['employee_info', 'leave_info', 'salary_history', 'skill', 'permanent_status']
         if not request.user.is_superuser:
             list_display.remove('salary_history')
             list_display.remove('active')
