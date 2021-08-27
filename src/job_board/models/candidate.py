@@ -29,7 +29,7 @@ class Candidate(TimeStampMixin):
     email = models.EmailField(max_length=40, unique=True)
     email_otp = models.CharField(max_length=10, null=True, blank=True)
     email_verified_at = models.DateField(null=True, blank=True)
-    phone = models.CharField(max_length=10, unique=True)
+    phone = models.CharField(unique=True, max_length=10)
     password = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to='candidate/avatar/', null=True, blank=True)
     cv = models.FileField(upload_to=candidate_email_path)

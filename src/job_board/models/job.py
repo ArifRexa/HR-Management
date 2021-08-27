@@ -20,7 +20,7 @@ class Job(AuthorMixin, TimeStampMixin):
 
 class JobContext(AuthorMixin):
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='job_contexts')
-    title = models.CharField(null=True, max_length=255)
+    title = models.CharField(null=True, blank=True, max_length=255)
     description = HTMLField(null=True, blank=True)
 
 
