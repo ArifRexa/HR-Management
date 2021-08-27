@@ -1,14 +1,19 @@
 from django.contrib import admin
 from django import forms
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from django.db import models
 
 from job_board.models.assessment import Assessment
-from job_board.models.job import JobSummery, JobAdditionalField, Job
+from job_board.models.job import JobContext, JobSummery, JobAdditionalField, Job
 
 
 class JobSummeryInline(admin.StackedInline):
     model = JobSummery
     min_num = 1
+
+class JobContextInline(admin.TabularInline):
+    model = JobContext
+    extra = 1
 
 
 class AdditionalFieldInline(admin.TabularInline):
@@ -33,6 +38,6 @@ class JobForm(forms.ModelForm):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    inlines = (JobSummeryInline, AdditionalFieldInline)
+    inlines = (JobSummeryInline,JobContextInline, AdditionalFieldInline)
     list_display = ('title', 'job_summery', 'active')
     form = JobForm

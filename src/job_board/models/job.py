@@ -10,17 +10,18 @@ from job_board.models.assessment import Assessment
 class Job(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=155)
     slug = models.SlugField(max_length=255)
-    job_context = HTMLField(max_length=500)
-    job_responsibilities = HTMLField(null=True, blank=True)
-    educational_requirements = HTMLField(null=True, blank=True)
-    experience_requirements = HTMLField(null=True, blank=True)
-    additional_requirements = HTMLField(null=True, blank=True)
-    compensation = HTMLField(null=True, blank=True)
+    banner_image = models.ImageField(null=True, blank=True)
     assessments = models.ManyToManyField(Assessment)
     active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
+
+
+class JobContext(AuthorMixin):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='job_contexts')
+    title = models.CharField(null=True, max_length=255)
+    description = HTMLField(null=True, blank=True)
 
 
 class JobSummery(AuthorMixin, TimeStampMixin):
