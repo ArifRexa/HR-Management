@@ -15,7 +15,7 @@ class CandidateSerializer(ModelSerializer):
     Candidate serializer has been used in registration and fetch candidate
     this serializer is based on Candidate Model
     """
-    phone = serializers.IntegerField()
+    # phone = serializers.CharField(min_length=10, max_length=10)
 
     class Meta:
         model = Candidate
