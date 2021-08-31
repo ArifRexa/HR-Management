@@ -1,3 +1,4 @@
+import os
 import random
 import uuid
 from datetime import timedelta
@@ -20,6 +21,13 @@ def candidate_email_path(instance, filename):
     return 'hr/candidate/{0}/{1}'.format(instance.email, filename)
 
 
+def validate_file_extension(value):
+    ext = os.path.splitext(value.name)[1]  # [0] returns path+filename
+    valid_extensions = ['.pdf', '.doc', '.docx']
+    if not ext.lower() in valid_extensions:
+        raise ValidationError('Unsupported file extension. please attach pdf or doc file')
+
+
 class Candidate(TimeStampMixin):
     STATUS_CHOICE = (
         ('active', 'Active'),
@@ -32,7 +40,7 @@ class Candidate(TimeStampMixin):
     phone = models.CharField(unique=True, max_length=10)
     password = models.CharField(max_length=255)
     avatar = models.ImageField(upload_to='candidate/avatar/', null=True, blank=True)
-    cv = models.FileField(upload_to=candidate_email_path)
+    cv = models.FileField(upload_to=candidate_email_path, validators=[validate_file_extension])
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
 
     def __str__(self):

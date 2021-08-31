@@ -88,7 +88,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         @return:
         """
         if data['new_password'] != data['retype_new_password']:
-            raise serializers.ValidationError({'new_password': 'Retype password does not match with current password'})
+            raise serializers.ValidationError({'new_password': 'Re-type password does not match with new password'})
         user_pass = self.context['request'].user.password
         given_current_pass = hashers.make_password(data['current_password'], salt=settings.CANDIDATE_PASSWORD_HASH)
         if user_pass == given_current_pass:
