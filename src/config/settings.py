@@ -200,7 +200,7 @@ TINYMCE_DEFAULT_CONFIG = {
                "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
                "code,help,wordcount,codesample,spellchecker",
     "toolbar": "undo redo | formatselect | "
-               "bold italic backcolor | alignleft aligncenter "
+               "bold italic backcolor forecolor | alignleft aligncenter "
                "alignright alignjustify | bullist numlist outdent indent table | "
                "removeformat codesample | preview fullscreen help",
 }

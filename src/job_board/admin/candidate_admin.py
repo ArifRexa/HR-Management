@@ -64,7 +64,7 @@ class CandidateAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateJob)
 class CandidateJobAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_job', 'get_assessment', 'additional_message', 'merit')
+    list_display = ('candidate', 'get_job', 'expected_salary', 'get_assessment', 'additional_message', 'merit')
     list_display_links = ('get_job', 'candidate')
     search_fields = ('candidate__full_name', 'candidate__email', 'candidate__phone')
     list_filter = ('merit', 'job', 'candidate_assessment__assessment')
