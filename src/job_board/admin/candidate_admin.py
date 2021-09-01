@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth import hashers
-from django.utils.html import format_html
+from django.utils.html import format_html, linebreaks
 
 from config import settings
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment
@@ -19,7 +19,7 @@ class CandidateForm(forms.ModelForm):
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
-    list_display = ('full_name', 'email', 'phone', 'assessment')
+    list_display = ('full_name', 'email', 'phone', 'assessment', 'note')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
 
     @admin.display()
@@ -33,6 +33,12 @@ class CandidateAdmin(admin.ModelAdmin):
                                f'| {candidate_assessment.score} out of {candidate_assessment.assessment.score}' \
                                f'</span><br>'
         return format_html(assessments)
+
+    @admin.display()
+    def note(self, obj: Candidate):
+        candidate_job = obj.candidatejob_set.last()
+        if candidate_job:
+            return format_html(linebreaks(candidate_job.additional_message))
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
