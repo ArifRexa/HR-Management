@@ -202,7 +202,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "toolbar": "undo redo | formatselect | "
                "bold italic backcolor forecolor | alignleft aligncenter "
                "alignright alignjustify | bullist numlist outdent indent table | "
-               "removeformat codesample | preview fullscreen help",
+               "removeformat codesample image | preview fullscreen help",
 }
 
 TINYMCE_SPELLCHECKER = True
