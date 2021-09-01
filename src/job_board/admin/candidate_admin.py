@@ -19,8 +19,16 @@ class CandidateForm(forms.ModelForm):
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
-    list_display = ('full_name', 'email', 'phone', 'assessment', 'note')
+    list_display = ('contact_information', 'assessment', 'note')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
+
+    @admin.display(ordering='full_name')
+    def contact_information(self, obj: Candidate):
+        return format_html(
+            f'{obj.full_name} <br>'
+            f'{obj.email} <br>'
+            f'{obj.phone} <br>'
+        )
 
     @admin.display()
     def assessment(self, obj: Candidate):
