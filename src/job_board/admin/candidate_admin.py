@@ -19,11 +19,20 @@ class CandidateForm(forms.ModelForm):
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
-    list_display = ('full_name', 'email', 'phone', 'applied_job')
+    list_display = ('full_name', 'email', 'phone', 'assessment')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
 
-    def applied_job(self, obj: Candidate):
-        return obj.candidatejob_set.count()
+    @admin.display()
+    def assessment(self, obj: Candidate):
+        assessments = ''
+        candidate_job = obj.candidatejob_set.last()
+        if candidate_job is not None:
+            for candidate_assessment in candidate_job.candidate_assessment.all():
+                assessments += f'<span style="color : {"green" if candidate_assessment.result == "pass" else ""}">' \
+                               f'{candidate_assessment.assessment} ' \
+                               f'| {candidate_assessment.score} out of {candidate_assessment.assessment.score}' \
+                               f'</span><br>'
+        return format_html(assessments)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
