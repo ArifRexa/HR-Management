@@ -19,8 +19,14 @@ class CandidateForm(forms.ModelForm):
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
-    list_display = ('contact_information', 'assessment', 'note')
+    list_display = ('contact_information', 'assessment', 'note', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
+
+    @admin.display(ordering='candidatejob__expected_salary')
+    def expected_salary(self, obj: Candidate):
+        candidate_job = obj.candidatejob_set.last()
+        if candidate_job is not None:
+            return candidate_job.expected_salary
 
     @admin.display(ordering='full_name')
     def contact_information(self, obj: Candidate):

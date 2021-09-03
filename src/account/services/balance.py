@@ -36,7 +36,8 @@ class BalanceSummery:
             'salary': salary,
             'income': income,
             'date': date,
-            'pl': income - (expense + salary)
+            'pl': income - (expense + salary),
+            'rifat': ((income - (expense + salary)) * 25) / 100
         }
 
     def __sum_total(self, queryset, column):
