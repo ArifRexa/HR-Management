@@ -62,7 +62,6 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, a
         list_display = ['employee_info', 'leave_info', 'salary_history', 'skill', 'permanent_status']
         if not request.user.is_superuser:
             list_display.remove('salary_history')
-            list_display.remove('active')
         return list_display
 
     def get_queryset(self, request):
