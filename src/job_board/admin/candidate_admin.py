@@ -1,6 +1,10 @@
+import datetime
+
 from django import forms
 from django.contrib import admin
 from django.contrib.auth import hashers
+from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.template.loader import get_template
 from django.utils.html import format_html, linebreaks
 
 from config import settings
@@ -19,7 +23,7 @@ class CandidateForm(forms.ModelForm):
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
-    list_display = ('contact_information', 'assessment', 'note', 'expected_salary')
+    list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
 
     @admin.display(ordering='candidatejob__expected_salary')
@@ -38,15 +42,22 @@ class CandidateAdmin(admin.ModelAdmin):
 
     @admin.display()
     def assessment(self, obj: Candidate):
-        assessments = ''
+        candidate_job = obj.candidatejob_set.last()
+        if candidate_job is not None:
+            html_template = get_template('admin/candidate/list/assessment.html')
+            html_content = html_template.render({
+                'candidate_assessments': candidate_job.candidate_assessment.all()
+            })
+            return html_content
+
+    @admin.display()
+    def review(self, obj: Candidate):
+        review = ''
         candidate_job = obj.candidatejob_set.last()
         if candidate_job is not None:
             for candidate_assessment in candidate_job.candidate_assessment.all():
-                assessments += f'<span style="color : {"green" if candidate_assessment.result == "pass" else ""}">' \
-                               f'{candidate_assessment.assessment} ' \
-                               f'| {candidate_assessment.score} out of {candidate_assessment.assessment.score}' \
-                               f'</span><br>'
-        return format_html(assessments)
+                review += f'{candidate_assessment.note if candidate_assessment.note is not None else ""} <br>'
+        return format_html(review)
 
     @admin.display()
     def note(self, obj: Candidate):
@@ -89,8 +100,7 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'status',
-                    'result', 'preview_assessment', 'unique_id')
+    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'exam_time', 'preview_assessment')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
 
@@ -102,7 +112,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             f'{obj.candidate_job.candidate.full_name}'
         )
 
-    @admin.display()
+    @admin.display(description='Assessment')
     def get_assessment(self, obj):
         return format_html(
             f'{obj.assessment.title} </br>'
@@ -111,16 +121,17 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             f'{obj.assessment.get_type_display()}'
         )
 
-    @admin.display()
-    def assessment_pass_score(self, obj):
-        return obj.assessment.pass_score
-
     @admin.display(description='👁')
     def preview_assessment(self, obj):
         if obj.assessment.open_to_start:
             return 'own url'
         else:
             return obj.evaluation_url
+
+    @admin.display()
+    def exam_time(self, obj: CandidateAssessment):
+        if obj.exam_started_at:
+            return obj.updated_at - obj.exam_started_at
 
 
 @admin.register(ResetPassword)

@@ -1,0 +1,28 @@
+<style>
+    .column-assessment {
+        width: 25%;
+    }
+
+    .assessment-list {
+        list-style: none;
+        padding-left: 0;
+        margin-left: 0 !important;
+    }
+
+    .text-success {
+        color: green;
+    }
+
+    .text-danger {
+        color: red;
+    }
+</style>
+
+<ol class="assessment-list">
+    {% for candidate_assessment in candidate_assessments %}
+        <li class="{% if candidate_assessment.result == "pass" %} text-success{% elif candidate_assessment.result == 'fail' %} text-danger {% endif %}">
+            {{ candidate_assessment.score }}/ {{ candidate_assessment.assessment.score }}
+            : {{ candidate_assessment.assessment }}
+        </li>
+    {% endfor %}
+</ol>
