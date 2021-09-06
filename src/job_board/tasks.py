@@ -1,3 +1,4 @@
+from django.core import management
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Value, Count
 from django.template.loader import get_template
@@ -83,3 +84,7 @@ def mark_merit(assessment_id: int):
             candidate_assessment.candidate_job.save()
             print('mark merit', candidate_assessment.candidate_job)
             # TODO : Send email to candidate and admin
+
+
+def exam_reminder():
+    return management.call_command('exam_reminder')

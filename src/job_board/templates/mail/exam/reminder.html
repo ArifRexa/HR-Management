@@ -2,7 +2,7 @@
 
 {% block content %}
     <p>Hello <b>{{ candidate_assessment.candidate_job.candidate.full_name }}</b>, <br>
-        Thank you for apply at <b>Mediusware Ltd.</b> in the position of
+        You have applied at <b>Mediusware Ltd.</b> in the position of
         <b>{{ candidate_assessment.candidate_job.job.title }}</b>,
         <br>
     </p>
@@ -14,8 +14,6 @@
             <li>{{ exam.title }}</li>
         {% endfor %}
     </ul>
-    <br>
-    </p>
     <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
         bellow
     </p>
@@ -25,5 +23,4 @@
         Mediusware Ltd, <br>
         +8801750020408 <br>
         hr@mediusware.com</p>
-
 {% endblock %}
