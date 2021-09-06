@@ -37,7 +37,8 @@ class CandidateAdmin(admin.ModelAdmin):
         return format_html(
             f'{obj.full_name} <br>'
             f'{obj.email} <br>'
-            f'{obj.phone} <br>'
+            f'{obj.phone} <br><br>'
+            f'<a href="{obj.cv.url}" target="blank">Resume</a>'
         )
 
     @admin.display()
