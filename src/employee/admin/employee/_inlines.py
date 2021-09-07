@@ -1,0 +1,45 @@
+from django.contrib import admin
+from django.db import models
+from django.forms import Textarea
+
+from employee.models import SalaryHistory, Attachment, BankAccount, EmployeeSkill
+
+
+class SalaryHistoryInline(admin.TabularInline):
+    model = SalaryHistory
+
+    formfield_overrides = {
+        models.TextField: {'widget': Textarea(attrs={'rows': 2, 'cols': 60})}
+    }
+
+    def get_extra(self, request, obj=None, **kwargs):
+        return 1 if not obj else 0
+
+    def get_fields(self, request, obj=None):
+        fields = super(SalaryHistoryInline, self).get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields.remove('note')
+        return fields
+
+
+class AttachmentInline(admin.TabularInline):
+    model = Attachment
+    extra = 0
+
+
+class BankAccountInline(admin.TabularInline):
+    model = BankAccount
+
+    def get_extra(self, request, obj=None, **kwargs):
+        return 1 if not obj else 0
+
+
+class SkillInline(admin.TabularInline):
+    model = EmployeeSkill
+
+    def get_extra(self, request, obj=None, **kwargs):
+        return 1 if not obj else 0
+
+
+class EmployeeInline(admin.ModelAdmin):
+    inlines = (SkillInline, AttachmentInline, SalaryHistoryInline, BankAccountInline)

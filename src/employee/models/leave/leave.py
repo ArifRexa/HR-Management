@@ -1,12 +1,10 @@
 from django.contrib.auth.models import User
-from django.core.mail import EmailMessage
 from django.db import models
 from django.template.defaultfilters import truncatewords
-from django_q.tasks import async_task
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-from employee.model_mixin.LeaveMixin import LeaveMixin
+from employee.models.leave.LeaveMixin import LeaveMixin
 from employee.models.employee import Employee
 
 

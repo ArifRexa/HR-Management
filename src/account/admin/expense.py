@@ -26,7 +26,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('date', 'expanse_group', 'expense_category', 'amount', 'note', 'created_by')
     date_hierarchy = 'date'
     list_filter = ['expanse_group', 'expense_category', 'date']
-    change_list_template = 'admin/expense/list.html'
+    change_list_template = 'admin/expense/index.html'
     inlines = [ExpanseAttachmentInline]
 
     def get_queryset(self, request):

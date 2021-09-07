@@ -4,6 +4,7 @@ from django import forms
 from django.contrib import admin
 from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturaltime
+from django.db.models import Sum
 from django.template.loader import get_template
 from django.utils.html import format_html, linebreaks
 

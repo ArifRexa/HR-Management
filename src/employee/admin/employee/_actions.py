@@ -1,16 +1,8 @@
-from time import sleep
-
 from django.contrib import admin, messages
-from django.core.mail import EmailMessage, EmailMultiAlternatives, send_mass_mail, send_mail
-from django.http import QueryDict
 from django.template import loader
-from django.template.loader import get_template
 from django.utils.text import slugify
-from django.utils.translation import ngettext
 from django_q.tasks import async_task
-
 from config.utils.pdf import PDF
-from employee.tasks import send_mail_to_employee
 
 
 class EmployeeActions:

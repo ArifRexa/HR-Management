@@ -1,7 +1,4 @@
 import datetime
-import operator
-import random
-import re
 
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminDateWidget
@@ -9,12 +6,11 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet, Sum, Value
 from django import forms
 from django.db.models.functions import Coalesce
-from django.forms import SelectDateWidget
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
-from rest_framework.fields import FloatField
 
+from account.models import EmployeeSalary
 from employee.models import Employee, SalaryHistory
 from project_management.models import EmployeeProjectHour, ProjectHour, Project
 
@@ -32,40 +28,41 @@ class EmployeeExtraUrls(admin.ModelAdmin):
             path('graph/', self.admin_site.admin_view(self.all_employee_hour_graph_view), name='employee.hours.graph'),
             path('<int:employee_id__exact>/graph/', self.admin_site.admin_view(self.hour_graph_view),
                  name='hour_graph'),
+            path('<int:employee_id__exact>/salary/received-history/',
+                 self.admin_site.admin_view(self.salary_receive_history), name='employee.salary.receive.history')
         ]
         return employee_urls + urls
 
-    def formal_summery(self, request, *args, **kwargs):
-        employees = Employee.objects.filter(active=True)
-        increment_employee = []
-        today = datetime.datetime.today()
-        for inc_employee in employees.all():
-            if inc_employee.salaryhistory_set.count() > 0 and inc_employee.current_salary.active_from <= (
-                    today - datetime.timedelta(days=150)).date():
-                increment_employee.append(inc_employee)
+    def salary_receive_history(self, request, *args, **kwargs):
+        if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
+            raise PermissionDenied
 
+        employee = Employee.objects.get(id=kwargs.get(*kwargs))
+        employee_salaries = employee.employeesalary_set.filter(employee_id__exact=kwargs.get(*kwargs)).order_by('-id')
+        context = dict(
+            self.admin_site.each_context(request),
+            employee=employee,
+            employee_salaries=employee_salaries
+        )
+        return TemplateResponse(request, "admin/employee/paid_salary_history.html", context=context)
+
+    def formal_summery(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        nearby_summery = EmployeeNearbySummery()
         context = dict(
             self.admin_site.each_context(request),
             title='Employee Calender',
-            birthday=employees.extra(
-                select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
-                date_of_birth__month__gte=timezone.now().date().month,
-                date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(
-                    days=30)).month).order_by('birth_month', 'birth_day'),
-            permanent=employees.filter(permanent_date__isnull=True,
-                                       active=True,
-                                       joining_date__lte=(datetime.date.today() - datetime.timedelta(
-                                           days=80))).order_by('joining_date'),
-            increment=increment_employee,
-            anniversaries=employees.filter(joining_date__month__in=[today.month, today.month + 1],
-                                           permanent_date__isnull=False)
+            birthday=nearby_summery.birthdays(),
+            permanent=nearby_summery.permanents,
+            increment=nearby_summery.increments(),
+            anniversaries=nearby_summery.anniversaries()
         )
-        print(context['increment'])
         return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
 
     def hour_graph_view(self, request, *args, **kwargs):
         """
-
+        Hour graph by employee id
         @param request:
         @param args:
         @param kwargs:
@@ -91,6 +88,9 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         @param kwargs:
         @return:
         """
+        if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
+            raise PermissionDenied
+        print(request.GET)
         chart = {'label': "Weekly View", 'total_hour': 0,
                  'labels': [], 'data': [], }
 
@@ -112,6 +112,8 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         @param request:
         @return:
         """
+        if not request.user.is_superuser:
+            raise PermissionDenied
         context = dict(
             self.admin_site.each_context(request),
             series=self._get_all_employee_dataset()
@@ -165,3 +167,42 @@ class EmployeeExtraUrls(admin.ModelAdmin):
             )
             employee_hours.append(total_hour['sum_hours'] + total_project_manage_hour['sum_hours'])
         return employee_hours
+
+
+class EmployeeNearbySummery:
+    """
+    Employee nearby summery class
+    will return birthdays, permanents, and employee to have an increment nearby
+    """
+
+    def __init__(self):
+        self.today = datetime.datetime.today()
+        self.employees = Employee.objects.filter(active=True)
+
+    def birthdays(self):
+        return self.employees.extra(
+            select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
+            date_of_birth__month__gte=timezone.now().date().month,
+            date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(days=30)).month
+        ).order_by('birth_month', 'birth_day')
+
+    def permanents(self):
+        return self.employees.filter(
+            permanent_date__isnull=True,
+            active=True,
+            joining_date__lte=(datetime.date.today() - datetime.timedelta(days=80))
+        ).order_by('joining_date')
+
+    def increments(self):
+        increment_employee = []
+        for inc_employee in self.employees.all():
+            if inc_employee.salaryhistory_set.count() > 0 and inc_employee.current_salary.active_from <= (
+                    self.today - datetime.timedelta(days=150)).date():
+                increment_employee.append(inc_employee)
+        return increment_employee
+
+    def anniversaries(self):
+        return self.employees.filter(
+            joining_date__month__in=[self.today.month, self.today.month + 1],
+            permanent_date__isnull=False
+        )

@@ -1,0 +1,11 @@
+<div style="padding-bottom: 15px">
+    <b>Name &emsp; &emsp; &nbsp: {{ employee }} </b><br>
+    <b>Designation :</b> {{ employee.designation }} <br>
+    {% if employee.resignation_date is not None %}
+        <b>Resign at &emsp;&nbsp;:</b> {{ employee.resignation_date }}<br>
+    {% endif %}
+    <b>Joined at &emsp;&nbsp;:</b> {{ employee.joining_date }} ({{ employee.joining_date_human }}) <br>
+</div>
+
+<a href="{% url 'admin:hour_graph' employee.id %}">📈</a>
+<a href="{% url 'admin:employee.salary.receive.history' employee.id %}">💳</a>

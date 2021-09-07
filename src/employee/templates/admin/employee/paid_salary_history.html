@@ -1,0 +1,40 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+    <h1>{{ employee.full_name }}</h1>
+
+    <div style="overflow-x:auto;">
+        <table style="min-width: 100%">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Net Salary</th>
+                <th>Overtime</th>
+                {% if employee.manager %}
+                    <th>Project Bonus</th>
+                {% endif %}
+                <th>Leave Bonus</th>
+                <th>Festival Bonus</th>
+                <th>Gross Salary</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for employee_salary in employee_salaries %}
+                <tr>
+                    <td>{{ employee_salary.salary_sheet.date }}</td>
+                    <td>{{ employee_salary.net_salary }}</td>
+                    <td>{{ employee_salary.overtime }}</td>
+                    {% if employee.manager %}
+                        <td>{{ employee_salary.project_bonus }}</td>
+                    {% endif %}
+                    <td>{{ employee_salary.leave_bonus }}</td>
+                    <td>{{ employee_salary.festival_bonus }}</td>
+                    <td>{{ employee_salary.gross_salary }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+{% endblock %}

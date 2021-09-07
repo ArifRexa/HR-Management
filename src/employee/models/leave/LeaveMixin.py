@@ -37,8 +37,7 @@ class LeaveMixin(models.Model):
         office_holidays = PublicHolidayDate.objects.filter(date__gte=self.start_date,
                                                            date__lte=self.end_date).values_list('date', flat=True)
         print(office_holidays)
-        delta = self.end_date - self.start_date
-        weekly_holiday, public_holiday = [], []
+        delta, weekly_holiday, public_holiday = self.end_date - self.start_date, [], []
         self.note = ""
         for i in range(delta.days + 1):
             date = self.start_date + datetime.timedelta(days=i)
@@ -48,8 +47,13 @@ class LeaveMixin(models.Model):
             if date in office_holidays:
                 self.note += "The date {} is public holiday \n".format(date)
                 public_holiday.append(date)
-        self.total_leave = (delta.days + 1) - (len(weekly_holiday) + len(public_holiday))
-        self.note += "Applied day total {}. chargeable day {}".format(delta.days + 1, self.total_leave)
+        print("employee", self.leave_type == 'non_paid')
+        if self.leave_type != 'non_paid':
+            self.total_leave = (delta.days + 1) - (len(weekly_holiday) + len(public_holiday))
+            self.note += "Applied day total {}. chargeable day {}".format(delta.days + 1, self.total_leave)
+        else:
+            self.total_leave = delta.days + 1
+            self.note = "Applied day total {}. chargeable day {}".format(delta.days + 1, self.total_leave)
         super().save(*args, **kwargs)
 
     class Meta:

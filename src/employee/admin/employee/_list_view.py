@@ -1,22 +1,28 @@
 from django.contrib.humanize.templatetags.humanize import intcomma, naturalday, naturaltime
 from django.db.models import Sum
+from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
 
 from django.contrib import admin
-from employee.models import Employee, EmployeeSkill
+
+from employee.models import Employee
 
 
 class EmployeeAdminListView:
-    def employee_info(self, obj):
-        resigned = obj.resignation_set.filter(status='approved')
-        return format_html(
-            f'<b>Name &emsp; &emsp; &nbsp:  {obj.full_name.capitalize()} </b><br>'
-            f'<b>Designation :</b> {obj.designation} <br>'
-            f'<b>Joined at &emsp;&nbsp;:</b> {naturalday(obj.joining_date)} ({obj.joining_date_human}) <br>'
-            f'{"<b>Resign at &emsp;&nbsp;:</b> " + str(resigned.first().date) if resigned.first() else ""}</br>'
-            f'<a href="{reverse("admin:hour_graph", kwargs={"employee_id__exact": obj.id})}">📈</a>'
-        )
+    def employee_info(self, obj: Employee):
+        html_template = get_template('admin/employee/list/employee_info.html')
+        html_content = html_template.render({
+            'employee': obj
+        })
+        return format_html(html_content)
+        # return format_html(
+        #     f'<b>Name &emsp; &emsp; &nbsp:  {obj.full_name.capitalize()} </b><br>'
+        #     f'<b>Designation :</b> {obj.designation} <br>'
+        #     f'<b>Joined at &emsp;&nbsp;:</b> {naturalday(obj.joining_date)} ({obj.joining_date_human}) <br>'
+        #     f'{"<b>Resign at &emsp;&nbsp;:</b> " + str(resigned.first().date) if resigned.first() else ""}</br>'
+        #     f'<a href="{reverse("admin:hour_graph", kwargs={"employee_id__exact": obj.id})}">📈</a>'
+        # )
 
     def leave_info(self, obj):
         approved_leave = obj.leave_set.filter(status='approved')

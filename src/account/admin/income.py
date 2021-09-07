@@ -24,7 +24,7 @@ class IncomeAdmin(admin.ModelAdmin):
         models.TextField: {'widget': Textarea(attrs={'rows': 2})}
     }
 
-    change_list_template = 'admin/income/list.html'
+    change_list_template = 'admin/income/index.html'
 
     list_per_page = 20
 
