@@ -19,7 +19,7 @@ class CustomFilteredSelect(FilteredSelectMultiple):
 
 
 class SalaryDisbursementForm(forms.ModelForm):
-    queryset = Employee.objects.filter(active=True, user__is_superuser=False).all()
+    queryset = Employee.objects.filter(active=True).all()
     employee = forms.ModelMultipleChoiceField(
         queryset=queryset,
         widget=CustomFilteredSelect(verbose_name='employee', is_stacked=False),
