@@ -28,7 +28,8 @@ class AssessmentAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         additional_urls = [
             path('<int:pk>/preview/', self.admin_site.admin_view(self.preview, cacheable=True),
-                 name='assessment_preview')
+                 name='assessment_preview'),
+            # path()
         ]
         return additional_urls + urls
 

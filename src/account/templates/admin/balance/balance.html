@@ -25,7 +25,13 @@
                     <td>{{ month.expense }}</td>
                     <td>{{ month.income }}</td>
                     <td>{{ month.pl }}</td>
-                    <td>{{ month.rifat }}</td>
+                    <td>
+                        {{ month.rifat }} <br>
+                        <sub>
+                            <span style="color: green;">{{ month.payment }}</span> /
+                            <span style="color: red">{{ month.due }}</span>
+                        </sub>
+                    </td>
                 </tr>
             {% endfor %}
             </tbody>

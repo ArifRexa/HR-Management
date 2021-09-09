@@ -8,6 +8,8 @@ from django.db.models import Sum
 from django.utils import timezone
 
 from django.conf import settings
+from django_userforeignkey.models.fields import UserForeignKey
+
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -91,6 +93,12 @@ class Income(TimeStampMixin, AuthorMixin):
     def save(self, *args, **kwargs):
         self.payment = self.hours * (self.hour_rate * 80)
         super(Income, self).save(*args, **kwargs)
+
+
+class ProfitShare(TimeStampMixin, AuthorMixin):
+    user = UserForeignKey(limit_choices_to={'is_superuser': True}, on_delete=models.CASCADE)
+    date = models.DateField()
+    payment_amount = models.FloatField()
 
 
 class Fund(TimeStampMixin, AuthorMixin):

@@ -75,7 +75,7 @@ class IncomeAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('balance/', self.balance_view, name='account_balance'),
+            path('balance/', self.admin_site.admin_view(self.balance_view), name='account_balance'),
         ]
         return my_urls + urls
 

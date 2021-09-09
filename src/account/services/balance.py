@@ -1,9 +1,10 @@
 from datetime import datetime, timedelta, date
 
 from dateutil.relativedelta import relativedelta
-from django.db.models import Sum
+from django.db.models import Sum, Value
+from django.db.models.functions import Coalesce
 
-from account.models import SalarySheet, Expense, Income
+from account.models import SalarySheet, Expense, Income, ProfitShare
 
 
 class BalanceSummery:
@@ -31,13 +32,20 @@ class BalanceSummery:
         salary = salary.total if salary else 0
         expense = self.__sum_total(Expense.objects.filter(**filter).all(), 'amount')
         income = self.__sum_total(Income.objects.filter(**filter).filter(status='approved').all(), 'payment')
+        profit_share_with_rifat = ((income - (expense + salary)) * 25) / 100
+        payment_done = ProfitShare.objects.filter(**filter).filter(user_id=1).aggregate(
+            monthly_payment_amount=Coalesce(Sum('payment_amount'), Value(0.0))
+        )['monthly_payment_amount']
+
         return {
             'expense': expense,
             'salary': salary,
             'income': income,
             'date': date,
             'pl': income - (expense + salary),
-            'rifat': ((income - (expense + salary)) * 25) / 100
+            'rifat': profit_share_with_rifat,
+            'payment': payment_done,
+            'due': profit_share_with_rifat - payment_done
         }
 
     def __sum_total(self, queryset, column):
