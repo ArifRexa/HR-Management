@@ -22,7 +22,8 @@ class Command(BaseCommand):
             from_email, to = 'no-reply@mediusware.com', candidate_assessment.candidate_job.candidate.email
             html_template = get_template('mail/exam/reminder.html')
             html_content = html_template.render({
-                'candidate_assessment': candidate_assessment
+                'candidate_assessment': candidate_assessment,
+                'url': f'https://job.mediusware.com/exam/{candidate_assessment.unique_id}'
             })
             email = EmailMultiAlternatives(subject=subject, from_email=from_email, to=[to])
             email.attach_alternative(html_content, "text/html")

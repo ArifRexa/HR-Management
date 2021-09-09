@@ -20,3 +20,7 @@ class Asset(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return self.title
+
+
+class SubAsset(AuthorMixin, TimeStampMixin):
+    pass
