@@ -105,7 +105,7 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'get_score', 'exam_time', 'preview_url')
+    list_display = ('candidate', 'get_score', 'exam_started_at', 'get_assessment', 'exam_time', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
     list_display_links = ('get_assessment',)
