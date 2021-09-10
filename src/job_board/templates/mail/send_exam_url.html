@@ -1,4 +1,4 @@
-{% extends 'mail/layout.html' %}
+{% extends 'mail/basic_layout.html' %}
 
 {% block content %}
     <p>Hello <b>{{ candidate_assessment.candidate_job.candidate.full_name }}</b>, <br>
@@ -19,7 +19,7 @@
     <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
         bellow
     </p>
-    {% include 'mail/_particals/button.html' with title='Start Exam' url=url %}
+    <a href="{{ url }}">Start Exam</a>
     <p>Wish you good luck</p>
     <p>Regards, <br>
         Mediusware Ltd, <br>
