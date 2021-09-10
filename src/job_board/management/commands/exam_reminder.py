@@ -18,7 +18,8 @@ class Command(BaseCommand):
         connection = get_connection()
         connection.open()
         for candidate_assessment in candidate_assessments:
-            subject = f'Reminder : {candidate_assessment.candidate_job.job.title} || Mediusware Ltd.'
+            subject = f'{candidate_assessment.candidate_job.candidate.full_name},' \
+                      f' {candidate_assessment.candidate_job.job.title} || Mediusware Ltd.'
             from_email, to = 'no-reply@mediusware.com', candidate_assessment.candidate_job.candidate.email
             html_template = get_template('mail/exam/reminder.html')
             html_content = html_template.render({

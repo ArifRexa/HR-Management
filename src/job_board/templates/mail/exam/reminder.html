@@ -3,7 +3,9 @@
 {% block content %}
     <p>Hello <b>{{ candidate_assessment.candidate_job.candidate.full_name }}</b>, <br>
         You have applied at <b>Mediusware Ltd.</b> in the position of
-        <b>{{ candidate_assessment.candidate_job.job.title }}</b>,
+        <b>{{ candidate_assessment.candidate_job.job.title }}</b> : <br>
+        Applied at : {{ candidate_assessment.candidate_job.created_at }} <br>
+        Expected Salary : {{ candidate_assessment.candidate_job.expected_salary }} BDT
         <br>
     </p>
     <p>

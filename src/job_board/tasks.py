@@ -28,7 +28,9 @@ def send_exam_url(candidate_assessment: CandidateAssessment):
         'url': f'https://job.mediusware.com/exam/{candidate_assessment.unique_id}'
     })
 
-    email = EmailMultiAlternatives(subject=f'Mediusware Job - {candidate_assessment.assessment.title}')
+    email = EmailMultiAlternatives(subject=f'{candidate_assessment.candidate_job.candidate.full_name}, '
+                                           f'Mediusware Job - {candidate_assessment.assessment.title}'
+                                   )
     email.attach_alternative(html_content, 'text/html')
     email.to = [candidate_assessment.candidate_job.candidate.email]
     email.from_email = 'Mediusware Ltd. <hr@mediusware.com>'
@@ -41,7 +43,9 @@ def send_evaluation_url_to_admin(candidate_assessment: CandidateAssessment):
         'candidate_assessment': candidate_assessment
     })
 
-    email = EmailMultiAlternatives(subject=f'Mediusware Job - {candidate_assessment.candidate_job.candidate}')
+    email = EmailMultiAlternatives(subject=f'{candidate_assessment.candidate_job.candidate.full_name}, '
+                                           f'Mediusware Job - {candidate_assessment.candidate_job.candidate}'
+                                   )
     email.attach_alternative(html_content, 'text/html')
     email.to = ['hr@mediusware.com']
     email.from_email = candidate_assessment.candidate_job.candidate.email
