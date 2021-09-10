@@ -105,10 +105,11 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'exam_time', 'preview_url')
+    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'get_score', 'exam_time', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
     list_display_links = ('get_assessment',)
+    ordering = ('-exam_started_at',)
 
     readonly_fields = ['step']
 
@@ -116,18 +117,19 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     def candidate(self, obj):
         html_template = get_template('admin/candidate_assessment/list/col_candidate.html')
         html_content = html_template.render({
-            'candidate': obj.candidate_job.candidate
+            'candidate': obj.candidate_job.candidate,
+            'candidate_job': obj.candidate_job
         })
         return format_html(html_content)
 
     @admin.display(description='Assessment')
     def get_assessment(self, obj):
-        return format_html(
-            f'{obj.assessment.title} </br>'
-            f'Total Score : {obj.assessment.score} </br>'
-            f'Pass Score : {obj.assessment.pass_score} </br>'
-            f'{obj.assessment.get_type_display()}'
-        )
+        html_template = get_template('admin/candidate_assessment/list/col_assessment.html')
+        print(obj.assessment)
+        html_content = html_template.render({
+            'assessment': obj.assessment
+        })
+        return format_html(html_content)
 
     @admin.display(description='👁')
     def preview_url(self, obj):
@@ -141,6 +143,14 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     def exam_time(self, obj: CandidateAssessment):
         if obj.exam_started_at:
             return obj.updated_at - obj.exam_started_at
+
+    @admin.display(description='score', ordering='score')
+    def get_score(self, obj: CandidateAssessment):
+        html_template = get_template('admin/candidate_assessment/list/col_score.html')
+        html_content = html_template.render({
+            'candidate_assessment': obj
+        })
+        return format_html(html_content)
 
     def get_urls(self):
         urls = super().get_urls()
