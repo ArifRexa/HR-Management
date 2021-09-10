@@ -9,6 +9,7 @@ from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html, linebreaks
+from openpyxl.cell.cell import get_type
 
 from config import settings
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
@@ -105,10 +106,10 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_score', 'exam_started_at', 'exam_time', 'preview_url')
+    list_display = ('candidate', 'get_score', 'exam_started_at', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
-    list_display_links = ('get_assessment',)
+    list_display_links = ('exam_started_at',)
     ordering = ('-exam_started_at',)
 
     readonly_fields = ['step']
@@ -118,18 +119,19 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         html_template = get_template('admin/candidate_assessment/list/col_candidate.html')
         html_content = html_template.render({
             'candidate': obj.candidate_job.candidate,
-            'candidate_job': obj.candidate_job
+            'candidate_job': obj.candidate_job,
+            'candidate_assessment': obj
         })
         return format_html(html_content)
 
-    # @admin.display(description='Assessment')
-    # def get_assessment(self, obj):
-    #     html_template = get_template('admin/candidate_assessment/list/col_assessment.html')
-    #     print(obj.assessment)
-    #     html_content = html_template.render({
-    #         'assessment': obj.assessment
-    #     })
-    #     return format_html(html_content)
+    @admin.display(description='Assessment')
+    def get_assessment(self, obj):
+        html_template = get_template('admin/candidate_assessment/list/col_assessment.html')
+        print(obj.assessment)
+        html_content = html_template.render({
+            'assessment': obj.assessment
+        })
+        return format_html(html_content)
 
     @admin.display(description='👁')
     def preview_url(self, obj):
@@ -139,16 +141,17 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         })
         return format_html(html_content)
 
-    @admin.display()
-    def exam_time(self, obj: CandidateAssessment):
-        if obj.exam_started_at:
-            return obj.updated_at - obj.exam_started_at
-
     @admin.display(description='score', ordering='score')
     def get_score(self, obj: CandidateAssessment):
+        exam_time = ''
+        if obj.exam_started_at:
+            exam_time_diff = obj.exam_end_at - obj.exam_started_at
+            days, hours, minutes = exam_time_diff.days * 24, exam_time_diff.seconds // 3600, exam_time_diff.seconds // 60 % 60
+            exam_time = days + hours + float(f'0.{minutes}')
         html_template = get_template('admin/candidate_assessment/list/col_score.html')
         html_content = html_template.render({
-            'candidate_assessment': obj
+            'candidate_assessment': obj,
+            'exam_time': exam_time
         })
         return format_html(html_content)
 
