@@ -1,0 +1,46 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+    {% load static %}
+
+    <ol>
+        {% for assessment_question in candidate_assessment.assessment.assessmentquestion_set.all %}
+            <li>
+                <div style="display: flex">
+                    <div style="width: 80%; display: flex">
+                        <div style="width: 60%">{{ assessment_question.title | safe }}</div>
+                        <div style="width: 20%">{{ assessment_question.get_type_display }} |
+                            Score {{ assessment_question.score }}</div>
+                    </div>
+                    <div style="width: 20%">
+                        Given answer
+                    </div>
+
+                </div>
+                <div style="display: flex">
+                    <ol style="width: 80%">
+                        {% for assessment_answer in assessment_question.answers.all %}
+                            <li>
+                                <div style="display: flex">
+                                    <div style="width: 60%"> {{ assessment_answer.title | safe }}</div>
+                                    <div style="width: 40%">
+                                        {% if assessment_answer.correct %}
+                                            <img src="{% static  '/admin/img/icon-yes.svg' %}" alt="">
+                                        {% else %}
+                                            <img src="{% static '/admin/img/icon-no.svg' %}" alt="">
+                                        {% endif %}
+                                        {{ assessment_answer.score }}
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                    <div style="width: 20%">
+                        given ans {{ assessment_question.id }}
+                        {{ candidate_assessment.candidate_job.id }}
+                    </div>
+                </div>
+
+            </li>
+        {% endfor %}
+    </ol>
+{% endblock %}

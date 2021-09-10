@@ -6,10 +6,13 @@ from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models import Sum
 from django.template.loader import get_template
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.html import format_html, linebreaks
 
 from config import settings
-from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment
+from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
+    CandidateAssessmentAnswer
 
 
 class CandidateForm(forms.ModelForm):
@@ -102,17 +105,20 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'exam_time', 'preview_assessment')
+    list_display = ('candidate', 'exam_started_at', 'get_assessment', 'score', 'exam_time', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
+    list_display_links = ('get_assessment',)
 
     readonly_fields = ['step']
 
     @admin.display()
     def candidate(self, obj):
-        return format_html(
-            f'{obj.candidate_job.candidate.full_name}'
-        )
+        html_template = get_template('admin/candidate_assessment/list/col_candidate.html')
+        html_content = html_template.render({
+            'candidate': obj.candidate_job.candidate
+        })
+        return format_html(html_content)
 
     @admin.display(description='Assessment')
     def get_assessment(self, obj):
@@ -124,16 +130,37 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         )
 
     @admin.display(description='👁')
-    def preview_assessment(self, obj):
-        if obj.assessment.open_to_start:
-            return 'own url'
-        else:
-            return obj.evaluation_url
+    def preview_url(self, obj):
+        html_template = get_template('admin/candidate_assessment/list/col_prev_assessment.html')
+        html_content = html_template.render({
+            'candidate_assessment': obj
+        })
+        return format_html(html_content)
 
     @admin.display()
     def exam_time(self, obj: CandidateAssessment):
         if obj.exam_started_at:
             return obj.updated_at - obj.exam_started_at
+
+    def get_urls(self):
+        urls = super().get_urls()
+        candidate_assessment_urls = [
+            path(
+                'candidate-assessment/<int:assessment__id__exact>/preview/',
+                self.admin_site.admin_view(self.preview_assessment),
+                name='candidate.assessment.preview'
+            )
+        ]
+        return candidate_assessment_urls + urls
+
+    def preview_assessment(self, request, *args, **kwargs):
+        candidate_assessment = CandidateAssessment.objects.get(id=kwargs.get(*kwargs))
+        context = dict(
+            self.admin_site.each_context(request),
+            candidate_assessment=candidate_assessment,
+            title=f'{candidate_assessment.assessment} - {candidate_assessment.candidate_job.candidate}',
+        )
+        return TemplateResponse(request, "admin/candidate_assessment/assessment_preview.html", context=context)
 
 
 @admin.register(ResetPassword)

@@ -1,0 +1,7 @@
+{% if candidate_assessment.assessment.open_to_start %}
+    <a href="{% url 'admin:candidate.assessment.preview' candidate_assessment.id %}" target="_blank">🔗</a>
+{% else %}
+    <a href="{{ candidate_assessment.evaluation_url }}" target="_blank">
+        {% if candidate_assessment.evaluation_url %}🔗{% endif %}
+    </a>
+{% endif %}
