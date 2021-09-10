@@ -17,14 +17,14 @@
         {% endfor %}
     </ul>
     <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
-        bellow
+        below
     </p>
-    <a href="{{ url }}">Start Exam</a>
+    <b style="font-size: 20px"><a href="{{ url }}">Start Exam</a></b>
     <p>Wish you good luck</p>
     <p>Regards, <br>
         Mediusware Ltd, <br>
         +8801750020408 <br>
         hr@mediusware.com</p>
 
-{#    <p style="display: none">{{ candidate_assessment.candidate_job.additional_message | safe }}</p>#}
+    {#    <p style="display: none">{{ candidate_assessment.candidate_job.additional_message | safe }}</p>#}
 {% endblock %}
