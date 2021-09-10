@@ -106,10 +106,10 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_score', 'exam_started_at', 'preview_url')
+    list_display = ('candidate', 'get_score', 'meta_information', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title')
-    list_display_links = ('exam_started_at',)
+    list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
 
     readonly_fields = ['step']
@@ -127,7 +127,6 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     @admin.display(description='Assessment')
     def get_assessment(self, obj):
         html_template = get_template('admin/candidate_assessment/list/col_assessment.html')
-        print(obj.assessment)
         html_content = html_template.render({
             'assessment': obj.assessment
         })
@@ -154,6 +153,10 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             'exam_time': exam_time
         })
         return format_html(html_content)
+
+    @admin.display(ordering='exam_started_at')
+    def meta_information(self, obj: CandidateAssessment):
+        return format_html(obj.candidate_job.additional_message.replace('\n', '<br>'))
 
     def get_urls(self):
         urls = super().get_urls()

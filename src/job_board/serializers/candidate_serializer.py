@@ -90,7 +90,7 @@ class CandidateJobApplySerializer(serializers.Serializer):
     def _valid_additional_fields(self, job_additional_fields, request_additional_fields):
         if self._match_len(job_additional_fields, request_additional_fields):
             for index, field in enumerate(job_additional_fields):
-                self.next_message += f'{field.title} : {request_additional_fields[index]} \n'
+                self.next_message += f'\n {field.title} : {request_additional_fields[index]} \n'
                 if request_additional_fields[index]:
                     if not re.match(field.validation_regx, request_additional_fields[index]):
                         msg = f'{request_additional_fields[index]} is not a valid {field.title}'

@@ -1,6 +1,6 @@
 {{ candidate.full_name }} <br>
 <a href="tel:+880{{ candidate.phone }}">+880{{ candidate.phone }}</a> <br>
-<a href="mailto:{{ candidate.email }}">{{ candidate.email }}</a> <br>
+{{ candidate.email }} <br>
 {{ candidate_assessment.assessment }} <br>
 <b style="color: #985f0d">Expected Salary : {{ candidate_job.expected_salary }} </b><br>
-<u><a href="{{ candidate.cv.url }}" style="text-transform: uppercase">Resume</a></u>
+<u><a href="{{ candidate.cv.url }}" target="_blank" style="text-transform: uppercase">Resume</a></u>
