@@ -1,6 +1,7 @@
 from datetime import date
 
 from django.contrib import admin
+from django import forms
 from django_q.tasks import async_task
 
 from employee.models import LeaveAttachment, Leave
@@ -11,6 +12,30 @@ class LeaveAttachmentInline(admin.TabularInline):
     extra = 0
 
 
+class LeaveForm(forms.ModelForm):
+    placeholder = """
+    Sample application with full explanation
+    =========================================
+    
+    Hello sir,
+
+    I am doing home office. Tomorrow there might not be electricity in our area from 8 am to 5 pm.
+    That's why I am asking for a leave.
+    
+    I will join office day after tomorrow.
+    
+    Thank you.
+    Full name    
+    """
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'placeholder': placeholder, 'cols': 100, 'rows': 15})
+    )
+
+    class Meta:
+        model = Leave
+        fields = '__all__'
+
+
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
     list_display = ('employee', 'leave_type', 'total_leave', 'status', 'short_message', 'start_date', 'end_date')
@@ -18,6 +43,7 @@ class LeaveManagement(admin.ModelAdmin):
     exclude = ['status_changed_at', 'status_changed_by']
     inlines = (LeaveAttachmentInline,)
     search_fields = ('employee__full_name', 'leave_type')
+    form = LeaveForm
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)

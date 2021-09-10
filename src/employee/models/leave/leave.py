@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MinLengthValidator
 from django.db import models
 from django.template.defaultfilters import truncatewords
 
@@ -11,7 +12,7 @@ from employee.models.employee import Employee
 # TODO : leave calculation by permanent date
 # TODO : leave in cash in every january
 class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
-    message = models.TextField()
+    message = models.TextField(validators=[MinLengthValidator(150)])
     employee = models.ForeignKey(Employee, limit_choices_to={'active': True}, on_delete=models.CASCADE)
     status_changed_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True,
                                           on_delete=models.RESTRICT)
