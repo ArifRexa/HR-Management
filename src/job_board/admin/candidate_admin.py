@@ -143,7 +143,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     @admin.display(description='score', ordering='score')
     def get_score(self, obj: CandidateAssessment):
         exam_time = ''
-        if obj.exam_started_at:
+        if obj.exam_end_at:
             exam_time_diff = obj.exam_end_at - obj.exam_started_at
             days, hours, minutes = exam_time_diff.days * 24, exam_time_diff.seconds // 3600, exam_time_diff.seconds // 60 % 60
             exam_time = days + hours + float(f'0.{minutes}')

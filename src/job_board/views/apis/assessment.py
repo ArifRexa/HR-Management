@@ -165,10 +165,11 @@ class SaveEvaluationUrl(GenericAPIView):
             ).first()
             if candidate_assessment:
                 candidate_assessment.evaluation_url = validated_data['evaluation_url']
+                candidate_assessment.exam_end_at = timezone.now()
                 candidate_assessment.save()
                 async_task('job_board.tasks.send_evaluation_url_to_admin', candidate_assessment)
                 return Response({'success': 'Your evaluation url has been saved successfully.'
-                                            ' you can update the url during exam process time'})
+                                            ' We will review your submission very shortly'})
             return Response({'evaluation_url': 'We cannot save your evaluation url due some reason, '
                                                'The assessment_uuid might not found. '
                                                'Your exam time might expire'},
