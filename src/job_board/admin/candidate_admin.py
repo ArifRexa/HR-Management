@@ -87,7 +87,7 @@ class CandidateAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateJob)
 class CandidateJobAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_job', 'expected_salary', 'get_assessment', 'additional_message', 'merit')
+    list_display = ('candidate', 'get_job', 'expected_salary', 'get_assessment', 'meta_information', 'merit')
     list_display_links = ('get_job', 'candidate')
     search_fields = ('candidate__full_name', 'candidate__email', 'candidate__phone')
     list_filter = ('merit', 'job', 'candidate_assessment__assessment')
@@ -102,6 +102,10 @@ class CandidateJobAdmin(admin.ModelAdmin):
         for ddd in obj.candidate_assessment.all():
             assessment_result += f'{ddd.assessment} {ddd.result} {ddd.score} <br>'
         return format_html(assessment_result)
+
+    @admin.display(description='additional_message')
+    def meta_information(self, obj: CandidateJob):
+        return format_html(obj.additional_message.replace('\n', '<br>'))
 
 
 @admin.register(CandidateAssessment)

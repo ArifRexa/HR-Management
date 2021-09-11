@@ -15,6 +15,7 @@ class CandidateSerializer(ModelSerializer):
     Candidate serializer has been used in registration and fetch candidate
     this serializer is based on Candidate Model
     """
+
     # phone = serializers.CharField(min_length=10, max_length=10)
 
     class Meta:
@@ -76,11 +77,11 @@ class CandidateJobApplySerializer(serializers.Serializer):
         raise serializers.ValidationError({'job_slug': 'Invalid Job slug, we could not found job by your given slug'})
 
     def create(self, validated_data):
-        message = validated_data['additional_fields']
+        additional_message = f'{self.next_message}' + validated_data['additional_message']
         validated_data.pop('job_slug')
         validated_data.pop('additional_fields')
         candidate_job = CandidateJob(**validated_data)
-        candidate_job.additional_message += self.next_message
+        candidate_job.additional_message = additional_message
         candidate_job.save()
         return candidate_job
 
@@ -90,7 +91,7 @@ class CandidateJobApplySerializer(serializers.Serializer):
     def _valid_additional_fields(self, job_additional_fields, request_additional_fields):
         if self._match_len(job_additional_fields, request_additional_fields):
             for index, field in enumerate(job_additional_fields):
-                self.next_message += f'\n {field.title} : {request_additional_fields[index]} \n'
+                self.next_message += f'{field.title} : {request_additional_fields[index]} \n'
                 if request_additional_fields[index]:
                     if not re.match(field.validation_regx, request_additional_fields[index]):
                         msg = f'{request_additional_fields[index]} is not a valid {field.title}'
