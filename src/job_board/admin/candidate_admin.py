@@ -112,11 +112,16 @@ class CandidateJobAdmin(admin.ModelAdmin):
 class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'get_score', 'meta_information', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
-    list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at')
+    list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at', 'can_start_after')
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
 
     readonly_fields = ['step']
+
+    class Media:
+        css = {
+            'all': ('css/list.css',)
+        }
 
     @admin.display()
     def candidate(self, obj):
