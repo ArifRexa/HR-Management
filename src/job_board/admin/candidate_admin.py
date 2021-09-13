@@ -112,7 +112,7 @@ class CandidateJobAdmin(admin.ModelAdmin):
 class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'get_score', 'meta_information', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
-    list_filter = ('assessment', 'assessment__type', 'candidate_job__job__title', 'exam_started_at')
+    list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at')
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
 
