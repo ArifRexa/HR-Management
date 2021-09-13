@@ -77,7 +77,7 @@ class CandidateJobApplySerializer(serializers.Serializer):
         raise serializers.ValidationError({'job_slug': 'Invalid Job slug, we could not found job by your given slug'})
 
     def create(self, validated_data):
-        additional_message = f'{self.next_message}' + validated_data['additional_message']
+        additional_message = f'{self.next_message} \n' + validated_data['additional_message']
         validated_data.pop('job_slug')
         validated_data.pop('additional_fields')
         candidate_job = CandidateJob(**validated_data)
