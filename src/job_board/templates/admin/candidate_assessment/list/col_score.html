@@ -3,8 +3,8 @@
 {% else %}
     <b style="color: red">{{ candidate_assessment.score }}</b>
 {% endif %}
-
 <br>
 
-{{ exam_time }} Hour <br>
-{{ candidate_assessment.exam_started_at }}
+{{ exam_time }} Hour <br> <br>
+{{ candidate_assessment.exam_started_at }} <br> <br>
+{{ candidate_assessment.candidate_job.created_at }}

@@ -122,6 +122,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         css = {
             'all': ('css/list.css',)
         }
+        js = ('js/list.js',)
 
     @admin.display()
     def candidate(self, obj):
@@ -165,7 +166,12 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 
     @admin.display(ordering='exam_started_at')
     def meta_information(self, obj: CandidateAssessment):
-        return format_html(obj.candidate_job.additional_message.replace('\n', '<br>'))
+        html_template = get_template('admin/candidate_assessment/list/col_meta_information.html')
+        html_content = html_template.render({
+            'candidate_assessment': obj
+        })
+        return format_html(html_content)
+        # return format_html(obj.candidate_job.additional_message.replace('\n', '<br>'))
 
     def get_urls(self):
         urls = super().get_urls()
