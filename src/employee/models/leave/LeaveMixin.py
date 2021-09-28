@@ -3,6 +3,7 @@ import datetime
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from employee.models import Employee
 from settings.models import PublicHolidayDate
 
 
@@ -23,12 +24,14 @@ class LeaveMixin(models.Model):
     note = models.TextField(null=True)
     leave_type = models.CharField(choices=LEAVE_CHOICE, max_length=20)
     status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
+    employee = models.ForeignKey(Employee, limit_choices_to={'active': True}, on_delete=models.CASCADE)
 
     def clean_fields(self, exclude=None):
         super().clean_fields(exclude=exclude)
         if self.start_date is not None and self.end_date is not None:
-            # if datetime.date.today() > self.start_date:
-            #     raise ValidationError({'start_date': 'Start date must be greater then today'})
+            if self.leave_type != 'medical':
+                if datetime.date.today() >= self.start_date:
+                    raise ValidationError({'start_date': 'Start date must be greater then today'})
 
             if self.start_date > self.end_date:
                 raise ValidationError({'end_date': "End date must be greater then or equal {}".format(self.start_date)})
@@ -54,6 +57,10 @@ class LeaveMixin(models.Model):
         else:
             self.total_leave = delta.days + 1
             self.note = "Applied day total {}. chargeable day {}".format(delta.days + 1, self.total_leave)
+
+        if self.employee.permanent_date is None:
+            self.leave_type = 'non_paid'
+
         super().save(*args, **kwargs)
 
     class Meta:
