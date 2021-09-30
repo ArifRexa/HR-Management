@@ -114,8 +114,9 @@ class Loan(TimeStampMixin, AuthorMixin):
         ('security', 'Security Loan'),
         ('collateral', 'Collateral Loan'),
     )
-    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT)
-    witness = models.ForeignKey(Employee, on_delete=models.RESTRICT, related_name='witness')
+    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'active': True})
+    witness = models.ForeignKey(Employee, on_delete=models.RESTRICT, related_name='witness',
+                                limit_choices_to={'active': True})
     loan_amount = models.FloatField(help_text='Load amount')
     emi = models.FloatField(help_text='Installment amount', verbose_name='EMI')
     start_date = models.DateField()

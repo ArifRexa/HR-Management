@@ -1,171 +1,239 @@
 {% extends 'agreements/base/layout.html' %}
 
 {% block content %}
-    <h1>LOAN AGREEMENT</h1>
-    <h4>PARTIES</h4>
-    <p>
-        This Loan Agreement (hereinafter referred to as the “Agreement”) is entered into on _____________ (the
-        “Effective Date”), by and between __________________ (hereinafter referred to as the “Borrower”), and
-        ________________ (hereinafter referred to as the “Lender”) (collectively referred to as the “Parties”).
-    </p>
-    <h4>LOAN</h4>
-    <p>
-        The Parties agree that the loan information set below is accurate. <br>
-        Loan Amount : BDT ________________________ <br>
-        Payment Method : _______________________ <br>
-        Tenor : _______________________ <br>
-        EMI : ------------------------ <br>
-        Start Date of the First EMI : ___________________________ <br>
-        End Date of the Last EMI :____________________________ <br>
-    </p>
-    <h4>AMENDMENTS</h4>
-    <p>
-        The Parties agree that any amendments made to this Agreement must be in writing where they must be signed by
-        both Parties to this Agreement.
-    </p>
-    <h4>OWNERSHIP</h4>
-    <p>
-        The Parties agree that this Agreement is not transferable unless a written consent is provided by both Parties
-        of this Agreement.
-    </p>
-    <h4>SIGNATURE AND DATE</h4>
-    <p>
-        The Parties hereby agree to the terms and conditions set forth in this Agreement and such is demonstrated
-        throughout by their signatures below:
-    </p>
-    <table>
-        <tbody>
-        <tr>
-            <td>
-                <table>
-                    <tbody>
-                    <tr>
-                        <td>BORROWER</td>
-                    </tr>
-                    <tr>
-                        <td>Name : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Address : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Email : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Phone : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>NID : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Signature : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Date : ______________</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tbody>
-                    <tr>
-                        <td>LENDER</td>
-                    </tr>
-                    <tr>
-                        <td>Name : Mediusware Ltd</td>
-                    </tr>
-                    <tr>
-                        <td>Address : 18/5 Ring Road, Mohammadpur, Dhaka</td>
-                    </tr>
-                    <tr>
-                        <td>Email : contact@mediusware.com</td>
-                    </tr>
-                    <tr>
-                        <td>Phone : +8801750020408</td>
-                    </tr>
-                    <tr>
-                        <td>NID : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Signature : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Date : ______________</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
-        </tbody>
-    </table>
-    <br>
-    <table>
-        <tbody>
+    {% for loan in loans %}
+        <center><h1>LOAN AGREEMENT</h1></center>
+        <h4>PARTIES</h4>
+        <p>
+            This Loan Agreement (hereinafter referred to as the “Agreement”) is entered into on
+            <b><u>{{ loan.start_date }}</u></b>
+            (the “Effective Date”), by and between <b><u>{{ loan.employee }}</u></b> (hereinafter referred to as the
+            “Borrower”), and
+            <b><u>Mediusware Ltd.</u></b> (hereinafter referred to as the “Lender”) (collectively referred to as the
+            “Parties”).
+        </p>
+        <h4>LOAN</h4>
+        <p>
+            The Parties agree that the loan information set below is accurate. <br>
+            Loan Amount : <b><u> BDT {{ loan.loan_amount }} TAKA</u></b> <br>
+            Payment Method : <b><u>{{ loan.get_payment_method_display }}</u></b> <br>
+            Tenor : <b><u>{{ loan.tenor }} Month{{ loan.tenor | pluralize }}</u></b> <br>
+            EMI : <b><u>BDT {{ loan.emi }} TAKA</u></b> <br>
+            Start Date of the First EMI : <b><u>{{ loan.start_date }}</u></b> <br>
+            End Date of the Last EMI : <b><u>{{ loan.end_date }}</u></b> <br>
+        </p>
+        <h4>AMENDMENTS</h4>
+        <p>
+            The Parties agree that any amendments made to this Agreement must be in writing where they must be signed by
+            both Parties to this Agreement.
+        </p>
+        <h4>OWNERSHIP</h4>
+        <p>
+            The Parties agree that this Agreement is not transferable unless a written consent is provided by both
+            Parties
+            of this Agreement.
+        </p>
+        <h4>TERMS AND CONDITIONS</h4>
+        <p><u>The Loan Borrower will have to agree with the following Terms & Conditions:</u></p>
+        <ol>
+            <li>According to the standard service contract of Mediusware Limited, the loan borrower shall not be
+                eligible
+                to leave the service unless recovered the loan amount with/without agreed interest on approved duration.
+            </li>
+            <li>
+                The Management Authority shall reserve the right to take legal action against the loan borrower, if s/he
+                breaks the bridge of contract.
+            </li>
+            <li>
+                The loan borrower shall compel to pay an extra Equated Monthly Installment (EMI), if s/he failed to pay
+                consecutive 3 EMIs at any point of time within the approved duration
+            </li>
+            <li>
+                An employee shall be entitled to get only 1 loan at a time in any kind
+            </li>
+            <li>
+                According to the loan agreement procedure of Mediusware Limited, BDT 200 (Two Hundred Taka only) will be
+                charged for the file processing
+            </li>
+            <li>
+                The loan borrower shall enjoy the right on advance payment of EMI(s). The advance payment of EMI(s)
+                shall
+                adjust immediately with the allocated loan amount.
+            </li>
+            <li>
+                Before signing the loan approved contract, the borrower shall readout the entire Terms & Conditions
+                carefully and provide efforts to understand the all the terms and conditions that are mentioned on the
+                contract.
+            </li>
+            <li>
+                The loan borrower shall sign on the contract consciously and based on his/her own interest.
+            </li>
+            <li>
+                The loan borrower shall need to arrange 1 (one) guarantor, if becomes eligible to get the
+                loan.
+            </li>
+            <li>
+                The guarantor or the guarantor shall be liable to pay the EMI(s), if the loan borrower failed to repay
+                the loan disbursed amount.
+            </li>
+            <li>
+                The loan amount and the duration of the replayment of the allocated loan shall be decided based on the
+                rules and regulations of the Mediusware limited
+            </li>
+            <li>
+                The Management Authority of Mediusware Limited shall reserve all rights in this regards.
+            </li>
+        </ol>
+        <div class="page-break"></div>
+        <h4>SIGNATURE AND DATE</h4>
+        <p>
+            The Parties hereby agree to the terms and conditions set forth in this Agreement and such is demonstrated
+            throughout by their signatures below:
+        </p>
+        <table>
+            <tbody>
+            <tr>
+                <td>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>BORROWER</td>
+                        </tr>
+                        <tr>
+                            <td>Name : <b><u>{{ loan.employee }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>Address : <b><u>{{ loan.employee.address }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>Email : <b><u>{{ loan.employee.email }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>Phone : <b><u>{{ loan.employee.phone }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>NID : <b><u>{{ loan.employee.national_id_no }}</u></b></td>
+                        </tr>
+                        <tr></tr>
+                        <tr></tr>
+                        <tr>
+                            <td>Signature : ______________</td>
+                        </tr>
+                        <tr>
+                            <td>Date : ______________</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>LENDER</td>
+                        </tr>
+                        <tr>
+                            <td>Name : Mediusware Ltd</td>
+                        </tr>
+                        <tr>
+                            <td>Address : 18/5 Ring Road, Mohammadpur, Dhaka</td>
+                        </tr>
+                        <tr>
+                            <td>Email : contact@mediusware.com</td>
+                        </tr>
+                        <tr>
+                            <td>Phone : +8801750020408</td>
+                        </tr>
+                        <tr>
 
-        <tr>
-            <td>
-                <table>
-                    <tbody>
-                    <tr>
-                        <td>GUARANTORS</td>
-                    </tr>
-                    <tr>
-                        <td>Name : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Address : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Email : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Phone : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>NID : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Signature : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Date : ______________</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-            <td>
-                <table>
-                    <tbody>
-                    <tr>
-                        <td>WITNESS</td>
-                    </tr>
-                    <tr>
-                        <td>Name : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Address : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Email : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Phone : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>NID : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Signature : ______________</td>
-                    </tr>
-                    <tr>
-                        <td>Date : ______________</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </td>
-        </tr>
+                        </tr>
+                        <tr></tr>
+                        <tr>
+                            <td>Signature : ______________</td>
+                        </tr>
+                        <tr>
+                            <td>Date : ______________</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <br>
+        <table>
+            <tbody>
 
-        </tbody>
-    </table>
+            <tr>
+                <td>
+                    <table>
+                        <tbody>
+                        {% for gurentor in loan.loanguarantor_set.all %}
+                            <tr>
+                                <td>GUARANTORS</td>
+                            </tr>
+                            <tr>
+                                <td>Name : <b><u>{{ gurentor.full_name }}</u></b></td>
+                            </tr>
+                            <tr>
+                                <td>Address : <b><u>{{ gurentor.address }}</u></b></td>
+                            </tr>
+                            <tr>
+                                <td>Email : <b><u>{{ gurentor.email }}</u></b></td>
+                            </tr>
+                            <tr>
+                                <td>Phone : <b><u>{{ gurentor.phone }}</u></b></td>
+                            </tr>
+                            <tr>
+                                <td>NID : <b><u>{{ gurentor.national_id_no }}</u></b></td>
+                            </tr>
+                            <tr></tr>
+                            <tr></tr>
+                            <tr>
+                                <td>Signature : ______________</td>
+                            </tr>
+                            <tr>
+                                <td>Date : ______________</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <tbody>
+                        <tr>
+                            <td>WITNESS</td>
+                        </tr>
+                        <tr>
+                            <td>Name : <b><u>{{ loan.witness }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>Address : <b><u>{{ loan.witness.address }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>Email : <b><u>{{ loan.witness.email }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>Phone : <b><u>{{ loan.witness.phone }}</u></b></td>
+                        </tr>
+                        <tr>
+                            <td>NID : <b><u>{{ loan.witness.national_id_no }}</u></b></td>
+                        </tr>
+                        <tr></tr>
+                        <tr></tr>
+                        <tr>
+                            <td>Signature : ______________</td>
+                        </tr>
+                        <tr>
+                            <td>Date : ______________</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+        <div class="page-break"></div>
+    {% endfor %}
 {% endblock %}
