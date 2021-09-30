@@ -1,0 +1,8 @@
+<div class="popover-wrapper">
+    <div class="popover-title">
+        {{ candidate_assessment.note|stringformat:".50s" | linebreaks }}
+    </div>
+    <div class="popover-message">
+        {{ candidate_assessment.note | linebreaks }}
+    </div>
+</div>

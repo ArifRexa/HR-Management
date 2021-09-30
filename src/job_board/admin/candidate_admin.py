@@ -110,7 +110,7 @@ class CandidateJobAdmin(admin.ModelAdmin):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_score', 'meta_information', 'preview_url')
+    list_display = ('candidate', 'get_score', 'meta_information', 'meta_review', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
     list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at', 'can_start_after')
     list_display_links = ('get_score',)
@@ -172,6 +172,13 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         })
         return format_html(html_content)
         # return format_html(obj.candidate_job.additional_message.replace('\n', '<br>'))
+
+    def meta_review(self, obj: CandidateAssessment):
+        html_template = get_template('admin/candidate_assessment/list/col_meta_review.html')
+        html_content = html_template.render({
+            'candidate_assessment': obj
+        })
+        return format_html(html_content)
 
     def get_urls(self):
         urls = super().get_urls()
