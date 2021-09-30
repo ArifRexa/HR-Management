@@ -1,13 +1,11 @@
 from math import floor
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-
 # Create your models here.
 from django.db.models import Sum
 from django.utils import timezone
-
-from django.conf import settings
 from django_userforeignkey.models.fields import UserForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
@@ -105,3 +103,46 @@ class Fund(TimeStampMixin, AuthorMixin):
     date = models.DateField()
     amount = models.FloatField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+
+
+class Loan(TimeStampMixin, AuthorMixin):
+    PAYMENT_METHOD = (
+        ('salary', 'Bank/Cash/Salary'),
+    )
+    LOAN_TYPE = (
+        ('salary', 'Salary Against Loan'),
+        ('security', 'Security Loan'),
+        ('collateral', 'Collateral Loan'),
+    )
+    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT)
+    witness = models.ForeignKey(Employee, on_delete=models.RESTRICT, related_name='witness')
+    loan_amount = models.FloatField(help_text='Load amount')
+    emi = models.FloatField(help_text='Installment amount', verbose_name='EMI')
+    start_date = models.DateField()
+    end_date = models.DateField()
+    tenor = models.IntegerField(help_text='Period month')
+    payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD)
+    loan_type = models.CharField(max_length=50, choices=LOAN_TYPE)
+
+    def __str__(self):
+        return f'{self.employee}-{self.loan_amount}'
+
+
+class LoanGuarantor(TimeStampMixin, AuthorMixin):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    national_id_no = models.CharField(max_length=20, blank=True, null=True)
+    address = models.TextField()
+
+
+class LoanAttachment(TimeStampMixin, AuthorMixin):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    file = models.FileField()
+
+
+class LoanPayment(TimeStampMixin, AuthorMixin):
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    payment_amount = models.FloatField()
+    note = models.TextField(null=True, blank=True)

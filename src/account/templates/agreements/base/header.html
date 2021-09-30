@@ -1,0 +1,33 @@
+<style>
+    * {
+        font-size: 13px;
+    }
+
+    @page {
+        size: a4 portrait;
+        @frame content_frame {
+        left: 40pt;
+        width: 512pt;
+        top: 100pt;
+        height: 570pt;
+    }
+
+    @frame footer_frame {
+        /* Another static Frame */
+    -pdf-frame-content:footer_content;
+    left: 50pt; width: 512pt; top: 680pt; height: 120pt;
+    }
+
+    @frame logo {
+    -pdf-frame-content:logo;
+    left: 40px;
+    top: 20px;
+    width: 150px;
+    height: 60px;
+    }
+    }
+
+    .page-break {
+        page-break-after: always;
+    }
+</style>
