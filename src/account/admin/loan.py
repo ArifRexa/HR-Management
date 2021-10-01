@@ -27,7 +27,7 @@ class LoadAdmin(admin.ModelAdmin):
         pdf.file_name = f'Loan Agreement'
         pdf.template_path = 'agreements/loan_agreement.html'
         pdf.context = {'loans': queryset}
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf(download=True)
 
 
 @admin.register(LoanPayment)
