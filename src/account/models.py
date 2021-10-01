@@ -119,6 +119,7 @@ class Loan(TimeStampMixin, AuthorMixin):
                                 limit_choices_to={'active': True})
     loan_amount = models.FloatField(help_text='Load amount')
     emi = models.FloatField(help_text='Installment amount', verbose_name='EMI')
+    effective_date = models.DateField(default=timezone.now)
     start_date = models.DateField()
     end_date = models.DateField()
     tenor = models.IntegerField(help_text='Period month')
