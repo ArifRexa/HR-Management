@@ -32,6 +32,7 @@ class EmployeeSalary(TimeStampMixin):
     project_bonus = models.FloatField(null=True, default=0.0)
     leave_bonus = models.FloatField(null=True, default=0.0)
     festival_bonus = models.FloatField(null=True, default=0.0)
+    loan_emi = models.FloatField(null=True, default=0.0)
     gross_salary = models.FloatField()
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
 
@@ -146,5 +147,6 @@ class LoanAttachment(TimeStampMixin, AuthorMixin):
 
 class LoanPayment(TimeStampMixin, AuthorMixin):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+    payment_date = models.DateField(default=timezone.now)
     payment_amount = models.FloatField()
     note = models.TextField(null=True, blank=True)

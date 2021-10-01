@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Sum
 
-from account.models import SalarySheet, EmployeeSalary
+from account.models import SalarySheet, EmployeeSalary, LoanPayment
 from employee.models import Employee, SalaryHistory
 
 
@@ -73,9 +73,11 @@ class SalarySheetRepository:
         employee_salary.leave_bonus = self.__calculate_non_paid_leave(salary_sheet, employee)
         employee_salary.project_bonus = self.__calculate_project_bonus(salary_sheet, employee)
         employee_salary.festival_bonus = self.__calculate_festival_bonus(employee=employee)
+        employee_salary.loan_emi = self.__calculate_loan_emi(employee=employee, salary_date=salary_sheet.date)
         employee_salary.gross_salary = employee_salary.net_salary + employee_salary.overtime + \
                                        employee_salary.festival_bonus + \
-                                       employee_salary.leave_bonus + employee_salary.project_bonus
+                                       employee_salary.leave_bonus + employee_salary.project_bonus + \
+                                       employee_salary.loan_emi
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
 
@@ -179,3 +181,23 @@ class SalarySheetRepository:
             if dtdelta < self.__salary_sheet.date:
                 return (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
         return 0
+
+    def __calculate_loan_emi(self, employee: Employee, salary_date: datetime.date):
+        """Calculate loan EMI if have any
+
+        if the employee have loan and the loan does not finish it will sum all the loan emi amount
+        """
+        employee_loans = employee.loan_set.filter(
+            start_date__lte=salary_date,
+            end_date__gte=salary_date,
+        )
+        # insert into loan payment table if the sum amount is not zero
+        for employee_loan in employee_loans:
+            note = f'This payment has been made automated when salary sheet generated at {salary_date}'
+            employee_loan.loanpayment_set.get_or_create(
+                loan=employee_loan, payment_amount=employee_loan.emi,
+                note=note, payment_date=salary_date,
+                defaults={'payment_date': salary_date, 'loan': employee_loan}
+            )
+        emi_amount = employee_loans.aggregate(Sum('emi'))
+        return -emi_amount['emi__sum'] if emi_amount['emi__sum'] else 0.0
