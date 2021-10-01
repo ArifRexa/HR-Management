@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.template.loader import get_template
 
 from account.models import Loan, LoanPayment, LoanGuarantor, LoanAttachment
@@ -32,7 +33,9 @@ class LoadAdmin(admin.ModelAdmin):
 
     @admin.display(description='Due amount')
     def due(self, obj: Loan):
-        due_amount = obj.loan_amount - obj.loanpayment_set.aggregate(Sum('payment_amount'))['payment_amount__sum']
+        due_amount = obj.loan_amount - obj.loanpayment_set.aggregate(
+            total_payment=Coalesce(Sum('payment_amount'), 0.0)
+        )['total_payment']
         return f'{due_amount} ({obj.loanpayment_set.count()})'
 
 
