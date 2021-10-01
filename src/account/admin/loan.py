@@ -23,13 +23,11 @@ class LoadAdmin(admin.ModelAdmin):
 
     @admin.action(description='Print Agreement')
     def print_loan_agreement(self, request, queryset):
-        for loan in queryset:
-            print(loan.witness)
         pdf = PDF()
         pdf.file_name = f'Loan Agreement'
         pdf.template_path = 'agreements/loan_agreement.html'
         pdf.context = {'loans': queryset}
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf(download=True)
 
 
 @admin.register(LoanPayment)
