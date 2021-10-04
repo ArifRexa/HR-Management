@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 
 from config.utils.pdf import PDF
 from employee.models import Employee
-from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter
+from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter, OpenLetter
 
 admin.site.register(Designation)
 admin.site.register(PayScale)
@@ -67,3 +67,8 @@ class LetterAdmin(admin.ModelAdmin):
 
     def print_pdf(self, request, queryset):
         pass
+
+
+@admin.register(OpenLetter)
+class OpenLetterAdmin(admin.ModelAdmin):
+    list_display = ('title', 'message')

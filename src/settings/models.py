@@ -70,3 +70,8 @@ class Letter(TimeStampMixin, AuthorMixin):
     body = tinymce_models.HTMLField()
     footer = tinymce_models.HTMLField()
     sticky_footer = models.BooleanField(default=False)
+
+
+class OpenLetter(TimeStampMixin):
+    title = models.CharField(max_length=255)
+    message = models.TextField()
