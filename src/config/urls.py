@@ -29,6 +29,7 @@ admin.site.index_title = "Welcome to Mediusware Admin Portal"
 
 urlpatterns = [
     path('', include('job_board.urls')),
+    path('api-auth/', include('rest_framework.urls')),
     path('settings/', include('settings.urls')),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='js-catalog'),
     # path('admin/account/', include('account.urls')),

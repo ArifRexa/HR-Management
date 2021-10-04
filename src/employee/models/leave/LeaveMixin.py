@@ -2,6 +2,7 @@ import datetime
 
 from django.core.exceptions import ValidationError
 from django.db import models
+from django_userforeignkey.request import get_current_user
 
 from employee.models import Employee
 from settings.models import PublicHolidayDate
@@ -27,11 +28,15 @@ class LeaveMixin(models.Model):
     employee = models.ForeignKey(Employee, limit_choices_to={'active': True}, on_delete=models.CASCADE)
 
     def clean_fields(self, exclude=None):
+        user = get_current_user()
+        print(user.is_superuser)
         super().clean_fields(exclude=exclude)
+        # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
-            if self.leave_type != 'medical':
-                if datetime.date.today() >= self.start_date:
-                    raise ValidationError({'start_date': 'Start date must be greater then today'})
+            if not user.is_superuser:
+                if self.leave_type != 'medical':
+                    if datetime.date.today() >= self.start_date:
+                        raise ValidationError({'start_date': 'Start date must be greater then today'})
 
             if self.start_date > self.end_date:
                 raise ValidationError({'end_date': "End date must be greater then or equal {}".format(self.start_date)})
