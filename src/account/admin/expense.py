@@ -28,6 +28,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_filter = ['expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
+    search_fields = ['note']
 
     def get_queryset(self, request):
         qs = super(ExpenseAdmin, self).get_queryset(request)

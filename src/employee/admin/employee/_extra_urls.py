@@ -90,7 +90,6 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         """
         if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
             raise PermissionDenied
-        print(request.GET)
         chart = {'label': "Weekly View", 'total_hour': 0,
                  'labels': [], 'data': [], }
 
@@ -99,6 +98,7 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         filters['employee_id__exact'] = kwargs.get(*kwargs)
         employee_hours = EmployeeProjectHour.objects.values('project_hour__date').filter(**filters).annotate(
             hours=Sum('hours'))
+        print(employee_hours)
         for employee_hour in employee_hours:
             chart.get('labels').append(employee_hour['project_hour__date'].strftime('%B %d %Y'))
             chart.get('data').append(employee_hour['hours'])
@@ -137,17 +137,18 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                 'project_hour',
                 'project_hour__date'
             )
-            for employee_hour in employee_hours:
-                timestamp = int(datetime.datetime.combine(
-                    employee_hour['project_hour__date'],
-                    datetime.datetime.min.time()
-                ).timestamp())
-                data.append([timestamp * 1000, employee_hour['hours']])
-            dataset.append({
-                'type': 'spline',
-                'name': employee.full_name,
-                'data': data,
-            })
+            if employee_hours.count() > 0:
+                for employee_hour in employee_hours:
+                    timestamp = int(datetime.datetime.combine(
+                        employee_hour['project_hour__date'],
+                        datetime.datetime.min.time()
+                    ).timestamp())
+                    data.append([timestamp * 1000, employee_hour['hours']])
+                dataset.append({
+                    'type': 'spline',
+                    'name': employee.full_name,
+                    'data': data,
+                })
         return dataset
 
     def _get_employee_project_hour(self, project, employees):

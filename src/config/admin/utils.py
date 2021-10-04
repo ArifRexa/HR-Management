@@ -3,7 +3,7 @@ from django.utils.dateparse import parse_date, parse_datetime
 
 
 def simple_request_filter(request):
-    s_filter = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o', 'e']])
+    s_filter = dict([(key, request.GET.get(key)) for key in dict(request.GET) if key not in ['p', 'o', 'e', 'q']])
     if s_filter.get('date__gte'):
         s_filter['date__gte'] = parse_date(request.GET['date__gte'])
     if s_filter.get('date__lt'):
