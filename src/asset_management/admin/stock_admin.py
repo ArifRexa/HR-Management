@@ -24,7 +24,7 @@ class ProductAdmin(admin.ModelAdmin):
 @admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
     search_fields = ('title', 'product', 'type')
-    list_display = ('date', 'product', 'get_quantity', 'employee', 'type')
+    list_display = ('date', 'employee', 'product', 'get_quantity', 'note', 'type')
     list_filter = ('type', 'product')
     date_hierarchy = 'date'
 
