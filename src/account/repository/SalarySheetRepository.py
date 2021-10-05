@@ -58,7 +58,7 @@ class SalarySheetRepository:
         @return void:
         """
         self.__employee_current_salary = employee.salaryhistory_set.filter(
-            active_from__lte=salary_sheet.date.replace(day=1) - timedelta(days=1)
+            active_from__lte=salary_sheet.date.replace(day=1)
         ).last()
         if self.__employee_current_salary is None:
             self.__employee_current_salary = employee.current_salary
