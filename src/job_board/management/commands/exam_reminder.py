@@ -1,33 +1,36 @@
-from django.core.mail import EmailMessage, EmailMultiAlternatives, get_connection
+import time
+
 from django.core.management import BaseCommand
-from django.template.loader import get_template
+from django.db.models import Q
 from django_q.tasks import async_task
 
+from job_board.mails.exam import ExamMail
+from job_board.mobile_sms.exam import ExamSMS
 from job_board.models.candidate import CandidateAssessment
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         candidate_assessments = CandidateAssessment.objects.filter(
-            candidate_job__job__active=True,
-            can_start_after__isnull=False,
-            exam_started_at__isnull=True)
+            Q(candidate_job__job__active=True, can_start_after__isnull=False, exam_started_at__isnull=True)
+            | Q(candidate_job__job__active=True, assessment__open_to_start=True, exam_started_at__isnull=True)
+        )
         self.send_mail_to_candidate(candidate_assessments)
 
     def send_mail_to_candidate(self, candidate_assessments):
-        connection = get_connection()
-        connection.open()
         for candidate_assessment in candidate_assessments:
-            subject = f'{candidate_assessment.candidate_job.candidate.full_name},' \
-                      f' {candidate_assessment.candidate_job.job.title} || Mediusware Ltd.'
-            from_email, to = 'Mediusware Ltd. <hr@mediusware.com>', candidate_assessment.candidate_job.candidate.email
-            html_template = get_template('mail/exam/reminder.html')
-            html_content = html_template.render({
-                'candidate_assessment': candidate_assessment,
-                'url': f'https://job.mediusware.com/exam/{candidate_assessment.unique_id}'
-            })
-            email = EmailMultiAlternatives(subject=subject, from_email=from_email, to=[to])
-            email.attach_alternative(html_content, "text/html")
-            email.send()
+            async_task('job_board.management.commands.exam_reminder.send_mail', candidate_assessment,
+                       group=f'Exam Reminder {candidate_assessment.candidate_job.candidate}')
+            async_task('job_board.management.commands.exam_reminder.send_sms', candidate_assessment,
+                       group=f'Exam Reminder SMS {candidate_assessment.candidate_job.candidate}')
+            time.sleep(5)
 
-        connection.close()  # Close connection
+
+def send_mail(candidate_assessment: CandidateAssessment):
+    exam_mail = ExamMail(candidate_assessment)
+    exam_mail.reminder_mail()
+
+
+def send_sms(candidate_assessment: CandidateAssessment):
+    exam_sms = ExamSMS(candidate_assessment)
+    exam_sms.reminder_sms()

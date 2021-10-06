@@ -52,42 +52,12 @@ def send_evaluation_url_to_admin(candidate_assessment: CandidateAssessment):
     email.send()
 
 
-def send_exam_url_if(passe_exam_id, send_exam_id):
-    assessment = Assessment.objects.get(pk=passe_exam_id)
-    candidate_assessments = CandidateAssessment.objects.filter(
-        assessment_id=passe_exam_id,
-        score__gte=assessment.pass_score,
-        step__contains={'auto_checked': False}
-    ).all()
-    if candidate_assessments.count() > 0:
-        target_candidate_assessment = CandidateAssessment.objects.filter(
-            candidate_job__in=list(candidate_assessments.values_list('candidate_job', flat=True)),
-            assessment_id=send_exam_id,
-            can_start_after__isnull=True
-        ).all()
-
-        for candidate_assessment in target_candidate_assessment:
-            candidate_assessment.can_start_after = timezone.now()
-            candidate_assessment.save()
-
-        for candidate_job in candidate_assessments:
-            candidate_job.step['auto_checked'] = True
-            candidate_job.save()
+def send_exam_url_if(passed_exam_id, send_exam_id):
+    return management.call_command('send_exam_url', passed_exam_id, send_exam_id)
 
 
 def mark_merit(assessment_id: int):
-    candidate_assessments = CandidateAssessment.objects.filter(
-        assessment_id=assessment_id,
-        exam_end_at__lte=timezone.now(),
-        candidate_job__merit=None
-    ).all()
-    for candidate_assessment in candidate_assessments:
-        print('hello', candidate_assessments)
-        if candidate_assessment.score >= candidate_assessment.assessment.pass_score:
-            candidate_assessment.candidate_job.merit = True
-            candidate_assessment.candidate_job.save()
-            print('mark merit', candidate_assessment.candidate_job)
-            # TODO : Send email to candidate and admin
+    return management.call_command('mark_merit', assessment_id)
 
 
 def exam_reminder():

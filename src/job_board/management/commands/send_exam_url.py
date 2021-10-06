@@ -22,6 +22,7 @@ class Command(BaseCommand):
             score__gte=assessment.pass_score,
             step__contains={'auto_checked': False}
         ).all()
+        print(candidate_assessments)
         if candidate_assessments.count() > 0:
             target_candidate_assessment = CandidateAssessment.objects.filter(
                 candidate_job__in=list(candidate_assessments.values_list('candidate_job', flat=True)),

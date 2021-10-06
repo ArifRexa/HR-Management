@@ -21,6 +21,7 @@ xhtml2pdf = "*"
 num2words = "*"
 django-q = "*"
 django-cors-headers = "*"
+requests = "*"
 
 [requires]
 python_version = "3.6"

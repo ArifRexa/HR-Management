@@ -150,7 +150,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         })
         return format_html(html_content)
 
-    @admin.display(description='score', ordering='score')
+    @admin.display(description='score/start/apply', ordering='score')
     def get_score(self, obj: CandidateAssessment):
         exam_time = ''
         if obj.exam_end_at:
