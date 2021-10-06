@@ -1,14 +1,16 @@
 import datetime
 
 from django.contrib import admin
-from django.contrib.admin.widgets import AdminDateWidget
+from django.contrib.admin.widgets import AdminDateWidget, FilteredSelectMultiple
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet, Sum, Value
 from django import forms
 from django.db.models.functions import Coalesce
+from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.urls import path
+from django.urls import path, reverse
 from django.utils import timezone
+from requests import post
 
 from account.models import EmployeeSalary
 from employee.models import Employee, SalaryHistory
@@ -20,6 +22,12 @@ class FilterForm(forms.Form):
     project_hour__date__lte = forms.DateField(label=' ', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
 
 
+class SMSAnnounceForm(forms.Form):
+    employee_choice = Employee.objects.filter(active=True).values_list('id', 'full_name')
+    message = forms.CharField(widget=forms.Textarea)
+    employees = forms.MultipleChoiceField(widget=forms.SelectMultiple, choices=employee_choice)
+
+
 class EmployeeExtraUrls(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
@@ -29,9 +37,25 @@ class EmployeeExtraUrls(admin.ModelAdmin):
             path('<int:employee_id__exact>/graph/', self.admin_site.admin_view(self.hour_graph_view),
                  name='hour_graph'),
             path('<int:employee_id__exact>/salary/received-history/',
-                 self.admin_site.admin_view(self.salary_receive_history), name='employee.salary.receive.history')
+                 self.admin_site.admin_view(self.salary_receive_history), name='employee.salary.receive.history'),
+            path('announce/sms/', self.admin_site.admin_view(self.sms_announce), name='employee.announce.sms'),
+            path('announce/sms/post/', self.admin_site.admin_view(self.send_sms), name='employee.announce.sms.post')
         ]
         return employee_urls + urls
+
+    def sms_announce(self, request, *args, **kwargs):
+        if not request.user.is_superuser:
+            raise PermissionDenied
+        context = dict(
+            self.admin_site.each_context(request),
+            form=SMSAnnounceForm()
+        )
+        return TemplateResponse(request, "admin/employee/sms_announce.html", context=context)
+
+    def send_sms(self, request, *args, **kwargs):
+        employees = Employee.objects.filter(pk__in=request.POST.getlist('employees'))
+        print(employees)
+        return redirect(reverse('admin:employee.announce.sms'))
 
     def salary_receive_history(self, request, *args, **kwargs):
         if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
