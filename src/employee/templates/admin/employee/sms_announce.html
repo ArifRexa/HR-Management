@@ -1,33 +1,43 @@
 {% extends "admin/base_site.html" %}
 
 {% block content %}
-
-
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-duallistbox/4.0.2/bootstrap-duallistbox.min.css"
-          integrity="sha512-BcFCeKcQ0xb020bsj/ZtHYnUsvPh9jS8PNIdkmtVoWvPJRi2Ds9sFouAUBo0q8Bq0RA/RlIncn6JVYXFIw/iQA=="
-          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'admin/css/forms.css' %}">
 
     <form action="{% url 'admin:employee.announce.sms.post' %}" method="post">
         {% csrf_token %}
-        {{ form }}
-        <input type='submit' value='Submit'>
+        <fieldset class="module aligned ">
+            <div class="form-row field-date">
+                <div>
+                    {{ form.message.errors }}
+                    <label for="{{ form.message.id_for_label }}">{{ form.message.label }}:</label>
+                    {{ form.message }}
+                    <div class="help">You have write <span id="message_character_count">0</span> character.
+                        Remember that 160 character is
+                        one sms
+                    </div>
+                </div>
+            </div>
+            <div class="form-row field-date">
+                <div>
+                    {{ form.employees.errors }}
+                    <label for="{{ form.employees.id_for_label }}">{{ form.employees.label }}:</label>
+                    {{ form.employees }}
+                </div>
+            </div>
+        </fieldset>
+        <div class="submit-row">
+            <input type="submit" value="Send SMS" class="default" name="_save">
+        </div>
     </form>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
-            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+    {{ form.media }}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap4-duallistbox/4.0.2/jquery.bootstrap-duallistbox.min.js"
-            integrity="sha512-l/BJWUlogVoiA2Pxj3amAx2N7EW9Kv6ReWFKyJ2n6w7jAQsjXEyki2oEVsE6PuNluzS7MvlZoUydGrHMIg33lw=="
-            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
-        {#var demo1 = $('#id_employees').bootstrapDualListbox();#}
-        var demo2 = $('#id_employees').bootstrapDualListbox({
-            nonSelectedListLabel: 'Non-selected',
-            selectedListLabel: 'Selected',
-            preserveSelectionOnMove: 'moved',
-            moveOnSelect: false
-        });
+        let message = document.querySelector('#id_message')
+        message.addEventListener('input', (event) => {
+            document.querySelector('#message_character_count').textContent = message.value.length
+        })
     </script>
 
 {% endblock %}

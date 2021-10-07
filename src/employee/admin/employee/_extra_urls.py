@@ -2,17 +2,19 @@ import datetime
 
 from django.contrib import admin
 from django.contrib.admin.widgets import AdminDateWidget, FilteredSelectMultiple
+from django.core import management
 from django.core.exceptions import PermissionDenied
 from django.db.models import QuerySet, Sum, Value
 from django import forms
 from django.db.models.functions import Coalesce
+from django.http import HttpResponseNotFound
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
 from django.utils import timezone
-from requests import post
-
-from account.models import EmployeeSalary
+from django_q.tasks import async_task
+from django.contrib import messages
+from employee.admin.employee._forms import SMSAnnounceForm
 from employee.models import Employee, SalaryHistory
 from project_management.models import EmployeeProjectHour, ProjectHour, Project
 
@@ -20,12 +22,6 @@ from project_management.models import EmployeeProjectHour, ProjectHour, Project
 class FilterForm(forms.Form):
     project_hour__date__gte = forms.DateField(label='', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
     project_hour__date__lte = forms.DateField(label=' ', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
-
-
-class SMSAnnounceForm(forms.Form):
-    employee_choice = Employee.objects.filter(active=True).values_list('id', 'full_name')
-    message = forms.CharField(widget=forms.Textarea)
-    employees = forms.MultipleChoiceField(widget=forms.SelectMultiple, choices=employee_choice)
 
 
 class EmployeeExtraUrls(admin.ModelAdmin):
@@ -44,18 +40,45 @@ class EmployeeExtraUrls(admin.ModelAdmin):
         return employee_urls + urls
 
     def sms_announce(self, request, *args, **kwargs):
+        """
+        Render sms announce view
+        @param request:
+        @param args:
+        @param kwargs:
+        @return TemplateResponse:
+        """
         if not request.user.is_superuser:
             raise PermissionDenied
         context = dict(
             self.admin_site.each_context(request),
+            title='SMS Announcement',
             form=SMSAnnounceForm()
         )
         return TemplateResponse(request, "admin/employee/sms_announce.html", context=context)
 
     def send_sms(self, request, *args, **kwargs):
-        employees = Employee.objects.filter(pk__in=request.POST.getlist('employees'))
-        print(employees)
-        return redirect(reverse('admin:employee.announce.sms'))
+        """
+        Send sms to selected employees by management command
+        @param request:
+        @param args:
+        @param kwargs:
+        @return redirect back | @return 404:
+        """
+        if request.method == 'POST':
+            form = SMSAnnounceForm(request.POST)
+            context = dict(
+                self.admin_site.each_context(request),
+                title='SMS Announcement',
+                form=form
+            )
+            if form.is_valid():
+                management.call_command('sms_notification_to_employee', form.cleaned_data['employees'],
+                                        form.cleaned_data['message'])
+                messages.success(request=request, message='SMS sent')
+                return redirect(reverse('admin:employee.announce.sms'))
+            else:
+                return TemplateResponse(request, "admin/employee/sms_announce.html", context=context)
+        return HttpResponseNotFound('<h1>Page not found</h1>')
 
     def salary_receive_history(self, request, *args, **kwargs):
         if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
