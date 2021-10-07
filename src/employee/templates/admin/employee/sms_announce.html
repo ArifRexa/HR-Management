@@ -11,7 +11,16 @@
                 <div>
                     {{ form.message.errors }}
                     <label for="{{ form.message.id_for_label }}">{{ form.message.label }}:</label>
-                    {{ form.message }}
+                    <div style="display: flex">
+                        {{ form.message }}
+                        <div style="padding: 10px">
+                            {full_name} -> Employee Full Name <br>
+                            {email} -> Employee email <br>
+                            {address} -> Employee Address <br>
+                            {phone} -> Employee Phone
+                        </div>
+                    </div>
+
                     <div class="help">You have write <span id="message_character_count">0</span> character.
                         Remember that 160 character is
                         one sms

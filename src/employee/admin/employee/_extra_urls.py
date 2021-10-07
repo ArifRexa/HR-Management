@@ -34,7 +34,8 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                  name='hour_graph'),
             path('<int:employee_id__exact>/salary/received-history/',
                  self.admin_site.admin_view(self.salary_receive_history), name='employee.salary.receive.history'),
-            path('announce/sms/', self.admin_site.admin_view(self.sms_announce), name='employee.announce.sms'),
+            path('announce/sms/', self.admin_site.admin_view(self.sms_announce),
+                 name='employee.announce.sms'),
             path('announce/sms/post/', self.admin_site.admin_view(self.send_sms), name='employee.announce.sms.post')
         ]
         return employee_urls + urls
@@ -72,7 +73,8 @@ class EmployeeExtraUrls(admin.ModelAdmin):
                 form=form
             )
             if form.is_valid():
-                management.call_command('sms_notification_to_employee', form.cleaned_data['employees'],
+                management.call_command('sms_notification_to_employee',
+                                        list(form.cleaned_data['employees'].values_list('id', flat=True)),
                                         form.cleaned_data['message'])
                 messages.success(request=request, message='SMS sent')
                 return redirect(reverse('admin:employee.announce.sms'))
