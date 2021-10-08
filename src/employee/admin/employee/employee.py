@@ -3,7 +3,7 @@ from django.db import models
 from django.forms import Textarea
 
 from employee.admin.employee._actions import EmployeeActions
-from employee.admin.employee._extra_urls import EmployeeExtraUrls
+from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill

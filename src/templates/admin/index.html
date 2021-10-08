@@ -2,7 +2,16 @@
 {% load i18n static %}
 
 {% block extrastyle %}{{ block.super }}
-    <link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">{% endblock %}
+    <link rel="stylesheet" type="text/css" href="{% static "admin/css/dashboard.css" %}">
+    <style>
+        .news-track {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+        }
+    </style>
+{% endblock %}
 
 {% block coltype %}colMS{% endblock %}
 
@@ -16,15 +25,18 @@
     <div id="content-main">
         {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
     </div>
+
+    <div class="news-track">
+        <marquee onmouseover="this.stop();" önmouseout="this.start();">Test Message</marquee>
+    </div>
+
 {% endblock %}
 
 {% block sidebar %}
+
     <div id="content-related">
+
         <div class="module" id="recent-actions-module">
-            <h2>Recent Events</h2>
-            <ul class="actionlist">
-                <li>Hello</li>
-            </ul>
             <h2>{% translate 'Recent actions' %}</h2>
             <h3>{% translate 'My actions' %}</h3>
             {% load log %}
@@ -53,4 +65,8 @@
             {% endif %}
         </div>
     </div>
+
+
+
+
 {% endblock %}

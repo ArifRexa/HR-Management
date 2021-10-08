@@ -16,13 +16,6 @@ class EmployeeAdminListView:
             'employee': obj
         })
         return format_html(html_content)
-        # return format_html(
-        #     f'<b>Name &emsp; &emsp; &nbsp:  {obj.full_name.capitalize()} </b><br>'
-        #     f'<b>Designation :</b> {obj.designation} <br>'
-        #     f'<b>Joined at &emsp;&nbsp;:</b> {naturalday(obj.joining_date)} ({obj.joining_date_human}) <br>'
-        #     f'{"<b>Resign at &emsp;&nbsp;:</b> " + str(resigned.first().date) if resigned.first() else ""}</br>'
-        #     f'<a href="{reverse("admin:hour_graph", kwargs={"employee_id__exact": obj.id})}">📈</a>'
-        # )
 
     def leave_info(self, obj):
         approved_leave = obj.leave_set.filter(status='approved')
