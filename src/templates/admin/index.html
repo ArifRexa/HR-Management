@@ -26,9 +26,9 @@
         {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
     </div>
 
-{#    <div class="news-track">#}
-{#        <marquee onmouseover="this.stop();" önmouseout="this.start();">Test Message</marquee>#}
-{#    </div>#}
+    {#    <div class="news-track">#}
+    {#        <marquee onmouseover="this.stop();" önmouseout="this.start();">Test Message</marquee>#}
+    {#    </div>#}
 
 {% endblock %}
 
@@ -47,29 +47,38 @@
                 </ul>
             {% endif %}
 
-            {% if birthday.count > 0 %}
-                <h3>Birthday Today ({{ birthday.count }})</h3>
+            {% if birthdays.count > 0 %}
+                <h3>Birthday Today ({{ birthdays.count }})</h3>
                 <ul class="actionlist">
-                    {% for employee_birthday in birthday %}
-                        <li>{{ employee_birthday }}</li>
+                    {% for employee_birthday in birthdays %}
+                        <li>{{ employee_birthday }} - {{ employee_birthday.date_of_birth }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
 
-            {% if increment.count > 0 %}
-                <h3>Increment Nearby ({{ increment.count }})</h3>
+            {% if increments.count > 0 %}
+                <h3>Increment Nearby ({{ increments.count }})</h3>
                 <ul class="actionlist">
-                    {% for employee_increment in increment %}
+                    {% for employee_increment in increments %}
                         <li>{{ employee_increment }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
 
-            {% if permanent.count > 0 %}
-                <h3>Permanent Nearby ({{ permanent.count }})</h3>
+            {% if permanents.count > 0 %}
+                <h3>Permanent Nearby ({{ permanents.count }})</h3>
                 <ul class="actionlist">
-                    {% for employee_permanent in permanent %}
+                    {% for employee_permanent in permanents %}
                         <li>{{ employee_permanent }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if anniversaries.count > 0 %}
+                <h3>Anniversaries Nearby ({{ anniversaries.count }})</h3>
+                <ul class="actionlist">
+                    {% for employee_anniversary in anniversaries %}
+                        <li>{{ employee_anniversary }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}

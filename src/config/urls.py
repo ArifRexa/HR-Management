@@ -39,9 +39,10 @@ urlpatterns = [
          {
              'extra_context': {
                  'leaves': employee_formal_summery.employees_on_leave_today,
-                 'birthday': employee_formal_summery.employees_birthday_today,
-                 'increment': employee_formal_summery.increments,
-                 'permanent': employee_formal_summery.permanents
+                 'birthdays': employee_formal_summery.birthdays,
+                 'increments': employee_formal_summery.increments,
+                 'permanents': employee_formal_summery.permanents,
+                 'anniversaries': employee_formal_summery.anniversaries
              }
          }),
 
