@@ -37,6 +37,44 @@
     <div id="content-related">
 
         <div class="module" id="recent-actions-module">
+            <h2>Recent Event</h2>
+            {% if leaves.count > 0 %}
+                <h3>Leave Today ({{ leaves.count }})</h3>
+                <ul class="actionlist">
+                    {% for employee_leave in leaves %}
+                        <li>{{ employee_leave }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if birthday.count > 0 %}
+                <h3>Birthday Today ({{ birthday.count }})</h3>
+                <ul class="actionlist">
+                    {% for employee_birthday in birthday %}
+                        <li>{{ employee_birthday }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if increment.count > 0 %}
+                <h3>Increment Nearby ({{ increment.count }})</h3>
+                <ul class="actionlist">
+                    {% for employee_increment in increment %}
+                        <li>{{ employee_increment }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            {% if permanent.count > 0 %}
+                <h3>Permanent Nearby ({{ permanent.count }})</h3>
+                <ul class="actionlist">
+                    {% for employee_permanent in permanent %}
+                        <li>{{ employee_permanent }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+
             <h2>{% translate 'Recent actions' %}</h2>
             <h3>{% translate 'My actions' %}</h3>
             {% load log %}

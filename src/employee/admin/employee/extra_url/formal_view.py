@@ -12,7 +12,7 @@ class FormalView(admin.ModelAdmin):
 
     def notice_bord(self, request, *args, **kwargs):
         nearby_summery = EmployeeNearbySummery()
-        print(nearby_summery.employee_on_leave_today())
+        print(nearby_summery.employees_on_leave_today())
         context = dict(
             title='Notice Board',
             birthday=nearby_summery.birthdays(),
@@ -87,9 +87,12 @@ class EmployeeNearbySummery:
             permanent_date__isnull=False
         )
 
-    def employee_on_leave_today(self):
+    def employees_on_leave_today(self):
         return self.employees.filter(
             leave__start_date__gte=self.today,
             leave__end_date__lte=self.today,
             leave__status='approved'
         )
+
+    def employees_birthday_today(self):
+        return self.employees.filter(date_of_birth=timezone.now().date())
