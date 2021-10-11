@@ -56,8 +56,8 @@
                 </ul>
             {% endif %}
 
-            {% if increments.count > 0 %}
-                <h3>Increment Nearby ({{ increments.count }})</h3>
+            {% if increments|length > 0 %}
+                <h3>Increment Nearby ({{ increments | length }})</h3>
                 <ul class="actionlist">
                     {% for employee_increment in increments %}
                         <li>{{ employee_increment }}</li>
