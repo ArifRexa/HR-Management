@@ -9,6 +9,7 @@ from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html, linebreaks
+from django_q.tasks import async_task
 from openpyxl.cell.cell import get_type
 
 from config import settings
@@ -115,6 +116,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at', 'can_start_after')
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
+    actions = ('send_exam_url',)
 
     readonly_fields = ['step']
 
@@ -199,6 +201,13 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             title=f'{candidate_assessment.assessment} - {candidate_assessment.candidate_job.candidate}',
         )
         return TemplateResponse(request, "admin/candidate_assessment/assessment_preview.html", context=context)
+
+    def send_exam_url(self, request, queryset):
+        # TODO : need to finish it
+        pass
+        # for candidate_assessment in queryset:
+        #     async_task('job_board.tasks.send_exam_url')
+        #     pass
 
 
 @admin.register(ResetPassword)

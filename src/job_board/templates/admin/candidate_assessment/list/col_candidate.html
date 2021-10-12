@@ -1,4 +1,4 @@
-{{ candidate.full_name }} <br>
+<a href="{% url 'admin:job_board_candidate_change' candidate.id %}">{{ candidate.full_name }}</a> <br>
 <a href="tel:+880{{ candidate.phone }}">+880{{ candidate.phone }}</a> <br>
 {{ candidate.email }} <br>
 <b style="color: #985f0d">Expected Salary : {{ candidate_job.expected_salary }} </b><br>
