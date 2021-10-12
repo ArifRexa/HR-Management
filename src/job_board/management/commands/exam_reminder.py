@@ -20,6 +20,7 @@ class Command(BaseCommand):
     def send_mail_to_candidate(self, candidate_assessments):
         for candidate_assessment in candidate_assessments:
             print(f'{candidate_assessment.candidate_job.candidate}-{candidate_assessment.assessment}')
+            # TODO : need to dubug why it's stopped after 10 to 20 loop from schedule run
             async_task('job_board.management.commands.exam_reminder.send_mail', candidate_assessment,
                        group=f'Exam Reminder {candidate_assessment.assessment.type} {candidate_assessment.candidate_job.candidate}')
             async_task('job_board.management.commands.exam_reminder.send_sms', candidate_assessment,

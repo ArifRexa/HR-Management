@@ -39,6 +39,7 @@ class LeaveForm(forms.ModelForm):
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
     list_display = ('employee', 'leave_type', 'total_leave', 'status', 'short_message', 'start_date', 'end_date')
+    actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
     inlines = (LeaveAttachmentInline,)
@@ -86,3 +87,7 @@ class LeaveManagement(admin.ModelAdmin):
             async_task('employee.tasks.leave_mail', obj)
         elif not change:
             async_task('employee.tasks.leave_mail', obj)
+
+    @admin.action()
+    def approve_selected(self, request, queryset):
+        return queryset.update(status='approved')
