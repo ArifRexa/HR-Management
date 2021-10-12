@@ -7,6 +7,7 @@ from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
 
 from job_board.models.assessment import AssessmentAnswer, Assessment, AssessmentQuestion
+from django.http import HttpResponse
 
 
 class AssessmentAnswerInline(admin.TabularInline):
@@ -29,11 +30,10 @@ class AssessmentAdmin(admin.ModelAdmin):
         additional_urls = [
             path('<int:pk>/preview/', self.admin_site.admin_view(self.preview, cacheable=True),
                  name='assessment_preview'),
-            # path()
         ]
         return additional_urls + urls
 
-    def preview(self, request, pk):
+    def preview(self, request, pk, *args, **kwargs):
         if self.has_view_permission(request, None):
             assessment = self.get_queryset(request).filter(pk=pk).first()
             context = dict(
