@@ -19,9 +19,11 @@
         {% for assessment_question in assessment.assessmentquestion_set.all %}
             <li>
                 <div style="display: flex">
-                    <div style="width: 50%">{{ assessment_question.title | safe }}</div>
+                    <div style="width: 50%"> {{ assessment_question.title | safe }}  </div>
                     <div style="float: right">{{ assessment_question.get_type_display }} |
                         Score {{ assessment_question.score }}</div>
+                    <a href="{% url 'admin:job_board_assessmentquestion_change' assessment_question.id %}"> &nbsp; ✎
+                        Edit</a>
                 </div>
                 <ol>
                     {% for assessment_answer in assessment_question.answers.all %}
