@@ -10,6 +10,10 @@
             left: 0;
             width: 100%;
         }
+
+        .green-mark {
+            color: red;
+        }
     </style>
 {% endblock %}
 
@@ -39,44 +43,47 @@
         <div class="module" id="recent-actions-module">
             <h2>Recent Event</h2>
             {% if leaves.count > 0 %}
-                <h3>Leave Today ({{ leaves.count }})</h3>
-                <ul class="actionlist">
+                <h3>Leave Nearby ({{ leaves.count }})</h3>
+                <ul class="actionlist green-mark">
                     {% for employee_leave in leaves %}
-                        <li>{{ employee_leave }}</li>
+                        <li>{{ employee_leave }} <br> <sub>{{ employee_leave.leave_set.last.start_date }}
+                            to {{ employee_leave.leave_set.last.end_date }}</sub></li>
                     {% endfor %}
                 </ul>
             {% endif %}
 
             {% if birthdays.count > 0 %}
                 <h3>Birthday Today ({{ birthdays.count }})</h3>
-                <ul class="actionlist">
+                <ul class="actionlist green-mark">
                     {% for employee_birthday in birthdays %}
                         <li>{{ employee_birthday }} - {{ employee_birthday.date_of_birth }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
 
-            {% if increments|length > 0 %}
-                <h3>Increment Nearby ({{ increments | length }})</h3>
-                <ul class="actionlist">
-                    {% for employee_increment in increments %}
-                        <li>{{ employee_increment }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {% if request.user.is_superuser %}
+                {% if increments|length > 0 %}
+                    <h3>Increment Nearby ({{ increments | length }})</h3>
+                    <ul class="actionlist green-mark">
+                        {% for employee_increment in increments %}
+                            <li>{{ employee_increment }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
 
-            {% if permanents.count > 0 %}
-                <h3>Permanent Nearby ({{ permanents.count }})</h3>
-                <ul class="actionlist">
-                    {% for employee_permanent in permanents %}
-                        <li>{{ employee_permanent }}</li>
-                    {% endfor %}
-                </ul>
+                {% if permanents.count > 0 %}
+                    <h3>Permanent Nearby ({{ permanents.count }})</h3>
+                    <ul class="actionlist green-mark">
+                        {% for employee_permanent in permanents %}
+                            <li>{{ employee_permanent }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
             {% endif %}
 
             {% if anniversaries.count > 0 %}
                 <h3>Anniversaries Nearby ({{ anniversaries.count }})</h3>
-                <ul class="actionlist">
+                <ul class="actionlist green-mark">
                     {% for employee_anniversary in anniversaries %}
                         <li>{{ employee_anniversary }}</li>
                     {% endfor %}

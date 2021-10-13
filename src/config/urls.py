@@ -29,24 +29,23 @@ admin.site.index_title = "Welcome to Mediusware Admin Portal"
 
 employee_formal_summery = EmployeeNearbySummery()
 
+extra_context = dict(
+    leaves=employee_formal_summery.employee_leave_nearby,
+    birthdays=employee_formal_summery.birthdays,
+    increments=employee_formal_summery.increments,
+    permanents=employee_formal_summery.permanents,
+    anniversaries=employee_formal_summery.anniversaries
+)
+
 urlpatterns = [
     path('', include('job_board.urls')),
     path('api-auth/', include('rest_framework.urls')),
     path('settings/', include('settings.urls')),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='js-catalog'),
     # path('admin/account/', include('account.urls')),
-    path('admin/', admin.site.urls,
-         {
-             'extra_context': {
-                 'leaves': employee_formal_summery.employees_on_leave_today,
-                 'birthdays': employee_formal_summery.birthdays,
-                 'increments': employee_formal_summery.increments,
-                 'permanents': employee_formal_summery.permanents,
-                 'anniversaries': employee_formal_summery.anniversaries
-             }
-         }),
+    path('admin/', admin.site.urls, {'extra_context': extra_context}),
 
-    path("password-change/", auth_view.PasswordChangeView.as_view(), name='password_change'),
+    path("password-change/", auth_view.PasswordChangeView.as_view(extra_context=extra_context), name='password_change'),
     path("password-change/done/", auth_view.PasswordResetDoneView.as_view(), name='password_change_done'),
 
     path('password-reset/', auth_view.PasswordResetView.as_view(), name="admin_password_reset"),

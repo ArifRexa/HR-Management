@@ -1,4 +1,5 @@
 import datetime
+from datetime import timedelta
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -86,6 +87,16 @@ class EmployeeNearbySummery:
             joining_date__month__in=[self.today.month, self.today.month + 1],
             permanent_date__isnull=False
         )
+
+    def employee_leave_nearby(self):
+        leaves = self.employees.filter(
+            # leave__start_date__gte=self.today - timedelta(days=1),
+            leave__end_date__gte=self.today,
+            leave__status='approved'
+        )
+        for leave in leaves:
+            print(leave)
+        return leaves
 
     def employees_on_leave_today(self):
         return self.employees.filter(
