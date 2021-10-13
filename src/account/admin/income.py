@@ -79,7 +79,7 @@ class IncomeAdmin(admin.ModelAdmin):
         ]
         return my_urls + urls
 
-    def balance_view(self, request):
+    def balance_view(self, request, *args, **kwargs):
         if request.user.is_superuser:
             balance = (BalanceSummery()).get_context_data()
             context = dict(
