@@ -89,14 +89,10 @@ class EmployeeNearbySummery:
         )
 
     def employee_leave_nearby(self):
-        leaves = self.employees.filter(
-            # leave__start_date__gte=self.today - timedelta(days=1),
-            leave__end_date__gte=self.today,
-            leave__status='approved'
+        return Leave.objects.filter(
+            end_date__gte=self.today,
+            status='approved'
         )
-        for leave in leaves:
-            print(leave)
-        return leaves
 
     def employees_on_leave_today(self):
         return self.employees.filter(

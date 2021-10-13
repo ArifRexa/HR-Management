@@ -46,8 +46,8 @@
                 <h3>Leave Nearby ({{ leaves.count }})</h3>
                 <ul class="actionlist green-mark">
                     {% for employee_leave in leaves %}
-                        <li>{{ employee_leave }} <br> <sub>{{ employee_leave.leave_set.last.start_date }}
-                            to {{ employee_leave.leave_set.last.end_date }}</sub></li>
+                        <li>{{ employee_leave.employee }} <br> <sub>{{ employee_leave.start_date }}
+                            to {{ employee_leave.end_date }}</sub></li>
                     {% endfor %}
                 </ul>
             {% endif %}
