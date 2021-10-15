@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Mediusware Ltd - Salary Account</title>
+    {% load static %}
+    <style>
+        * {
+            font-size: 13px;
+        }
+
+        @font-face {
+            font-family: "Siyam Rupali";
+            src: url("{{ font }}");
+        }
+
+        body {
+            font-family: "Roboto", "Lucida Grande", "DejaVu Sans", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+        }
+
+        @page {
+            size: a4 portrait;
+            @frame content_frame {
+            left: 40pt;
+            width: 512pt;
+            top: 100pt;
+            height: 570pt;
+        }
+
+        @frame footer_frame {
+            /* Another static Frame */
+        -pdf-frame-content:footer_content;
+        left: 50pt; width: 512pt; top: 680pt; height: 120pt;
+        }
+
+        @frame logo {
+        -pdf-frame-content:logo;
+        left: 40px;
+        top: 20px;
+        width: 150px;
+        height: 60px;
+        }
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+
+        table, td, th {
+            border: 1px solid black;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+    </style>
+</head>
+<body>
+{% for expense_group in expense_groups %}
+    <table>
+        <thead>
+        <tr>
+            <td>No</td>
+            <td></td>
+            <td>Voucher No</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Name</td>
+            <td>{{ expense_group.created_by.first_name }} {{ expense_group.created_by.last_name }}</td>
+            <td>Date</td>
+            <td>{{ expense_group.created_at }}</td>
+        </tr>
+        </thead>
+    </table>
+    <br>
+    <table>
+        <thead>
+        <tr>
+            <th>Details</th>
+            <th>Particular</th>
+            <th>Debit TK</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for expense in expense_group.data %}
+            <tr>
+                <td>{{ expense.expense_category }} ({{ expense.note }})</td>
+                <td>{{ expense }}</td>
+                <td>{{ expense.amount }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <br>
+{% endfor %}
+
+</body>
+</html>

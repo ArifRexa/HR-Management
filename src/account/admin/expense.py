@@ -1,9 +1,18 @@
+import datetime
+from datetime import date
+
+from dateutil.utils import today
 from django.contrib import admin
 from django.contrib.admin import AdminSite
-from django.db.models import Sum, Q
+from django.contrib.auth.models import User
+from django.db.models import Sum, Q, Value, QuerySet, Func, F, CharField
+from django.template.loader import get_template
+from django.utils import timezone
 
 from account.models import Expense, ExpenseCategory, ExpanseAttachment, ExpenseGroup
 from config.admin.utils import simple_request_filter
+from config.utils.pdf import PDF
+from employee.models import Employee
 
 
 @admin.register(ExpenseGroup)
@@ -29,6 +38,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
     search_fields = ['note']
+    actions = ('print_voucher',)
 
     def get_queryset(self, request):
         qs = super(ExpenseAdmin, self).get_queryset(request)
@@ -47,5 +57,25 @@ class ExpenseAdmin(admin.ModelAdmin):
             'total': self.get_total_hour(request),
         }
         return super().changelist_view(request, extra_context=my_context)
+
     # TODO : Export to excel
     # TODO : Credit feature
+    @admin.action()
+    def print_voucher(self, request, queryset):
+        pdf = PDF()
+        pdf.context = dict(
+            expense_groups=self._get_mapped_expense_data(queryset=queryset)
+        )
+        pdf.template_path = 'voucher/expense_voucher.html'
+        return pdf.render_to_pdf(download=False)
+
+    def _get_mapped_expense_data(self, queryset):
+        mapped_date = []
+        for expense in queryset.values('date', 'created_by'):
+            context = dict(
+                created_at=expense['date'],
+                created_by=User.objects.get(id=expense['created_by']),
+                data=queryset.filter(date=expense['date'], created_by=expense['created_by'])
+            )
+            mapped_date.append(context)
+        return mapped_date

@@ -14,6 +14,7 @@ class PDF:
     __FILE_PATH = config.settings.MEDIA_ROOT
     __FILE_EXTENSION = '.pdf'
     _letter_head = f"{config.settings.STATIC_ROOT}/stationary/letter_head.jpeg"
+    _font = f"{config.settings.STATIC_ROOT}/stationary/bangla/Siyamrupali.ttf"
 
     def __init__(self, file_name=get_random_string(length=12), context=None, template_path=None, letter_head=None):
         if context is None:
@@ -28,6 +29,7 @@ class PDF:
         @return:
         """
         self.context['watermark'] = self._letter_head
+        self.context['font'] = self._font
         template = get_template(self.template_path)
         html = template.render(self.context)
         result = BytesIO()
