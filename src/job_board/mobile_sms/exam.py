@@ -17,7 +17,13 @@ class ExamSMS:
     def reminder_sms(self):
         message = f'Dear Candidate, You have applied at ' \
                   f'the position {self.candidate_assessment.candidate_job.job.title}. ' \
-                  f'\nCheck your email (inbox/spam/promotions) for the {self.candidate_assessment.assessment.type} exam.'\
+                  f'\nCheck your email (inbox/spam/promotions) for the {self.candidate_assessment.assessment.type} exam.' \
                   f'\nFor Query : 01750020408'
+        self.sms_end_point += f'&msg={message}'
+        requests.get(self.sms_end_point, verify=False)
+
+    def promotional_sms(self, message):
+        message = message.format(full_name=self.candidate_assessment.candidate_job.candidate.full_name,
+                                 candidate_job=self.candidate_assessment.candidate_job.job.title)
         self.sms_end_point += f'&msg={message}'
         requests.get(self.sms_end_point, verify=False)

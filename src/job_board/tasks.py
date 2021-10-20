@@ -6,6 +6,7 @@ from django.utils import timezone
 from django_q.tasks import async_task
 
 from job_board.admin.candidate_admin import CandidateAssessment
+from job_board.mobile_sms.exam import ExamSMS
 from job_board.models.assessment import Assessment
 
 
@@ -62,3 +63,8 @@ def mark_merit(assessment_id: int):
 
 def exam_reminder():
     return management.call_command('exam_reminder')
+
+
+def sms_promotion(promotion_sms, candidate_assessment: CandidateAssessment):
+    exam_sms = ExamSMS(candidate_assessment=candidate_assessment)
+    exam_sms.promotional_sms(promotion_sms)
