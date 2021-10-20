@@ -36,6 +36,7 @@ class CandidateAdmin(admin.ModelAdmin):
     list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
     actions = ('send_default_sms',)
+    list_per_page = 50
 
     @admin.display(ordering='candidatejob__expected_salary')
     def expected_salary(self, obj: Candidate):
@@ -148,6 +149,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
     actions = ('send_default_sms',)
+    list_per_page = 50
 
     readonly_fields = ['step']
 
