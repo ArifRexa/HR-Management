@@ -6,8 +6,10 @@ from django.utils import timezone
 from django_q.tasks import async_task
 
 from job_board.admin.candidate_admin import CandidateAssessment
+from job_board.mobile_sms.candidate import CandidateSMS
 from job_board.mobile_sms.exam import ExamSMS
 from job_board.models.assessment import Assessment
+from job_board.models.candidate import Candidate
 
 
 def send_otp(otp, email_address):
@@ -68,3 +70,8 @@ def exam_reminder():
 def sms_promotion(promotion_sms, candidate_assessment: CandidateAssessment):
     exam_sms = ExamSMS(candidate_assessment=candidate_assessment)
     exam_sms.promotional_sms(promotion_sms)
+
+
+def employee_sms_promotion(promotion_sms, candidate: Candidate):
+    candidate_sms = CandidateSMS(candidate=candidate)
+    candidate_sms.promotional_sms(promotion_sms)

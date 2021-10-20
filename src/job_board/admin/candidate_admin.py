@@ -1,7 +1,9 @@
 import datetime
+from distutils.util import strtobool
 
 from django import forms
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models import Sum
@@ -33,6 +35,7 @@ class CandidateAdmin(admin.ModelAdmin):
     search_fields = ('full_name', 'email', 'phone')
     list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
+    actions = ('send_default_sms',)
 
     @admin.display(ordering='candidatejob__expected_salary')
     def expected_salary(self, obj: Candidate):
@@ -74,6 +77,14 @@ class CandidateAdmin(admin.ModelAdmin):
         if candidate_job:
             return format_html(linebreaks(candidate_job.additional_message))
 
+    @admin.display(description='Send Default Promotional SMS')
+    def send_default_sms(self, request, queryset):
+        promotion = SMSPromotion.objects.filter(is_default=True).first()
+        if promotion:
+            for candidate in queryset:
+                async_task('job_board.tasks.employee_sms_promotion', promotion.sms_body, candidate,
+                           group=f"{candidate.full_name} Got an Promotional SMS")
+
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['candidate_jobs'] = CandidateJob.objects.filter(candidate_id=object_id).all()
@@ -111,11 +122,29 @@ class CandidateJobAdmin(admin.ModelAdmin):
         return format_html(obj.additional_message.replace('\n', '<br>'))
 
 
+class CandidateHasUrlFilter(SimpleListFilter):
+    title = 'Has Evaluation Url'
+    parameter_name = 'evaluation_url__isnull'
+
+    def lookups(self, request, model_admin):
+        return (
+            (False, 'Has Link'),
+            (True, 'Has not Link'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is not None:
+            to_bol = bool(strtobool(self.value()))
+            dd = queryset.filter(evaluation_url__isnull=to_bol)
+            return dd
+
+
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'get_score', 'meta_information', 'meta_review', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email')
-    list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at', 'can_start_after')
+    list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at',
+                   'can_start_after', CandidateHasUrlFilter)
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
     actions = ('send_default_sms',)
