@@ -15,7 +15,7 @@ class ExamSMS:
                              f'&senderid={self.sender_id}'
 
     def reminder_sms(self):
-        message = f'Dear Candidate, You have applied at ' \
+        message = f'You have applied at ' \
                   f'the position {self.candidate_assessment.candidate_job.job.title}. ' \
                   f'\nCheck your email (inbox/spam/promotions) for the {self.candidate_assessment.assessment.type} exam.' \
                   f'\nFor Query : 01750020408'
