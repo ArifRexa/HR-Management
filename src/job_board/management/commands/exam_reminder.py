@@ -1,8 +1,12 @@
+import datetime
 import time
+from datetime import timedelta
 
 from django.core.management import BaseCommand
 from django.db.models import Q
-from django_q.tasks import async_task
+from django.utils import timezone
+from django_q.models import Schedule
+from django_q.tasks import async_task, schedule
 
 from job_board.mails.exam import ExamMail
 from job_board.mobile_sms.exam import ExamSMS
@@ -18,21 +22,24 @@ class Command(BaseCommand):
         self.send_mail_to_candidate(candidate_assessments)
 
     def send_mail_to_candidate(self, candidate_assessments):
+        seconds = 1
         for candidate_assessment in candidate_assessments:
-            print(f'{candidate_assessment.candidate_job.candidate}-{candidate_assessment.assessment}')
-            # TODO : need to dubug why it's stopped after 10 to 20 loop from schedule run
-            async_task('job_board.management.commands.exam_reminder.send_mail', candidate_assessment,
-                       group=f'Exam Reminder {candidate_assessment.assessment.type} {candidate_assessment.candidate_job.candidate}')
-            async_task('job_board.management.commands.exam_reminder.send_sms', candidate_assessment,
-                       group=f'Exam Reminder SMS {candidate_assessment.assessment.type} {candidate_assessment.candidate_job.candidate}')
-            time.sleep(5)
+            seconds = seconds + 1
+            schedule('job_board.management.commands.exam_reminder.send_mail', candidate_assessment.id,
+                     name=f'{candidate_assessment.candidate_job.candidate}',
+                     schedule_type=Schedule.ONCE, next_run=timezone.now() + timedelta(seconds=seconds))
+            schedule('job_board.management.commands.exam_reminder.send_sms', candidate_assessment.id,
+                     name=f'SMS {candidate_assessment.candidate_job.candidate}',
+                     schedule_type=Schedule.ONCE, next_run=timezone.now() + timedelta(seconds=seconds))
 
 
-def send_mail(candidate_assessment: CandidateAssessment):
+def send_mail(candidate_assessment_id: int):
+    candidate_assessment = CandidateAssessment.objects.get(pk=candidate_assessment_id)
     exam_mail = ExamMail(candidate_assessment)
     exam_mail.reminder_mail()
 
 
-def send_sms(candidate_assessment: CandidateAssessment):
+def send_sms(candidate_assessment_id: int):
+    candidate_assessment = CandidateAssessment.objects.get(pk=candidate_assessment_id)
     exam_sms = ExamSMS(candidate_assessment)
     exam_sms.reminder_sms()
