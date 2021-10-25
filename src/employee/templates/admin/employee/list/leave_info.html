@@ -1,0 +1,5 @@
+{% load employee_helper %}
+
+<b>Casual &nbsp;&nbsp;&nbsp; :</b> <b>{{ casual }}</b> / {{ employee | get_available_leave:'casual_leave' }} <br>
+<b>Medical &nbsp;&nbsp;:</b> <b>{{ medical }}</b> / {{ employee | get_available_leave:'medical_leave' }} <br>
+<b>Non Paid :</b> <b>{{ non_paid }}</b> / ∞ <br>
