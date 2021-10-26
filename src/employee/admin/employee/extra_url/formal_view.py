@@ -39,7 +39,6 @@ class FormalView(admin.ModelAdmin):
     def salary_receive_history_view(self, request, *args, **kwargs):
         if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
             raise PermissionDenied
-
         employee = Employee.objects.get(id=kwargs.get(*kwargs))
         employee_salaries = employee.employeesalary_set.filter(employee_id__exact=kwargs.get(*kwargs)).order_by('-id')
         context = dict(
