@@ -18,7 +18,7 @@ class ExamSMS:
         message = f'You have applied at ' \
                   f'the position {self.candidate_assessment.candidate_job.job.title}. ' \
                   f'\nCheck your email (inbox/spam/promotions) for the {self.candidate_assessment.assessment.type} exam.' \
-                  f'\nFor Query : 01750020408'
+                  f'\nQuery :01750020408'
         self.sms_end_point += f'&msg={message}'
         requests.get(self.sms_end_point, verify=False)
 
