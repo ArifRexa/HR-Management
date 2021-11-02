@@ -141,3 +141,6 @@ class CandidateAssessmentAnswer(TimeStampMixin):
     total_score = models.FloatField()
     answers = models.JSONField()
     score_achieve = models.FloatField()
+
+    def __str__(self):
+        return f'{self.answers}'

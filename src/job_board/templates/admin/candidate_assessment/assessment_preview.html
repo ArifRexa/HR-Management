@@ -1,6 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% block content %}
     {% load static %}
+    {% load assessment %}
 
     <ol>
         {% for assessment_question in candidate_assessment.assessment.assessmentquestion_set.all %}
@@ -35,8 +36,7 @@
                         {% endfor %}
                     </ol>
                     <div style="width: 20%">
-                        given ans {{ assessment_question.id }}
-                        {{ candidate_assessment.candidate_job.id }}
+                        {{ assessment_question | get_candidate_answer:candidate_assessment | safe }}
                     </div>
                 </div>
 
