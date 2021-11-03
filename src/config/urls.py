@@ -23,9 +23,9 @@ from django.views.i18n import JavaScriptCatalog
 
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 
-admin.site.site_header = 'Mediusware Ltd.'
-admin.site.site_title = "Mediusware Admin Portal"
-admin.site.index_title = "Welcome to Mediusware Admin Portal"
+admin.site.site_header = settings.APP_SITE_HEADER
+admin.site.site_title = settings.APP_SITE_TITLE
+admin.site.index_title = settings.APP_INDEX_TITLE
 
 employee_formal_summery = EmployeeNearbySummery()
 

@@ -25,8 +25,9 @@ def _total_by_des_type(employee_salary_set):
     total = 0
     for employee_salary in employee_salary_set:
         print(employee_salary.gross_salary)
-        total += employee_salary.gross_salary
+        total += floor(employee_salary.gross_salary)
     return floor(total)
+
 
 @register.filter
 def _in_dollar(value):

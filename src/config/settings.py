@@ -23,6 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'f&xx*e46f#670*h0512(%hn7*5t=5cg2@8vg0dhl+fcll77n8@'
 
+APP_SITE_HEADER = os.environ.get('APP_SITE_HEADER', 'Mediusware Ltd')
+APP_SITE_TITLE = os.environ.get('APP_SITE_TITLE', 'Mediusware Admin Portal')
+APP_INDEX_TITLE = os.environ.get('APP_INDEX_TITLE', 'Welcome to Mediusware Admin Portal')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', False).lower() in ('true', 1, 't')
 
