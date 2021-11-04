@@ -7,6 +7,7 @@ from config.utils.pdf import PDF
 
 class EmployeeActions:
     actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter', 'print_noc_letter',
+               'print_resignation_letter',
                'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter', 'mail_noc_letter']
 
     @admin.action(description='Print Appointment Letter')
@@ -24,6 +25,9 @@ class EmployeeActions:
     @admin.action(description='Print NOC Letter')
     def print_noc_letter(self, request, queryset):
         return self.generate_pdf(queryset=queryset, letter_type='NOC').render_to_pdf()
+
+    def print_resignation_letter(self, request, queryset):
+        return self.generate_pdf(queryset=queryset, letter_type='ERL').render_to_pdf(download=False)
 
     @admin.action(description='Mail Appointment Letter')
     def mail_appointment_letter(self, request, queryset):
@@ -89,5 +93,6 @@ class EmployeeActions:
             'EPL': 'letters/permanent_letter.html',
             'EIL': 'letters/increment_latter.html',
             'NOC': 'letters/noc_letter.html',
+            'ERL': 'letters/resignation_letter.html'
         }
         return switcher.get(letter_type, '')

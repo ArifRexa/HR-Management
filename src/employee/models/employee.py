@@ -63,6 +63,9 @@ class Employee(TimeStampMixin, AuthorMixin):
     def permanent_date_human(self):
         return timesince(self.permanent_date)
 
+    def approved_resignation(self):
+        return self.resignation_set.filter(status='approved').first()
+
     @property
     def resignation_date(self):
         is_resigned = self.resignation_set.filter(status='approved').first()

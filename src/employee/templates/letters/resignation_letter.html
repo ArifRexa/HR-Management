@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include 'letters/extra/header.html' with title='Resignation Latter' %}
+</head>
+
+{% load humanize %}
+{% load humanize_extra %}
+
+<body>
+{% for employee in employees %}
+    <p>
+        Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.approved_resignation.date | date:'Ym' }}{{ employee.id }}
+        <br>
+        Date: {{ employee.approved_resignation.date }} <br>
+        <b>{{ employee.full_name | title }}</b> <br>
+        Email: {{ employee.email }}<br>
+    </p>
+
+    <p><b>Subject :</b> Resignation letter of {{ employee.full_name }} </p>
+
+    {{ employee.approved_resignation.message | linebreaks }}
+
+    <br>
+    <table width="100%">
+        <tr>
+            <td width="70%">Regards,</td>
+            <td>Agreed & Accepted</td>
+        </tr>
+        <tr>
+            <td><br><br></td>
+            <td><br><br></td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top">
+                {{ employee.full_name }} <br>
+                {{ employee.designation }} <br>
+                Mediusware Ltd.
+            </td>
+            <td>
+                Md Shahinur Rahman <br>
+                Managing Director <br>
+                Mediusware Ltd.
+            </td>
+        </tr>
+    </table>
+{% endfor %}
+</body>
+
+</html>
