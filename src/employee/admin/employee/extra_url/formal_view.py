@@ -37,10 +37,11 @@ class FormalView(admin.ModelAdmin):
         return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
 
     def salary_receive_history_view(self, request, *args, **kwargs):
-        if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
+        employee_id = kwargs.get('employee_id__exact')
+        if not request.user.is_superuser and request.user.employee.id != employee_id:
             raise PermissionDenied
-        employee = Employee.objects.get(id=kwargs.get(*kwargs))
-        employee_salaries = employee.employeesalary_set.filter(employee_id__exact=kwargs.get(*kwargs)).order_by('-id')
+        employee = Employee.objects.get(id=employee_id)
+        employee_salaries = employee.employeesalary_set.filter(employee_id__exact=employee_id).order_by('-id')
         context = dict(
             self.admin_site.each_context(request),
             employee=employee,

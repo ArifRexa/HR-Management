@@ -41,7 +41,7 @@ class GraphView(admin.ModelAdmin):
             self.admin_site.each_context(request),
             chart=self._get_chart_data(request, *args, **kwargs),
             filter_form=filter_form,
-            title=Employee.objects.get(pk=kwargs.get(*kwargs))
+            title=Employee.objects.get(pk=kwargs.get('employee_id__exact'))
         )
         return TemplateResponse(request, "admin/employee/hour_graph.html", context)
 
@@ -84,14 +84,15 @@ class GraphView(admin.ModelAdmin):
         @param kwargs:
         @return:
         """
-        if not request.user.is_superuser and request.user.employee.id != kwargs.get(*kwargs):
+        employee_id = kwargs.get('employee_id__exact')
+        if not request.user.is_superuser and request.user.employee.id != employee_id:
             raise PermissionDenied
         chart = {'label': "Weekly View", 'total_hour': 0,
                  'labels': [], 'data': [], }
 
         filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if
                         key not in ['p', 'q', 'o', '_changelist_filters']])
-        filters['employee_id__exact'] = kwargs.get(*kwargs)
+        filters['employee_id__exact'] = employee_id
         employee_hours = EmployeeProjectHour.objects.values('project_hour__date').filter(**filters).annotate(
             hours=Sum('hours'))
         print(employee_hours)
