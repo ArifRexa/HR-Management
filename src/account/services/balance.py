@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import Sum, Value
 from django.db.models.functions import Coalesce
 
-from account.models import SalarySheet, Expense, Income, ProfitShare
+from account.models import SalarySheet, Expense, Income, ProfitShare, LoanPayment
 
 
 class BalanceSummery:
@@ -31,14 +31,18 @@ class BalanceSummery:
         salary = SalarySheet.objects.filter(**filter).first()
         salary = salary.total if salary else 0
         expense = self.__sum_total(Expense.objects.filter(**filter).all(), 'amount')
+        loan_expense = self.__sum_total(
+            LoanPayment.objects.filter(payment_date__month=date.month, payment_date__year=date.year).all(),
+            'payment_amount')
         income = self.__sum_total(Income.objects.filter(**filter).filter(status='approved').all(), 'payment')
-        profit_share_with_rifat = ((income - (expense + salary)) * 25) / 100
+        profit_share_with_rifat = ((income - (expense + salary + loan_expense)) * 25) / 100
         payment_done = ProfitShare.objects.filter(**filter).filter(user_id=1).aggregate(
             monthly_payment_amount=Coalesce(Sum('payment_amount'), Value(0.0))
         )['monthly_payment_amount']
 
         return {
             'expense': expense,
+            'loan_expense': loan_expense,
             'salary': salary,
             'income': income,
             'date': date,
