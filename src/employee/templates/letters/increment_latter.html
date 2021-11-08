@@ -19,7 +19,7 @@
     <p><b>Congratulations!</b></p>
     <p>Based on your performance in <b>Mediusware Ltd, House- 18/5 (3rd Floor), Ring Road, Mohammadpur,
         Dhaka,</b> we are pleased to inform you that we have decided to increase your salary & it will be effective
-        from <b>{{ employee.current_salary.active_from }}</b>.</p>
+        from <b>{{ employee.current_salary.active_from }}</b> on the position <b>"{{ employee.designation }}"</b>.</p>
 
     {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary %}
 
