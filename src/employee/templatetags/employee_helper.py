@@ -10,9 +10,8 @@ register = template.Library()
 def get_available_leave(employee: Employee, leave_type: str):
     available_leave = 0
     get_leave_by_type = getattr(employee.leave_management, leave_type)
-    print(leave_type, get_leave_by_type)
-    if employee.resignation_date:
-        if employee.approved_resignation:
+    if employee.permanent_date:
+        if employee.resignation_date:
             total_days_of_permanent = (employee.resignation_date - employee.permanent_date).days
         else:
             total_days_of_permanent = (timezone.now().replace(month=12, day=31).date() - employee.permanent_date).days
@@ -21,4 +20,5 @@ def get_available_leave(employee: Employee, leave_type: str):
             available_leave = (month_of_permanent * get_leave_by_type) / 12
         else:
             available_leave = get_leave_by_type
+
     return round(available_leave)
