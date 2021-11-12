@@ -63,3 +63,7 @@ def execute_increment_notification():
 
 def execute_permanent_notification():
     management.call_command('permanent_notifi')
+
+
+def execute_birthday_notification():
+    management.call_command('birthday_wish')
