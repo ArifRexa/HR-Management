@@ -24,6 +24,7 @@ class AssessmentAnswerInline(admin.TabularInline):
 @admin.register(Assessment)
 class AssessmentAdmin(admin.ModelAdmin):
     list_display = ('title', 'score', 'duration_display', 'get_description', 'type', 'open_to_start', 'show_action')
+    actions = ('clone_assessment',)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -53,6 +54,26 @@ class AssessmentAdmin(admin.ModelAdmin):
         return format_html(
             f'<a href="{reverse("admin:assessment_preview", kwargs={"pk": obj.pk})}">Preview</a>'
         )
+
+    @admin.action(description='Clone Assessment')
+    def clone_assessment(self, request, queryset):
+        for assessment in queryset:
+            assessment_questions = assessment.assessmentquestion_set.all()
+            print(assessment_questions)
+            _assessment = assessment
+            _assessment.pk = None
+            _assessment.title = f"{assessment.title} (Copy)"
+            _assessment.save()
+            print(assessment_questions)
+            for assessment_question in assessment_questions:
+                question_answers = assessment_question.answers.all()
+                print(question_answers)
+                _assessment_question = assessment_question
+                _assessment_question.pk = None
+                _assessment_question.save()
+                for question_answer in question_answers:
+                    question_answer.pk = None
+                    question_answer.save()
 
 
 @admin.register(AssessmentQuestion)
