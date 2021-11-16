@@ -63,6 +63,7 @@ class EmployeeNearbySummery:
     def birthdays(self):
         return self.employees.extra(
             select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
+            date_of_birth__day__gte=timezone.now().date().day,
             date_of_birth__month__gte=timezone.now().date().month,
             date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(days=30)).month
         ).order_by('birth_month', 'birth_day')

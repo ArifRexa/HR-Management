@@ -44,12 +44,14 @@ class CandidateAdmin(admin.ModelAdmin):
         if candidate_job is not None:
             return candidate_job.expected_salary
 
-    @admin.display(ordering='full_name')
+    @admin.display(ordering='created_at')
     def contact_information(self, obj: Candidate):
+        candidate_job = obj.candidatejob_set.last()
         return format_html(
             f'{obj.full_name} <br>'
             f'{obj.email} <br>'
-            f'{obj.phone} <br><br>'
+            f'{obj.phone} <br>'
+            f'{candidate_job.created_at.strftime("%b. %d-%Y") if candidate_job else ""}<br><br>'
             f'<a href="{obj.cv.url}" target="blank">Resume</a>'
         )
 
