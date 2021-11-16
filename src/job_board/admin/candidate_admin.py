@@ -227,7 +227,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         return candidate_assessment_urls + urls
 
     def preview_assessment(self, request, *args, **kwargs):
-        candidate_assessment = CandidateAssessment.objects.get(id=kwargs.get(*kwargs))
+        candidate_assessment = CandidateAssessment.objects.get(id=kwargs.get('assessment__id__exact'))
         context = dict(
             self.admin_site.each_context(request),
             candidate_assessment=candidate_assessment,
