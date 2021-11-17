@@ -4,5 +4,9 @@
     </div>
     <div class="popover-message">
         {{ candidate_assessment.note | linebreaks }}
+        {% for review in candidate_assessment.candidateassessmentreview_set.all %}
+            - {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>
+            {{ review.note | linebreaks }} <br>
+        {% endfor %}
     </div>
 </div>

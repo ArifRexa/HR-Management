@@ -13,6 +13,7 @@ from django.utils import timezone
 from django_q.tasks import async_task
 from django_userforeignkey.models.fields import UserForeignKey
 
+from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from job_board.models.assessment import AssessmentQuestion, Assessment
 from job_board.models.job import Job
@@ -145,3 +146,8 @@ class CandidateAssessmentAnswer(TimeStampMixin):
 
     def __str__(self):
         return f'{self.answers}'
+
+
+class CandidateAssessmentReview(TimeStampMixin, AuthorMixin):
+    candidate_assessment = models.ForeignKey(CandidateAssessment, on_delete=models.CASCADE)
+    note = models.TextField()

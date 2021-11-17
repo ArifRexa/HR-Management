@@ -17,7 +17,7 @@ from openpyxl.cell.cell import get_type
 from config import settings
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
-    CandidateAssessmentAnswer
+    CandidateAssessmentAnswer, CandidateAssessmentReview
 from job_board.tasks import sms_promotion
 
 
@@ -142,6 +142,11 @@ class CandidateHasUrlFilter(SimpleListFilter):
             return dd
 
 
+class CandidateAssessmentReviewAdmin(admin.StackedInline):
+    model = CandidateAssessmentReview
+    extra = 1
+
+
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'get_score', 'meta_information', 'meta_review', 'preview_url')
@@ -152,14 +157,20 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     ordering = ('-exam_started_at',)
     actions = ('send_default_sms',)
     list_per_page = 50
-
-    readonly_fields = ['step']
+    inlines = (CandidateAssessmentReviewAdmin,)
 
     class Media:
         css = {
             'all': ('css/list.css',)
         }
         js = ('js/list.js',)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            fields = [field.name for field in obj.__class__._meta.fields]
+            fields.remove('score')
+            return fields
+        return ['step']
 
     @admin.display()
     def candidate(self, obj):
