@@ -11,6 +11,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
 from django_q.tasks import async_task
+from django_userforeignkey.models.fields import UserForeignKey
 
 from config.model.TimeStampMixin import TimeStampMixin
 from job_board.models.assessment import AssessmentQuestion, Assessment
