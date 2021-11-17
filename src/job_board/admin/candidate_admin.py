@@ -210,6 +210,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         return format_html(html_content)
         # return format_html(obj.candidate_job.additional_message.replace('\n', '<br>'))
 
+    @admin.display(ordering='updated_at')
     def meta_review(self, obj: CandidateAssessment):
         html_template = get_template('admin/candidate_assessment/list/col_meta_review.html')
         html_content = html_template.render({
