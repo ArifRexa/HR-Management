@@ -53,10 +53,10 @@
             {% endif %}
 
             {% if birthdays.count > 0 %}
-                <h3>Birthday Today ({{ birthdays.count }})</h3>
+                <h3>Birthday Nearby ({{ birthdays.count }})</h3>
                 <ul class="actionlist green-mark">
                     {% for employee_birthday in birthdays %}
-                        <li>{{ employee_birthday }} - {{ employee_birthday.date_of_birth }}</li>
+                        <li>{{ employee_birthday }} - {{ employee_birthday.date_of_birth | date:"jS F" }}</li>
                     {% endfor %}
                 </ul>
             {% endif %}
