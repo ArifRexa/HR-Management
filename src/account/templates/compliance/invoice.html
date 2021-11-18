@@ -1,0 +1,144 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% block content %}
+    <style>
+        .list-table {
+            border-collapse: collapse;
+            border: 1px solid black;
+            table-layout: auto;
+            width: 100%;
+        {#text-align: justify;#}
+        }
+
+        .list-table td {
+            padding: 3px;
+        }
+    </style>
+
+    {% for invoice in invoices %}
+        <table>
+            <thead>
+            <tr>
+                <td></td>
+                <td width="50%" align="center">Goverment of the Peoples's Republic of Bangladesh</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="center">National Board of Revenue, Dhaka</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td align="right" border="1">
+                    <b style="padding: 5px; border: 2px solid black;">Mushok-6.3</b>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="center">Tax Invoice</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td align="center">[See Clauses (c) and (f) of Sub-Rule-1 of Rule-40]</td>
+                <td></td>
+            </tr>
+            </thead>
+        </table>
+        <br>
+        <table>
+            <thead>
+            <tr>
+                <td></td>
+                <td></td>
+                <td align="right"><b>Name of Tax Payer:</b> Mediusware Ltd.</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td align="right"><b>BIN of Tax Payer:</b> 888888</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+                <td align="right"><b>Address of Tax Payer:</b> Ring Road, House 18/5, Floor - 2nd Dhaka, 1207</td>
+            </tr>
+            <tr>
+                <td><br></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Buyer Name : {{ invoice.client }}</td>
+                <td></td>
+                <td>Invoice Number : {{ invoice.serial_no }}</td>
+            </tr>
+            <tr>
+                <td>Buyer BIN : N/A</td>
+                <td></td>
+                <td>Issue Date : {{ invoice.date_time|date:'j M Y' }}</td>
+            </tr>
+            <tr>
+                <td>Buyer Address : {{ invoice.client.country }}</td>
+                <td></td>
+                <td>Issue Time : {{ invoice.date_time| date:'h:i a' }}</td>
+            </tr>
+            <tr>
+                <td>Delivery Destination : N/A</td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>The Name and number of the Vehicle : N/A</td>
+                <td></td>
+                <td></td>
+            </tr>
+            </thead>
+        </table>
+
+        <table class="list-table">
+            <tr>
+                <td width="25px">SL</td>
+                <td>Description of the Product or Service (Including Brand Name if applicable)</td>
+                <td>Unit of Measure</td>
+                <td>Quantity</td>
+                <td>Unit Price (Taka)</td>
+                <td>Total Price (Taka)</td>
+                <td>Rate of Supplem entary Duty</td>
+                <td>Value of Supplem entary</td>
+                <td>Rate of VAT/ Specified Tax</td>
+                <td>Amount of VAT/ Specified Tax</td>
+                <td>Total Price Including All Types of Duty and VAT</td>
+            </tr>
+            {% for invoice_details in invoice.invoicedetail_set.all %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ invoice_details.description }}</td>
+                    <td>{{ invoice_details.unit_of_measure }}</td>
+                    <td>{{ invoice_details.quantity }}</td>
+                    <td>{{ invoice_details.unit_price }}</td>
+                    <td>{{ invoice_details.total }}</td>
+                    <td>{{ invoice_details.rate_of_supplementary_duty }}</td>
+                    <td>{{ invoice_details.value_of_supplementary_duty }}</td>
+                    <td>{{ invoice_details.rate_of_vat }}</td>
+                    <td>{{ invoice_details.amount_of_vat }}</td>
+                    <td>{{ invoice_details.total_price_inc_all_duty }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <div>
+            <p>
+                The Name of Authorised Person of the Company : <br>
+                Designation : <br>
+                Signature : <br>
+                Seal :
+            </p>
+
+            <p>1. Total Price Excluding All Types of Duty and VAT :</p>
+        </div>
+        <div class="page-break"></div>
+    {% endfor %}
+{% endblock %}
