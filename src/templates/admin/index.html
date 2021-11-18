@@ -46,8 +46,10 @@
                 <h3>Leave Nearby ({{ leaves.count }})</h3>
                 <ul class="actionlist green-mark">
                     {% for employee_leave in leaves %}
-                        <li>{{ employee_leave.employee }} <br> <sub>{{ employee_leave.start_date }}
-                            to {{ employee_leave.end_date }}</sub></li>
+                        <li>{{ employee_leave.employee }} <br>
+                            <b>{{ employee_leave.start_date|date:'j M' }} to
+                                {{ employee_leave.end_date|date:'j M' }}</b>
+                        </li>
                     {% endfor %}
                 </ul>
             {% endif %}
@@ -56,7 +58,7 @@
                 <h3>Birthday Nearby ({{ birthdays.count }})</h3>
                 <ul class="actionlist green-mark">
                     {% for employee_birthday in birthdays %}
-                        <li>{{ employee_birthday }} - {{ employee_birthday.date_of_birth | date:"jS F" }}</li>
+                        <li>{{ employee_birthday }} - <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b></li>
                     {% endfor %}
                 </ul>
             {% endif %}
