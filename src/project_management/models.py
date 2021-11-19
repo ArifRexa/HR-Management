@@ -10,6 +10,7 @@ from employee.models import Employee
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     email = models.EmailField(max_length=80)
+    address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
 
     def __str__(self):

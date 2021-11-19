@@ -19,14 +19,14 @@
         <table>
             <thead>
             <tr>
-                <td></td>
-                <td width="50%" align="center">Goverment of the Peoples's Republic of Bangladesh</td>
-                <td></td>
+                <td colspan="3" align="center">
+                    <h1>Government of the People's Republic of Bangladesh</h1>
+                </td>
             </tr>
             <tr>
-                <td></td>
-                <td align="center">National Board of Revenue, Dhaka</td>
-                <td></td>
+                <td colspan="3" align="center">
+                    <h2>National Board of Revenue, Dhaka</h2>
+                </td>
             </tr>
             <tr>
                 <td></td>
@@ -37,13 +37,13 @@
             </tr>
             <tr>
                 <td></td>
-                <td align="center">Tax Invoice</td>
+                <td align="center">
+                    <span style="font-size: 32px;">TAX INVOICE</span>
+                </td>
                 <td></td>
             </tr>
             <tr>
-                <td></td>
-                <td align="center">[See Clauses (c) and (f) of Sub-Rule-1 of Rule-40]</td>
-                <td></td>
+                <td align="center" colspan="3">[See Clauses (c) and (f) of Sub-Rule-1 of Rule-40]</td>
             </tr>
             </thead>
         </table>
@@ -52,19 +52,26 @@
             <thead>
             <tr>
                 <td></td>
+                <td align="right"><b>Name of Tax Payer: </b></td>
+                <td align="left">&nbsp; Mediusware Ltd.</td>
                 <td></td>
-                <td align="right"><b>Name of Tax Payer:</b> Mediusware Ltd.</td>
             </tr>
             <tr>
                 <td></td>
+                <td align="right"><b>BIN of Tax Payer: </b></td>
+                <td align="left">&nbsp; 004140326-0402</td>
                 <td></td>
-                <td align="right"><b>BIN of Tax Payer:</b> 888888</td>
             </tr>
             <tr>
                 <td></td>
-                <td></td>
-                <td align="right"><b>Address of Tax Payer:</b> Ring Road, House 18/5, Floor - 2nd Dhaka, 1207</td>
+                <td align="right" style="vertical-align: top;"><b>Address of Tax Payer: </b></td>
+                <td align="left" colspan="2">&nbsp; Ring Road, House 18/5, Floor - 2nd Dhaka, 1207</td>
             </tr>
+            </thead>
+        </table>
+        <table>
+            <thead>
+
             <tr>
                 <td><br></td>
                 <td></td>
@@ -81,12 +88,12 @@
                 <td>Issue Date : {{ invoice.date_time|date:'j M Y' }}</td>
             </tr>
             <tr>
-                <td>Buyer Address : {{ invoice.client.country }}</td>
+                <td>Buyer Address : {{ invoice.client.address }}</td>
                 <td></td>
                 <td>Issue Time : {{ invoice.date_time| date:'h:i a' }}</td>
             </tr>
             <tr>
-                <td>Delivery Destination : N/A</td>
+                <td>Delivery Destination : {{ invoice.client.country }}</td>
                 <td></td>
                 <td></td>
             </tr>
@@ -100,33 +107,46 @@
 
         <table class="list-table">
             <tr>
-                <td width="25px">SL</td>
-                <td>Description of the Product or Service (Including Brand Name if applicable)</td>
-                <td>Unit of Measure</td>
-                <td>Quantity</td>
-                <td>Unit Price (Taka)</td>
-                <td>Total Price (Taka)</td>
-                <td>Rate of Supplem entary Duty</td>
-                <td>Value of Supplem entary</td>
-                <td>Rate of VAT/ Specified Tax</td>
-                <td>Amount of VAT/ Specified Tax</td>
-                <td>Total Price Including All Types of Duty and VAT</td>
+                <td width="25px" align="center">SL</td>
+                <td width="200px" align="center">Description of the Product or Service (Including Brand Name if
+                    applicable)
+                </td>
+                {#                <td>Unit of Measure</td>#}
+                <td align="center">Qty</td>
+                <td align="center">Unit Price<sup>1</sup> (Taka)</td>
+                <td align="center">Total Price<sup>1</sup> (Taka)</td>
+                {#                <td>Rate of Supplem entary Duty</td>#}
+                {#                <td>Value of Supplem entary</td>#}
+                <td align="center">Rate of VAT/ Specified Tax</td>
+                <td align="center">Amount of VAT/ Specified Tax</td>
+                <td width="100px" align="center">Total Price Including All Types of Duty and VAT</td>
             </tr>
             {% for invoice_details in invoice.invoicedetail_set.all %}
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ invoice_details.description }}</td>
-                    <td>{{ invoice_details.unit_of_measure }}</td>
+                    {#                    <td>{{ invoice_details.unit_of_measure }}</td>#}
                     <td>{{ invoice_details.quantity }}</td>
                     <td>{{ invoice_details.unit_price }}</td>
                     <td>{{ invoice_details.total }}</td>
-                    <td>{{ invoice_details.rate_of_supplementary_duty }}</td>
-                    <td>{{ invoice_details.value_of_supplementary_duty }}</td>
+                    {#                    <td>{{ invoice_details.rate_of_supplementary_duty }}</td>#}
+                    {#                    <td>{{ invoice_details.value_of_supplementary_duty }}</td>#}
                     <td>{{ invoice_details.rate_of_vat }}</td>
                     <td>{{ invoice_details.amount_of_vat }}</td>
                     <td>{{ invoice_details.total_price_inc_all_duty }}</td>
                 </tr>
             {% endfor %}
+            <tfoot>
+            <tr>
+                <td colspan="2">&nbsp;</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            </tfoot>
         </table>
         <br>
         <div>

@@ -155,18 +155,18 @@ class LoanPayment(TimeStampMixin, AuthorMixin):
 class Invoice(TimeStampMixin, AuthorMixin):
     serial_no = models.IntegerField()
     client = models.ForeignKey(Client, on_delete=models.RESTRICT)
-    date_time = models.DateTimeField(auto_now_add=True)
+    date_time = models.DateTimeField()
 
 
 class InvoiceDetail(TimeStampMixin, AuthorMixin):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
     description = models.TextField()
-    unit_of_measure = models.CharField(max_length=255)
+    unit_of_measure = models.CharField(max_length=255, null=True, blank=True)
     quantity = models.FloatField()
     unit_price = models.FloatField()
     total = models.FloatField()
-    rate_of_supplementary_duty = models.FloatField()
-    value_of_supplementary_duty = models.FloatField()
+    rate_of_supplementary_duty = models.FloatField(null=True, blank=True)
+    value_of_supplementary_duty = models.FloatField(null=True, blank=True)
     rate_of_vat = models.FloatField()
     amount_of_vat = models.FloatField()
     total_price_inc_all_duty = models.FloatField()
