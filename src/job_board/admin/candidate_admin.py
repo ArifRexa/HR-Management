@@ -225,7 +225,8 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     def meta_review(self, obj: CandidateAssessment):
         html_template = get_template('admin/candidate_assessment/list/col_meta_review.html')
         html_content = html_template.render({
-            'candidate_assessment': obj
+            'candidate_assessment': obj,
+            'reviews': obj.candidateassessmentreview_set.order_by('-id').all()
         })
         return format_html(html_content)
 
