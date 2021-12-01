@@ -13,6 +13,7 @@ class Job(AuthorMixin, TimeStampMixin):
     banner_image = models.ImageField(null=True, blank=True)
     assessments = models.ManyToManyField(Assessment)
     active = models.BooleanField(default=True)
+    level = models.IntegerField(default=1)
 
     def __str__(self):
         return self.title
