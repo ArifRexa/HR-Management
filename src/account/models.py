@@ -104,6 +104,7 @@ class Fund(TimeStampMixin, AuthorMixin):
     date = models.DateField()
     amount = models.FloatField()
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+    note = models.TextField(null=True, blank=True)
 
 
 class Loan(TimeStampMixin, AuthorMixin):

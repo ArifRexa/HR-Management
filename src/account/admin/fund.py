@@ -7,5 +7,5 @@ from config.admin import RecentEdit
 
 @admin.register(Fund)
 class FundAdmin(RecentEdit, admin.ModelAdmin):
-    list_display = ['date', 'amount', 'user']
+    list_display = ['date', 'amount', 'user', 'note']
     list_filter = ['date', 'user']
