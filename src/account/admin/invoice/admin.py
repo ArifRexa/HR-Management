@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.template.loader import get_template
 
+import config.settings
 from account.models import InvoiceDetail, Invoice
 from config.utils.pdf import PDF
 
@@ -20,5 +21,8 @@ class InvoiceAdmin(admin.ModelAdmin):
         pdf = PDF()
         pdf.file_name = f'Invoice'
         pdf.template_path = "compliance/invoice.html"
-        pdf.context = {'invoices': queryset}
+        pdf.context = {
+            'invoices': queryset,
+            'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
+        }
         return pdf.render_to_pdf(download=False)

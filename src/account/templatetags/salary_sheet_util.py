@@ -2,6 +2,9 @@ from datetime import datetime
 from math import floor
 
 from django import template
+from django.db.models import Sum
+
+from account.models import Invoice
 from employee.models import Employee
 
 register = template.Library()
@@ -32,3 +35,8 @@ def _total_by_des_type(employee_salary_set):
 @register.filter
 def _in_dollar(value):
     return value / 80
+
+
+@register.filter
+def sum_invoice_details(invoice: Invoice, column: str):
+    return invoice.invoicedetail_set.all().aggregate(total=Sum(column))['total']
