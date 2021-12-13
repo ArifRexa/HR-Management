@@ -2,6 +2,8 @@ from django.contrib import admin, messages
 from django.template import loader
 from django.utils.text import slugify
 from django_q.tasks import async_task
+
+import config.settings
 from config.utils.pdf import PDF
 
 
@@ -77,7 +79,8 @@ class EmployeeActions:
         pdf = PDF()
         pdf.file_name = f'{self.create_file_name(queryset)}{letter_type}'
         pdf.template_path = self.get_letter_type(letter_type)
-        pdf.context = {'employees': queryset, 'latter_type': letter_type}
+        pdf.context = {'employees': queryset, 'latter_type': letter_type,
+                       'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"}
         return pdf
 
     # generate file using selected employees
