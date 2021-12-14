@@ -26,10 +26,10 @@ class Command(BaseCommand):
         for candidate_assessment in candidate_assessments:
             seconds = seconds + 1
             schedule('job_board.management.commands.exam_reminder.send_mail', candidate_assessment.id,
-                     name=f'MAIL {candidate_assessment.candidate_job.candidate}',
+                     name=f'MAIL {candidate_assessment.candidate_job.candidate} - {candidate_assessment.candidate_job.candidate.id}',
                      schedule_type=Schedule.ONCE, next_run=timezone.now() + timedelta(seconds=seconds))
             schedule('job_board.management.commands.exam_reminder.send_sms', candidate_assessment.id,
-                     name=f'SMS {candidate_assessment.candidate_job.candidate}',
+                     name=f'SMS {candidate_assessment.candidate_job.candidate} - {candidate_assessment.candidate_job.candidate.id}',
                      schedule_type=Schedule.ONCE, next_run=timezone.now() + timedelta(seconds=seconds))
 
 

@@ -25,4 +25,4 @@ class InvoiceAdmin(admin.ModelAdmin):
             'invoices': queryset,
             'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
         }
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf(download=True)
