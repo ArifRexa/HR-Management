@@ -184,11 +184,11 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(' ')
 # GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = 'AUTOMATED_HR'
 Q_CLUSTER = {
     'name': 'mediusware_erp',
-    'workers': 8,
+    'workers': 2,
     'recycle': 500,
     'timeout': 60,
     'compress': True,
-    'save_limit': 250,
+    'save_limit': 0,
     'queue_limit': 500,
     'cpu_affinity': 1,
     'label': 'Django Q',
