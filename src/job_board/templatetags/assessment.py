@@ -13,7 +13,9 @@ def get_candidate_answer(assessment_question: AssessmentQuestion, candidate_asse
         candidate_job=candidate_assessment.candidate_job
     ).first()
     formatted_answer = ''
-    for answer in candidate_assessment_answer.answers:
-        formatted_answer += f"{answer['title']}"
-    formatted_answer += f"{candidate_assessment_answer.score_achieve} </br>"
+
+    if candidate_assessment_answer is not None:
+        for answer in candidate_assessment_answer.answers:
+            formatted_answer += f"{answer['title']}"
+        formatted_answer += f"{candidate_assessment_answer.score_achieve} </br>"
     return formatted_answer

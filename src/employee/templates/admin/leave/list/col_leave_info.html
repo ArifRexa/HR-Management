@@ -1,0 +1,9 @@
+<span {% if casual_passed >= casual_remain %} style="color: red" {% endif %}>
+    <b>Casual : {{ casual_passed }}</b> / {{ casual_remain }}
+</span>
+<br>
+<span {% if medical_passed >= medical_remain %} style="color: red" {% endif %}>
+    <b>Medical : {{ medical_passed }}</b> / {{ medical_remain }}
+</span>
+
+

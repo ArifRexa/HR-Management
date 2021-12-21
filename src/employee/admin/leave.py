@@ -2,6 +2,8 @@ from datetime import date
 
 from django.contrib import admin
 from django import forms
+from django.template.loader import get_template
+from django.utils.html import format_html
 from django_q.tasks import async_task
 
 from employee.models import LeaveAttachment, Leave
@@ -38,7 +40,8 @@ class LeaveForm(forms.ModelForm):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = ('employee', 'leave_type', 'total_leave', 'status', 'short_message', 'start_date', 'end_date')
+    list_display = ('employee', 'leave_info', 'leave_type', 'total_leave',
+                    'status', 'short_message', 'start_date', 'end_date')
     actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
@@ -91,3 +94,14 @@ class LeaveManagement(admin.ModelAdmin):
     @admin.action()
     def approve_selected(self, request, queryset):
         return queryset.update(status='approved')
+
+    @admin.display()
+    def leave_info(self, leave: Leave):
+        html_template = get_template('admin/leave/list/col_leave_info.html')
+        html_content = html_template.render({
+            'casual_passed': leave.employee.leave_passed('casual'),
+            'casual_remain': leave.employee.leave_available('casual_leave'),
+            'medical_passed': leave.employee.leave_passed('medical'),
+            'medical_remain': leave.employee.leave_available('medical_leave'),
+        })
+        return format_html(html_content)

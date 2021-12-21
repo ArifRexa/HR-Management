@@ -88,5 +88,24 @@ class Employee(TimeStampMixin, AuthorMixin):
             return salary
         return self.current_salary
 
+    def leave_passed(self, leave_type: str):
+        return self.leave_set.filter(leave_type=leave_type, status='approved').count()
+
+    def leave_available(self, leave_type: str):
+        available_leave = 0
+        get_leave_by_type = getattr(self.leave_management, leave_type)
+        if self.permanent_date:
+            if self.resignation_date:
+                total_days_of_permanent = (self.resignation_date - self.permanent_date).days
+            else:
+                total_days_of_permanent = (timezone.now().replace(month=12, day=31).date() - self.permanent_date).days
+            month_of_permanent = round(total_days_of_permanent / 30)
+            if month_of_permanent < 12:
+                available_leave = (month_of_permanent * get_leave_by_type) / 12
+            else:
+                available_leave = get_leave_by_type
+
+        return round(available_leave)
+
     class Meta:
         db_table = 'employees'

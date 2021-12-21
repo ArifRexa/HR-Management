@@ -1,5 +1,4 @@
 import datetime
-from datetime import timedelta
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
@@ -61,11 +60,11 @@ class EmployeeNearbySummery:
         self.employees = Employee.objects.filter(active=True)
 
     def birthdays(self):
-        return self.employees.extra(
-            select={'birth_month': 'month(date_of_birth)', 'birth_day': 'day(date_of_birth)'}).filter(
+        # TODO : Need to fix it
+        return self.employees.filter(
             date_of_birth__month__gte=timezone.now().date().month,
-            date_of_birth__month__lte=(datetime.datetime.now() + datetime.timedelta(days=30)).month
-        ).order_by('birth_month', 'birth_day')
+            date_of_birth__month__lte=timezone.now().date().month
+        ).order_by('date_of_birth__month', 'date_of_birth__day')
 
     def permanents(self):
         return self.employees.filter(

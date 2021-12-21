@@ -8,6 +8,7 @@ register = template.Library()
 
 @register.filter
 def get_available_leave(employee: Employee, leave_type: str):
+    # TODO : need to replace it with Employee Model method that i've done for Leave -> list -> leave info
     available_leave = 0
     get_leave_by_type = getattr(employee.leave_management, leave_type)
     if employee.permanent_date:
