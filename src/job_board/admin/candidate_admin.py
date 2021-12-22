@@ -6,10 +6,11 @@ from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
 from django.contrib.humanize.templatetags.humanize import naturaltime
-from django.db.models import Sum
+from django.db.models import Sum, QuerySet
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.urls import path
+from django.utils import timezone
 from django.utils.html import format_html, linebreaks
 from django_q.tasks import async_task
 from openpyxl.cell.cell import get_type
@@ -150,12 +151,13 @@ class CandidateAssessmentReviewAdmin(admin.StackedInline):
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = ('candidate', 'get_score', 'meta_information', 'meta_review', 'preview_url')
-    search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email', 'note')
+    search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email',
+                     'candidate_job__candidate__phone', 'note')
     list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at',
                    'can_start_after', CandidateHasUrlFilter)
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
-    actions = ('send_default_sms',)
+    actions = ('send_default_sms', 'mark_as_fail')
     list_per_page = 50
     inlines = (CandidateAssessmentReviewAdmin,)
 
@@ -257,6 +259,17 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             for candidate_assessment in queryset:
                 async_task('job_board.tasks.sms_promotion', promotion.sms_body, candidate_assessment,
                            group=f"{candidate_assessment.candidate_job.candidate} Got an Promotional SMS")
+
+    @admin.display(description='Mark as Fail / Withdraw Application')
+    def mark_as_fail(self, request, queryset: QuerySet(CandidateAssessment)):
+        for candidate_assessment in queryset:
+            candidate_assessment.can_start_after = timezone.now()
+            candidate_assessment.exam_started_at = timezone.now()
+            candidate_assessment.exam_end_at = timezone.now()
+            candidate_assessment.score = -1.0
+            candidate_assessment.evaluation_url = '#'
+            candidate_assessment.note = 'System Generated Failed / Withdraw'
+            candidate_assessment.save()
 
 
 @admin.register(ResetPassword)
