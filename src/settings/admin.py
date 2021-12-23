@@ -82,3 +82,4 @@ admin.site.unregister([q_models.Success])
 @admin.register(q_models.Success)
 class SuccessfulTask(q_admin.TaskAdmin):
     date_hierarchy = 'started'
+    list_filter = ('started',)
