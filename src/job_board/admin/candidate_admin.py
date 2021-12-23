@@ -38,6 +38,7 @@ class CandidateAdmin(admin.ModelAdmin):
     list_filter = ('candidatejob__merit', 'candidatejob__job')
     actions = ('send_default_sms',)
     list_per_page = 50
+    date_hierarchy = 'created_at'
 
     @admin.display(ordering='candidatejob__expected_salary')
     def expected_salary(self, obj: Candidate):
