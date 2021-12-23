@@ -87,7 +87,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 employee_salaries = salary_sheet.employeesalary_set.filter(query_filter).all()
             for employee_salary in employee_salaries.all():
                 # if employee_salary.employee.
-                salary_sheet.total_value += floor(employee_salary.gross_salary)
+                salary_sheet.total_value += employee_salary.gross_salary
                 bank_account = employee_salary.employee.bankaccount_set.filter(default=True).first()
                 work_sheet.append([
                     employee_salary.employee.full_name,
@@ -96,7 +96,7 @@ class SalarySheetAction(admin.ModelAdmin):
                     employee_salary.project_bonus,
                     employee_salary.leave_bonus,
                     employee_salary.festival_bonus,
-                    floor(employee_salary.gross_salary),
+                    employee_salary.gross_salary,
                     bank_account.bank.name if bank_account else '',
                     bank_account.account_number if bank_account else ''
                 ])

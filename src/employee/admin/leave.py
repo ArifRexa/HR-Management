@@ -41,7 +41,7 @@ class LeaveForm(forms.ModelForm):
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
     list_display = ('employee', 'leave_info', 'leave_type', 'total_leave',
-                    'status', 'short_message', 'start_date', 'end_date')
+                    'status', 'start_date', 'end_date')
     actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']

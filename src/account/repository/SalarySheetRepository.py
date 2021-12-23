@@ -70,7 +70,8 @@ class SalarySheetRepository:
         employee_salary.salary_sheet = salary_sheet
         employee_salary.net_salary = self.__calculate_net_salary(salary_sheet, employee)
         employee_salary.overtime = self.__calculate_overtime(salary_sheet, employee)
-        employee_salary.leave_bonus = self.__calculate_non_paid_leave(salary_sheet, employee)
+        employee_salary.leave_bonus = self.__calculate_non_paid_leave(salary_sheet, employee) + \
+                                      self.__calculate_leave_in_cash(salary_sheet, employee)
         employee_salary.project_bonus = self.__calculate_project_bonus(salary_sheet, employee)
         employee_salary.festival_bonus = self.__calculate_festival_bonus(employee=employee)
         employee_salary.loan_emi = self.__calculate_loan_emi(employee=employee, salary_date=salary_sheet.date)
@@ -149,6 +150,32 @@ class SalarySheetRepository:
         if total_non_paid_leave:
             return -(self.__employee_current_salary.payable_salary / 31) * total_non_paid_leave
         return 0
+
+    def __calculate_leave_in_cash(self, salary_sheet: SalarySheet, employee: Employee):
+        """Calculate Leave in Cash
+        It will only effect at end of the year which is December
+        The % of the in case will come from the pay scale
+        it should always return number
+
+        @param employee:
+        @param salary_sheet:
+        @return:
+        """
+        leave_in_cash = 0
+        if salary_sheet.date.month is 12 and employee.permanent_date is not None:
+            one_day_salary = self.__employee_current_salary.payable_salary / 31
+            payable_medical_leave = employee.leave_available('medical_leave', salary_sheet.date) - \
+                                    employee.leave_passed('medical', salary_sheet.date.year)
+            payable_medical_leave_amount = ((payable_medical_leave * employee.pay_scale.leave_in_cash_medical) / 100) \
+                                           * one_day_salary
+
+            payable_casual_leave = employee.leave_available('casual_leave', salary_sheet.date) - \
+                                   employee.leave_passed('casual', salary_sheet.date.year)
+            payable_casual_leave_amount = ((payable_casual_leave * employee.pay_scale.leave_in_cash_casual) / 100) \
+                                          * one_day_salary
+
+            leave_in_cash = payable_medical_leave_amount + payable_casual_leave_amount
+        return leave_in_cash
 
     def __calculate_project_bonus(self, salary_sheet: SalarySheet, employee: Employee):
         """Calculate Project Bonus

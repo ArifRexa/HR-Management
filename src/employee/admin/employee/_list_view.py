@@ -19,27 +19,17 @@ class EmployeeAdminListView:
         return format_html(html_content)
 
     def leave_info(self, obj: Employee):
-        approved_leave = obj.leave_set.filter(status='approved')
         html_template = get_template('admin/employee/list/leave_info.html')
         html_content = html_template.render({
-            'casual': self.sum_total_leave(approved_leave.filter(leave_type='casual')),
-            'medical': self.sum_total_leave(approved_leave.filter(leave_type='medical')),
-            'non_paid': self.sum_total_leave(approved_leave.filter(leave_type='non_paid')),
+            'casual_passed': obj.leave_passed('casual'),
+            'casual_remain': obj.leave_available('casual_leave'),
+            'medical_passed': obj.leave_passed('medical'),
+            'medical_remain': obj.leave_available('medical_leave'),
+            'non_paid': obj.leave_passed('non_paid'),
             'employee': obj
         })
+        print(html_content)
         return format_html(html_content)
-        # approved_leave = obj.leave_set.filter(status='approved')
-        # available_casual_leave = 0
-        # if obj.permanent_date:
-        #     month_of_permanent = (timezone.now().year - obj.permanent_date.year) * 12 + (
-        #             timezone.now().month - obj.permanent_date.month)
-        #     available_casual_leave = (month_of_permanent / obj.leave_management.casual_leave) \
-        #                              * obj.leave_management.casual_leave
-        # return format_html(
-        #     f"<b>Casual &emsp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='casual'))}</b> / {available_casual_leave} <br>"
-        #     f"<b>Medical &ensp;:</b> <b>{self.sum_total_leave(approved_leave.filter(leave_type='medical'))}</b> / {obj.leave_management.medical_leave}<br>"
-        #     f"<b>Non Paid :</b> {self.sum_total_leave(approved_leave.filter(leave_type='non_paid'))}<br>"
-        # )
 
     def salary_history(self, obj):
         history = ''

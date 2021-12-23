@@ -27,6 +27,16 @@ class PayScale(TimeStampMixin, AuthorMixin):
     provision_period = models.IntegerField(help_text='Month')
     increment_period = models.IntegerField(help_text='increment month count')
     increment_rate = models.FloatField(help_text='In percentage')
+    leave_in_cash_medical = models.FloatField(
+        help_text='Medical Leave in cash, your submitted value will count as % percentage. '
+                  'It will automatically calculate to the employee salary sheet on year closing',
+        verbose_name='Leave in Cash (Medical)',
+        default=0.0)
+    leave_in_cash_casual = models.FloatField(
+        help_text='Casual leave in cash, your submitted value will count as % percentage. '
+                  'It will automatically calculate to the employee salary sheet on year closing',
+        verbose_name='Leave in Cash (Casual)',
+        default=0.0)
 
     def __str__(self):
         return self.title

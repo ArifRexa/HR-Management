@@ -1,6 +1,8 @@
 from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django.utils.timesince import timesince
 
@@ -88,23 +90,26 @@ class Employee(TimeStampMixin, AuthorMixin):
             return salary
         return self.current_salary
 
-    def leave_passed(self, leave_type: str):
-        return self.leave_set.filter(leave_type=leave_type, status='approved').count()
+    def leave_passed(self, leave_type: str, year=timezone.datetime.now().year):
+        return self.leave_set.filter(
+            end_date__year=year,
+            leave_type=leave_type,
+            status='approved'
+        ).aggregate(total=Coalesce(Sum('total_leave'), 0.0))['total']
 
-    def leave_available(self, leave_type: str):
+    def leave_available(self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()):
         available_leave = 0
         get_leave_by_type = getattr(self.leave_management, leave_type)
         if self.permanent_date:
             if self.resignation_date:
                 total_days_of_permanent = (self.resignation_date - self.permanent_date).days
             else:
-                total_days_of_permanent = (timezone.now().replace(month=12, day=31).date() - self.permanent_date).days
+                total_days_of_permanent = (year_end - self.permanent_date).days
             month_of_permanent = round(total_days_of_permanent / 30)
             if month_of_permanent < 12:
                 available_leave = (month_of_permanent * get_leave_by_type) / 12
             else:
                 available_leave = get_leave_by_type
-
         return round(available_leave)
 
     class Meta:
