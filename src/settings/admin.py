@@ -10,6 +10,8 @@ from django.utils.safestring import mark_safe
 from config.utils.pdf import PDF
 from employee.models import Employee
 from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter, OpenLetter
+from django_q import models as q_models
+from django_q import admin as q_admin
 
 admin.site.register(Designation)
 admin.site.register(PayScale)
@@ -72,3 +74,11 @@ class LetterAdmin(admin.ModelAdmin):
 @admin.register(OpenLetter)
 class OpenLetterAdmin(admin.ModelAdmin):
     list_display = ('title', 'message')
+
+
+admin.site.unregister([q_models.Success])
+
+
+@admin.register(q_models.Success)
+class SuccessfulTask(q_admin.TaskAdmin):
+    date_hierarchy = 'started'

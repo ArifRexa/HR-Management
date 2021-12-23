@@ -160,6 +160,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     actions = ('send_default_sms', 'mark_as_fail')
     list_per_page = 50
     inlines = (CandidateAssessmentReviewAdmin,)
+    date_hierarchy = 'exam_started_at'
 
     class Media:
         css = {

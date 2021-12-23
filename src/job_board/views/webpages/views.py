@@ -8,7 +8,7 @@ class WebsiteView(TemplateView):
 
 
 class MailView(TemplateView):
-    template_name = 'mail/evaluation_url_to_admin.html'
+    template_name = 'mail/exam/reminder.html'
 
     def get_context_data(self, **kwargs):
         candidate_assessment = CandidateAssessment.objects.first()
