@@ -269,6 +269,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             candidate_assessment.exam_started_at = timezone.now()
             candidate_assessment.exam_end_at = timezone.now()
             candidate_assessment.score = -1.0
+            candidate_assessment.evaluation_url = None
             candidate_assessment.note = 'System Generated Failed / Withdraw'
             candidate_assessment.save()
 
