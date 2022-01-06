@@ -22,6 +22,8 @@ class LoadAdmin(admin.ModelAdmin):
     list_display = ('employee', 'loan_amount', 'due', 'emi', 'tenor')
     inlines = (LoadGuarantorInline, LoadAttachmentInline)
     actions = ('print_loan_agreement',)
+    list_filter = ('employee',)
+    search_fields = ('employee__full_name',)
 
     @admin.action(description='Print Agreement')
     def print_loan_agreement(self, request, queryset):
@@ -42,3 +44,6 @@ class LoadAdmin(admin.ModelAdmin):
 @admin.register(LoanPayment)
 class LoanPaymentAdmin(admin.ModelAdmin):
     list_display = ('payment_date', 'payment_amount', 'loan', 'note')
+    date_hierarchy = 'payment_date'
+    list_filter = ('loan',)
+    search_fields = ('loan__employee__full_name',)

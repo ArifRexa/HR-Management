@@ -48,6 +48,7 @@ class LeaveManagement(admin.ModelAdmin):
     inlines = (LeaveAttachmentInline,)
     search_fields = ('employee__full_name', 'leave_type')
     form = LeaveForm
+    date_hierarchy = 'start_date'
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
