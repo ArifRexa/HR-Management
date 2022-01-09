@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
+import config.settings
 from account.models import EmployeeSalary, SalarySheet, SalaryDisbursement
 from config.utils.pdf import PDF
 
@@ -62,10 +63,11 @@ class SalarySheetAction(admin.ModelAdmin):
             'employee_salary_set': queryset.first().employeesalary_set.filter(
                 employee__in=salary_disbursement.employee.all()
             ).all(),
-            'bank': bank
+            'bank': bank,
+            'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
         }
         pdf.template_path = 'letters/bank_salary.html'
-        return pdf.render_to_pdf()
+        return pdf.render_to_pdf(download=False)
 
     def export_in_xl(self, queryset, query_filter=None):
         """
