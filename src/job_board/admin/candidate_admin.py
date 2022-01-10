@@ -151,7 +151,7 @@ class CandidateAssessmentReviewAdmin(admin.StackedInline):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_score', 'meta_information', 'meta_review', 'preview_url')
+    list_display = ('candidate', 'get_score', 'meta_information', 'candidate_feedback', 'meta_review', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email',
                      'candidate_job__candidate__phone', 'note')
     list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at',
@@ -174,7 +174,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             fields = [field.name for field in obj.__class__._meta.fields]
             fields.remove('score')
             return fields
-        return ['step']
+        return ['step', 'candidate_feedback']
 
     @admin.display()
     def candidate(self, obj):

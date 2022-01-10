@@ -100,6 +100,7 @@ class CandidateAssessment(TimeStampMixin):
     exam_end_at = models.DateTimeField(null=True, blank=True)
     score = models.FloatField(default=0)
     evaluation_url = models.CharField(null=True, blank=True, max_length=255)
+    candidate_feedback = models.TextField(null=True, blank=True)
     step = models.JSONField(null=True, blank=True)
     note = models.TextField(null=True, blank=True)
 

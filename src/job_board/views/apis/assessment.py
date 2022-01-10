@@ -165,6 +165,8 @@ class SaveEvaluationUrl(GenericAPIView):
             ).first()
             if candidate_assessment:
                 candidate_assessment.evaluation_url = validated_data['evaluation_url']
+                candidate_assessment.candidate_feedback = f"{timezone.now().date()} \n \n" \
+                                                          f"{validated_data['candidate_feedback']} \n"
                 candidate_assessment.exam_end_at = timezone.now()
                 candidate_assessment.save()
                 async_task('job_board.tasks.send_evaluation_url_to_admin', candidate_assessment)

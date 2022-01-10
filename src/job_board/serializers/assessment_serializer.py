@@ -117,3 +117,4 @@ class GivenAssessmentAnswerSerializer(serializers.Serializer):
 class AssessmentEvaluationUrlSerializer(serializers.Serializer):
     evaluation_url = serializers.URLField()
     assessment_uuid = serializers.UUIDField()
+    candidate_feedback = serializers.CharField(allow_blank=True, allow_null=True, trim_whitespace=True)
