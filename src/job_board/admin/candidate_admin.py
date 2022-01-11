@@ -151,7 +151,7 @@ class CandidateAssessmentReviewAdmin(admin.StackedInline):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_score', 'meta_information', 'candidate_feedback', 'meta_review', 'preview_url')
+    list_display = ('candidate', 'get_score', 'meta_information', 'get_candidate_feedback', 'meta_review', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email',
                      'candidate_job__candidate__phone', 'note')
     list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at',
@@ -223,7 +223,14 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             'candidate_assessment': obj
         })
         return format_html(html_content)
-        # return format_html(obj.candidate_job.additional_message.replace('\n', '<br>'))
+
+    @admin.display(description='Candidate Feedback')
+    def get_candidate_feedback(self, obj: CandidateAssessment):
+        html_template = get_template('admin/candidate_assessment/list/col_candidate_feedback.html')
+        html_content = html_template.render({
+            'candidate_assessment': obj
+        })
+        return format_html(html_content)
 
     @admin.display(ordering='updated_at')
     def meta_review(self, obj: CandidateAssessment):
