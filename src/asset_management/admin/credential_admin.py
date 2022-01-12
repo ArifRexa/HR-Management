@@ -28,6 +28,7 @@ class CredentialAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'created_by')
     form = CredentialAdminForm
     list_filter = ('category',)
+    search_fields = ('title', 'description')
 
     def get_queryset(self, request):
         query_set = super(CredentialAdmin, self).get_queryset(request)
