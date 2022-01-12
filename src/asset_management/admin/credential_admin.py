@@ -14,6 +14,7 @@ class CredentialCategoryAdmin(admin.ModelAdmin):
 class CredentialAdminForm(forms.ModelForm):
     queryset = User.objects.filter(employee__active=True, is_superuser=False)
     privileges = forms.ModelMultipleChoiceField(
+        required=False,
         queryset=queryset,
         widget=FilteredSelectMultiple(verbose_name='privileges', is_stacked=False))
 
@@ -26,6 +27,7 @@ class CredentialAdminForm(forms.ModelForm):
 class CredentialAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'created_by')
     form = CredentialAdminForm
+    list_filter = ('category',)
 
     def get_queryset(self, request):
         query_set = super(CredentialAdmin, self).get_queryset(request)

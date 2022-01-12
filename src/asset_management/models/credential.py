@@ -16,4 +16,4 @@ class Credential(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     category = models.ForeignKey(CredentialCategory, on_delete=models.RESTRICT)
     description = models.TextField()
-    privileges = models.ManyToManyField(User)
+    privileges = models.ManyToManyField(User, blank=True)
