@@ -2,11 +2,71 @@
 
 {% block admin_change_form_document_ready %}
     {{ block.super }}
-    <script src="https://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{#    <script src="https://code.jquery.com/jquery-2.1.1.min.js" type="text/javascript"></script>#}
+{#    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet"/>#}
+{#    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>#}
     <script type="text/javascript">
         {#$("select").select2({});#}
+    </script>
+
+    <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        let removeIfStartsWith = [
+            'Md. ', 'Md ', 'MD ', 'MD. '
+        ];
+        let optionsArr         = [];
+
+        // Get all options
+        let firstSelect = document.querySelector("select#id_employeeprojecthour_set-0-employee");
+        let options     = firstSelect.querySelectorAll("option");
+
+        // Get example select
+        let exampleSelect = document.querySelector("select#id_employeeprojecthour_set-__prefix__-employee");
+
+        /**
+         * Set sorted options
+         *
+         * @param select
+         * @param options
+         */
+        const createOptions = (select, options) => {
+            // reset the options
+            select.innerHTML = "";
+
+            for (let i = 0; i < options.length; i++) {
+                let option       = document.createElement("option");
+                option.value     = options[i].value;
+                option.innerHTML = options[i].option;
+                select.appendChild(option);
+            }
+        }
+
+        // Get optionsArr
+        options.forEach(function (option) {
+            optionsArr.push({option: option.innerHTML, value: option.value});
+        });
+
+        // Remove the options that starts with 'Md.'
+        optionsArr.filter(function (option) {
+            if (removeIfStartsWith.some(function (removeIfStartsWith) {
+                return option.option.startsWith(removeIfStartsWith);
+            })) {
+                option.option = option.option.split(" ").splice(1).join(" ",);
+            }
+        });
+
+        // Sort the options
+        optionsArr.sort(function (a, b) {
+            return a.option.localeCompare(b.option);
+        });
+
+        // create new options for the example select
+        createOptions(exampleSelect, optionsArr);
+
+        // create new options for the first select
+        createOptions(firstSelect, optionsArr);
+    });
     </script>
 
 {% endblock %}
