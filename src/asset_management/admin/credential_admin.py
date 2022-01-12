@@ -29,6 +29,8 @@ class CredentialAdmin(admin.ModelAdmin):
     form = CredentialAdminForm
     list_filter = ('category',)
     search_fields = ('title', 'description')
+    change_form_template = 'admin/credentials/change_form.html'
+
 
     def get_queryset(self, request):
         query_set = super(CredentialAdmin, self).get_queryset(request)
