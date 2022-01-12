@@ -25,7 +25,7 @@ class CredentialAdminForm(forms.ModelForm):
 
 @admin.register(Credential)
 class CredentialAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'created_by')
+    list_display = ('title', 'category', 'created_by', 'access_count')
     form = CredentialAdminForm
     list_filter = ('category',)
     search_fields = ('title', 'description')
@@ -35,3 +35,7 @@ class CredentialAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return query_set.filter(privileges__in=[request.user])
         return query_set
+
+    @admin.display(description='Total Privileges')
+    def access_count(self, obj: Credential):
+        return obj.privileges.count()

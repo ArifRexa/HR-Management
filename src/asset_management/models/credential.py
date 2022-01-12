@@ -1,5 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import models
+from tinymce.models import HTMLField
+
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 
@@ -15,5 +17,5 @@ class CredentialCategory(AuthorMixin):
 class Credential(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     category = models.ForeignKey(CredentialCategory, on_delete=models.RESTRICT)
-    description = models.TextField()
+    description = HTMLField()
     privileges = models.ManyToManyField(User, blank=True)
