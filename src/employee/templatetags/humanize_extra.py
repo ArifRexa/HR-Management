@@ -16,7 +16,7 @@ def num_to_word(number):
 
 @register.filter
 def percentage(number, arg):
-    return intcomma((number / 100) * arg)
-
-
-
+    try:
+        return intcomma((number / 100) * arg)
+    except:
+        return 0.0
