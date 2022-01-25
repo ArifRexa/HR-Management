@@ -1,0 +1,32 @@
+{% extends 'letters/extra/base.html' %}
+
+{% block content %}
+    {% for employee in employees %}
+        <p>Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.resignation_date | date:'Ym' }}{{ employee.id }} <br>
+            Date: {% now "jS F Y" %} <br>
+            <b>{{ employee.full_name | title }}</b> <br>
+            Email: {{ employee.email }}<br>
+        </p>
+        <br>
+        <br>
+        <br>
+        <center><h2>To Whom It May Concern</h2></center>
+
+
+        <p>
+            This is to certify that <b>{{ employee.full_name | title }}</b>, Designation:
+            <b>{{ employee.designation }}</b> has been
+            under permanent employment with this company. His yearly basic employment and remuneration details for the
+            financial year 2020-2021 were as follows:
+        </p>
+
+        {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary %}
+        <p>
+            We are issuing this letter on the specific request of our employee without or part of this letter on our
+            company.
+        </p>
+
+        {% include 'letters/extra/footer.html' %}
+        <div class="page-break"></div>
+    {% endfor %}
+{% endblock %}
