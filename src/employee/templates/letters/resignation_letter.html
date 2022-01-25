@@ -22,22 +22,27 @@
     {{ employee.approved_resignation.message | linebreaks }}
 
     <br>
+
     <table width="100%">
         <tr>
             <td width="70%">Regards,</td>
             <td>Agreed & Accepted</td>
         </tr>
         <tr>
-            <td><br><br></td>
-            <td><br><br></td>
+            <td></td>
+            <td></td>
         </tr>
         <tr>
             <td style="vertical-align: top">
+                <br>
+                <br>
+                <br>
                 {{ employee.full_name }} <br>
                 {{ employee.designation }} <br>
                 Mediusware Ltd.
             </td>
             <td>
+                <img src="{{ seal }}" height="80px" alt="">
                 Md Shahinur Rahman <br>
                 Managing Director <br>
                 Mediusware Ltd.
