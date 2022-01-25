@@ -9,13 +9,19 @@ from django.utils.safestring import mark_safe
 
 from config.utils.pdf import PDF
 from employee.models import Employee
-from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter, OpenLetter
+from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter, OpenLetter, \
+    FinancialYear
 from django_q import models as q_models
 from django_q import admin as q_admin
 
 admin.site.register(Designation)
 admin.site.register(PayScale)
 admin.site.register(LeaveManagement)
+
+
+@admin.register(FinancialYear)
+class FinancialYearAdmin(admin.ModelAdmin):
+    list_display = ('start_date', 'end_date', 'active')
 
 
 class PublicHolidayDateInline(admin.TabularInline):

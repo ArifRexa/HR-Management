@@ -1,10 +1,13 @@
 from django.contrib import admin, messages
+from django.db.models import Sum
 from django.template import loader
 from django.utils.text import slugify
 from django_q.tasks import async_task
 
 import config.settings
 from config.utils.pdf import PDF
+from employee.models import Employee
+from settings.models import FinancialYear
 
 
 class EmployeeActions:
@@ -32,7 +35,8 @@ class EmployeeActions:
         return self.generate_pdf(queryset=queryset, letter_type='ERL').render_to_pdf()
 
     def print_salary_certificate(self, request, queryset):
-        return self.generate_pdf(queryset=queryset, letter_type='ESC').render_to_pdf()
+        context = {'financial_year': FinancialYear.objects.filter(active=True).first()}
+        return self.generate_pdf(queryset=queryset, letter_type='ESC', context=context).render_to_pdf()
 
     @admin.action(description='Mail Appointment Letter')
     def mail_appointment_letter(self, request, queryset):
@@ -70,6 +74,15 @@ class EmployeeActions:
             request=request
         )
 
+    @admin.action()
+    def mail_salary_certificate(self, request, queryset):
+        self.__send_mail(
+            queryset,
+            letter_type='ESC', subject='No objection certificate (NOC)',
+            mail_template='mails/noc.html',
+            request=request
+        )
+
     def __send_mail(self, queryset, letter_type, subject, mail_template, request):
         for employee in queryset:
             pdf = self.generate_pdf(queryset=(employee,), letter_type=letter_type).create()
@@ -78,11 +91,12 @@ class EmployeeActions:
         self.message_user(request, 'Mail sent successfully', messages.SUCCESS)
 
     # Download generated pdf ile
-    def generate_pdf(self, queryset, letter_type='EAL'):
+    def generate_pdf(self, queryset, letter_type='EAL', context=None):
         pdf = PDF()
         pdf.file_name = f'{self.create_file_name(queryset)}{letter_type}'
         pdf.template_path = self.get_letter_type(letter_type)
         pdf.context = {'employees': queryset, 'latter_type': letter_type,
+                       'context': context,
                        'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"}
         return pdf
 

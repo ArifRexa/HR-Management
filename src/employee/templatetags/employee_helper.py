@@ -1,7 +1,10 @@
 from django import template
+from django.db.models import QuerySet, Sum
 from django.utils import timezone
 
+from account.models import EmployeeSalary
 from employee.models import Employee
+from settings.models import FinancialYear
 
 register = template.Library()
 
@@ -23,3 +26,11 @@ def get_available_leave(employee: Employee, leave_type: str):
             available_leave = get_leave_by_type
 
     return round(available_leave)
+
+
+@register.filter
+def sum_employee_salary(employee_salary: QuerySet, target_column: str):
+    financial_year = FinancialYear.objects.filter(active=True).first()
+    total = employee_salary.filter(salary_sheet__date__gte=financial_year.start_date,
+                                   salary_sheet__date__lte=financial_year.end_date).aggregate(total=Sum(target_column))
+    return total['total']

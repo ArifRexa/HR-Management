@@ -9,6 +9,13 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 
 
+class FinancialYear(TimeStampMixin, AuthorMixin):
+    start_date = models.DateField()
+    end_date = models.DateField()
+    description = models.TextField(null=True, blank=True)
+    active = models.BooleanField(default=False)
+
+
 class Designation(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     description = models.TextField()
