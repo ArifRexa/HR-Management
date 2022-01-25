@@ -32,7 +32,7 @@ class EmployeeActions:
         return self.generate_pdf(queryset=queryset, letter_type='ERL').render_to_pdf()
 
     def print_salary_certificate(self, request, queryset):
-        return self.generate_pdf(queryset=queryset, letter_type='ESC').render_to_pdf(download=False)
+        return self.generate_pdf(queryset=queryset, letter_type='ESC').render_to_pdf()
 
     @admin.action(description='Mail Appointment Letter')
     def mail_appointment_letter(self, request, queryset):
