@@ -1,0 +1,58 @@
+{% extends 'letters/extra/base.html' %}
+
+{% block content %}
+    <style>
+        p {
+            font-size: 14px;
+        }
+    </style>
+    <p>Date : {% now "jS F Y" %}</p>
+    <p>
+        Dear <b>{{ candidate.full_name }}</b>
+    </p>
+
+    <p>
+        <b>We (Mediusware Ltd.)</b> is delighted to offer you the full-time position of
+        <b>{{ candidate.candidatejob_set.last.job }}</b>
+        with an anticipated start within 30 days from the offer date.
+    </p>
+
+
+    <p>
+        You’ll be a regular employee of <b>Mediusware Ltd.</b> and will be able to participate in benefits such as
+        <b></b>. You’ll also have access to some awesome perks, including <b>Game room, Lunch, Snacks, Premium Learning
+        Resources and Books </b>
+    </p>
+
+
+    <p>
+        Your employment with <b>Mediusware Ltd</b> will be on an at-will basis, which means you and the company are free
+        to
+        terminate employment at any time, with one month advance notice. This letter is not a contract indicating
+        employment terms or duration.
+    </p>
+
+    <p>
+        Please confirm your acceptance of this offer by signing and returning this letter in between 14 days from the
+        issue date.
+    </p>
+    <br>
+    <p>
+        Sincerely, <br>
+
+        <img src="{{ seal }}" height="100px" alt=""> <br>
+
+        Md Shahinur Rahman <br>
+        Managing Director <br>
+        <br>
+        <br>
+
+        Candidate Signature: ______________________________ <br>
+
+        Candidate Written Name: ______________________________ <br>
+
+        Date: ______________________________
+    </p>
+
+
+{% endblock %}

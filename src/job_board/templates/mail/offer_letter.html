@@ -1,5 +1,23 @@
 {% extends 'mail/basic_layout.html' %}
 
 {% block content %}
-    <p></p>
+
+    <p>
+        Dear <b>{{ candidate.full_name }}</b>
+    </p>
+
+    <p>
+        <b>We (Mediusware Ltd.)</b> is delighted to offer you the full-time position of
+        <b>{{ candidate.candidatejob_set.last.job }}</b>
+        with an anticipated start within 30 days from the offer date.
+    </p>
+
+    <p>Please check the attachment bellow, print and sign in the selected area and submit back to us in this mail.</p>
+
+    <p>
+        Sincerely, <br>
+        Md Shahinur Rahman <br>
+        Managing Director <br>
+        Mediusware Ltd.
+    </p>
 {% endblock %}

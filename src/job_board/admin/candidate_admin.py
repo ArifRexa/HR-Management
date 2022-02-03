@@ -1,4 +1,4 @@
-import datetime
+from django.core import management
 from distutils.util import strtobool
 
 from django import forms
@@ -16,7 +16,7 @@ from django_q.tasks import async_task
 from config import settings
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
-    CandidateAssessmentAnswer, CandidateAssessmentReview
+    CandidateAssessmentReview
 
 
 class CandidateForm(forms.ModelForm):
@@ -95,7 +95,9 @@ class CandidateAdmin(admin.ModelAdmin):
 
     @admin.action(description="Send Offer letter (Email)")
     def send_offer_letter(self, request, queryset):
-        pass
+        for candidate in queryset:
+            print(candidate.pk)
+            management.call_command('send_offer_letter', candidate.pk)
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}

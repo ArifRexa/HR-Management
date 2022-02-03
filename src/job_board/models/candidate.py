@@ -48,6 +48,9 @@ class Candidate(TimeStampMixin):
     def __str__(self):
         return self.full_name
 
+    def get_last_job(self):
+        self.candidatejob_set.last()
+
 
 class CandidateJob(TimeStampMixin):
     unique_id = models.UUIDField(default=uuid.uuid4, editable=False)
