@@ -75,3 +75,14 @@ def sms_promotion(promotion_sms, candidate_assessment: CandidateAssessment):
 def employee_sms_promotion(promotion_sms, candidate: Candidate):
     candidate_sms = CandidateSMS(candidate=candidate)
     candidate_sms.promotional_sms(promotion_sms)
+
+
+def mail_offer_letter(candidate: Candidate):
+    html_template = get_template('mail/offer_letter.html')
+    html_content = html_template.render({
+        'candidate': candidate
+    })
+    email = EmailMultiAlternatives(subject=f'')
+    email.attach_alternative(html_content, 'text/html')
+    email.from_email = 'hr@mediusware.com'
+    email.send()

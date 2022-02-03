@@ -5,7 +5,6 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
-from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.db.models import Sum, QuerySet
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
@@ -13,13 +12,11 @@ from django.urls import path
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks
 from django_q.tasks import async_task
-from openpyxl.cell.cell import get_type
 
 from config import settings
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
     CandidateAssessmentAnswer, CandidateAssessmentReview
-from job_board.tasks import sms_promotion
 
 
 class CandidateForm(forms.ModelForm):
@@ -36,9 +33,15 @@ class CandidateAdmin(admin.ModelAdmin):
     search_fields = ('full_name', 'email', 'phone')
     list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
-    actions = ('send_default_sms',)
+    actions = ('send_default_sms', 'send_offer_letter')
     list_per_page = 50
     date_hierarchy = 'created_at'
+
+    class Media:
+        css = {
+            'all': ('css/list.css',)
+        }
+        js = ('js/list.js',)
 
     @admin.display(ordering='candidatejob__expected_salary')
     def expected_salary(self, obj: Candidate):
@@ -61,7 +64,7 @@ class CandidateAdmin(admin.ModelAdmin):
     def assessment(self, obj: Candidate):
         candidate_job = obj.candidatejob_set.last()
         if candidate_job is not None:
-            html_template = get_template('admin/candidate/list/assessment.html')
+            html_template = get_template('admin/candidate/list/col_assessment.html')
             html_content = html_template.render({
                 'candidate_assessments': candidate_job.candidate_assessment.all()
             })
@@ -89,6 +92,10 @@ class CandidateAdmin(admin.ModelAdmin):
             for candidate in queryset:
                 async_task('job_board.tasks.employee_sms_promotion', promotion.sms_body, candidate,
                            group=f"{candidate.full_name} Got an Promotional SMS")
+
+    @admin.action(description="Send Offer letter (Email)")
+    def send_offer_letter(self, request, queryset):
+        pass
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -151,7 +158,8 @@ class CandidateAssessmentReviewAdmin(admin.StackedInline):
 
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
-    list_display = ('candidate', 'get_score', 'meta_information', 'get_candidate_feedback', 'meta_review', 'preview_url')
+    list_display = (
+        'candidate', 'get_score', 'meta_information', 'get_candidate_feedback', 'meta_review', 'preview_url')
     search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email',
                      'candidate_job__candidate__phone', 'note')
     list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at',
