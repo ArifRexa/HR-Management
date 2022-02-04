@@ -66,6 +66,7 @@ class CandidateAdmin(admin.ModelAdmin):
         if candidate_job is not None:
             html_template = get_template('admin/candidate/list/col_assessment.html')
             html_content = html_template.render({
+                'candidate_job': candidate_job,
                 'candidate_assessments': candidate_job.candidate_assessment.all()
             })
             return html_content
