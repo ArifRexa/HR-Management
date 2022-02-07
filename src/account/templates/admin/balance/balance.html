@@ -2,6 +2,7 @@
 
 
 {% block content %}
+    {% load humanize %}
     <h3>{{ data.start_date }} to {{ data.end_date }}</h3>
     <div class="results">
         <table width="100%">
@@ -12,8 +13,9 @@
                 <th>Salary</th>
                 <th>Office Expense</th>
                 <th>Loan Expense</th>
-                <th>Income</th>
-                <th>P/L</th>
+                <th>Total Expense</th>
+                <th>Total Revenue</th>
+                <th title="Profit / Loss">P/L</th>
                 <th>Rifat</th>
             </tr>
             </thead>
@@ -22,16 +24,17 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ month.date }}</td>
-                    <td>{{ month.salary }}</td>
-                    <td>{{ month.expense }}</td>
-                    <td>{{ month.loan_expense }}</td>
-                    <td>{{ month.income }}</td>
-                    <td>{{ month.pl }}</td>
+                    <td>{{ month.salary | floatformat:2 }}</td>
+                    <td>{{ month.expense | floatformat:2 }}</td>
+                    <td>{{ month.loan_expense | floatformat:2 }}</td>
+                    <td>{{ month.salary|add:month.expense|add:month.loan_expense | floatformat:2 | intcomma  }}</td>
+                    <td>{{ month.income | floatformat:2 | intcomma   }}</td>
+                    <td>{{ month.pl | floatformat:2 | intcomma   }}</td>
                     <td>
-                        {{ month.rifat }} <br>
+                        {{ month.rifat | floatformat:2 }} <br>
                         <sub>
-                            <span style="color: green;">{{ month.payment }}</span> /
-                            <span style="color: red">{{ month.due }}</span>
+                            <span style="color: green;">{{ month.payment | floatformat:2 }}</span> /
+                            <span style="color: red">{{ month.due| floatformat:2 }}</span>
                         </sub>
                     </td>
                 </tr>

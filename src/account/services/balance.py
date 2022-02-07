@@ -46,7 +46,7 @@ class BalanceSummery:
             'salary': salary,
             'income': income,
             'date': date,
-            'pl': income - (expense + salary),
+            'pl': income - (expense + salary + loan_expense),
             'rifat': profit_share_with_rifat,
             'payment': payment_done,
             'due': profit_share_with_rifat - payment_done
