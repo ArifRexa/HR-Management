@@ -24,9 +24,9 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ month.date }}</td>
-                    <td>{{ month.salary | floatformat:2 }}</td>
-                    <td>{{ month.expense | floatformat:2 }}</td>
-                    <td>{{ month.loan_expense | floatformat:2 }}</td>
+                    <td>{{ month.salary | floatformat:2 | intcomma }}</td>
+                    <td>{{ month.expense | floatformat:2 | intcomma }}</td>
+                    <td>{{ month.loan_expense | floatformat:2 | intcomma }}</td>
                     <td>{{ month.salary|add:month.expense|add:month.loan_expense | floatformat:2 | intcomma  }}</td>
                     <td>{{ month.income | floatformat:2 | intcomma   }}</td>
                     <td>{{ month.pl | floatformat:2 | intcomma   }}</td>
