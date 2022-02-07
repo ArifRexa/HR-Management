@@ -31,10 +31,10 @@
                     <td>{{ month.income | floatformat:2 | intcomma   }}</td>
                     <td>{{ month.pl | floatformat:2 | intcomma   }}</td>
                     <td>
-                        {{ month.rifat | floatformat:2 }} <br>
+                        {{ month.rifat | floatformat:2 | intcomma }} <br>
                         <sub>
-                            <span style="color: green;">{{ month.payment | floatformat:2 }}</span> /
-                            <span style="color: red">{{ month.due| floatformat:2 }}</span>
+                            <span style="color: green;">{{ month.payment | floatformat:2 | intcomma }}</span> /
+                            <span style="color: red">{{ month.due| floatformat:2 | intcomma }}</span>
                         </sub>
                     </td>
                 </tr>
