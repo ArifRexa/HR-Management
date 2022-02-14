@@ -13,7 +13,10 @@ from django.utils import timezone
 from django.utils.html import format_html, linebreaks
 from django_q.tasks import async_task
 
+import config
 from config import settings
+from config.utils.pdf import PDF
+from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
     CandidateAssessmentReview
@@ -33,7 +36,7 @@ class CandidateAdmin(admin.ModelAdmin):
     search_fields = ('full_name', 'email', 'phone')
     list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
-    actions = ('send_default_sms', 'send_offer_letter')
+    actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter')
     list_per_page = 50
     date_hierarchy = 'created_at'
 
@@ -99,6 +102,11 @@ class CandidateAdmin(admin.ModelAdmin):
         for candidate in queryset:
             print(candidate.pk)
             management.call_command('send_offer_letter', candidate.pk)
+
+    @admin.action(description='Download Offer Letter (PDF)')
+    def download_offer_letter(self, request, queryset):
+        for candidate in queryset:
+            return generate_attachment(candidate).render_to_pdf()
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}

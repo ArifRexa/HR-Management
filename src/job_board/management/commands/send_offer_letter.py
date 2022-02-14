@@ -14,19 +14,19 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         candidate = Candidate.objects.get(pk=options['candidate_id'])
-        pdf = self.generate_attachment(candidate)
-        print(candidate, pdf)
-        async_task('job_board.management.commands.send_offer_letter.send_mail', candidate, pdf)
+        pdf = generate_attachment(candidate)
+        async_task('job_board.management.commands.send_offer_letter.send_mail', candidate, pdf.create())
 
-    def generate_attachment(self, candidate: Candidate):
-        pdf = PDF()
-        pdf.file_name = f'offer-letter-{candidate.id}'
-        pdf.template_path = 'letters/offer_letter.html'
-        pdf.context = {
-            'candidate': candidate,
-            'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
-        }
-        return pdf.create()
+
+def generate_attachment(candidate: Candidate):
+    pdf = PDF()
+    pdf.file_name = f'offer-letter-{candidate.id}'
+    pdf.template_path = 'letters/offer_letter.html'
+    pdf.context = {
+        'candidate': candidate,
+        'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
+    }
+    return pdf
 
 
 def send_mail(candidate: Candidate, pdf_location):
