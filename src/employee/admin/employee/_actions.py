@@ -12,7 +12,7 @@ from settings.models import FinancialYear
 
 class EmployeeActions:
     actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter', 'print_noc_letter',
-               'print_resignation_letter', 'print_salary_certificate',
+               'print_resignation_letter', 'print_salary_certificate', 'print_bank_forwarding_letter',
                'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter', 'mail_noc_letter']
 
     @admin.action(description='Print Appointment Letter')
@@ -37,6 +37,10 @@ class EmployeeActions:
     def print_salary_certificate(self, request, queryset):
         context = {'financial_year': FinancialYear.objects.filter(active=True).first()}
         return self.generate_pdf(queryset=queryset, letter_type='ESC', context=context).render_to_pdf()
+
+    @admin.action(description="Print Salary Account Forwarding Letter")
+    def print_bank_forwarding_letter(self, request, queryset):
+        return self.generate_pdf(queryset=queryset, letter_type='AFL').render_to_pdf()
 
     @admin.action(description='Mail Appointment Letter')
     def mail_appointment_letter(self, request, queryset):
@@ -114,6 +118,7 @@ class EmployeeActions:
             'EIL': 'letters/increment_latter.html',
             'NOC': 'letters/noc_letter.html',
             'ERL': 'letters/resignation_letter.html',
-            'ESC': 'letters/salary_certificate.html'
+            'ESC': 'letters/salary_certificate.html',
+            'AFL': 'letters/salary_account_forwarding_letter.html'
         }
         return switcher.get(letter_type, '')

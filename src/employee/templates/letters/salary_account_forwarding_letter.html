@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include 'letters/extra/header.html' with title='Permanent Latter' %}
+</head>
+
+{% load humanize %}
+{% load humanize_extra %}
+
+<style>
+    table, td, th {
+        border: 1px solid black;
+        padding: 3px 2px 0 2px;
+        vertical-align: bottom;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+</style>
+
+<body>
+
+<p>
+    Date: {% now "jS F Y" %} <br>
+    Manager <br>
+    Dutch Bangla Bank Limited <br>
+    Ring Road Sub-Branch, Dhaka
+</p>
+
+<p><b>Subject: Application for Opening Salary Account</b></p>
+<p>Dear Sir,</p>
+
+<p>With due respect, we inform you that, we are maintaining our company bank account "Mediusware Ltd.",
+    [1481100038741]
+    with your Bank, Ring Road Branch. So we will be highly glad if you take the necessary steps to open a salary
+    account
+    for the following employees:</p>
+
+<table>
+    <tbody>
+    {% for employee in employees %}
+        <tr>
+            <td width="7%">{{ forloop.counter }}</td>
+            <td>{{ employee.full_name }}</td>
+            <td>{{ employee.designation }}</td>
+            <td>{{ employee.phone }}</td>
+        </tr>
+    {% endfor %}
+
+
+    </tbody>
+</table>
+
+
+<br>
+<br>
+<br>
+<p>
+    Yours Sincerely, <br>
+    <img src="{{ seal }}" height="80px" alt=""> <br>
+    Md. Shahinur Rahman <br>
+    Managing Director <br>
+    Mediusware Ltd. <br>
+    Phone: +8801715712931
+</p>
+
+
+</body>
+
+</html>
