@@ -1,0 +1,97 @@
+{% extends 'letters/extra/base.html' %}
+
+{% load humanize %}
+{% load humanize_extra %}
+{% load employee_helper %}
+
+{% block content %}
+    {% for employee in employees %}
+        <p>Ref: Mediusware
+            Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}
+            <br>
+            Date: {% now "jS F Y" %} <br>
+            <b>{{ employee.full_name | title }}</b> <br>
+            Email: {{ employee.email }}<br>
+        </p>
+        <br>
+        <br>
+        <br>
+        <center><h2>To Whom It May Concern</h2></center>
+
+        <p>
+            This is to certify that <b>{{ employee.full_name | title }}</b>, Designation:
+            <b>{{ employee.designation }}</b>,
+            Employee ID: <b>{{ employee.joining_date | date:"Ym" }}{{ employee.designation.id }}{{ employee.id }}</b>
+            has been under {% if employee.permanent_date %}permanent {% else %} provisional {% endif %} employment with this company.
+        </p>
+
+        <table width="100%" border="1" cellpadding="5">
+            <tr>
+                <td width="30%">Basic (55%)</td>
+
+                <td>{{ employee.current_salary.payable_salary | percentage:55 }}</td>
+            </tr>
+            <tr>
+                <td>House Allowance (20%)</td>
+
+                <td>{{ employee.current_salary.payable_salary | percentage:20 }}</td>
+            </tr>
+            <tr>
+                <td>Conveyance (15%)</td>
+
+                <td>{{ employee.current_salary.payable_salary | percentage:15 }}</td>
+            </tr>
+            <tr>
+                <td>Medical Allowance (10%)</td>
+
+                <td>{{ employee.current_salary.payable_salary | percentage:10 }}</td>
+            </tr>
+            <tfoot style="border-top: 1px solid black;">
+            <tr>
+                <th align='left'>Gross Salary:</th>
+
+                <td>{{ employee.current_salary.payable_salary | intcomma }} BDT</td>
+            </tr>
+            </tfoot>
+
+        </table>
+        <br>
+
+
+
+        <br>
+        <br>
+        <br>
+        <table width="100%">
+
+            <tr>
+                <td width="70%">For Mediusware Ltd</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="1"><img src="{{ seal }}" height="80px" alt=""></td>
+                <td></td>
+            </tr>
+
+            <tr>
+                <td>
+                    <br>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Md. Shahinur Rahman</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Managing Director</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Mediusware Ltd.</td>
+                <td></td>
+            </tr>
+        </table>
+        <div class="page-break"></div>
+    {% endfor %}
+{% endblock %}
