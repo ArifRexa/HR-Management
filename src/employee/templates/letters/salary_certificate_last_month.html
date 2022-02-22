@@ -22,7 +22,9 @@
             This is to certify that <b>{{ employee.full_name | title }}</b>, Designation:
             <b>{{ employee.designation }}</b>,
             Employee ID: <b>{{ employee.joining_date | date:"Ym" }}{{ employee.designation.id }}{{ employee.id }}</b>
-            has been under {% if employee.permanent_date %}permanent {% else %} provisional {% endif %} employment with this company.
+            has been under {% if employee.permanent_date %}permanent {% else %} provisional {% endif %} employment with
+            this company.
+            His/Her monthly salary is bellow.
         </p>
 
         <table width="100%" border="1" cellpadding="5">
@@ -56,8 +58,11 @@
 
         </table>
         <br>
+        <p>Deducted on salary : {{ employee.current_salary.payable_salary }}
+            {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }} Taka</b>
+        </p>
 
-
+        <p><b>In Word : </b>{{ employee.employeesalary_set.last.gross_salary | num_to_word }} Taka only</p>
 
         <br>
         <br>
