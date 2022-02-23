@@ -29,7 +29,11 @@
                     <td>{{ month.loan_expense | floatformat:2 | intcomma }}</td>
                     <td>{{ month.salary|add:month.expense|add:month.loan_expense | floatformat:2 | intcomma  }}</td>
                     <td>{{ month.income | floatformat:2 | intcomma   }}</td>
-                    <td>{{ month.pl | floatformat:2 | intcomma   }}</td>
+                    <td>{{ month.pl | floatformat:2 | intcomma   }} <br>
+                        <sub>
+                            <span style="color: red">{{ month.pending_income | floatformat:2 | intcomma }}</span>
+                        </sub>
+                    </td>
                     <td>
                         {{ month.rifat | floatformat:2 | intcomma }} <br>
                         <sub>

@@ -35,6 +35,7 @@ class BalanceSummery:
             LoanPayment.objects.filter(payment_date__month=date.month, payment_date__year=date.year).all(),
             'payment_amount')
         income = self.__sum_total(Income.objects.filter(**filter).filter(status='approved').all(), 'payment')
+        pending_income = self.__sum_total(Income.objects.filter(**filter).filter(status='pending').all(), 'payment')
         profit_share_with_rifat = ((income - (expense + salary + loan_expense)) * 25) / 100
         payment_done = ProfitShare.objects.filter(**filter).filter(user_id=1).aggregate(
             monthly_payment_amount=Coalesce(Sum('payment_amount'), Value(0.0))
@@ -47,6 +48,7 @@ class BalanceSummery:
             'income': income,
             'date': date,
             'pl': income - (expense + salary + loan_expense),
+            'pending_income': pending_income,
             'rifat': profit_share_with_rifat,
             'payment': payment_done,
             'due': profit_share_with_rifat - payment_done
