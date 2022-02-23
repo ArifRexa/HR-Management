@@ -31,35 +31,65 @@
             <tr>
                 <td width="30%">Basic (55%)</td>
 
-                <td>{{ employee.current_salary.payable_salary | percentage:55 }}</td>
+                <td>{{ employee.employeesalary_set.last.net_salary | percentage:55 }}</td>
             </tr>
             <tr>
                 <td>House Allowance (20%)</td>
 
-                <td>{{ employee.current_salary.payable_salary | percentage:20 }}</td>
+                <td>{{ employee.employeesalary_set.last.net_salary | percentage:20 }}</td>
             </tr>
             <tr>
                 <td>Conveyance (15%)</td>
 
-                <td>{{ employee.current_salary.payable_salary | percentage:15 }}</td>
+                <td>{{ employee.employeesalary_set.last.net_salary | percentage:15 }}</td>
             </tr>
             <tr>
                 <td>Medical Allowance (10%)</td>
 
-                <td>{{ employee.current_salary.payable_salary | percentage:10 }}</td>
+                <td>{{ employee.employeesalary_set.last.net_salary | percentage:10 }}</td>
             </tr>
+            {% if employee.employeesalary_set.last.project_bonus %}
+                <tr>
+                    <td>Project Bonus</td>
+                    <td>{{ employee.employeesalary_set.last.project_bonus }}</td>
+                </tr>
+            {% endif %}
+            {% if employee.employeesalary_set.last.festival_bonus %}
+                <tr>
+                    <td>Festival Bonus</td>
+                    <td>{{ employee.employeesalary_set.last.festival_bonus }}</td>
+                </tr>
+            {% endif %}
+
+            {% if employee.employeesalary_set.last.overtime %}
+                <tr>
+                    <td>Overtime Bonus</td>
+                    <td>{{ employee.employeesalary_set.last.overtime }}</td>
+                </tr>
+            {% endif %}
+
+            {% if employee.employeesalary_set.last.leave_bonus %}
+                <tr>
+                    <td>Leave Bonus</td>
+                    <td>{{ employee.employeesalary_set.last.leave_bonus }}</td>
+                </tr>
+            {% endif %}
+
             <tfoot style="border-top: 1px solid black;">
             <tr>
                 <th align='left'>Gross Salary:</th>
 
-                <td>{{ employee.current_salary.payable_salary | intcomma }} BDT</td>
+                <td>{{ employee.employeesalary_set.last.net_salary |addition:employee.employeesalary_set.last.project_bonus | intcomma }}
+                    BDT
+                </td>
             </tr>
             </tfoot>
 
         </table>
         <br>
         {% if employee.employeesalary_set.last.loan_emi %}
-            <p>Deducted on salary : {{ employee.current_salary.payable_salary }}
+            <p>Deducted on salary :
+                {{ employee.employeesalary_set.last.net_salary |addition:employee.employeesalary_set.last.project_bonus }}
                 {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
                     Taka</b>
             </p>

@@ -20,3 +20,8 @@ def percentage(number, arg):
         return intcomma((number / 100) * arg)
     except:
         return 0.0
+
+
+@register.filter
+def addition(number, addition_number):
+    return number + addition_number
