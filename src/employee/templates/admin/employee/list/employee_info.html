@@ -1,6 +1,6 @@
 <div style="padding-bottom: 15px">
     <b>ID &emsp; &emsp; &emsp; &nbsp; &nbsp;: </b>
-    {{ employee.joining_date | date:'Yd' }}{{ employee.designation.id }}{{ employee.id }}<br>
+    {{ employee.joining_date | date:'Yd' }}{{ employee.id }}<br>
     <b>Name &emsp; &emsp; &nbsp: {{ employee }} </b><br>
     <b>Designation :</b> {{ employee.designation }} <br>
     {% if employee.resignation_date is not None %}
