@@ -60,3 +60,21 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         permissions = [
             ("change_recent_activity", "Can change if inserted recently (3days)")
         ]
+
+
+class DurationUnit(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=200)
+    duration = models.TextField(null=True, blank=True)
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
+
+
+class ProjectResource(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    manager = models.ForeignKey(Employee, limit_choices_to={'manager': True}, on_delete=models.CASCADE)
+    duration = models.CharField(max_length=200, help_text='Estimated Project End Duration')
+    duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    employees = models.ManyToManyField(Employee, limit_choices_to={'manager': False}, related_name='employees')
+    active = models.BooleanField(default=True)
