@@ -57,3 +57,16 @@ class ProjectResourceAdmin(admin.ModelAdmin):
     @admin.display(description='Project Duration')
     def get_duration(self, obj: ProjectResource):
         return f'{obj.duration} {obj.duration_unit}'
+
+    def get_queryset(self, request):
+        """ Return query_set
+
+        overrides django admin query set
+        allow super admin only to see all project hour
+        manager's will only see theirs
+        @type request: object
+        """
+        query_set = super(ProjectResourceAdmin, self).get_queryset(request)
+        if not request.user.is_superuser:
+            return query_set.filter(manager_id=request.user.employee.id)
+        return query_set
