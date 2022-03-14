@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.semanticui.min.css">
+    <table id="dTbale" width="100%">
+        <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Hours</th>
+            <th>Assigned At</th>
+            <th>Duration</th>
+            <th>End At</th>
+            <th>Project</th>
+            <th>Manager</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for employee in employees %}
+            <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
+                <th>{{ employee }}</th>
+                <td>
+                    {% if employee.projectresourceemployee_set.get.duration_hour %}
+                        {{ employee.projectresourceemployee_set.get.duration_hour }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </td>
+                <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
+                <td>
+                    {% if  employee.projectresourceemployee_set.get.duration %}
+                        {{ employee.projectresourceemployee_set.get.duration }}
+                        {{ employee.projectresourceemployee_set.get.duration_unit }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </td>
+
+                <td>{{ employee.projectresourceemployee_set.get.end_date | date:'m/d' }}</td>
+                <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
+                <td>{{ employee.projectresourceemployee_set.get.project_resource.manager }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"
+            integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.semanticui.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#dTbale').DataTable({
+                "paging": false,
+                "ordering": true,
+                "info": false
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,28 +1,25 @@
 from django import forms
 from django.contrib import admin
+from django.core.exceptions import PermissionDenied
+from django.template.response import TemplateResponse
+from django.urls import path
 from django.utils.html import format_html
 
 from config.widgets.mw_select_multiple import EmployeeFilteredSelectMultiple
+from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.models import Employee
-from project_management.models import DurationUnit, ProjectResource
+from project_management.models import DurationUnit, ProjectResource, ProjectResourceEmployee
 
 
 @admin.register(DurationUnit)
 class DurationUnitAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('title', 'duration_in_hour')
 
 
-class ProjectResourceAdminForm(forms.ModelForm):
-    queryset = Employee.objects.filter(active=True).all()
-    employees = forms.ModelMultipleChoiceField(
-        queryset=queryset,
-        widget=EmployeeFilteredSelectMultiple(verbose_name='employee', is_stacked=False,
-                                              aln_labels=[]),
-    )
-
-    class Meta:
-        model = ProjectResource
-        fields = '__all__'
+class ProjectResourceEmployeeInline(admin.TabularInline):
+    model = ProjectResourceEmployee
+    extra = 1
+    readonly_fields = ['duration_hour']
 
 
 @admin.register(ProjectResource)
@@ -30,7 +27,7 @@ class ProjectResourceAdmin(admin.ModelAdmin):
     list_display = ('project', 'get_duration', 'manager', 'get_employees', 'active')
     list_filter = ('project', 'manager')
     search_fields = ('project', 'manager')
-    form = ProjectResourceAdminForm
+    inlines = (ProjectResourceEmployeeInline,)
 
     def save_model(self, request, obj, form, change):
         """
@@ -49,14 +46,11 @@ class ProjectResourceAdmin(admin.ModelAdmin):
 
     @admin.display(description='Employees')
     def get_employees(self, obj: ProjectResource):
-        employees = ''
-        for employee in obj.employees.all():
-            employees += format_html(f'{employee} <br>')
-        return format_html(employees)
+        return 'asfd'
 
     @admin.display(description='Project Duration')
     def get_duration(self, obj: ProjectResource):
-        return f'{obj.duration} {obj.duration_unit}'
+        return f'Hello'
 
     def get_queryset(self, request):
         """ Return query_set
@@ -70,3 +64,18 @@ class ProjectResourceAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return query_set.filter(manager_id=request.user.employee.id)
         return query_set
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('daily-activity/', self.my_view, name='activity'),
+        ]
+        return my_urls + urls
+
+    def my_view(self, request, *args, **kwargs):
+        context = dict(
+            # Include common variables for rendering the admin template.
+            self.admin_site.each_context(request),
+            employees=Employee.objects.filter(active=True, manager=False).all()
+        )
+        return TemplateResponse(request, "admin/project_resource/daily-activity.html", context)

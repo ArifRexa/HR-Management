@@ -1,4 +1,9 @@
+import datetime
+from datetime import timedelta
+
+from dateutil.utils import today
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
 
@@ -64,7 +69,8 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
 
 class DurationUnit(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
-    duration = models.TextField(null=True, blank=True)
+    duration_in_hour = models.FloatField(default=1)
+    description = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -74,8 +80,22 @@ class DurationUnit(TimeStampMixin, AuthorMixin):
 class ProjectResource(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
     manager = models.ForeignKey(Employee, limit_choices_to={'manager': True, 'active': True}, on_delete=models.CASCADE)
-    duration = models.CharField(max_length=200, help_text='Estimated Project End Duration')
-    duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-    employees = models.ManyToManyField(Employee, limit_choices_to={'manager': False, 'active': True},
-                                       related_name='employees')
     active = models.BooleanField(default=True)
+
+
+class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
+    project_resource = models.ForeignKey(ProjectResource, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, limit_choices_to={'active': True, 'manager': False,
+                                                             'projectresourceemployee__duration_hour': None},
+                                 on_delete=models.CASCADE)
+    duration = models.FloatField(max_length=200, help_text='Estimated Project End Duration')
+    duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    duration_hour = models.FloatField()
+
+    def save(self, *args, **kwargs):
+        self.duration_hour = self.duration * self.duration_unit.duration_in_hour
+        super().save(*args, **kwargs)
+
+    @property
+    def end_date(self):
+        return self.updated_at + timedelta(hours=self.duration_hour)
