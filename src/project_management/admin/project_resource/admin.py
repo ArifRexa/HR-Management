@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Sum
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html
@@ -46,11 +47,14 @@ class ProjectResourceAdmin(admin.ModelAdmin):
 
     @admin.display(description='Employees')
     def get_employees(self, obj: ProjectResource):
-        return 'asfd'
+        employees = ''
+        for employee in obj.projectresourceemployee_set.all():
+            employees += f'{employee.employee} <br>'
+        return format_html(employees)
 
     @admin.display(description='Project Duration')
     def get_duration(self, obj: ProjectResource):
-        return f'Hello'
+        return obj.projectresourceemployee_set.aggregate(total_hour=Sum('duration_hour'))
 
     def get_queryset(self, request):
         """ Return query_set
@@ -68,7 +72,7 @@ class ProjectResourceAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('daily-activity/', self.my_view, name='activity'),
+            path('daily-activity/', self.admin_site.admin_view(self.my_view), name='activity'),
         ]
         return my_urls + urls
 
