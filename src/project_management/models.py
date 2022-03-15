@@ -85,12 +85,15 @@ class ProjectResource(TimeStampMixin, AuthorMixin):
 
 class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
     project_resource = models.ForeignKey(ProjectResource, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-    employee = models.ForeignKey(Employee, limit_choices_to={'active': True, 'manager': False,
-                                                             'projectresourceemployee__duration_hour': None},
+    employee = models.ForeignKey(Employee, limit_choices_to={'active': True, 'manager': False},
                                  on_delete=models.CASCADE)
     duration = models.FloatField(max_length=200, help_text='Estimated Project End Duration')
     duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
     duration_hour = models.FloatField()
+
+    def clean(self):
+        if ProjectResourceEmployee.objects.filter(employee=self.employee).exclude(id=self.id).first():
+            raise ValidationError({'employee': f'{self.employee} is already been taken in another project'})
 
     def save(self, *args, **kwargs):
         self.duration_hour = self.duration * self.duration_unit.duration_in_hour
