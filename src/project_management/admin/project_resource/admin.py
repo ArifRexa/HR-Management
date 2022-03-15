@@ -80,6 +80,7 @@ class ProjectResourceAdmin(admin.ModelAdmin):
         context = dict(
             # Include common variables for rendering the admin template.
             self.admin_site.each_context(request),
+            title='Daily Activity',
             employees=Employee.objects.filter(active=True, manager=False).all()
         )
         return TemplateResponse(request, "admin/project_resource/daily-activity.html", context)
