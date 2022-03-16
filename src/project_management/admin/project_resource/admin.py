@@ -72,11 +72,13 @@ class ProjectResourceAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('daily-activity/', self.admin_site.admin_view(self.my_view), name='activity'),
+            path('daily-activity/', self.admin_site.admin_view(self.daily_activity), name='activity'),
         ]
         return my_urls + urls
 
-    def my_view(self, request, *args, **kwargs):
+    def daily_activity(self, request, *args, **kwargs):
+        employee = Employee.objects.get(id=64)
+        print(employee.employeeskill_set.order_by('percentage').all())
         context = dict(
             # Include common variables for rendering the admin template.
             self.admin_site.each_context(request),

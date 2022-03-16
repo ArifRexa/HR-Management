@@ -5,6 +5,7 @@
         <thead>
         <tr>
             <th>Employee</th>
+            <th>Skills</th>
             <th>Hours</th>
             <th>Assigned At</th>
             <th>Duration</th>
@@ -17,6 +18,14 @@
         {% for employee in employees %}
             <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
                 <th>{{ employee }}</th>
+                <th>
+                    {% for skill in employee.top_skills %}
+                        {{ skill.skill }}
+                        {% if not forloop.last %}
+                            ,
+                        {% endif %}
+                    {% endfor %}
+                </th>
                 <td>
                     {% if employee.projectresourceemployee_set.get.duration_hour %}
                         {{ employee.projectresourceemployee_set.get.duration_hour }}
