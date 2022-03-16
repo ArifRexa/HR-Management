@@ -77,8 +77,6 @@ class ProjectResourceAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def daily_activity(self, request, *args, **kwargs):
-        employee = Employee.objects.get(id=64)
-        print(employee.employeeskill_set.order_by('percentage').all())
         context = dict(
             # Include common variables for rendering the admin template.
             self.admin_site.each_context(request),

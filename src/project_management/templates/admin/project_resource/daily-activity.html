@@ -16,37 +16,39 @@
         </thead>
         <tbody>
         {% for employee in employees %}
-            <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
-                <th>{{ employee }}</th>
-                <th>
-                    {% for skill in employee.top_skills %}
-                        {{ skill.skill }}
-                        {% if not forloop.last %}
-                            ,
+            {% if employee.employeeskill_set.all %}
+                <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
+                    <th>{{ employee }}</th>
+                    <th>
+                        {% for skill in employee.top_skills %}
+                            {{ skill.skill }}
+                            {% if not forloop.last %}
+                                ,
+                            {% endif %}
+                        {% endfor %}
+                    </th>
+                    <td>
+                        {% if employee.projectresourceemployee_set.get.duration_hour %}
+                            {{ employee.projectresourceemployee_set.get.duration_hour }}
+                        {% else %}
+                            0
                         {% endif %}
-                    {% endfor %}
-                </th>
-                <td>
-                    {% if employee.projectresourceemployee_set.get.duration_hour %}
-                        {{ employee.projectresourceemployee_set.get.duration_hour }}
-                    {% else %}
-                        0
-                    {% endif %}
-                </td>
-                <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
-                <td>
-                    {% if  employee.projectresourceemployee_set.get.duration %}
-                        {{ employee.projectresourceemployee_set.get.duration }}
-                        {{ employee.projectresourceemployee_set.get.duration_unit }}
-                    {% else %}
-                        0
-                    {% endif %}
-                </td>
+                    </td>
+                    <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
+                    <td>
+                        {% if  employee.projectresourceemployee_set.get.duration %}
+                            {{ employee.projectresourceemployee_set.get.duration }}
+                            {{ employee.projectresourceemployee_set.get.duration_unit }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
 
-                <td>{{ employee.projectresourceemployee_set.get.end_date | date:'m/d' }}</td>
-                <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
-                <td>{{ employee.projectresourceemployee_set.get.project_resource.manager }}</td>
-            </tr>
+                    <td>{{ employee.projectresourceemployee_set.get.end_date | date:'m/d' }}</td>
+                    <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
+                    <td>{{ employee.projectresourceemployee_set.get.project_resource.manager }}</td>
+                </tr>
+            {% endif %}
         {% endfor %}
         </tbody>
     </table>
