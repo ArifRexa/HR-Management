@@ -21,9 +21,8 @@
                     <th>{{ employee }}</th>
                     <th>
                         {% for skill in employee.top_skills %}
-                            {{ skill.skill }}
-                            {% if not forloop.last %}
-                                ,
+                            {% if skill.percentage >= 50 %}
+                                {{ skill.skill }} ({{ skill.percentage | add:"0" }}%),
                             {% endif %}
                         {% endfor %}
                     </th>
