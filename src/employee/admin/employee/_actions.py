@@ -26,7 +26,7 @@ class EmployeeActions:
 
     @admin.action(description='Print Increment Letter')
     def print_increment_letter(self, request, queryset):
-        return self.generate_pdf(queryset=queryset, letter_type='EIL').render_to_pdf(download=False)
+        return self.generate_pdf(queryset=queryset, letter_type='EIL').render_to_pdf()
 
     @admin.action(description='Print NOC Letter')
     def print_noc_letter(self, request, queryset):
