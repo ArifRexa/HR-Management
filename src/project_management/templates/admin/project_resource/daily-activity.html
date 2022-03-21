@@ -7,10 +7,10 @@
             <th>Employee</th>
             <th>Project</th>
             <th>End At</th>
+            <th>Duration</th>
             <th>Skills</th>
             <th>Hours</th>
             <th>Assigned At</th>
-            <th>Duration</th>
             <th>Manager</th>
         </tr>
         </thead>
@@ -21,13 +21,6 @@
                     <th>{{ employee }}</th>
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
                     <td>{{ employee.projectresourceemployee_set.get.end_date }}</td>
-                    <th>
-                        {% for skill in employee.top_skills %}
-                            {% if skill.percentage >= 50 %}
-                                {{ skill.skill }} ({{ skill.percentage | add:"0" }}%),
-                            {% endif %}
-                        {% endfor %}
-                    </th>
                     <td>
                         {% if employee.projectresourceemployee_set.get.duration_hour %}
                             {{ employee.projectresourceemployee_set.get.duration_hour }}
@@ -35,6 +28,14 @@
                             0
                         {% endif %}
                     </td>
+                    <th>
+                        {% for skill in employee.top_skills %}
+                            {% if skill.percentage >= 50 %}
+                                {{ skill.skill }} ({{ skill.percentage | add:"0" }}%),
+                            {% endif %}
+                        {% endfor %}
+                    </th>
+
                     <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
                     <td>
                         {% if  employee.projectresourceemployee_set.get.duration %}
