@@ -5,12 +5,12 @@
         <thead>
         <tr>
             <th>Employee</th>
+            <th>Project</th>
+            <th>End At</th>
             <th>Skills</th>
             <th>Hours</th>
             <th>Assigned At</th>
             <th>Duration</th>
-            <th>End At</th>
-            <th>Project</th>
             <th>Manager</th>
         </tr>
         </thead>
@@ -19,6 +19,8 @@
             {% if employee.employeeskill_set.all %}
                 <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
                     <th>{{ employee }}</th>
+                    <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
+                    <td>{{ employee.projectresourceemployee_set.get.end_date }}</td>
                     <th>
                         {% for skill in employee.top_skills %}
                             {% if skill.percentage >= 50 %}
@@ -43,8 +45,7 @@
                         {% endif %}
                     </td>
 
-                    <td>{{ employee.projectresourceemployee_set.get.end_date | date:'m/d' }}</td>
-                    <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
+
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.manager }}</td>
                 </tr>
             {% endif %}
