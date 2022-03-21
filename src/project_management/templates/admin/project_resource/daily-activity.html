@@ -22,8 +22,9 @@
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
                     <td>{{ employee.projectresourceemployee_set.get.end_date }}</td>
                     <td>
-                        {% if employee.projectresourceemployee_set.get.duration_hour %}
-                            {{ employee.projectresourceemployee_set.get.duration_hour }}
+                        {% if  employee.projectresourceemployee_set.get.duration %}
+                            {{ employee.projectresourceemployee_set.get.duration }}
+                            {{ employee.projectresourceemployee_set.get.duration_unit }}
                         {% else %}
                             0
                         {% endif %}
@@ -35,16 +36,14 @@
                             {% endif %}
                         {% endfor %}
                     </th>
-
-                    <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
                     <td>
-                        {% if  employee.projectresourceemployee_set.get.duration %}
-                            {{ employee.projectresourceemployee_set.get.duration }}
-                            {{ employee.projectresourceemployee_set.get.duration_unit }}
+                        {% if employee.projectresourceemployee_set.get.duration_hour %}
+                            {{ employee.projectresourceemployee_set.get.duration_hour }}
                         {% else %}
                             0
                         {% endif %}
                     </td>
+                    <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
 
 
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.manager }}</td>
