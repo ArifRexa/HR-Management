@@ -7,11 +7,12 @@
             <th>Employee</th>
             <th>Project</th>
             <th>End At</th>
-{#            <th>Duration</th>#}
+            {#            <th>Duration</th>#}
             <th>Skills</th>
-{#            <th>Hours</th>#}
+            {#            <th>Hours</th>#}
             <th>Assigned At</th>
             <th>Manager</th>
+            <th>Sort End Date</th>
         </tr>
         </thead>
         <tbody>
@@ -21,7 +22,7 @@
                     <th>{{ employee }}</th>
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
                     <td>{{ employee.projectresourceemployee_set.get.end_date | date }}</td>
-{% comment %}                    <td>
+                    {% comment %}                    <td>
                         {% if  employee.projectresourceemployee_set.get.duration %}
                             {{ employee.projectresourceemployee_set.get.duration }}
                             {{ employee.projectresourceemployee_set.get.duration_unit }}
@@ -36,7 +37,7 @@
                             {% endif %}
                         {% endfor %}
                     </th>
-                   {% comment %} <td>
+                    {% comment %} <td>
                         {% if employee.projectresourceemployee_set.get.duration_hour %}
                             {{ employee.projectresourceemployee_set.get.duration_hour }}
                         {% else %}
@@ -47,6 +48,7 @@
 
 
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.manager }}</td>
+                    <td>{{ employee.projectresourceemployee_set.get.end_date | date:"m/d/Y" }}</td>
                 </tr>
             {% endif %}
         {% endfor %}
@@ -60,7 +62,7 @@
         $(document).ready(function () {
             $('#dTbale').DataTable({
                 "paging": false,
-                "order": [[2, "asc"]],
+                "order": [[6, "asc"]],
             });
         });
     </script>
