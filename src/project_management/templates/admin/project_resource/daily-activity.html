@@ -7,9 +7,9 @@
             <th>Employee</th>
             <th>Project</th>
             <th>End At</th>
-            <th>Duration</th>
+{#            <th>Duration</th>#}
             <th>Skills</th>
-            <th>Hours</th>
+{#            <th>Hours</th>#}
             <th>Assigned At</th>
             <th>Manager</th>
         </tr>
@@ -20,15 +20,15 @@
                 <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
                     <th>{{ employee }}</th>
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
-                    <td>{{ employee.projectresourceemployee_set.get.end_date }}</td>
-                    <td>
+                    <td>{{ employee.projectresourceemployee_set.get.end_date | date }}</td>
+{% comment %}                    <td>
                         {% if  employee.projectresourceemployee_set.get.duration %}
                             {{ employee.projectresourceemployee_set.get.duration }}
                             {{ employee.projectresourceemployee_set.get.duration_unit }}
                         {% else %}
                             0
                         {% endif %}
-                    </td>
+                    </td>{% endcomment %}
                     <th>
                         {% for skill in employee.top_skills %}
                             {% if skill.percentage >= 50 %}
@@ -36,13 +36,13 @@
                             {% endif %}
                         {% endfor %}
                     </th>
-                    <td>
+                   {% comment %} <td>
                         {% if employee.projectresourceemployee_set.get.duration_hour %}
                             {{ employee.projectresourceemployee_set.get.duration_hour }}
                         {% else %}
                             0
                         {% endif %}
-                    </td>
+                    </td>{% endcomment %}
                     <td>{{ employee.projectresourceemployee_set.get.updated_at }}</td>
 
 
@@ -60,7 +60,7 @@
         $(document).ready(function () {
             $('#dTbale').DataTable({
                 "paging": false,
-                "order": [[5, "asc"]],
+                "order": [[2, "asc"]],
             });
         });
     </script>
