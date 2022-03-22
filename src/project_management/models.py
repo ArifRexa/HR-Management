@@ -102,3 +102,7 @@ class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
     @property
     def end_date(self):
         return self.updated_at + timedelta(hours=self.duration_hour)
+
+    @property
+    def endways(self):
+        return self.end_date <= today() + timedelta(days=7)

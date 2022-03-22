@@ -18,7 +18,11 @@
         <tbody>
         {% for employee in employees %}
             {% if employee.employeeskill_set.all %}
-                <tr style="color:{% if employee.projectresourceemployee_set.get.duration_hour %} '' {% else %} red {% endif %}">
+                <tr
+                        {% if not employee.projectresourceemployee_set.get.duration_hour %}
+                            style="color: red" {% endif %}
+                        {% if employee.projectresourceemployee_set.get.endways %} style="background: yellow" {% endif %}
+                >
                     <th>{{ employee }}</th>
                     <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}</td>
                     <td>{{ employee.projectresourceemployee_set.get.end_date | date }}</td>
