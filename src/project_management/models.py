@@ -85,7 +85,8 @@ class ProjectResource(TimeStampMixin, AuthorMixin):
 
 class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
     project_resource = models.ForeignKey(ProjectResource, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-    employee = models.ForeignKey(Employee, limit_choices_to={'active': True, 'manager': False},
+    employee = models.ForeignKey(Employee,
+                                 limit_choices_to={'active': True, 'manager': False, 'employeeskill__isnull': False},
                                  on_delete=models.CASCADE)
     duration = models.FloatField(max_length=200, help_text='Estimated Project End Duration')
     duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
