@@ -15,10 +15,13 @@ class ExamSMS:
                              f'&senderid={self.sender_id}'
 
     def reminder_sms(self):
-        message = f'You have applied at ' \
-                  f'the position {self.candidate_assessment.candidate_job.job.title}. ' \
-                  f'\nCheck your email (inbox/spam/promotions) for the {self.candidate_assessment.assessment.type} exam.' \
-                  f'\nQuery :01750020408'
+        # message = f'You have applied at ' \
+        #           f'the position {self.candidate_assessment.candidate_job.job.title}. ' \
+        #           f'\nCheck your email (inbox/spam/promotions) for the {self.candidate_assessment.assessment.type} exam.' \
+        #           f'\nQuery :01750020408'
+        message = 'আপনি মিডিয়াসওয়্যার-এ চাকরির পোস্টে আবেদন করেছেন।' \
+                  '\n পরবর্তী ধাপের জন্য অনুগ্রহ করে আপনার মেইল (স্প্যাম/প্রোমোশন) চেক করুন।' \
+                  '\n জব লিঙ্কঃ https://job.mediusware.com/'
         self.sms_end_point += f'&msg={message}'
         requests.get(self.sms_end_point, verify=False)
 
