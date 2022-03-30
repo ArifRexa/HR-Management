@@ -6,10 +6,16 @@ from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
+from tinymce.models import HTMLField
 
 from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
+
+
+class Technology(TimeStampMixin, AuthorMixin):
+    icon = models.ImageField()
+    name = models.CharField(max_length=200)
 
 
 class Client(TimeStampMixin, AuthorMixin):
@@ -17,6 +23,8 @@ class Client(TimeStampMixin, AuthorMixin):
     email = models.EmailField(max_length=80)
     address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
+    logo = models.ImageField(null=True, blank=True)
+    show_in_web = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -25,12 +33,32 @@ class Client(TimeStampMixin, AuthorMixin):
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
+    slug = models.SlugField(null=True, blank=True, unique=True)
     description = models.TextField()
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
     active = models.BooleanField(default=True)
+    thumbnail = models.ImageField(null=True, blank=True)
+    show_in_website = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+
+
+class ProjectTechnology(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    technologies = models.ManyToManyField(Technology)
+
+
+class ProjectScreenshot(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    image = models.ImageField()
+
+
+class ProjectContent(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    content = HTMLField()
 
 
 class ProjectHour(TimeStampMixin, AuthorMixin):

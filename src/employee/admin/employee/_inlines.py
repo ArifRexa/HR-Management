@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.db import models
 from django.forms import Textarea
 
-from employee.models import SalaryHistory, Attachment, BankAccount, EmployeeSkill
+from employee.models import SalaryHistory, Attachment, BankAccount, EmployeeSkill, EmployeeSocial, EmployeeContent
 
 
 class SalaryHistoryInline(admin.TabularInline):
@@ -41,5 +41,16 @@ class SkillInline(admin.TabularInline):
         return 1 if not obj else 0
 
 
+class EmployeeSocialInline(admin.TabularInline):
+    model = EmployeeSocial
+    extra = 0
+
+
+class EmployeeContentInline(admin.StackedInline):
+    model = EmployeeContent
+    extra = 0
+
+
 class EmployeeInline(admin.ModelAdmin):
-    inlines = (SkillInline, AttachmentInline, SalaryHistoryInline, BankAccountInline)
+    inlines = (SkillInline, AttachmentInline, SalaryHistoryInline, BankAccountInline,
+               EmployeeSocialInline, EmployeeContentInline)
