@@ -8,13 +8,18 @@ from rest_framework.views import APIView
 from employee.models import Employee
 from project_management.models import Project
 from website.models import Service
-from website.serializers import ServiceSerializer, ProjectSerializer, EmployeeSerializer
+from website.serializers import ServiceSerializer, ProjectSerializer, EmployeeSerializer, ServiceDetailsSerializer, \
+    ProjectDetailsSerializer, EmployeeDetailsSerializer
+
+
+def index(request):
+    return render(request, 'webdoc/index.html')
 
 
 class ServiceList(APIView):
     def get(self, request, format=None):
         services = Service.objects.filter(active=True).order_by('order').all()
-        serializer = ServiceSerializer(services, many=True)
+        serializer = ServiceSerializer(services, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -28,7 +33,7 @@ class ServiceDetails(APIView):
 
     def get(self, request, slug, format=None):
         service = self.get_object(slug)
-        serializer = ServiceSerializer(service)
+        serializer = ServiceDetailsSerializer(service, context={'request': request})
         return Response(serializer.data)
 
 
@@ -48,12 +53,25 @@ class ProjectDetails(APIView):
 
     def get(self, request, slug, format=None):
         projects = self.get_object(slug)
-        serializer = ProjectSerializer(projects)
+        serializer = ProjectDetailsSerializer(projects, context={'request': request})
         return Response(serializer.data)
 
 
 class EmployeeList(APIView):
     def get(self, request, format=None):
-        employees = Employee.objects.filter(active=True).order_by('manager').all()
-        serializer = EmployeeSerializer(employees)
+        employees = Employee.objects.filter(active=True).order_by('list_order', '-manager').all()
+        serializer = EmployeeSerializer(employees, many=True)
+        return Response(serializer.data)
+
+
+class EmployeeDetails(APIView):
+    def get_object(self, slug):
+        try:
+            return Employee.objects.get(slug__exact=slug)
+        except Employee.DoesNotExist:
+            raise Http404
+
+    def get(self, request, slug, format=None):
+        employee = self.get_object(slug)
+        serializer = EmployeeDetailsSerializer(employee, context={'request': request})
         return Response(serializer.data)

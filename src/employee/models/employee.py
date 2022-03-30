@@ -1,10 +1,14 @@
+import uuid
+
 from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.timesince import timesince
+from tinymce.models import HTMLField
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -13,7 +17,9 @@ from settings.models import Designation, LeaveManagement, PayScale
 
 class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    image = models.ImageField(null=True, blank=True)
     full_name = models.CharField(max_length=255)
+    slug = models.SlugField(null=True, blank=True, unique=True)
     date_of_birth = models.DateField(null=True, blank=True)
     email = models.EmailField(max_length=255, null=True)
     address = models.TextField(null=True)
@@ -28,6 +34,7 @@ class Employee(TimeStampMixin, AuthorMixin):
                                 help_text='i.e: 59530389237, Circle–138, Zone-11, Dhaka')
     manager = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
+    list_order = models.IntegerField(default=1)
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
@@ -47,6 +54,8 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     def save(self, *args, **kwargs, ):
         self.save_user()
+        if not self.slug:
+            self.slug = f'{slugify(self.full_name)}-{self.email}'
         super().save(*args, **kwargs)
 
     def save_user(self):
