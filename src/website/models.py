@@ -1,7 +1,8 @@
 from django.db import models
 
-# Create your models here.
-from config.model.HTMLField import HTMLField
+# Create your models here
+from tinymce.models import HTMLField
+
 from project_management.models import Client, Technology
 
 
