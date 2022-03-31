@@ -26,4 +26,5 @@ class ProjectContentInline(admin.StackedInline):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'client', 'active', 'show_in_website')
+    search_fields = ('title', 'client__name', 'client__email')
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline)
