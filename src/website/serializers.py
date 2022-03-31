@@ -98,3 +98,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ('slug', 'full_name', 'designation', 'manager', 'image', 'socials')
+
+    def get_image_url(self, employee):
+        request = self.context.get('request')
+        image_url = employee.image.url
+        return request.build_absolute_uri(image_url)

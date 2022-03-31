@@ -40,7 +40,7 @@ class ServiceDetails(APIView):
 class ProjectList(APIView):
     def get(self, request, format=None):
         projects = Project.objects.filter(show_in_website=True).all()
-        serializer = ProjectSerializer(projects, many=True)
+        serializer = ProjectSerializer(projects, many=True, context={'request': request})
         return Response(serializer.data)
 
 
@@ -60,7 +60,7 @@ class ProjectDetails(APIView):
 class EmployeeList(APIView):
     def get(self, request, format=None):
         employees = Employee.objects.filter(active=True).order_by('list_order', '-manager').all()
-        serializer = EmployeeSerializer(employees, many=True)
+        serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         return Response(serializer.data)
 
 
