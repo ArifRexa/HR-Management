@@ -35,7 +35,7 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('title', 'slug', 'description', 'thumbnail')
+        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url')
 
 
 class ProjectTechnologySerializer(serializers.ModelSerializer):

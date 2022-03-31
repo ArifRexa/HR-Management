@@ -38,6 +38,7 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
     active = models.BooleanField(default=True)
     thumbnail = models.ImageField(null=True, blank=True)
+    video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
 
     def __str__(self):
