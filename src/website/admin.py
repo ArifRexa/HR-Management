@@ -6,4 +6,5 @@ from website.models import Service
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    pass
+    list_display = ('title', 'slug', 'order', 'active')
+    search_fields = ('title',)

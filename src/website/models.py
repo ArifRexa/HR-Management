@@ -17,3 +17,6 @@ class Service(models.Model):
     clients = models.ManyToManyField(Client)
     order = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title

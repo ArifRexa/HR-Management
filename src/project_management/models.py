@@ -17,6 +17,9 @@ class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
     name = models.CharField(max_length=200)
 
+    def __str__(self):
+        return self.name
+
 
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
@@ -50,6 +53,9 @@ class ProjectTechnology(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     technologies = models.ManyToManyField(Technology)
 
+    def __str__(self):
+        return self.title
+
 
 class ProjectScreenshot(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
@@ -60,6 +66,9 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = HTMLField()
+
+    def __str__(self):
+        return self.title
 
 
 class ProjectHour(TimeStampMixin, AuthorMixin):
