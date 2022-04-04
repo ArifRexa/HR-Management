@@ -67,7 +67,7 @@ class SalarySheetAction(admin.ModelAdmin):
             'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
         }
         pdf.template_path = 'letters/bank_salary.html'
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf()
 
     def export_in_xl(self, queryset, query_filter=None):
         """
