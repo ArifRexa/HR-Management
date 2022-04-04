@@ -21,5 +21,11 @@
             </tr>
         {% endfor %}
         </tbody>
+        <tfoot>
+        <tr style="padding-top: 4px">
+            <th colspan="3" align="right">Total</th>
+            <th align="left">{{ employee_salary_set | _total_by_des_type }}</th>
+        </tr>
+        </tfoot>
     </table>
 {% endblock %}
