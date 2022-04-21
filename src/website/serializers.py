@@ -20,7 +20,7 @@ class ClientSerializer(serializers.ModelSerializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Service
-        fields = ('title', 'slug', 'icon')
+        fields = ('title', 'slug', 'icon', 'short_description')
 
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
@@ -65,7 +65,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('title', 'slug', 'description', 'thumbnail', 'technologies', 'contents', 'screenshots')
+        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url', 'technologies', 'contents', 'screenshots')
 
 
 class EmployeeSocialSerializer(serializers.ModelSerializer):
