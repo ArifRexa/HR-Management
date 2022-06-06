@@ -7,7 +7,7 @@ from config.admin.utils import simple_request_filter
 
 @admin.register(ProfitShare)
 class ProfitShareAdmin(admin.ModelAdmin):
-    list_display = ('date', 'payment_amount', 'user')
+    list_display = ('date', 'payment_amount', 'note', 'user')
     date_hierarchy = 'date'
     change_list_template = 'admin/profit_share/list.html'
 
