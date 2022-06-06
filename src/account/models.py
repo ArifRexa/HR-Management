@@ -98,6 +98,7 @@ class ProfitShare(TimeStampMixin, AuthorMixin):
     user = UserForeignKey(limit_choices_to={'is_superuser': True}, on_delete=models.CASCADE)
     date = models.DateField()
     payment_amount = models.FloatField()
+    note = models.TextField(null=True, blank=True)
 
 
 class Fund(TimeStampMixin, AuthorMixin):
