@@ -129,6 +129,7 @@ class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
     duration = models.FloatField(max_length=200, help_text='Estimated Project End Duration')
     duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
     duration_hour = models.FloatField()
+    hour = models.FloatField(max_length=200, help_text='Estimated hours for each week', null=True, default=True)
 
     def clean(self):
         if ProjectResourceEmployee.objects.filter(employee=self.employee).exclude(id=self.id).first():
