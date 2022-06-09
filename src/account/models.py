@@ -84,13 +84,14 @@ class Income(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.RESTRICT, limit_choices_to={'active': True})
     hours = models.FloatField()
     hour_rate = models.FloatField(default=10.0)
+    convert_rate = models.FloatField(default=80.0, help_text='BDT convert rate')
     payment = models.FloatField()
     date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
 
     def save(self, *args, **kwargs):
-        self.payment = self.hours * (self.hour_rate * 80)
+        self.payment = self.hours * (self.hour_rate * self.convert_rate)
         super(Income, self).save(*args, **kwargs)
 
 

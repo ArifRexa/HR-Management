@@ -24,7 +24,11 @@
                         {% if employee.projectresourceemployee_set.get.endways %} style="background: yellow" {% endif %}
                 >
                     <th>{{ employee }}</th>
-                    <td>{{ employee.projectresourceemployee_set.get.project_resource.project }} [{{ employee.projectresourceemployee_set.get.hour }}]</td>
+                    <td>{{ employee.projectresourceemployee_set.get.project_resource.project }}
+                        {% if employee.projectresourceemployee_set.get.hour %}
+                        [{{ employee.projectresourceemployee_set.get.hour }}]
+                        {% endif %}
+                    </td>
                     <td>{{ employee.projectresourceemployee_set.get.end_date | date }}</td>
                     {% comment %}                    <td>
                         {% if  employee.projectresourceemployee_set.get.duration %}
