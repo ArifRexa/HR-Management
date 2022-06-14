@@ -40,7 +40,7 @@ class IncomeAdmin(admin.ModelAdmin):
     @admin.display()
     def payment_details(self, obj):
         return format_html(
-            f"<b style='color: green; font-size: 16px'>$ {obj.payment / 80}</b> / "
+            f"<b style='color: green; font-size: 16px'>$ {obj.payment / obj.convert_rate}</b> / "
             f"{obj.payment} TK"
         )
 
