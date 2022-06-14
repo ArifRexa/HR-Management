@@ -18,7 +18,7 @@ class AssessmentAnswerInline(admin.TabularInline):
     # min_num = 2
 
     def get_extra(self, request, obj=None, **kwargs):
-        return 2 if not obj else 0
+        return 4 if not obj else 0
 
 
 @admin.register(Assessment)
