@@ -32,18 +32,20 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url')
-
-
 class ProjectTechnologySerializer(serializers.ModelSerializer):
     technologies = TechnologySerializer(many=True)
 
     class Meta:
         model = ProjectTechnology
         fields = ('title', 'technologies')
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    technologies = ProjectTechnologySerializer(many=True, source='projecttechnology_set')
+
+    class Meta:
+        model = Project
+        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url', 'technologies')
 
 
 class ProjectContentSerializer(serializers.ModelSerializer):

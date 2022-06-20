@@ -19,7 +19,9 @@ from django.shortcuts import redirect
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
+from rest_framework.schemas import get_schema_view
 
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 
@@ -55,6 +57,18 @@ urlpatterns = [
     path('reset/done/', auth_view.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     path('tinymce/', include('tinymce.urls')),
+
+    path('openapi', get_schema_view(
+        title="Mediusware Ltd",
+        description="API for all …",
+        version="1.0.0"
+    ), name='openapi-schema'),
+
+    path('all-api-doc/', TemplateView.as_view(
+        template_name='docs/swagger-ui.html',
+        extra_context={'schema_url': 'openapi-schema'}
+    ), name='swagger-ui'),
+
     path('', lambda request: redirect('/admin')),
 ]
 
