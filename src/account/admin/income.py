@@ -1,7 +1,7 @@
 from django.contrib import admin, messages
 from django.db import models
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, F
 from django.db.models.functions import Coalesce
 from django.forms import Textarea
 from django.template.response import TemplateResponse
@@ -51,7 +51,11 @@ class IncomeAdmin(admin.ModelAdmin):
         dataset = Income.objects.filter(*[Q(**{key: value}) for key, value in filters.items() if value])
         return {
             'total_pending': dataset.filter(status='pending').aggregate(total=Coalesce(Sum('payment'), 0.0))['total'],
+            'total_pending_usd': dataset.filter(status='pending').aggregate(
+                total=Coalesce(Sum(F('payment') / F('convert_rate')), 0.0))['total'],
             'total_paid': dataset.filter(status='approved').aggregate(total=Coalesce(Sum('payment'), 0.0))['total'],
+            'total_paid_usd': dataset.filter(status='approved').aggregate(
+                total=Coalesce(Sum(F('payment') / F('convert_rate')), 0.0))['total'],
             'pending_hour': dataset.filter(status='pending').aggregate(total=Coalesce(Sum('hours'), 0.0))['total'],
             'approved_hour': dataset.filter(status='approved').aggregate(total=Coalesce(Sum('hours'), 0.0))['total'],
         }
