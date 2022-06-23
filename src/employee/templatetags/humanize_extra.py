@@ -2,6 +2,7 @@ from math import floor
 
 from django import template
 from django.contrib.humanize.templatetags.humanize import intcomma
+from django.template.defaultfilters import floatformat
 from num2words import num2words
 
 from employee.models import Employee
@@ -17,9 +18,10 @@ def num_to_word(number):
 @register.filter
 def percentage(number, arg):
     try:
-        return intcomma((number / 100) * arg)
+        percentage_number = (number / 100) * arg
+        return intcomma(floatformat(percentage_number, 2))
     except:
-        return 0.0
+        return 0.00
 
 
 @register.filter

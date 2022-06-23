@@ -36,7 +36,7 @@ class PDF:
         pisa.pisaDocument(BytesIO(html.encode("utf-8")), result)
         return result
 
-    def render_to_pdf(self, download=True):
+    def render_to_pdf(self, download=config.settings.DOWNLOAD_PDF):
         """
 
         @param download:

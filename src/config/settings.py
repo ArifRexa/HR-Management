@@ -220,3 +220,5 @@ APPLY_SAME_JOB_AFTER = 90
 CANDIDATE_PASSWORD_HASH = "mediusware_hr"
 
 X_FRAME_OPTIONS = 'ALLOW-FROM http://localhost'
+
+DOWNLOAD_PDF = os.environ.get('DOWNLOAD_PDF', True).lower() in ('true', 1, 't')
