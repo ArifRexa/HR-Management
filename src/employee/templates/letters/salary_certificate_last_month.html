@@ -44,7 +44,7 @@
             </tr>
             <tr>
                 <td>Monthly gross Salary</td>
-                <td>: {{ employee.current_salary.payable_salary|floatformat:2|intcomma }}</td>
+                <td>: {{ employee.employeesalary_set.last.net_salary |floatformat:2|intcomma }}</td>
             </tr>
             <tr>
                 <td>Model Of Salary Payment</td>
