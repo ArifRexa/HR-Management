@@ -14,7 +14,7 @@ from account.services.balance import BalanceSummery
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'date', 'hours', 'hour_rate', 'payment_details', 'status_col')
+    list_display = ('project', 'date', 'hours', 'hour_rate', 'convert_rate', 'payment_details', 'status_col')
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'hour_rate', 'date')
