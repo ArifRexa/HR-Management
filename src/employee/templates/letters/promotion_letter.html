@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include 'letters/extra/header.html' with title='Permanent Latter' %}
+</head>
+
+{% load humanize %}
+{% load humanize_extra %}
+
+<body>
+{% for employee in employees %}
+    <p>
+        Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.permanent_date | date:'Ym' }}{{ employee.id }} <br>
+        Date: {% now 'jS F Y' %} <br>
+        <b>{{ employee.full_name | title }}</b> <br>
+        Email: {{ employee.email }}<br>
+    </p>
+
+    <p><b>Subject: Promotion Letter of {{ employee.full_name | title }}</b></p>
+    <p>Dear {{ employee.full_name | title }},</p>
+    <center>
+        <h2>Congratulations!</h2>
+    </center>
+
+    <p>Based on your performance in <b>Mediusware Ltd , House- 18/5 (3rd Floor), Ring Road, Mohammadpur, Dhaka.</b> We
+        are
+        pleased to
+        inform you that you have been promoted to <b>{{ employee.designation }}</b>.
+    </p>
+    <p>
+        You have done a great job and very well deserve the promotion. We trust that your office will be very much
+        effective under your contribution. The company is very fortunate to have you in the company and we wish
+        you for your continued success.
+    </p>
+    {% include 'letters/extra/footer.html' %}
+{% endfor %}
+</body>
+
+</html>
