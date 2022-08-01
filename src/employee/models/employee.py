@@ -34,7 +34,7 @@ class Employee(TimeStampMixin, AuthorMixin):
                                 help_text='i.e: 59530389237, Circle–138, Zone-11, Dhaka')
     manager = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
-    list_order = models.IntegerField(default=1)
+    list_order = models.IntegerField(default=100)
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
