@@ -9,7 +9,7 @@ from django.utils.html import format_html
 from config.widgets.mw_select_multiple import EmployeeFilteredSelectMultiple
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.models import Employee
-from project_management.models import DurationUnit, ProjectResource, ProjectResourceEmployee
+from project_management.models import DurationUnit, ProjectResource, ProjectResourceEmployee, ProjectNeed
 
 
 @admin.register(DurationUnit)

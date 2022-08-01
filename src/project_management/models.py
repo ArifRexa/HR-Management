@@ -146,3 +146,9 @@ class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
     @property
     def endways(self):
         return self.end_date <= today() + timedelta(days=7)
+
+
+class ProjectNeed(TimeStampMixin, AuthorMixin):
+    technology = models.CharField(max_length=255)
+    quantity = models.IntegerField()
+    note = models.TextField(null=True, blank=True)

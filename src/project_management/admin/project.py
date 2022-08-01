@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
+    ProjectNeed
 
 
 @admin.register(Technology)
@@ -29,3 +30,8 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline)
+
+
+@admin.register(ProjectNeed)
+class ProjectNeedAdmin(admin.ModelAdmin):
+    list_display = ('technology', 'quantity', 'note')
