@@ -14,7 +14,8 @@ from account.services.balance import BalanceSummery
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'date', 'hours', 'hour_rate', 'convert_rate', 'payment_details', 'status_col')
+    list_display = ('project', 'date', 'hours', 'loss_hours',
+                    'hour_rate', 'convert_rate', 'payment_details', 'status_col')
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'hour_rate', 'date')
@@ -58,6 +59,7 @@ class IncomeAdmin(admin.ModelAdmin):
                 total=Coalesce(Sum(F('payment') / F('convert_rate')), 0.0))['total'],
             'pending_hour': dataset.filter(status='pending').aggregate(total=Coalesce(Sum('hours'), 0.0))['total'],
             'approved_hour': dataset.filter(status='approved').aggregate(total=Coalesce(Sum('hours'), 0.0))['total'],
+            'total_loss_hours': dataset.aggregate(total=Coalesce(Sum('loss_hours'), 0.0))['total']
         }
 
     def changelist_view(self, request, extra_context=None):

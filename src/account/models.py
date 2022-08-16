@@ -83,6 +83,7 @@ class Income(TimeStampMixin, AuthorMixin):
     )
     project = models.ForeignKey(Project, on_delete=models.RESTRICT, limit_choices_to={'active': True})
     hours = models.FloatField()
+    loss_hours = models.FloatField(default=0)
     hour_rate = models.FloatField(default=10.0)
     convert_rate = models.FloatField(default=90.0, help_text='BDT convert rate')
     payment = models.FloatField()

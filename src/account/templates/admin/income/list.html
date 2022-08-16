@@ -17,6 +17,8 @@
             <br>
             Pending : <b style="color: red">${{ result.total_pending_usd }}</b> / {{ result.total_pending }} TK
             <small>({{ result.pending_hour }})</small>
+            <br>
+            Loss Hours : <b style="color: red">{{ result.total_loss_hours }}</b>
         </div>
     </div>
 {% endblock %}
