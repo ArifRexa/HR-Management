@@ -21,6 +21,14 @@ class Technology(TimeStampMixin, AuthorMixin):
         return self.name
 
 
+class Tag(TimeStampMixin, AuthorMixin):
+    icon = models.ImageField(null=True, blank=True)
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     email = models.EmailField(max_length=80)
@@ -43,6 +51,7 @@ class Project(TimeStampMixin, AuthorMixin):
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
+    tags = models.ManyToManyField(Tag)
 
     def __str__(self):
         return self.title

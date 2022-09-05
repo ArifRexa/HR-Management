@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
 from employee.models import Employee, EmployeeSocial, EmployeeContent
-from project_management.models import Project, Client, Technology, ProjectTechnology, ProjectContent, ProjectScreenshot
+from project_management.models import Project, Client, Technology, ProjectTechnology, ProjectContent, ProjectScreenshot, \
+    Tag
 from website.models import Service
 
 
@@ -40,12 +41,19 @@ class ProjectTechnologySerializer(serializers.ModelSerializer):
         fields = ('title', 'technologies')
 
 
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = ('name',)
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(many=True, source='projecttechnology_set')
+    available_tags = TagSerializer(read_only=True, many=True, source='tags')
 
     class Meta:
         model = Project
-        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url', 'technologies')
+        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url', 'technologies', 'available_tags')
 
 
 class ProjectContentSerializer(serializers.ModelSerializer):
@@ -67,7 +75,8 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url', 'technologies', 'contents', 'screenshots')
+        fields = ('title', 'slug', 'description', 'thumbnail', 'video_url',
+                  'tags', 'technologies', 'contents', 'screenshots')
 
 
 class EmployeeSocialSerializer(serializers.ModelSerializer):

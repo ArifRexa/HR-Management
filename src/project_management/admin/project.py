@@ -1,11 +1,16 @@
 from django.contrib import admin
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed
+    ProjectNeed, Tag
 
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
     pass
 
 
