@@ -39,7 +39,8 @@ class ExtraUrl(admin.ModelAdmin):
                 item['total_project']
             ])
         inactive_projects = []
-        for item in self.get_project_query('updated_at').filter(active=False).values('month', 'total_project'):
+        for item in self.get_project_query('in_active_at').filter(active=False, in_active_at__isnull=False).values(
+                'month', 'total_project'):
             inactive_projects.append([
                 int(parse_datetime(item['month']).timestamp()),
                 item['total_project']
