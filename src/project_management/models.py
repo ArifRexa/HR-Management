@@ -56,6 +56,10 @@ class Project(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.title
 
+    @property
+    def created_at_timestamp(self):
+        return int(self.created_at.strftime("%s")) * 1000
+
 
 class ProjectTechnology(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
