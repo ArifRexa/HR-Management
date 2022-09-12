@@ -20,14 +20,20 @@
         below
     </p>
     <br>
-    <b style="font-size: 24px"><a href="{{ url }}">Exam Details ({{ candidate_assessment.assessment.title }})</a></b>
+    <b style="font-size: 24px"><a href="{{ url }}">Start Exam</a></b>
 
     <p>Wish you good luck</p>
     <p>Regards, <br>
         Mediusware Ltd, <br>
         +8801750020408 <br>
         hr@mediusware.com</p>
+    <hr>
+    <address>
+        Applicant Notes: <br>
+        ================= <br>
+        {{ candidate_assessment.candidate_job.additional_message }}
+    </address>
 
-{#    <p style="display: none">{{ candidate_assessment.candidate_job.additional_message | safe }}</p>#}
+    {#    <p style="display: none">{{ candidate_assessment.candidate_job.additional_message | safe }}</p>#}
 
 {% endblock %}
