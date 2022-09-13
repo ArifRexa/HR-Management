@@ -16,10 +16,11 @@
             <li>{{ exam.title }}</li>
         {% endfor %}
     </ul>
-    <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
+    <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the link given
         below
     </p>
-    <b style="font-size: 24px"><a href="{{ url }}">Start Exam</a></b> <br> <br>
+    <b style="font-size: 24px"><a href="{{ url }}">Exam Details ({{ candidate_assessment.assessment.title }})</a></b> <br> <br>
+
     <b style="color: red; text-transform: uppercase;">N.B: You can start the exam at any time but we prefer as early as possible. And once you start you have to finish
         within the given allocated maximum hours.</b>
     <p>Wish you good luck</p>
@@ -27,6 +28,12 @@
         Mediusware Ltd, <br>
         +8801750020408 <br>
         hr@mediusware.com</p>
+    <hr>
+    <address>
+        Applicant Notes: <br>
+        ================= <br>
+        {{ candidate_assessment.candidate_job.additional_message | safe }}
+    </address>
 
     {#    <p style="display: none">{{ candidate_assessment.candidate_job.additional_message | safe }}</p>#}
 {% endblock %}

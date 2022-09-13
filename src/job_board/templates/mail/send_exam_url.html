@@ -16,11 +16,11 @@
     </ul>
     <br>
     </p>
-    <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in the button <b>Start Exam</b> given
+    <p>To attend <b>{{ candidate_assessment.assessment.title }}</b> please click in link given
         below
     </p>
     <br>
-    <b style="font-size: 24px"><a href="{{ url }}">Start Exam</a></b>
+    <b style="font-size: 24px"><a href="{{ url }}">Exam Details ({{ candidate_assessment.assessment.title }})</a></b>
 
     <p>Wish you good luck</p>
     <p>Regards, <br>
@@ -31,7 +31,7 @@
     <address>
         Applicant Notes: <br>
         ================= <br>
-        {{ candidate_assessment.candidate_job.additional_message }}
+        {{ candidate_assessment.candidate_job.additional_message | safe }}
     </address>
 
     {#    <p style="display: none">{{ candidate_assessment.candidate_job.additional_message | safe }}</p>#}
