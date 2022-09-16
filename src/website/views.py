@@ -59,7 +59,7 @@ class ProjectDetails(APIView):
 
 class EmployeeList(APIView):
     def get(self, request, format=None):
-        employees = Employee.objects.filter(active=True).order_by('joining_date', '-manager', 'list_order', ).all()
+        employees = Employee.objects.filter(active=True, show_in_web=True).order_by('joining_date', '-manager', 'list_order', ).all()
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         return Response(serializer.data)
 
