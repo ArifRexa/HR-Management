@@ -1,8 +1,11 @@
 from django.contrib import admin, messages
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.template import loader
 from django.utils.text import slugify
 from django_q.tasks import async_task
+from openpyxl import Workbook
+from openpyxl.writer.excel import save_virtual_workbook
 
 import config.settings
 from config.utils.pdf import PDF
@@ -14,7 +17,8 @@ class EmployeeActions:
     actions = ['print_appointment_letter', 'print_permanent_letter', 'print_increment_letter', 'print_noc_letter',
                'print_resignation_letter', 'print_tax_salary_certificate', 'print_salary_certificate',
                'print_bank_forwarding_letter', 'print_promotion_letter',
-               'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter', 'mail_noc_letter']
+               'mail_appointment_letter', 'mail_permanent_letter', 'mail_increment_letter', 'mail_noc_letter',
+               'download_employee_info']
 
     @admin.action(description='Print Appointment Letter')
     def print_appointment_letter(self, request, queryset):
@@ -96,6 +100,24 @@ class EmployeeActions:
             mail_template='mails/noc.html',
             request=request
         )
+
+    @admin.action(description='Download all active employee information')
+    def download_employee_info(self, request, queryset):
+        wb = Workbook()
+        work_sheets = {}
+        work_sheet = wb.create_sheet(title='Employee List')
+        work_sheet.append(
+            ['Name', 'Designation', 'Phone', 'Email', 'Address']
+        )
+        for employee in Employee.objects.filter(active=True).all():
+            work_sheet.append(
+                [employee.full_name, employee.designation.title, employee.phone, employee.email, employee.address]
+            )
+        work_sheets['employee'] = work_sheet
+        wb.remove(wb['Sheet'])
+        response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=Employees.xlsx'
+        return response
 
     def __send_mail(self, queryset, letter_type, subject, mail_template, request):
         for employee in queryset:
