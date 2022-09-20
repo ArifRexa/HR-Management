@@ -35,6 +35,7 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline)
+    list_filter = ('active', 'show_in_website')
 
 
 @admin.register(ProjectNeed)

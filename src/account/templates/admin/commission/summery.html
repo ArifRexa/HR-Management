@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+{% load humanize %}
+{% load commission_utils %}
+
+{% block content %}
+    <h1>Project OnBoard Commission</h1>
+    <div class="results">
+        <table width="100%">
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Employee</th>
+                <th>Paid</th>
+                <th>Due</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for employee in employees %}
+                <tr>
+                    <td>1</td>
+                    <td>{{ employee.full_name }}</td>
+                    <td>{{ employee | total_paid }} TK</td>
+                    <td>{{ employee | total_due }} TK</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

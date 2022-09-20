@@ -174,3 +174,10 @@ class InvoiceDetail(TimeStampMixin, AuthorMixin):
     rate_of_vat = models.FloatField()
     amount_of_vat = models.FloatField()
     total_price_inc_all_duty = models.FloatField()
+
+
+class ProjectCommission(TimeStampMixin, AuthorMixin):
+    date = models.DateField(default=timezone.now)
+    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'active': True})
+    project = models.ForeignKey(Project, on_delete=models.RESTRICT, limit_choices_to={'active': True})
+    payment = models.FloatField()

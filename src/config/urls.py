@@ -68,7 +68,6 @@ urlpatterns = [
         template_name='docs/swagger-ui.html',
         extra_context={'schema_url': 'openapi-schema'}
     ), name='swagger-ui'),
-
     path('', lambda request: redirect('/admin')),
 ]
 

@@ -53,6 +53,8 @@ class Project(TimeStampMixin, AuthorMixin):
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag)
+    on_boarded_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True,
+                                      limit_choices_to={'active': True})
 
     def __str__(self):
         return self.title
