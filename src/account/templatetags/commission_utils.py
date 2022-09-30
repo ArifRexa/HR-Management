@@ -25,10 +25,11 @@ def total_due(employee: Employee):
     projects = Project.objects.filter(on_boarded_by=employee, active=True).all()
     total_due_amount = 0.0
     for project in projects:
-        total_hours = 0.0
-        for index, hour in enumerate(project.projecthour_set.all()):
-            total_hours += hour.hours
+        total_payment = 0.0
+        for index, income in enumerate(project.income_set.filter(status='approved').all()):
+            print(income.project, "income: ", income.payment, " Status : ", income.status)
+            total_payment += income.payment
             if index == 3:
                 break
-        total_due_amount += total_hours * 10
+        total_due_amount += (total_payment / 100) * 5
     return total_due_amount - prev_paid

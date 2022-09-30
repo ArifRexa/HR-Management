@@ -4,6 +4,7 @@ from django.urls import path
 
 from account.models import ProjectCommission
 from employee.models import Employee
+from project_management.models import Project
 
 
 @admin.register(ProjectCommission)
@@ -21,7 +22,7 @@ class ProjectCommissionAdmin(admin.ModelAdmin):
 
     def commission(self, request, *args, **kwargs):
         if request.user.is_superuser:
-            employee_ids = ProjectCommission.objects.values_list('employee')
+            employee_ids = Project.objects.values_list('on_boarded_by')
             context = dict(
                 self.admin_site.each_context(request),
                 employees=Employee.objects.filter(active=True, pk__in=employee_ids).all()
