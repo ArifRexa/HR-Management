@@ -22,7 +22,7 @@ def total_paid_amount(employee):
 @register.filter
 def total_due(employee: Employee):
     prev_paid = total_paid_amount(employee)
-    projects = Project.objects.filter(on_boarded_by=employee, active=True).all()
+    projects = Project.objects.filter(on_boarded_by=employee).all()
     total_due_amount = 0.0
     for project in projects:
         total_payment = 0.0
