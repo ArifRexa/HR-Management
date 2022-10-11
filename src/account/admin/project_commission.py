@@ -21,11 +21,9 @@ class ProjectCommissionAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def commission(self, request, *args, **kwargs):
-        if request.user.is_superuser:
-            employee_ids = Project.objects.values_list('on_boarded_by')
-            context = dict(
-                self.admin_site.each_context(request),
-                employees=Employee.objects.filter(active=True, pk__in=employee_ids).all()
-            )
-            return TemplateResponse(request, "admin/commission/summery.html", context)
-        raise PermissionError
+        employee_ids = Project.objects.values_list('on_boarded_by')
+        context = dict(
+            self.admin_site.each_context(request),
+            employees=Employee.objects.filter(active=True, pk__in=employee_ids).all()
+        )
+        return TemplateResponse(request, "admin/commission/summery.html", context)
