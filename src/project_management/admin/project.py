@@ -37,6 +37,11 @@ class ProjectAdmin(admin.ModelAdmin):
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline)
     list_filter = ('active', 'show_in_website')
 
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ['on_boarded_by']
+        return []
+
 
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
