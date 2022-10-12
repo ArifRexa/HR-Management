@@ -137,8 +137,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
-    employee_lunch = EmployeeLunch(employee=instance)
-    employee_lunch.save()
+    EmployeeLunch.objects.update_or_create(employee=instance)
 
 
 class EmployeeLunch(TimeStampMixin):
