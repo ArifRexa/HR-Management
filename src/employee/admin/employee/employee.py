@@ -46,6 +46,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
 class EmployeeLunchAdmin(admin.ModelAdmin):
     list_display = ('employee', 'get_lunch_status')
     list_filter = ('active',)
+    search_fields = ('employee__full_name',)
 
     @admin.display(boolean=True, description='Lunch Staus')
     def get_lunch_status(self, obj):
