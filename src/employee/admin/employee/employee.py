@@ -60,6 +60,8 @@ class EmployeeLunchAdmin(admin.ModelAdmin):
             return queryset.filter(employee_id=request.user.employee.id)
 
     def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser or request.user.employee == obj.employee:
+        if request.user.is_superuser:
             return []
+        elif request.user.employee == obj.employee:
+            return ['employee']
         return ['employee', 'active']
