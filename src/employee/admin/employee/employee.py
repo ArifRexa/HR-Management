@@ -8,6 +8,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
 from employee.models.attachment import Attachment
+from employee.models.employee import EmployeeLunch
 
 
 @admin.register(Employee)
@@ -39,3 +40,25 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
     #     if request.user.is_superuser:
     #         return ['active', 'permanent_date']
     #     return []
+
+
+@admin.register(EmployeeLunch)
+class EmployeeLunchAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'get_lunch_status')
+    list_filter = ('active',)
+
+    @admin.display(boolean=True, description='Lunch Staus')
+    def get_lunch_status(self, obj):
+        return obj.active
+
+    def get_queryset(self, request):
+        queryset = super(EmployeeLunchAdmin, self).get_queryset(request)
+        if request.user.is_superuser or request.user.has_perm('employee.can_see_all_lunch'):
+            return queryset.filter(active=True)
+        else:
+            return queryset.filter(employee_id=request.user.employee.id)
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser or request.user.employee == obj.employee:
+            return []
+        return ['employee', 'active']

@@ -5,6 +5,8 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.timesince import timesince
@@ -131,3 +133,19 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     class Meta:
         db_table = 'employees'
+
+
+@receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
+def create_employee_lunch(sender, instance, **kwargs):
+    employee_lunch = EmployeeLunch(employee=instance)
+    employee_lunch.save()
+
+
+class EmployeeLunch(TimeStampMixin):
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        permissions = (
+            ("can_see_all_lunch", "Can able to see all lunch"),
+        )
