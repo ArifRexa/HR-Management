@@ -54,7 +54,7 @@ class EmployeeLunchAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super(EmployeeLunchAdmin, self).get_queryset(request)
         if request.user.is_superuser or request.user.has_perm('employee.can_see_all_lunch'):
-            return queryset.filter(active=True)
+            return queryset.filter(employee__active=True)
         else:
             return queryset.filter(employee_id=request.user.employee.id)
 
