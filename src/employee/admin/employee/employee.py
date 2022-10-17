@@ -44,13 +44,17 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
 
 @admin.register(EmployeeLunch)
 class EmployeeLunchAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'get_lunch_status')
+    list_display = ('employee', 'get_phone', 'get_lunch_status')
     list_filter = ('active',)
-    search_fields = ('employee__full_name',)
+    search_fields = ('employee__full_name', 'employee__phone')
 
-    @admin.display(boolean=True, description='Lunch Staus')
+    @admin.display(boolean=True, description='Lunch Status')
     def get_lunch_status(self, obj):
         return obj.active
+
+    @admin.display(description='Phone')
+    def get_phone(self, obj: EmployeeLunch):
+        return obj.employee.phone
 
     def get_queryset(self, request):
         queryset = super(EmployeeLunchAdmin, self).get_queryset(request)
