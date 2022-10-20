@@ -3,7 +3,7 @@ from rest_framework import serializers
 from employee.models import Employee, EmployeeSocial, EmployeeContent
 from project_management.models import Project, Client, Technology, ProjectTechnology, ProjectContent, ProjectScreenshot, \
     Tag
-from website.models import Service
+from website.models import Service, Blog, Category, BlogTag, BlogCategory
 
 
 class TechnologySerializer(serializers.ModelSerializer):
@@ -114,3 +114,45 @@ class EmployeeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         image_url = employee.image.url
         return request.build_absolute_uri(image_url)
+
+
+class CategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = "__all__"
+
+
+class TagListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = "__all__"
+
+
+class BlogTagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogTag
+        fields = "__all__"
+
+
+class BlogCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogCategory
+        fields = "__all__"
+
+
+class BlogListSerializer(serializers.ModelSerializer):
+    tags = BlogTagSerializer(many=True, source='blogtag_set')
+    categories = BlogCategorySerializer(many=True, source='blogcategory_set')
+
+    class Meta:
+        model = Blog
+        fields = ('title', 'slug', 'short_description', 'tags', 'categories')
+
+
+class BlogDetailsSerializer(serializers.ModelSerializer):
+    tags = BlogTagSerializer(many=True, source='blogtag_set')
+    categories = BlogCategorySerializer(many=True, source='blogcategory_set')
+
+    class Meta:
+        model = Blog
+        fields = ('title', 'slug', 'short_description', 'content', 'tags', 'categories')

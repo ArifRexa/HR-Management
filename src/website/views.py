@@ -1,15 +1,18 @@
+import django_filters
 from django.http import Http404
 from django.shortcuts import render
 
 # Create your views here.
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from employee.models import Employee
 from project_management.models import Project
-from website.models import Service
+from website.models import Service, Category, Tag, Blog
 from website.serializers import ServiceSerializer, ProjectSerializer, EmployeeSerializer, ServiceDetailsSerializer, \
-    ProjectDetailsSerializer, EmployeeDetailsSerializer
+    ProjectDetailsSerializer, EmployeeDetailsSerializer, CategoryListSerializer, TagListSerializer, BlogListSerializer, \
+    BlogDetailsSerializer
 
 
 def index(request):
@@ -59,7 +62,8 @@ class ProjectDetails(APIView):
 
 class EmployeeList(APIView):
     def get(self, request, format=None):
-        employees = Employee.objects.filter(active=True, show_in_web=True).order_by('joining_date', '-manager', 'list_order', ).all()
+        employees = Employee.objects.filter(active=True, show_in_web=True).order_by('joining_date', '-manager',
+                                                                                    'list_order', ).all()
         serializer = EmployeeSerializer(employees, many=True, context={'request': request})
         return Response(serializer.data)
 
@@ -75,3 +79,25 @@ class EmployeeDetails(APIView):
         employee = self.get_object(slug)
         serializer = EmployeeDetailsSerializer(employee, context={'request': request})
         return Response(serializer.data)
+
+
+class CategoryListView(ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategoryListSerializer
+
+
+class TagListView(ListAPIView):
+    queryset = Tag.objects.all()
+    serializer_class = TagListSerializer
+
+
+class BlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True).all()
+    serializer_class = BlogListSerializer
+
+
+class BlogDetailsView(RetrieveAPIView):
+    lookup_field = 'slug'
+    queryset = Blog.objects.filter(active=True).all()
+    serializer_class = BlogDetailsSerializer
+    filter_backends = [django_filters.rest_framework.DjangoFilterBackend]

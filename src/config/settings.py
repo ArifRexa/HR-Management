@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'django_filters',
     'django_userforeignkey',
     'django_q',
     'tinymce',
