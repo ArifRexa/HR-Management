@@ -19,6 +19,7 @@ from project_management.models import Client, Project, ProjectHour, EmployeeProj
 class EmployeeHourAdmin(admin.TabularInline):
     model = EmployeeProjectHour
     extra = 1
+    autocomplete_fields = ('employee',)
 
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
@@ -34,8 +35,9 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     search_fields = ['hours', 'manager__full_name', 'project__title', 'date']
     inlines = (EmployeeHourAdmin,)
     change_list_template = 'admin/total.html'
-
+    autocomplete_fields = ['project']
     list_per_page = 20
+    ordering = ('pk',)
 
     # query for get total hour by query string
     def get_total_hour(self, request):

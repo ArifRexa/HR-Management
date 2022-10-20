@@ -6,3 +6,5 @@ from employee.models import Skill
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
     list_display = ('title', 'note')
+    search_fields = ('title',)
+    list_per_page = 20

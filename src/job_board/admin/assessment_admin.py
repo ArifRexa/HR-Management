@@ -25,6 +25,9 @@ class AssessmentAnswerInline(admin.TabularInline):
 class AssessmentAdmin(admin.ModelAdmin):
     list_display = ('title', 'score', 'duration_display', 'get_description', 'type', 'open_to_start', 'show_action')
     actions = ('clone_assessment',)
+    search_fields = ('title',)
+    list_per_page = 20
+    ordering = ('pk',)
 
     def get_urls(self):
         urls = super().get_urls()

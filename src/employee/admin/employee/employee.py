@@ -17,7 +17,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
     list_per_page = 20
     ordering = ['-active']
     list_filter = ['active', 'permanent_date']
-
+    autocomplete_fields = ['user', 'designation']
     change_list_template = 'admin/employee/list/index.html'
 
     def get_list_display(self, request):

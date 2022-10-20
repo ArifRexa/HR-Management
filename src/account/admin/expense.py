@@ -18,11 +18,13 @@ from employee.models import Employee
 @admin.register(ExpenseGroup)
 class ExpenseGroupAdmin(admin.ModelAdmin):
     list_display = ('title', 'note')
+    search_fields = ['title']
 
 
 @admin.register(ExpenseCategory)
 class ExpenseCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'note')
+    search_fields = ['title']
 
 
 class ExpanseAttachmentInline(admin.TabularInline):
@@ -39,6 +41,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     inlines = [ExpanseAttachmentInline]
     search_fields = ['note']
     actions = ('print_voucher',)
+    autocomplete_fields = ('expanse_group', 'expense_category')
 
     def get_queryset(self, request):
         qs = super(ExpenseAdmin, self).get_queryset(request)

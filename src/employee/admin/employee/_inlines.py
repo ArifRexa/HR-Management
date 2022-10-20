@@ -36,6 +36,7 @@ class BankAccountInline(admin.TabularInline):
 
 class SkillInline(admin.TabularInline):
     model = EmployeeSkill
+    autocomplete_fields = ['skill']
 
     def get_extra(self, request, obj=None, **kwargs):
         return 1 if not obj else 0

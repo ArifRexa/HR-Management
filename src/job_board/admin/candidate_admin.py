@@ -128,6 +128,8 @@ class CandidateJobAdmin(admin.ModelAdmin):
     list_display_links = ('get_job', 'candidate')
     search_fields = ('candidate__full_name', 'candidate__email', 'candidate__phone')
     list_filter = ('merit', 'job', 'candidate_assessment__assessment')
+    list_per_page = 20
+    ordering = ('pk',)
 
     @admin.display(description='Job', ordering='job')
     def get_job(self, obj):
@@ -181,6 +183,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_per_page = 50
     inlines = (CandidateAssessmentReviewAdmin,)
     date_hierarchy = 'exam_started_at'
+    autocomplete_fields = ['candidate_job', 'assessment']
 
     class Media:
         css = {

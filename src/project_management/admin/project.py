@@ -36,6 +36,8 @@ class ProjectAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline)
     list_filter = ('active', 'show_in_website')
+    list_per_page = 20
+    ordering = ('pk',)
 
     def get_readonly_fields(self, request, obj=None):
         if not request.user.is_superuser:

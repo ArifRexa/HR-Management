@@ -14,9 +14,14 @@ from .models import Designation, PayScale, LeaveManagement, PublicHoliday, Publi
 from django_q import models as q_models
 from django_q import admin as q_admin
 
-admin.site.register(Designation)
 admin.site.register(PayScale)
 admin.site.register(LeaveManagement)
+
+
+@admin.register(Designation)
+class DesignationAdmin(admin.ModelAdmin):
+    list_display = ('title', 'description')
+    search_fields = ['title']
 
 
 @admin.register(FinancialYear)

@@ -3,6 +3,8 @@ from django.db import models
 # Create your models here
 from tinymce.models import HTMLField
 
+from config.model.AuthorMixin import AuthorMixin
+from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Technology
 
 
@@ -21,3 +23,40 @@ class Service(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Category(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Tag(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Blog(AuthorMixin, TimeStampMixin):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    short_description = models.TextField()
+    content = HTMLField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
+
+
+class BlogCategory(models.Model):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+
+class BlogTag(models.Model):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)

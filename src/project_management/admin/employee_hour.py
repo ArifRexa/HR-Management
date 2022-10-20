@@ -14,7 +14,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     list_filter = ('employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
-
+    autocomplete_fields = ('employee', 'project_hour')
     change_list_template = 'admin/total.html'
 
     def manager(self, obj):

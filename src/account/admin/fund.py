@@ -9,3 +9,4 @@ from config.admin import RecentEdit
 class FundAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ['date', 'amount', 'user', 'note']
     list_filter = ['date', 'user']
+    autocomplete_fields = ['user']
