@@ -28,7 +28,7 @@ class EmployeeAdminListView:
             'non_paid': obj.leave_passed('non_paid'),
             'employee': obj
         })
-        print(html_content)
+        # print(html_content)
         return format_html(html_content)
 
     def salary_history(self, obj):
