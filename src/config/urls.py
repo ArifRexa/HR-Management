@@ -48,7 +48,7 @@ urlpatterns = [
     # path('admin/account/', include('account.urls')),
     path('admin/', admin.site.urls),
 
-    path("password-change/", auth_view.PasswordChangeView.as_view(extra_context=extra_context), name='password_change'),
+    path("password-change/", auth_view.PasswordChangeView.as_view(), name='password_change'),
     path("password-change/done/", auth_view.PasswordResetDoneView.as_view(), name='password_change_done'),
 
     path('password-reset/', auth_view.PasswordResetView.as_view(), name="admin_password_reset"),
