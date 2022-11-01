@@ -24,6 +24,7 @@ class IncomeAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.TextField: {'widget': Textarea(attrs={'rows': 2})}
     }
+    autocomplete_fields = ['project']
 
     change_list_template = 'admin/income/list.html'
 
