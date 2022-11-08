@@ -18,7 +18,7 @@ from job_board.serializers.candidate_serializer import CandidateJobSerializer, C
 
 
 class GenericJobView(GenericAPIView):
-    queryset = Job.objects.filter(active=True).order_by('level').all()
+    queryset = Job.objects.filter(active=True, job_summery__application_deadline__gte=timezone.now()).order_by('level').all()
     serializer_class = JobSerializer
 
     class Meta:
