@@ -51,28 +51,27 @@
                     </div>
                 {% endif %}
 
-
-
-                {% if request.user.is_superuser %}
-                    {% if birthdays.count > 0 %}
-                        <div class="col-md-6 mb-4">
-                            <div class="card rounded-0">
-                                <div class="card-header">Birthday Nearby <span
-                                        class="float-end badge bg-secondary">{{ birthdays.count }}</span>
-                                </div>
-                                <div class="card-body rounded-0 p-0">
-                                    <ul class="list-group list-group-flush">
-                                        {% for employee_birthday in birthdays %}
-                                            <li class="list-group-item">
-                                                {{ employee_birthday }} -
-                                                <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
+                {% if birthdays.count > 0 %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header">Birthday Nearby <span
+                                    class="float-end badge bg-secondary">{{ birthdays.count }}</span>
+                            </div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for employee_birthday in birthdays %}
+                                        <li class="list-group-item">
+                                            {{ employee_birthday }} -
+                                            <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
                             </div>
                         </div>
-                    {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if request.user.is_superuser %}
 
                     {% if increments|length > 0 %}
                         <div class="col-md-6 mb-4">
