@@ -33,4 +33,4 @@ def sum_employee_salary(employee_salary: QuerySet, target_column: str):
     financial_year = FinancialYear.objects.filter(active=True).first()
     total = employee_salary.filter(salary_sheet__date__gte=financial_year.start_date,
                                    salary_sheet__date__lte=financial_year.end_date).aggregate(total=Sum(target_column))
-    return total['total']
+    return round(total['total'], 2)
