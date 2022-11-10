@@ -19,6 +19,7 @@ from project_management.models import Client, Project, ProjectHour, EmployeeProj
 class EmployeeHourAdmin(admin.TabularInline):
     model = EmployeeProjectHour
     extra = 1
+
     # autocomplete_fields = ('employee',)
 
     def get_readonly_fields(self, request, obj=None):

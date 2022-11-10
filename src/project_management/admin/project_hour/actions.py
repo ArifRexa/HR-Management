@@ -1,4 +1,7 @@
+import csv
+
 from django.contrib import admin
+from django.http import HttpResponse
 
 from project_management.admin.graph.admin import ExtraUrl
 
@@ -24,4 +27,22 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
 
     @admin.action()
     def export_as_csv(self, request, queryset):
-        pass
+        response = HttpResponse(
+            content_type='text/csv',
+            headers={'Content-Disposition': 'attachment; filename="project_hour.csv"'},
+        )
+
+        writer = csv.writer(response)
+        writer.writerow(['Date', 'Project', 'Hours', 'Payment', 'Manager'])
+        total = 0
+        for project_hour in queryset:
+            total += project_hour.hours * 10
+            writer.writerow([
+                project_hour.date,
+                project_hour.project,
+                project_hour.hours,
+                project_hour.hours * 10,
+                project_hour.manager
+            ])
+        writer.writerow(['', 'Total', '', total, ''])
+        return response
