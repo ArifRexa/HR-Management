@@ -93,11 +93,17 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
                                 blank=True)
     date = models.DateField()
     hours = models.FloatField()
-    description = models.TextField(blank=True)
+    description = models.TextField(blank=True, verbose_name='Explanation')
     payable = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
+
+    def clean(self):
+        if self.hours <= 25 and self.description == "":
+            raise ValidationError({
+                'description': f"Please explain why the hours is less then or equal 25"
+            })
 
     def save(self, *args, **kwargs):
         if not self.manager.manager:

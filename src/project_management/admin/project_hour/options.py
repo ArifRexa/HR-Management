@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib import admin
+from django.utils.html import format_html
 
 from project_management.models import ProjectHour
 
@@ -26,10 +27,16 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'created_by', 'created_at', 'payable']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'payable']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
+
+    def get_resources(self, obj: ProjectHour):
+        html = ""
+        for elem in obj.employeeprojecthour_set.all():
+            html += f"{elem.employee.full_name} <br>"
+        return format_html(html)
 
     # def get_readonly_fields(self, request, obj=None):
     #     three_day_earlier = datetime.datetime.today() - datetime.timedelta(days=2)
