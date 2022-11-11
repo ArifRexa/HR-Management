@@ -1,6 +1,7 @@
 from django import template
 from django.db.models import Sum, FloatField
 from django.db.models.functions import Coalesce
+from django.utils.html import format_html
 
 from account.models import ProjectCommission, Income
 from employee.models import Employee
@@ -33,3 +34,18 @@ def total_due(employee: Employee):
                 break
         total_due_amount += (total_payment / 100) * 5
     return total_due_amount - prev_paid
+
+
+@register.filter
+def total_due_projects(employee: Employee):
+    html = ""
+    projects = Project.objects.filter(on_boarded_by=employee).all()
+    for project in projects:
+        total_payment = 0.0
+        for index, income in enumerate(project.income_set.filter(status='approved').all()):
+            total_payment += income.payment
+            if index == 3:
+                break
+        if total_payment > 0:
+            html += f"<li>{project}</li>"
+    return format_html(html)
