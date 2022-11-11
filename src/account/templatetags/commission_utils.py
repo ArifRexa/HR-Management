@@ -47,5 +47,5 @@ def total_due_projects(employee: Employee):
             if index == 3:
                 break
         if total_payment > 0:
-            html += f"<li>{project}</li>"
+            html += f"<li>{project} | {(total_payment / 100) * 5}</li>"
     return format_html(html)
