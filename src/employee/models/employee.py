@@ -23,6 +23,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     full_name = models.CharField(max_length=255)
     slug = models.SlugField(null=True, blank=True, unique=True)
     date_of_birth = models.DateField(null=True, blank=True)
+    blood_group = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True)
     address = models.TextField(null=True)
     phone = models.CharField(max_length=60, help_text='Use (,) comma for separate phone numbers')

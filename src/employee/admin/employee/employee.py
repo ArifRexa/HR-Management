@@ -44,7 +44,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
 
 @admin.register(EmployeeLunch)
 class EmployeeLunchAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'get_designation', 'get_phone', 'get_lunch_status')
+    list_display = ('employee', 'get_designation', 'get_phone', 'get_blood_group', 'get_lunch_status')
     list_filter = ('active',)
     search_fields = ('employee__full_name', 'employee__phone')
 
@@ -59,6 +59,10 @@ class EmployeeLunchAdmin(admin.ModelAdmin):
     @admin.display(description='Phone')
     def get_phone(self, obj: EmployeeLunch):
         return obj.employee.phone
+
+    @admin.display(description='Blood Group')
+    def get_blood_group(self, obj: EmployeeLunch):
+        return obj.employee.blood_group
 
     def get_queryset(self, request):
         queryset = super(EmployeeLunchAdmin, self).get_queryset(request)

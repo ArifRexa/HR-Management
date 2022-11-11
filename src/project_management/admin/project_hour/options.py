@@ -32,10 +32,13 @@ class ProjectHourOptions(admin.ModelAdmin):
             list_display.remove('payable')
         return list_display
 
+    @admin.display(description='Resources')
     def get_resources(self, obj: ProjectHour):
         html = ""
+        i = 1
         for elem in obj.employeeprojecthour_set.all():
-            html += f"{elem.employee.full_name} <br>"
+            html += f"<p>{i}.{elem.employee.full_name} </p>"
+            i += 1
         return format_html(html)
 
     # def get_readonly_fields(self, request, obj=None):
