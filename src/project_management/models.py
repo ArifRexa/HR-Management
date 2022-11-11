@@ -114,6 +114,11 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         total = self.employeeprojecthour_set.aggregate(Sum('hours'))
         return employee_id, total['hours__sum']
 
+    class Meta:
+        permissions = [
+            ('show_all_hours', 'Can show all hours just like admin')
+        ]
+
 
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)

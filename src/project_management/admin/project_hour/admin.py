@@ -64,7 +64,8 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         @type request: object
         """
         query_set = super(ProjectHourAdmin, self).get_queryset(request)
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm('project_management.show_all_hours'):
+            print('inside')
             return query_set.filter(manager_id=request.user.employee.id)
         return query_set
 
