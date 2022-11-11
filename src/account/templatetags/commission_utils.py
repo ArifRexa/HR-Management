@@ -47,5 +47,7 @@ def total_due_projects(employee: Employee):
             if index == 3:
                 break
         if total_payment > 0:
-            html += f"<li>{project} | {(total_payment / 100) * 5}</li>"
+            paid = project.projectcommission_set.aggregate(total=Coalesce(Sum('payment'), 0, output_field=FloatField()))
+            due = ((total_payment / 100) * 5) - paid['total']
+            html += f"<li>{project} | {due}</li>"
     return format_html(html)
