@@ -33,7 +33,7 @@ class CredentialAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         query_set = super(CredentialAdmin, self).get_queryset(request)
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm('asset_management.access_all_credentials'):
             return query_set.filter(privileges__in=[request.user])
         return query_set
 

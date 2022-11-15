@@ -19,3 +19,8 @@ class Credential(AuthorMixin, TimeStampMixin):
     category = models.ForeignKey(CredentialCategory, on_delete=models.RESTRICT)
     description = HTMLField()
     privileges = models.ManyToManyField(User, blank=True)
+
+    class Meta:
+        permissions = [
+            ("access_all_credentials", "Can able to see all credentials")
+        ]
