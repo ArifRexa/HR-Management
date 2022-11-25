@@ -12,11 +12,16 @@
 
     <div id="graph" style="height: 80vh; min-width: 310px"></div>
 
-
+    <button onclick="toggleSelect(false)">Deselect All</button>
+    <button onclick="toggleSelect(true)">Select All</button>
 
     <script>
 
-        Highcharts.stockChart('graph', {
+
+        let series =
+        {{ series | safe }}
+
+        const highCharts = Highcharts.stockChart('graph', {
             chart: {
                 type: 'spline'
             },
@@ -26,8 +31,12 @@
                     enabled: false
                 }
             },
-            series: {{ series | safe }}
+            series: series
         });
+
+        function toggleSelect(){
+            highCharts.update()
+        }
 
 
     </script>

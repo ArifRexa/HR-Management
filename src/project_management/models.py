@@ -88,12 +88,20 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
 
 
 class ProjectHour(TimeStampMixin, AuthorMixin):
+    FORCAST_SELECTOR = (
+        ('increase', '⬆ Increase'),
+        ('decrease', '⬇ Decrease'),
+        ('same', '✅ Same'),
+        ('confused', '😕 Confused'),
+    )
+
     manager = models.ForeignKey(Employee, limit_choices_to={'manager': True}, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.SET_NULL, null=True,
                                 blank=True)
     date = models.DateField()
     hours = models.FloatField()
     description = models.TextField(blank=True, verbose_name='Explanation')
+    forcast = models.CharField(max_length=40, choices=FORCAST_SELECTOR, null=True, blank=True, default='same')
     payable = models.BooleanField(default=True)
 
     def __str__(self):

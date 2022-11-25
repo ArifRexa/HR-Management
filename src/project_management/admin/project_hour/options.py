@@ -17,7 +17,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = ['project', 'manager', 'date']
+        filters = ['forcast', 'project', 'manager', 'date']
         if not request.user.is_superuser:
             filters.remove('manager')
         return filters
@@ -27,7 +27,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'payable']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'forcast', 'payable']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
