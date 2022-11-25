@@ -1,6 +1,7 @@
 import datetime
 
 from django.contrib import admin
+from django.template.loader import get_template
 from django.utils.html import format_html
 
 from project_management.models import ProjectHour
@@ -27,10 +28,18 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'forcast', 'payable']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'get_forcast', 'payable']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
+
+    @admin.display(description='Forcast next week hour', ordering='forcast')
+    def get_forcast(self, obj: ProjectHour):
+        html_template = get_template('admin/project_hour/col_forcast.html')
+        html_content = html_template.render({
+            'project_hour': obj
+        })
+        return format_html(html_content)
 
     @admin.display(description='Resources')
     def get_resources(self, obj: ProjectHour):

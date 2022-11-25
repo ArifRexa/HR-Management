@@ -1,0 +1,9 @@
+{% if project_hour.forcast == 'increase' %}
+    <b style="color: blue">{{ project_hour.get_forcast_display }}</b>
+{% elif project_hour.forcast == 'decrease' %}
+    <b style="color: red">{{ project_hour.get_forcast_display }}</b>
+{% elif project_hour.forcast == 'same' %}
+    <b style="color: green">{{ project_hour.get_forcast_display }}</b>
+{% else %}
+    <b style="">{{ project_hour.get_forcast_display }}</b>
+{% endif %}

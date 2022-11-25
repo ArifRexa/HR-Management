@@ -89,9 +89,9 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
 
 class ProjectHour(TimeStampMixin, AuthorMixin):
     FORCAST_SELECTOR = (
-        ('increase', '⬆ Increase'),
-        ('decrease', '⬇ Decrease'),
-        ('same', '✅ Same'),
+        ('increase', '✔ Increase'),
+        ('decrease', '⌛ Decrease'),
+        ('same', '⌛ Same'),
         ('confused', '😕 Confused'),
     )
 
@@ -108,6 +108,10 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         return f"{self.project} | {self.manager}"
 
     def clean(self):
+        if self.hours is None:
+            raise ValidationError({
+                'hours': f"Hours filed is required"
+            })
         if self.hours <= 25 and self.description == "":
             raise ValidationError({
                 'description': f"Please explain why the hours is less then or equal 25"
