@@ -33,7 +33,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             list_display.remove('payable')
         return list_display
 
-    @admin.display(description='Forcast next week hour', ordering='forcast')
+    @admin.display(description='Forcast', ordering='forcast')
     def get_forcast(self, obj: ProjectHour):
         html_template = get_template('admin/project_hour/col_forcast.html')
         html_content = html_template.render({
