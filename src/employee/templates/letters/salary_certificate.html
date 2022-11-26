@@ -54,14 +54,17 @@
             </tr>
             <tr>
                 <td>Festival Bonus</td>
-                <td align="right">{{ employee.employeesalary_set | sum_employee_salary:'festival_bonus'  }}</td>
+                <td align="right">
+                    {{ employee.employeesalary_set | sum_employee_salary:'festival_bonus'| floatformat:2  }}</td>
             </tr>
             </tbody>
 
             <tfoot style="border-top: 1px solid black;">
             <tr>
                 <th align='right'>Total</th>
-                <td align="right"><b> {{ employee.employeesalary_set | sum_employee_salary:'gross_salary' }} BDT</b>
+                <td align="right"><b>
+                    {{ employee.employeesalary_set | sum_employee_salary_with_festival_bonus | floatformat:2 }}
+                    BDT</b>
                 </td>
             </tr>
             </tfoot>
