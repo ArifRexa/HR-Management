@@ -18,7 +18,7 @@ class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
     extra = 0
     readonly_fields = ('employee', 'net_salary', 'overtime',
-                       'project_bonus', 'leave_bonus', 'festival_bonus', 'loan_emi', 'gross_salary')
+                       'project_bonus', 'leave_bonus', 'festival_bonus', 'food_allowance', 'loan_emi', 'gross_salary')
     can_delete = False
 
     def has_add_permission(self, request, obj):

@@ -1,11 +1,12 @@
 import calendar
-import time
 from datetime import datetime, timedelta
 
-from django.db.models import Sum
+from django.db.models import Sum, Count
+from django.db.models.functions import Coalesce
 
 from account.models import SalarySheet, EmployeeSalary, LoanPayment
-from employee.models import Employee, SalaryHistory
+from employee.models import Employee, SalaryHistory, Leave
+from settings.models import PublicHolidayDate
 
 
 class SalarySheetRepository:
@@ -74,9 +75,11 @@ class SalarySheetRepository:
                                       self.__calculate_leave_in_cash(salary_sheet, employee)
         employee_salary.project_bonus = self.__calculate_project_bonus(salary_sheet, employee)
         employee_salary.festival_bonus = self.__calculate_festival_bonus(employee=employee)
+        employee_salary.food_allowance = self.__calculate_food_allowance(employee=employee,
+                                                                         salary_date=salary_sheet.date)
         employee_salary.loan_emi = self.__calculate_loan_emi(employee=employee, salary_date=salary_sheet.date)
         employee_salary.gross_salary = employee_salary.net_salary + employee_salary.overtime + \
-                                       employee_salary.festival_bonus + \
+                                       employee_salary.festival_bonus + employee_salary.food_allowance + \
                                        employee_salary.leave_bonus + employee_salary.project_bonus + \
                                        employee_salary.loan_emi
         employee_salary.save()
@@ -228,3 +231,24 @@ class SalarySheetRepository:
             )
         emi_amount = employee_loans.aggregate(Sum('emi'))
         return -emi_amount['emi__sum'] if emi_amount['emi__sum'] else 0.0
+
+    def __calculate_food_allowance(self, employee, salary_date: datetime.date):
+        date_range = calendar.monthrange(salary_date.year, salary_date.month)
+        import datetime
+        start_date = datetime.date(salary_date.year, salary_date.month, date_range[0])
+        end_date = datetime.date(salary_date.year, salary_date.month, date_range[1])
+        office_holidays = PublicHolidayDate.objects.filter(date__gte=start_date,
+                                                           date__lte=end_date).values_list('date', flat=True)
+        employee_on_leave = Leave.objects.filter(start_date__gte=start_date, end_date__lte=end_date, status='approved',
+                                                 employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
+        print(employee, employee_on_leave)
+        day_off = 0
+        for day in range(1, date_range[1] + 1):
+            date = datetime.date(salary_date.year, salary_date.month, day)
+            if date.strftime("%A") in ['Saturday', 'Sunday']:
+                day_off += 1
+            if date in office_holidays:
+                day_off += 1
+        day_off += employee_on_leave
+        payable_days = date_range[1] - day_off
+        return payable_days * 140
