@@ -23,6 +23,9 @@
                    title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">Others</a>
             </caption>
             <tr>
+                <th><a href="{% url 'admin:employee.online.graph' %}">Break Graph</a></th>
+            </tr>
+            <tr>
                 <th scope="row"><a href="{% url 'admin:employee.summery' %}">Summary</a></th>
             </tr>
             <tr>

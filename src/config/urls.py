@@ -23,6 +23,7 @@ from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
 from rest_framework.schemas import get_schema_view
 
+import employee.views
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 
 admin.site.site_header = settings.APP_SITE_HEADER
@@ -55,6 +56,7 @@ urlpatterns = [
     path('password-reset/done/', auth_view.PasswordResetDoneView.as_view(), name="password_reset_done"),
     path('reset/<uidb64>/<token>/', auth_view.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('reset/done/', auth_view.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
+    path('change-active-status/', employee.views.change_status, name='change-active-status'),
 
     path('tinymce/', include('tinymce.urls')),
 

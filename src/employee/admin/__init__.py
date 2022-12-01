@@ -4,3 +4,4 @@ from .overtime import OvertimeAdmin
 from .resignation import ResignationAdmin
 from .user import UserAdmin
 from .skill import SkillAdmin
+from .employee_activity import *

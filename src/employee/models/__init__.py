@@ -7,3 +7,4 @@ from .attachment import Attachment
 from .bank_account import BankAccount
 from .employee_skill import Skill, EmployeeSkill
 from .employee_social import EmployeeSocial, EmployeeContent
+from .employee_activity import EmployeeOnline, EmployeeAttendance, EmployeeActivity

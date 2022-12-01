@@ -1,0 +1,114 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}
+    Employee Break Graph
+{% endblock %}
+
+{% block content %}
+    {% load static %}
+
+
+    <style>
+        @import "https://code.highcharts.com/css/highcharts.css";
+
+        #employee-online {
+            min-width: 300px;
+            max-width: 800px;
+            height: 300px;
+            margin: 1em auto;
+        }
+
+        .highcharts-xrange-series .highcharts-point {
+            stroke-width: 1px;
+            stroke: gray;
+        }
+
+        .highcharts-partfill-overlay {
+            fill: #010101;
+            fill-opacity: 0.3;
+        }
+
+        .highcharts-data-label text {
+            fill: white;
+            text-shadow: 1px 1px black, -1px 1px black, -1px -1px black, 1px -1px black;
+        }
+
+    </style>
+
+    <form action="{% url 'admin:employee.online.graph' %}" method="get">
+        <input type="date" name="date">
+        <button type="submit">Search</button>
+    </form>
+
+    <div id="employee-online"></div>
+
+
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/xrange.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+    <script>
+
+        let myData =
+        {{ graph_data | safe }}
+
+        // console.log(myData[2]);
+        const categories = myData?.map((data, index) => data[0]);
+        // var categories =[];
+        // for(let i=0; i<myData.length; i++){
+        //   categories.push(myData[i][0]);
+        // }
+        // console.log(categories);
+        var chartData = [];
+        for (let i = 0; i < myData.length; i++) {
+            // if odd number of data then add in the last current time
+            if (myData[i][1].length % 2 != 0) myData[i][1].push(25);
+
+            for (let j = 0; j < myData[i][1].length; j++) {
+                // console.log(myData[i][1][j]);
+                // console.log(j);
+                chartData.push({
+                    'x': myData[i][1][j],
+                    'x2': myData[i][1][++j],
+                    'y': i
+                });
+            }
+
+            console.log(chartData);
+            // console.log(myData[i][1]);
+
+        }
+
+        Highcharts.chart('employee-online', {
+            chart: {
+                type: 'xrange',
+                styledMode: true
+            },
+            title: {
+                text: 'Highcharts X-range'
+            },
+            xAxis: {
+                type: 'datetime'
+            },
+            yAxis: {
+                title: {
+                    text: ''
+                },
+                categories: categories,
+                reversed: true
+            },
+            series: [{
+                name: 'Project 1',
+                // pointPadding: 0,
+                // groupPadding: 0,
+                pointWidth: 20,
+                data: chartData,
+                dataLabels: {
+                    enabled: true
+                }
+            }]
+
+        });
+    </script>
+
+{% endblock %}
