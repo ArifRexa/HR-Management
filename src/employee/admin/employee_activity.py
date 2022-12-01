@@ -67,10 +67,12 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
                 breaks_timestamp.append(int(employee_break.start_time.timestamp() * 1000))
                 if employee_break.end_time:
                     breaks_timestamp.append(int(employee_break.end_time.timestamp() * 1000))
+                else:
+                    breaks_timestamp.append((int(timezone.now().timestamp() * 1000)))
 
-            if len(breaks_timestamp) > 1:
-                element.append(attendance.employee.full_name)
-                element.append(breaks_timestamp)
+            element.append(attendance.employee.full_name)
+            element.append(breaks_timestamp)
+
             graph_data.append(element)
 
         context = dict(

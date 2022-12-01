@@ -62,7 +62,7 @@
         var chartData = [];
         for (let i = 0; i < myData.length; i++) {
             // if odd number of data then add in the last current time
-            if (myData[i][1].length % 2 != 0) myData[i][1].push(25);
+            {#if (myData[i][1].length % 2 != 0) myData[i][1].push(25);#}
 
             for (let j = 0; j < myData[i][1].length; j++) {
                 // console.log(myData[i][1][j]);
@@ -78,6 +78,12 @@
             // console.log(myData[i][1]);
 
         }
+
+        Highcharts.setOptions({
+            time: {
+                timezone: 'Asia/Dhaka'
+            }
+        });
 
         Highcharts.chart('employee-online', {
             chart: {
