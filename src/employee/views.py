@@ -3,15 +3,19 @@ import json
 from django.http import JsonResponse
 
 # Create your views here.
-from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import redirect
 
-from employee.models import EmployeeActivity
+from employee.forms.employee_online import EmployeeStatusForm
+from employee.models import EmployeeActivity, EmployeeOnline
 
 
-@csrf_exempt
 def change_status(request, *args, **kwargs):
     if request.method == 'POST':
-        data = json.loads(request.body)
-        use = request.user
-        activity = EmployeeActivity.objects.filter(en)
-    return JsonResponse({'status': 'success'})
+        employee_status = EmployeeOnline.objects.get(employee=request.user.employee)
+        form = EmployeeStatusForm(request.POST, instance=employee_status)
+        print(form.is_valid())
+        if form.is_valid():
+            form.save()
+            return redirect('/admin/')
+        else:
+            return redirect('/wrong-page/')

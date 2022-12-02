@@ -18,7 +18,7 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
     list_display = ('employee', 'get_status', 'active')
     list_editable = ('active',)
     list_filter = ('active',)
-    search_fields = ('employee',)
+    search_fields = ('employee__full_name',)
 
     def get_queryset(self, request):
         query_set = super(EmployeeOnlineAdmin, self).get_queryset(request)

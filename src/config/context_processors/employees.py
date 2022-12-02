@@ -1,4 +1,6 @@
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
+from employee.forms.employee_online import EmployeeStatusForm
+from employee.models import EmployeeOnline
 
 
 def formal_summery(request):
@@ -9,4 +11,12 @@ def formal_summery(request):
         "increments": employee_formal_summery.increments,
         "permanents": employee_formal_summery.permanents,
         "anniversaries": employee_formal_summery.anniversaries
+    }
+
+
+def employee_status_form(request):
+    employee_online = EmployeeOnline.objects.get(employee_id=request.user.employee.id)
+    print(employee_online)
+    return {
+        'status_form': EmployeeStatusForm(instance=employee_online)
     }

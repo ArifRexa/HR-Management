@@ -20,21 +20,27 @@
 
 {#{% block bodyclass %}{{ block.super }} dashboard{% endblock %}#}
 
+{% block content_title %}
+
+    <div class="d-flex justify-content-between">
+        <div class="">
+            {% if title %}
+                <h1>{{ title }}</h1>
+            {% endif %}
+        </div>
+        <div class="">
+            {% include 'admin/form/employee_status_form.html' %}
+        </div>
+    </div>
+
+
+{% endblock %}
+
 {% block nav-sidebar %}{% endblock %}
 
 {% block content %}
     <div class="container-fluid">
-    {#    <div class="row justify-content-end">#}
-    {#        <div class="col-md-2">#}
-    {#            <div class="form-check form-switch">#}
-    {#                <label class="form-check-label" style="font-size: 2rem" id="switchLbl" for="flexSwitchCheckDefault">Inactive</label>#}
-    {#                <input onchange="changeBtnStatus(event)" class="form-check-input float-end" style="font-size: 2rem"#}
-    {#                       type="checkbox" role="switch"#}
-    {#                       id="flexSwitchCheckChecked">#}
-    {#            </div>#}
-    {#        </div>#}
-    {##}
-    {#    </div>#}
+
     <div class="row">
         <div class="col-md-4">
             {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
@@ -149,6 +155,7 @@
 
             <div class="card rounded-0">
                 <div class="card-header rounded-0">Recent actions</div>
+
                 <div class="card-body">
                     {% load log %}
                     {% get_admin_log 10 as admin_log for_user user %}
