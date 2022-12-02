@@ -21,10 +21,11 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
     search_fields = ('employee__full_name',)
 
     def get_queryset(self, request):
+        EmployeeOnline.objects.filter()
         query_set = super(EmployeeOnlineAdmin, self).get_queryset(request)
         if not request.user.is_superuser and not request.user.has_perm('employee.can_see_all_break'):
             return query_set.filter(employee=request.user.employee.id)
-        return query_set.filter(employee_id__in=[7, 30, 76, 49], employee__active=True)
+        return query_set.filter(employee__active=True).exclude(employee_id__in=[7, 30, 76, 49])
 
     @admin.display(description='Status')
     def get_status(self, obj):
