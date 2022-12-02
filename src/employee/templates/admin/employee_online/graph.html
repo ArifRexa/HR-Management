@@ -44,6 +44,11 @@
 
 
     <script src="https://code.highcharts.com/highcharts.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.13/moment-timezone-with-data-2012-2022.min.js"></script>
+
+
     <script src="https://code.highcharts.com/modules/xrange.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
 
@@ -52,21 +57,12 @@
         let myData =
         {{ graph_data | safe }}
 
-        // console.log(myData[2]);
         const categories = myData?.map((data, index) => data[0]);
-        // var categories =[];
-        // for(let i=0; i<myData.length; i++){
-        //   categories.push(myData[i][0]);
-        // }
-        // console.log(categories);
+
         var chartData = [];
         for (let i = 0; i < myData.length; i++) {
-            // if odd number of data then add in the last current time
-            {#if (myData[i][1].length % 2 != 0) myData[i][1].push(25);#}
-
             for (let j = 0; j < myData[i][1].length; j++) {
-                // console.log(myData[i][1][j]);
-                // console.log(j);
+
                 chartData.push({
                     'x': myData[i][1][j],
                     'x2': myData[i][1][++j],
@@ -75,13 +71,13 @@
             }
 
             console.log(chartData);
-            // console.log(myData[i][1]);
 
         }
 
         Highcharts.setOptions({
             time: {
-                timezone: 'Asia/Dhaka'
+                timezone: 'Asia/Dhaka',
+                useUTC: true
             }
         });
 
@@ -91,18 +87,29 @@
                 styledMode: true
             },
             title: {
-                text: 'Highcharts X-range'
+                text: 'Employee Activities'
+            },
+            tooltip: {
+                formatter: function () {
+                    return 'Active From<b>' + moment(this.x).format('LT') +
+                        '</b> to <b>' + moment(this.x2).format('LT') + '</b>';
+                }
             },
             xAxis: {
-                type: 'datetime'
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                    hour: '%I:%M %P',
+                    minute: '%I:%M %P'
+                }
             },
             yAxis: {
                 title: {
-                    text: ''
+                    text: 'Employees'
                 },
                 categories: categories,
                 reversed: true
             },
+
             series: [{
                 name: 'Project 1',
                 // pointPadding: 0,
