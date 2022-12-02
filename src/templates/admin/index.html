@@ -50,7 +50,19 @@
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
                         <div class="card-header">Employee Status</div>
-                        <div class="card-body">
+                        <div class="card-body p-0">
+                            <ol class="list-group rounded-0">
+                                {% for offline in employee_offline %}
+                                    <li class="list-group-item">
+                                        {% if offline.active %}
+                                            <span style="color: green">🟢</span>
+                                        {% else %}
+                                            <span>🔴</span>
+                                        {% endif %}
+                                        {{ offline.employee }}
+                                    </li>
+                                {% endfor %}
+                            </ol>
 
                         </div>
                     </div>
