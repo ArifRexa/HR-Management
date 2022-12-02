@@ -2,8 +2,9 @@ from django.core import management
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template import Context, loader
 from django.template.loader import get_template
+from django.utils import timezone
 
-from employee.models import Employee, Leave
+from employee.models import Employee, Leave, EmployeeOnline
 
 
 def send_mail_to_employee(employee, pdf, html_body, subject):
@@ -67,3 +68,8 @@ def execute_permanent_notification():
 
 def execute_birthday_notification():
     management.call_command('birthday_wish')
+
+
+def all_employee_offline():
+    EmployeeOnline.objects.filter(active=True).update(active=False)
+    print('[Bot] All Employee Offline ', timezone.now())
