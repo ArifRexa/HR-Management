@@ -14,6 +14,15 @@
             caption-side: top !important;
         }
     </style>
+
+    <style>
+        ul.messagelist li.alert-danger {
+            background: var(--message-success-bg) url({% static 'admin/img/icon-no.svg' %}) 40px 12px no-repeat;
+            color: #842029;
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+        }
+    </style>
 {% endblock %}
 
 {#{% block coltype %}colMS{% endblock %}#}
