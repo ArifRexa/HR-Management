@@ -5,8 +5,10 @@ from employee.models import EmployeeOnline
 
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
-    employee_offline = EmployeeOnline.objects.filter(employee__active=True).order_by('active',
-                                                                                     'employee__full_name').all()
+    employee_offline = EmployeeOnline.objects.filter(
+        employee__active=True).order_by(
+        'active', 'employee__full_name').exclude(
+        employee_id__in=[7, 30, 76, 49]).all()
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
         "birthdays": employee_formal_summery.birthdays,
