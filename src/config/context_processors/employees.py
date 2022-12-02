@@ -15,8 +15,12 @@ def formal_summery(request):
 
 
 def employee_status_form(request):
-    employee_online = EmployeeOnline.objects.get(employee_id=request.user.employee.id)
-    print(employee_online)
-    return {
-        'status_form': EmployeeStatusForm(instance=employee_online)
-    }
+    if request.user.is_authenticated:
+        employee_online = EmployeeOnline.objects.get(employee_id=request.user.employee.id)
+        return {
+            'status_form': EmployeeStatusForm(instance=employee_online)
+        }
+    else:
+        return {
+            'status_form': EmployeeStatusForm()
+        }
