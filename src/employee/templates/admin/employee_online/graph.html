@@ -91,8 +91,27 @@
             },
             tooltip: {
                 formatter: function () {
-                    return 'Active From<b>' + moment(this.x).format('LT') +
-                        '</b> to <b>' + moment(this.x2).format('LT') + '</b>';
+
+                    let series = this.series
+                    let i = 0
+                    let activeTime = 0;
+                    for (i = 0; i < series.data.length; i++) {
+                        activeTime += series.data[i].x2 - series.data[i].x;
+                    }
+
+                    let breakTime = 0;
+                    breakTime = series.data[i - 1].x2 - series.data[0].x - activeTime;
+
+                    activeTime = activeTime / 1000
+                    let activeHour = (activeTime / 60) / 60
+                    breakTime = breakTime / 1000
+                    let breakHour = (breakTime / 60) / 60
+
+                    const time = new Highcharts.Time();
+
+                    return `Active: ${parseInt(activeHour) > 0 ? parseInt(activeHour) + ' h' : ''} ${parseInt(activeTime / 60)} m |
+                    Break ${parseInt(breakHour) > 0 ? parseInt(breakHour) + ' h' : ''} ${parseInt(breakHour / 60)} m`;
+
                 }
             },
             xAxis: {
