@@ -50,6 +50,9 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
     entry_time = models.TimeField(default=timezone.now)
     exit_time = models.TimeField(null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.employee.full_name} - {self.date}"
+
 
 class EmployeeActivity(TimeStampMixin, AuthorMixin):
     employee_attendance = models.ForeignKey(EmployeeAttendance, on_delete=models.CASCADE)

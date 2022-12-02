@@ -18,6 +18,7 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
     list_display = ('employee', 'get_status', 'active')
     list_editable = ('active',)
     list_filter = ('active',)
+    search_fields = ('employee',)
 
     def get_queryset(self, request):
         query_set = super(EmployeeOnlineAdmin, self).get_queryset(request)
@@ -86,9 +87,15 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
 class EmployeeAttendanceAdmin(admin.ModelAdmin):
     list_display = ('date', 'employee', 'entry_time', 'exit_time')
     date_hierarchy = 'date'
+    list_filter = ('employee',)
+    search_fields = ('employee', 'date')
+    autocomplete_fields = ('employee',)
 
 
 @admin.register(EmployeeActivity)
 class EmployeeBreakAdmin(admin.ModelAdmin):
     list_display = ('employee_attendance', 'start_time', 'end_time')
     date_hierarchy = 'employee_attendance__date'
+    autocomplete_fields = ('employee_attendance',)
+    list_filter = ('employee_attendance__employee',)
+    search_fields = ('employee_attendance__employee__full_name',)
