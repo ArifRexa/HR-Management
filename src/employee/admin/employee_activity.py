@@ -11,6 +11,7 @@ from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
 
 from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity
+from employee.models.employee_activity import EmployeeProject
 
 
 @admin.register(EmployeeOnline)
@@ -19,6 +20,7 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
     list_editable = ('active',)
     list_filter = ('active',)
     search_fields = ('employee__full_name',)
+    autocomplete_fields = ('employee',)
 
     def get_queryset(self, request):
         EmployeeOnline.objects.filter()
@@ -100,3 +102,11 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
     autocomplete_fields = ('employee_attendance',)
     list_filter = ('employee_attendance__employee',)
     search_fields = ('employee_attendance__employee__full_name',)
+
+
+@admin.register(EmployeeProject)
+class EmployeeProjectAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'project')
+    autocomplete_fields = ('employee', 'project')
+    list_filter = ('project',)
+    search_fields = ('employee__full_name', 'project__title')

@@ -1,0 +1,14 @@
+<form action="{% url 'change-employee-project' %}" method="post" id="projectForm">
+    {% csrf_token %}
+    {% for field in employee_project_form.visible_fields %}
+        <label for="">{{ field.label }}</label>
+        {{ field }}
+    {% endfor %}
+</form>
+
+<script>
+    document.getElementById('id_project').addEventListener('change', (event) => {
+        event.preventDefault()
+        document.getElementById('projectForm').submit()
+    })
+</script>

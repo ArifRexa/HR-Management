@@ -8,17 +8,38 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_http_methods
 
 from employee.forms.employee_online import EmployeeStatusForm
+from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeActivity, EmployeeOnline
+from employee.models.employee_activity import EmployeeProject
+
+white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127']
 
 
 @require_http_methods(['POST'])
 def change_status(request, *args, **kwargs):
-    if get_client_id(request) in ['103.180.244.213', '127.0.0.1', '134.209.155.127']:
+    if get_client_id(request) in white_listed_ips:
         employee_status = EmployeeOnline.objects.get(employee=request.user.employee)
         form = EmployeeStatusForm(request.POST, instance=employee_status)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your status has been change successfully')
+            return redirect('/admin/')
+        else:
+            messages.error(request, 'Something went wrong')
+            return redirect('/admin/')
+    else:
+        messages.error(request, 'You cannot change your activity status from out site office')
+        return redirect('/admin/')
+
+
+@require_http_methods(['POST'])
+def change_project(request, *args, **kwargs):
+    if get_client_id(request) in white_listed_ips:
+        employee_project = EmployeeProject.objects.get(employee=request.user.employee)
+        form = EmployeeProjectForm(request.POST, instance=employee_project)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your project has been changes successfully')
             return redirect('/admin/')
         else:
             messages.error(request, 'Something went wrong')

@@ -31,16 +31,23 @@
 
 {% block content_title %}
 
-    <div class="d-flex justify-content-between">
-        <div class="">
+    <div class="row">
+        <div class="col-md-6">
             {% if title %}
                 <h1>{{ title }}</h1>
             {% endif %}
         </div>
-        <div class="">
-            {% include 'admin/form/employee_status_form.html' %}
+        <div class="col-md-6">
+            <div class="d-flex justify-content-between">
+
+                {% include 'admin/form/employee_project_form.html' %}
+                {% include 'admin/form/employee_status_form.html' %}
+
+            </div>
         </div>
     </div>
+
+
 
 
 {% endblock %}
@@ -76,6 +83,23 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card rounded-0">
+                        <div class="card-header">Employee Projects</div>
+                        <div class="card-body p-0">
+                            <ol class="list-group rounded-0">
+                                {% for employee_project in employee_projects %}
+                                    <li class="list-group-item">
+                                        {{ employee_project.employee }} | <b>{{ employee_project.project }}</b>
+                                    </li>
+                                {% endfor %}
+                            </ol>
+
+                        </div>
+                    </div>
+                </div>
+
                 {% if leaves.count > 0 %}
                     <div class="col-md-6 mb-4">
                         <div class="card rounded-0">

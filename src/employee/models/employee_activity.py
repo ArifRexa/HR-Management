@@ -8,6 +8,7 @@ from django.utils import timezone
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
+from project_management.models import Project
 
 
 class EmployeeOnline(TimeStampMixin, AuthorMixin):
@@ -55,3 +56,9 @@ class EmployeeActivity(TimeStampMixin, AuthorMixin):
     employee_attendance = models.ForeignKey(EmployeeAttendance, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
+
+
+class EmployeeProject(TimeStampMixin, AuthorMixin):
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, limit_choices_to={'active': True}, null=True,
+                                blank=True)

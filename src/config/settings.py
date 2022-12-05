@@ -86,7 +86,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'config.context_processors.employees.formal_summery',
-                'config.context_processors.employees.employee_status_form'
+                'config.context_processors.employees.employee_status_form',
+                'config.context_processors.employees.employee_project_form'
             ],
         },
     },
