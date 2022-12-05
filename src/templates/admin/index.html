@@ -60,8 +60,12 @@
     <div class="row">
         <div class="col-md-4">
             {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+
+            {% block extra_menu %}
+
+            {% endblock %}
         </div>
-        <div class="col-md-4">
+        <div class="col-md-8">
             <div class="row">
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
@@ -203,40 +207,7 @@
 
             </div>
         </div>
-        <div class="col-md-4">
 
-
-            <div class="card rounded-0">
-                <div class="card-header rounded-0">Recent actions</div>
-
-                <div class="card-body">
-                    {% load log %}
-                    {% get_admin_log 10 as admin_log for_user user %}
-                    {% if not admin_log %}
-                        <p>{% translate 'None available' %}</p>
-                    {% else %}
-                        <ul class="actionlist">
-                            {% for entry in admin_log %}
-                                <li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
-                                    {% if entry.is_deletion or not entry.get_admin_url %}
-                                        {{ entry.object_repr }}
-                                    {% else %}
-                                        <a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-                                    {% endif %}
-                                    <br>
-                                    {% if entry.content_type %}
-                                        <span class="mini quiet">{% filter capfirst %}
-                                            {{ entry.content_type.name }}{% endfilter %}</span>
-                                    {% else %}
-                                        <span class="mini quiet">{% translate 'Unknown content' %}</span>
-                                    {% endif %}
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- JavaScript Bundle with Popper -->
@@ -261,6 +232,11 @@
             })
 
         }
+    </script>
+    <script>
+        setInterval(() => {
+            window.location.reload()
+        }, 50000)
     </script>
 {% endblock %}
 
