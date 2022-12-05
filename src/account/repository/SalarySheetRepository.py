@@ -233,6 +233,8 @@ class SalarySheetRepository:
         return -emi_amount['emi__sum'] if emi_amount['emi__sum'] else 0.0
 
     def __calculate_food_allowance(self, employee, salary_date: datetime.date):
+        if not employee.lunch_allowance:
+            return 0.0
         date_range = calendar.monthrange(salary_date.year, salary_date.month)
         import datetime
         start_date = datetime.date(salary_date.year, salary_date.month, date_range[0])
