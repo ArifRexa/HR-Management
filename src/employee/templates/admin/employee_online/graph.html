@@ -91,8 +91,24 @@
             },
             tooltip: {
                 formatter: function () {
-                    return 'Active From<b>' + moment(this.x).format('LT') +
-                        '</b> to <b>' + moment(this.x2).format('LT') + '</b>';
+
+                    let y = this.y, series = this.series, activeTime = 0, breakTime = 0, first = -1, last = -1
+
+
+                    for (var i = 0; i < series.data.length; i++) {
+
+                        if (series.data[i].y == this.y) {
+                            activeTime += series.data[i].x2 - series.data[i].x;
+                            if (first == -1) first = i;
+                            last = i;
+                        }
+                    }
+                    breakTime = series.data[last].x2 - series.data[first].x - activeTime;
+
+                    console.log()
+
+                    return `Outside Office ${msToTime(breakTime)} <br> Inside Office ${msToTime(activeTime)}`
+
                 }
             },
             xAxis: {
@@ -122,6 +138,16 @@
             }]
 
         });
+
+        function msToTime(duration) {
+            let minutes = Math.floor((duration / (1000 * 60)) % 60),
+                hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+
+            return hours + ":" + minutes;
+        }
     </script>
 
     <script>
