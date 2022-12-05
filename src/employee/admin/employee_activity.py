@@ -89,7 +89,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     list_display = ('date', 'employee', 'entry_time', 'exit_time')
     date_hierarchy = 'date'
     list_filter = ('employee',)
-    search_fields = ('employee', 'date')
+    search_fields = ('employee__full_name', 'date')
     autocomplete_fields = ('employee',)
 
 
