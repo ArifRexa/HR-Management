@@ -26,22 +26,19 @@ def save_employee_attendance(sender, **kwargs):
     # TODO : set data in employee attendance if it's first attempt of active
     attendance, created = EmployeeAttendance.objects.get_or_create(
         employee=instance.employee,
-        defaults={'date': datetime.datetime.today().date()}
+        date=timezone.now().date(),
+        defaults={'date': timezone.now().date()}
     )
-    print(attendance)
-    print(instance.active)
     if instance.active:
         EmployeeActivity.objects.create(
             employee_attendance=attendance,
             start_time=datetime.datetime.now()
         )
-        print('created employee activity')
     else:
         activity = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True).first()
         if activity:
             activity.end_time = datetime.datetime.now()
             activity.save()
-            print('completed employee activity')
 
 
 class EmployeeAttendance(TimeStampMixin, AuthorMixin):
