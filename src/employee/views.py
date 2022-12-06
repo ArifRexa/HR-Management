@@ -12,7 +12,7 @@ from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeActivity, EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
 
-white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127']
+white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 
 
 @require_http_methods(['POST'])
