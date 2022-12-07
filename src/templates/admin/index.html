@@ -95,12 +95,21 @@
                             <ol class="list-group rounded-0">
                                 {% for employee_project in employee_projects %}
                                     <li class="list-group-item">
-                                        {% if employee_project.project %}
+                                        {% if employee_project.project.all|length %}
                                             <span style="color: green">🟢</span>
                                         {% else %}
                                             <span>🔴</span>
                                         {% endif %}
-                                        {{ employee_project.employee }} | <b>{{ employee_project.project }}</b>
+
+                                        {{ employee_project.employee }}
+
+                                        {% for project in employee_project.project.all %}
+                                            | <b>{{ project.title }}</b>
+                                        {% endfor %}
+                                        
+                                        {% if not employee_project.project.all|length %}
+                                            | <b>None</b>
+                                        {% endif %}
                                     </li>
                                 {% endfor %}
                             </ol>
