@@ -106,7 +106,7 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeProject)
 class EmployeeProjectAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'project')
+    # list_display = ('employee', 'project')
     autocomplete_fields = ('employee', 'project')
     list_filter = ('project',)
     search_fields = ('employee__full_name', 'project__title')

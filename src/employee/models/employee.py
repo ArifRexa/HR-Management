@@ -39,6 +39,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     active = models.BooleanField(default=True)
     show_in_web = models.BooleanField(default=True)
     lunch_allowance = models.BooleanField(default=True)
+    project_eligibility = models.BooleanField(default=True)
     list_order = models.IntegerField(default=100)
 
     def __str__(self):

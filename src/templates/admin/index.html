@@ -31,18 +31,20 @@
 
 {% block content_title %}
 
-    <div class="row">
+    <div class="row mb-4">
         <div class="col-md-6">
             {% if title %}
                 <h1>{{ title }}</h1>
             {% endif %}
         </div>
         <div class="col-md-6">
-            <div class="d-flex justify-content-between">
-
-                {% include 'admin/form/employee_project_form.html' %}
-                {% include 'admin/form/employee_status_form.html' %}
-
+            <div class="row">
+                <div class="col-lg-9 text-end">
+                    {% include 'admin/form/employee_project_form.html' %}
+                </div>
+                <div class="col-lg-3">
+                    {% include 'admin/form/employee_status_form.html' %}
+                </div>
             </div>
         </div>
     </div>
@@ -95,12 +97,21 @@
                             <ol class="list-group rounded-0">
                                 {% for employee_project in employee_projects %}
                                     <li class="list-group-item">
-                                        {% if employee_project.project %}
+                                        {% if employee_project.project_exists %}
                                             <span style="color: green">🟢</span>
                                         {% else %}
                                             <span>🔴</span>
                                         {% endif %}
-                                        {{ employee_project.employee }} | <b>{{ employee_project.project }}</b>
+
+                                        {{ employee_project.employee }}
+
+                                        {% for project in employee_project.project.all %}
+                                            | <b>{{ project.title }}</b>
+                                        {% endfor %}
+                                        
+                                        {% if not employee_project.project_exists %}
+                                            | <b>None</b>
+                                        {% endif %}
                                     </li>
                                 {% endfor %}
                             </ol>

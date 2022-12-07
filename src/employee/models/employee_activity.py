@@ -60,5 +60,4 @@ class EmployeeActivity(TimeStampMixin, AuthorMixin):
 
 class EmployeeProject(TimeStampMixin, AuthorMixin):
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, limit_choices_to={'active': True}, null=True,
-                                blank=True)
+    project = models.ManyToManyField(Project, limit_choices_to={'active': True}, blank=True)

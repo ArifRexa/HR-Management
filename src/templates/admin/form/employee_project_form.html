@@ -1,14 +1,54 @@
-<form action="{% url 'change-employee-project' %}" method="post" id="projectForm">
+{% if user.employee.project_eligibility %}
+
+<style>
+    #projectForm {
+        margin-left: auto;
+    }
+</style>
+
+<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
     {% csrf_token %}
+    
     {% for field in employee_project_form.visible_fields %}
-        <label for="">{{ field.label }}</label>
+        <label for="" class="me-2">{{ field.label }}</label>
+        <select name="" id="id_project_s" class="" style="width: 250px;">
+            <option value>-----</option>
+            {% for option in field %}
+                {{ option }}
+            {% endfor %}
+        </select>
         {{ field }}
     {% endfor %}
+    <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1">
 </form>
 
 <script>
-    document.getElementById('id_project').addEventListener('change', (event) => {
+    // document.getElementById('id_project').addEventListener('change', (event) => {
+    //     event.preventDefault()
+    //     document.getElementById('projectForm').submit()
+    // })
+
+    const id_project = document.getElementById('id_project');
+    const id_project_s = document.getElementById('id_project_s');
+
+    id_project_s.addEventListener('change', (event) => {
         event.preventDefault()
-        document.getElementById('projectForm').submit()
-    })
+
+        for(let i=0; i<id_project.length; i++) {
+            const option = id_project[i];
+            if(option.value == event.target.value) {
+                option.selected = !option.selected;
+                event.target[i+1].text = event.target[i+1].text.replace('✓ ', '');
+                if(option.selected)
+                    event.target[i+1].text = '✓ ' + event.target[i+1].text;
+            }
+        }
+    });
+
+    id_project_s.selectedIndex = 0;
+    for(let i=0; i<id_project.length; i++)
+        if(id_project[i].selected) id_project_s[i+1].text = '✓ ' + id_project_s[i+1].text
+
 </script>
+
+{% endif %}
