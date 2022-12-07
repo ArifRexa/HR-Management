@@ -12,12 +12,13 @@ def formal_summery(request):
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True).order_by('active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
     employee_projects = EmployeeProject.objects.filter(
-        employee__active=True).annotate(project_exists=ExpressionWrapper(
-                                            Count("project"),
-                                            output_field=BooleanField()
-                                        )
-                                ).order_by('project_exists', 'employee__full_name'
-                                ).exclude(employee_id__in=employee_ids).all()
+        employee__active=True, employee__project_eligibility=True
+        ).annotate(project_exists=ExpressionWrapper(
+                    Count("project"),
+                    output_field=BooleanField()
+                )
+        ).order_by('project_exists', 'employee__full_name'
+        ).exclude(employee_id__in=employee_ids).all()
 
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
