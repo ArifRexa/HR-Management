@@ -1,9 +1,15 @@
-<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" style="padding-bottom: 1rem;">
+<style>
+    #projectForm {
+        margin-left: auto;
+    }
+</style>
+
+<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
     {% csrf_token %}
     
     {% for field in employee_project_form.visible_fields %}
-        <label for="">{{ field.label }}</label>
-        <select name="" id="id_project_s" style="width: 250px;">
+        <label for="" class="me-2">{{ field.label }}</label>
+        <select name="" id="id_project_s" class="" style="width: 250px;">
             <option value>-----</option>
             {% for option in field %}
                 {{ option }}
@@ -11,7 +17,7 @@
         </select>
         {{ field }}
     {% endfor %}
-    <input type="submit" value="Submit">
+    <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1">
 </form>
 
 <script>
