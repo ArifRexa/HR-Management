@@ -10,4 +10,4 @@ class EmployeeProjectForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(EmployeeProjectForm, self).__init__(*args, **kwargs)
-        #self.fields['project'].widget.attrs.update({'hidden': 'hidden'})
+        self.fields['project'].widget.attrs.update({'hidden': 'hidden'})

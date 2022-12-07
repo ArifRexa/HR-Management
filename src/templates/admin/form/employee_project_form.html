@@ -1,9 +1,9 @@
-<form action="{% url 'change-employee-project' %}" method="post" id="projectForm">
+<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" style="padding-bottom: 1rem;">
     {% csrf_token %}
     
     {% for field in employee_project_form.visible_fields %}
         <label for="">{{ field.label }}</label>
-        <select name="" id="id_project_s">
+        <select name="" id="id_project_s" style="width: 250px;">
             <option value>-----</option>
             {% for option in field %}
                 {{ option }}
@@ -20,25 +20,24 @@
     //     document.getElementById('projectForm').submit()
     // })
 
-    document.getElementById('id_project_s').addEventListener('change', (event) => {
+    const id_project = document.getElementById('id_project');
+    const id_project_s = document.getElementById('id_project_s');
+
+    id_project_s.addEventListener('change', (event) => {
         event.preventDefault()
-        console.log(event.target.value);
-        const id_project = document.getElementById('id_project');
-        for(let i=0; i<id_project.length; i++)
-        {
+
+        for(let i=0; i<id_project.length; i++) {
             const option = id_project[i];
             if(option.value == event.target.value) {
                 option.selected = !option.selected;
-
+                event.target[i+1].text = event.target[i+1].text.replace('✓ ', '');
                 if(option.selected)
                     event.target[i+1].text = '✓ ' + event.target[i+1].text;
-                else
-                    event.target[i+1].text = event.target[i+1].text.split('✓ ')[1];
             }
         }
-
     });
 
-    const id_project = document.getElementById('id_project');
+    for(let i=0; i<id_project.length; i++)
+        if(id_project[i].selected) id_project_s[i+1].text = '✓ ' + id_project_s[i+1].text
 
 </script>
