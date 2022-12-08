@@ -48,7 +48,7 @@ class EmployeeDetails(admin.ModelAdmin):
     list_filter = ('active',)
     search_fields = ('employee__full_name', 'employee__phone')
 
-    @admin.display(description='Designation')
+    @admin.display(description='Designation', ordering='employee__designation')
     def get_designation(self, obj: EmployeeLunch):
         return obj.employee.designation
 
@@ -56,7 +56,7 @@ class EmployeeDetails(admin.ModelAdmin):
     def get_phone(self, obj: EmployeeLunch):
         return obj.employee.phone
 
-    @admin.display(description='Blood Group')
+    @admin.display(description='Blood Group', ordering='employee__blood_group')
     def get_blood_group(self, obj: EmployeeLunch):
         return obj.employee.blood_group
 
