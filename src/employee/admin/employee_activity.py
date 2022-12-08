@@ -43,7 +43,7 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
         employee_online_urls = [
             path('employee-online-graph/', self.admin_site.admin_view(self.graph),
                  name='employee.online.graph'),
-            path('employee-online-graph/<str:date>/', self.admin_site.admin_view(self.graph)),
+            # path('employee-online-graph/<str:date>/', self.admin_site.admin_view(self.graph)),
             path('save-employee-online-status/', self.save_status)
         ]
 
@@ -58,8 +58,9 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
 
     def graph(self, request, *args, **kwargs):
         target_date = timezone.now().date()
-        if 'date' in kwargs and parse_date(kwargs['date']) is not None:
-            target_date = parse_date(kwargs['date'])
+
+        if 'date' in request.GET and parse_date(request.GET.get('date')):
+            target_date = parse_date(request.GET.get('date'))
 
         employee_attendance = EmployeeAttendance.objects.filter(date=target_date).all()
         graph_data = []
