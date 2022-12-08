@@ -22,6 +22,13 @@
             background-color: #f8d7da;
             border-color: #f5c2c7;
         }
+
+        @media screen and (min-width: 768px) and (max-width: 991px) {
+            .title-h1{
+                font-size: 24px;
+            }
+        }
+        
     </style>
 {% endblock %}
 
@@ -32,24 +39,31 @@
 {% block content_title %}
 
     <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-5 d-flex justify-content-center justify-content-md-start align-items-center">
             {% if title %}
-                <h1>{{ title }}</h1>
+                <h2 class="title-h1 mb-0">{{ title }}</h2>
             {% endif %}
         </div>
-        <div class="col-md-6">
-            <div class="row">
-                <div class="col-lg-8 text-end">
-                    {% include 'admin/form/employee_project_form.html' %}
-                </div>
-                <div class="col-lg-4 text-center">
-                    {% include 'admin/form/employee_status_form.html' %}
-                </div>
+        <div class="col-md-7">
+           <div class="d-flex justify-content-md-end align-items-center gap-2 mt-3 mt-md-0 flex-wrap flex-sm-nowrap justify-content-center justify-content-md-start">
+            <div>
+                {% include 'admin/form/employee_project_form.html' %}
+            </div>        
+            <div>                
+                {% include 'admin/form/employee_status_form.html' %}
             </div>
+           </div>
         </div>
     </div>
 
-
+    <!-- <div class="row">
+        <div class="col-lg-8 text-end">
+            {% include 'admin/form/employee_project_form.html' %}
+        </div>
+        <div class="col-lg-4 text-center">
+            {% include 'admin/form/employee_status_form.html' %}
+        </div>
+    </div> -->
 
 
 {% endblock %}

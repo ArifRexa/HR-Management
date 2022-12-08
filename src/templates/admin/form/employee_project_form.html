@@ -1,16 +1,11 @@
 {% if user.employee.project_eligibility %}
-<style>
-    #projectForm {
-        margin-left: auto;
-    }
-</style>
 
-<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1" style="margin-top: 0.5rem !important;">
+<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
     {% csrf_token %}
-    <div class="d-flex flex-wrap justify-content-start justify-content-sm-end justify-content-md-end justify-content-lg-start justify-content-xl-end">
+    <div class="d-flex align-items-center">
     {% for field in employee_project_form.visible_fields %}
-        <label for="" class="align-self-start me-2">{{ field.label }}</label>
-        <select name="" id="id_project_s" style="max-width: 16rem;">
+        <label for="" class="me-2">{{ field.label }}</label>
+        <select name="" id="id_project_s" style="max-width: 13rem;">
             <option value>-----</option>
             {% for option in field %}
                 {{ option }}
@@ -18,7 +13,7 @@
         </select>
         {{ field }}
     {% endfor %}
-    <div class="flex-grow-1 flex-sm-grow-0 flex-lg-grow-1 flex-xl-grow-0 text-center text-lg-center">
+    <div class="text-lg-center">
         <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1 my-1 my-xl-0 px-sm-2">
     </div>
     </div> 
