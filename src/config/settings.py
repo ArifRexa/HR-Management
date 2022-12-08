@@ -229,3 +229,4 @@ X_FRAME_OPTIONS = 'ALLOW-FROM http://localhost'
 DOWNLOAD_PDF = os.environ.get('DOWNLOAD_PDF', True).lower() in ('true', 1, 't')
 
 white_listed_ips = os.environ.get('WHITELISTED_IP', '103.180.244.213, 127.0.0.1, 134.209.155.127, 45.248.149.252').split(', ')
+employee_ids = os.environ.get('MANAGEMENT_EMPLOYEE_IDS', '7, 30, 76, 49').split(', ')

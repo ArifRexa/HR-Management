@@ -1,4 +1,3 @@
-{% if not user.employee.manager %}
 <form action="{% url 'change-active-status' %}" method="post" id="statusForm">
     {% csrf_token %}
     {% for field in status_form.visible_fields %}
@@ -16,4 +15,3 @@
         {{ field.errors }}
     {% endfor %}
 </form>
-{% endif %}
