@@ -43,37 +43,26 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
 
 
 @admin.register(EmployeeLunch)
-class EmployeeLunchAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'get_designation', 'get_phone', 'get_blood_group', 'get_lunch_status')
+class EmployeeDetails(admin.ModelAdmin):
+    list_display = ('employee', 'get_designation', 'get_phone', 'get_blood_group')
     list_filter = ('active',)
     search_fields = ('employee__full_name', 'employee__phone')
 
-    @admin.display(description='Designation')
+    @admin.display(description='Designation', ordering='employee__designation')
     def get_designation(self, obj: EmployeeLunch):
         return obj.employee.designation
-
-    @admin.display(boolean=True, description='Lunch Status')
-    def get_lunch_status(self, obj):
-        return obj.active
 
     @admin.display(description='Phone')
     def get_phone(self, obj: EmployeeLunch):
         return obj.employee.phone
 
-    @admin.display(description='Blood Group')
+    @admin.display(description='Blood Group', ordering='employee__blood_group')
     def get_blood_group(self, obj: EmployeeLunch):
         return obj.employee.blood_group
 
     def get_queryset(self, request):
-        queryset = super(EmployeeLunchAdmin, self).get_queryset(request)
+        queryset = super(EmployeeDetails, self).get_queryset(request)
         return queryset.filter(employee__active=True)
-
-    # def get_queryset(self, request):
-    #     queryset = super(EmployeeLunchAdmin, self).get_queryset(request)
-    #     if request.user.is_superuser or request.user.has_perm('employee.can_see_all_lunch'):
-    #         return queryset.filter(employee__active=True)
-    #     else:
-    #         return queryset.filter(employee_id=request.user.employee.id)
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
