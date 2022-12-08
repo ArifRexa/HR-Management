@@ -1,4 +1,4 @@
-{% if user.employee.project_eligibility %}
+{% if user.employee.project_eligibility and employee_project_form%}
 
 <form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
     {% csrf_token %}
