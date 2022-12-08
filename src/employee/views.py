@@ -11,8 +11,9 @@ from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeActivity, EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
+from config.settings import white_listed_ips
 
-white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
+# white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 
 
 @require_http_methods(['POST'])
@@ -34,19 +35,20 @@ def change_status(request, *args, **kwargs):
 
 @require_http_methods(['POST'])
 def change_project(request, *args, **kwargs):
-    if get_client_id(request) in white_listed_ips:
-        employee_project = EmployeeProject.objects.get(employee=request.user.employee)
-        form = EmployeeProjectForm(request.POST, instance=employee_project)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Your project has been changes successfully')
-            return redirect('/admin/')
-        else:
-            messages.error(request, 'Something went wrong')
-            return redirect('/admin/')
-    else:
-        messages.error(request, 'You cannot change your activity status from out site office')
+    # if request.user.has_perm('employee.can_see_all_break'):
+    employee_project = EmployeeProject.objects.get(employee=request.user.employee)
+    form = EmployeeProjectForm(request.POST, instance=employee_project)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Your project has been changes successfully')
         return redirect('/admin/')
+    else:
+        messages.error(request, 'Something went wrong')
+        return redirect('/admin/')
+
+# else:
+#     messages.error(request, 'You can not change Employee Project from outside of office')
+#     return redirect('/admin/')
 
 
 def get_client_id(request):
