@@ -40,12 +40,12 @@ def employee_status_form(request):
 
 
 def employee_project_form(request):
-    if request.user.is_authenticated:
+    if request.user.is_authenticated and request.user.employee.id not in employee_ids:
         employee_project = EmployeeProject.objects.get(employee_id=request.user.employee.id)
         return {
             'employee_project_form': EmployeeProjectForm(instance=employee_project)
         }
     else:
         return {
-            'employee_project_form': EmployeeProjectForm()
+            'employee_project_form': None
         }
