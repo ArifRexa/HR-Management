@@ -7,10 +7,6 @@
                    name="{{ field.name }}"
                    style="padding: 0.9rem 2rem"
                    id="flexSwitchCheckChecked" {% if field.value %} checked {% endif %}>
-            <label class="form-check-label" style="margin: 0.5rem 0.5rem"
-                   for="flexSwitchCheckChecked">
-                {% if field.value %} Inside Office {% else %} OutSide Office {% endif %}
-            </label>
         </div>
         {{ field.errors }}
     {% endfor %}
