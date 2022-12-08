@@ -28,7 +28,7 @@ def formal_summery(request):
 
 
 def employee_status_form(request):
-    if request.user.is_authenticated and request.user.employee.id not in employee_ids:
+    if request.user.is_authenticated and str(request.user.employee.id) not in employee_ids:
         employee_online = EmployeeOnline.objects.get(employee_id=request.user.employee.id)
         return {
             'status_form': EmployeeStatusForm(instance=employee_online)
@@ -40,7 +40,7 @@ def employee_status_form(request):
 
 
 def employee_project_form(request):
-    if request.user.is_authenticated and request.user.employee.id not in employee_ids:
+    if request.user.is_authenticated and not str(request.user.employee.id) in employee_ids:
         employee_project = EmployeeProject.objects.get(employee_id=request.user.employee.id)
         return {
             'employee_project_form': EmployeeProjectForm(instance=employee_project)

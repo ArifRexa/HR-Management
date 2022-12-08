@@ -22,7 +22,7 @@ def change_status(request, *args, **kwargs):
         messages.error(request, 'You cannot change your activity status from out site office')
         return redirect('/admin/')
 
-    if request.user.employee.id in employee_ids:
+    if str(request.user.employee.id) in employee_ids:
         messages.error(request, 'Management should not use activity status')
         return redirect('/admin/')
 
@@ -39,6 +39,10 @@ def change_status(request, *args, **kwargs):
 
 @require_http_methods(['POST'])
 def change_project(request, *args, **kwargs):
+    if str(request.user.employee.id) in employee_ids:
+        messages.error(request, 'Management should not use select or change project')
+        return redirect('/admin/')
+
     employee_project = EmployeeProject.objects.get(employee=request.user.employee)
     form = EmployeeProjectForm(request.POST, instance=employee_project)
     if form.is_valid():
