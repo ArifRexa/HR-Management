@@ -1,4 +1,4 @@
-from django.db.models import Count, F, ExpressionWrapper, Q, BooleanField
+from django.db.models import Count, F, ExpressionWrapper, Q, BooleanField, Case, When, Value
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
@@ -11,21 +11,29 @@ def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True).order_by('active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
-    employee_projects = EmployeeProject.objects.filter(employee__active=True, employee__project_eligibility=True
-                                                       ).annotate(project_exists=ExpressionWrapper(
-                                                        Count("project"), output_field=BooleanField())
+    
+    employee_projects = EmployeeProject.objects.filter(
+        employee__active=True, employee__project_eligibility=True
+    ).annotate(
+        project_count=Count("project")
+    ).annotate(
+        project_exists=Case(
+            When(project_count=0, then=Value(False)), 
+            default=Value(True),
+            output_field=BooleanField()
+        )
     ).order_by('project_exists', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
 
+    order_keys = {
+        '1': 'employee__full_name',
+        '-1': '-employee__full_name',
+        '2': 'project_count',
+        '-2': '-project_count',
+    }
 
-    pFilter = request.GET.get('filter__projects', None)
-    if pFilter:
-        if pFilter == 'by_name_asc':
-            employee_projects = employee_projects.order_by('employee__full_name')
-        elif pFilter == 'by_name_desc':
-            employee_projects = employee_projects.order_by('-employee__full_name')
-        elif pFilter == 'by_project':
-            # TODO: Sort Employee by Projects
-            pass
+    order_by = request.GET.get('o', None)
+    if order_by:
+        employee_projects = employee_projects.order_by('project_exists', order_keys.get(order_by, '1'))
 
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
@@ -35,7 +43,7 @@ def formal_summery(request):
         "anniversaries": employee_formal_summery.anniversaries,
         'employee_offline': employee_offline,
         "employee_projects": employee_projects,
-        "project_filter_by": pFilter,
+        "o": order_by,
     }
 
 

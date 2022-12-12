@@ -108,9 +108,9 @@
                     <div class="card rounded-0">
                         <div class="card-header">Employee Projects</div>
                         <div class="card-body p-0">
-                            <table class="table table-striped">
+                            <table class="table table-stripe">
                                 <thead>
-                                    <tr>
+                                    <tr class="">
                                         <th scope="col">
                                             <div class="text">
                                                 <span href="#">#</span>
@@ -118,16 +118,20 @@
                                         </th>
                                         <th scope="col" class="sortable">
                                             <div class="text">
-                                                {% if project_filter_by == 'by_name_asc' %}
-                                                    <a href="?filter__projects=by_name_desc">Employee Name</a>
+                                                {% if o == '1' %}
+                                                    <a href="?o=-1">Employee Name</a>
                                                 {% else %}
-                                                    <a href="?filter__projects=by_name_asc">Employee Name</a>
+                                                    <a href="?o=1">Employee Name</a>
                                                 {% endif %}
                                             </div>
                                         </th>
                                         <th scope="col" class="sortable">
                                             <div class="text">
-                                                <a href="#">Projects</a>
+                                                {% if o == '2' %}
+                                                    <a href="?o=-2">Projects</a>
+                                                {% else %}
+                                                    <a href="?o=2">Projects</a>
+                                                {% endif %}
                                             </div>
                                         </th>
                                     </tr>
