@@ -1,4 +1,4 @@
-from django.db.models import Count, F, ExpressionWrapper, Q, BooleanField, Case, When, Value
+from django.db.models import Count, F, ExpressionWrapper, Q, BooleanField, Case, When, Value, Min
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
@@ -15,7 +15,8 @@ def formal_summery(request):
     employee_projects = EmployeeProject.objects.filter(
         employee__active=True, employee__project_eligibility=True
     ).annotate(
-        project_count=Count("project")
+        project_count=Count("project"),
+        project_order=Min("project"),
     ).annotate(
         project_exists=Case(
             When(project_count=0, then=Value(False)), 
@@ -27,8 +28,8 @@ def formal_summery(request):
     order_keys = {
         '1': 'employee__full_name',
         '-1': '-employee__full_name',
-        '2': 'project_count',
-        '-2': '-project_count',
+        '2': 'project_order',
+        '-2': '-project_order',
     }
 
     order_by = request.GET.get('o', None)
