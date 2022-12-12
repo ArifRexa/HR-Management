@@ -215,7 +215,7 @@ TINYMCE_DEFAULT_CONFIG = {
                "bold italic backcolor forecolor | alignleft aligncenter "
                "alignright alignjustify | bullist numlist outdent indent table | "
                "removeformat codesample image | preview fullscreen help",
-    "contextmenu": "paste | link"
+    "contextmenu": "copy | paste | link"
 }
 
 TINYMCE_SPELLCHECKER = True
