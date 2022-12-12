@@ -16,6 +16,17 @@ def formal_summery(request):
                                                         Count("project"), output_field=BooleanField())
     ).order_by('project_exists', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
 
+
+    pFilter = request.GET.get('filter__projects', None)
+    if pFilter:
+        if pFilter == 'by_name_asc':
+            employee_projects = employee_projects.order_by('employee__full_name')
+        elif pFilter == 'by_name_desc':
+            employee_projects = employee_projects.order_by('-employee__full_name')
+        elif pFilter == 'by_project':
+            # TODO: Sort Employee by Projects
+            pass
+
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
         "birthdays": employee_formal_summery.birthdays,
@@ -23,7 +34,8 @@ def formal_summery(request):
         "permanents": employee_formal_summery.permanents,
         "anniversaries": employee_formal_summery.anniversaries,
         'employee_offline': employee_offline,
-        "employee_projects": employee_projects
+        "employee_projects": employee_projects,
+        "project_filter_by": pFilter,
     }
 
 

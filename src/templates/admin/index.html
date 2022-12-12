@@ -108,28 +108,63 @@
                     <div class="card rounded-0">
                         <div class="card-header">Employee Projects</div>
                         <div class="card-body p-0">
-                            <ol class="list-group rounded-0">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">
+                                            <div class="text">
+                                                <span href="#">#</span>
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="sortable">
+                                            <div class="text">
+                                                {% if project_filter_by == 'by_name_asc' %}
+                                                    <a href="?filter__projects=by_name_desc">Employee Name</a>
+                                                {% else %}
+                                                    <a href="?filter__projects=by_name_asc">Employee Name</a>
+                                                {% endif %}
+                                            </div>
+                                        </th>
+                                        <th scope="col" class="sortable">
+                                            <div class="text">
+                                                <a href="#">Projects</a>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                 {% for employee_project in employee_projects %}
-                                    <li class="list-group-item">
-                                        {% if employee_project.project_exists %}
-                                            <span style="color: green">🟢</span>
-                                        {% else %}
-                                            <span>🔴</span>
-                                        {% endif %}
-
-                                        {{ employee_project.employee }}
-
-                                        {% for project in employee_project.project.all %}
-                                            | <b>{{ project.title }}</b>
-                                        {% endfor %}
-                                        
-                                        {% if not employee_project.project_exists %}
-                                            | <b>None</b>
-                                        {% endif %}
-                                    </li>
+                                    <tr>
+                                        <td>
+                                            <div class="text">
+                                                {% if employee_project.project_exists %}
+                                                    <span style="color: green">🟢</span>
+                                                {% else %}
+                                                    <span>🔴</span>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text">
+                                                {{ employee_project.employee }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="text">
+                                                {% for project in employee_project.project.all %}
+                                                    {% if forloop.counter0 != 0 %} | {% endif %}
+                                                    <b>{{ project.title }}</b>
+                                                {% endfor %}
+                                                
+                                                {% if not employee_project.project_exists %}
+                                                    <b>None</b>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
                                 {% endfor %}
-                            </ol>
-
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
