@@ -14,14 +14,14 @@ def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True).order_by('active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
-    
+
     employee_projects = EmployeeProject.objects.filter(
         employee__active=True, employee__project_eligibility=True
     ).annotate(
         project_count=Count("project"),
         project_order=Min("project"),
         project_exists=Case(
-            When(project_count=0, then=Value(False)), 
+            When(project_count=0, then=Value(False)),
             default=Value(True),
             output_field=BooleanField()
         )
@@ -85,7 +85,6 @@ def get_managed_birthday_image(request):
     else:
         birthday = False
         if not request.user.employee.birthday_image_shown:
-
             if request.user.employee.date_of_birth == datetime.today().date():
                 birthday = request.user.employee.birthday_image.url
                 request.user.employee.birthday_image_shown = True
