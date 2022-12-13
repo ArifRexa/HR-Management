@@ -17,7 +17,6 @@ def formal_summery(request):
     ).annotate(
         project_count=Count("project"),
         project_order=Min("project"),
-    ).annotate(
         project_exists=Case(
             When(project_count=0, then=Value(False)), 
             default=Value(True),

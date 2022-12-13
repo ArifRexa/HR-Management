@@ -116,7 +116,7 @@
                         <div class="card-header">Employee Projects</div>
                         <div class="card-body p-0">
                             <table class="table table-stripe">
-                                <tbody>
+                                <thead>
                                     <tr class="projects__row">
                                         <th scope="col" class="sortable">
                                             <div class="text">
@@ -137,8 +137,8 @@
                                             </div>
                                         </th>
                                     </tr>
-                                
-                                
+                                </thead>
+                                <tbody
                                 {% for employee_project in employee_projects %}
                                     <tr class="projects__row">
                                         <td>
@@ -168,7 +168,7 @@
                                         </td>
                                     </tr>
                                 {% endfor %}
-                                </tbody>
+                                </thead>
                             </table>
                         </div>
                     </div>
