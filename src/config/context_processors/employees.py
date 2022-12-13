@@ -1,13 +1,20 @@
-from django.db.models import Count, F, ExpressionWrapper, Q, BooleanField, Case, When, Value, Min
+from django.db.models import Count, BooleanField, Case, When, Value, Min
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
 from config.settings import employee_ids
+from datetime import datetime
+from django.contrib.auth.models import AnonymousUser
 
 
 def formal_summery(request):
+    if isinstance(request.user, AnonymousUser):
+        birthday = False
+    else:
+        birthday = request.user.employee.date_of_birth == datetime.today().date()
+
     employee_formal_summery = EmployeeNearbySummery()
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True).order_by('active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
@@ -33,7 +40,11 @@ def formal_summery(request):
 
     order_by = request.GET.get('ord', None)
     if order_by:
-        employee_projects = employee_projects.order_by('project_exists', order_keys.get(order_by, '1'))
+        order_by_list = ['project_exists', order_keys.get(order_by, '1')]
+        if order_by not in ['1', '-1']:
+            order_by_list.append('employee__full_name')
+
+        employee_projects = employee_projects.order_by(*order_by_list)
 
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
@@ -44,6 +55,7 @@ def formal_summery(request):
         'employee_offline': employee_offline,
         "employee_projects": employee_projects,
         "ord": order_by,
+        "birthday_today": birthday,
     }
 
 
