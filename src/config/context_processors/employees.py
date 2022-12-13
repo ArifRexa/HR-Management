@@ -31,7 +31,7 @@ def formal_summery(request):
         '-2': '-project_order',
     }
 
-    order_by = request.GET.get('o', None)
+    order_by = request.GET.get('ord', None)
     if order_by:
         employee_projects = employee_projects.order_by('project_exists', order_keys.get(order_by, '1'))
 
@@ -43,7 +43,7 @@ def formal_summery(request):
         "anniversaries": employee_formal_summery.anniversaries,
         'employee_offline': employee_offline,
         "employee_projects": employee_projects,
-        "o": order_by,
+        "ord": order_by,
     }
 
 
