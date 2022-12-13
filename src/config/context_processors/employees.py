@@ -7,14 +7,10 @@ from employee.models.employee_activity import EmployeeProject
 from config.settings import employee_ids
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
+from employee.models.employee import Employee
 
 
 def formal_summery(request):
-    if isinstance(request.user, AnonymousUser):
-        birthday = False
-    else:
-        birthday = request.user.employee.date_of_birth == datetime.today().date()
-
     employee_formal_summery = EmployeeNearbySummery()
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True).order_by('active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
@@ -55,7 +51,7 @@ def formal_summery(request):
         'employee_offline': employee_offline,
         "employee_projects": employee_projects,
         "ord": order_by,
-        "birthday_today": birthday,
+        "birthday_today": get_managed_birthday_image(request),
     }
 
 
@@ -81,3 +77,20 @@ def employee_project_form(request):
         return {
             'employee_project_form': None
         }
+
+
+def get_managed_birthday_image(request):
+    if isinstance(request.user, AnonymousUser):
+        birthday = False
+    else:
+        birthday = False
+        if not request.user.employee.birthday_image_shown:
+
+            if request.user.employee.date_of_birth == datetime.today().date():
+                birthday = request.user.employee.birthday_image.url
+                request.user.employee.birthday_image_shown = True
+                request.user.employee.save()
+        else:
+            request.user.employee.birthday_image_shown = False
+            request.user.employee.save()
+    return birthday

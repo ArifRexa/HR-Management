@@ -42,6 +42,9 @@ class Employee(TimeStampMixin, AuthorMixin):
     project_eligibility = models.BooleanField(default=True)
     list_order = models.IntegerField(default=100)
 
+    birthday_image = models.ImageField(null=True, blank=True)
+    birthday_image_shown = models.BooleanField(default=False)
+
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
         return self.full_name
