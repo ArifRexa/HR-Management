@@ -147,7 +147,10 @@
                                                 {% else %}
                                                     <span>🔴</span>
                                                 {% endif %}
-                                                {{ employee_project.employee }} ( {{ employee_project.employee.top_one_skill.skill }} )
+                                                {{ employee_project.employee }}
+                                                {% if employee_project.employee.top_one_skill %}
+                                                ( {{ employee_project.employee.top_one_skill.skill }} )
+                                                {% endif %}
                                             </div>
                                         </td>
                                         <td>
