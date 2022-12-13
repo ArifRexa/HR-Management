@@ -52,6 +52,11 @@ class Employee(TimeStampMixin, AuthorMixin):
         return skills[:4]
 
     @property
+    def top_one_skill(self):
+        skills = self.employeeskill_set.order_by('-percentage').all()
+        return skills[0]
+
+    @property
     def default_bank(self):
         bank = self.bankaccount_set.filter(default=True).first()
         if bank:
