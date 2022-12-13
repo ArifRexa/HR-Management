@@ -28,6 +28,13 @@
                 font-size: 24px;
             }
         }
+
+        .projects__row:nth-child(odd) {
+            background: #f8f8f8;
+        }
+        .projects__row:nth-child(even) {
+            background: white;
+        }
         
     </style>
 {% endblock %}
@@ -109,36 +116,31 @@
                         <div class="card-header">Employee Projects</div>
                         <div class="card-body p-0">
                             <table class="table table-stripe">
-                                <thead>
-                                    <tr class="">
-                                        <th scope="col">
-                                            <div class="text">
-                                                <span href="#">#</span>
-                                            </div>
-                                        </th>
+                                <tbody>
+                                    <tr class="projects__row">
                                         <th scope="col" class="sortable">
                                             <div class="text">
                                                 {% if o == '1' %}
-                                                    <a href="?o=-1">Employee Name</a>
+                                                    <a class="text-decoration-none text-dark" href="?o=-1">Employee Name</a>
                                                 {% else %}
-                                                    <a href="?o=1">Employee Name</a>
+                                                    <a class="text-decoration-none text-dark" href="?o=1">Employee Name</a>
                                                 {% endif %}
                                             </div>
                                         </th>
                                         <th scope="col" class="sortable">
                                             <div class="text">
                                                 {% if o == '2' %}
-                                                    <a href="?o=-2">Projects</a>
+                                                    <a class="text-decoration-none text-dark" href="?o=-2">Projects</a>
                                                 {% else %}
-                                                    <a href="?o=2">Projects</a>
+                                                    <a class="text-decoration-none text-dark" href="?o=2">Projects</a>
                                                 {% endif %}
                                             </div>
                                         </th>
                                     </tr>
-                                </thead>
-                                <tbody>
+                                
+                                
                                 {% for employee_project in employee_projects %}
-                                    <tr>
+                                    <tr class="projects__row">
                                         <td>
                                             <div class="text">
                                                 {% if employee_project.project_exists %}
@@ -146,10 +148,9 @@
                                                 {% else %}
                                                     <span>🔴</span>
                                                 {% endif %}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="text">
+                                                
+                                                &nbsp;
+
                                                 {{ employee_project.employee }}
                                             </div>
                                         </td>
