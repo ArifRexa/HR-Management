@@ -1,25 +1,27 @@
-from django.db.models import Count, F, ExpressionWrapper, Q, BooleanField, Case, When, Value, Min
+from django.db.models import Count, BooleanField, Case, When, Value, Min
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
 from config.settings import employee_ids
+from datetime import datetime
+from django.contrib.auth.models import AnonymousUser
+from employee.models.employee import Employee
 
 
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True).order_by('active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
-    
+
     employee_projects = EmployeeProject.objects.filter(
         employee__active=True, employee__project_eligibility=True
     ).annotate(
         project_count=Count("project"),
         project_order=Min("project"),
-    ).annotate(
         project_exists=Case(
-            When(project_count=0, then=Value(False)), 
+            When(project_count=0, then=Value(False)),
             default=Value(True),
             output_field=BooleanField()
         )
@@ -32,9 +34,13 @@ def formal_summery(request):
         '-2': '-project_order',
     }
 
-    order_by = request.GET.get('o', None)
+    order_by = request.GET.get('ord', None)
     if order_by:
-        employee_projects = employee_projects.order_by('project_exists', order_keys.get(order_by, '1'))
+        order_by_list = ['project_exists', order_keys.get(order_by, '1')]
+        if order_by not in ['1', '-1']:
+            order_by_list.append('employee__full_name')
+
+        employee_projects = employee_projects.order_by(*order_by_list)
 
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
@@ -44,7 +50,8 @@ def formal_summery(request):
         "anniversaries": employee_formal_summery.anniversaries,
         'employee_offline': employee_offline,
         "employee_projects": employee_projects,
-        "o": order_by,
+        "ord": order_by,
+        "birthday_today": get_managed_birthday_image(request),
     }
 
 
@@ -70,3 +77,19 @@ def employee_project_form(request):
         return {
             'employee_project_form': None
         }
+
+
+def get_managed_birthday_image(request):
+    if isinstance(request.user, AnonymousUser):
+        birthday = False
+    else:
+        birthday = False
+        if not request.user.employee.birthday_image_shown:
+            if request.user.employee.date_of_birth == datetime.today().date():
+                birthday = request.user.employee.birthday_image.url
+                request.user.employee.birthday_image_shown = True
+                request.user.employee.save()
+        else:
+            request.user.employee.birthday_image_shown = False
+            request.user.employee.save()
+    return birthday

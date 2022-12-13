@@ -28,6 +28,13 @@
                 font-size: 24px;
             }
         }
+
+        .projects__row:nth-child(odd) {
+            background: #f8f8f8;
+        }
+        .projects__row:nth-child(even) {
+            background: white;
+        }
         
     </style>
 {% endblock %}
@@ -99,7 +106,6 @@
                                     </li>
                                 {% endfor %}
                             </ol>
-
                         </div>
                     </div>
                 </div>
@@ -110,35 +116,30 @@
                         <div class="card-body p-0">
                             <table class="table table-stripe">
                                 <thead>
-                                    <tr class="">
-                                        <th scope="col">
-                                            <div class="text">
-                                                <span href="#">#</span>
-                                            </div>
-                                        </th>
+                                    <tr class="projects__row">
                                         <th scope="col" class="sortable">
                                             <div class="text">
-                                                {% if o == '1' %}
-                                                    <a href="?o=-1">Employee Name</a>
+                                                {% if ord == '1' %}
+                                                    <a class="text-decoration-none text-dark" href="?ord=-1">Employee Name</a>
                                                 {% else %}
-                                                    <a href="?o=1">Employee Name</a>
+                                                    <a class="text-decoration-none text-dark" href="?ord=1">Employee Name</a>
                                                 {% endif %}
                                             </div>
                                         </th>
                                         <th scope="col" class="sortable">
                                             <div class="text">
-                                                {% if o == '2' %}
-                                                    <a href="?o=-2">Projects</a>
+                                                {% if ord == '2' %}
+                                                    <a class="text-decoration-none text-dark" href="?ord=-2">Projects</a>
                                                 {% else %}
-                                                    <a href="?o=2">Projects</a>
+                                                    <a class="text-decoration-none text-dark" href="?ord=2">Projects</a>
                                                 {% endif %}
                                             </div>
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody
                                 {% for employee_project in employee_projects %}
-                                    <tr>
+                                    <tr class="projects__row">
                                         <td>
                                             <div class="text">
                                                 {% if employee_project.project_exists %}
@@ -146,11 +147,7 @@
                                                 {% else %}
                                                     <span>🔴</span>
                                                 {% endif %}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="text">
-                                                {{ employee_project.employee }}
+                                                {{ employee_project.employee }} ( {{ employee_project.employee.top_one_skill.skill }} )
                                             </div>
                                         </td>
                                         <td>
@@ -167,7 +164,7 @@
                                         </td>
                                     </tr>
                                 {% endfor %}
-                                </tbody>
+                                </thead>
                             </table>
                         </div>
                     </div>
@@ -255,6 +252,23 @@
 
                 {% endif %}
 
+                {% if birthday_today %}
+                <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary d-none" data-bs-toggle="modal" id="testModal" data-bs-target="#exampleModal">
+                      Launch demo modal
+                    </button>
+                    <!-- Modal -->
+                    <div class="modal fade " id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered modal-xl">
+                        <div class="modal-content overflow-hidden rounded">
+                          <div class="modal-body p-0">
+                            <img class="w-100 h-100" src="{{ birthday_today }}">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                {% endif %}
+
                 {% if anniversaries.count > 0 %}
                     <div class="col-md-6 mb-4">
                         <div class="card rounded-0">
@@ -273,11 +287,12 @@
                         </div>
                     </div>
                 {% endif %}
-
             </div>
         </div>
-
     </div>
+
+
+
 
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
@@ -299,8 +314,14 @@
             }).then((data) => {
                 console.log(data)
             })
-
         }
+            window.onload = function () {
+                let url = window.location.href;
+                console.log(url);
+                if(url == 'http://127.0.0.1:8000/admin/'){
+                    document.getElementById("testModal").click();
+                }
+            };
     </script>
     <script>
         setInterval(() => {
