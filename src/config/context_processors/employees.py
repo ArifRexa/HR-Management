@@ -79,16 +79,23 @@ def employee_project_form(request):
 
 
 def get_managed_birthday_image(request):
+    path = request.get_full_path()
+    if not path == '/admin/':
+        return False
+
     if isinstance(request.user, AnonymousUser):
         birthday = False
     else:
         birthday = False
         if request.user.employee.date_of_birth == datetime.today().date():
             if not request.user.employee.birthday_image_shown:
-                birthday = request.user.employee.birthday_image.url
+                try:
+                    birthday = request.user.employee.birthday_image.url
+                except:
+                    birthday = False
                 request.user.employee.birthday_image_shown = True
                 request.user.employee.save()
-        else:
-            request.user.employee.birthday_image_shown = False
-            request.user.employee.save()
+            else:
+                request.user.employee.birthday_image_shown = False
+                request.user.employee.save()
     return birthday

@@ -319,11 +319,16 @@
             })
         }
             window.onload = function () {
-                let url = window.location.href;
-                console.log(url);
-                if(url == 'http://127.0.0.1:8000/admin/'){
-                    document.getElementById("testModal").click();
-                }
+                isBirthday = "{{ birthday_today }}"
+
+                {% if birthday_today %}
+                    let url_path = window.location.pathname;
+                        if(url_path == '/admin/'){
+                            document.getElementById("testModal").click();
+                        }
+                {% endif %}
+
+
             };
     </script>
     <script>
