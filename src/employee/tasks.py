@@ -71,5 +71,9 @@ def execute_birthday_notification():
 
 
 def all_employee_offline():
-    EmployeeOnline.objects.filter(active=True).update(active=False)
+    employee_online = EmployeeOnline.objects.filter(active=True).all()
+    for ep in employee_online:
+        ep.active = False
+        ep.save()
+
     print('[Bot] All Employee Offline ', timezone.now())
