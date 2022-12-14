@@ -7,6 +7,7 @@ from employee.models.employee_activity import EmployeeProject
 from config.settings import employee_ids
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
+from employee.models.employee import Employee
 
 
 def formal_summery(request):
@@ -79,16 +80,21 @@ def employee_project_form(request):
 
 
 def get_managed_birthday_image(request):
+    path = request.get_full_path()
+    if not path == '/admin/':
+        return False
+
     if isinstance(request.user, AnonymousUser):
         birthday = False
     else:
         birthday = False
         if request.user.employee.date_of_birth == datetime.today().date():
             if not request.user.employee.birthday_image_shown:
-                birthday = request.user.employee.birthday_image.url
-                request.user.employee.birthday_image_shown = True
-                request.user.employee.save()
-        else:
-            request.user.employee.birthday_image_shown = False
-            request.user.employee.save()
+                try:
+                    birthday = request.user.employee.birthday_image.url
+                except:
+                    birthday = False
+                Employee.objects.filter(user=request.user).update(birthday_image_shown=True)
+            else:
+                Employee.objects.filter(user=request.user).update(birthday_image_shown=False)
     return birthday
