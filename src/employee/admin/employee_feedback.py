@@ -1,9 +1,16 @@
-from django.contrib import admin
+import datetime
+
+from django.contrib import admin, messages
 
 from django.urls import path
 
+from django.template.response import TemplateResponse
+
+from django.shortcuts import redirect
+
 from employee.models import EmployeeFeedback
-from employee.views import employee_feedback
+from employee.forms.employee_feedback import EmployeeFeedbackForm
+
 
 @admin.register(EmployeeFeedback)
 class EmployeeFeedbackAdmin(admin.ModelAdmin):
@@ -17,7 +24,35 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
         urls = super(EmployeeFeedbackAdmin, self).get_urls()
 
         employee_online_urls = [
-            path('employee-feedback/', employee_feedback, name='employee_feedback'),
+            path('employee-feedback/', self.employee_feedback, name='employee_feedback'),
         ]
 
         return employee_online_urls + urls
+
+    def employee_feedback(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            form = EmployeeFeedbackForm(request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Your feedback has been submitted successfully')
+                return redirect('/admin/')
+            else:
+                messages.error(request, 'Something went wrong')
+                return redirect('/admin/')
+        elif request.method == 'GET':
+
+            this_month = datetime.datetime.today().replace(day=1)
+
+            feedback = EmployeeFeedback.objects.filter(
+                employee=request.user.employee, 
+                created_at__gte=this_month
+            ).first()
+
+            form = EmployeeFeedbackForm(instance=feedback)
+
+            context = dict(
+                self.admin_site.each_context(request),
+                employee_feedback_form=form,
+            )
+            
+            return TemplateResponse(request, 'admin/form/employee_feedback_form.html', context)

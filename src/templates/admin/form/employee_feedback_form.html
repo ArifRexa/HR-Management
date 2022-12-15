@@ -1,5 +1,10 @@
 {% extends "admin/base_site.html" %}
-{% load i18n static %}
+
+{% block title %}
+    Employee Feedback
+{% endblock %}
+
+{% block content %}
 
 <form action="{% url 'admin:employee_feedback' %}" method="post" id="feedbackForm" class="m-1">
     {% csrf_token %}
@@ -14,4 +19,4 @@
     </div>
 </form>
 
-
+{% endblock %}
