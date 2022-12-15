@@ -30,9 +30,15 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
         return employee_online_urls + urls
 
     def employee_feedback(self, request, *args, **kwargs):
+        employee_feedback_obj = EmployeeFeedback.objects.filter(
+                employee=request.user.employee, 
+                created_at__gte=datetime.datetime.today().replace(day=1)
+            ).first()
         if request.method == 'POST':
-            form = EmployeeFeedbackForm(request.POST)
+            form = EmployeeFeedbackForm(request.POST, instance=employee_feedback_obj)
             if form.is_valid():
+                form = form.save(commit=False)
+                form.employee = request.user.employee
                 form.save()
                 messages.success(request, 'Your feedback has been submitted successfully')
                 return redirect('/admin/')
@@ -40,15 +46,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 messages.error(request, 'Something went wrong')
                 return redirect('/admin/')
         elif request.method == 'GET':
-
-            this_month = datetime.datetime.today().replace(day=1)
-
-            feedback = EmployeeFeedback.objects.filter(
-                employee=request.user.employee, 
-                created_at__gte=this_month
-            ).first()
-
-            form = EmployeeFeedbackForm(instance=feedback)
+            form = EmployeeFeedbackForm(instance=employee_feedback_obj)
 
             context = dict(
                 self.admin_site.each_context(request),
