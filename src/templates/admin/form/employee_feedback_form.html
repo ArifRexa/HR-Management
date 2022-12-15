@@ -1,0 +1,17 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+<form action="{% url 'admin:employee_feedback' %}" method="post" id="feedbackForm" class="m-1">
+    {% csrf_token %}
+    <div class="d-flex align-items-center">
+    {% for field in employee_feedback_form.visible_fields %}
+        <label for="" class="me-2">{{ field.label }}</label>
+        {{ field }}
+    {% endfor %}
+    <div class="text-lg-center">
+        <input id="feedbackSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1 my-1 my-xl-0 px-sm-2">
+    </div>
+    </div>
+</form>
+
+
