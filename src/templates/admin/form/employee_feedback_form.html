@@ -6,28 +6,142 @@
 
 {% block content %}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<!-- <link 
+    rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" 
+    integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" 
+/> -->
 <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
-    rel="stylesheet"
-    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
-    crossorigin="anonymous"
->
+    rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
+/>
 
-<div class="">
-    <form action="{% url 'admin:employee_feedback' %}" method="post" id="feedbackForm" class="m-1">
-        {% csrf_token %}
-            {% for field in employee_feedback_form.visible_fields %}
-                <div class="m-5">
-                    <label for="" class="me-2">{{ field.label }}</label> <br>
-                    {{ field }}
+<style>
+    /* Base setup */
+    @import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+
+    /* Ratings widget */
+    .rate {
+        display: inline-block;
+        border: 0;
+    }
+    /* Hide radio */
+    .rate > input {
+        display: none;
+    }
+    /* Order correctly by floating highest to the right */
+    .rate > label {
+        float: right;
+    }
+    /* The star of the show */
+    .rate > label:before {
+        display: inline-block;
+        font-size: 1.6rem;
+        padding: .3rem .2rem;
+        margin: 0;
+        cursor: pointer;
+        font-family: FontAwesome;
+        content: "\f005 "; /* full star */
+    }
+
+    /* Half star trick */
+    .rate .half:before {
+        content: "\f089 "; /* half star no outline */
+        position: absolute;
+        padding-right: 0;
+    }
+    /* Click + hover color */
+    input:checked ~ label, /* color current and previous stars on checked */
+    label:hover, label:hover ~ label { color: #73B100;  } /* color previous stars on hover */
+
+    /* Hover highlights */
+    input:checked + label:hover, input:checked ~ label:hover, /* highlight current and previous stars */
+    input:checked ~ label:hover ~ label, /* highlight previous selected stars for new rating */
+    label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #A6E72D;  } 
+
+
+</style>
+
+<div class="row">
+    <div class="col-md-8 col-lg-6 col-xl-4">
+        <form action="{% url 'admin:employee_feedback' %}" method="post" id="feedbackForm" class="m-1">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="inputFeedback" class="form-label">Feedback / Suggestion</label>
+                <textarea 
+                    class="form-control" 
+                    name="feedback" 
+                    id="inputFeedback" 
+                    cols="30" rows="6" 
+                    required
+                >{{ employee_feedback_form.feedback.value|default_if_none:'' }}</textarea>
+              </div>
+              <div class="mb-3">
+                <label for="feelingRatingMask" class="form-label">Feeling Rating</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="feelingRatingMask">
+                        <input class="inputRatingMask" type="radio" id="rating10" name="rating" value="10" />
+                        <label for="rating10" title="5 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating9" name="rating" value="9" />
+                        <label class="half" for="rating9" title="4.5 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating8" name="rating" value="8" />
+                        <label for="rating8" title="4 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating7" name="rating" value="7" />
+                        <label class="half" for="rating7" title="3.5 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating6" name="rating" value="6" />
+                        <label for="rating6" title="3 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating5" name="rating" value="5" />
+                        <label class="half" for="rating5" title="2.5 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating4" name="rating" value="4" />
+                        <label for="rating4" title="2 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating3" name="rating" value="3" />
+                        <label class="half" for="rating3" title="1.5 stars"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating2" name="rating" value="2" />
+                        <label for="rating2" title="1 star"></label>
+
+                        <input class="inputRatingMask" type="radio" id="rating1" name="rating" value="1" />
+                        <label class="half" for="rating1" title="0.5 star"></label>
+                    </fieldset>
                 </div>
-            {% endfor %}
-            <div class="m-5">
-                <input id="feedbackSubmit" type="submit" value="Submit" class="btn btn-sm">
-            </div>
-    </form>
+                <input 
+                    type="number" step="0.5" 
+                    id="feelingRating", 
+                    name="rating" 
+                    min="0.5" max="5.0" 
+                    value="{{ employee_feedback_form.rating.value }}"
+                    hidden
+                />
+              </div>
+              <div class="mb-3">
+                <input id="feedbackSubmit" type="submit" class="form-control" value="Submit">
+              </div>
+        </form>
+    </div>
 </div>
 
+<script>
+
+    const rateMask = document.querySelectorAll(".inputRatingMask");
+    const rateInput = document.getElementById("feelingRating");
+
+    rateMask.forEach(el => {
+        el.addEventListener('click', function (e){
+            const val = parseInt(e.target.value);
+            rateInput.value = val/2;
+        });
+    });
+
+    const initialRate = rateInput.value;
+    document.getElementById(`rating${initialRate*2}`)?.click();
+
+</script>
 
 {% endblock %}
