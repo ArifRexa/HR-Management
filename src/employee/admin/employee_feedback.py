@@ -24,12 +24,35 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
         urls = super(EmployeeFeedbackAdmin, self).get_urls()
 
         employee_online_urls = [
-            path('employee-feedback/', self.employee_feedback, name='employee_feedback'),
+            path('employee-feedback/', self.employee_feedback_view, name='employee_feedback'),
+            path('employee-feedback-form/', self.employee_feedback_form_view, name='employee_feedback_form'),
         ]
 
         return employee_online_urls + urls
+    
 
-    def employee_feedback(self, request, *args, **kwargs):
+    def employee_feedback_view(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            current_feedback_exists = EmployeeFeedback.objects.filter(
+                employee=request.user.employee, 
+                created_at__gte=datetime.datetime.today().replace(day=1)
+            ).exists()
+            employee_feedbac_objs = EmployeeFeedback.objects.filter(
+                employee=request.user.employee
+            ).order_by('-created_at')
+            
+            form = EmployeeFeedbackForm()
+            
+            context = dict(
+                self.admin_site.each_context(request),
+                employee_feedback_form=form,
+                employee_feedbac_objs=employee_feedbac_objs,
+                current_feedback_exists=current_feedback_exists,
+            )
+            return TemplateResponse(request, 'admin/employee_feedback/employee_feedback.html', context)
+
+
+    def employee_feedback_form_view(self, request, *args, **kwargs):
         employee_feedback_obj = EmployeeFeedback.objects.filter(
                 employee=request.user.employee, 
                 created_at__gte=datetime.datetime.today().replace(day=1)
@@ -41,10 +64,10 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 form.employee = request.user.employee
                 form.save()
                 messages.success(request, 'Your feedback has been submitted successfully')
-                return redirect('/admin/')
+                return redirect('admin:employee_feedback')
             else:
                 messages.error(request, 'Something went wrong')
-                return redirect('/admin/')
+                return redirect('admin:employee_feedback')
         elif request.method == 'GET':
             form = EmployeeFeedbackForm(instance=employee_feedback_obj)
 
@@ -53,4 +76,5 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 employee_feedback_form=form,
             )
             
-            return TemplateResponse(request, 'admin/form/employee_feedback_form.html', context)
+            return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_form_full.html', context)
+
