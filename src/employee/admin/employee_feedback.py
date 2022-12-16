@@ -70,6 +70,11 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             )
         return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_admin.html', context)
 
+    list_display = ('employee', 'feedback', 'avg_rating')
+    #list_editable = ('employee',)
+    list_filter = ('employee', 'avg_rating')
+    search_fields = ('employee__full_name',)
+    autocomplete_fields = ('employee',)
 
     def get_urls(self):
         urls = super(EmployeeFeedbackAdmin, self).get_urls()
