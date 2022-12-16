@@ -2,9 +2,9 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from config.settings import employee_ids
 from django.contrib import admin, messages
-
+from django.contrib.auth.decorators import login_required
 from django.urls import path
-
+from django.contrib.auth.models import AnonymousUser
 from django.template.response import TemplateResponse
 
 from django.shortcuts import redirect
@@ -14,10 +14,9 @@ from employee.forms.employee_feedback import EmployeeFeedbackForm
 
 
 def get_last_months(start_date):
-    start_date += relativedelta(months = -1)
     for _ in range(3):
         yield start_date.month
-        start_date += relativedelta(months = -1)
+        start_date += relativedelta(months=-1)
 
 
 @admin.register(EmployeeFeedback)
@@ -48,10 +47,10 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
         ]
 
         six_months = [i for i in get_last_months(datetime.datetime.today())]
+
         six_months_names = [months[i-1] for i in six_months]
 
-        employees = Employee.objects.all()
-
+        employees = Employee.objects.filter(active=True)
         monthly_feedbacks = list()
 
         for e in employees:
@@ -63,9 +62,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                         break
                 else:
                     temp.append(None)
-            
             monthly_feedbacks.append(temp)
-
         context = dict(
                 self.admin_site.each_context(request),
                 month_names=six_months_names,
@@ -74,7 +71,6 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
         return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_admin.html', context)
 
     list_display = ('employee', 'environmental_rating', 'facilities_rating', 'learning_growing_rating', 'avg_rating')
-    #list_editable = ('employee',)
     list_filter = ('employee', 'avg_rating')
     search_fields = ('employee__full_name',)
     autocomplete_fields = ('employee',)
@@ -86,12 +82,12 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             path('employee-feedback/', self.employee_feedback_view, name='employee_feedback'),
             path('employee-feedback-form/', self.employee_feedback_form_view, name='employee_feedback_form'),
         ]
-
         return employee_online_urls + urls
-    
+
 
     def employee_feedback_view(self, request, *args, **kwargs):
-
+        if isinstance(request.user, AnonymousUser):
+            return redirect('/admin/login/')
 
         if request.method == 'GET':
             current_feedback_exists = EmployeeFeedback.objects.filter(
