@@ -1,5 +1,8 @@
 import uuid
 
+import datetime
+from dateutil.relativedelta import relativedelta
+
 from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -64,6 +67,15 @@ class Employee(TimeStampMixin, AuthorMixin):
         if bank:
             return bank.bank.name
         return ''
+    
+    @property
+    def last_x_months_feedback(self):
+        current_month = datetime.datetime.today().replace(day=1)
+        last_x_months = current_month+relativedelta(months = -6)
+        return self.employeefeedback_set.filter(
+            created_at__lt=current_month,
+            created_at__gte=last_x_months,
+        ).order_by("-created_at")
 
     def save(self, *args, **kwargs, ):
         self.save_user()
