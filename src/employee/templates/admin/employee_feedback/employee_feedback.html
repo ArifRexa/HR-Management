@@ -28,7 +28,13 @@
                     {% for emp_feedback in employee_feedbac_objs %}
                         <tr>
                             <td>{{ emp_feedback.created_at|date:"F Y" }}</td>
-                            <td>{{ emp_feedback.feedback }}</td>
+                            <td>
+                                {% if emp_feedback.feedback|length >= 150 %}
+                                    <div data-mdb-toggle="popover" title="{{ emp_feedback.feedback }}" data-mdb-content="And here's some amazing content. It's very engaging. Right?" data-mdb-trigger="hover">{{ emp_feedback.feedback | slice:50 }}</div>
+                                {% else %}
+                                    <div>{{ emp_feedback.feedback }}</div>
+                                {% endif %}
+                            </td>
                             <td>{{ emp_feedback.rating }}</td>
                             
                             {% if forloop.counter == 1 and current_feedback_exists %}
@@ -51,5 +57,27 @@
     </div>
     {% endif %}
 </div>
+
+
+<script>
+    window.onload = function(e){
+        all_feedback = document.querySelectorAll('.feedback')
+        i = 0;
+        for(i=0; i < all_feedback.length; i++){
+            text = all_feedback[i].innerText
+            if (text.length > 300){
+                all_feedback[i].innerHTML = `
+                <div class="popover-wrapper">
+                    <div class="popover-title">
+                        text.substring(0, 20)
+                    </div>
+                    <div class="popover-message">
+                        text
+                    </div>
+                </div>`
+            }
+        }
+    }
+</script>
 
 {% endblock %}

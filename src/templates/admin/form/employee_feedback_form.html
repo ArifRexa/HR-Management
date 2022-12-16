@@ -39,7 +39,7 @@
     /* Hover highlights */
     input:checked + label:hover, input:checked ~ label:hover, /* highlight current and previous stars */
     input:checked ~ label:hover ~ label, /* highlight previous selected stars for new rating */
-    label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #A6E72D;  } 
+    label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #A6E72D;  }
 
 
 </style>
@@ -52,7 +52,7 @@
             class="form-control" 
             name="feedback" 
             id="inputFeedback" 
-            cols="30" rows="6" 
+            cols="30" rows="6"
             required
         >{{ employee_feedback_form.feedback.value|default_if_none:'' }}</textarea>
         </div>
