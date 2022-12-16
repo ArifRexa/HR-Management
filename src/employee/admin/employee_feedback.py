@@ -14,9 +14,9 @@ from employee.forms.employee_feedback import EmployeeFeedbackForm
 
 @admin.register(EmployeeFeedback)
 class EmployeeFeedbackAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'feedback', 'rating')
+    list_display = ('employee', 'feedback', 'avg_rating')
     #list_editable = ('employee',)
-    list_filter = ('employee', 'rating')
+    list_filter = ('employee', 'avg_rating')
     search_fields = ('employee__full_name',)
     autocomplete_fields = ('employee',)
 
