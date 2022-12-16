@@ -1,6 +1,6 @@
 import datetime
 from dateutil.relativedelta import relativedelta
-
+from config.settings import employee_ids
 from django.contrib import admin, messages
 
 from django.urls import path
@@ -15,7 +15,7 @@ from employee.forms.employee_feedback import EmployeeFeedbackForm
 
 def get_last_months(start_date):
     start_date += relativedelta(months = -1)
-    for _ in range(6):
+    for _ in range(3):
         yield start_date.month
         start_date += relativedelta(months = -1)
 
@@ -29,6 +29,9 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
     # autocomplete_fields = ('employee',)
 
     def changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
+        if str(request.user.employee.id) not in employee_ids:
+            return redirect('/admin/')
+
         months = [
             'January',
             'February',
@@ -70,7 +73,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             )
         return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_admin.html', context)
 
-    list_display = ('employee', 'feedback', 'avg_rating')
+    list_display = ('employee', 'environmental_rating', 'facilities_rating', 'learning_growing_rating', 'avg_rating')
     #list_editable = ('employee',)
     list_filter = ('employee', 'avg_rating')
     search_fields = ('employee__full_name',)
@@ -88,6 +91,8 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
     
 
     def employee_feedback_view(self, request, *args, **kwargs):
+
+
         if request.method == 'GET':
             current_feedback_exists = EmployeeFeedback.objects.filter(
                 employee=request.user.employee, 
