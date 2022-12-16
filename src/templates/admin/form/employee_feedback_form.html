@@ -1,0 +1,209 @@
+<style>
+    /* Base setup */
+    @import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+
+    /* Ratings widget */
+    .rate {
+        display: inline-block;
+        border: 0;
+    }
+    /* Hide radio */
+    .rate > input {
+        display: none;
+    }
+    /* Order correctly by floating highest to the right */
+    .rate > label {
+        float: right;
+    }
+    /* The star of the show */
+    .rate > label:before {
+        display: inline-block;
+        font-size: 1.6rem;
+        padding: .3rem .2rem;
+        margin: 0;
+        cursor: pointer;
+        font-family: FontAwesome;
+        content: "\f005 "; /* full star */
+    }
+
+    /* Half star trick */
+    .rate .half:before {
+        content: "\f089 "; /* half star no outline */
+        position: absolute;
+        padding-right: 0;
+    }
+    /* Click + hover color */
+    input:checked ~ label, /* color current and previous stars on checked */
+    label:hover, label:hover ~ label { color: #73B100;  } /* color previous stars on hover */
+
+    /* Hover highlights */
+    input:checked + label:hover, input:checked ~ label:hover, /* highlight current and previous stars */
+    input:checked ~ label:hover ~ label, /* highlight previous selected stars for new rating */
+    label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #A6E72D;  }
+
+
+</style>
+
+<form action="{% url 'admin:employee_feedback_form' %}" method="post" id="feedbackForm" class="m-1">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="inputFeedback" class="form-label">Feedback / Suggestion</label>
+        <textarea 
+            class="form-control" 
+            name="feedback" 
+            id="inputFeedback" 
+            cols="30" rows="6"
+            required
+        >{{ employee_feedback_form.feedback.value|default_if_none:'' }}</textarea>
+        </div>
+
+        <div class="mb-3">
+        <label for="working_space_rating_fieldset" class="form-label">Working Environmental Rating</label>
+        <div class="d-flex gap-3">
+            <fieldset class="rate" id="working_space_rating_fieldset">
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating10" name="environmental_rating" value="10" />
+                <label for="environmental_rating10" title="5 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating9" name="ernvironmental_ating" value="9" />
+                <label class="half" for="environmental_rating9" title="4.5 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating8" name="environmental_rating" value="8" />
+                <label for="environmental_rating8" title="4 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating7" name="environmental_rating" value="7" />
+                <label class="half" for="environmental_rating7" title="3.5 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating6" name="environmental_rating" value="6" />
+                <label for="environmental_rating6" title="3 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating5" name="environmental_rating" value="5" />
+                <label class="half" for="environmental_rating5" title="2.5 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating4" name="environmental_rating" value="4" />
+                <label for="environmental_rating4" title="2 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating3" name="environmental_rating" value="3" />
+                <label class="half" for="environmental_rating3" title="1.5 stars"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating2" name="environmental_rating" value="2" />
+                <label for="environmental_rating2" title="1 star"></label>
+                <input class="environmental_rating_mask" type="radio" id="environmental_rating1" name="environmental_rating" value="1" />
+                <label class="half" for="environmental_rating1" title="0.5 star"></label>
+            </fieldset>
+        </div>
+        <input
+            type="number" step="0.5"
+            id="working_space_rating",
+            name="environmental_rating"
+            min="0.5" max="5.0"
+            value="{{ employee_feedback_form.environmental_rating.value }}"
+            hidden
+        />
+        </div>
+
+        <div class="mb-3">
+        <label for="facilities_rating_fieldset" class="form-label">Facilities Rating</label>
+        <div class="d-flex gap-3">
+            <fieldset class="rate" id="facilities_rating_fieldset">
+                <input class="facility_rating_mask" type="radio" id="facilities_rating10" name="facility_rating" value="10" />
+                <label for="facilities_rating10" title="5 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating9" name="facility_rating" value="9" />
+                <label class="half" for="facilities_rating9" title="4.5 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating8" name="facility_rating" value="8" />
+                <label for="facilities_rating8" title="4 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating7" name="facility_rating" value="7" />
+                <label class="half" for="facilities_rating7" title="3.5 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating6" name="facility_rating" value="6" />
+                <label for="facilities_rating6" title="3 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating5" name="facility_rating" value="5" />
+                <label class="half" for="facilities_rating5" title="2.5 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating4" name="facility_rating" value="4" />
+                <label for="facilities_rating4" title="2 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating3" name="facility_rating" value="3" />
+                <label class="half" for="facilities_rating3" title="1.5 stars"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating2" name="facility_rating" value="2" />
+                <label for="facilities_rating2" title="1 star"></label>
+                <input class="facility_rating_mask" type="radio" id="facilities_rating1" name="facility_rating" value="1" />
+                <label class="half" for="facilities_rating1" title="0.5 star"></label>
+            </fieldset>
+        </div>
+        <input
+            type="number" step="0.5"
+            id="facilities_rating_input",
+            name="facilities_rating"
+            min="0.5" max="5.0"
+            value="{{ employee_feedback_form.facilities_rating.value }}"
+            hidden
+        />
+        </div>
+
+        <div class="mb-3">
+        <label for="feelingRatingMask" class="form-label">Learning & Growing Rating</label>
+        <div class="d-flex gap-3">
+            <fieldset class="rate" id="feelingRatingMask">
+                <input class="inputRatingMask" type="radio" id="rating10" name="rating" value="10" />
+                <label for="rating10" title="5 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating9" name="rating" value="9" />
+                <label class="half" for="rating9" title="4.5 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating8" name="rating" value="8" />
+                <label for="rating8" title="4 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating7" name="rating" value="7" />
+                <label class="half" for="rating7" title="3.5 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating6" name="rating" value="6" />
+                <label for="rating6" title="3 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating5" name="rating" value="5" />
+                <label class="half" for="rating5" title="2.5 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating4" name="rating" value="4" />
+                <label for="rating4" title="2 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating3" name="rating" value="3" />
+                <label class="half" for="rating3" title="1.5 stars"></label>
+                <input class="inputRatingMask" type="radio" id="rating2" name="rating" value="2" />
+                <label for="rating2" title="1 star"></label>
+                <input class="inputRatingMask" type="radio" id="rating1" name="rating" value="1" />
+                <label class="half" for="rating1" title="0.5 star"></label>
+            </fieldset>
+        </div>
+        <input
+            type="number" step="0.5"
+            id="feelingRating",
+            name="learning_growing_rating"
+            min="0.5" max="5.0"
+            value="{{ employee_feedback_form.learning_growing_rating.value }}"
+            hidden
+        />
+        </div>
+
+        <div class="mb-3">
+        <input id="feedbackSubmit" type="submit" class="form-control" value="Submit">
+        </div>
+</form>
+
+<script>
+
+    const envRateMask = document.querySelectorAll(".environmental_rating_mask");
+    const envRateInput = document.getElementById("working_space_rating");
+    envRateMask.forEach(el => {
+        el.addEventListener('click', function (e){
+            const val = parseInt(e.target.value);
+            envRateInput.value = val/2;
+        });
+    });
+
+    const facRateMask = document.querySelectorAll(".facility_rating_mask");
+    const facRateInput = document.getElementById("facilities_rating_input");
+    facRateMask.forEach(el => {
+        el.addEventListener('click', function (e){
+            const val = parseInt(e.target.value);
+            facRateInput.value = val/2;
+        });
+    });
+
+    const rateMask = document.querySelectorAll(".inputRatingMask");
+    const rateInput = document.getElementById("feelingRating");
+    rateMask.forEach(el => {
+        el.addEventListener('click', function (e){
+            const val = parseInt(e.target.value);
+            rateInput.value = val/2;
+        });
+    });
+
+    var initialRate = envRateInput.value;
+    document.getElementById(`environmental_rating${initialRate*2}`)?.click();
+    var initialRate = facRateInput.value;
+    document.getElementById(`facilities_rating${initialRate*2}`)?.click();
+    var initialRate = rateInput.value;
+    document.getElementById(`rating${initialRate*2}`)?.click();
+
+</script>

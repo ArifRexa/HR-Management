@@ -5,3 +5,4 @@ from .resignation import ResignationAdmin
 from .user import UserAdmin
 from .skill import SkillAdmin
 from .employee_activity import *
+from .employee_feedback import EmployeeFeedbackAdmin

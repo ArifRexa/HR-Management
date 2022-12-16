@@ -1,7 +1,8 @@
 import json
+
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
@@ -51,5 +52,4 @@ def change_project(request, *args, **kwargs):
     else:
         messages.error(request, 'Something went wrong')
         return redirect('/admin/')
-
 
