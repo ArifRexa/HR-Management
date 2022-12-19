@@ -18,7 +18,7 @@
     /* The star of the show */
     .rate > label:before {
         display: inline-block;
-        font-size: 1.6rem;
+        font-size: 20px;
         padding: .3rem .2rem;
         margin: 0;
         cursor: pointer;
@@ -47,19 +47,19 @@
 <form action="{% url 'admin:employee_feedback_form' %}" method="post" id="feedbackForm" class="m-1">
     {% csrf_token %}
     <div class="mb-3">
-        <label for="inputFeedback" class="form-label">Feedback / Suggestion</label>
+        <label for="inputFeedback" class="form-label mb-0 fs-4">Feedback / Suggestion</label>
         <textarea 
             class="form-control" 
             name="feedback" 
             id="inputFeedback" 
             cols="30" rows="6"
-            placeholder="Please write your valuable feedback like good things, bad things and suggestions..."
+            placeholder="Please write your valuable feedback like &#10; &#10; Good things &#10; Bad things &#10; Suggestions"
             required
         >{{ employee_feedback_form.feedback.value|default_if_none:'' }}</textarea>
         </div>
 
-        <div class="mb-3">
-        <label for="working_space_rating_fieldset" class="form-label">Working Environmental</label>
+        <div class="align-items-center d-flex justify-content-between mb-2">
+        <label for="working_space_rating_fieldset" class="form-label mb-0">Working Environment</label>
         <div class="d-flex gap-3">
             <fieldset class="rate" id="working_space_rating_fieldset">
                 <input class="environmental_rating_mask" type="radio" id="environmental_rating10" name="environmental_rating" value="10" />
@@ -94,8 +94,8 @@
         />
         </div>
 
-        <div class="mb-3">
-        <label for="facilities_rating_fieldset" class="form-label">Benifits & Facilities</label>
+        <div class="align-items-center d-flex justify-content-between mb-2">
+        <label for="facilities_rating_fieldset" class="form-label mb-0">Benifits & Facilities</label>
         <div class="d-flex gap-3">
             <fieldset class="rate" id="facilities_rating_fieldset">
                 <input class="facility_rating_mask" type="radio" id="facilities_rating10" name="facility_rating" value="10" />
@@ -130,8 +130,8 @@
         />
         </div>
 
-        <div class="mb-3">
-        <label for="feelingRatingMask" class="form-label">Learning & Growing</label>
+        <div class="align-items-center d-flex justify-content-between mb-2">
+        <label for="feelingRatingMask" class="form-label mb-0">Learning & Growing</label>
         <div class="d-flex gap-3">
             <fieldset class="rate" id="feelingRatingMask">
                 <input class="inputRatingMask" type="radio" id="rating10" name="rating" value="10" />
@@ -166,8 +166,8 @@
         />
         </div>
 
-        <div class="mb-3">
-            <label for="happiness_index_rating_fieldset" class="form-label">Happiness Index</label>
+        <div class="align-items-center d-flex justify-content-between mb-2">
+            <label for="happiness_index_rating_fieldset" class="form-label mb-0">Happiness Index</label>
             <div class="d-flex gap-3">
                 <fieldset class="rate" id="happiness_index_rating_fieldset">
                     <input class="happiness_rating" type="radio" id="happiness_rating10" name="happiness_rating" value="10" />
@@ -202,8 +202,8 @@
             />
         </div>
 
-        <div class="mb-3">
-            <label for="boss_rating_fieldset" class="form-label">Management / Managers / Leads</label>
+        <div class="align-items-center d-flex justify-content-between mb-2">
+            <label for="boss_rating_fieldset" class="form-label mb-0">Management</label>
             <div class="d-flex gap-3">
                 <fieldset class="rate" id="boss_rating_fieldset">
                     <input class="boss_rating_mask" type="radio" id="boss_rating10" name="boss_rating_mask" value="10" />
