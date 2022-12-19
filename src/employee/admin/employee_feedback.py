@@ -79,8 +79,8 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
         urls = super(EmployeeFeedbackAdmin, self).get_urls()
 
         employee_online_urls = [
-            path('employee-feedback/', self.employee_feedback_view, name='employee_feedback'),
-            path('employee-feedback-form/', self.employee_feedback_form_view, name='employee_feedback_form'),
+            path('my-feedback/', self.employee_feedback_view, name='employee_feedback'),
+            path('my-feedback-form/', self.employee_feedback_form_view, name='employee_feedback_form'),
         ]
         return employee_online_urls + urls
 
