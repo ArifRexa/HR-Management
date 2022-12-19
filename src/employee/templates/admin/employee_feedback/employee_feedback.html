@@ -21,8 +21,10 @@
                         <th class="border" scope="col">Month</th>
                         <th class="border" scope="col">Feedback</th>
                         <th class="border" scope="col">Environmental</th>
-                        <th class="border" scope="col">Facilities</th>
+                        <th class="border" scope="col">Benifits & Facilities</th>
                         <th class="border" scope="col">Learning & Growing</th>
+                        <th class="border" scope="col">Happy Index</th>
+                        <th class="border" scope="col">Management / Managers / Leads</th>
                         <th class="border" scope="col">Average</th>
                         <th class="border" scope="col">Action</th>
                     </tr>
@@ -41,6 +43,8 @@
                             <td>{{ emp_feedback.environmental_rating }}</td>
                             <td>{{ emp_feedback.facilities_rating }}</td>
                             <td>{{ emp_feedback.learning_growing_rating }}</td>
+                            <td>{{ emp_feedback.happiness_index_rating }}</td>
+                            <td>{{ emp_feedback.boss_rating }}</td>
                             <td>{{ emp_feedback.avg_rating }}</td>
 
                             {% if forloop.counter == 1 and current_feedback_exists %}

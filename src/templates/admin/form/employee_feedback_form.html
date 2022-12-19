@@ -167,6 +167,78 @@
         </div>
 
         <div class="mb-3">
+            <label for="happiness_index_rating_fieldset" class="form-label">Happiness Index</label>
+            <div class="d-flex gap-3">
+                <fieldset class="rate" id="happiness_index_rating_fieldset">
+                    <input class="happiness_rating" type="radio" id="happiness_rating10" name="happiness_rating" value="10" />
+                    <label for="happiness_rating10" title="5 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating9" name="happiness_rating" value="9" />
+                    <label class="half" for="happiness_rating9" title="4.5 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating8" name="happiness_rating" value="8" />
+                    <label for="happiness_rating8" title="4 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating7" name="happiness_rating" value="7" />
+                    <label class="half" for="happiness_rating7" title="3.5 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating6" name="happiness_rating" value="6" />
+                    <label for="happiness_rating6" title="3 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating5" name="happiness_rating" value="5" />
+                    <label class="half" for="happiness_rating5" title="2.5 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating4" name="happiness_rating" value="4" />
+                    <label for="happiness_rating4" title="2 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating3" name="happiness_rating" value="3" />
+                    <label class="half" for="happiness_rating3" title="1.5 stars"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating2" name="happiness_rating" value="2" />
+                    <label for="happiness_rating2" title="1 star"></label>
+                    <input class="happiness_rating" type="radio" id="happiness_rating1" name="happiness_rating" value="1" />
+                    <label class="half" for="happiness_rating1" title="0.5 star"></label>
+                </fieldset>
+            </div>
+            <input
+                type="number" step="0.5"
+                id="happiness_index_rating_input",
+                name="happiness_index_rating"
+                min="0.5" max="5.0"
+                value="{{ employee_feedback_form.happiness_index_rating.value }}"
+                hidden
+            />
+        </div>
+
+        <div class="mb-3">
+            <label for="boss_rating_fieldset" class="form-label">Management / Managers / Leads</label>
+            <div class="d-flex gap-3">
+                <fieldset class="rate" id="boss_rating_fieldset">
+                    <input class="boss_rating_mask" type="radio" id="boss_rating10" name="boss_rating_mask" value="10" />
+                    <label for="boss_rating10" title="5 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating9" name="boss_rating_mask" value="9" />
+                    <label class="half" for="boss_rating9" title="4.5 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating8" name="boss_rating_mask" value="8" />
+                    <label for="boss_rating8" title="4 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating7" name="boss_rating_mask" value="7" />
+                    <label class="half" for="boss_rating7" title="3.5 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating6" name="boss_rating_mask" value="6" />
+                    <label for="boss_rating6" title="3 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating5" name="boss_rating_mask" value="5" />
+                    <label class="half" for="boss_rating5" title="2.5 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating4" name="boss_rating_mask" value="4" />
+                    <label for="boss_rating4" title="2 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating3" name="boss_rating_mask" value="3" />
+                    <label class="half" for="boss_rating3" title="1.5 stars"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating2" name="boss_rating_mask" value="2" />
+                    <label for="boss_rating2" title="1 star"></label>
+                    <input class="boss_rating_mask" type="radio" id="boss_rating1" name="boss_rating_mask" value="1" />
+                    <label class="half" for="boss_rating1" title="0.5 star"></label>
+                </fieldset>
+            </div>
+            <input
+                type="number" step="0.5"
+                id="boss_rating_input",
+                name="boss_rating"
+                min="0.5" max="5.0"
+                value="{{ employee_feedback_form.boss_rating.value }}"
+                hidden
+            />
+        </div>
+
+        <div class="mb-3">
         <input id="feedbackSubmit" type="submit" class="form-control" value="Submit">
         </div>
 </form>
@@ -200,11 +272,33 @@
         });
     });
 
+    const happiness_rating = document.querySelectorAll(".happiness_rating");
+    const happiness_index_rating_input = document.getElementById("happiness_index_rating_input");
+    happiness_rating.forEach(el => {
+        el.addEventListener('click', function (e){
+            const val = parseInt(e.target.value);
+            happiness_index_rating_input.value = val/2;
+        });
+    });
+
+    const boss_rating_mask = document.querySelectorAll(".boss_rating_mask");
+    const boss_rating_input = document.getElementById("boss_rating_input");
+    boss_rating_mask.forEach(el => {
+        el.addEventListener('click', function (e){
+            const val = parseInt(e.target.value);
+            boss_rating_input.value = val/2;
+        });
+    });
+
     var initialRate = envRateInput.value;
     document.getElementById(`environmental_rating${initialRate*2}`)?.click();
-    var initialRate = facRateInput.value;
+    initialRate = facRateInput.value;
     document.getElementById(`facilities_rating${initialRate*2}`)?.click();
-    var initialRate = rateInput.value;
+    initialRate = rateInput.value;
     document.getElementById(`rating${initialRate*2}`)?.click();
+    initialRate = happiness_index_rating_input.value;
+    document.getElementById(`happiness_rating${initialRate*2}`)?.click();
+    initialRate = boss_rating_input.value;
+    document.getElementById(`boss_rating${initialRate*2}`)?.click();
 
 </script>
