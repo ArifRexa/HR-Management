@@ -75,7 +75,7 @@ class ExtraUrl(admin.ModelAdmin):
 
             series.append({
                 'type': 'spline',
-                'visible': 'false',
+                # 'visible': 'false',
                 'name': project.title,
                 'data': list(array_date)
             })
