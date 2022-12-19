@@ -39,8 +39,12 @@
                             {% endif %}
 
                             <div>Working Environment: {{ em_fb.environmental_rating}} </div>
-                            <div>Facilities: {{ em_fb.facilities_rating}} </div>
-                            <div>Learning & Growing: {{ em_fb.learning_growing_rating}} </div><br>
+                            <div>Benifits & Facilities: {{ em_fb.facilities_rating}} </div>
+                            <div>Learning & Growing: {{ em_fb.learning_growing_rating}} </div>
+                            <div>Happy Index: {{ em_fb.happiness_index_rating }} </div>
+                            <div>Management / Managers / Leads: {{ em_fb.boss_rating }} </div>
+
+                            <br>
                             <div class="h5">{{ em_fb.feedback }}</div>
                         </td>
                     {% else %}

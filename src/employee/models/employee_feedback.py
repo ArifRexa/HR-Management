@@ -12,10 +12,12 @@ class EmployeeFeedback(AuthorMixin, TimeStampMixin):
     environmental_rating = models.FloatField()
     facilities_rating = models.FloatField()
     learning_growing_rating = models.FloatField()
+    happiness_index_rating = models.FloatField()
+    boss_rating = models.FloatField()
 
     def save(self, *args, **kwargs):
-        avg_rating = self.environmental_rating + self.facilities_rating + self.learning_growing_rating
-        avg_rating = round(avg_rating/3, 1)
+        avg_rating = self.environmental_rating + self.facilities_rating + self.learning_growing_rating + self.happiness_index_rating + self.boss_rating
+        avg_rating = round(avg_rating/5, 1)
         self.avg_rating = avg_rating
         super(EmployeeFeedback, self).save(*args, **kwargs)
 
