@@ -5,11 +5,13 @@
 {% endblock %}
 
 {% block content %}
+{% load static %}
 
 <link 
     rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
     integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
 />
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
 
 <div class="row">
     <div class="col {% if not current_feedback_exists %}col-xl-8{% endif %} order-1 order-xl-0">
@@ -36,7 +38,14 @@
                                 <td>{{ emp_feedback.created_at|date:"F Y" }}</td>
                                 <td>
                                     {% if emp_feedback.feedback|length >= 150 %}
-                                        <div data-mdb-toggle="popover" title="{{ emp_feedback.feedback }}" data-mdb-content="And here's some amazing content. It's very engaging. Right?" data-mdb-trigger="hover">{{ emp_feedback.feedback | slice:50 }}</div>
+                                        <div class="popover-wrapper">
+                                            <div class="popover-title">
+                                                {{ emp_feedback.feedback|stringformat:".100s" }}
+                                            </div>
+                                            <div class="popover-message">
+                                                {{ emp_feedback.feedback }}
+                                            </div>
+                                        </div>
                                     {% else %}
                                         <div>{{ emp_feedback.feedback }}</div>
                                     {% endif %}
@@ -71,7 +80,7 @@
 </div>
 
 
-<script>
+<!-- <script>
     window.onload = function(e){
         all_feedback = document.querySelectorAll('.feedback')
         i = 0;
@@ -90,6 +99,6 @@
             }
         }
     }
-</script>
+</script> -->
 
 {% endblock %}
