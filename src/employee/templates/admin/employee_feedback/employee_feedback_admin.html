@@ -14,47 +14,50 @@
 
 <div class="container">
     <h2 class="h2 text-center py-3">Employee Feedback</h2>
-    <table class="table w-100 table-bordered">
-        <thead>
-            <tr>
-                <th scope="col" rowspan="2" class="align-middle">Employee</th>
-            </tr>
-            <tr>
-                {% for month in month_names %}
-                    <th>{{ month }}</th>
+    <div class="table-responsive">
+        <table class="table w-100 table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col" rowspan="2" class="align-middle">Employee</th>
+                </tr>
+                <tr>
+                    {% for month in month_names %}
+                        <th>{{ month }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for employee, monthly_feedback in monthly_feedbacks %}
+                <tr>
+                    <td class="align-middle">{{ employee.full_name }}</td>
+                    {% for em_fb in monthly_feedback %}
+                        {% if em_fb %}
+                            <td>
+                                {% if em_fb.avg_rating <= 3%}
+                                    <div style="color: red;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
+                                {% else %}
+                                    <div style="color: green;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
+                                {% endif %}
+    
+                                <div>Working Environment: {{ em_fb.environmental_rating}} </div>
+                                <div>Benifits & Facilities: {{ em_fb.facilities_rating}} </div>
+                                <div>Learning & Growing: {{ em_fb.learning_growing_rating}} </div>
+                                <div>Happy Index: {{ em_fb.happiness_index_rating }} </div>
+                                <div>Management / Managers / Leads: {{ em_fb.boss_rating }} </div>
+    
+                                <br>
+                                <div class="h5">{{ em_fb.feedback }}</div>
+                            </td>
+                        {% else %}
+                            <td class="align-middle"> - </td>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for employee, monthly_feedback in monthly_feedbacks %}
-            <tr>
-                <td class="align-middle">{{ employee.full_name }}</td>
-                {% for em_fb in monthly_feedback %}
-                    {% if em_fb %}
-                        <td>
-                            {% if em_fb.avg_rating <= 3%}
-                                <div style="color: red;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
-                            {% else %}
-                                <div style="color: green;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
-                            {% endif %}
-
-                            <div>Working Environment: {{ em_fb.environmental_rating}} </div>
-                            <div>Benifits & Facilities: {{ em_fb.facilities_rating}} </div>
-                            <div>Learning & Growing: {{ em_fb.learning_growing_rating}} </div>
-                            <div>Happy Index: {{ em_fb.happiness_index_rating }} </div>
-                            <div>Management / Managers / Leads: {{ em_fb.boss_rating }} </div>
-
-                            <br>
-                            <div class="h5">{{ em_fb.feedback }}</div>
-                        </td>
-                    {% else %}
-                        <td class="align-middle"> - </td>
-                    {% endif %}
-                {% endfor %}
-            {% endfor %}
-            </tr>
-        </tbody>
-    </table>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
 </div>
 
 
