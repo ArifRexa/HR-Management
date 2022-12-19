@@ -12,8 +12,10 @@
 
     <div id="graph" style="height: 80vh; min-width: 310px"></div>
 
-    <button onclick="toggleSelect(false)">Deselect All</button>
-    <button onclick="toggleSelect(true)">Select All</button>
+    <!-- <button onclick="toggleSelect(false)">Deselect All</button>
+    <button onclick="toggleSelect(true)">Select All</button> -->
+
+    <button id="button" class="autocompare">Toggle series</button>
 
     <script>
 
@@ -23,7 +25,8 @@
 
         const highCharts = Highcharts.stockChart('graph', {
             chart: {
-                type: 'spline'
+                type: 'spline',
+                
             },
             legend: {
                 enabled: true,
@@ -35,9 +38,23 @@
         });
 
         function toggleSelect(){
-            highCharts.update()
+            // highCharts.update()
         }
-
+        document.getElementById('button').addEventListener('click', e => {
+            // console.log(highCharts.series.length);
+            // console.log(highCharts);
+            for(i = 0; i < highCharts.series.length; i++){
+                var series = highCharts.series[i];
+                if (series.visible) {
+                    series.hide();
+                    // e.target.innerHTML = 'Show series';
+                } else {
+                    series.show();
+                    // e.target.innerHTML = 'Hide series';
+                }
+            }
+            
+        });
 
     </script>
 {% endblock %}
