@@ -12,7 +12,7 @@
 />
 
 <div class="row">
-    <div class="col-xl-8 order-1 order-xl-0">
+    <div class="col {% if not current_feedback_exists %}col-xl-8{% endif %} order-1 order-xl-0">
         <div class="container">
             <h2 class="h2 text-center py-3">Your Feedback(s)</h2>
             <div class="table-responsive ">
