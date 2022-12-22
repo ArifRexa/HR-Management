@@ -35,8 +35,8 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
         
         num_of_week = 4
 
-        x_weeks = [i for i in get_last_x_friday(datetime.datetime.today(), num_of_week)]
-        x_weeks_titles = [i.date().strftime("%b %d, %Y") for i in x_weeks]
+        x_weeks = [i.date() for i in get_last_x_friday(datetime.datetime.today(), num_of_week)]
+        x_weeks_titles = [i.strftime("%b %d, %Y") for i in x_weeks]
 
         projects = Project.objects.filter(active=True)
         weekly_feedbacks = list()
@@ -46,13 +46,14 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
             today = datetime.datetime.today().date()
             last_x_weeks_feedback = pr.last_x_weeks_feedback(num_of_week)
 
-            for i in range(num_of_week):
-                fback = last_x_weeks_feedback.filter(
-                    created_at__date__lte = today + relativedelta(weekday=FR(-i-1)),
-                    created_at__date__gt = today + relativedelta(weekday=FR(-i-2)),
-                ).last()
-                temp.append(fback)
-            
+            for week in x_weeks:
+                for feedback in last_x_weeks_feedback:
+                    if week == feedback.feedback_week.date():
+                        temp.append(feedback)
+                        break
+                else:
+                    temp.append(None)
+
             weekly_feedbacks.append(temp)
 
         context = dict(
@@ -78,9 +79,10 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
             path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
             
             path("", self.custom_changelist_view, name='client_feedback_admin'),
+            # path("urls/", self.client_feedback_urls_view, name='client_feedback_urls'),
 
-            path('client-feedback/<str:token>', self.client_feedback_view, name='client_feedback'),
-            path('client-feedback/<str:token>/update', self.client_feedback_form_view, name='client_feedback_form'), 
+            path('client-feedback/<str:token>/', self.client_feedback_view, name='client_feedback'),
+            path('client-feedback/<str:token>/update/', self.client_feedback_form_view, name='client_feedback_form'), 
         ]
         return employee_online_urls + urls
 

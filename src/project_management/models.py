@@ -6,7 +6,8 @@ from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, ExpressionWrapper
+from django.db.models.functions import Trunc
 from tinymce.models import HTMLField
 
 from config.model.TimeStampMixin import TimeStampMixin
@@ -65,12 +66,17 @@ class Project(TimeStampMixin, AuthorMixin):
         return int(self.created_at.strftime("%s")) * 1000
     
     def last_x_weeks_feedback(self, x):
-        last_friday = datetime.datetime.today() + relativedelta(weekday=FR(-1))
-        last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x-1))
+        today = datetime.datetime.today()
+        last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x))
 
         return self.clientfeedback_set.filter(
-            created_at__date__lte=last_friday,
+            created_at__date__lte=today,
             created_at__date__gt=last_xth_friday,
+        ).annotate(
+            feedback_week=ExpressionWrapper(
+                    Trunc('created_at', 'week') - datetime.timedelta(days=3),
+                    output_field=models.DateField(),
+                )
         ).order_by("-created_at").exclude(project__active=False)
 
 
