@@ -43,12 +43,11 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
 
         for pr in projects:
             temp = []
-            today = datetime.datetime.today().date()
             last_x_weeks_feedback = pr.last_x_weeks_feedback(num_of_week)
 
             for week in x_weeks:
                 for feedback in last_x_weeks_feedback:
-                    if week == feedback.feedback_week.date():
+                    if week == feedback.feedback_week:
                         temp.append(feedback)
                         break
                 else:
@@ -101,18 +100,13 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                 project = project_token.last().project
                 current_feedback_exists = ClientFeedback.objects.filter(
                     project=project,
-                    created_at__gt=datetime.datetime.today().date() + relativedelta(weekday=FR(-1)),
+                    feedback_week=datetime.datetime.today().date() + relativedelta(weekday=FR(-1)),
                 ).exists()
                 
                 feedback_objs = ClientFeedback.objects.filter(
                     project=project,
-                ).annotate(
-                    feedback_week=ExpressionWrapper(
-                        Trunc('created_at', 'week') - datetime.timedelta(days=3),
-                        output_field=DateField(),
-                    )
                 ).order_by('-created_at')
-
+                
                 form = ClientFeedbackForm()
                 
                 context = dict(
@@ -139,7 +133,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
             project = project_token.last().project
             feedback_obj = ClientFeedback.objects.filter(
                 project=project,
-                created_at__date__gt=datetime.datetime.today().date() + relativedelta(weekday=FR(-1)),
+                feedback_week=datetime.datetime.today().date() + relativedelta(weekday=FR(-1)),
             ).last()
             if request.method == 'POST':
                 form = ClientFeedbackForm(request.POST, instance=feedback_obj)

@@ -6,8 +6,8 @@ from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum, ExpressionWrapper
-from django.db.models.functions import Trunc
+from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F
+from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from tinymce.models import HTMLField
 
 from config.model.TimeStampMixin import TimeStampMixin
@@ -68,15 +68,10 @@ class Project(TimeStampMixin, AuthorMixin):
     def last_x_weeks_feedback(self, x):
         today = datetime.datetime.today()
         last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x))
-
+        
         return self.clientfeedback_set.filter(
             created_at__date__lte=today,
             created_at__date__gt=last_xth_friday,
-        ).annotate(
-            feedback_week=ExpressionWrapper(
-                    Trunc('created_at', 'week') - datetime.timedelta(days=3),
-                    output_field=models.DateField(),
-                )
         ).order_by("-created_at").exclude(project__active=False)
 
 
@@ -220,6 +215,8 @@ class ProjectNeed(TimeStampMixin, AuthorMixin):
 class ClientFeedback(AuthorMixin, TimeStampMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
+    feedback_week = models.DateField(null=True)
+
     feedback = models.TextField()
     avg_rating = models.FloatField()
 
@@ -234,7 +231,8 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
         avg_rating = round(avg_rating/5, 1)
         self.avg_rating = avg_rating
         super(ClientFeedback, self).save(*args, **kwargs)
+        self.feedback_week = self.created_at + relativedelta(weekday=FR(-1))
+        return super(ClientFeedback, self).save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.project.title} ({str(self.avg_rating)})"
-
