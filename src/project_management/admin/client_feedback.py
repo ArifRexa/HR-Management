@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta, FR
 from config.settings import employee_ids
 from django.contrib import admin, messages
 from django.contrib.auth.decorators import login_required
-from django.urls import path
+from django.urls import path, reverse
 from django.contrib.auth.models import AnonymousUser, User
 from django.template.response import TemplateResponse
 from django.db.models import F, ExpressionWrapper, DateField
@@ -29,8 +29,10 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
     search_fields = ('project__title',)
     autocomplete_fields = ('project',)
 
+    URL_ACCESS_IDS = [30, ]
+
     def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
-        if str(request.user.employee.id) not in employee_ids:
+        if not request.user.is_authenticated or str(request.user.employee.id) not in employee_ids:
             return redirect('/admin/')
         
         num_of_week = 4
@@ -57,10 +59,32 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
 
         context = dict(
                 self.admin_site.each_context(request),
+                url_permission=request.user.id in self.URL_ACCESS_IDS,
                 week_titles=x_weeks_titles,
                 weekly_feedbacks=zip(projects, weekly_feedbacks),
             )
         return TemplateResponse(request, 'admin/client_feedback/client_feedback_admin.html', context)
+
+
+    def client_feedback_urls_view(self, request, *args, **kwargs):
+        if not request.user.is_authenticated or request.user.id not in self.URL_ACCESS_IDS:
+            return redirect('/')
+        
+        token_objs = ProjectToken.objects.all().values('project__title', 'token')
+
+        BASE_URL = f'http://{request.get_host()}'
+
+        for token_obj in token_objs:
+            kwargs = dict(
+                token=token_obj['token'],
+            )
+            token_obj['url'] = BASE_URL + reverse("admin:client_feedback", kwargs=kwargs)
+        
+        context = dict(
+                self.admin_site.each_context(request),
+                token_objs=token_objs
+            )
+        return TemplateResponse(request, 'admin/client_feedback/client_feedback_urls.html', context)
 
 
     def get_urls(self):
@@ -78,7 +102,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
             path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
             
             path("", self.custom_changelist_view, name='client_feedback_admin'),
-            # path("urls/", self.client_feedback_urls_view, name='client_feedback_urls'),
+            path("urls/", self.client_feedback_urls_view, name='client_feedback_urls'),
 
             path('client-feedback/<str:token>/', self.client_feedback_view, name='client_feedback'),
             path('client-feedback/<str:token>/update/', self.client_feedback_form_view, name='client_feedback_form'), 
@@ -150,7 +174,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                 form = ClientFeedbackForm(instance=feedback_obj)
 
                 context = dict(
-                    self.admin_site.each_context(request),
+                    context,
                     temp_token=token,
                     feedback_form=form,
                 )

@@ -18,6 +18,16 @@
 
 <div class="container">
     <h2 class="h2 text-center py-3">Client Feedback</h2>
+    {% if url_permission %}
+    <div class="text-end">
+        <a 
+            href="{% url 'admin:client_feedback_urls' %}" 
+            class="text-decoration-none btn btn-primary text-white mb-3 mx-auto"
+        >
+            View URL(s)
+        </a>
+    </div>
+    {% endif %}
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
             <thead>

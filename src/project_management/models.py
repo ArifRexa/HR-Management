@@ -1,6 +1,7 @@
 import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
+from uuid import uuid4
 
 from dateutil.utils import today
 from django.contrib.auth.models import User
@@ -76,8 +77,8 @@ class Project(TimeStampMixin, AuthorMixin):
 
 
 class ProjectToken(TimeStampMixin, AuthorMixin):
-    project = models.OneToOneField(Project, on_delete=models.CASCADE)
-    token = models.CharField(max_length=32)
+    project = models.OneToOneField(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    token = models.CharField(default = uuid4, max_length=255)
 
     def __str__(self) -> str:
         return f'{self.project.title} - {self.token[:-8]}'
