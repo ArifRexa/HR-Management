@@ -1,11 +1,14 @@
 import datetime
 from datetime import timedelta
+from dateutil.relativedelta import relativedelta, FR
+from uuid import uuid4
 
 from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum
+from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F
+from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from tinymce.models import HTMLField
 
 from config.model.TimeStampMixin import TimeStampMixin
@@ -62,6 +65,23 @@ class Project(TimeStampMixin, AuthorMixin):
     @property
     def created_at_timestamp(self):
         return int(self.created_at.strftime("%s")) * 1000
+    
+    def last_x_weeks_feedback(self, x):
+        today = datetime.datetime.today()
+        last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x))
+        
+        return self.clientfeedback_set.filter(
+            created_at__date__lte=today,
+            created_at__date__gt=last_xth_friday,
+        ).order_by("-created_at").exclude(project__active=False)
+
+
+class ProjectToken(TimeStampMixin, AuthorMixin):
+    project = models.OneToOneField(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    token = models.CharField(default = uuid4, max_length=255)
+
+    def __str__(self) -> str:
+        return f'{self.project.title} - {self.token[:-8]}'
 
 
 class ProjectTechnology(TimeStampMixin, AuthorMixin):
@@ -191,3 +211,29 @@ class ProjectNeed(TimeStampMixin, AuthorMixin):
     technology = models.CharField(max_length=255)
     quantity = models.IntegerField()
     note = models.TextField(null=True, blank=True)
+
+
+class ClientFeedback(AuthorMixin, TimeStampMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    feedback_week = models.DateField(null=True)
+
+    feedback = models.TextField()
+    avg_rating = models.FloatField()
+
+    rating_communication = models.FloatField()
+    rating_output = models.FloatField()
+    rating_time_management = models.FloatField()
+    rating_billing = models.FloatField()
+    rating_long_term_interest = models.FloatField()
+
+    def save(self, *args, **kwargs):
+        avg_rating = self.rating_communication + self.rating_output + self.rating_time_management + self.rating_billing + self.rating_long_term_interest
+        avg_rating = round(avg_rating/5, 1)
+        self.avg_rating = avg_rating
+        super(ClientFeedback, self).save(*args, **kwargs)
+        self.feedback_week = self.created_at + relativedelta(weekday=FR(-1))
+        return super(ClientFeedback, self).save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return f"{self.project.title} ({str(self.avg_rating)})"

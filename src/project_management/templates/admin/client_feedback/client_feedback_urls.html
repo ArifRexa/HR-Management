@@ -1,0 +1,50 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}
+    Client Feedback Admin
+{% endblock %}
+
+{% block content %}
+
+{% load static %}
+
+<link 
+    rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
+/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css" integrity="sha512-MV7K8+y+gLIBoVD59lQIYicR65iaqukzvf/nwasF0nqhPay5w/9lJmVM2hMDcnK1OnMGCdVK+iQrJ7lzPJQd1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+
+
+<div class="container">
+    <h2 class="h2 text-center py-3">Client Feedback URL(s)</h2>
+    <div class="text-right">
+        <a href="{% url 'admin:client_feedback_urls' %}" class="btn"></a>
+    </div>
+    <div class="table-responsive">
+        <table class="table w-100 table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col" class="align-middle">Project</th>
+                    <th scope="col">URL</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for token_obj in token_objs %}
+                <tr>
+                    <td class="align-middle">{{ token_obj.project__title }}</td>
+                    <td class="align-middle">{{ token_obj.url }}</td>
+                    <td class="align-middle">
+                        <div class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('{{ token_obj.url }}')">
+                            Copy
+                        </div>
+                    </td>
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

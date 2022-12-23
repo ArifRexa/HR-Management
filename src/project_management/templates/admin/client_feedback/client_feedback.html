@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}
+    Employee Feedback Update
+{% endblock %}
+
+{% block content %}
+{% load static %}
+
+<link 
+    rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
+/>
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+
+{% if temp_token %}
+<div class="row">
+    <div class="col {% if not current_feedback_exists %}col-xl-8{% endif %} order-1 order-xl-0">
+        <div class="container">
+            <h2 class="h2 text-center py-3">Your Feedback(s)</h2>
+            <h5 class="h5 text-center pb-3">Project: {{ project.title }}</h5>
+            <div class="table-responsive">
+                <table class="table w-100 table-bordered">
+                    <thead>
+                        <tr>
+                            <th class="border" scope="col">Weekdate</th>
+                            <th class="border" scope="col">Feedback</th>
+                            <th class="border" scope="col">Communication</th>
+                            <th class="border" scope="col">Output</th>
+                            <th class="border" scope="col">Time Management</th>
+                            <th class="border" scope="col">Billing</th>
+                            <th class="border" scope="col">Long-Term Working Interest</th>
+                            <th class="border" scope="col">Average</th>
+                            <th class="border" scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fback_obj in feedback_objs %}
+                            <tr>
+                                <td>{{ fback_obj.feedback_week|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if fback_obj.feedback|length >= 150 %}
+                                        <div class="popover-wrapper">
+                                            <div class="popover-title">
+                                                {{ fback_obj.feedback|stringformat:".100s" }}
+                                            </div>
+                                            <div class="popover-message">
+                                                {{ fback_obj.feedback }}
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <div>{{ fback_obj.feedback }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>{{ fback_obj.rating_communication }}</td>
+                                <td>{{ fback_obj.rating_output }}</td>
+                                <td>{{ fback_obj.rating_time_management }}</td>
+                                <td>{{ fback_obj.rating_billing }}</td>
+                                <td>{{ fback_obj.rating_long_term_interest }}</td>
+                                <td>{{ fback_obj.avg_rating }}</td>
+    
+                                {% if forloop.counter == 1 and current_feedback_exists %}
+                                    <td>
+                                        <a class="btn btn-secondary btn-sm text-light" href="{% url 'admin:client_feedback_form' token=temp_token %}">Edit</a>
+                                    </td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
+                                
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% if not current_feedback_exists %}
+    <div class="col-xl-4 col-12 col-sm-8 ">
+        {% include 'admin/form/client_feedback_form.html' %}
+    </div>
+    {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}
+    Client Feedback Admin
+{% endblock %}
+
+{% block content %}
+
+{% load humanize %}
+{% load static %}
+
+<link 
+    rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
+/>
+<link rel="stylesheet" href="{% static 'css/list.css' %}">
+
+
+<div class="container">
+    <h2 class="h2 text-center py-3">Client Feedback</h2>
+    {% if url_permission %}
+    <div class="text-end">
+        <a 
+            href="{% url 'admin:client_feedback_urls' %}" 
+            class="text-decoration-none btn btn-primary text-white mb-3 mx-auto"
+        >
+            View URL(s)
+        </a>
+    </div>
+    {% endif %}
+    <div class="table-responsive">
+        <table class="table w-100 table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col" class="align-middle">Project</th>
+                    
+                    {% for week in week_titles %}
+                        <th class="border">{{ week }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for project, weekly_feedback in weekly_feedbacks %}
+                <tr>
+                    <td class="align-middle">{{ project.title }}</td>
+
+                    {% for cl_fb in weekly_feedback %}
+                        {% if cl_fb %}
+                            <td>
+                                {% if cl_fb.avg_rating <= 3 %}
+                                    <div style="color: red;"><strong>Avgerage Rating: {{ cl_fb.avg_rating }}</strong></div><br>
+                                {% else %}
+                                    <div style="color: green;"><strong>Avgerage Rating: {{ cl_fb.avg_rating }} </strong></div><br>
+                                {% endif %}
+    
+                                <div>Communication: {{ cl_fb.rating_communication}} </div>
+                                <div>Output: {{ cl_fb.rating_output}} </div>
+                                <div>Time Management: {{ cl_fb.rating_time_management}} </div>
+                                <div>Billing: {{ cl_fb.rating_billing }} </div>
+                                <div>Interested in Long Term: {{ cl_fb.rating_long_term_interest }} </div>
+    
+                                <br>
+
+                                {% if cl_fb.feedback|length >= 300 %}
+                                    <div class="popover-wrapper">
+                                        <div class="popover-title h6">
+                                            {{ cl_fb.feedback|stringformat:".150s" }}
+                                        </div>
+                                        <div class="popover-message">
+                                            {{ cl_fb.feedback }}
+                                        </div>
+                                    </div>
+                                    
+                                {% else %}
+                                <div class="h6">{{ cl_fb.feedback }}</div>
+                                {% endif %}
+                                
+                                
+                            </td>
+                        {% else %}
+                            <td class="align-middle"> - </td>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
