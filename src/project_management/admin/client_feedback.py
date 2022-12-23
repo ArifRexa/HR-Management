@@ -60,7 +60,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
 
         context = dict(
                 self.admin_site.each_context(request),
-                url_permission=request.user.id in self.URL_ACCESS_IDS,
+                url_permission=request.user.employee.id in self.URL_ACCESS_IDS,
                 week_titles=x_weeks_titles,
                 weekly_feedbacks=zip(projects, weekly_feedbacks),
             )
