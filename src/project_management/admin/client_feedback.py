@@ -68,7 +68,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
 
 
     def client_feedback_urls_view(self, request, *args, **kwargs):
-        if not request.user.is_authenticated or request.user.id not in self.URL_ACCESS_IDS:
+        if not request.user.is_authenticated or request.user.employee.id not in self.URL_ACCESS_IDS:
             return redirect('/')
         
         token_objs = ProjectToken.objects.all().values('project__title', 'token')
