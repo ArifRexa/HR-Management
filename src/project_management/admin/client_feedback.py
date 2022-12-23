@@ -9,6 +9,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.template.response import TemplateResponse
 from django.db.models import F, ExpressionWrapper, DateField
 from django.db.models.functions import Trunc
+from django.http import HttpResponseNotFound
 
 from django.shortcuts import redirect
 
@@ -119,7 +120,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
             )
 
             if not project_token.exists():
-                messages.error(request, 'This URL is expired / invalid.')
+                return HttpResponseNotFound("<h1>Invalid / Expired URL</h1>")
             else:
                 project = project_token.last().project
                 current_feedback_exists = ClientFeedback.objects.filter(
@@ -152,7 +153,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
         )
 
         if not project_token.exists():
-            messages.error(request, 'This URL is expired / invalid.')
+            return HttpResponseNotFound("<h1>Invalid / Expired URL</h1>")
         else:
             project = project_token.last().project
             feedback_obj = ClientFeedback.objects.filter(
