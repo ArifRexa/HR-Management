@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path, reverse
 from django.contrib.auth.models import AnonymousUser, User
 from django.template.response import TemplateResponse
-from django.db.models import F, ExpressionWrapper, DateField
+from django.db.models import Max
 from django.db.models.functions import Trunc
 from django.http import HttpResponseNotFound
 
@@ -41,7 +41,9 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
         x_weeks = [i.date() for i in get_last_x_friday(datetime.datetime.today(), num_of_week)]
         x_weeks_titles = [i.strftime("%b %d, %Y") for i in x_weeks]
 
-        projects = Project.objects.filter(active=True)
+        projects = Project.objects.filter(active=True).annotate(
+            last_feedback_date=Max('clientfeedback__updated_at'),
+        ).order_by('-last_feedback_date')
         weekly_feedbacks = list()
 
         for pr in projects:

@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path
 from django.contrib.auth.models import AnonymousUser
 from django.template.response import TemplateResponse
+from django.db.models import Min, Max
 
 from django.shortcuts import redirect
 
@@ -50,9 +51,11 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
 
         six_months_names = [months[i-1] for i in six_months]
 
-        employees = Employee.objects.filter(active=True)
-        monthly_feedbacks = list()
+        employees = Employee.objects.filter(active=True).annotate(
+            last_feedback_date=Max('employeefeedback__updated_at'),
+        ).order_by('-last_feedback_date')
 
+        monthly_feedbacks = list()
         for e in employees:
             temp = []
             for month in six_months:
