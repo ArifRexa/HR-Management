@@ -1,7 +1,11 @@
 import datetime
+import functools
+import operator
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
+from django.db import models
+from django.db.models import Q, Case, When, Value
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
@@ -60,11 +64,27 @@ class EmployeeNearbySummery:
         self.employees = Employee.objects.filter(active=True)
 
     def birthdays(self):
-        # TODO : Need to fix it
-        return self.employees.filter(
-            date_of_birth__month__gte=timezone.now().date().month,
-            date_of_birth__month__lte=timezone.now().date().month
-        ).order_by('date_of_birth__month', 'date_of_birth__day')
+        now = datetime.datetime.now()
+        then = now + datetime.timedelta(days=31)
+
+        monthdays = [(now.month, now.day)]
+        while now <= then:
+            monthdays.append((now.month, now.day))
+            now += datetime.timedelta(days=1)
+
+        monthdays = (dict(zip(("date_of_birth__month", "date_of_birth__day"), t)) 
+                    for t in monthdays)
+
+        query = functools.reduce(operator.or_, (Q(**d) for d in monthdays))
+
+        # TODO: Improve Query Performance
+        return self.employees.filter(query).annotate(
+            year_change=Case(
+                When(date_of_birth__month__lt=datetime.datetime.now().date().month, then=Value(1)),
+                default=Value(0),
+                output_field=models.IntegerField()
+            )
+        ).order_by('year_change', 'date_of_birth__month', 'date_of_birth__day')
 
     def permanents(self):
         return self.employees.filter(
