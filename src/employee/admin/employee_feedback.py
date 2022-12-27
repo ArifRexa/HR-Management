@@ -97,7 +97,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 employee=request.user.employee, 
                 created_at__gte=datetime.datetime.today().replace(day=1)
             ).exists()
-            employee_feedbac_objs = EmployeeFeedback.objects.filter(
+            employee_feedback_objs = EmployeeFeedback.objects.filter(
                 employee=request.user.employee
             ).order_by('-created_at')
             
@@ -106,7 +106,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             context = dict(
                 self.admin_site.each_context(request),
                 employee_feedback_form=form,
-                employee_feedbac_objs=employee_feedbac_objs,
+                employee_feedback_objs=employee_feedback_objs,
                 current_feedback_exists=current_feedback_exists,
             )
             return TemplateResponse(request, 'admin/employee_feedback/employee_feedback.html', context)
