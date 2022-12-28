@@ -26,7 +26,17 @@
                 </tr>
                 <tr>
                     {% for month in month_names %}
-                        <th style="width: 28%;">{{ month }}</th>
+                        <th style="width: 28%;">
+                            {% if forloop.counter == 1 %}
+                                <a class="text-decoration-none text-dark"
+                                    href="?o={% if o == '1' %}-1{% else %}1{% endif %}"
+                                >
+                                    {{ month }}
+                                </a>
+                            {% else %}
+                                {{ month }}
+                            {% endif %}
+                        </th>
                     {% endfor %}
                 </tr>
             </thead>
