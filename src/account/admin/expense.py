@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.db.models import Sum, Q, Value, QuerySet, Func, F, CharField
 from django.template.loader import get_template
 from django.utils import timezone
+from django.utils.html import format_html
 
 from account.models import Expense, ExpenseCategory, ExpanseAttachment, ExpenseGroup
 from config.admin.utils import simple_request_filter
@@ -34,7 +35,7 @@ class ExpanseAttachmentInline(admin.TabularInline):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'expanse_group', 'expense_category', 'amount', 'note', 'created_by')
+    list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by')
     date_hierarchy = 'date'
     list_filter = ['expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
@@ -42,7 +43,15 @@ class ExpenseAdmin(admin.ModelAdmin):
     search_fields = ['note']
     actions = ('print_voucher',)
     autocomplete_fields = ('expanse_group', 'expense_category')
-
+    
+    @admin.display(description="Amount", ordering='amount')
+    def get_amount(self, obj):
+        html_template = get_template('admin/expense/list/col_amount.html')
+        html_content = html_template.render({
+            'expense': obj,
+        })
+        return format_html(html_content)
+    
     def get_queryset(self, request):
         qs = super(ExpenseAdmin, self).get_queryset(request)
         if not request.user.is_superuser:
