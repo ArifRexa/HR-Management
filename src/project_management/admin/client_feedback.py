@@ -7,11 +7,14 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path, reverse
 from django.contrib.auth.models import AnonymousUser, User
 from django.template.response import TemplateResponse
-from django.db.models import Max
+from django.db import models
+from django.db.models import Max, Subquery, OuterRef, Case, When, Value
 from django.db.models.functions import Trunc
 from django.http import HttpResponseNotFound
 
 from django.shortcuts import redirect
+
+from django.utils import timezone
 
 from project_management.models import ClientFeedback, Project, ProjectToken
 from project_management.forms import ClientFeedbackForm
@@ -41,11 +44,36 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
         x_weeks = [i.date() for i in get_last_x_friday(datetime.datetime.today(), num_of_week)]
         x_weeks_titles = [i.strftime("%b %d, %Y") for i in x_weeks]
 
+        order_keys = {
+            '1': 'last_feedback_rating',
+            '-1': '-last_feedback_rating',
+        }
+
+        order_by = ['-current_feedback_exists', '-last_feedback_date']
+
+        o=request.GET.get('o', None)
+        if o and o in order_keys.keys():
+            order_by.insert(1, order_keys.get(o))
+        
+        last_week=timezone.now() + relativedelta(weekday=FR(-1))
+        last_week=last_week.date()
+
+        c_fback_qs = ClientFeedback.objects.filter(
+                        project=OuterRef('pk'), 
+                        feedback_week=last_week,
+                    )
+        
         projects = Project.objects.filter(active=True).annotate(
             last_feedback_date=Max('clientfeedback__updated_at'),
-        ).order_by('-last_feedback_date')
-        weekly_feedbacks = list()
+            last_feedback_rating=Subquery(c_fback_qs.values('avg_rating')[:1]),
+            current_feedback_exists=Case(
+                When(last_feedback_rating=None, then=Value(False)),
+                default=Value(True),
+                output_field=models.BooleanField(),
+            ),
+        ).order_by(*order_by)
 
+        weekly_feedbacks = list()
         for pr in projects:
             temp = []
             last_x_weeks_feedback = pr.last_x_weeks_feedback(num_of_week)
@@ -65,6 +93,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                 url_permission=request.user.employee.id in self.URL_ACCESS_IDS,
                 week_titles=x_weeks_titles,
                 weekly_feedbacks=zip(projects, weekly_feedbacks),
+                o=o, # order key
             )
         return TemplateResponse(request, 'admin/client_feedback/client_feedback_admin.html', context)
 

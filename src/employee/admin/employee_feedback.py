@@ -1,4 +1,5 @@
 import datetime
+from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from config.settings import employee_ids
 from django.contrib import admin, messages
@@ -6,7 +7,9 @@ from django.contrib.auth.decorators import login_required
 from django.urls import path
 from django.contrib.auth.models import AnonymousUser
 from django.template.response import TemplateResponse
-from django.db.models import Min, Max
+
+from django.db import models
+from django.db.models import Max, Subquery, OuterRef, Case, When, Value, Prefetch
 
 from django.shortcuts import redirect
 
@@ -29,6 +32,9 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
     # autocomplete_fields = ('employee',)
 
     def changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
+
+        
+
         if str(request.user.employee.id) not in employee_ids:
             return redirect('/admin/')
 
@@ -51,9 +57,31 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
 
         six_months_names = [months[i-1] for i in six_months]
 
+        order_keys = {
+            '1': 'last_feedback_rating',
+            '-1': '-last_feedback_rating',
+        }
+
+        order_by = ['-current_feedback_exists', '-last_feedback_date']
+
+        o=request.GET.get('o', None)
+        if o and o in order_keys.keys():
+            order_by.insert(1, order_keys.get(o))
+
+        e_fback_qs = EmployeeFeedback.objects.filter(
+                        employee=OuterRef('pk'), 
+                        updated_at__month=timezone.now().date().month,
+                    )
+
         employees = Employee.objects.filter(active=True).annotate(
             last_feedback_date=Max('employeefeedback__updated_at'),
-        ).order_by('-last_feedback_date')
+            last_feedback_rating=Subquery(e_fback_qs.values('avg_rating')[:1]),
+            current_feedback_exists=Case(
+                When(last_feedback_rating=None, then=Value(False)),
+                default=Value(True),
+                output_field=models.BooleanField(),
+            ),
+        ).order_by(*order_by)
 
         monthly_feedbacks = list()
         for e in employees:
@@ -70,6 +98,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 self.admin_site.each_context(request),
                 month_names=six_months_names,
                 monthly_feedbacks=zip(employees, monthly_feedbacks),
+                o=o, # order key
             )
         return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_admin.html', context)
 
@@ -97,7 +126,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 employee=request.user.employee, 
                 created_at__gte=datetime.datetime.today().replace(day=1)
             ).exists()
-            employee_feedbac_objs = EmployeeFeedback.objects.filter(
+            employee_feedback_objs = EmployeeFeedback.objects.filter(
                 employee=request.user.employee
             ).order_by('-created_at')
             
@@ -106,7 +135,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             context = dict(
                 self.admin_site.each_context(request),
                 employee_feedback_form=form,
-                employee_feedbac_objs=employee_feedbac_objs,
+                employee_feedback_objs=employee_feedback_objs,
                 current_feedback_exists=current_feedback_exists,
             )
             return TemplateResponse(request, 'admin/employee_feedback/employee_feedback.html', context)
