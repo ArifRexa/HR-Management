@@ -35,7 +35,17 @@
                     <th scope="col" class="align-middle">Project</th>
                     
                     {% for week in week_titles %}
-                        <th class="border">{{ week }}</th>
+                        <th class="border">
+                            {% if forloop.counter == 1 %}
+                                <a class="text-decoration-none text-dark"
+                                    href="?o={% if o == '1' %}-1{% else %}1{% endif %}"
+                                >
+                                    {{ week }}
+                                </a>
+                            {% else %}
+                                {{ week }}
+                            {% endif %}
+                        </th>
                     {% endfor %}
                 </tr>
             </thead>
