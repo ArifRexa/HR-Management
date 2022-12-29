@@ -24,7 +24,10 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     def get_total_hour(self, request):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
-            qs.filter(project_hour__manager=request.user.employee.id)
+            if request.user.employee.manager:
+                qs.filter(project_hour__manager=request.user.employee.id)
+            else:
+                qs.filter(employee=request.user.employee)
         return qs.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view
@@ -45,7 +48,10 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         """
         query_set = super(EmployeeHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser:
-            return query_set.filter(project_hour__manager=request.user.employee.id)
+            if request.user.employee.manager:
+                return query_set.filter(project_hour__manager=request.user.employee.id)
+            else:
+                return query_set.filter(employee=request.user.employee)
         return query_set
 
     def get_list_filter(self, request):
