@@ -189,11 +189,19 @@ class SalarySheetRepository:
         @param employee:
         @return number:
         """
-        project_hours = employee.projecthour_set.filter(
-            date__month=salary_sheet.date.month,
-            date__year=salary_sheet.date.year,
-            payable=True
-        ).aggregate(total_hour=Sum('hours'))['total_hour']
+
+        if employee.manager:
+            project_hours = employee.projecthour_set.filter(
+                date__month=salary_sheet.date.month,
+                date__year=salary_sheet.date.year,
+                payable=True
+            ).aggregate(total_hour=Sum('hours'))['total_hour']
+        else:
+            project_hours = employee.employeeprojecthour_set.filter(
+                updated_at__month=salary_sheet.date.month,
+                updated_at__year=salary_sheet.date.year
+            ).aggregate(total_hour=Sum('hours'))['total_hour']
+
         if project_hours:
             return project_hours * 10
         return 0
