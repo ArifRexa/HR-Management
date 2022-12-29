@@ -1,7 +1,7 @@
 from functools import update_wrapper
 import datetime
 from dateutil.relativedelta import relativedelta, FR
-from config.settings import employee_ids
+from config.settings import employee_ids, CLIENT_FEEDBACK_VIDEO_EMBED_URL
 from django.contrib import admin, messages
 from django.contrib.auth.decorators import login_required
 from django.urls import path, reverse
@@ -172,6 +172,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                     current_feedback_exists=current_feedback_exists,
                     feedback_objs=feedback_objs,
                     feedback_form=form,
+                    youtube_url=CLIENT_FEEDBACK_VIDEO_EMBED_URL,
                 )
             return TemplateResponse(request, 'admin/client_feedback/client_feedback.html', context)
 
@@ -209,6 +210,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                     context,
                     temp_token=token,
                     feedback_form=form,
+                    youtube_url=CLIENT_FEEDBACK_VIDEO_EMBED_URL,
                 )
                 
                 return TemplateResponse(request, 'admin/client_feedback/client_feedback_update.html', context)
