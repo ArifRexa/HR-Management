@@ -306,7 +306,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     def send_ct_time_extend_email(self, request, queryset):
         for candidate_assesment in queryset:
             candidate_pk = candidate_assesment.candidate_job.candidate.pk
-            management.call_command('send_ct_time_extend_email', candidate_pk)
+            management.call_command('send_ct_time_extend_email', candidate_pk, candidate_assesment)
 
 
 @admin.register(ResetPassword)
