@@ -50,7 +50,11 @@
 {#{% block bodyclass %}{{ block.super }} dashboard{% endblock %}#}
 
 {% block content_title %}
-
+    {% if not current_month_feedback_done %}
+        <div class="alert alert-warning">
+            Please provide this months feedback <a href="{% url 'admin:employee_feedback' %}" class="alert-link">here</a> before the month ends.
+        </div>
+    {% endif %}
     <div class="row mb-4">
         <div class="col-md-5 d-flex justify-content-center justify-content-md-start align-items-center">
             {% if title %}

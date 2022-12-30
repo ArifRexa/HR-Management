@@ -4,10 +4,12 @@ from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
+from employee.models.employee_feedback import EmployeeFeedback
 from config.settings import employee_ids
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
 from employee.models.employee import Employee
+from django.utils import timezone
 
 
 def formal_summery(request):
@@ -41,6 +43,13 @@ def formal_summery(request):
             order_by_list.append('employee__full_name')
 
         employee_projects = employee_projects.order_by(*order_by_list)
+    
+    current_month_feedback_done = False
+    if not isinstance(request.user, AnonymousUser) and request.user.employee.id not in employee_ids:
+        current_month_feedback_done = EmployeeFeedback.objects.filter(
+            employee=request.user.employee,
+            created_at__date__month=timezone.now().date().month,
+        ).exists()
 
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,
@@ -52,6 +61,7 @@ def formal_summery(request):
         "employee_projects": employee_projects,
         "ord": order_by,
         "birthday_today": get_managed_birthday_image(request),
+        "current_month_feedback_done": current_month_feedback_done,
     }
 
 
