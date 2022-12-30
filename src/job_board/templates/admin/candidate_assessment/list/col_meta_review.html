@@ -8,7 +8,7 @@
             {% with reviews|first as review %}
             <b>- {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>
                 <sub>&nbsp;&nbsp;{{ review.created_at | naturaltime }}</sub> </b>  <br>
-            {{ review.note | linebreaks }} <br>
+            {{ review.note|stringformat:".50s" | linebreaks }} <br>
 
             {% endwith %}
         {% else %}
