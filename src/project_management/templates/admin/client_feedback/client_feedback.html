@@ -1,110 +1,130 @@
-{% block content %}
+
 {% load static %}
 
-<link 
-    rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
-    integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous"
-/>
-<link rel="stylesheet" href="{% static 'css/list.css' %}">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback | Mediusware</title>
 
-{% if temp_token %}
-<div class="row">
-    <div class="col {% if not current_feedback_exists %}col-xl-8{% endif %} order-1 order-xl-0">
-        <div class="container">
-            <h2 class="h2 text-center py-3">Weekly Feedback</h2>
+    <link 
+        rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" 
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" 
+        crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="{% static 'css/list.css' %}">
+</head>
+<body>
+    {% if temp_token %}
 
-            {% comment %} <div class="video pb-4 mx-auto text-center">
-                <iframe width="100%" height="315" style="max-width: 500px;"
-                    src="{{ youtube_url }}" 
-                    title="YouTube video player" frameborder="0" 
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                    allowfullscreen>
-                </iframe>
-            </div> {% endcomment %}
+    <div class="container py-3 pb-5">
+        <h2 class="h1 fs-1 text-center py-4">Weekly Feedback</h2>
 
-            <div class="audio pb-3">
-                <audio controls>
-                    <source src="{% static 'audio/client_feedback_intro.mp3' %}" type="audio/mpeg">
-                    Your browser does not support the audio element.
-                </audio>
-            </div>
-
-            <div class="">
-                <p>
-                    Hello, dear hope you are doing well. We are working together for a long time, 
-                    If  I did any wrong please share it with me feel free and, 
-                    please give me Feedback on my job. The Feedback will be an inspiration of mine to best work. 
-                    I will try to satisfy you with my level best.
-                </p>
-                <p>
-                    <strong>
-                        Please don't hesitate to give your honest(Positive / Negative) opinion.
-                    Your feedback is my fuel to grow together in long term.
-                    </strong>
-                </p>
-            </div>
-            <h5 class="h5 text-center pb-3">Project: {{ project.title }}</h5>
-            <div class="table-responsive">
-                <table class="table w-100 table-bordered">
-                    <thead>
-                        <tr>
-                            <th class="border" scope="col">Weekdate</th>
-                            <th class="border" scope="col">Feedback</th>
-                            <th class="border" scope="col">Communication</th>
-                            <th class="border" scope="col">Output</th>
-                            <th class="border" scope="col">Time Management</th>
-                            <th class="border" scope="col">Billing</th>
-                            <th class="border" scope="col">Long-Term Working Interest</th>
-                            <th class="border" scope="col">Average</th>
-                            <th class="border" scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for fback_obj in feedback_objs %}
-                            <tr>
-                                <td>{{ fback_obj.feedback_week|date:"M d, Y" }}</td>
-                                <td>
-                                    {% if fback_obj.feedback|length >= 150 %}
-                                        <div class="popover-wrapper">
-                                            <div class="popover-title">
-                                                {{ fback_obj.feedback|stringformat:".100s" }}
-                                            </div>
-                                            <div class="popover-message">
-                                                {{ fback_obj.feedback }}
-                                            </div>
-                                        </div>
-                                    {% else %}
-                                        <div>{{ fback_obj.feedback }}</div>
-                                    {% endif %}
-                                </td>
-                                <td>{{ fback_obj.rating_communication }}</td>
-                                <td>{{ fback_obj.rating_output }}</td>
-                                <td>{{ fback_obj.rating_time_management }}</td>
-                                <td>{{ fback_obj.rating_billing }}</td>
-                                <td>{{ fback_obj.rating_long_term_interest }}</td>
-                                <td>{{ fback_obj.avg_rating }}</td>
-    
-                                {% if forloop.counter == 1 and current_feedback_exists %}
-                                    <td>
-                                        <a class="btn btn-secondary btn-sm text-light" href="{% url 'admin:client_feedback_form' token=temp_token %}">Edit</a>
-                                    </td>
-                                {% else %}
-                                    <td></td>
-                                {% endif %}
-                                
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+        {% comment %} <div class="video pb-4 mx-auto text-center">
+            <iframe width="100%" height="315" style="max-width: 500px;"
+                src="{{ youtube_url }}" 
+                title="YouTube video player" frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
+        </div> {% endcomment %}
+        
+        <div class="audio pb-3">
+            <audio controls>
+                <source src="{% static 'audio/client_feedback_intro.mp3' %}" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
+        </div>
+        
+        <div class="">
+            <p>
+                Hello, dear hope you are doing well. We are working together for a long time, 
+                If  I did any wrong please share it with me feel free and, 
+                please give me Feedback on my job. The Feedback will be an inspiration of mine to best work. 
+                I will try to satisfy you with my level best.
+            </p>
+            <p>
+                <strong>
+                    Please don't hesitate to give your honest(Positive / Negative) opinion.
+                Your feedback is my fuel to grow together in long term.
+                </strong>
+            </p>
         </div>
     </div>
-    {% if not current_feedback_exists %}
-    <div class="col-xl-4 col-12 col-sm-8 ">
-        {% include 'admin/form/client_feedback_form.html' %}
+    
+    <div class="row">
+        <div class="container">
+            <h5 class="h5 text-center pb-3">Project: {{ project.title }}</h5>
+        </div>
+        <div class="col {% if not current_feedback_exists %}col-xl-8{% endif %} order-1 order-xl-0">
+            <div class="container py-3 pb-5">
+                <h5 class="h5 text-center pb-3">Weekly Feedbacks</h5>
+                <div class="table-responsive">
+                    <table class="table w-100 table-bordered">
+                        <thead>
+                            <tr>
+                                <th class="border" scope="col">Weekdate</th>
+                                <th class="border" scope="col">Feedback</th>
+                                <th class="border" scope="col">Communication</th>
+                                <th class="border" scope="col">Output</th>
+                                <th class="border" scope="col">Time Management</th>
+                                <th class="border" scope="col">Billing</th>
+                                <th class="border" scope="col">Long-Term Working Interest</th>
+                                <th class="border" scope="col">Average</th>
+                                <th class="border" scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for fback_obj in feedback_objs %}
+                                <tr>
+                                    <td>{{ fback_obj.feedback_week|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if fback_obj.feedback|length >= 150 %}
+                                            <div class="popover-wrapper">
+                                                <div class="popover-title">
+                                                    {{ fback_obj.feedback|stringformat:".100s" }}
+                                                </div>
+                                                <div class="popover-message">
+                                                    {{ fback_obj.feedback }}
+                                                </div>
+                                            </div>
+                                        {% else %}
+                                            <div>{{ fback_obj.feedback }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ fback_obj.rating_communication }}</td>
+                                    <td>{{ fback_obj.rating_output }}</td>
+                                    <td>{{ fback_obj.rating_time_management }}</td>
+                                    <td>{{ fback_obj.rating_billing }}</td>
+                                    <td>{{ fback_obj.rating_long_term_interest }}</td>
+                                    <td>{{ fback_obj.avg_rating }}</td>
+        
+                                    {% if forloop.counter == 1 and current_feedback_exists %}
+                                        <td>
+                                            <a class="btn btn-secondary btn-sm text-light" href="{% url 'admin:client_feedback_form' token=temp_token %}">Edit</a>
+                                        </td>
+                                    {% else %}
+                                        <td></td>
+                                    {% endif %}
+                                    
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% if not current_feedback_exists %}
+        <div class="col-xl-4 col-12 col-sm-8 ">
+            <div class="container">
+                {% include 'admin/form/client_feedback_form.html' %}
+            </div>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
-</div>
 
-{% endif %}
-{% endblock %}
+    {% endif %}
+</body>
+</html>

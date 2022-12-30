@@ -3,8 +3,17 @@
     <div class="popover-title">
         {% if candidate_assessment.note %}
             {{ candidate_assessment.updated_at }} <br>
+            {{ candidate_assessment.note|stringformat:".50s" | linebreaks }}
+        {% elif reviews|length > 0 %}
+            {% with reviews|first as review %}
+            <b>- {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>
+                <sub>&nbsp;&nbsp;{{ review.created_at | naturaltime }}</sub> </b>  <br>
+            {{ review.note | linebreaks }} <br>
+
+            {% endwith %}
+        {% else %}
+            None
         {% endif %}
-        {{ candidate_assessment.note|stringformat:".50s" | linebreaks }}
 
     </div>
     <div class="popover-message">
