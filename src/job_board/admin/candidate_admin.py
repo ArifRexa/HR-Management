@@ -179,7 +179,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
                    'can_start_after', CandidateHasUrlFilter)
     list_display_links = ('get_score',)
     ordering = ('-exam_started_at',)
-    actions = ('send_default_sms', 'mark_as_fail')
+    actions = ('send_default_sms', 'mark_as_fail', 'send_ct_time_extend_email', )
     list_per_page = 50
     inlines = (CandidateAssessmentReviewAdmin,)
     date_hierarchy = 'exam_started_at'
@@ -301,6 +301,12 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             candidate_assessment.evaluation_url = None
             candidate_assessment.note = 'System Generated Failed / Withdraw'
             candidate_assessment.save()
+    
+    @admin.action(description="Send Coding Test Time Extend Email")
+    def send_ct_time_extend_email(self, request, queryset):
+        for candidate_assesment in queryset:
+            candidate_pk = candidate_assesment.candidate_job.candidate.pk
+            management.call_command('send_ct_time_extend_email', candidate_pk)
 
 
 @admin.register(ResetPassword)

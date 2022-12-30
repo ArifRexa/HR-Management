@@ -1,0 +1,24 @@
+{% extends 'mail/basic_layout.html' %}
+
+{% block content %}
+
+    <p>
+        Dear <b>{{ candidate.full_name }}</b>
+    </p>
+
+    <p>
+        You've missed our 48 hours of <b>Coding Test</b>.
+    </p>
+
+    <p>
+        If you have a <b>valid reason</b> for not submitting the test in time, 
+        email us and we'll consider extending your <b>Coding Test</b> time depending on your <b>reason</b>.
+    </p>
+
+    <p>
+        Sincerely, <br>
+        Md Shahinur Rahman <br>
+        Managing Director <br>
+        Mediusware Ltd.
+    </p>
+{% endblock %}
