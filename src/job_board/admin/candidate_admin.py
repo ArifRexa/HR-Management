@@ -2,7 +2,7 @@ from django.core import management
 from distutils.util import strtobool
 
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
 from django.db.models import Sum, QuerySet
@@ -308,6 +308,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             candidate_pk = candidate_assesment.candidate_job.candidate.pk
             # management.call_command('send_ct_time_extend_email', candidate_pk, candidate_assesment)
             management.call_command('send_ct_time_extend_email', candidate_pk)
+            messages.success(request, 'Mail Sent Successfully.');
 
 
 @admin.register(ResetPassword)
