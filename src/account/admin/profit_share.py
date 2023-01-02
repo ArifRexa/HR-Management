@@ -17,3 +17,6 @@ class ProfitShareAdmin(admin.ModelAdmin):
             'total': qs.aggregate(tot=Sum('payment_amount'))['tot']
         }
         return super(ProfitShareAdmin, self).changelist_view(request, extra_context)
+    
+    def has_module_permission(self, request):
+        return False

@@ -5,7 +5,8 @@ from asset_management.models import Asset, AssetCategory
 
 @admin.register(AssetCategory)
 class AssetCategoryAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Asset)

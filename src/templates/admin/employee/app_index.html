@@ -40,6 +40,32 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_feedback' %}">My Feedback</a></th>
             </tr>
+
+
+            <!-- Hidden from Main Index -->
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeeactivity_changelist' %}">Employee Activities</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeeattendance_changelist' %}">Employee Attendances</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeeonline_changelist' %}">Employee Onlines</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeeproject_changelist' %}">Employee Projects</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_overtime_changelist' %}">Overtimes</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_resignation_changelist' %}">Resignations</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_skill_changelist' %}">Skills</a></th>
+            </tr>
+            <!-- Hidden from Main Index -->
+
         </table>
     </div>
 {% endblock %}

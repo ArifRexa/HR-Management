@@ -8,7 +8,8 @@ from config.widgets.mw_select_multiple import UserFilteredSelectMultiple
 
 @admin.register(CredentialCategory)
 class CredentialCategoryAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
 
 
 class CredentialAdminForm(forms.ModelForm):

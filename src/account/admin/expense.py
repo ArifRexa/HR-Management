@@ -21,11 +21,17 @@ class ExpenseGroupAdmin(admin.ModelAdmin):
     list_display = ('title', 'note')
     search_fields = ['title']
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(ExpenseCategory)
 class ExpenseCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'note')
     search_fields = ['title']
+
+    def has_module_permission(self, request):
+        return False
 
 
 class ExpanseAttachmentInline(admin.TabularInline):

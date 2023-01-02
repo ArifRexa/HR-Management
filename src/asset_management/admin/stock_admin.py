@@ -8,7 +8,8 @@ from config.admin.utils import simple_request_filter
 
 @admin.register(Unit)
 class UnitAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Product)
@@ -19,6 +20,9 @@ class ProductAdmin(admin.ModelAdmin):
     @admin.display()
     def current_stock(self, obj):
         return f'{obj.current_stock} {obj.unit}'
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Stock)
@@ -41,3 +45,6 @@ class StockAdmin(admin.ModelAdmin):
     @admin.display(description='Quantity')
     def get_quantity(self, obj):
         return f'{obj.quantity} {obj.product.unit}'
+    
+    def has_module_permission(self, request):
+        return False

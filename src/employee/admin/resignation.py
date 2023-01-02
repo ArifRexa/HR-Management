@@ -30,3 +30,6 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
         else:
             obj.employee = request.user.employee
         super().save_model(request, obj, form, change)
+    
+    def has_module_permission(self, request):
+        return False
