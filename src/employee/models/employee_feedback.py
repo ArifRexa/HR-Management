@@ -15,6 +15,11 @@ class EmployeeFeedback(AuthorMixin, TimeStampMixin):
     happiness_index_rating = models.FloatField()
     boss_rating = models.FloatField()
 
+    class Meta:
+        permissions = (
+            ("can_see_employee_feedback_admin", "Can able to see emloyee feedback admin"),
+        )
+
     def save(self, *args, **kwargs):
         avg_rating = self.environmental_rating + self.facilities_rating + self.learning_growing_rating + self.happiness_index_rating + self.boss_rating
         avg_rating = round(avg_rating/5, 1)
