@@ -32,10 +32,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
     # autocomplete_fields = ('employee',)
 
     def changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
-
-        
-
-        if str(request.user.employee.id) not in employee_ids:
+        if str(request.user.employee.id) not in employee_ids and not request.user.has_perm('employee.can_see_employee_feedback_admin'):
             return redirect('/admin/')
 
         months = [

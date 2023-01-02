@@ -39,6 +39,9 @@ class LoadAdmin(admin.ModelAdmin):
             total_payment=Coalesce(Sum('payment_amount'), 0.0)
         )['total_payment']
         return f'{due_amount} ({obj.loanpayment_set.count()})'
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(LoanPayment)
@@ -47,3 +50,6 @@ class LoanPaymentAdmin(admin.ModelAdmin):
     date_hierarchy = 'payment_date'
     list_filter = ('loan',)
     search_fields = ('loan__employee__full_name',)
+
+    def has_module_permission(self, request):
+        return False

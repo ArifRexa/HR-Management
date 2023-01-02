@@ -45,11 +45,14 @@ def formal_summery(request):
         employee_projects = employee_projects.order_by(*order_by_list)
     
     current_month_feedback_done = False
-    if not isinstance(request.user, AnonymousUser) and request.user.employee.id not in employee_ids:
-        current_month_feedback_done = EmployeeFeedback.objects.filter(
-            employee=request.user.employee,
-            created_at__date__month=timezone.now().date().month,
-        ).exists()
+    if not isinstance(request.user, AnonymousUser):
+        if str(request.user.employee.id) in employee_ids:
+            current_month_feedback_done = True
+        else:
+            current_month_feedback_done = EmployeeFeedback.objects.filter(
+                employee=request.user.employee,
+                created_at__date__month=timezone.now().date().month,
+            ).exists()
 
     return {
         "leaves": employee_formal_summery.employee_leave_nearby,

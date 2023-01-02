@@ -85,6 +85,9 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
             graph_data=graph_data
         )
         return TemplateResponse(request, 'admin/employee_online/graph.html', context=context)
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(EmployeeAttendance)
@@ -95,6 +98,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     search_fields = ('employee__full_name', 'date')
     autocomplete_fields = ('employee',)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(EmployeeActivity)
 class EmployeeBreakAdmin(admin.ModelAdmin):
@@ -104,6 +110,9 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
     list_filter = ('employee_attendance__employee',)
     search_fields = ('employee_attendance__employee__full_name',)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(EmployeeProject)
 class EmployeeProjectAdmin(admin.ModelAdmin):
@@ -111,3 +120,6 @@ class EmployeeProjectAdmin(admin.ModelAdmin):
     autocomplete_fields = ('employee', 'project')
     list_filter = ('project',)
     search_fields = ('employee__full_name', 'project__title')
+
+    def has_module_permission(self, request):
+        return False

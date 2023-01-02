@@ -39,3 +39,6 @@ class OvertimeAdmin(admin.ModelAdmin):
                 if overtime.status != 'pending':
                     return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
         return ()
+    
+    def has_module_permission(self, request):
+        return False
