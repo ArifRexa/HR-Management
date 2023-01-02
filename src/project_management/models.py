@@ -227,6 +227,11 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
     rating_billing = models.FloatField()
     rating_long_term_interest = models.FloatField()
 
+    class Meta:
+        permissions = (
+            ("can_see_client_feedback_admin", "Can see Client Feedback admin"),
+        )
+
     def save(self, *args, **kwargs):
         avg_rating = self.rating_communication + self.rating_output + self.rating_time_management + self.rating_billing + self.rating_long_term_interest
         avg_rating = round(avg_rating/5, 1)

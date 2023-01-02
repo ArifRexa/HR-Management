@@ -36,7 +36,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
     URL_ACCESS_IDS = [30, ]
 
     def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
-        if not request.user.is_authenticated or str(request.user.employee.id) not in employee_ids:
+        if not request.user.is_authenticated or not request.user.has_perm("project_management.can_see_client_feedback_admin"):
             return redirect('/admin/')
         
         num_of_week = 4
