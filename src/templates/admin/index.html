@@ -42,13 +42,30 @@
             display: block;
           }
           
-          .feedback__marquee {
+        #feedback__marquee {
             overflow: hidden;
             width: 100%;
-          }
-          .feedback__marquee__inner {
+            background-color: magenta;
+            padding: 0.8rem 0.5rem;
+            margin: 0.6rem 0 1.6rem;
+            border-radius: 1rem;
+        }
+        #feedback__marquee__inner {
+            color: white;
             white-space: nowrap;
-          }
+            animation: blink 3s linear infinite;
+            font-size: 2rem;
+        }
+        #feedback__marquee__inner a {
+            color: white;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        @keyframes blink{
+            0%{opacity: 0;}
+            15%{opacity: .5;}
+            30%{opacity: 1;}
+        }
         
     </style>
 {% endblock %}
@@ -59,12 +76,12 @@
 
 {% block content_title %}
     {% if not current_month_feedback_done %}
-        <div class="alert alert-danger" style="overflow: hidden; white-space: nowrap;">
-            <div id="feedback__marquee">
-                <span id="feedback__marquee__inner">
-                    <span>Please provide this months feedback <a href="{% url 'admin:employee_feedback' %}" class="alert-link">here</a> before the month ends.</span>
-                </span>
-            </div>
+        <div id="feedback__marquee">
+            <span id="feedback__marquee__inner">
+                <span>Please provide last months feedback
+                    <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline">HERE</a>. 
+                    So I can be vanished &#128578;</span>
+            </span>
         </div>
     {% endif %}
     <div class="row mb-4">
