@@ -18,8 +18,13 @@ class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
     extra = 0
     readonly_fields = ('employee', 'net_salary', 'overtime',
-                       'project_bonus', 'leave_bonus', 'festival_bonus', 'food_allowance', 'loan_emi', 'gross_salary')
+                       'project_bonus', 'leave_bonus', 'festival_bonus', 'food_allowance', 'loan_emi', 'gross_salary', 'get_details')
     can_delete = False
+
+    @admin.display(description="More Info")
+    def get_details(self, obj, *args, **kwargs):
+        return format_html(f'<a href="/media/temp_emp_salary/{obj.employee.id}.txt" download>Download</a>')
+
 
     def has_add_permission(self, request, obj):
         return False
