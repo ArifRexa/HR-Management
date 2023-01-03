@@ -15,6 +15,16 @@ class EmployeeFeedback(AuthorMixin, TimeStampMixin):
     happiness_index_rating = models.FloatField()
     boss_rating = models.FloatField()
 
+    @property
+    def has_red_rating(self):
+        red_line = 3.5
+
+        return self.environmental_rating <= red_line \
+            or self.facilities_rating <= red_line \
+            or self.learning_growing_rating <= red_line \
+            or self.happiness_index_rating <= red_line \
+            or self.boss_rating <= red_line
+
     class Meta:
         permissions = (
             ("can_see_employee_feedback_admin", "Can able to see emloyee feedback admin"),

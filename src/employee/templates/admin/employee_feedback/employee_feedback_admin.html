@@ -57,7 +57,7 @@
                             <td>
                                 <div class="popover-wrapper">
                                     <div class="popover-title">
-                                        {% if em_fb.avg_rating <= 3 %}
+                                        {% if em_fb.has_red_rating %}
                                             <div style="color: red;"><strong>Avgerage Rating: {{ em_fb.avg_rating }}</strong></div><br>
                                         {% else %}
                                             <div style="color: green;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
