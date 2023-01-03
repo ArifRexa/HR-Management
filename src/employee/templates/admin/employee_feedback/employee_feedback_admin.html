@@ -15,18 +15,26 @@
 />
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
 
+<style>
+    .table__row:nth-child(odd) {
+        background: #f8f8f8;
+    }
+    .table__row:nth-child(even) {
+        background: white;
+    }
+</style>
 
 <div class="container">
     <h2 class="h2 text-center py-3">Employee Feedback</h2>
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
             <thead>
-                <tr>
-                    <th scope="col" rowspan="2" class="align-middle" style="width: 16%;">Employee</th>
+                <tr class="table__row">
+                    <th scope="col" rowspan="2" class="align-middle text-dark" style="width: 16%;">Employee</th>
                 </tr>
-                <tr>
+                <tr class="table__row">
                     {% for month in month_names %}
-                        <th style="width: 28%;">
+                        <th style="width: 28%;" class=" text-dark">
                             {% if forloop.counter == 1 %}
                                 <a class="text-decoration-none text-dark"
                                     href="?o={% if o == '1' %}-1{% else %}1{% endif %}"
@@ -42,7 +50,7 @@
             </thead>
             <tbody>
                 {% for employee, monthly_feedback in monthly_feedbacks %}
-                <tr>
+                <tr class="table__row">
                     <td class="align-middle">{{ employee.full_name }}</td>
                     {% for em_fb in monthly_feedback %}
                         {% if em_fb %}

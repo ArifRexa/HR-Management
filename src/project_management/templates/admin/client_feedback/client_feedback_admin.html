@@ -15,6 +15,14 @@
 />
 <link rel="stylesheet" href="{% static 'css/list.css' %}">
 
+<style>
+    .table__row:nth-child(odd) {
+        background: #f8f8f8;
+    }
+    .table__row:nth-child(even) {
+        background: white;
+    }
+</style>
 
 <div class="container">
     <h2 class="h2 text-center py-3">Client Feedback</h2>
@@ -31,11 +39,11 @@
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
             <thead>
-                <tr>
-                    <th scope="col" class="align-middle">Project</th>
+                <tr class="table__row">
+                    <th scope="col" class="align-middle text-dark">Project</th>
                     
                     {% for week in week_titles %}
-                        <th class="border">
+                        <th class="border text-dark">
                             {% if forloop.counter == 1 %}
                                 <a class="text-decoration-none text-dark"
                                     href="?o={% if o == '1' %}-1{% else %}1{% endif %}"
@@ -51,7 +59,7 @@
             </thead>
             <tbody>
                 {% for project, weekly_feedback in weekly_feedbacks %}
-                <tr>
+                <tr class="table__row">
                     <td class="align-middle">{{ project.title }}</td>
 
                     {% for cl_fb in weekly_feedback %}
