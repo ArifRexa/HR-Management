@@ -67,24 +67,24 @@
                                         </div>
                                     </div>
                                     <div class="popover-message">
-                                        {% if em_fb.avg_rating <= 3 %}
+                                        {% if em_fb.has_red_rating %}
                                             <div style="color: red;"><strong>Avgerage Rating: {{ em_fb.avg_rating }}</strong></div><br>
                                         {% else %}
                                             <div style="color: green;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
                                         {% endif %}
-                                        <div style="{% if em_fb.environmental_rating <= 3 %}color: red;{% endif %}">
+                                        <div style="{% if em_fb.environmental_rating <= 3.5 %}color: red;{% endif %}">
                                             Working Environment: {{ em_fb.environmental_rating}} 
                                         </div>
-                                        <div style="{% if em_fb.facilities_rating <= 3 %}color: red;{% endif %}">
+                                        <div style="{% if em_fb.facilities_rating <= 3.5 %}color: red;{% endif %}">
                                             Benefits & Facilities: {{ em_fb.facilities_rating}} 
                                         </div>
-                                        <div style="{% if em_fb.learning_growing_rating <= 3 %}color: red;{% endif %}">
+                                        <div style="{% if em_fb.learning_growing_rating <= 3.5 %}color: red;{% endif %}">
                                             Learning & Growing: {{ em_fb.learning_growing_rating}} 
                                         </div>
-                                        <div style="{% if em_fb.happiness_index_rating <= 3 %}color: red;{% endif %}">
+                                        <div style="{% if em_fb.happiness_index_rating <= 3.5 %}color: red;{% endif %}">
                                             Happy Index: {{ em_fb.happiness_index_rating }} 
                                         </div>
-                                        <div style="{% if em_fb.boss_rating <= 3 %}color: red;{% endif %}">
+                                        <div style="{% if em_fb.boss_rating <= 3.5 %}color: red;{% endif %}">
                                             Management / Managers: {{ em_fb.boss_rating }} 
                                         </div>
                                         <br><br>
