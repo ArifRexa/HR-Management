@@ -170,12 +170,12 @@ class SalarySheetRepository:
         leave_in_cash = 0
         if salary_sheet.date.month == 12 and employee.leave_in_cash_eligibility and employee.permanent_date != None:
             one_day_salary = self.__employee_current_salary.payable_salary / 31
-            payable_medical_leave = employee.leave_available('medical_leave', salary_sheet.date) - \
+            payable_medical_leave = employee.leave_available_leaveincash('medical_leave', salary_sheet.date) - \
                                     employee.leave_passed('medical', salary_sheet.date.year)
             payable_medical_leave_amount = ((payable_medical_leave * employee.pay_scale.leave_in_cash_medical) / 100) \
                                            * one_day_salary
 
-            payable_casual_leave = employee.leave_available('casual_leave', salary_sheet.date) - \
+            payable_casual_leave = employee.leave_available_leaveincash('casual_leave', salary_sheet.date) - \
                                    employee.leave_passed('casual', salary_sheet.date.year)
             payable_casual_leave_amount = ((payable_casual_leave * employee.pay_scale.leave_in_cash_casual) / 100) \
                                           * one_day_salary
