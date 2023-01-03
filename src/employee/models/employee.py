@@ -43,6 +43,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     show_in_web = models.BooleanField(default=True)
     lunch_allowance = models.BooleanField(default=True)
     project_eligibility = models.BooleanField(default=True)
+    leave_in_cash_eligibility = models.BooleanField(default=True)
     list_order = models.IntegerField(default=100)
 
     birthday_image = models.ImageField(null=True, blank=True)
@@ -146,16 +147,18 @@ class Employee(TimeStampMixin, AuthorMixin):
         # TODO: Need to upgrade calculation style without temporary fix
         permanent_date = self.joining_date
         
-        if self.resignation_date:
-            total_days_of_permanent = (self.resignation_date - permanent_date).days
-        else:
-            total_days_of_permanent = (year_end - permanent_date).days
+        if self.leave_in_cash_eligibility:
+            if self.resignation_date:
+                total_days_of_permanent = (self.resignation_date - permanent_date).days
+            else:
+                total_days_of_permanent = (year_end - permanent_date).days
+            
+            month_of_permanent = round(total_days_of_permanent / 30)
+            if month_of_permanent < 12:
+                available_leave = (month_of_permanent * get_leave_by_type) / 12
+            else:
+                available_leave = get_leave_by_type
         
-        month_of_permanent = round(total_days_of_permanent / 30)
-        if month_of_permanent < 12:
-            available_leave = (month_of_permanent * get_leave_by_type) / 12
-        else:
-            available_leave = get_leave_by_type
         return round(available_leave)
 
     class Meta:
