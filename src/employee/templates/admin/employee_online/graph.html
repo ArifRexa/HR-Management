@@ -105,7 +105,7 @@
                     }
                     breakTime = series.data[last].x2 - series.data[first].x - activeTime;
 
-                    // console.log()
+                    //console.log(series.yAxis['categories'][0])
                     const entry = new Date(series.data[first].x);
                     const exit = new Date(series.data[last].x2);
 
@@ -116,7 +116,7 @@
                     // console.log(formatAMPM(entry));
                     // console.log(formatAMPM(exit));
 
-                    return `Outside Office - ${msToTime(breakTime)} <br> Inside Office - ${msToTime(activeTime)} <br> Entry - ${formatAMPM(entry)} <br> Exit - ${formatAMPM(exit)}`
+                    return `<strong>${series.yAxis['categories'][0]}</strong> <br> Outside Office - ${msToTime(breakTime)} <br> Inside Office - ${msToTime(activeTime)} <br> Entry - ${formatAMPM(entry)} <br> Exit - ${formatAMPM(exit)}`
 
                 }
             },
