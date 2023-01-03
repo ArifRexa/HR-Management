@@ -166,7 +166,7 @@ class SalarySheetRepository:
         @return:
         """
         leave_in_cash = 0
-        if salary_sheet.date.month == 12 and employee.permanent_date is not None:
+        if salary_sheet.date.month == 12:
             one_day_salary = self.__employee_current_salary.payable_salary / 31
             payable_medical_leave = employee.leave_available('medical_leave', salary_sheet.date) - \
                                     employee.leave_passed('medical', salary_sheet.date.year)
