@@ -98,11 +98,13 @@ class LeaveManagement(admin.ModelAdmin):
 
     @admin.display()
     def leave_info(self, leave: Leave):
+        year_end_date = leave.end_date.replace(month=12, day=31)
+
         html_template = get_template('admin/leave/list/col_leave_info.html')
         html_content = html_template.render({
-            'casual_passed': leave.employee.leave_passed('casual'),
-            'casual_remain': leave.employee.leave_available('casual_leave'),
-            'medical_passed': leave.employee.leave_passed('medical'),
-            'medical_remain': leave.employee.leave_available('medical_leave'),
+            'casual_passed': leave.employee.leave_passed('casual', year_end_date.year),
+            'casual_remain': leave.employee.leave_available('casual_leave', year_end_date),
+            'medical_passed': leave.employee.leave_passed('medical', year_end_date.year),
+            'medical_remain': leave.employee.leave_available('medical_leave', year_end_date),
         })
         return format_html(html_content)

@@ -63,8 +63,8 @@ class LeaveMixin(models.Model):
             self.total_leave = delta.days + 1
             self.note = "Applied day total {}. chargeable day {}".format(delta.days + 1, self.total_leave)
 
-        if self.employee.permanent_date is None:
-            self.leave_type = 'non_paid'
+        # if self.employee.permanent_date is None:
+        #     self.leave_type = 'non_paid'
 
         super().save(*args, **kwargs)
 
