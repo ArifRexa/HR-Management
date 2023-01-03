@@ -41,6 +41,14 @@
           .modal-open .birthdayGift canvas{
             display: block;
           }
+          
+          .feedback__marquee {
+            overflow: hidden;
+            width: 100%;
+          }
+          .feedback__marquee__inner {
+            white-space: nowrap;
+          }
         
     </style>
 {% endblock %}
@@ -51,8 +59,12 @@
 
 {% block content_title %}
     {% if not current_month_feedback_done %}
-        <div class="alert alert-warning">
-            Please provide this months feedback <a href="{% url 'admin:employee_feedback' %}" class="alert-link">here</a> before the month ends.
+        <div class="alert alert-danger" style="overflow: hidden; white-space: nowrap;">
+            <div id="feedback__marquee">
+                <span id="feedback__marquee__inner">
+                    <span>Please provide this months feedback <a href="{% url 'admin:employee_feedback' %}" class="alert-link">here</a> before the month ends.</span>
+                </span>
+            </div>
         </div>
     {% endif %}
     <div class="row mb-4">
@@ -82,6 +94,22 @@
         </div>
     </div> -->
 
+    <script>
+        function animate(element) {
+            let elementWidth = element.offsetWidth;
+            let parentWidth = element.parentElement.offsetWidth;
+            let flag = parentWidth;
+            
+            setInterval(() => {
+                element.style.marginLeft = --flag + "px";
+            
+                if (elementWidth == -flag) {
+                    flag = parentWidth;
+                }
+            }, 10);
+        }
+        animate(document.getElementById("feedback__marquee__inner"));
+    </script>
 
 {% endblock %}
 
