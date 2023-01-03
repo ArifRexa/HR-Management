@@ -139,6 +139,28 @@ class Employee(TimeStampMixin, AuthorMixin):
             status='approved'
         ).aggregate(total=Coalesce(Sum('total_leave'), 0.0))['total']
 
+    def leave_available_leaveincash(self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()):
+        available_leave = 0
+        get_leave_by_type = getattr(self.leave_management, leave_type)
+        
+        if self.leave_in_cash_eligibility and self.permanent_date:
+            if self.resignation_date:
+                total_days_of_permanent = (self.resignation_date - self.permanent_date).days
+            else:
+                total_days_of_permanent = (year_end - self.permanent_date).days
+            
+            month_of_permanent = round(total_days_of_permanent / 30)
+            if month_of_permanent < 12:
+                available_leave = (month_of_permanent * get_leave_by_type) / 12
+            else:
+                available_leave = get_leave_by_type
+        
+        return round(available_leave)
+
+    class Meta:
+        db_table = 'employees'
+
+
     def leave_available(self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()):
         available_leave = 0
         get_leave_by_type = getattr(self.leave_management, leave_type)
