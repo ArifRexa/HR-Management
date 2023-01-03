@@ -128,7 +128,9 @@ class SalarySheetRepository:
         @param employee:
         @return number:
         """
-        return (self.__employee_current_salary.payable_salary / 15.5) * employee.overtime_set.filter(
+
+        # 31 / 1.5
+        return (self.__employee_current_salary.payable_salary / 20.67) * employee.overtime_set.filter(
             date__month=salary_sheet.date.month,
             date__year=salary_sheet.date.year,
             status='approved'
@@ -166,7 +168,7 @@ class SalarySheetRepository:
         @return:
         """
         leave_in_cash = 0
-        if salary_sheet.date.month == 12 and employee.leave_in_cash_eligibility:
+        if salary_sheet.date.month == 12 and employee.leave_in_cash_eligibility and employee.permanent_date != None:
             one_day_salary = self.__employee_current_salary.payable_salary / 31
             payable_medical_leave = employee.leave_available('medical_leave', salary_sheet.date) - \
                                     employee.leave_passed('medical', salary_sheet.date.year)
