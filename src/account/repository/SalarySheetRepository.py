@@ -4,9 +4,10 @@ from datetime import datetime, timedelta
 
 from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 
 from account.models import SalarySheet, EmployeeSalary, LoanPayment
-from employee.models import Employee, SalaryHistory, Leave
+from employee.models import Employee, SalaryHistory, Leave, Overtime
 from settings.models import PublicHolidayDate
 
 
@@ -275,25 +276,33 @@ Leave Cash: {leave_in_cash}"""
         emi_amount = employee_loans.aggregate(Sum('emi'))
         return -emi_amount['emi__sum'] if emi_amount['emi__sum'] else 0.0
 
-    def __calculate_food_allowance(self, employee, salary_date: datetime.date):
+    def __calculate_food_allowance(self, employee: Employee, salary_date: datetime.date):
         if not employee.lunch_allowance:
             return 0.0
         date_range = calendar.monthrange(salary_date.year, salary_date.month)
         import datetime
-        start_date = datetime.date(salary_date.year, salary_date.month, date_range[0])
+
+        # TODO: Fix for resign date
+        if employee.joining_date.year == salary_date.year and employee.joining_date.month == salary_date.month:
+            start_date = datetime.date(salary_date.year, salary_date.month, employee.joining_date.day)
+        else:
+            start_date = datetime.date(salary_date.year, salary_date.month, 1)
+        
         end_date = datetime.date(salary_date.year, salary_date.month, date_range[1])
         office_holidays = PublicHolidayDate.objects.filter(date__gte=start_date,
                                                            date__lte=end_date).values_list('date', flat=True)
         employee_on_leave = Leave.objects.filter(start_date__gte=start_date, end_date__lte=end_date, status='approved',
                                                  employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
-        print(employee, employee_on_leave)
+        employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
+                                                 employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
+        # print(employee, employee_on_leave)
         day_off = 0
-        for day in range(1, date_range[1] + 1):
+        for day in range(start_date.day, date_range[1] + 1):
             date = datetime.date(salary_date.year, salary_date.month, day)
             if date.strftime("%A") in ['Saturday', 'Sunday']:
                 day_off += 1
             if date in office_holidays:
                 day_off += 1
         day_off += employee_on_leave
-        payable_days = date_range[1] - day_off
+        payable_days = (date_range[1] - start_date.day) - day_off + employee_overtime
         return payable_days * 140
