@@ -299,7 +299,7 @@ Leave Cash: {leave_in_cash}"""
             end_date__year=salary_date.year,
             end_date__month=salary_date.month,
             status='approved',
-            employee=employee).aggregate(total_leave=Coalesce(Sum('total_leave'), 0))['total_leave']
+            employee=employee).aggregate(total_leave=Coalesce(Sum('total_leave'), 0.0))['total_leave']
         
         # employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
         #                                          employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
