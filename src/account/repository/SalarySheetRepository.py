@@ -293,8 +293,15 @@ Leave Cash: {leave_in_cash}"""
                                                            date__lte=end_date).values_list('date', flat=True)
         employee_on_leave = Leave.objects.filter(start_date__gte=start_date, end_date__lte=end_date, status='approved',
                                                  employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
-        employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
-                                                 employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
+        
+        # employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
+        #                                          employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
+
+        # TODO: Temporary fix
+        employee_overtime = 0
+        if Overtime.objects.filter(date=datetime.date(2022, 12, 16), status='approved', employee=employee).exists():
+            employee_overtime = 1
+        
         # print(employee, employee_on_leave)
         day_off = 0
         for day in range(start_date.day, date_range[1] + 1):
