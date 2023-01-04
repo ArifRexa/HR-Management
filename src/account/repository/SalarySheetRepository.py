@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from account.models import SalarySheet, EmployeeSalary, LoanPayment
 from employee.models import Employee, SalaryHistory, Leave, Overtime
+from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate
 
 
@@ -226,21 +227,21 @@ Leave Cash: {leave_in_cash}"""
         @return number:
         """
 
+        project_hours = employee.employeeprojecthour_set.filter(
+                project_hour__date__month=salary_sheet.date.month,
+                project_hour__date__year=salary_sheet.date.year
+            ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
+
         if employee.manager:
-            project_hours = employee.projecthour_set.filter(
+            print(employee.full_name)
+            print(project_hours)
+            project_hours += employee.projecthour_set.filter(
                 date__month=salary_sheet.date.month,
                 date__year=salary_sheet.date.year,
                 payable=True
-            ).aggregate(total_hour=Sum('hours'))['total_hour']
-        else:
-            project_hours = employee.employeeprojecthour_set.filter(
-                updated_at__month=salary_sheet.date.month,
-                updated_at__year=salary_sheet.date.year
-            ).aggregate(total_hour=Sum('hours'))['total_hour']
-
-        if project_hours:
-            return project_hours * 10
-        return 0
+            ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
+            
+        return project_hours * 10
 
     def __calculate_festival_bonus(self, employee: Employee):
         """Calculate festival bonus
