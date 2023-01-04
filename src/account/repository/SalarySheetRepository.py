@@ -291,15 +291,22 @@ Leave Cash: {leave_in_cash}"""
         end_date = datetime.date(salary_date.year, salary_date.month, date_range[1])
         office_holidays = PublicHolidayDate.objects.filter(date__gte=start_date,
                                                            date__lte=end_date).values_list('date', flat=True)
-        employee_on_leave = Leave.objects.filter(start_date__gte=start_date, end_date__lte=end_date, status='approved',
-                                                 employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
+        
+        # TODO: What if leave spans to next month
+        employee_on_leave = Leave.objects.filter(
+            start_date__month=salary_date.month,
+            start_date__year=salary_date.year,
+            end_date__year=salary_date.year,
+            end_date__month=salary_date.month,
+            status='approved',
+            employee=employee).aggregate(total_leave=Sum('total_leave'))['total_leave']
         
         # employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
         #                                          employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
 
         # TODO: Temporary fix
         employee_overtime = 0
-        if Overtime.objects.filter(date=datetime.date(2022, 12, 16), status='approved', employee=employee).exists():
+        if Overtime.objects.filter(date=datetime.date(2022, 12, 16), status='approved', employee=employee).exists() or employee.permanent_date:
             employee_overtime = 1
         
         # print(employee, employee_on_leave)
