@@ -227,6 +227,16 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
     rating_billing = models.FloatField()
     rating_long_term_interest = models.FloatField()
 
+    @property
+    def has_red_rating(self):
+        red_line = 3.5
+        
+        return self.rating_communication <= red_line \
+            or self.rating_output <= red_line \
+            or self.rating_time_management <= red_line \
+            or self.rating_billing <= red_line \
+            or self.rating_long_term_interest <= red_line
+    
     class Meta:
         permissions = (
             ("can_see_client_feedback_admin", "Can see Client Feedback admin"),
