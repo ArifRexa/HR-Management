@@ -21,6 +21,6 @@ jobs:
           git pull
           venv/bin/python -m pip install -r requirements.txt
           venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py migrate
-          venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py collectstatic
+          venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py collectstatic --noinput
           service apache2 reload
           service supervisor reload
