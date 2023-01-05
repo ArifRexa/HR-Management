@@ -1,7 +1,10 @@
 name: remote ssh command
-on: [push]
-jobs:
+on:
+  push:
+    branches:
+      - main
 
+jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
@@ -16,6 +19,8 @@ jobs:
         script: |
           cd /var/www/hr.mediusware.xyz
           git pull
+          venv/bin/python -m pip install -r requirements.txt
           venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py migrate
+          venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py collectstatic
           service apache2 reload
           service supervisor reload
