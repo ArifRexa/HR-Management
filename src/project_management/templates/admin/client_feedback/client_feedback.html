@@ -32,6 +32,12 @@
         tbody tr:nth-child(odd) {
             background-color: #ffffff;
         }
+        div.messages {
+            background: tomato;
+        }
+        div.messages div.alert-danger {
+            background: tomato;
+        }
     </style>
 </head>
 <body>
@@ -39,6 +45,16 @@
     {% if temp_token %}
 
     <div class="container py-3 pb-5">
+
+            {% if messages %}
+            <div class="row">
+                <div class="col-12">
+                    {% for message in messages %}
+                        <div{% if message.tags %} class="alert {{ message.tags }}"{% endif %}>{{ message }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
 
         <!-- HEADING -->
         <div class="row">
@@ -63,7 +79,7 @@
             <div class="col-lg-4">
                 <div class="video pb-4 mx-auto text-center">
                     <iframe width="100%" style="max-width: 500px; height: 234px; border-radius: 8px;"
-                        src="{{ youtube_url }}?controls=0&autoplay=1&mute=0"
+                        src="{{ youtube_url }}?controls=0&autoplay=1&mute=0&loop=1&rel=0&showinfo=0&playlist=zrt7SWJXriY"
                         title="YouTube video player" frameborder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
@@ -80,11 +96,11 @@
         </div>
 
         <!-- FORM -->
-        {% if not current_feedback_exists %}
+        {% if not current_feedback_exists or update_feedback %}
         <div class="row">
             <div class="col-12">
                 {% include 'admin/form/client_feedback_form.html' %}   
-            </div>     
+            </div>
         </div>
         {% endif %}
 
@@ -93,7 +109,7 @@
             <div class="col-12">
                 <h5 class="h5 pb-3">Feedback History ({{ project.title }})</h5>
                 <div class="table-responsive">
-                    <table class="table w-100 table-bordered">
+                    <table class="table w-100 table-bordered rounded">
                         <thead>
                             <tr>
                                 <th class="border" scope="col">Weekdate</th>

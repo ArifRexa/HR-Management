@@ -111,7 +111,13 @@
         </div>
         <div class="col-12">
             <div class="d-flex justify-content-end mb-3 mt-4">
-                <input id="feedbackSubmit" type="submit" class="form-control w-auto text-white" style="background:#0060AF;padding:10px 60px;" value="Submit">
+                <input 
+                    id="feedbackSubmit" 
+                    type="submit" 
+                    class="form-control w-auto text-white" 
+                    style="background:#0060AF;padding:10px 60px;" 
+                    value="{% if update_feedback %}Update{% else %}Submit{% endif %}" 
+                >
             </div>
         </div>
     </div>
