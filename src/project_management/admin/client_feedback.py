@@ -201,17 +201,24 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                     messages.success(request, 'Your feedback has been submitted successfully')
                     return redirect('admin:client_feedback', token=token)
                 else:
-                    messages.error(request, 'Something went wrong')
+                    messages.error(request, 'Please provide all info')
                     return redirect('admin:client_feedback', token=token)
             elif request.method == 'GET':
                 form = ClientFeedbackForm(instance=feedback_obj)
 
+                feedback_objs = ClientFeedback.objects.filter(
+                    project=project,
+                ).order_by('-created_at')
+
                 context = dict(
                     context,
                     temp_token=token,
+                    update_feedback=True,
+                    project=project,
                     feedback_form=form,
+                    feedback_objs=feedback_objs,
                     youtube_url=CLIENT_FEEDBACK_VIDEO_EMBED_URL,
                 )
                 
-                return TemplateResponse(request, 'admin/client_feedback/client_feedback_update.html', context)
+                return TemplateResponse(request, 'admin/client_feedback/client_feedback.html', context)
 
