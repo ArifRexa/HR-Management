@@ -15,52 +15,76 @@
         crossorigin="anonymous"
     />
     <link rel="stylesheet" href="{% static 'css/list.css' %}">
+    <style>
+        thead tr {
+            background-color: #f9f9f9;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+    </style>
 </head>
 <body>
+
     {% if temp_token %}
 
     <div class="container py-3 pb-5">
-        <h2 class="h1 fs-1 text-center py-4">Weekly Feedback</h2>
 
-        {% comment %} <div class="video pb-4 mx-auto text-center">
-            <iframe width="100%" height="315" style="max-width: 500px;"
-                src="{{ youtube_url }}" 
-                title="YouTube video player" frameborder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowfullscreen>
-            </iframe>
-        </div> {% endcomment %}
-        
-        <div class="audio pb-3">
-            <audio controls>
-                <source src="{% static 'audio/client_feedback_intro.mp3' %}" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
+        <!-- HEADING -->
+        <div class="row">
+            <h2 class="h1 fs-1 py-4">Weekly Feedback ({{ project.title }})</h2>
+            <hr>
+            <div class="col-lg-8">
+                <div class="">
+                    <p>
+                        Hello, dear hope you are doing well. We are working together for a long time, 
+                        If  I did any wrong please share it with me feel free and, 
+                        please give me Feedback on my job. The Feedback will be an inspiration of mine to best work. 
+                        I will try to satisfy you with my level best.
+                    </p>
+                    <p>
+                        <strong>
+                            Please don't hesitate to give your honest(Positive / Negative) opinion.
+                        Your feedback is my fuel to grow together in long term.
+                        </strong>
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="video pb-4 mx-auto text-center">
+                    <iframe width="100%" style="max-width: 500px; height: 234px; border-radius: 8px;"
+                        src="{{ youtube_url }}?controls=0&autoplay=1&mute=0"
+                        title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen>
+                    </iframe>
+                </div>
+                
+                {% comment %} <div class="audio pb-3">
+                    <audio controls>
+                        <source src="{% static 'audio/client_feedback_intro.mp3' %}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div> {% endcomment %}
+            </div>
         </div>
-        
-        <div class="">
-            <p>
-                Hello, dear hope you are doing well. We are working together for a long time, 
-                If  I did any wrong please share it with me feel free and, 
-                please give me Feedback on my job. The Feedback will be an inspiration of mine to best work. 
-                I will try to satisfy you with my level best.
-            </p>
-            <p>
-                <strong>
-                    Please don't hesitate to give your honest(Positive / Negative) opinion.
-                Your feedback is my fuel to grow together in long term.
-                </strong>
-            </p>
+
+        <!-- FORM -->
+        {% if not current_feedback_exists %}
+        <div class="row">
+            <div class="col-12">
+                {% include 'admin/form/client_feedback_form.html' %}   
+            </div>     
         </div>
-    </div>
-    
-    <div class="row">
-        <div class="container">
-            <h5 class="h5 text-center pb-3">Project: {{ project.title }}</h5>
-        </div>
-        <div class="col {% if not current_feedback_exists %}col-xl-8{% endif %} order-1 order-xl-0">
-            <div class="container py-3 pb-5">
-                <h5 class="h5 text-center pb-3">Weekly Feedbacks</h5>
+        {% endif %}
+
+        <!-- TABLE -->
+        <div class="row">
+            <div class="col-12">
+                <h5 class="h5 pb-3">Feedback History ({{ project.title }})</h5>
                 <div class="table-responsive">
                     <table class="table w-100 table-bordered">
                         <thead>
@@ -116,15 +140,10 @@
                 </div>
             </div>
         </div>
-        {% if not current_feedback_exists %}
-        <div class="col-xl-4 col-12 col-sm-8 ">
-            <div class="container">
-                {% include 'admin/form/client_feedback_form.html' %}
-            </div>
-        </div>
-        {% endif %}
+        
     </div>
 
     {% endif %}
+
 </body>
 </html>
