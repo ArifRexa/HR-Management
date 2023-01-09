@@ -16,6 +16,9 @@ from project_management.models import DurationUnit, ProjectResource, ProjectReso
 class DurationUnitAdmin(admin.ModelAdmin):
     list_display = ('title', 'duration_in_hour')
 
+    def has_module_permission(self, request):
+        return False
+
 
 class ProjectResourceEmployeeInline(admin.TabularInline):
     model = ProjectResourceEmployee
@@ -84,3 +87,6 @@ class ProjectResourceAdmin(admin.ModelAdmin):
             employees=Employee.objects.filter(active=True, manager=False).all()
         )
         return TemplateResponse(request, "admin/project_resource/daily-activity.html", context)
+    
+    def has_module_permission(self, request):
+        return False

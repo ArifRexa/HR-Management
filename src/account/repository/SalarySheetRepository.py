@@ -184,6 +184,7 @@ class SalarySheetRepository:
 
             leave_in_cash = payable_medical_leave_amount + payable_casual_leave_amount
 
+            ## INLINE DEBUG
             # print("="*30)
             # print()
             # print("", self.__employee_current_salary.payable_salary)
@@ -194,26 +195,27 @@ class SalarySheetRepository:
             # print("Payable Casual:", )
             # print("Leave Cash:", leave_in_cash)
             # print("="*30)
-
-            text = f"""Employee: {employee.full_name}
-
-Payable Salary: {one_day_salary}
-
-Medical Cash: {employee.pay_scale.leave_in_cash_medical}
-Casual Cash: {employee.pay_scale.leave_in_cash_casual}
-
-Payable Medial: {payable_medical_leave}
-Payable Casual: {payable_casual_leave}
-
-Leave Cash: {leave_in_cash}"""
-
-            file_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/media/temp_emp_salary'
-
-            if not os.path.exists(file_dir):
-                os.mkdir(file_dir)
             
-            with open(f'{file_dir}/{employee.id}.txt', 'w') as f:
-                f.write(text)
+            # text = f"""Employee: {employee.full_name}
+            
+            # Payable Salary: {one_day_salary}
+            
+            # Medical Cash: {employee.pay_scale.leave_in_cash_medical}
+            # Casual Cash: {employee.pay_scale.leave_in_cash_casual}
+            
+            # Payable Medial: {payable_medical_leave}
+            # Payable Casual: {payable_casual_leave}
+            
+            # Leave Cash: {leave_in_cash}"""
+            
+            # file_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/media/temp_emp_salary'
+            
+            # if not os.path.exists(file_dir):
+            #     os.mkdir(file_dir)
+            
+            # with open(f'{file_dir}/{employee.id}.txt', 'w') as f:
+            #     f.write(text)
+            ## INLINE DEBUG
 
         return leave_in_cash
 

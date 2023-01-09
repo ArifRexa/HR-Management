@@ -145,6 +145,9 @@ class CandidateJobAdmin(admin.ModelAdmin):
     @admin.display(description='additional_message')
     def meta_information(self, obj: CandidateJob):
         return format_html(obj.additional_message.replace('\n', '<br>'))
+    
+    def has_module_permission(self, request):
+        return False
 
 
 class CandidateHasUrlFilter(SimpleListFilter):
@@ -315,3 +318,6 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 class CandidateResetPasswordAdmin(admin.ModelAdmin):
     list_display = ('email', 'otp', 'otp_expire_at', 'otp_used_at')
     readonly_fields = ('otp', 'otp_expire_at', 'otp_used_at')
+
+    def has_module_permission(self, request):
+        return False

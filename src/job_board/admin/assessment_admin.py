@@ -77,6 +77,9 @@ class AssessmentAdmin(admin.ModelAdmin):
                 for question_answer in question_answers:
                     question_answer.pk = None
                     question_answer.save()
+                
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(AssessmentQuestion)
@@ -118,3 +121,6 @@ class AssessmentQuestionAdmin(admin.ModelAdmin):
             if form.cleaned_data['DELETE'] is False and form.cleaned_data['correct'] is True:
                 correct_answer += 1
         return correct_answer
+    
+    def has_module_permission(self, request):
+        return False

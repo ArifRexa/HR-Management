@@ -10,7 +10,7 @@ from project_management.models import EmployeeProjectHour
 
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
-    list_display = ('employee', 'hours', 'project_hour', 'manager')
+    list_display = ('employee', 'hours', 'project_hour', )
     list_filter = ('employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
