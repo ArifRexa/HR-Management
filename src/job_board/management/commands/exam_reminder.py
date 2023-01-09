@@ -15,9 +15,13 @@ from job_board.models.candidate import CandidateAssessment
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
+        timelimit = timezone.now() - timedelta(days=60)
         candidate_assessments = CandidateAssessment.objects.filter(
-            Q(candidate_job__job__active=True, can_start_after__isnull=False, exam_started_at__isnull=True)
-            | Q(candidate_job__job__active=True, assessment__open_to_start=True, exam_started_at__isnull=True)
+            Q(candidate_job__job__active=True, updated_at__gt=timelimit)
+            & (
+                Q(candidate_job__job__active=True, can_start_after__isnull=False, exam_started_at__isnull=True)
+                | Q(candidate_job__job__active=True, assessment__open_to_start=True, exam_started_at__isnull=True)
+            )
         )
         self.send_mail_to_candidate(candidate_assessments)
 
