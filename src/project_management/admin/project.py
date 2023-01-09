@@ -6,12 +6,14 @@ from project_management.models import Project, ProjectTechnology, ProjectScreens
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
 
 
 class ProjectTechnologyInline(admin.StackedInline):
@@ -48,3 +50,6 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
     list_display = ('technology', 'quantity', 'note')
+
+    def has_module_permission(self, request):
+        return False

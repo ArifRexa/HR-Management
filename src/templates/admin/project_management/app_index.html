@@ -32,6 +32,27 @@
                 <th scope="row"><a href="{% url 'admin:activity' %}">Activity</a></th>
             </tr>
 
+            <!-- Hidden from Main Index -->
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_client_changelist' %}">Clients</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_durationunit_changelist' %}">Duration Units</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_projectneed_changelist' %}">Project Needs</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_projectresource_changelist' %}">Project Resources</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_tag_changelist' %}">Tags</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_technology_changelist' %}">Technologies</a></th>
+            </tr>
+            <!-- Hidden from Main Index -->
+
         </table>
     </div>
 {% endblock %}
