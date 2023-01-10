@@ -10,6 +10,9 @@ from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
 
+# Needed for optional Features
+# from django.db.models import Count, Case, When, Value, BooleanField
+
 from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity
 from employee.models.employee_activity import EmployeeProject
 
@@ -116,10 +119,31 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeProject)
 class EmployeeProjectAdmin(admin.ModelAdmin):
-    # list_display = ('employee', 'project')
+    list_display = ('employee', 'get_projects')
     autocomplete_fields = ('employee', 'project')
     list_filter = ('project',)
     search_fields = ('employee__full_name', 'project__title')
+
+    # Can be used when hide employees without projects
+    # If used, no project can be assigned by admin due to onetoone field
+
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+    #     return qs.annotate(
+    #         project_count=Count("project"),
+    #         project_exists=Case(
+    #             When(project_count=0, then=Value(False)),
+    #             default=Value(True),
+    #             output_field=BooleanField()
+    #         )
+    #     ).filter(project_exists=True)
+
+    @admin.display(description='Projects')
+    def get_projects(self, obj):
+        projects = ' | '.join(obj.project.filter(active=True).values_list('title', flat=True))
+        if projects == '':
+            projects = '-'
+        return projects
 
     def has_module_permission(self, request):
         return False
