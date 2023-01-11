@@ -107,7 +107,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         if not request.user.is_authenticated:
             return redirect('/')
         
-        emps = Employee.objects.order_by('full_name').prefetch_related("employeeattendance_set")
+        emps = Employee.objects.filter(active=True).order_by('full_name').prefetch_related("employeeattendance_set")
 
         now = timezone.now()
 
