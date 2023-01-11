@@ -1,7 +1,7 @@
 .idea
 src/.env
 src/.env.backup
-static
+src/static
 media
 *.pyc
 env
