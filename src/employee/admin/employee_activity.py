@@ -1,6 +1,7 @@
-import datetime
+import datetime, calendar
+from functools import update_wrapper
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.http import JsonResponse
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
@@ -9,8 +10,9 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
+from django.shortcuts import redirect
 
-from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity
+from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity, Employee
 from employee.models.employee_activity import EmployeeProject
 
 
@@ -98,6 +100,67 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     search_fields = ('employee__full_name', 'date')
     autocomplete_fields = ('employee',)
 
+    def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
+        if not request.user.has_perms("employee.view_employeeattendance"):
+            messages.error(request, "You don't have permission to view the page")
+            return redirect('/admin/')
+        
+        emps = Employee.objects.order_by('full_name').prefetch_related("employeeattendance_set")
+
+        now = timezone.now()
+
+        last_x_dates = [(now - datetime.timedelta(i)) for i in range(30)]
+
+        # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
+
+        date_datas = {}
+        
+        for emp in emps:
+            temp = {}
+            for date in last_x_dates:
+                attendance = emp.employeeattendance_set.filter(date=date)
+                temp[date] = None
+                if attendance.exists():
+                    activity = attendance.last().employeeactivity_set
+                    if activity.exists():
+                        start_time = activity.first().start_time
+                        end_time = activity.last().end_time
+                        temp[date] = {
+                            'entry_time': start_time.time() if start_time else None,
+                            'exit_time': end_time.time() if end_time else None,
+                        }
+            date_datas.update({emp: temp})
+        
+        # print(date_datas)
+        
+
+        o=request.GET.get('o', None)
+        context = dict(
+                self.admin_site.each_context(request),
+                dates=last_x_dates,
+                date_datas=date_datas,
+                o=o, # order key
+            )
+        return TemplateResponse(request, 'admin/employee/employee_attendance.html', context)
+
+    def get_urls(self):
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+
+        urls = super(EmployeeAttendanceAdmin, self).get_urls()
+
+        employee_online_urls = [
+            path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
+            
+            path("", self.custom_changelist_view, name='employee_attendance'),
+        ]
+        return employee_online_urls + urls
+    
     def has_module_permission(self, request):
         return False
 
