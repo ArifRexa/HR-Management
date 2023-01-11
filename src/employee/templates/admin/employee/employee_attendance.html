@@ -67,13 +67,13 @@
                         {% if data %}
                             <td>
                                 <p>
-                                    <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i>
-                                    <span {% if data.entry_time.hour > 13 %}class="text-danger"{% endif %}>
+                                    {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
+                                    <span {% if data.entry_time.hour > 13 %}class="text-danger fw-bold"{% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
                                 </p>
                                 <p>
-                                    <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i>
+                                    {% comment %} <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i> {% endcomment %}
                                     <span {% if data.exit_time == '-' %}class="color-muted"{% endif %} >
                                         {% if data.exit_time != '-' %}
                                             {{ data.exit_time|time:"h:i A" }}

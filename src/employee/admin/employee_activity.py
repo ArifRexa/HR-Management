@@ -104,9 +104,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     autocomplete_fields = ('employee',)
 
     def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
-        if not request.user.has_perms("employee.view_employeeattendance"):
-            messages.error(request, "You don't have permission to view the page")
-            return redirect('/admin/')
+        if not request.user.is_authenticated:
+            return redirect('/')
         
         emps = Employee.objects.order_by('full_name').prefetch_related("employeeattendance_set")
 
