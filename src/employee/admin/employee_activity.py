@@ -129,8 +129,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         start_time = activity.first().start_time
                         end_time = activity.last().end_time
                         temp[date] = {
-                            'entry_time': start_time.time() if start_time else None,
-                            'exit_time': end_time.time() if end_time else None,
+                            'entry_time': start_time.time() if start_time else '-',
+                            'exit_time': end_time.time() if end_time else '-',
                         }
             date_datas.update({emp: temp})
         
