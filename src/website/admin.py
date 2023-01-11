@@ -37,6 +37,10 @@ class BlogTagInline(admin.StackedInline):
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('title',)}
-    inlines = (BlogCategoryInline, BlogTagInline)
-    search_fields = ('title',)
-    list_display = ('title', 'slug', 'active')
+    inlines = (
+        BlogCategoryInline, 
+        # BlogTagInline,
+    )
+    readonly_fields = ('read_time_minute', )
+    search_fields = ('title', )
+    list_display = ('title', 'slug', 'active', )

@@ -1,3 +1,5 @@
+import math
+
 from django.db import models
 
 # Create your models here
@@ -44,12 +46,18 @@ class Tag(AuthorMixin, TimeStampMixin):
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
+    image = models.ImageField(upload_to="blog_image")
     short_description = models.TextField()
     content = HTMLField()
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=False)
+    read_time_minute = models.IntegerField(default=1)
 
     def __str__(self):
         return self.title
+    
+    def save(self, *args, **kwargs) -> None:
+        self.read_time_minute = math.ceil(len(self.content.split(' ')) / 200)
+        return super(Blog, self).save(*args, **kwargs)
 
 
 class BlogCategory(models.Model):
