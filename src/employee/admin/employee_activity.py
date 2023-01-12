@@ -10,6 +10,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
+from django.db.models import Prefetch
 
 # Needed for optional Features
 # from django.db.models import Count, Case, When, Value, BooleanField
@@ -107,11 +108,23 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         if not request.user.is_authenticated:
             return redirect('/')
         
-        emps = Employee.objects.filter(active=True).order_by('full_name').prefetch_related("employeeattendance_set")
-
         now = timezone.now()
 
-        last_x_dates = [(now - datetime.timedelta(i)) for i in range(30)]
+        last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
+        last_x_date = (now - datetime.timedelta(30)).date()
+        
+        emps = Employee.objects.filter(
+            active=True
+        ).order_by(
+            'full_name'
+        ).prefetch_related(
+            Prefetch(
+                "employeeattendance_set", 
+                queryset=EmployeeAttendance.objects.filter(
+                    date__gte=last_x_date
+                ).prefetch_related("employeeactivity_set")
+            ),
+        )
 
         # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
 
@@ -119,23 +132,23 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         
         for emp in emps:
             temp = {}
+            attendances = emp.employeeattendance_set.all()
             for date in last_x_dates:
-                attendance = emp.employeeattendance_set.filter(date=date)
                 temp[date] = None
-                if attendance.exists():
-                    activity = attendance.last().employeeactivity_set
-                    if activity.exists():
-                        start_time = activity.first().start_time
-                        end_time = activity.last().end_time
-                        temp[date] = {
-                            'entry_time': start_time.time() if start_time else '-',
-                            'exit_time': end_time.time() if end_time else '-',
-                        }
+                for attendance in attendances:
+                    if attendance.date == date:
+                        activity = attendance.employeeactivity_set.all()
+                        if activity.exists():
+                            activity = list(activity)
+                            start_time = activity[0].start_time
+                            end_time = activity[-1].end_time
+                            temp[date] = {
+                                'entry_time': start_time.time() if start_time else '-',
+                                'exit_time': end_time.time() if end_time else '-',
+                            }
+                        break
             date_datas.update({emp: temp})
         
-        # print(date_datas)
-        
-
         o=request.GET.get('o', None)
         context = dict(
                 self.admin_site.each_context(request),
