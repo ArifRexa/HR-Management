@@ -20,7 +20,7 @@ from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity
 from employee.models.employee_activity import EmployeeProject
 
 
-def msToTime(duration):
+def sToTime(duration):
     minutes = math.floor((duration / 60) % 60)
     hours = math.floor((duration / (60 * 60)) % 24)
 
@@ -157,7 +157,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 if et:
                                     break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
                             
-                            break_time = msToTime(break_time)
+                            break_time = sToTime(break_time)
 
                             temp[date] = {
                                 'entry_time': start_time.time() if start_time else '-',
