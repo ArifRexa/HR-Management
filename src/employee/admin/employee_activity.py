@@ -1,4 +1,4 @@
-import datetime, calendar
+import datetime, calendar, math
 from functools import update_wrapper
 
 from django.contrib import admin, messages
@@ -18,6 +18,13 @@ from django.shortcuts import redirect
 
 from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity, Employee
 from employee.models.employee_activity import EmployeeProject
+
+
+def msToTime(duration):
+    minutes = math.floor((duration / 60) % 60)
+    hours = math.floor((duration / (60 * 60)) % 24)
+
+    return f"{hours:01}h: {minutes:01}m"
 
 
 @admin.register(EmployeeOnline)
@@ -137,14 +144,25 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 temp[date] = None
                 for attendance in attendances:
                     if attendance.date == date:
-                        activity = attendance.employeeactivity_set.all()
-                        if activity.exists():
-                            activity = list(activity)
-                            start_time = activity[0].start_time
-                            end_time = activity[-1].end_time
+                        activities = attendance.employeeactivity_set.all()
+                        if activities.exists():
+                            activities = list(activities)
+                            al = len(activities)
+                            start_time = activities[0].start_time
+                            end_time = activities[-1].end_time
+                            break_time = 0
+
+                            for i in range(al-1):
+                                et = activities[i].end_time
+                                if et:
+                                    break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
+                            
+                            break_time = msToTime(break_time)
+
                             temp[date] = {
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
+                                'break_time': break_time,
                             }
                         break
             date_datas.update({emp: temp})
