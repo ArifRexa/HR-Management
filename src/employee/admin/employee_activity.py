@@ -154,7 +154,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
                             for i in range(al-1):
                                 et = activities[i].end_time
-                                if et:
+                                if et and et.date() == activities[i+1].start_time.date():
                                     break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
                             
                             break_time = sToTime(break_time)
