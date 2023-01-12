@@ -220,6 +220,24 @@ TINYMCE_DEFAULT_CONFIG = {
 
 TINYMCE_SPELLCHECKER = True
 
+# Only for django-querycount
+if DEBUG:
+    QUERYCOUNT = {
+        'THRESHOLDS': {
+            'MEDIUM': 50,
+            'HIGH': 100,
+            'MIN_TIME_TO_LOG':0,
+            'MIN_QUERY_COUNT_TO_LOG':0
+        },
+        'IGNORE_REQUEST_PATTERNS': [],
+        'IGNORE_SQL_PATTERNS': [r'silk_'],
+        'DISPLAY_DUPLICATES': None,
+        'RESPONSE_HEADER': 'X-DjangoQueryCount-Count',
+    }
+
+    MIDDLEWARE.append("querycount.middleware.QueryCountMiddleware")
+
+
 APPLY_SAME_JOB_AFTER = 90
 
 CANDIDATE_PASSWORD_HASH = "mediusware_hr"
