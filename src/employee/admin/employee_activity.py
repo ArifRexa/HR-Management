@@ -137,14 +137,15 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 temp[date] = None
                 for attendance in attendances:
                     if attendance.date == date:
-                        activity = attendance.employeeactivity_set
+                        activity = attendance.employeeactivity_set.all()
                         if activity.exists():
-                            start_time = activity.first().start_time
-                            end_time = activity.last().end_time
+                            activity = list(activity)
+                            start_time = activity[0].start_time
+                            end_time = activity[-1].end_time
                             temp[date] = {
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
-                        }
+                            }
                         break
             date_datas.update({emp: temp})
         
