@@ -25,7 +25,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
             if request.user.employee.manager:
-                qs.filter(project_hour__manager=request.user.employee.id)
+                qs.filter(Q(project_hour__manager=request.user.employee.id) | Q(employee=request.user.employee))
             else:
                 qs.filter(employee=request.user.employee)
         return qs.aggregate(tot=Sum('hours'))['tot']
