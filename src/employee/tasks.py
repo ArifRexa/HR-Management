@@ -1,10 +1,14 @@
+from dateutil.relativedelta import relativedelta, FR
+
 from django.core import management
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template import Context, loader
 from django.template.loader import get_template
 from django.utils import timezone
+from django.conf import settings
 
-from employee.models import Employee, Leave, EmployeeOnline
+from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance
+from project_management.models import ProjectHour, EmployeeProjectHour
 
 
 def send_mail_to_employee(employee, pdf, html_body, subject):
@@ -77,3 +81,46 @@ def all_employee_offline():
         ep.save()
 
     print('[Bot] All Employee Offline ', timezone.now())
+
+
+def bonus__project_hour__on_entry():
+    now = timezone.now().date()
+
+    project_id = 20 # HR - 20 # Local HR - 4
+    manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
+    num_of_hour = 1
+
+
+    current_friday = now + relativedelta(weekday=FR(0))
+    if current_friday.month != now.month:
+        current_friday = now + relativedelta(weekday=FR(-1))
+
+    attendances = EmployeeAttendance.objects.filter(
+        employee__active=True,
+        employee__project_eligibility=True,
+        date=now,
+        entry_time__lt=timezone.now().time().replace(hour=13, minute=0, second=1),
+    ).prefetch_related(
+        "employee",
+        "employeeactivity_set",
+    )
+
+    for attendance in attendances:
+        if attendance.employeeactivity_set.exists():
+            project_hour = ProjectHour.objects.create(
+                manager_id = manager_employee_id,
+                project_id = project_id,
+                date = current_friday,
+                hours = num_of_hour,
+                description = 'Bonus for Timely Entry',
+                forcast = 'same',
+                payable = True,
+            )
+            EmployeeProjectHour.objects.create(
+                    project_hour = project_hour,
+                    hours = num_of_hour,
+                    employee=attendance.employee,
+            )
+    
+    print("[Bot] Entry Bonus Done! ")
+

@@ -138,8 +138,8 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             })
 
     def save(self, *args, **kwargs):
-        if not self.manager.manager:
-            self.payable = False
+        # if not self.manager.manager:
+        #     self.payable = False
         super(ProjectHour, self).save(*args, **kwargs)
 
     def employee_hour(self, employee_id):
