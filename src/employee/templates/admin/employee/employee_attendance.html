@@ -48,6 +48,9 @@
     .twopx_font {
         font-size: 18px;
     }
+    .text-jalamoyi {
+        color: magenta;
+    }
 </style>
 
 <div class="container-fluid">
@@ -93,12 +96,12 @@
                                     </span>
                                 </p>
                                 <p>
-                                    <span {% if data.break_time_hour >= 1 %}class="twopx_font"{% endif %}>
+                                    <span {% if data.break_time_hour >= 1 %}class="text-jalamoyi fw-bold"{% endif %}>
                                         {{ data.break_time }}
                                     </span>
                                 </p>
                                 <p>
-                                    <span {% if data.inside_time_hour >= 5 %}class="text-success"{% endif %}>
+                                    <span {% if data.inside_time_hour >= 8 %}class="text-success fw-bold"{% endif %}>
                                         {{ data.inside_time }}
                                     </span>
                                 </p>

@@ -121,7 +121,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         last_x_date = (now - datetime.timedelta(30)).date()
         
         emps = Employee.objects.filter(
-            active=True
+            active=True,
+            show_in_attendance_list=True,
         ).order_by(
             'full_name'
         ).prefetch_related(
