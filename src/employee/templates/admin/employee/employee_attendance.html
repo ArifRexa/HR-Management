@@ -45,6 +45,9 @@
     .color-muted {
         color: #bbb;
     }
+    .twopx_font {
+        font-size: 18px;
+    }
 </style>
 
 <div class="container-fluid">
@@ -90,12 +93,12 @@
                                     </span>
                                 </p>
                                 <p>
-                                    <span>
+                                    <span {% if data.break_time_hour >= 1 %}class="twopx_font"{% endif %}>
                                         {{ data.break_time }}
                                     </span>
                                 </p>
                                 <p>
-                                    <span>
+                                    <span {% if data.inside_time_hour >= 5 %}class="text-success"{% endif %}>
                                         {{ data.inside_time }}
                                     </span>
                                 </p>
