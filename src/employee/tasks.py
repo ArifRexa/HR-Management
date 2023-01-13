@@ -105,22 +105,32 @@ def bonus__project_hour__on_entry():
         "employeeactivity_set",
     )
 
+    project_hour = ProjectHour.objects.create(
+        manager_id = manager_employee_id,
+        project_id = project_id,
+        date = current_friday,
+        hours = 0,
+        description = 'Bonus for Timely Entry',
+        forcast = 'same',
+        payable = True,
+    )
+
+    eph = []
+    total_hour = 0
+
     for attendance in attendances:
         if attendance.employeeactivity_set.exists():
-            project_hour = ProjectHour.objects.create(
-                manager_id = manager_employee_id,
-                project_id = project_id,
-                date = current_friday,
+            total_hour += num_of_hour
+            eph.append(EmployeeProjectHour(
+                project_hour = project_hour,
                 hours = num_of_hour,
-                description = 'Bonus for Timely Entry',
-                forcast = 'same',
-                payable = True,
-            )
-            EmployeeProjectHour.objects.create(
-                    project_hour = project_hour,
-                    hours = num_of_hour,
-                    employee=attendance.employee,
-            )
+                employee=attendance.employee,
+            ))
+    
+    project_hour.hours = total_hour
+    project_hour.save()
+
+    EmployeeProjectHour.objects.bulk_create(eph)
     
     print("[Bot] Entry Bonus Done! ")
 
