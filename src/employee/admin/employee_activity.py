@@ -194,8 +194,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         ]
         return employee_online_urls + urls
     
-    def has_module_permission(self, request):
-        return False
+    # def has_module_permission(self, request):
+    #     return False
 
 
 @admin.register(EmployeeActivity)
