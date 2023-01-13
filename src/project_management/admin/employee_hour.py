@@ -49,7 +49,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         query_set = super(EmployeeHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser:
             if request.user.employee.manager:
-                return query_set.filter(project_hour__manager=request.user.employee.id)
+                return query_set.filter(Q(project_hour__manager=request.user.employee.id) | Q(employee=request.user.employee))
             else:
                 return query_set.filter(employee=request.user.employee)
         return query_set
