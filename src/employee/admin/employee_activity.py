@@ -151,18 +151,25 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             start_time = activities[0].start_time
                             end_time = activities[-1].end_time
                             break_time = 0
+                            inside_time = 0
 
                             for i in range(al-1):
                                 et = activities[i].end_time
                                 if et and et.date() == activities[i+1].start_time.date():
                                     break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
+                            for i in range(al):
+                                st, et = activities[i].start_time, activities[i].end_time
+                                if et:
+                                    inside_time += (et.timestamp() - st.timestamp())
                             
                             break_time = sToTime(break_time)
-
+                            inside_time = sToTime(inside_time)
+                            
                             temp[date] = {
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
                                 'break_time': break_time,
+                                'inside_time': inside_time,
                             }
                         break
             date_datas.update({emp: temp})
@@ -194,8 +201,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         ]
         return employee_online_urls + urls
     
-    def has_module_permission(self, request):
-        return False
+    # def has_module_permission(self, request):
+    #     return False
 
 
 @admin.register(EmployeeActivity)
