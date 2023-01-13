@@ -162,14 +162,16 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 if et:
                                     inside_time += (et.timestamp() - st.timestamp())
                             
-                            break_time = sToTime(break_time)
-                            inside_time = sToTime(inside_time)
+                            break_time_s = sToTime(break_time)
+                            inside_time_s = sToTime(inside_time)
                             
                             temp[date] = {
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
-                                'break_time': break_time,
-                                'inside_time': inside_time,
+                                'break_time': break_time_s,
+                                'break_time_hour': math.floor((break_time / (60 * 60)) % 24),
+                                'inside_time': inside_time_s,
+                                'inside_time_hour': math.floor((inside_time / (60 * 60)) % 24),
                             }
                         break
             date_datas.update({emp: temp})
