@@ -78,7 +78,7 @@
                     <td class="align-middle">{{ employee.full_name }}</td>
                     {% for date, data in date_data.items %}
                         {% if data %}
-                            <td>
+                            <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}">
                                 <p>
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
                                     <span {% if data.entry_time.hour > 13 %}class="text-danger fw-bold"{% endif %}>

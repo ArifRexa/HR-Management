@@ -160,8 +160,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
                             for i in range(al):
                                 st, et = activities[i].start_time, activities[i].end_time
-                                if et:
-                                    inside_time += (et.timestamp() - st.timestamp())
+                                if not et:
+                                    et = timezone.now()
+                                inside_time += (et.timestamp() - st.timestamp())
                             
                             break_time_s = sToTime(break_time)
                             inside_time_s = sToTime(inside_time)
