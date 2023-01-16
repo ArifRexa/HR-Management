@@ -114,8 +114,13 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         ('same', '⌛ Same'),
         ('confused', '😕 Confused'),
     )
+    HOUR_TYPE_SELECTOR = (
+        ('project', 'Project Hour'),
+        ('bonus', 'Bonus Project Hour'),
+    )
 
     manager = models.ForeignKey(Employee, limit_choices_to={'manager': True}, on_delete=models.CASCADE)
+    hour_type = models.CharField(max_length=40, choices=HOUR_TYPE_SELECTOR, default='project', verbose_name='Project Hour Type')
     project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.SET_NULL, null=True,
                                 blank=True)
     date = models.DateField()
@@ -148,7 +153,8 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
 
     class Meta:
         permissions = [
-            ('show_all_hours', 'Can show all hours just like admin')
+            ('show_all_hours', 'Can show all hours just like admin'),
+            ('select_hour_type', 'Can select Project Hour type'),
         ]
 
 

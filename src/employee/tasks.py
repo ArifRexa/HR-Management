@@ -91,9 +91,9 @@ def bonus__project_hour__on_entry():
     num_of_hour = 1
 
 
-    current_friday = now + relativedelta(weekday=FR(0))
-    if current_friday.month != now.month:
-        current_friday = now + relativedelta(weekday=FR(-1))
+    # current_friday = now + relativedelta(weekday=FR(0))
+    # if current_friday.month != now.month:
+    #     current_friday = now + relativedelta(weekday=FR(-1))
 
     attendances = EmployeeAttendance.objects.filter(
         employee__active=True,
@@ -105,32 +105,34 @@ def bonus__project_hour__on_entry():
         "employeeactivity_set",
     )
 
-    project_hour = ProjectHour.objects.create(
-        manager_id = manager_employee_id,
-        project_id = project_id,
-        date = current_friday,
-        hours = 0,
-        description = 'Bonus for Timely Entry',
-        forcast = 'same',
-        payable = True,
-    )
+    if len(attendances) > 0:
+        project_hour = ProjectHour.objects.create(
+            manager_id = manager_employee_id,
+            hour_type = 'bonus',
+            project_id = project_id,
+            date = now,
+            hours = 0,
+            description = 'Bonus for Timely Entry',
+            forcast = 'same',
+            payable = True,
+        )
 
-    eph = []
-    total_hour = 0
+        eph = []
+        total_hour = 0
 
-    for attendance in attendances:
-        if attendance.employeeactivity_set.exists():
-            total_hour += num_of_hour
-            eph.append(EmployeeProjectHour(
-                project_hour = project_hour,
-                hours = num_of_hour,
-                employee=attendance.employee,
-            ))
+        for attendance in attendances:
+            if attendance.employeeactivity_set.exists():
+                total_hour += num_of_hour
+                eph.append(EmployeeProjectHour(
+                    project_hour = project_hour,
+                    hours = num_of_hour,
+                    employee=attendance.employee,
+                ))
+        
+        project_hour.hours = total_hour
+        project_hour.save()
+
+        EmployeeProjectHour.objects.bulk_create(eph)
     
-    project_hour.hours = total_hour
-    project_hour.save()
-
-    EmployeeProjectHour.objects.bulk_create(eph)
-    
-    print("[Bot] Entry Bonus Done! ")
+        print("[Bot] Entry Bonus Done! ")
 

@@ -7,6 +7,25 @@ from django.utils.html import format_html
 from project_management.models import ProjectHour
 
 
+class ProjectTypeFilter(admin.SimpleListFilter):
+    title = 'hour type'
+    parameter_name = 'hour_type'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('bonus', 'Bonus Project Hour'),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'bonus':
+            return queryset.filter(
+                hour_type='bonus',
+            )
+        return queryset.filter(
+                hour_type='project',
+            )
+
+
 class ProjectHourOptions(admin.ModelAdmin):
     # override create / edit fields
     # manager filed will not appear if the authenticate user is not super user
@@ -15,10 +34,12 @@ class ProjectHourOptions(admin.ModelAdmin):
         if not request.user.is_superuser:
             fields.remove('manager')
             fields.remove('payable')
+            if not request.user.has_perm('project_management.select_hour_type'):
+                fields.remove('hour_type')
         return fields
 
     def get_list_filter(self, request):
-        filters = ['forcast', 'project', 'manager', 'date']
+        filters = ['forcast', ProjectTypeFilter, 'project', 'manager', 'date']
         if not request.user.is_superuser:
             filters.remove('manager')
         return filters
