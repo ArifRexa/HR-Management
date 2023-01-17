@@ -280,7 +280,7 @@ class EmployeeProjectAdmin(admin.ModelAdmin):
 
 
 @admin.register(PrayerInfo)
-class EmployeeProjectAdmin(admin.ModelAdmin):
+class EmployeePrayerInfoAdmin(admin.ModelAdmin):
     list_display = ('get_date', 'employee', 'num_of_waqt', )
     autocomplete_fields = ('employee', )
     list_filter = ('employee', )
