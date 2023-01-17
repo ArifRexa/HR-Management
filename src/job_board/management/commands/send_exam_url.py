@@ -1,3 +1,4 @@
+import datetime
 from django.core.management import BaseCommand
 from django.utils import timezone
 
@@ -16,8 +17,10 @@ class Command(BaseCommand):
         self._can_start_exam_if_pass(options['passed_exam_id'], options['target_exam_id'])
 
     def _can_start_exam_if_pass(self, passe_exam_id, send_exam_id):
+        timelimit = timezone.now() - datetime.timedelta(days=60)
         assessment = Assessment.objects.get(pk=passe_exam_id)
         candidate_assessments = CandidateAssessment.objects.filter(
+            updated_at__gt=timelimit,
             assessment_id=passe_exam_id,
             score__gte=assessment.pass_score,
             step__contains={'auto_checked': False}
