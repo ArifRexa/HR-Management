@@ -10,12 +10,20 @@ from project_management.models import EmployeeProjectHour
 
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
-    list_display = ('employee', 'hours', 'project_hour', )
+    list_display = ('get_date', 'employee', 'hours', 'get_hour_type', 'project_hour', )
     list_filter = ('employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
     autocomplete_fields = ('employee', 'project_hour')
     change_list_template = 'admin/total.html'
+
+    @admin.display(description="Date", ordering='project_hour__date')
+    def get_date(self, obj):
+        return obj.project_hour.date
+    
+    @admin.display(description="Hour Type", ordering='project_hour__')
+    def get_hour_type(self, obj):
+        return obj.project_hour.hour_type.title()
 
     def manager(self, obj):
         return obj.project_hour.manager
@@ -52,7 +60,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
                 return query_set.filter(Q(project_hour__manager=request.user.employee.id) | Q(employee=request.user.employee))
             else:
                 return query_set.filter(employee=request.user.employee)
-        return query_set
+        return query_set.select_related("project_hour")
 
     def get_list_filter(self, request):
         if not request.user.is_superuser:
