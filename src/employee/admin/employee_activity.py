@@ -16,8 +16,9 @@ from django.db.models import Prefetch
 # from django.db.models import Count, Case, When, Value, BooleanField
 from django.shortcuts import redirect
 
-from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity, Employee
+from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity, Employee, PrayerInfo
 from employee.models.employee_activity import EmployeeProject
+from employee.forms.prayer_info import EmployeePrayerInfoForm
 
 
 def sToTime(duration):
@@ -132,6 +133,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                     date__gte=last_x_date
                 ).prefetch_related("employeeactivity_set")
             ),
+            # Prefetch(
+            #     "prayerinfo_set", 
+            #     queryset=PrayerInfo.objects.filter(
+            #         created_at__date=now.date(),
+            #     ),
+            # ),
         )
 
         # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
@@ -178,14 +185,32 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         break
             date_datas.update({emp: temp})
         
+        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee).last()
+        form = EmployeePrayerInfoForm(instance=prayerobj)
+
         o=request.GET.get('o', None)
         context = dict(
                 self.admin_site.each_context(request),
                 dates=last_x_dates,
                 date_datas=date_datas,
                 o=o, # order key
+                form=form,
             )
         return TemplateResponse(request, 'admin/employee/employee_attendance.html', context)
+    
+    def waqt_select(self, request, *args, **kwargs) -> redirect:
+        if not request.user.is_authenticated:
+            return redirect('/')
+        if request.method == 'POST':
+            prayerobj = PrayerInfo.objects.filter(employee=request.user.employee).last()
+            form = EmployeePrayerInfoForm(request.POST, instance=prayerobj)
+            if form.is_valid():
+                prayer_info = form.save(commit=False)
+                prayer_info.employee = request.user.employee
+                prayer_info.save()
+                messages.success(request, 'Submitted Successfully')
+                
+        return redirect("admin:employee_attendance")
 
     def get_urls(self):
         def wrap(view):
@@ -202,6 +227,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
             
             path("", self.custom_changelist_view, name='employee_attendance'),
+            path("waqtselect/", self.waqt_select, name='waqt_select')
         ]
         return employee_online_urls + urls
     
@@ -251,3 +277,19 @@ class EmployeeProjectAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+
+@admin.register(PrayerInfo)
+class EmployeePrayerInfoAdmin(admin.ModelAdmin):
+    list_display = ('get_date', 'employee', 'num_of_waqt', )
+    autocomplete_fields = ('employee', )
+    list_filter = ('employee', )
+    search_fields = ('employee__full_name', )
+
+    @admin.display(description="Date", ordering="created_at")
+    def get_date(self, obj, *args, **kwargs):
+        return obj.created_at.strftime("%b %d, %Y")
+
+    def has_module_permission(self, request):
+        return False
+

@@ -1,3 +1,4 @@
+import datetime
 import math
 from dateutil.relativedelta import relativedelta, FR
 
@@ -7,8 +8,9 @@ from django.template import Context, loader
 from django.template.loader import get_template
 from django.utils import timezone
 from django.conf import settings
+from django.db.models import Prefetch
 
-from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance
+from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance, PrayerInfo
 from project_management.models import ProjectHour, EmployeeProjectHour
 
 
@@ -84,23 +86,34 @@ def all_employee_offline():
     print('[Bot] All Employee Offline ', timezone.now())
 
 
-def bonus__project_hour__on_exit():
+def bonus__project_hour_add():
     now = timezone.now().date()
 
-    project_id = 20 # HR - 20 # Local HR - 4
-    manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
+    project_id = 4 # HR - 20 # Local HR - 4
+    manager_employee_id = 1 # Shahinur Rahman - 30 # Local ID - 1
+
+    bonushour_for_timelyentry = 1
     bonushour_for_hroff = 1
     bonushour_for_overtime = 1
+    bonushour_for_prayer = 1
 
     attendances = EmployeeAttendance.objects.filter(
         employee__active=True,
         employee__project_eligibility=True,
-        employee__employeeonline__active=False,
         date=now,
     ).prefetch_related(
-        "employee",
-        "employee__employeeonline",
         "employeeactivity_set",
+        Prefetch(
+            "employee",
+            queryset=Employee.objects.select_related(
+                "employeeonline",
+            ).prefetch_related(
+                Prefetch(
+                    "prayerinfo_set",
+                    queryset=PrayerInfo.objects.filter(created_at__date=now),
+                ),
+            )
+        ),
     )
 
     if len(attendances) > 0:
@@ -110,7 +123,7 @@ def bonus__project_hour__on_exit():
             project_id = project_id,
             date = now,
             hours = 0,
-            description = 'Bonus for turning off HR',
+            description = 'Bonus for Entry / Exit / Exceeding 8 Hour / Prayer',
             forcast = 'same',
             payable = True,
         )
@@ -120,22 +133,39 @@ def bonus__project_hour__on_exit():
 
         for attendance in attendances:
             if attendance.employeeactivity_set.exists():
-                e_hour = bonushour_for_hroff
+                e_hour = 0
+                
+                # If takes entry before 01:00 PM
+                if attendance.entry_time < datetime.time(hour=13, minute=0, second=1):
+                    # print(attendance.employee.full_name, " - entry bonus")
+                    e_hour += bonushour_for_timelyentry
 
-                inside_time = 0
-                activities = attendance.employeeactivity_set.all()
-                activities = list(activities)
-                al = len(activities)
+                # If HR OFF
+                if not attendance.employee.employeeonline.active:
+                    
+                    # print(attendance.employee.full_name, " - hr off bonus")
+                    e_hour += bonushour_for_hroff
 
-                for i in range(al):
-                    st, et = activities[i].start_time, activities[i].end_time
-                    if et:
-                        inside_time += (et.timestamp() - st.timestamp())
+                    inside_time = 0
+                    activities = attendance.employeeactivity_set.all()
+                    activities = list(activities)
+                    al = len(activities)
 
-                inside_time = math.floor(inside_time / 60) # convert to minute
+                    for i in range(al):
+                        st, et = activities[i].start_time, activities[i].end_time
+                        if et:
+                            inside_time += (et.timestamp() - st.timestamp())
 
-                if inside_time > 480: # 8 hours = 480 minute
-                    e_hour += bonushour_for_overtime
+                    inside_time = math.floor(inside_time / 60) # convert to minute
+
+                    if inside_time > 480: # 8 hours = 480 minute
+                        # print(attendance.employee.full_name, " - 8 hours bonus")
+                        e_hour += bonushour_for_overtime
+                    
+                    if attendance.employee.prayerinfo_set.exists():
+                        prayer_info = attendance.employee.prayerinfo_set.all()[0]
+                        # print(attendance.employee.full_name, " - prayer bonus:", ((prayer_info.num_of_waqt // 2) * bonushour_for_prayer))
+                        e_hour += ((prayer_info.num_of_waqt // 2) * bonushour_for_prayer)
 
                 total_hour += e_hour
                 eph.append(EmployeeProjectHour(
@@ -148,59 +178,5 @@ def bonus__project_hour__on_exit():
         project_hour.save()
 
         EmployeeProjectHour.objects.bulk_create(eph)
-        print("[Bot] Exit Bonus Done")
-
-
-def bonus__project_hour__on_entry():
-    now = timezone.now().date()
-
-    project_id = 20 # HR - 20 # Local HR - 4
-    manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
-    num_of_hour = 1
-
-
-    # current_friday = now + relativedelta(weekday=FR(0))
-    # if current_friday.month != now.month:
-    #     current_friday = now + relativedelta(weekday=FR(-1))
-
-    attendances = EmployeeAttendance.objects.filter(
-        employee__active=True,
-        employee__project_eligibility=True,
-        date=now,
-        entry_time__lt=timezone.now().time().replace(hour=13, minute=0, second=1),
-    ).prefetch_related(
-        "employee",
-        "employeeactivity_set",
-    )
-
-    if len(attendances) > 0:
-        project_hour = ProjectHour.objects.create(
-            manager_id = manager_employee_id,
-            hour_type = 'bonus',
-            project_id = project_id,
-            date = now,
-            hours = 0,
-            description = 'Bonus for Timely Entry',
-            forcast = 'same',
-            payable = True,
-        )
-
-        eph = []
-        total_hour = 0
-
-        for attendance in attendances:
-            if attendance.employeeactivity_set.exists():
-                total_hour += num_of_hour
-                eph.append(EmployeeProjectHour(
-                    project_hour = project_hour,
-                    hours = num_of_hour,
-                    employee=attendance.employee,
-                ))
-        
-        project_hour.hours = total_hour
-        project_hour.save()
-
-        EmployeeProjectHour.objects.bulk_create(eph)
-    
-        print("[Bot] Entry Bonus Done! ")
+        print("[Bot] Bonus Done")
 

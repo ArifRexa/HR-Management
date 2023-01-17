@@ -206,3 +206,10 @@ class EmployeeLunch(TimeStampMixin):
         )
         verbose_name = 'Employee detail'
         verbose_name_plural = 'Employee details'
+
+
+class PrayerInfo(AuthorMixin, TimeStampMixin):
+    WAQT_CHOICES = [(i,i,) for i in range(6)]
+
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    num_of_waqt = models.IntegerField(choices=WAQT_CHOICES)
