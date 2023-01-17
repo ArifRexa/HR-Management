@@ -89,8 +89,8 @@ def all_employee_offline():
 def bonus__project_hour_add():
     now = timezone.now().date()
 
-    project_id = 4 # HR - 20 # Local HR - 4
-    manager_employee_id = 1 # Shahinur Rahman - 30 # Local ID - 1
+    project_id = 20 # HR - 20 # Local HR - 4
+    manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
 
     bonushour_for_timelyentry = 1
     bonushour_for_hroff = 1
