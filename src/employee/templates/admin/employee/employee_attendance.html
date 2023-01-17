@@ -55,8 +55,37 @@
 
 <div class="container-fluid">
     <h2 class="h2 text-center py-3">Employee Attendance</h2>
-    <div class="d-flex justify-content-end pb-3">
-        <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>
+    <div class="pb-3">
+        <div class="d-flex justify-content-between">
+            {% if form %}
+            <div class="">
+                <form action="{% url 'admin:waqt_select' %}" method="post" id="prayerWaqtForm">
+                    {% csrf_token %}
+
+                    {% for field in form.visible_fields %}
+                        <div class="">
+                            <div class="d-inline-block">
+                                {{ field.label }}: 
+                            </div>
+                            <div class="d-inline-block mx-2">
+                                {{ field }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </form>
+                <script>
+                    form = document.getElementById("prayerWaqtForm");
+                    select = document.getElementById("id_num_of_waqt");
+                    select.addEventListener('change', e => form.submit())
+                </script>
+            </div>
+            {% endif %}
+            <div class="">
+                <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>
+            </div>
+        </div>
+        
+        
     </div>
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
