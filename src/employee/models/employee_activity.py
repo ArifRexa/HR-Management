@@ -31,15 +31,16 @@ def save_employee_attendance(sender, **kwargs):
         defaults={'date': timezone.now().date()}
     )
     if instance.active:
-        EmployeeActivity.objects.create(
-            employee_attendance=attendance,
-            start_time=datetime.datetime.now()
-        )
+        activity = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True).last()
+        if not activity:
+            EmployeeActivity.objects.create(
+                employee_attendance=attendance,
+                start_time=datetime.datetime.now()
+            )
     else:
-        activity = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True).first()
-        if activity:
-            activity.end_time = datetime.datetime.now()
-            activity.save()
+        activities = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True)
+        if activities.exists():
+            activities.update(end_time=timezone.now())
 
 
 class EmployeeAttendance(TimeStampMixin, AuthorMixin):
