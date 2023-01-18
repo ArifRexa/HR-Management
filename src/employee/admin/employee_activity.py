@@ -281,15 +281,15 @@ class EmployeeProjectAdmin(admin.ModelAdmin):
 
 @admin.register(PrayerInfo)
 class EmployeePrayerInfoAdmin(admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'num_of_waqt', )
+    list_display = ('get_date', 'employee', 'num_of_waqt_done' )
     autocomplete_fields = ('employee', )
     list_filter = ('employee', )
     search_fields = ('employee__full_name', )
-
+    
     @admin.display(description="Date", ordering="created_at")
     def get_date(self, obj, *args, **kwargs):
         return obj.created_at.strftime("%b %d, %Y")
-
+    
     def has_module_permission(self, request):
         return False
 
