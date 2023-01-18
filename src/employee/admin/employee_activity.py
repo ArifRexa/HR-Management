@@ -185,7 +185,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         break
             date_datas.update({emp: temp})
         
-        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee).last()
+        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now).last()
         form = EmployeePrayerInfoForm(instance=prayerobj)
 
         o=request.GET.get('o', None)
