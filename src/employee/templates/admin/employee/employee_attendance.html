@@ -57,6 +57,9 @@
     .text-jalamoyi {
         color: magenta;
     }
+    .prayer_info__text{
+        font-size: 10px;
+    }
 </style>
 
 <div class="container-fluid">
@@ -129,7 +132,8 @@
                                 <p class="text-center">
                                     <span>
                                         {% if data.prayer_info %}
-                                            {{ data.prayer_info }}
+                                            <span class="">{{ data.prayer_count }}</span>
+                                            <span class="prayer_info__text">{{ data.prayer_info }}</span>
                                         {% else %}
                                             -
                                         {% endif %}

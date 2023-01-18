@@ -154,14 +154,15 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 
                 for pinfo in prayerinfos:
                     if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
-                        prayer_info_text = f'{pinfo.num_of_waqt_done}('
-                        if pinfo.waqt_fajr: prayer_info_text += 'F'
-                        if pinfo.waqt_zuhr: prayer_info_text += 'Z'
-                        if pinfo.waqt_asr: prayer_info_text += 'A'
-                        if pinfo.waqt_maghrib: prayer_info_text += 'M'
-                        if pinfo.waqt_isha: prayer_info_text += 'I'
+                        prayer_info_text = '( '
+                        if pinfo.waqt_fajr: prayer_info_text += 'F '
+                        if pinfo.waqt_zuhr: prayer_info_text += 'Z '
+                        if pinfo.waqt_asr: prayer_info_text += 'A '
+                        if pinfo.waqt_maghrib: prayer_info_text += 'M '
+                        if pinfo.waqt_isha: prayer_info_text += 'I '
                         prayer_info_text += ')'
                         temp[date].update({
+                            'prayer_count': pinfo.num_of_waqt_done,
                             'prayer_info': prayer_info_text,
                         })
                 
