@@ -133,12 +133,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                     date__gte=last_x_date
                 ).prefetch_related("employeeactivity_set")
             ),
-            # Prefetch(
-            #     "prayerinfo_set", 
-            #     queryset=PrayerInfo.objects.filter(
-            #         created_at__date=now.date(),
-            #     ),
-            # ),
+            Prefetch(
+                "prayerinfo_set", 
+                queryset=PrayerInfo.objects.filter(
+                    created_at__date__gt=last_x_date,
+                ),
+            ),
         )
 
         # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
@@ -148,8 +148,23 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         for emp in emps:
             temp = {}
             attendances = emp.employeeattendance_set.all()
+            prayerinfos = emp.prayerinfo_set.all()
             for date in last_x_dates:
-                temp[date] = None
+                temp[date] = dict()
+                
+                for pinfo in prayerinfos:
+                    if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
+                        prayer_info_text = f'{pinfo.num_of_waqt_done}('
+                        if pinfo.waqt_fajr: prayer_info_text += 'F'
+                        if pinfo.waqt_zuhr: prayer_info_text += 'Z'
+                        if pinfo.waqt_asr: prayer_info_text += 'A'
+                        if pinfo.waqt_maghrib: prayer_info_text += 'M'
+                        if pinfo.waqt_isha: prayer_info_text += 'I'
+                        prayer_info_text += ')'
+                        temp[date].update({
+                            'prayer_info': prayer_info_text,
+                        })
+                
                 for attendance in attendances:
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
@@ -160,7 +175,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             end_time = activities[-1].end_time
                             break_time = 0
                             inside_time = 0
-
+                            
                             for i in range(al-1):
                                 et = activities[i].end_time
                                 if et and et.date() == activities[i+1].start_time.date():
@@ -174,14 +189,14 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             break_time_s = sToTime(break_time)
                             inside_time_s = sToTime(inside_time)
                             
-                            temp[date] = {
+                            temp[date].update({
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
                                 'break_time': break_time_s,
                                 'break_time_hour': math.floor((break_time / (60 * 60)) % 24),
                                 'inside_time': inside_time_s,
                                 'inside_time_hour': math.floor((inside_time / (60 * 60)) % 24),
-                            }
+                            })
                         break
             date_datas.update({emp: temp})
         

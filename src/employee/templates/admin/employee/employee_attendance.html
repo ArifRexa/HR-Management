@@ -98,15 +98,15 @@
                 <tr class="table__row">
                     <td class="align-middle">{{ employee.full_name }}</td>
                     {% for date, data in date_data.items %}
-                        {% if data %}
+                        {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}">
-                                <p>
+                                <p class="text-center">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
                                     <span {% if data.entry_time.hour > 13 %}class="text-danger fw-bold"{% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
                                 </p>
-                                <p>
+                                <p class="text-center">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i> {% endcomment %}
                                     <span {% if data.exit_time == '-' %}class="color-muted"{% endif %} >
                                         {% if data.exit_time != '-' %}
@@ -116,14 +116,23 @@
                                         {% endif %}
                                     </span>
                                 </p>
-                                <p>
+                                <p class="text-center">
                                     <span {% if data.break_time_hour >= 1 %}class="text-jalamoyi fw-bold"{% endif %}>
                                         {{ data.break_time }}
                                     </span>
                                 </p>
-                                <p>
+                                <p class="text-center">
                                     <span {% if data.inside_time_hour >= 8 %}class="text-success fw-bold"{% endif %}>
                                         {{ data.inside_time }}
+                                    </span>
+                                </p>
+                                <p class="text-center">
+                                    <span>
+                                        {% if data.prayer_info %}
+                                            {{ data.prayer_info }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
                                     </span>
                                 </p>
                             </td>
