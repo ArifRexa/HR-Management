@@ -63,20 +63,22 @@
 </style>
 
 <div class="container-fluid">
-    <div class="pb-4">
-        <h2 class="h2 fs-1">Employee Attendance</h2>
-        <div class="text-muted">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
+    <div class="pb-4 text-center">
+        <h2 class="h2 fs-1 text-center">Employee Attendance</h2>
+        <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
     </div>
     <div class="pb-3">
-        <div class="d-flex justify-content-between">
+        <div class="{% if user.is_superuser %}d-flex justify-content-between{% else %}text-center{% endif %}">
             {% if form %}
-            <div class="rounded p-2 bg-body-secondary">
-                {% include 'admin/form/employee_prayerinfo_form.html' %}
-            </div>
+                <div class="d-inline-block rounded p-2 bg-body-secondary">
+                    {% include 'admin/form/employee_prayerinfo_form.html' %}
+                </div>
             {% endif %}
-            <div class="py-2">
-                <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>
-            </div>
+            {% if user.is_superuser %}
+                <div class="py-2">
+                    <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>
+                </div>
+            {% endif %}
         </div>
         
         
@@ -106,7 +108,7 @@
                                 <p class="text-center">
                                     {% if data.bonus_hour %}
                                         <span class="fs-6 fw-bold text-primary">
-                                            Bonus: {{ data.bonus_hour }}
+                                            {{ data.bonus_hour }} H
                                         </span>
                                     {% else %}
                                         <span>
