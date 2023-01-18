@@ -104,8 +104,8 @@
                     <td class="align-middle">{{ employee.full_name }}</td>
                     {% for date, data in date_data.items %}
                         {% if data and data.entry_time %}
-                            <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}">
-                                <p class="text-center">
+                            <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
+                                <p class="text-center mb-1">
                                     {% if data.bonus_hour %}
                                         <span class="fs-6 fw-bold text-primary">
                                             {{ data.bonus_hour }} H
@@ -116,13 +116,13 @@
                                         </span>
                                     {% endif %}
                                 </p>
-                                <p class="text-center">
+                                <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
                                     <span {% if data.entry_time.hour > 13 %}class="text-danger fw-bold"{% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
                                 </p>
-                                <p class="text-center">
+                                <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i> {% endcomment %}
                                     <span {% if data.exit_time == '-' %}class="color-muted"{% endif %} >
                                         {% if data.exit_time != '-' %}
@@ -132,17 +132,17 @@
                                         {% endif %}
                                     </span>
                                 </p>
-                                <p class="text-center">
+                                <p class="text-center mb-1">
                                     <span {% if data.break_time_hour >= 1 %}class="text-jalamoyi fw-bold"{% endif %}>
                                         {{ data.break_time }}
                                     </span>
                                 </p>
-                                <p class="text-center">
+                                <p class="text-center mb-1">
                                     <span {% if data.inside_time_hour >= 8 %}class="text-success fw-bold"{% endif %}>
                                         {{ data.inside_time }}
                                     </span>
                                 </p>
-                                <p class="text-center">
+                                <p class="text-center mb-1">
                                     <span>
                                         {% if data.prayer_info %}
                                             <span class="">{{ data.prayer_count }}</span>

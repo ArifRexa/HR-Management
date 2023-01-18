@@ -159,7 +159,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             attendances = emp.employeeattendance_set.all()
             prayerinfos = emp.prayerinfo_set.all()
             empprojhours = emp.employeeprojecthour_set.all()
-            print(empprojhours)
             for date in last_x_dates:
                 temp[date] = dict()
 
