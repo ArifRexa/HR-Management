@@ -57,6 +57,9 @@
     .text-jalamoyi {
         color: magenta;
     }
+    .prayer_info__text{
+        font-size: 10px;
+    }
 </style>
 
 <div class="container-fluid">
@@ -101,6 +104,17 @@
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}">
                                 <p class="text-center">
+                                    {% if data.bonus_hour %}
+                                        <span class="fs-6 fw-bold">
+                                            Bonus: {{ data.bonus_hour }}
+                                        </span>
+                                    {% else %}
+                                        <span>
+                                            -
+                                        </span>
+                                    {% endif %}
+                                </p>
+                                <p class="text-center">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
                                     <span {% if data.entry_time.hour > 13 %}class="text-danger fw-bold"{% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
@@ -129,7 +143,8 @@
                                 <p class="text-center">
                                     <span>
                                         {% if data.prayer_info %}
-                                            {{ data.prayer_info }}
+                                            <span class="">{{ data.prayer_count }}</span>
+                                            <span class="prayer_info__text">{{ data.prayer_info }}</span>
                                         {% else %}
                                             -
                                         {% endif %}

@@ -20,6 +20,8 @@ from employee.models import EmployeeOnline, EmployeeAttendance, EmployeeActivity
 from employee.models.employee_activity import EmployeeProject
 from employee.forms.prayer_info import EmployeePrayerInfoForm
 
+from project_management.models import EmployeeProjectHour
+
 
 def sToTime(duration):
     minutes = math.floor((duration / 60) % 60)
@@ -136,8 +138,15 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             Prefetch(
                 "prayerinfo_set", 
                 queryset=PrayerInfo.objects.filter(
-                    created_at__date__gt=last_x_date,
+                    created_at__date__gte=last_x_date,
                 ),
+            ),
+            Prefetch(
+                "employeeprojecthour_set", 
+                queryset=EmployeeProjectHour.objects.filter(
+                    project_hour__date__gte=last_x_date,
+                    project_hour__hour_type='bonus',
+                ).select_related("project_hour"),
             ),
         )
 
@@ -149,19 +158,29 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             temp = {}
             attendances = emp.employeeattendance_set.all()
             prayerinfos = emp.prayerinfo_set.all()
+            empprojhours = emp.employeeprojecthour_set.all()
+            print(empprojhours)
             for date in last_x_dates:
                 temp[date] = dict()
+
+                for eph in reversed(empprojhours):
+                    if eph.project_hour.date == date:
+                        temp[date].update({
+                            'bonus_hour': int(eph.hours),
+                        })
+                        break
                 
                 for pinfo in prayerinfos:
                     if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
-                        prayer_info_text = f'{pinfo.num_of_waqt_done}('
-                        if pinfo.waqt_fajr: prayer_info_text += 'F'
-                        if pinfo.waqt_zuhr: prayer_info_text += 'Z'
-                        if pinfo.waqt_asr: prayer_info_text += 'A'
-                        if pinfo.waqt_maghrib: prayer_info_text += 'M'
-                        if pinfo.waqt_isha: prayer_info_text += 'I'
+                        prayer_info_text = '( '
+                        if pinfo.waqt_fajr: prayer_info_text += 'F '
+                        if pinfo.waqt_zuhr: prayer_info_text += 'Z '
+                        if pinfo.waqt_asr: prayer_info_text += 'A '
+                        if pinfo.waqt_maghrib: prayer_info_text += 'M '
+                        if pinfo.waqt_isha: prayer_info_text += 'I '
                         prayer_info_text += ')'
                         temp[date].update({
+                            'prayer_count': pinfo.num_of_waqt_done,
                             'prayer_info': prayer_info_text,
                         })
                 
