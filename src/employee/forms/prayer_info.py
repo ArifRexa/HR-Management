@@ -11,7 +11,7 @@ class EmployeePrayerInfoForm(forms.ModelForm):
             "waqt_zuhr": "Zuhr",
             "waqt_asr": "Asr",
             "waqt_maghrib": "Maghrib",
-            "waqt_isha": "Isha",
+            "waqt_isha": "Esha",
         }
     
     def __init__(self, *args, **kwargs):
