@@ -185,7 +185,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         break
             date_datas.update({emp: temp})
         
-        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now).last()
+        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
         form = EmployeePrayerInfoForm(instance=prayerobj)
 
         o=request.GET.get('o', None)
@@ -202,7 +202,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         if not request.user.is_authenticated:
             return redirect('/')
         if request.method == 'POST':
-            prayerobj = PrayerInfo.objects.filter(employee=request.user.employee).last()
+            prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=timezone.now().date()).last()
             form = EmployeePrayerInfoForm(request.POST, instance=prayerobj)
             if form.is_valid():
                 prayer_info = form.save(commit=False)
