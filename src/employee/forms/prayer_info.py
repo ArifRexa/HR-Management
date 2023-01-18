@@ -5,7 +5,17 @@ from employee.models import PrayerInfo
 class EmployeePrayerInfoForm(forms.ModelForm):
     class Meta:
         model = PrayerInfo
-        fields = ['num_of_waqt']
+        exclude = ['employee', 'num_of_waqt_done', 'waqt_fajr']
         labels = {
-            "num_of_waqt": "Prayers Today"
+            # "waqt_fajr": "Fazr",
+            "waqt_zuhr": "Zuhr",
+            "waqt_asr": "Asr",
+            "waqt_maghrib": "Maghrib",
+            "waqt_isha": "Isha",
         }
+    
+    def __init__(self, *args, **kwargs):
+        super(EmployeePrayerInfoForm, self).__init__(*args, **kwargs)
+        for visible in self.visible_fields():
+            visible.field.widget.attrs['class'] = 'form-check-input waqt_check'
+

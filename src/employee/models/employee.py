@@ -209,7 +209,20 @@ class EmployeeLunch(TimeStampMixin):
 
 
 class PrayerInfo(AuthorMixin, TimeStampMixin):
-    WAQT_CHOICES = [(i,i,) for i in range(6)]
-
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    num_of_waqt = models.IntegerField(choices=WAQT_CHOICES)
+    num_of_waqt_done = models.IntegerField(default=0)
+    
+    waqt_fajr = models.BooleanField(default=False)
+    waqt_zuhr = models.BooleanField(default=False)
+    waqt_asr = models.BooleanField(default=False)
+    waqt_maghrib = models.BooleanField(default=False)
+    waqt_isha = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        self.num_of_waqt_done = self.waqt_fajr \
+                                + self.waqt_zuhr \
+                                + self.waqt_asr \
+                                + self.waqt_maghrib \
+                                + self.waqt_isha
+        
+        return super(PrayerInfo, self).save(*args, **kwargs)

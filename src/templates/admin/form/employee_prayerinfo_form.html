@@ -1,0 +1,23 @@
+<form action="{% url 'admin:waqt_select' %}" method="post" id="prayerWaqtForm">
+    {% csrf_token %}
+    <!-- <div class="mb-1"> -->
+        <span class="fw-bold px-1">Prayers Today:</span> 
+    <!-- </div> -->
+    {% for field in form.visible_fields %}
+        <div class="d-inline-block mx-2">
+            <span class="mx-1">
+                {{ field }}
+            </span>
+            <span class="">
+                {{ field.label }}
+            </span>
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-sm btn-primary mx-2">Submit</button>
+</form>
+<script>
+    // form = document.getElementById("prayerWaqtForm");
+    // checkboxes = document.querySelectorAll(".waqt_check").forEach(checkbox => 
+    //     checkbox.addEventListener('change', e => form.submit())
+    // )
+</script>
