@@ -86,12 +86,17 @@ def all_employee_offline():
     print('[Bot] All Employee Offline ', timezone.now())
 
 
-def bonus__project_hour_add():
-    now = timezone.now().date()
-
-    project_id = 20 # HR - 20 # Local HR - 4
-    manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
-
+def bonus__project_hour_add(target_date=None):
+    if not target_date:
+        target_date = timezone.now().date()
+    else:
+        target_date = datetime.datetime.strptime(target_date, '%Y-%m-%d').date()
+    
+    # print(target_date)
+    
+    project_id = 4 # HR - 20 # Local HR - 4
+    manager_employee_id = 1 # Shahinur Rahman - 30 # Local ID - 1
+    
     bonushour_for_timelyentry = 1
     bonushour_for_hroff = 1
     bonushour_for_overtime = 1
@@ -100,7 +105,7 @@ def bonus__project_hour_add():
     attendances = EmployeeAttendance.objects.filter(
         employee__active=True,
         employee__project_eligibility=True,
-        date=now,
+        date=target_date,
     ).prefetch_related(
         "employeeactivity_set",
         Prefetch(
@@ -110,7 +115,7 @@ def bonus__project_hour_add():
             ).prefetch_related(
                 Prefetch(
                     "prayerinfo_set",
-                    queryset=PrayerInfo.objects.filter(created_at__date=now),
+                    queryset=PrayerInfo.objects.filter(created_at__date=target_date),
                 ),
             )
         ),
@@ -121,7 +126,7 @@ def bonus__project_hour_add():
             manager_id = manager_employee_id,
             hour_type = 'bonus',
             project_id = project_id,
-            date = now,
+            date = target_date,
             hours = 0,
             description = 'Bonus for Entry / Exit / Exceeding 8 Hour / Prayer',
             forcast = 'same',
@@ -133,23 +138,28 @@ def bonus__project_hour_add():
 
         for attendance in attendances:
             if attendance.employeeactivity_set.exists():
+                activities = list(attendance.employeeactivity_set.all())
+                al = len(activities)
+
                 e_hour = 0
                 
                 # If takes entry before 01:00 PM
                 if attendance.entry_time < datetime.time(hour=13, minute=0, second=1):
                     # print(attendance.employee.full_name, " - entry bonus")
                     e_hour += bonushour_for_timelyentry
-
-                # If HR OFF
-                if not attendance.employee.employeeonline.active:
-                    
+                
+                # Prayer Bonus
+                if attendance.employee.prayerinfo_set.exists():
+                    prayer_info = attendance.employee.prayerinfo_set.all()[0]
+                    # print(attendance.employee.full_name, " - prayer bonus:", ((prayer_info.num_of_waqt_done // 2) * bonushour_for_prayer))
+                    e_hour += ((prayer_info.num_of_waqt_done // 2) * bonushour_for_prayer)
+                
+                # If HR OFF for that date
+                if al > 0 and activities[-1].end_time and activities[-1].end_time.time() < datetime.time(hour=23, minute=45, second=1):
                     # print(attendance.employee.full_name, " - hr off bonus")
                     e_hour += bonushour_for_hroff
 
                     inside_time = 0
-                    activities = attendance.employeeactivity_set.all()
-                    activities = list(activities)
-                    al = len(activities)
 
                     for i in range(al):
                         st, et = activities[i].start_time, activities[i].end_time
@@ -161,11 +171,6 @@ def bonus__project_hour_add():
                     if inside_time > 480: # 8 hours = 480 minute
                         # print(attendance.employee.full_name, " - 8 hours bonus")
                         e_hour += bonushour_for_overtime
-                    
-                    if attendance.employee.prayerinfo_set.exists():
-                        prayer_info = attendance.employee.prayerinfo_set.all()[0]
-                        # print(attendance.employee.full_name, " - prayer bonus:", ((prayer_info.num_of_waqt // 2) * bonushour_for_prayer))
-                        e_hour += ((prayer_info.num_of_waqt // 2) * bonushour_for_prayer)
 
                 total_hour += e_hour
                 eph.append(EmployeeProjectHour(
