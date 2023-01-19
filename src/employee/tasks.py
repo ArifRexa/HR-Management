@@ -144,7 +144,7 @@ def bonus__project_hour_add(target_date=None):
                 e_hour = 0
                 
                 # If takes entry before 01:00 PM
-                if attendance.entry_time < datetime.time(hour=13, minute=0, second=1):
+                if al > 0 and activities[0].start_time.time() < datetime.time(hour=13, minute=0, second=1):
                     # print(attendance.employee.full_name, " - entry bonus")
                     e_hour += bonushour_for_timelyentry
                 
