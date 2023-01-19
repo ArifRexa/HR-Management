@@ -79,7 +79,7 @@
         <div id="feedback__marquee">
             <span id="feedback__marquee__inner">
                 <span>Please provide last months feedback
-                    <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline">HERE</a>. 
+                    <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline" id="feedback__marquee_link">HERE</a>. 
                     So I can be vanished &#128578;</span>
             </span>
         </div>
@@ -117,6 +117,10 @@
             let parentWidth = element.parentElement.offsetWidth;
             let flag = parentWidth;
             
+            const feedback__marquee = document.getElementById("feedback__marquee");
+            const feedback__marquee_inner = document.getElementById("feedback__marquee__inner");
+            const feedback__marquee_link = document.getElementById("feedback__marquee_link");
+            
             setInterval(() => {
                 element.style.marginLeft = --flag + "px";
             
@@ -125,7 +129,30 @@
                 }
             }, 10);
         }
-        animate(document.getElementById("feedback__marquee__inner"));
+        animate(feedback__marquee__inner);
+        
+        let red, green, blue;
+        let c;
+
+        setInterval(() => {
+            red = Math.floor(Math.random() * 255);
+            green = Math.floor(Math.random() * 255);
+            blue = Math.floor(Math.random() * 255);
+
+            c = red*0.299 + green*0.587 + blue*0.114;
+            
+            feedback__marquee.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, 1)`;
+
+            if(c>150){
+                feedback__marquee__inner.style.color = '#000';
+                feedback__marquee__link.style.color = '#000';
+            } 
+            else{
+                feedback__marquee__inner.style.color = '#fff';
+                feedback__marquee__link.style.color = '#fff';
+            }
+        }, 25);
+
     </script>
 
 {% endblock %}
