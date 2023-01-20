@@ -79,7 +79,7 @@
         <div id="feedback__marquee">
             <span id="feedback__marquee__inner">
                 <span>Please provide last months feedback
-                    <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline" id="feedback__marquee_link">HERE</a>. 
+                    <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline" id="feedback__marquee__link">HERE</a>. 
                     So I can be vanished &#128578;</span>
             </span>
         </div>
@@ -112,15 +112,15 @@
     </div> -->
 
     <script>
+        const feedback__marquee = document.getElementById("feedback__marquee");
+        const feedback__marquee_inner = document.getElementById("feedback__marquee__inner");
+        const feedback__marquee__link = document.getElementById("feedback__marquee__link");
+
         function animate(element) {
             let elementWidth = element.offsetWidth;
             let parentWidth = element.parentElement.offsetWidth;
             let flag = parentWidth;
-            
-            const feedback__marquee = document.getElementById("feedback__marquee");
-            const feedback__marquee_inner = document.getElementById("feedback__marquee__inner");
-            const feedback__marquee_link = document.getElementById("feedback__marquee_link");
-            
+
             setInterval(() => {
                 element.style.marginLeft = --flag + "px";
             

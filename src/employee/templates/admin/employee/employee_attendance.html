@@ -93,6 +93,9 @@
                             {{ date|date:"M d" }}
                         </th>
                     {% endfor %}
+                    <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">
+                        T. Attendance: {{ last_month|date:"b, Y" }}
+                    </th>
                 </tr>
                 {% comment %} <tr class="table__row">
                     
@@ -157,6 +160,11 @@
                             <td class="align-middle text-center color-muted"> - </td>
                         {% endif %}
                     {% endfor %}
+
+                    <td class="text-center align-middle fs-5" title="{{ employee.full_name }}">
+                        {{ employee.last_month_attendance }}
+                    </td>
+                    
                 {% endfor %}
                 </tr>
             </tbody>

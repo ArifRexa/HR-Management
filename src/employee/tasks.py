@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import math
 from dateutil.relativedelta import relativedelta, FR
@@ -10,7 +11,7 @@ from django.utils import timezone
 from django.conf import settings
 from django.db.models import Prefetch
 
-from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance, PrayerInfo
+from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance, PrayerInfo, EmployeeFeedback
 from project_management.models import ProjectHour, EmployeeProjectHour
 
 
@@ -86,13 +87,63 @@ def all_employee_offline():
     print('[Bot] All Employee Offline ', timezone.now())
 
 
+def bonus__project_hour__monthly(date, project_id, manager_employee_id):
+    bonushour_for_feedback = 1
+
+    employees = Employee.objects.filter(
+        active=True,
+        project_eligibility=True,
+    ).prefetch_related(
+        Prefetch(
+            "employeefeedback_set",
+            queryset=EmployeeFeedback.objects.filter(
+                created_at__year=date.year,
+                created_at__month=date.month,
+            ),
+        ),
+    )
+
+    project_hour = ProjectHour.objects.create(
+            manager_id = manager_employee_id,
+            hour_type = 'bonus',
+            project_id = project_id,
+            date = date,
+            hours = 0,
+            description = 'Bonus for Monthly Feedback',
+            forcast = 'same',
+            payable = True,
+        )
+    
+    eph = []
+    total_hour = 0
+
+    for emp in employees:
+        e_hour = 0
+
+        if len(emp.employeefeedback_set.all()) > 0:
+            e_hour += bonushour_for_feedback
+
+        if e_hour > 0:
+            total_hour += e_hour
+            eph.append(EmployeeProjectHour(
+                project_hour = project_hour,
+                hours = e_hour,
+                employee=emp,
+            ))
+    
+    project_hour.hours = total_hour
+    project_hour.save()
+
+    EmployeeProjectHour.objects.bulk_create(eph)
+    print("[Bot] Monthly Bonus Done")
+
+
+
 def bonus__project_hour_add(target_date=None):
     if not target_date:
         target_date = timezone.now().date()
     else:
         target_date = datetime.datetime.strptime(target_date, '%Y-%m-%d').date()
-    
-    # print(target_date)
     
     project_id = 20 # HR - 20 # Local HR - 4
     manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
@@ -101,7 +152,11 @@ def bonus__project_hour_add(target_date=None):
     bonushour_for_hroff = 1
     bonushour_for_overtime = 1
     bonushour_for_prayer = 1
-
+    
+    # Monthly bonus if it's the last day of the month
+    _, last_day = calendar.monthrange(target_date.year, target_date.month)
+    if target_date.day == last_day: bonus__project_hour__monthly(target_date, project_id, manager_employee_id)
+    
     attendances = EmployeeAttendance.objects.filter(
         employee__active=True,
         employee__project_eligibility=True,

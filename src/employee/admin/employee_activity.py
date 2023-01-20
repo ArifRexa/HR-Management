@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Count, Q
 
 # Needed for optional Features
 # from django.db.models import Count, Case, When, Value, BooleanField
@@ -122,6 +122,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
         last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
         last_x_date = (now - datetime.timedelta(30)).date()
+
+        last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
         
         emps = Employee.objects.filter(
             active=True,
@@ -148,6 +150,14 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                     project_hour__hour_type='bonus',
                 ).select_related("project_hour"),
             ),
+        ).annotate(
+            last_month_attendance=Count(
+                "employeeattendance",
+                filter=Q(
+                    employeeattendance__date__year=last_month.year, 
+                    employeeattendance__date__month=last_month.month,
+                ),
+            )
         )
 
         # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
@@ -225,6 +235,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         context = dict(
                 self.admin_site.each_context(request),
                 dates=last_x_dates,
+                last_month=last_month,
                 date_datas=date_datas,
                 o=o, # order key
                 form=form,
