@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import get_template
 
@@ -16,6 +19,10 @@ class ExamMail:
         self.exam_url = f'https://job.mediusware.com/exam/{candidate_assessment.unique_id}'
 
     def reminder_mail(self):
+        time_limit = (timezone.now() - timedelta(days=60)).date()
+        if self.candidate_assessment.updated_at < time_limit:
+            return
+
         html_template = get_template('mail/exam/reminder.html')
         html_content = html_template.render({
             'candidate_assessment': self.candidate_assessment,
