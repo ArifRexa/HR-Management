@@ -13,7 +13,7 @@ class ProjectTypeFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('bonus', 'Bonus Project Hour'),
+            ('bonus', 'Bonus'),
         )
     
     def queryset(self, request, queryset):
