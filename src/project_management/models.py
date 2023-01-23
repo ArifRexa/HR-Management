@@ -166,7 +166,8 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
 
     class Meta:
         permissions = [
-            ("change_recent_activity", "Can change if inserted recently (3days)")
+            ("change_recent_activity", "Can change if inserted recently (3days)"),
+            ("see_all_employee_hour", "Can see all emploployee project hour"),
         ]
 
 

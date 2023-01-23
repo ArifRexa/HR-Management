@@ -54,7 +54,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     # query for get total hour by query string
     def get_total_hour(self, request):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
             if request.user.employee.manager:
                 qs.filter(Q(project_hour__manager=request.user.employee.id) | Q(employee=request.user.employee))
             else:
@@ -73,19 +73,22 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         """ Return query_set
 
         overrides django admin query set
-        allow super admin only to see all project hour
-        manager's will only see theirs
+        allow super admin and permitted user only to see all project hour
+        manager's and employees will only see theirs
         @type request: object
         """
         query_set = super(EmployeeHourAdmin, self).get_queryset(request)
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
             if request.user.employee.manager:
-                return query_set.filter(Q(project_hour__manager=request.user.employee.id) | Q(employee=request.user.employee))
+                return query_set.filter(
+                    Q(project_hour__manager=request.user.employee.id) | 
+                    Q(employee=request.user.employee)
+                )
             else:
                 return query_set.filter(employee=request.user.employee)
-        return query_set.select_related("project_hour")
+        return query_set
 
     def get_list_filter(self, request):
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
             return []
         return super(EmployeeHourAdmin, self).get_list_filter(request)
