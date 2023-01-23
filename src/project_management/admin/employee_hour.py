@@ -8,10 +8,33 @@ from config.admin.utils import simple_request_filter
 from project_management.models import EmployeeProjectHour
 
 
+class ProjectTypeFilter(admin.SimpleListFilter):
+    title = 'hour type'
+    parameter_name = 'project_hour__hour_type'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('project', 'Project'),
+            ('bonus', 'Bonus'),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value() == 'bonus':
+            return queryset.filter(
+                project_hour__hour_type='bonus',
+            )
+        elif self.value() == 'project':
+            return queryset.filter(
+                project_hour__hour_type='project',
+            )
+
+        return queryset
+
+
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ('get_date', 'employee', 'hours', 'get_hour_type', 'project_hour', )
-    list_filter = ('employee', 'created_at',)
+    list_filter = (ProjectTypeFilter, 'employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
     autocomplete_fields = ('employee', 'project_hour')
