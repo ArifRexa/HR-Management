@@ -1,5 +1,9 @@
 import datetime
 
+from django_userforeignkey.models.fields import UserForeignKey
+
+from django.contrib.auth import get_user_model
+
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -35,7 +39,7 @@ def save_employee_attendance(sender, **kwargs):
         if not activity:
             EmployeeActivity.objects.create(
                 employee_attendance=attendance,
-                start_time=datetime.datetime.now()
+                start_time=datetime.datetime.now(),
             )
     else:
         activities = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True)
@@ -57,7 +61,9 @@ class EmployeeActivity(TimeStampMixin, AuthorMixin):
     employee_attendance = models.ForeignKey(EmployeeAttendance, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
-
+    
+    updated_by = UserForeignKey(auto_user=True, verbose_name="Updated By", related_name="activities_updated")
+    
 
 class EmployeeProject(TimeStampMixin, AuthorMixin):
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
