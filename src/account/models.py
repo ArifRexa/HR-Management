@@ -34,6 +34,7 @@ class EmployeeSalary(TimeStampMixin):
     festival_bonus = models.FloatField(null=True, default=0.0)
     food_allowance = models.FloatField(null=True, default=0.0)
     loan_emi = models.FloatField(null=True, default=0.0)
+    provident_fund = models.FloatField(null=True, default=0.0)
     gross_salary = models.FloatField()
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
 
