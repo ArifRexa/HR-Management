@@ -39,8 +39,7 @@ class ProvidentFundAccountAdmin(admin.ModelAdmin):
     def get_queryset(self, request: HttpRequest) -> QuerySet[Account]:
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
-            qs.filter(employee=request.user.employee)
-        
+            return qs.filter(employee=request.user.employee)
         return qs
     
     @admin.display(description="Employee", ordering="employee__full_name")
