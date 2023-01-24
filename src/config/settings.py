@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'project_management',
     'account',
     'asset_management',
-    'website'
+    'website',
+    'provident_fund',
 ]
 
 MIDDLEWARE = [
