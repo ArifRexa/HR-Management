@@ -281,11 +281,44 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeActivity)
 class EmployeeBreakAdmin(admin.ModelAdmin):
-    list_display = ('employee_attendance', 'start_time', 'end_time')
+    list_display = ('employee_attendance', 'get_start_time', 'get_end_time')
     date_hierarchy = 'employee_attendance__date'
     autocomplete_fields = ('employee_attendance',)
     list_filter = ('employee_attendance__employee',)
     search_fields = ('employee_attendance__employee__full_name',)
+    # readonly_fields = ('start_by', 'end_by',)
+
+
+    # @admin.display(description='Created By', ordering="created_by")
+    # def get_created_by(self, obj):
+    #     return obj.created_by.employee.full_name
+
+    @admin.display(description='Start Time', ordering="start_time")
+    def get_start_time(self, obj):
+        start_time = ''
+
+        if obj.start_time:
+            start_time += obj.start_time.strftime("%b %d, %Y, %I:%M %p")
+        
+            if obj.created_by and obj.created_by != obj.employee_attendance.employee.user:
+                start_time += '(' + obj.created_by.employee.full_name + ')'
+        
+        return start_time
+    
+
+    @admin.display(description='End Time', ordering="end_time")
+    def get_end_time(self, obj):
+        end_time = ''
+
+        if obj.end_time:
+            end_time += obj.end_time.strftime("%b %d, %Y, %I:%M %p")
+        
+            if obj.updated_by and obj.updated_by != obj.employee_attendance.employee.user:
+                end_time += '(' + obj.updated_by.employee.full_name + ')'
+        
+        return end_time
+
+
 
     def has_module_permission(self, request):
         return False
