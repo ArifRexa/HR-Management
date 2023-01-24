@@ -301,9 +301,9 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
             start_time += obj.start_time.strftime("%b %d, %Y, %I:%M %p")
         
             if obj.created_by and obj.created_by != obj.employee_attendance.employee.user:
-                start_time += '(' + obj.created_by.employee.full_name + ')'
+                start_time += '<span style="color: red; font-weight: bold;"> (' + obj.created_by.employee.full_name + ')</span>'
         
-        return start_time
+        return format_html(start_time)
     
 
     @admin.display(description='End Time', ordering="end_time")
@@ -314,14 +314,13 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
             end_time += obj.end_time.strftime("%b %d, %Y, %I:%M %p")
         
             if obj.updated_by and obj.updated_by != obj.employee_attendance.employee.user:
-                end_time += '(' + obj.updated_by.employee.full_name + ')'
+                end_time += '<span style="color: red; font-weight: bold;"> (' + obj.updated_by.employee.full_name + ')</span>'
         
-        return end_time
-
-
-
-    def has_module_permission(self, request):
-        return False
+        return format_html(end_time)
+    
+    # To hide from main menu
+    # def has_module_permission(self, request):
+    #     return False
 
 
 @admin.register(EmployeeProject)
