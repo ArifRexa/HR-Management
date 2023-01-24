@@ -1,1 +1,2 @@
 from .account import ProvidentFundAccountAdmin
+from .monthly_entry import ProvidentFundMonthlyEntryAdmin
