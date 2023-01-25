@@ -8,7 +8,7 @@ from employee.models import Employee
 
 
 class Account(TimeStampMixin, AuthorMixin):
-    employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
+    employee = models.OneToOneField(Employee, on_delete=models.CASCADE, related_name='pf_account')
 
     start_date = models.DateField(default=timezone.now)
     maturity_date = models.DateField()

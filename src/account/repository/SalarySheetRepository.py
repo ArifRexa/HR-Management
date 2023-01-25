@@ -283,20 +283,21 @@ class SalarySheetRepository:
     def __calculate_provident_fund(self, employee: Employee, salary_date: datetime.date):
         """Calculate provident fund amount if have any
         """
-        pf_account = employee.account
+        if not employee.pf_eligibility:
+            return 0.0
+        
+        pf_account = employee.pf_account
         monthly_amount = 0
-
-        if pf_account:
-            note = f'This payment has been made automated when salary sheet generated at {salary_date}'
-            basic_salary = employee.pay_scale.basic
-            monthly_amount = basic_salary * (pf_account.scale / 100)
-            
-            monthly_entry = employee.account.monthlyentry_set.create(
-                tranx_date=salary_date,
-                amount=monthly_amount,
-                basic_salary=basic_salary,
-                note=note,
-            )
+        note = f'This payment has been made automated when salary sheet generated at {salary_date}'
+        basic_salary = employee.pay_scale.basic
+        monthly_amount = basic_salary * (pf_account.scale / 100)
+        
+        monthly_entry = employee.pf_account.monthlyentry_set.create(
+            tranx_date=salary_date,
+            amount=monthly_amount,
+            basic_salary=basic_salary,
+            note=note,
+        )
 
         return -monthly_amount if monthly_amount else 0.0
 

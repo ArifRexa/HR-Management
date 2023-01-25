@@ -43,7 +43,7 @@ class ProvidentFundMonthlyEntryAdmin(admin.ModelAdmin):
     def get_queryset(self, request: HttpRequest) -> QuerySet[MonthlyEntry]:
         qs = super().get_queryset(request)
         if not request.user.is_superuser:
-            return qs.filter(account=request.user.employee.account)
+            return qs.filter(account=request.user.employee.pf_account)
         return qs
     
     def get_list_filter(self, request: HttpRequest) -> Sequence[str]:

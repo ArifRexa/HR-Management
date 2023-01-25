@@ -118,6 +118,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         if not request.user.is_authenticated:
             return redirect('/')
         
+        # from account.tasks import create_all_pfaccount
+        # create_all_pfaccount()
+        
         now = timezone.now()
 
         last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
