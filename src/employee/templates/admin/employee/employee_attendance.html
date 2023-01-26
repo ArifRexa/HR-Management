@@ -104,7 +104,15 @@
             <tbody>
                 {% for employee, date_data in date_datas.items %}
                 <tr class="table__row">
-                    <td class="align-middle">{{ employee.full_name }}</td>
+                    <td class="align-middle">{{ employee.full_name }}
+
+                    {% if employee.is_online %}
+                        <span style="color: green">🟢</span>
+                    {% else %}
+                        <span>🔴</span>
+                    {% endif %}
+
+                    </td>
                     {% for date, data in date_data.items %}
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">

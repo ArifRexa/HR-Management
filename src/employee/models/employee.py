@@ -60,6 +60,11 @@ class Employee(TimeStampMixin, AuthorMixin):
         return skills[:4]
 
     @property
+    def is_online(self):
+        from employee.models.employee_activity import EmployeeOnline
+        return EmployeeOnline.objects.filter(employee__active=True, employee__id=self.id).values_list('active', flat=True).first()
+
+    @property
     def top_one_skill(self):
         return self.employeeskill_set.order_by('-percentage').first()
 
