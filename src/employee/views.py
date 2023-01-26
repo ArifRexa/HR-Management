@@ -24,10 +24,10 @@ def change_status(request, *args, **kwargs):
         if form.is_valid():
             form.save()
             messages.success(request, 'Your status has been change successfully')
-            return redirect('/admin/')
+            return redirect(request.META.get('HTTP_REFERER'))
         else:
             messages.error(request, 'Something went wrong')
-            return redirect('/admin/')
+            return redirect(request.META.get('HTTP_REFERER'))
     else:
         if employee_status.active:
             employee_status.active = False

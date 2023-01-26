@@ -21,6 +21,7 @@ from employee.models.employee_activity import EmployeeProject
 from employee.forms.prayer_info import EmployeePrayerInfoForm
 
 from project_management.models import EmployeeProjectHour
+from config.settings import employee_ids as management_ids
 
 
 def sToTime(duration):
@@ -240,6 +241,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
         form = EmployeePrayerInfoForm(instance=prayerobj)
 
+        online_status_form = False
+        if not str(request.user.employee.id) in management_ids:
+            online_status_form = True
+
         o=request.GET.get('o', None)
         context = dict(
                 self.admin_site.each_context(request),
@@ -248,6 +253,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 date_datas=date_datas,
                 o=o, # order key
                 form=form,
+                online_status_form=online_status_form
             )
         return TemplateResponse(request, 'admin/employee/employee_attendance.html', context)
 

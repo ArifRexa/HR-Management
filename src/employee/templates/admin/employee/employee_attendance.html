@@ -63,10 +63,22 @@
 </style>
 
 <div class="container-fluid">
-    <div class="pb-4 text-center">
-        <h2 class="h2 fs-1 text-center">Employee Attendance</h2>
-        <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
+    <div class="row">
+        <div class="col-md-10">
+            <div class="text-center">
+                <h2 class="h2 fs-1 text-center">Employee Attendance</h2>
+                <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
+            </div>
+        </div>
+        {% if online_status_form %}
+        <div class="col">
+            <div class="pb-4 text-center">
+                {% include 'admin/form/employee_status_form.html' %}
+            </div>
+        </div>
+        {% endif %}
     </div>
+
     <div class="pb-3">
         <div class="{% if user.is_superuser %}d-flex justify-content-between{% else %}text-center{% endif %}">
             {% if form %}
@@ -80,8 +92,8 @@
                 </div>
             {% endif %}
         </div>
-        
-        
+
+
     </div>
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
