@@ -102,7 +102,11 @@
                     <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">Employee</th>
                     {% for date in dates %}
                         <th class="border text-dark bg-white text-center py-3">
-                            {{ date|date:"M d" }}
+                            {% if forloop.counter0 == 0%}
+                                <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?o={% if o %}{{ o }}{% else %}entry{% endif %}">{{ date|date:"M d" }}</a>
+                            {% else %}
+                                <span>{{ date|date:"M d" }}</span>
+                            {% endif %}
                         </th>
                     {% endfor %}
                     <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">

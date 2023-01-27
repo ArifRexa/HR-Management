@@ -120,6 +120,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             return redirect('/')
 
         now = timezone.now()
+        DEFAULT_EXIT_HOUR = 12 + 9 # 24 Hour time == 9 pm
+        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
         last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
         last_x_date = (now - datetime.timedelta(30)).date()
@@ -221,7 +223,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             for i in range(al):
                                 st, et = activities[i].start_time, activities[i].end_time
                                 if not et:
-                                    et = timezone.now()
+                                    if not now.hour < DEFAULT_EXIT_HOUR:
+                                        if st.hour < DEFAULT_EXIT_HOUR:
+                                            et = DEFAULT_EXIT_TIME
+                                        else:
+                                            et = st
+                                    else:
+                                        et = timezone.now()
                                 inside_time += (et.timestamp() - st.timestamp())
 
                             break_time_s = sToTime(break_time)
@@ -246,6 +254,19 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             online_status_form = True
 
         o=request.GET.get('o', None)
+
+        if o:
+            if o == 'entry':
+                date_datas_sorted = sorted(date_datas.items(), key=lambda x: x[-1].get(datetime.datetime.now().date(), datetime.datetime.now().date()).get('entry_time', DEFAULT_EXIT_TIME.time()))
+                o = '-entry'
+            elif o == '-entry':
+                date_datas_sorted = sorted(date_datas.items(), key=lambda x: x[-1].get(datetime.datetime.now().date(),
+                                                                                       datetime.datetime.now().date()).get(
+                    'entry_time', DEFAULT_EXIT_TIME.time()), reverse=True)
+                o = 'entry'
+
+            date_datas = dict(date_datas_sorted)
+
         context = dict(
                 self.admin_site.each_context(request),
                 dates=last_x_dates,
