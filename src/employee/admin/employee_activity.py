@@ -226,13 +226,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             for i in range(al):
                                 st, et = activities[i].start_time, activities[i].end_time
                                 if not et:
-                                    if not now.hour < DEFAULT_EXIT_HOUR:
-                                        if st.hour < DEFAULT_EXIT_HOUR:
-                                            et = DEFAULT_EXIT_TIME
-                                        else:
-                                            et = st
-                                    else:
-                                        et = timezone.now()
+                                    # if not now.hour < DEFAULT_EXIT_HOUR:
+                                    #     if st.hour < DEFAULT_EXIT_HOUR:
+                                    #         et = DEFAULT_EXIT_TIME
+                                    #     else:
+                                    #         et = st
+                                    # else:
+                                    et = timezone.now()
                                 inside_time += (et.timestamp() - st.timestamp())
 
                             break_time_s = sToTime(break_time)
