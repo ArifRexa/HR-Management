@@ -131,7 +131,7 @@
                         {% if employee.employee_project_list %}
                             <span>
                             {% for project in employee.employee_project_list %}
-                                {% if forloop.counter0 != 0 %} | {% endif %}
+                                {% if forloop.counter0 != 0 %} <br> {% endif %}
                                     {{ project.title }}
                             {% endfor %}
                             </span>
