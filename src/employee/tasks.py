@@ -102,8 +102,8 @@ def execute_birthday_notification():
 
 
 def all_employee_offline():
+    set_default_exit_time()
     EmployeeOnline.objects.filter(active=True).update(active=False)
-    print('[Bot] All Employee Offline ', timezone.now())
 
 
 def bonus__project_hour__monthly(date, project_id, manager_employee_id):
