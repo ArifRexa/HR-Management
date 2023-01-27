@@ -254,6 +254,19 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             online_status_form = True
 
         o=request.GET.get('o', None)
+
+        if o:
+            if o == 'entry':
+                date_datas_sorted = sorted(date_datas.items(), key=lambda x: x[-1].get(datetime.datetime.now().date(), datetime.datetime.now().date()).get('entry_time', DEFAULT_EXIT_TIME.time()))
+                o = '-entry'
+            elif o == '-entry':
+                date_datas_sorted = sorted(date_datas.items(), key=lambda x: x[-1].get(datetime.datetime.now().date(),
+                                                                                       datetime.datetime.now().date()).get(
+                    'entry_time', DEFAULT_EXIT_TIME.time()), reverse=True)
+                o = 'entry'
+
+            date_datas = dict(date_datas_sorted)
+
         context = dict(
                 self.admin_site.each_context(request),
                 dates=last_x_dates,
