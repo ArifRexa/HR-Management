@@ -120,6 +120,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             return redirect('/')
 
         now = timezone.now()
+        DEFAULT_EXIT_HOUR = 12 + 9 # 24 Hour time == 9 pm
+        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
         last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
         last_x_date = (now - datetime.timedelta(30)).date()
@@ -221,7 +223,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             for i in range(al):
                                 st, et = activities[i].start_time, activities[i].end_time
                                 if not et:
-                                    et = timezone.now()
+                                    if not now.hour < DEFAULT_EXIT_HOUR:
+                                        if st.hour < DEFAULT_EXIT_HOUR:
+                                            et = DEFAULT_EXIT_TIME
+                                        else:
+                                            et = st
+                                    else:
+                                        et = timezone.now()
                                 inside_time += (et.timestamp() - st.timestamp())
 
                             break_time_s = sToTime(break_time)

@@ -15,6 +15,29 @@ from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance,
 from project_management.models import ProjectHour, EmployeeProjectHour
 
 
+def set_default_exit_time():
+    NOW = datetime.datetime.now()
+    DEFAULT_EXIT_HOUR = 12 + 9 # 24 hour time == 9pm
+    DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
+
+    employee_onlines = EmployeeOnline.objects.filter(active=True)
+
+    for emp_online in employee_onlines:
+        attandance = emp_online.employee.employeeattendance_set.last()
+
+        activities = attandance.employeeactivity_set.all()
+        if activities.exists():
+            activities = list(activities)
+            start_time = activities[-1].start_time
+            end_time = activities[-1].end_time
+            if not end_time:
+                if start_time.hour < DEFAULT_EXIT_HOUR:
+                    activities[-1].end_time = DEFAULT_EXIT_TIME
+                else:
+                    activities[-1].end_time = start_time
+                activities[-1].save()
+
+
 def send_mail_to_employee(employee, pdf, html_body, subject):
     email = EmailMultiAlternatives()
     email.subject = f'{subject} of {employee.full_name}'
@@ -79,11 +102,7 @@ def execute_birthday_notification():
 
 
 def all_employee_offline():
-    employee_online = EmployeeOnline.objects.filter(active=True).all()
-    for ep in employee_online:
-        ep.active = False
-        ep.save()
-
+    EmployeeOnline.objects.filter(active=True).update(active=False)
     print('[Bot] All Employee Offline ', timezone.now())
 
 
