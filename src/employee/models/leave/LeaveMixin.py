@@ -36,7 +36,9 @@ class LeaveMixin(models.Model):
             if not user.is_superuser:
                 if self.leave_type != 'medical':
                     if datetime.date.today() >= self.start_date:
-                        raise ValidationError({'start_date': 'Start date must be greater then today'})
+                        # Skipped Validation
+                        # raise ValidationError({'start_date': 'Start date must be greater then today'})
+                        pass
 
             if self.start_date > self.end_date:
                 raise ValidationError({'end_date': "End date must be greater then or equal {}".format(self.start_date)})
