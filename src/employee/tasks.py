@@ -242,7 +242,7 @@ def bonus__project_hour_add(target_date=None):
 
                     inside_time = math.floor(inside_time / 60) # convert to minute
 
-                    if inside_time > 480: # 8 hours = 480 minute
+                    if inside_time >= 480: # 8 hours = 480 minute
                         # print(attendance.employee.full_name, " - 8 hours bonus")
                         e_hour += bonushour_for_overtime
 
