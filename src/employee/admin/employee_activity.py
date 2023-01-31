@@ -21,6 +21,7 @@ from employee.models.employee_activity import EmployeeProject
 from employee.forms.prayer_info import EmployeePrayerInfoForm
 
 from project_management.models import EmployeeProjectHour
+from config.settings import employee_ids as management_ids
 
 
 def sToTime(duration):
@@ -101,7 +102,7 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
             graph_data=graph_data
         )
         return TemplateResponse(request, 'admin/employee_online/graph.html', context=context)
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -117,17 +118,19 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
         if not request.user.is_authenticated:
             return redirect('/')
-        
+
         # from account.tasks import create_all_pfaccount
         # create_all_pfaccount()
         
         now = timezone.now()
+        DEFAULT_EXIT_HOUR = 12 + 9 # 24 Hour time == 9 pm
+        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
         last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
         last_x_date = (now - datetime.timedelta(30)).date()
 
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
-        
+
         emps = Employee.objects.filter(
             active=True,
             show_in_attendance_list=True,
@@ -135,19 +138,19 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             'full_name'
         ).prefetch_related(
             Prefetch(
-                "employeeattendance_set", 
+                "employeeattendance_set",
                 queryset=EmployeeAttendance.objects.filter(
                     date__gte=last_x_date
                 ).prefetch_related("employeeactivity_set")
             ),
             Prefetch(
-                "prayerinfo_set", 
+                "prayerinfo_set",
                 queryset=PrayerInfo.objects.filter(
                     created_at__date__gte=last_x_date,
                 ),
             ),
             Prefetch(
-                "employeeprojecthour_set", 
+                "employeeprojecthour_set",
                 queryset=EmployeeProjectHour.objects.filter(
                     project_hour__date__gte=last_x_date,
                     project_hour__hour_type='bonus',
@@ -157,7 +160,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             last_month_attendance=Count(
                 "employeeattendance",
                 filter=Q(
-                    employeeattendance__date__year=last_month.year, 
+                    employeeattendance__date__year=last_month.year,
                     employeeattendance__date__month=last_month.month,
                 ),
             )
@@ -165,8 +168,17 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
         # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
 
+        emps = sorted(emps, key=lambda item: (item.is_online))
+        user_data = None
+        for (index, emp) in enumerate(emps):
+            if emp.user == request.user:
+                user_data = emps.pop(index)
+                break
+        if user_data:
+            emps.insert(0, user_data)
+
         date_datas = {}
-        
+
         for emp in emps:
             temp = {}
             attendances = emp.employeeattendance_set.all()
@@ -181,7 +193,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             'bonus_hour': int(eph.hours),
                         })
                         break
-                
+
                 for pinfo in prayerinfos:
                     if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
                         waqts = []
@@ -195,7 +207,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             'prayer_count': pinfo.num_of_waqt_done,
                             'prayer_info': prayer_info_text,
                         })
-                
+
                 for attendance in attendances:
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
@@ -206,7 +218,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             end_time = activities[-1].end_time
                             break_time = 0
                             inside_time = 0
-                            
+
                             for i in range(al-1):
                                 et = activities[i].end_time
                                 if et and et.date() == activities[i+1].start_time.date():
@@ -214,12 +226,18 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             for i in range(al):
                                 st, et = activities[i].start_time, activities[i].end_time
                                 if not et:
+                                    # if not now.hour < DEFAULT_EXIT_HOUR:
+                                    #     if st.hour < DEFAULT_EXIT_HOUR:
+                                    #         et = DEFAULT_EXIT_TIME
+                                    #     else:
+                                    #         et = st
+                                    # else:
                                     et = timezone.now()
                                 inside_time += (et.timestamp() - st.timestamp())
-                            
+
                             break_time_s = sToTime(break_time)
                             inside_time_s = sToTime(inside_time)
-                            
+
                             temp[date].update({
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
@@ -230,11 +248,28 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             })
                         break
             date_datas.update({emp: temp})
-        
+
         prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
         form = EmployeePrayerInfoForm(instance=prayerobj)
 
+        online_status_form = False
+        if not str(request.user.employee.id) in management_ids:
+            online_status_form = True
+
         o=request.GET.get('o', None)
+
+        if o:
+            if o == 'entry':
+                date_datas_sorted = sorted(date_datas.items(), key=lambda x: x[-1].get(datetime.datetime.now().date(), datetime.datetime.now().date()).get('entry_time', DEFAULT_EXIT_TIME.time()))
+                o = '-entry'
+            elif o == '-entry':
+                date_datas_sorted = sorted(date_datas.items(), key=lambda x: x[-1].get(datetime.datetime.now().date(),
+                                                                                       datetime.datetime.now().date()).get(
+                    'entry_time', DEFAULT_EXIT_TIME.time()), reverse=True)
+                o = 'entry'
+
+            date_datas = dict(date_datas_sorted)
+
         context = dict(
                 self.admin_site.each_context(request),
                 dates=last_x_dates,
@@ -242,9 +277,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 date_datas=date_datas,
                 o=o, # order key
                 form=form,
+                online_status_form=online_status_form
             )
         return TemplateResponse(request, 'admin/employee/employee_attendance.html', context)
-    
+
     def waqt_select(self, request, *args, **kwargs) -> redirect:
         if not request.user.is_authenticated:
             return redirect('/')
@@ -256,7 +292,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 prayer_info.employee = request.user.employee
                 prayer_info.save()
                 messages.success(request, 'Submitted Successfully')
-                
+
         return redirect("admin:employee_attendance")
 
     def get_urls(self):
@@ -272,12 +308,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
         employee_online_urls = [
             path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
-            
+
             path("", self.custom_changelist_view, name='employee_attendance'),
             path("waqtselect/", self.waqt_select, name='waqt_select')
         ]
         return employee_online_urls + urls
-    
+
     # def has_module_permission(self, request):
     #     return False
 
@@ -302,12 +338,12 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
 
         if obj.start_time:
             start_time += obj.start_time.strftime("%b %d, %Y, %I:%M %p")
-        
+
             if obj.created_by and obj.created_by != obj.employee_attendance.employee.user:
                 start_time += '<span style="color: red; font-weight: bold;"> (' + obj.created_by.employee.full_name + ')</span>'
-        
+
         return format_html(start_time)
-    
+
 
     @admin.display(description='End Time', ordering="end_time")
     def get_end_time(self, obj):
@@ -315,12 +351,12 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
 
         if obj.end_time:
             end_time += obj.end_time.strftime("%b %d, %Y, %I:%M %p")
-        
+
             if obj.updated_by and obj.updated_by != obj.employee_attendance.employee.user:
                 end_time += '<span style="color: red; font-weight: bold;"> (' + obj.updated_by.employee.full_name + ')</span>'
-        
+
         return format_html(end_time)
-    
+
     # To hide from main menu
     # def has_module_permission(self, request):
     #     return False
@@ -364,11 +400,11 @@ class EmployeePrayerInfoAdmin(admin.ModelAdmin):
     autocomplete_fields = ('employee', )
     list_filter = ('employee', )
     search_fields = ('employee__full_name', )
-    
+
     @admin.display(description="Date", ordering="created_at")
     def get_date(self, obj, *args, **kwargs):
         return obj.created_at.strftime("%b %d, %Y")
-    
+
     def has_module_permission(self, request):
         return False
 

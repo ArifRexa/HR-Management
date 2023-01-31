@@ -63,10 +63,22 @@
 </style>
 
 <div class="container-fluid">
-    <div class="pb-4 text-center">
-        <h2 class="h2 fs-1 text-center">Employee Attendance</h2>
-        <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
+    <div class="row">
+        <div class="col-md-10">
+            <div class="text-center">
+                <h2 class="h2 fs-1 text-center">Employee Attendance</h2>
+                <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
+            </div>
+        </div>
+        {% if online_status_form %}
+        <div class="col">
+            <div class="pb-4 text-center">
+                {% include 'admin/form/employee_status_form.html' %}
+            </div>
+        </div>
+        {% endif %}
     </div>
+
     <div class="pb-3">
         <div class="{% if user.is_superuser %}d-flex justify-content-between{% else %}text-center{% endif %}">
             {% if form %}
@@ -80,8 +92,8 @@
                 </div>
             {% endif %}
         </div>
-        
-        
+
+
     </div>
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
@@ -90,7 +102,11 @@
                     <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">Employee</th>
                     {% for date in dates %}
                         <th class="border text-dark bg-white text-center py-3">
-                            {{ date|date:"M d" }}
+                            {% if forloop.counter0 == 0%}
+                                <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?o={% if o %}{{ o }}{% else %}entry{% endif %}">{{ date|date:"M d" }}</a>
+                            {% else %}
+                                <span>{{ date|date:"M d" }}</span>
+                            {% endif %}
                         </th>
                     {% endfor %}
                     <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">
@@ -104,7 +120,28 @@
             <tbody>
                 {% for employee, date_data in date_datas.items %}
                 <tr class="table__row">
-                    <td class="align-middle">{{ employee.full_name }}</td>
+                    <td class="align-middle" style = "text-align:center">
+                        {% if employee.is_online %}
+                            <span style="color: green">🟢</span>
+                        {% else %}
+                            <span>🔴</span>
+                        {% endif %}
+                        <b>{{ employee.full_name }}</b>
+                        <br><br>
+                        {% if employee.top_one_skill %}
+                            ( {{ employee.top_one_skill.skill }} )
+                        {% endif %}
+                        <br><br>
+                        {% if employee.employee_project_list %}
+                            <span>
+                            {% for project in employee.employee_project_list %}
+                                {% if forloop.counter0 != 0 %} <br> {% endif %}
+                                    {{ project.title }}
+                            {% endfor %}
+                            </span>
+                        {% endif %}
+
+                    </td>
                     {% for date, data in date_data.items %}
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
