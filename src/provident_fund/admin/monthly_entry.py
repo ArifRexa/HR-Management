@@ -1,5 +1,3 @@
-from collections.abc import Sequence
-
 from django.db.models.query import QuerySet
 from django.contrib import admin
 from django.http import HttpRequest
@@ -46,7 +44,7 @@ class ProvidentFundMonthlyEntryAdmin(admin.ModelAdmin):
             return qs.filter(account=request.user.employee.pf_account)
         return qs
     
-    def get_list_filter(self, request: HttpRequest) -> Sequence[str]:
+    def get_list_filter(self, request):
         list_filter = super().get_list_filter(request)
         if not request.user.is_superuser:
             list_filter = []
