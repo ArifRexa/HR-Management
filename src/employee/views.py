@@ -3,6 +3,7 @@ import json
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
@@ -18,6 +19,17 @@ from config.admin.utils import white_listed_ip_check, not_for_management
 @not_for_management
 def change_status(request, *args, **kwargs):
     employee_status = EmployeeOnline.objects.get(employee=request.user.employee)
+
+    now = timezone.now().date()
+
+    feedback = request.user.employee.employeefeedback_set.filter(
+        created_at__date__year=now.year,
+        created_at__date__month=now.month,
+    )
+
+    if not feedback.exists() and now.day > 25:
+        messages.error(request, 'Please provide feedback first')
+        return redirect('/admin/')
 
     if request.method == 'POST':
         form = EmployeeStatusForm(request.POST, instance=employee_status)
