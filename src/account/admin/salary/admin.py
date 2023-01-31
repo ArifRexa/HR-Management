@@ -19,7 +19,7 @@ class EmployeeSalaryInline(admin.TabularInline):
     extra = 0
     readonly_fields = ('employee', 'net_salary', 'overtime',
                        'project_bonus', 'leave_bonus', 'festival_bonus', 
-                       'food_allowance', 'loan_emi', 'gross_salary', ) #'get_details'
+                       'food_allowance', 'loan_emi', 'provident_fund', 'gross_salary', ) #'get_details'
     can_delete = False
 
     @admin.display(description="More Info")

@@ -81,10 +81,11 @@ class SalarySheetRepository:
         employee_salary.food_allowance = self.__calculate_food_allowance(employee=employee,
                                                                          salary_date=salary_sheet.date)
         employee_salary.loan_emi = self.__calculate_loan_emi(employee=employee, salary_date=salary_sheet.date)
+        employee_salary.provident_fund = self.__calculate_provident_fund(employee=employee, salary_date=salary_sheet.date)
         employee_salary.gross_salary = employee_salary.net_salary + employee_salary.overtime + \
                                        employee_salary.festival_bonus + employee_salary.food_allowance + \
                                        employee_salary.leave_bonus + employee_salary.project_bonus + \
-                                       employee_salary.loan_emi
+                                       employee_salary.loan_emi + employee_salary.provident_fund
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
 
@@ -278,6 +279,27 @@ class SalarySheetRepository:
             )
         emi_amount = employee_loans.aggregate(Sum('emi'))
         return -emi_amount['emi__sum'] if emi_amount['emi__sum'] else 0.0
+    
+    def __calculate_provident_fund(self, employee: Employee, salary_date: datetime.date):
+        """Calculate provident fund amount if have any
+        """
+        if not employee.pf_eligibility:
+            return 0.0
+        
+        pf_account = employee.pf_account
+        monthly_amount = 0
+        note = f'This payment has been made automated when salary sheet generated at {salary_date}'
+        basic_salary = employee.pay_scale.basic
+        monthly_amount = basic_salary * (pf_account.scale / 100)
+        
+        monthly_entry = employee.pf_account.monthlyentry_set.create(
+            tranx_date=salary_date,
+            amount=monthly_amount,
+            basic_salary=basic_salary,
+            note=note,
+        )
+
+        return -monthly_amount if monthly_amount else 0.0
 
     def __calculate_food_allowance(self, employee: Employee, salary_date: datetime.date):
         if not employee.lunch_allowance:

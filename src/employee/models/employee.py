@@ -45,6 +45,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     project_eligibility = models.BooleanField(default=True)
     leave_in_cash_eligibility = models.BooleanField(default=True)
     show_in_attendance_list = models.BooleanField(default=True)
+    pf_eligibility = models.BooleanField(default=True)
     list_order = models.IntegerField(default=100)
 
     birthday_image = models.ImageField(null=True, blank=True)
@@ -200,6 +201,19 @@ class Employee(TimeStampMixin, AuthorMixin):
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
+    if instance.pf_eligibility:
+        now = timezone.now().date().replace(day=1)
+        maturity_date = now + relativedelta(years=2)
+        from provident_fund.models import Account
+        Account.objects.get_or_create(
+            employee=instance,
+            defaults= {
+                'start_date': now,
+                'maturity_date': maturity_date,
+                'scale': 10.0,
+            }
+        )
+
     from employee.models.employee_activity import EmployeeOnline, EmployeeProject
     EmployeeLunch.objects.update_or_create(employee=instance)
     EmployeeOnline.objects.get_or_create(employee=instance)

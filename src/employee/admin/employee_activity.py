@@ -119,6 +119,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         if not request.user.is_authenticated:
             return redirect('/')
 
+        # from account.tasks import create_all_pfaccount
+        # create_all_pfaccount()
+        
         now = timezone.now()
         DEFAULT_EXIT_HOUR = 12 + 9 # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
