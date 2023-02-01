@@ -289,7 +289,7 @@ class SalarySheetRepository:
         pf_account = employee.pf_account
         monthly_amount = 0
         note = f'This payment has been made automated when salary sheet generated at {salary_date}'
-        basic_salary = (employee.pay_scale.basic * employee.current_salary.payable_salary) / 100
+        basic_salary = (employee.pay_scale.basic * self.__employee_current_salary.payable_salary) / 100
         monthly_amount = (basic_salary * pf_account.scale) / 100
         
         monthly_entry = employee.pf_account.monthlyentry_set.create(
