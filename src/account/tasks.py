@@ -10,7 +10,7 @@ def create_all_pfaccount():
     now = timezone.now().date().replace(day=1)
     maturity_date = now + relativedelta(years=2)
     
-    employees = Employee.objects.filter(active=True, pf_eligibbility=True)
+    employees = Employee.objects.filter(active=True, pf_eligibility=True)
     accounts = list()
     
     for employee in employees:
