@@ -26,3 +26,6 @@ def create_all_pfaccount():
     
     Account.objects.bulk_create(accounts)
     
+
+def turn_off_all_employee_pf_eligibility():
+    Employee.objects.filter(pf_eligibility=True).update(pf_eligibility=False)
