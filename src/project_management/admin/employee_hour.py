@@ -153,6 +153,21 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     
     def get_list_filter(self, request):
         filters = list(super(DailyProjectUpdateAdmin, self).get_list_filter(request))
-        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
             if 'employee' in filters: filters.remove('employee')
         return filters
+    
+
+    def has_change_permission(self, request, obj=None):
+        permitted = super().has_change_permission(request, obj=obj)
+        if not request.user.is_superuser and obj and obj.employee != request.user.employee:
+            permitted = False
+        return permitted
+    
+
+    def has_delete_permission(self, request, obj=None):
+        permitted = super().has_delete_permission(request, obj=obj)
+        if not request.user.is_superuser and obj and obj.employee != request.user.employee:
+            permitted = False
+        return permitted
+
