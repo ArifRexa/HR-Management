@@ -171,6 +171,34 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         ]
 
 
+class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.RESTRICT,
+        limit_choices_to={'active': True},
+        related_name="dailyprojectupdate_employee",
+    )
+    manager = models.ForeignKey(
+        Employee,
+        on_delete=models.RESTRICT,
+        limit_choices_to={'active': True, 'manager': True},
+        related_name="dailyprojectupdate_manager",
+    )
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.RESTRICT,
+        limit_choices_to={'active': True},
+    )
+    hours = models.FloatField()
+    update = models.TextField()
+
+    class Meta:
+        permissions = [
+            ("see_all_employee_update", "Can see all daily update"),
+        ]
+
+
+
 class DurationUnit(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     duration_in_hour = models.FloatField(default=1)
