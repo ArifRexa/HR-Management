@@ -7,7 +7,7 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from account.models import SalarySheet, EmployeeSalary, LoanPayment
-from employee.models import Employee, SalaryHistory, Leave, Overtime
+from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate
 
@@ -304,44 +304,52 @@ class SalarySheetRepository:
     def __calculate_food_allowance(self, employee: Employee, salary_date: datetime.date):
         if not employee.lunch_allowance:
             return 0.0
-        date_range = calendar.monthrange(salary_date.year, salary_date.month)
-        import datetime
+        # date_range = calendar.monthrange(salary_date.year, salary_date.month)
+        # import datetime
 
-        # TODO: Fix for resign date
-        if employee.joining_date.year == salary_date.year and employee.joining_date.month == salary_date.month:
-            start_date = datetime.date(salary_date.year, salary_date.month, employee.joining_date.day)
-        else:
-            start_date = datetime.date(salary_date.year, salary_date.month, 1)
+        # # TODO: Fix for resign date
+        # if employee.joining_date.year == salary_date.year and employee.joining_date.month == salary_date.month:
+        #     start_date = datetime.date(salary_date.year, salary_date.month, employee.joining_date.day)
+        # else:
+        #     start_date = datetime.date(salary_date.year, salary_date.month, 1)
         
-        end_date = datetime.date(salary_date.year, salary_date.month, date_range[1])
-        office_holidays = PublicHolidayDate.objects.filter(date__gte=start_date,
-                                                           date__lte=end_date).values_list('date', flat=True)
+        # end_date = datetime.date(salary_date.year, salary_date.month, date_range[1])
+        # office_holidays = PublicHolidayDate.objects.filter(date__gte=start_date,
+        #                                                    date__lte=end_date).values_list('date', flat=True)
         
-        # TODO: What if leave spans to next month
-        employee_on_leave = Leave.objects.filter(
-            start_date__month=salary_date.month,
-            start_date__year=salary_date.year,
-            end_date__year=salary_date.year,
-            end_date__month=salary_date.month,
-            status='approved',
-            employee=employee).aggregate(total_leave=Coalesce(Sum('total_leave'), 0.0))['total_leave']
+        # # TODO: What if leave spans to next month
+        # employee_on_leave = Leave.objects.filter(
+        #     start_date__month=salary_date.month,
+        #     start_date__year=salary_date.year,
+        #     end_date__year=salary_date.year,
+        #     end_date__month=salary_date.month,
+        #     status='approved',
+        #     employee=employee).aggregate(total_leave=Coalesce(Sum('total_leave'), 0.0))['total_leave']
         
-        # employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
-        #                                          employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
+        # # employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
+        # #                                          employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
 
-        # TODO: Temporary fix
-        employee_overtime = 0
-        if Overtime.objects.filter(date=datetime.date(2022, 12, 16), status='approved', employee=employee).exists() or employee.permanent_date:
-            employee_overtime = 1
+        # # TODO: Temporary fix
+        # employee_overtime = 0
+        # if Overtime.objects.filter(date=datetime.date(2022, 12, 16), status='approved', employee=employee).exists() or employee.permanent_date:
+        #     employee_overtime = 1
         
-        # print(employee, employee_on_leave)
-        day_off = 0
-        for day in range(start_date.day, date_range[1] + 1):
-            date = datetime.date(salary_date.year, salary_date.month, day)
-            if date.strftime("%A") in ['Saturday', 'Sunday']:
-                day_off += 1
-            if date in office_holidays:
-                day_off += 1
-        day_off += employee_on_leave
-        payable_days = (date_range[1] - start_date.day) - day_off + employee_overtime
+        # # print(employee, employee_on_leave)
+        # day_off = 0
+        # for day in range(start_date.day, date_range[1] + 1):
+        #     date = datetime.date(salary_date.year, salary_date.month, day)
+        #     if date.strftime("%A") in ['Saturday', 'Sunday']:
+        #         day_off += 1
+        #     if date in office_holidays:
+        #         day_off += 1
+        # day_off += employee_on_leave
+        # payable_days = (date_range[1] - start_date.day) - day_off + employee_overtime
+        
+        payable_days = EmployeeAttendance.objects.filter(
+            employee=employee,
+            date__year=salary_date.year,
+            date__month=salary_date.month,
+        ).aggregate(total=Coalesce(Count('id'), 0))['total']
+        
+        print(payable_days)
         return payable_days * 140
