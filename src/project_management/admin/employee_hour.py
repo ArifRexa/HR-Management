@@ -3,9 +3,12 @@ import datetime
 from django.contrib import admin
 from django.db.models import Q, Sum
 
+from django.template.loader import get_template
+from django.utils.html import format_html, linebreaks
+
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
-from project_management.models import EmployeeProjectHour
+from project_management.models import EmployeeProjectHour, DailyProjectUpdate
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -92,3 +95,64 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
             return []
         return super(EmployeeHourAdmin, self).get_list_filter(request)
+
+
+
+
+
+
+@admin.register(DailyProjectUpdate)
+class DailyProjectUpdateAdmin(admin.ModelAdmin):
+    list_display = ('get_date', 'employee', 'project', 'hours', 'get_update', 'manager', )
+    list_filter = ('project', 'employee', 'manager', )
+    search_fields = ('employee__full_name', 'project__title', 'manager__full_name', )
+    date_hierarchy = 'created_at'
+    autocomplete_fields = ('employee', 'project', )
+    change_list_template = 'admin/total_employee_hour.html'
+
+    class Media:
+        css = {
+            'all': ('css/list.css',)
+        }
+        js = ('js/list.js',)
+
+    @admin.display(description="Date", ordering='created_at')
+    def get_date(self, obj):
+        return obj.created_at
+    
+    @admin.display(description="Update")
+    def get_update(self, obj):
+        html_template = get_template('admin/project_management/list/col_dailyupdate.html')
+        html_content = html_template.render({
+            'update': obj.update,
+        })
+        return format_html(html_content)
+    
+    def changelist_view(self, request, extra_context=None):
+        my_context = {
+            'total': self.get_total_hour(request),
+        }
+        return super(DailyProjectUpdateAdmin, self).changelist_view(request, extra_context=my_context)
+    
+    def get_total_hour(self, request):
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
+        return qs.aggregate(tot=Sum('hours'))['tot']
+    
+    def get_queryset(self, request):
+        query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request)
+
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+            if request.user.employee.manager:
+                return query_set.filter(
+                    Q(manager=request.user.employee) | 
+                    Q(employee=request.user.employee),
+                )
+            else:
+                return query_set.filter(employee=request.user.employee)
+        return query_set
+    
+    def get_list_filter(self, request):
+        filters = list(super(DailyProjectUpdateAdmin, self).get_list_filter(request))
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
+            if 'employee' in filters: filters.remove('employee')
+        return filters
