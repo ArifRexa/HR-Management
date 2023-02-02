@@ -80,7 +80,7 @@
     </div>
 
     <div class="pb-3">
-        <div class="{% if user.is_superuser %}d-flex justify-content-between{% else %}text-center{% endif %}">
+        <div class="d-flex justify-content-between">
             {% if form %}
                 <div class="d-inline-block rounded p-2 bg-body-secondary">
                     {% include 'admin/form/employee_prayerinfo_form.html' %}
