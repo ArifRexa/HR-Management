@@ -20,6 +20,18 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
     autocomplete_fields = ['user', 'designation']
     change_list_template = 'admin/employee/list/index.html'
 
+    def get_search_results(self, request, queryset, search_term):
+        qs, use_distinct = super().get_search_results(request, queryset, search_term)
+        data = request.GET.dict()
+
+        app_label = data.get('app_label')
+        model_name = data.get('model_name')
+
+        # TODO: Fix Permission
+        if  request.user.is_authenticated and app_label == 'project_management' and model_name == 'codereview':
+            qs = qs.union(Employee.objects.filter(active=True))
+        return qs, use_distinct
+
     def get_list_display(self, request):
         list_display = ['employee_info', 'leave_info', 'salary_history', 'skill', 'permanent_status']
         if not request.user.is_superuser:

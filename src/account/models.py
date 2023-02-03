@@ -72,6 +72,13 @@ class Expense(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField()
     date = models.DateField(default=timezone.now)
+    is_approved = models.BooleanField(default=False)
+
+    class Meta:
+        permissions = (
+            ('can_approve_expense', 'Can Approve Expense', ),
+        )
+
 
 
 class ExpanseAttachment(TimeStampMixin, AuthorMixin):
