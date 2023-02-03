@@ -298,8 +298,8 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
 
 
 class CodeReview(TimeStampMixin, AuthorMixin):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True})
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, limit_choices_to={'active': True})
 
     naming_convention = models.FloatField()
     code_reusability = models.FloatField()
