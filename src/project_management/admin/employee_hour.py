@@ -160,8 +160,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
-        if not request.user.is_superuser and obj and obj.employee != request.user.employee:
-            permitted = False
+        if not request.user.is_superuser \
+            and obj \
+                and obj.employee != request.user.employee \
+                    and obj.manager != request.user.employee:
+                permitted = False
         return permitted
     
 
