@@ -10,6 +10,7 @@ from account.models import SalarySheet, EmployeeSalary, LoanPayment
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate
+from django.db.models import Count, Sum, Avg
 
 
 class SalarySheetRepository:
@@ -77,6 +78,7 @@ class SalarySheetRepository:
         employee_salary.leave_bonus = self.__calculate_non_paid_leave(salary_sheet, employee) + \
                                       self.__calculate_leave_in_cash(salary_sheet, employee)
         employee_salary.project_bonus = self.__calculate_project_bonus(salary_sheet, employee)
+        employee_salary.code_quality_bonus = self.__calculate_code_quality_bonus(salary_sheet, employee)
         employee_salary.festival_bonus = self.__calculate_festival_bonus(employee=employee)
         employee_salary.food_allowance = self.__calculate_food_allowance(employee=employee,
                                                                          salary_date=salary_sheet.date)
@@ -85,7 +87,8 @@ class SalarySheetRepository:
         employee_salary.gross_salary = employee_salary.net_salary + employee_salary.overtime + \
                                        employee_salary.festival_bonus + employee_salary.food_allowance + \
                                        employee_salary.leave_bonus + employee_salary.project_bonus + \
-                                       employee_salary.loan_emi + employee_salary.provident_fund
+                                       employee_salary.code_quality_bonus + employee_salary.loan_emi + \
+                                       employee_salary.provident_fund
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
 
@@ -246,6 +249,15 @@ class SalarySheetRepository:
             
         return project_hours * 10
 
+    def __calculate_code_quality_bonus(self, salary_sheet: SalarySheet, employee: Employee):
+        _, last_day = calendar.monthrange(salary_sheet.date.year, salary_sheet.date.month)
+        code_review_set = employee.codereview_set.filter(
+                created_at__month=salary_sheet.date.month,
+                created_at__year=salary_sheet.date.year,
+            ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
+
+        return code_review_set * 10
+
     def __calculate_festival_bonus(self, employee: Employee):
         """Calculate festival bonus
 
@@ -350,6 +362,4 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             date__month=salary_date.month,
         ).aggregate(total=Coalesce(Count('id'), 0))['total']
-        
-        print(payable_days)
         return payable_days * 140
