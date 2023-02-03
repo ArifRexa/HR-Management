@@ -73,20 +73,21 @@ class CodeReviewAdmin(admin.ModelAdmin):
             # code_review_set = employee.codereview_set.filter(created_at__gte=last_two_month[-1])
             temp = dict()
             for month in last_two_month:
-                code_review_set = employee.codereview_set.filter(created_at__month=month.month, created_at__year=month.year).order_by('created_at')
+                code_review_set = employee.codereview_set.filter(created_at__month=month.month, created_at__year=month.year).order_by('-created_at')
                 first_quarter = code_review_set.filter(for_first_quarter=True)
-                first_quarter_total = round(first_quarter.filter(for_first_quarter=True).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg"), 1)
+                first_quarter_total = round(first_quarter.filter(for_first_quarter=True).aggregate(sum=Coalesce(Sum('avg_rating'), 0.0)).get("sum"), 1)
                 last_quarter = code_review_set.filter(for_first_quarter=False)
-                last_quarter_total = round(last_quarter.filter(for_first_quarter=False).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg"), 1)
+                last_quarter_total = round(last_quarter.filter(for_first_quarter=False).aggregate(sum=Coalesce(Sum('avg_rating'), 0.0)).get("sum"), 1)
 
-                # monthly_total = round(code_review_set.aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg"), 1)
-                monthly_total = (first_quarter_total+last_quarter_total)/2
+                monthly_total = round(code_review_set.aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg"), 1)
+                # monthly_total = first_quarter_total+last_quarter_total
 
                 crs = {
                     "first_quarter": first_quarter,
                     "first_quarter_total": first_quarter_total if first_quarter_total else "-",
                     "last_quarter": last_quarter,
                     "last_quarter_total": last_quarter_total if last_quarter_total else "-",
+                    # "last_date": last_quarter[0].created_at if last_quarter_total else "-",
                 }
                 temp[month] = {
                     "monthly_total": monthly_total,
@@ -99,15 +100,14 @@ class CodeReviewAdmin(admin.ModelAdmin):
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
 
-        print(full_data_set)
-        # print(full_data_set.get(employees_list[2]).get(datetime(2023, 2, 1).date())[0].monthly_total)
+        # full_data_set = sorted(full_data_set.items(), key=lambda x: datetime.now().date() if x[-1].get(datetime.now().date(), dict()).get('crs', dict()).get('first_quarter', CodeReview()).created_at is None else datetime.now().date())
+        # full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('crs', dict()).get('last_date', datetime.now().date()))
 
         context = dict(
             self.admin_site.each_context(request),
             full_data_set=full_data_set,
             online_status_form=online_status_form,
             last_two_months=last_two_month,
-            update="Lorem Ipsum "*500,
         )
 
         return TemplateResponse(request, 'admin/code_review.html', context)
@@ -121,7 +121,6 @@ class CodeReviewAdmin(admin.ModelAdmin):
 
             wrapper.model_admin = self
             return update_wrapper(wrapper, view)
-
 
         info = self.model._meta.app_label, self.model._meta.model_name
         custome_urls = [
