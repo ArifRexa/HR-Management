@@ -41,7 +41,7 @@ class ExpanseAttachmentInline(admin.TabularInline):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by')
+    list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by', 'is_approved')
     date_hierarchy = 'date'
     list_filter = ['expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
@@ -49,6 +49,20 @@ class ExpenseAdmin(admin.ModelAdmin):
     search_fields = ['note']
     actions = ('print_voucher',)
     autocomplete_fields = ('expanse_group', 'expense_category')
+
+    def get_readonly_fields(self, request, obj):
+        rfs = super().get_readonly_fields(request, obj)
+
+        if not request.user.is_superuser and not request.user.has_perm("account:can_approve_expense"):
+            rfs += ('is_approved', )
+        return rfs
+    
+    def has_change_permission(self, request, obj=None):
+        perm = super().has_change_permission(request, obj)
+        if perm and obj:
+            if not request.user.is_superuser and not request.user.has_perm("account:can_approve_expense") and obj.is_approved:
+                perm = False
+        return perm
     
     @admin.display(description="Amount", ordering='amount')
     def get_amount(self, obj):
