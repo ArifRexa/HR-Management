@@ -15,6 +15,8 @@ from config.admin.utils import simple_request_filter
 from config.utils.pdf import PDF
 from employee.models import Employee
 
+from django.contrib import messages
+
 
 @admin.register(ExpenseGroup)
 class ExpenseGroupAdmin(admin.ModelAdmin):
@@ -41,14 +43,28 @@ class ExpanseAttachmentInline(admin.TabularInline):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by')
+    list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by', 'is_approved')
     date_hierarchy = 'date'
     list_filter = ['expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
     search_fields = ['note']
-    actions = ('print_voucher',)
+    actions = ('print_voucher', 'approve_expense',)
     autocomplete_fields = ('expanse_group', 'expense_category')
+
+    def get_readonly_fields(self, request, obj):
+        rfs = super().get_readonly_fields(request, obj)
+
+        if not request.user.is_superuser and not request.user.has_perm("account.can_approve_expense"):
+            rfs += ('is_approved', )
+        return rfs
+    
+    def has_change_permission(self, request, obj=None):
+        perm = super().has_change_permission(request, obj)
+        if perm and obj:
+            if not request.user.is_superuser and not request.user.has_perm("account.can_approve_expense") and obj.is_approved:
+                perm = False
+        return perm
     
     @admin.display(description="Amount", ordering='amount')
     def get_amount(self, obj):
@@ -86,6 +102,15 @@ class ExpenseAdmin(admin.ModelAdmin):
         )
         pdf.template_path = 'voucher/expense_voucher.html'
         return pdf.render_to_pdf(download=False)
+    
+    @admin.action()
+    def approve_expense(self, request, queryset):
+        if request.user.is_superuser or request.user.has_perm("account.can_approve_expense"):
+            queryset.update(is_approved=True)
+            messages.success(request, 'Updated Successfully')
+        else:
+            messages.error(request, "You don't have enough permission")
+        
 
     def _get_mapped_expense_data(self, queryset):
         mapped_date = []
