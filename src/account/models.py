@@ -30,6 +30,7 @@ class EmployeeSalary(TimeStampMixin):
     net_salary = models.FloatField()
     overtime = models.FloatField(null=True)
     project_bonus = models.FloatField(null=True, default=0.0)
+    code_quality_bonus = models.FloatField(null=True, default=0.0)
     leave_bonus = models.FloatField(null=True, default=0.0)
     festival_bonus = models.FloatField(null=True, default=0.0)
     food_allowance = models.FloatField(null=True, default=0.0)
