@@ -287,3 +287,43 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
 
     def __str__(self) -> str:
         return f"{self.project.title} ({str(self.avg_rating)})"
+
+
+class CodeReview(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    naming_convention = models.FloatField()
+    code_reusability = models.FloatField()
+    oop_principal = models.FloatField()
+    design_pattern = models.FloatField()
+    standard_git_commit = models.FloatField()
+
+    avg_rating = models.FloatField()
+
+    comment = models.TextField()
+
+    for_first_quarter = models.BooleanField(default=True)
+
+    @property
+    def has_red_rating(self):
+        red_line = 6.5
+
+        return self.naming_convention <= red_line \
+            or self.code_reusability <= red_line \
+            or self.oop_principal <= red_line \
+            or self.design_pattern <= red_line \
+            or self.standard_git_commit <= red_line
+
+    def save(self, *args, **kwargs):
+        avg_rating = self.naming_convention + self.code_reusability + self.oop_principal + self.design_pattern + self.standard_git_commit
+        avg_rating = round(avg_rating / 5, 1)
+        self.avg_rating = avg_rating
+
+        super(CodeReview, self).save(*args, **kwargs)
+
+        if not self.created_at.date().day <= 15:
+            self.for_first_quarter = False
+
+        super(CodeReview, self).save(*args, **kwargs)
+
