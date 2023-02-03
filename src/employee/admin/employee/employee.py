@@ -29,7 +29,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
 
         # TODO: Fix Permission
         if  request.user.is_authenticated and app_label == 'project_management' and model_name == 'codereview':
-            qs = qs.union(Employee.objects.filter(active=True))
+            qs = Employee.objects.filter(active=True, full_name__icontains=search_term)
         return qs, use_distinct
 
     def get_list_display(self, request):
