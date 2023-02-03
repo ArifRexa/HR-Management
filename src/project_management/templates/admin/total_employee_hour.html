@@ -8,6 +8,17 @@
 
 {% block content_title %}
     <div style="width: 80%">
-        <h1> Project Hours <span style="float: right">Total Hour {{ total | floatformat:2| intcomma }}</span></h1>
+        <h1> Project Hours 
+            <span style="float: right">
+                {% if status_form %}
+                    <div>
+                        {% include 'admin/form/employee_status_form.html' %}
+                    </div>
+                    <p>
+                        Total Hour {{ total | floatformat:2| intcomma }}
+                    </p>
+                {% endif %}
+            </span>
+        </h1>
     </div>
 {% endblock %}
