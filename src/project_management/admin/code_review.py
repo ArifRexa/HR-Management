@@ -55,7 +55,7 @@ class CodeReviewAdmin(admin.ModelAdmin):
     def custom_changelist_view(self, request, extra_context=None):
         last_two_month = get_last_two_month()
 
-        employees_list = Employee.objects.filter(active=True).exclude(id__in=management_ids)
+        employees_list = Employee.objects.filter(active=True, project_eligibility=True).exclude(id__in=management_ids)
 
         employees_list = sorted(employees_list, key=lambda item: (item.is_online))
 
