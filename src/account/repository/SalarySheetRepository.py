@@ -254,9 +254,20 @@ class SalarySheetRepository:
         code_review_set = employee.codereview_set.filter(
                 created_at__month=salary_sheet.date.month,
                 created_at__year=salary_sheet.date.year,
-            ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
+            )
 
-        return code_review_set * 10
+        first_quarter = code_review_set.filter(created_at__day__lte=15).exists()
+        second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
+
+        if first_quarter and second_quarter:
+            total_qc_point = employee.codereview_set.filter(
+                    created_at__month=salary_sheet.date.month,
+                    created_at__year=salary_sheet.date.year,
+                ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
+
+            return total_qc_point * 10
+        else:
+            return 0.0
 
     def __calculate_festival_bonus(self, employee: Employee):
         """Calculate festival bonus
