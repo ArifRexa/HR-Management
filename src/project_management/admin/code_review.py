@@ -52,12 +52,13 @@ class CodeReviewAdmin(admin.ModelAdmin):
         }
         js = ('js/list.js',)
 
+
     def custom_changelist_view(self, request, extra_context=None):
         last_two_month = get_last_two_month()
 
         employees_list = Employee.objects.filter(active=True, project_eligibility=True).exclude(id__in=management_ids)
 
-        employees_list = sorted(employees_list, key=lambda item: (item.is_online))
+        # employees_list = sorted(employees_list, key=lambda item: (item.is_online))
 
         user_data = None
         for (index, emp) in enumerate(employees_list):
@@ -68,10 +69,11 @@ class CodeReviewAdmin(admin.ModelAdmin):
             employees_list.insert(0, user_data)
 
         full_data_set = dict()
-
+        last_date = None
         for index, employee in enumerate(employees_list):
             # code_review_set = employee.codereview_set.filter(created_at__gte=last_two_month[-1])
             temp = dict()
+            last_date = None
             for month in last_two_month:
                 code_review_set = employee.codereview_set.filter(created_at__month=month.month, created_at__year=month.year).order_by('-created_at')
                 first_quarter = code_review_set.filter(for_first_quarter=True)
@@ -82,12 +84,17 @@ class CodeReviewAdmin(admin.ModelAdmin):
                 monthly_total = round(code_review_set.aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg"), 1)
                 # monthly_total = first_quarter_total+last_quarter_total
 
+                if not last_date:
+                    last_date = next(iter(item.created_at.date() for item in code_review_set or []), None)
+                    # print(f"{employee.id} {employee.full_name} LAST DATE>>>")
+                    # print(last_date)
+
                 crs = {
                     "first_quarter": first_quarter,
                     "first_quarter_total": first_quarter_total if first_quarter_total else "-",
                     "last_quarter": last_quarter,
                     "last_quarter_total": last_quarter_total if last_quarter_total else "-",
-                    # "last_date": last_quarter[0].created_at if last_quarter_total else "-",
+                    "last_date": last_date if last_date else last_two_month[-1] - timedelta(days=1),
                 }
                 temp[month] = {
                     "monthly_total": monthly_total,
@@ -100,8 +107,10 @@ class CodeReviewAdmin(admin.ModelAdmin):
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
 
-        # full_data_set = sorted(full_data_set.items(), key=lambda x: datetime.now().date() if x[-1].get(datetime.now().date(), dict()).get('crs', dict()).get('first_quarter', CodeReview()).created_at is None else datetime.now().date())
-        # full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('crs', dict()).get('last_date', datetime.now().date()))
+        full_data_set = dict(sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[-1]).get('crs', dict()).get('last_date'), reverse=True))
+        full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0]).get('crs', dict()).get('last_date'), reverse=True)
+
+        full_data_set = dict(full_data_set)
 
         context = dict(
             self.admin_site.each_context(request),
