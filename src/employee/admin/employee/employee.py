@@ -28,8 +28,8 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
         model_name = data.get('model_name')
 
         # TODO: Fix Permission
-        if  request.user.is_authenticated and app_label == 'project_management' and model_name == 'codereview':
-            qs = Employee.objects.filter(active=True, full_name__icontains=search_term)
+        if request.user.is_authenticated and app_label == 'project_management' and model_name == 'codereview':
+            qs = Employee.objects.filter(active=True, project_eligibility=True, full_name__icontains=search_term)
         return qs, use_distinct
 
     def get_list_display(self, request):

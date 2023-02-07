@@ -313,16 +313,6 @@ class CodeReview(TimeStampMixin, AuthorMixin):
 
     for_first_quarter = models.BooleanField(default=True)
 
-    @property
-    def has_red_rating(self):
-        red_line = 6.5
-
-        return self.naming_convention <= red_line \
-            or self.code_reusability <= red_line \
-            or self.oop_principal <= red_line \
-            or self.design_pattern <= red_line \
-            or self.standard_git_commit <= red_line
-
     def save(self, *args, **kwargs):
         avg_rating = self.naming_convention + self.code_reusability + self.oop_principal + self.design_pattern + self.standard_git_commit
         avg_rating = round(avg_rating / 5, 1)
