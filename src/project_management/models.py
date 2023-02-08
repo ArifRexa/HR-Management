@@ -190,15 +190,15 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         limit_choices_to={'active': True},
     )
     hours = models.FloatField(default=0.0)
-    description = models.TextField(blank=True, verbose_name='Explanation')
+    # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField()
 
-    def clean(self):
-        if self.hours < 4 and self.description == "":
-            raise ValidationError({
-                'description': f"Please explain why the hours is less than 4"
-            })
-        return super().clean()
+    # def clean(self):
+    #     if self.hours < 4 and self.description == "":
+    #         raise ValidationError({
+    #             'description': f"Please explain why the hours is less than 4"
+    #         })
+    #     return super().clean()
 
     class Meta:
         permissions = [
