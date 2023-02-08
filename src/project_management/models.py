@@ -189,7 +189,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         on_delete=models.RESTRICT,
         limit_choices_to={'active': True},
     )
-    hours = models.FloatField()
+    hours = models.FloatField(default=0.0)
     description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField()
 
