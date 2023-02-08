@@ -9,6 +9,7 @@ from employee.models import Resignation
 @admin.register(Resignation)
 class ResignationAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ('employee', 'short_message', 'date', 'status', 'approved_at', 'approved_by')
+    search_fields = ['employee__full_name', 'message']
 
     def get_fields(self, request, obj=None):
         fields = super(ResignationAdmin, self).get_fields(request)
