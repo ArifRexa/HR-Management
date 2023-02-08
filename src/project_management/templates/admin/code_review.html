@@ -162,7 +162,7 @@
                                                    <td>
                                                        <div class="popover-wrapper">
                                                             <div class="popover-title">
-                                                                {{ review.comment | stringformat:".20s" }}
+                                                                {{ review.comment | truncatewords:8 }}
                                                             </div>
                                                             <div class="popover-message long-content">
                                                                 {{ review.comment | linebreaks }}
@@ -198,7 +198,7 @@
                                                    <td>
                                                        <div class="popover-wrapper">
                                                             <div class="popover-title">
-                                                                {{ review.comment | stringformat:".20s" }}
+                                                                {{ review.comment | truncatewords:8 }}
                                                             </div>
                                                             <div class="popover-message long-content">
                                                                 {{ review.comment | linebreaks }}
