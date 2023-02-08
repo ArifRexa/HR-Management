@@ -11,8 +11,6 @@ from django.db.models.functions import Coalesce
 from config.settings import employee_ids as management_ids
 
 
-
-
 def get_last_two_month():
     this_month_start = timezone.now().date().replace(day=1)
     previous_month_end = this_month_start - timedelta(days=1)
@@ -25,9 +23,10 @@ def get_last_two_month():
 class CodeReviewAdmin(admin.ModelAdmin):
 
     list_display = ['employee', 'project', 'avg_rating', 'comment']
+    change_form_template = 'admin/code_review_form_full.html'
 
     fieldsets = (
-        (None, {
+        ('Basic', {
             'fields': ('employee', 'project', )
         }),
         ('Ratings', {
@@ -51,7 +50,6 @@ class CodeReviewAdmin(admin.ModelAdmin):
             'all': ('css/list.css',)
         }
         js = ('js/list.js',)
-
 
     def custom_changelist_view(self, request, extra_context=None):
         last_two_month = get_last_two_month()
@@ -120,6 +118,10 @@ class CodeReviewAdmin(admin.ModelAdmin):
         )
 
         return TemplateResponse(request, 'admin/code_review.html', context)
+
+    def add_view(self, request, form_url='', extra_context=None):
+        # employee_list = Employee.objects.filter(active=True, project_eligibility=True)
+        return self.changeform_view(request, None, form_url, extra_context)
 
     def get_urls(self):
         urls = super(CodeReviewAdmin, self).get_urls()
