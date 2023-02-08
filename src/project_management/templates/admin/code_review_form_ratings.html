@@ -1,0 +1,128 @@
+<style>
+    /* Base setup */
+    @import url(//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css);
+
+    /* Ratings widget */
+    .rate {
+        display: inline-block;
+        border: 0;
+    }
+    /* Hide radio */
+    .rate > input {
+        display: none;
+    }
+    /* Order correctly by floating highest to the right */
+    .rate > label {
+        float: right;
+    }
+    /* The star of the show */
+    .rate > label:before {
+        display: inline-block;
+        font-size: 20px;
+        padding: .3rem .2rem;
+        margin: 0;
+        cursor: pointer;
+        font-family: FontAwesome;
+        content: "\f005 "; /* full star */
+    }
+
+    /* Half star trick */
+    .rate .half:before {
+        content: "\f089 "; /* half star no outline */
+        position: absolute;
+        padding-right: 0;
+    }
+    /* Click + hover color */
+    input:checked ~ label, /* color current and previous stars on checked */
+    label:hover, label:hover ~ label { color: #73B100;  } /* color previous stars on hover */
+
+    /* Hover highlights */
+    input:checked + label:hover, input:checked ~ label:hover, /* highlight current and previous stars */
+    input:checked ~ label:hover ~ label, /* highlight previous selected stars for new rating */
+    label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #A6E72D;  }
+</style>
+
+
+{% for fieldset in adminform %}
+    {% if fieldset.name == "Ratings" %}
+        {% if fieldset.name %}<h2>{{ fieldset.name }}</h2>{% endif %}
+        {% for line in fieldset %}
+            {% for field in line %}
+            <div class="align-items-center justify-content-between container">
+                <div class="row">
+                    <div class="col">
+                        <label for="{{ field.field.name }}_fieldset" class="form-label mb-0"><b>{{ field.field.label }}</b></label>
+                    </div>
+                    <div class="col">
+                        <fieldset class="rate" id="{{ field.field.name }}_fieldset">
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}20" name="{{ field.field.name }}_mask" value="20" />
+                            <label for="{{ field.field.name }}20" title="10 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}19" name="{{ field.field.name }}_mask" value="19" />
+                            <label class="half" for="{{ field.field.name }}19" title="9.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}18" name="{{ field.field.name }}_mask" value="18" />
+                            <label for="{{ field.field.name }}18" title="9 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}17" name="{{ field.field.name }}_mask" value="17" />
+                            <label class="half" for="{{ field.field.name }}17" title="8.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}16" name="{{ field.field.name }}_mask" value="16" />
+                            <label for="{{ field.field.name }}16" title="8 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}15" name="{{ field.field.name }}_mask" value="15" />
+                            <label class="half" for="{{ field.field.name }}15" title="7.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}14" name="{{ field.field.name }}_mask" value="14" />
+                            <label for="{{ field.field.name }}14" title="7 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}13" name="{{ field.field.name }}_mask" value="13" />
+                            <label class="half" for="{{ field.field.name }}13" title="6.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}12" name="{{ field.field.name }}_mask" value="12" />
+                            <label for="{{ field.field.name }}12" title="6 star"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}11" name="{{ field.field.name }}_mask" value="11" />
+                            <label class="half" for="{{ field.field.name }}11" title="5.5 star"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}10" name="{{ field.field.name }}_mask" value="10" />
+
+                            <label for="{{ field.field.name }}10" title="5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}9" name="{{ field.field.name }}_mask" value="9" />
+                            <label class="half"  for="{{ field.field.name }}9" title="4.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}8" name="{{ field.field.name }}_mask" value="8" />
+                            <label for="{{ field.field.name }}8" title="4 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}7" name="{{ field.field.name }}_mask" value="7" />
+                            <label class="half"  for="{{ field.field.name }}7" title="3.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}6" name="{{ field.field.name }}_mask" value="6" />
+                            <label for="{{ field.field.name }}6" title="3 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}5" name="{{ field.field.name }}_mask" value="5" />
+                            <label class="half" for="{{ field.field.name }}5" title="2.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}4" name="{{ field.field.name }}_mask" value="4" />
+                            <label for="{{ field.field.name }}4" title="2 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}3" name="{{ field.field.name }}_mask" value="3" />
+                            <label class="half"  for="{{ field.field.name }}3" title="1.5 stars"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}2" name="{{ field.field.name }}_mask" value="2" />
+                            <label for="{{ field.field.name }}2" title="1 star"></label>
+                            <input class="{{ field.field.name }}_mask" type="radio" id="{{ field.field.name }}1" name="{{ field.field.name }}_mask" value="1" />
+                            <label class="half" for="{{ field.field.name }}1" title="0.5 star"></label>
+                        </fieldset>
+                        <input
+                            type="number" step="0.5"
+                            id="{{ field.field.name }}",
+                            name="{{ field.field.name }}"
+                            min="0.5" max="5.0"
+                            value="{{ field.field.value }}"
+                            hidden
+                        />
+                    </div>
+                    <script>
+                        var rateInput;
+                        document.querySelectorAll(".{{ field.field.name }}_mask").forEach(el => {
+                            el.addEventListener('click', function (e){
+                                const val = parseInt(e.target.value);
+                                document.getElementById("{{ field.field.name }}").value = val/2;
+                            });
+                        });
+                        document.getElementById(
+                            `{{ field.field.name }}${parseInt(document.getElementById("{{ field.field.name }}").value*2)}`
+                        )?.click();
+                    </script>
+                    </div>
+                </div>
+        {% endfor %}
+        {% endfor %}
+    {% endif %}
+{% endfor %}
+
+
