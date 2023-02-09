@@ -15,12 +15,13 @@
     opacity: 0;
     visibility: hidden;
     position: absolute;
-    left: -120px;
+    left: 0;
     transform: translate(0, 10px);
     background-color: #d7d5d5;
-    padding: 1.5rem;
+    padding: 5px;
     box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
     width: auto;
+    top: 40px;
 }
 
 .popover-message:before {
