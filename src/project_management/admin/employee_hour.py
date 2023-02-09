@@ -47,7 +47,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     def get_date(self, obj):
         return obj.project_hour.date
     
-    @admin.display(description="Hour Type", ordering='project_hour__')
+    @admin.display(description="Hour Type", ordering='project_hour__hour_type')
     def get_hour_type(self, obj):
         return obj.project_hour.hour_type.title()
 
@@ -103,7 +103,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
 
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'project', 'hours', 'get_update', 'manager', )
+    list_display = ('get_date', 'employee', 'project', 'get_hours', 'get_update', 'manager', )
     list_filter = ('project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title', 'manager__full_name', )
     date_hierarchy = 'created_at'
@@ -126,6 +126,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_content = html_template.render({
             'update': obj.update,
         })
+        return format_html(html_content)
+    
+    @admin.display(description="Hours", ordering='hours')
+    def get_hours(self, obj):
+        custom_style=''
+        if obj.hours <= 4:
+            custom_style=' style="color:red; font-weight: bold;"'
+        html_content = f'<span{custom_style}>{obj.hours}</span>'
         return format_html(html_content)
     
     def changelist_view(self, request, extra_context=None):
