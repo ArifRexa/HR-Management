@@ -35,6 +35,7 @@ def set_default_exit_time():
                     activities[-1].end_time = DEFAULT_EXIT_TIME
                 else:
                     activities[-1].end_time = start_time
+                activities[-1].is_updated_by_bot = True
                 activities[-1].save()
 
 

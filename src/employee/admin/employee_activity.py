@@ -216,6 +216,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             al = len(activities)
                             start_time = activities[0].start_time
                             end_time = activities[-1].end_time
+                            is_updated_by_bot = activities[-1].is_updated_by_bot
                             break_time = 0
                             inside_time = 0
 
@@ -241,6 +242,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             temp[date].update({
                                 'entry_time': start_time.time() if start_time else '-',
                                 'exit_time': end_time.time() if end_time else '-',
+                                'is_updated_by_bot': is_updated_by_bot,
                                 'break_time': break_time_s,
                                 'break_time_hour': math.floor((break_time / (60 * 60)) % 24),
                                 'inside_time': inside_time_s,
