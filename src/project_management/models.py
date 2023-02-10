@@ -193,6 +193,12 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField()
 
+    STATUS_CHOICE = (
+        ('pending', '⌛ Pending'),
+        ('approved', '✔ Approved')
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
+
     # def clean(self):
     #     if self.hours < 4 and self.description == "":
     #         raise ValidationError({
