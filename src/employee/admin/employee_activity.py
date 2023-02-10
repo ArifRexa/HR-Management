@@ -322,7 +322,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeActivity)
 class EmployeeBreakAdmin(admin.ModelAdmin):
-    list_display = ('employee_attendance', 'get_start_time', 'get_end_time', 'is_updated_by_bot', 'updated_by', 'updated_at', 'created_by', 'created_at')
+    list_display = ('employee_attendance', 'get_start_time', 'get_end_time')
     date_hierarchy = 'employee_attendance__date'
     autocomplete_fields = ('employee_attendance',)
     list_filter = ('employee_attendance__employee',)
