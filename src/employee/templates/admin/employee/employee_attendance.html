@@ -164,7 +164,7 @@
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i> {% endcomment %}
-                                    <span {% if data.exit_time == '-' %}class="color-muted"{% endif %} >
+                                    <span {% if data.is_updated_by_bot %}class="p-1 bg-warning"{% endif %} >
                                         {% if data.exit_time != '-' %}
                                             {{ data.exit_time|time:"h:i A" }}
                                         {% else %}

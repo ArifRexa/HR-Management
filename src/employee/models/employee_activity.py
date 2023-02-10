@@ -63,7 +63,7 @@ class EmployeeActivity(TimeStampMixin, AuthorMixin):
     end_time = models.DateTimeField(null=True, blank=True)
     
     updated_by = UserForeignKey(auto_user=True, verbose_name="Updated By", related_name="activities_updated")
-    
+    is_updated_by_bot = models.BooleanField(default=False)
 
 class EmployeeProject(TimeStampMixin, AuthorMixin):
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
