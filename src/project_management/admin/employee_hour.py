@@ -103,18 +103,32 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
 
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'project', 'get_hours', 'get_update', 'manager', )
-    list_filter = ('project', 'employee', 'manager', )
+    list_display = ('get_date', 'employee', 'project', 'get_hours', 'get_update', 'manager', 'status_col')
+    list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title', 'manager__full_name', )
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
     change_list_template = 'admin/total_employee_hour.html'
+    readonly_fields = []
+    fieldsets = (
+      ('Standard info', {
+          'fields': ('employee', 'manager', 'project', 'hours', 'update', 'status')
+      }),
+   )
 
     class Media:
         css = {
             'all': ('css/list.css',)
         }
         js = ('js/list.js',)
+    
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.employee.manager:
+           return ['employee', 'manager', 'project', 'update']
+        elif request.user.is_superuser:
+            return []
+        
+        return ['status',]
 
     @admin.display(description="Date", ordering='created_at')
     def get_date(self, obj):
@@ -174,6 +188,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     and obj.manager != request.user.employee:
                 permitted = False
         return permitted
+    
+    @admin.action(description='Status')
+    def status_col(self, obj):
+        color = 'red'
+        if obj.status == 'approved':
+            color = 'green'
+        return format_html(
+            f'<b style="color: {color}">{obj.get_status_display()}</b>'
+        )
     
 
     def has_delete_permission(self, request, obj=None):
