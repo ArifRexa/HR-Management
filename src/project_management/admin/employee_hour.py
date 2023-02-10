@@ -122,13 +122,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         }
         js = ('js/list.js',)
     
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.employee.manager:
-           return ['employee', 'manager', 'project', 'update']
-        elif request.user.is_superuser:
-            return []
+    # def get_readonly_fields(self, request, obj=None):
+    #     if request.user.employee.manager:
+    #        return ['employee', 'manager', 'project', 'update']
+    #     elif request.user.is_superuser:
+    #         return []
         
-        return ['status',]
+    #     return ['status',]
 
     @admin.display(description="Date", ordering='created_at')
     def get_date(self, obj):
