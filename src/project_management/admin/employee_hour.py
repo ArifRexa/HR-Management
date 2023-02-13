@@ -109,7 +109,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
     change_list_template = 'admin/total_employee_hour.html'
-    readonly_fields = []
+    # readonly_fields = []
     fieldsets = (
       ('Standard info', {
           'fields': ('employee', 'manager', 'project', 'hours', 'update', 'status')
@@ -122,13 +122,20 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         }
         js = ('js/list.js',)
     
-    # def get_readonly_fields(self, request, obj=None):
-    #     if request.user.employee.manager:
-    #        return ['employee', 'manager', 'project', 'update']
-    #     elif request.user.is_superuser:
-    #         return []
+    def get_readonly_fields(self, request, obj=None):
+        if obj:
+            if obj.employee == obj.manager:
+                return []
+            else:
+                if request.user.employee.manager:
+                    return ['employee', 'manager', 'project', 'update']
+                elif request.user.is_superuser:
+                    return []
+            
+            return ['status',]
+        else:
+            return super(DailyProjectUpdateAdmin, self).get_readonly_fields(request, obj)
         
-    #     return ['status',]
 
     @admin.display(description="Date", ordering='created_at')
     def get_date(self, obj):
@@ -175,7 +182,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     
     def get_list_filter(self, request):
         filters = list(super(DailyProjectUpdateAdmin, self).get_list_filter(request))
-        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+        if not request.user.is_superuser  and not request.user.has_perm("project_management.see_all_employee_update"):
             if 'employee' in filters: filters.remove('employee')
         return filters
     
