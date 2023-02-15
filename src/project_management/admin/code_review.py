@@ -110,11 +110,27 @@ class CodeReviewAdmin(admin.ModelAdmin):
 
         full_data_set = dict(full_data_set)
 
+        order = request.GET.get('order', None)
+
+        if order:
+            print("ORDER FOUND")
+            print(order)
+            # print(full_data_set.items()[-1].get(last_two_month[0]))
+            if order == 'monthly_total':
+                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0), reverse=True)
+                order = '-monthly_total'
+            elif order == '-monthly_total':
+                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0))
+                order = 'monthly_total'
+
+            full_data_set = dict(full_data_set)
+
         context = dict(
             self.admin_site.each_context(request),
             full_data_set=full_data_set,
             online_status_form=online_status_form,
             last_two_months=last_two_month,
+            order=order,
         )
 
         return TemplateResponse(request, 'admin/code_review.html', context)
