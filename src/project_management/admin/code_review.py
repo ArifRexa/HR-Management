@@ -105,16 +105,9 @@ class CodeReviewAdmin(admin.ModelAdmin):
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
 
-        full_data_set = dict(sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[-1]).get('crs', dict()).get('last_date'), reverse=True))
-        full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0]).get('crs', dict()).get('last_date'), reverse=True)
-
-        full_data_set = dict(full_data_set)
-
         order = request.GET.get('order', None)
 
         if order:
-            print("ORDER FOUND")
-            print(order)
             # print(full_data_set.items()[-1].get(last_two_month[0]))
             if order == 'monthly_total':
                 full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0), reverse=True)
@@ -122,7 +115,14 @@ class CodeReviewAdmin(admin.ModelAdmin):
             elif order == '-monthly_total':
                 full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0))
                 order = 'monthly_total'
-
+            full_data_set = dict(full_data_set)
+        else:
+            full_data_set = dict(sorted(full_data_set.items(),
+                                        key=lambda x: x[-1].get(last_two_month[-1]).get('crs', dict()).get('last_date'),
+                                        reverse=True))
+            full_data_set = sorted(full_data_set.items(),
+                                   key=lambda x: x[-1].get(last_two_month[0]).get('crs', dict()).get('last_date'),
+                                   reverse=True)
             full_data_set = dict(full_data_set)
 
         context = dict(
