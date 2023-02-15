@@ -109,7 +109,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
     change_list_template = 'admin/total_employee_hour.html'
-    # readonly_fields = []
+    readonly_fields = ['status']
     fieldsets = (
       ('Standard info', {
           'fields': ('employee', 'manager', 'project', 'hours', 'update', 'status')
@@ -123,18 +123,23 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         js = ('js/list.js',)
     
     def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+
         if obj:
-            if obj.employee == obj.manager:
-                return []
-            else:
-                if request.user.employee.manager:
+            if request.user.employee.manager:
+                if obj.manager != obj.employee and obj.manager == request.user.employee:
                     return ['employee', 'manager', 'project', 'update']
-                elif request.user.is_superuser:
+                else:
                     return []
-            
-            return ['status',]
+            else:
+                return self.readonly_fields
+
         else:
-            return super(DailyProjectUpdateAdmin, self).get_readonly_fields(request, obj)
+            if request.user.employee.manager:
+                return []
+            else: 
+                return self.readonly_fields
         
 
     @admin.display(description="Date", ordering='created_at')
