@@ -105,16 +105,15 @@ class CodeReviewAdmin(admin.ModelAdmin):
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
 
-        order = request.GET.get('order', None)
+        order = request.GET.get('monthly_total', None)
 
         if order:
-            # print(full_data_set.items()[-1].get(last_two_month[0]))
-            if order == 'monthly_total':
-                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0), reverse=True)
-                order = '-monthly_total'
-            elif order == '-monthly_total':
-                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0))
-                order = 'monthly_total'
+            if order in ['0', '1']:
+                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[int(order)], dict()).get('monthly_total', 0), reverse=True)
+                order = True
+            elif order in ['-0', '-1']:
+                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[int(order)], dict()).get('monthly_total', 0))
+                order = False
             full_data_set = dict(full_data_set)
         else:
             full_data_set = dict(sorted(full_data_set.items(),
