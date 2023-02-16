@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from project_management.models import CodeReview
+from project_management.models import CodeReview, CodeReviewEmployeeFeedback
 from django.utils import timezone
 from datetime import datetime, timedelta
 from employee.models import Employee
@@ -19,11 +19,30 @@ def get_last_two_month():
     return this_month_start, previous_month_start
 
 
+class CodeReviewEmployeeFeedbackInline(admin.StackedInline):
+    model = CodeReviewEmployeeFeedback
+    extra = 1
+
+    # Returns true only when object owner or superuser
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser or obj.employee==request.user.employee:
+            return True
+        return False
+    
+    # Returns true only when object owner or superuser
+    def has_add_permission(self, request, obj=None):
+        return self.has_change_permission(request, obj)
+    
+
 @admin.register(CodeReview)
 class CodeReviewAdmin(admin.ModelAdmin):
 
     list_display = ['employee', 'project', 'avg_rating', 'comment']
     change_form_template = 'admin/code_review_form_full.html'
+
+    inlines = (
+        CodeReviewEmployeeFeedbackInline,
+    )
 
     fieldsets = (
         ('Basic', {
@@ -156,4 +175,25 @@ class CodeReviewAdmin(admin.ModelAdmin):
             path("", self.custom_changelist_view, name='code_review'),
         ]
         return custome_urls + urls
+    
+    def get_readonly_fields(self, request, obj=None):
+        ro_fields = super().get_readonly_fields(request, obj)
+
+        if not request.user.is_superuser and not request.user.has_perm('project_management.can_give_code_review'):
+            ro_fields = (
+                'employee', 'project', 
+                'naming_convention', 'code_reusability', 'oop_principal', 'design_pattern', 'standard_git_commit',
+                'comment',
+            )
+
+        return ro_fields
+    
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if not request.user.is_superuser and not request.user.has_perm('project_management.can_give_code_review'):
+            qs = qs.filter(employee=request.user.employee)
+
+        return qs
 

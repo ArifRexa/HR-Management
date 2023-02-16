@@ -330,4 +330,14 @@ class CodeReview(TimeStampMixin, AuthorMixin):
             self.for_first_quarter = False
 
         super(CodeReview, self).save(*args, **kwargs)
+    
+    class Meta:
+        permissions = (
+            ("can_give_code_review", "Can give code review"),
+        )
 
+
+
+class CodeReviewEmployeeFeedback(TimeStampMixin, AuthorMixin):
+    code_review = models.ForeignKey(CodeReview, on_delete=models.CASCADE)
+    comment = models.TextField()
