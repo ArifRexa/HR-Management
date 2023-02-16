@@ -104,7 +104,7 @@
                     {% for month in last_two_months %}
                         <th class="border text-dark bg-white text-center py-3">
                             {% if forloop.counter0 == 0%}
-                                {{ month|date:"M Y" }}
+                                <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?order={% if order %}{{ order }}{% else %}monthly_total{% endif %}"><b>{{ month|date:"M Y" }}</b></a>
                             {% else %}
                                 <span>{{ month|date:"M Y" }}</span>
                             {% endif %}
