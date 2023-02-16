@@ -76,19 +76,23 @@
                 <h2 class="h2 fs-1 text-center">Code Review</h2>
             </div>
         </div>
-        {% if online_status_form %}
         <div class="col">
-            <div class="pb-4 text-center">
-                {% include 'admin/form/employee_status_form.html' %}
-            </div>
-        </div>
-        {% else %}
-            <div class="col">
-                <div class="pb-4 text-center">
-                    <a class="btn btn-secondary text-white px-3" href="{% url 'admin:project_management_codereview_changelist' %}admin/">Management View</a>
+            <div class="row">
+                {% if online_status_form %}
+                <div class="col-12">
+                    <div class="pb-4 text-center">
+                        {% include 'admin/form/employee_status_form.html' %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-12">
+                    <div class="pb-4 text-center">
+                        <a class="btn btn-secondary text-white px-3" href="{% url 'admin:project_management_codereview_changelist' %}admin/">Management View</a>
+                    </div>
                 </div>
             </div>
-        {% endif %}
+        </div>
+        
     </div>
 
     <div class="pb-3">
