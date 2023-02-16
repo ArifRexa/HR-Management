@@ -9,10 +9,10 @@ from django.template import Context, loader
 from django.template.loader import get_template
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 
 from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance, PrayerInfo, EmployeeFeedback
-from project_management.models import ProjectHour, EmployeeProjectHour
+from project_management.models import ProjectHour, EmployeeProjectHour, DailyProjectUpdate
 
 
 def set_default_exit_time():
@@ -102,8 +102,35 @@ def execute_birthday_notification():
     management.call_command('birthday_wish')
 
 
+from employee.models.employee import Employee
+def no_daily_update():
+    
+    project_id = 92 # No Client Project - 92
+    manager_employee_id = 30 # Shahinur Rahman - 30 
+
+    today = timezone.now().date()
+    daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee_id', flat=True)
+    missing_daily_upd_emp = Employee.objects.filter(active=True).exclude(manager=True).exclude(id__in=daily_update_emp_ids)
+
+    if missing_daily_upd_emp.exists():
+        emps = list()
+        for employee in missing_daily_upd_emp:
+            emps.append(DailyProjectUpdate(
+                employee_id=employee.id,
+                manager_id=manager_employee_id,
+                project_id=project_id,
+                update='-',
+            ))
+        DailyProjectUpdate.objects.bulk_create(emps)
+
+        # print("[Bot] Daily Update Done")
+        
+
+
+
 def all_employee_offline():
     set_default_exit_time()
+    no_daily_update()
     EmployeeOnline.objects.filter(active=True).update(active=False)
 
 
