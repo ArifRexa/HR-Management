@@ -105,12 +105,12 @@ def execute_birthday_notification():
 from employee.models.employee import Employee
 def no_daily_update():
     
-    project_id = 92 # No Client Project - 92
-    manager_employee_id = 30 # Shahinur Rahman - 30 
+    project_id = 92 # No Client Project - 92  # local No client Project id 2
+    manager_employee_id = 30 # Shahinur Rahman - 30   # local manager id himel vai 9
 
     today = timezone.now().date()
     daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee_id', flat=True)
-    missing_daily_upd_emp = Employee.objects.filter(active=True).exclude(manager=True).exclude(id__in=daily_update_emp_ids)
+    missing_daily_upd_emp = Employee.objects.filter(active=True).exclude(manager=True).exclude(id__in=daily_update_emp_ids).exclude(project_eligibility=False)
 
     if missing_daily_upd_emp.exists():
         emps = list()
