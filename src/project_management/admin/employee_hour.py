@@ -4,7 +4,10 @@ from django.contrib import admin
 from django.db.models import Q, Sum
 
 from django.template.loader import get_template
+from django.utils import timezone
 from django.utils.html import format_html, linebreaks
+
+from employee.admin.employee._forms import DailyUpdateFilterForm
 
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
@@ -153,7 +156,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             'update': obj.update,
         })
         return format_html(html_content)
-    
+   
     @admin.display(description="Hours", ordering='hours')
     def get_hours(self, obj):
         custom_style=''
@@ -163,8 +166,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return format_html(html_content)
     
     def changelist_view(self, request, extra_context=None):
+        filter_form = DailyUpdateFilterForm(initial={
+            'created_at__date__gte': request.GET.get('created_at__date__gte', timezone.now().date()-datetime.timedelta(days=7)),
+            'created_at__date__lte': request.GET.get('created_at__date__lte', timezone.now().date())
+        })
         my_context = {
             'total': self.get_total_hour(request),
+            'filter_form': filter_form,
         }
         return super(DailyProjectUpdateAdmin, self).changelist_view(request, extra_context=my_context)
     
@@ -177,12 +185,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
             if request.user.employee.manager:
-                return query_set.filter(
+                query_set = query_set.filter(
                     Q(manager=request.user.employee) | 
                     Q(employee=request.user.employee),
                 )
             else:
-                return query_set.filter(employee=request.user.employee)
+                query_set = query_set.filter(employee=request.user.employee)
+
         return query_set
     
     def get_list_filter(self, request):
