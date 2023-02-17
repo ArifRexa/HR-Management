@@ -25,7 +25,7 @@ class CodeReviewEmployeeFeedbackInline(admin.StackedInline):
 
     # Returns true only when object owner or superuser
     def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser or obj.employee==request.user.employee:
+        if obj and (request.user.is_superuser or obj.employee==request.user.employee):
             return True
         return False
     
