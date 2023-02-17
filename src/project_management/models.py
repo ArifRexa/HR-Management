@@ -137,10 +137,10 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             raise ValidationError({
                 'hours': f"Hours filed is required"
             })
-        if self.hours <= 25 and self.description == "":
-            raise ValidationError({
-                'description': f"Please explain why the hours is less then or equal 25"
-            })
+        # if self.hours <= 25 and self.description == "":
+        #     raise ValidationError({
+        #         'description': f"Please explain why the hours is less then or equal 25"
+        #     })
 
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
