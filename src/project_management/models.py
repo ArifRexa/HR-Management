@@ -132,15 +132,15 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return f"{self.project} | {self.manager}"
 
-    # def clean(self):
-    #     if self.hours is None:
-    #         raise ValidationError({
-    #             'hours': f"Hours filed is required"
-    #         })
-    #     if self.hours <= 25 and self.description == "":
-    #         raise ValidationError({
-    #             'description': f"Please explain why the hours is less then or equal 25"
-    #         })
+    def clean(self):
+        if self.hours is None:
+            raise ValidationError({
+                'hours': f"Hours filed is required"
+            })
+        # if self.hours <= 25 and self.description == "":
+        #     raise ValidationError({
+        #         'description': f"Please explain why the hours is less then or equal 25"
+        #     })
 
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
