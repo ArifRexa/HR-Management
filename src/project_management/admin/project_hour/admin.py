@@ -39,6 +39,12 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     autocomplete_fields = ['project']
     list_per_page = 20
     ordering = ('-pk',)
+    add_form_template = 'admin/project_hour/project_hour.html'
+    fieldsets = (
+      ('Standard info', {
+          'fields': ('hour_type', 'project', 'date', 'hours')
+      }),
+   )
 
     # query for get total hour by query string
     def get_total_hour(self, request):
