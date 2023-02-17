@@ -39,7 +39,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = ['forcast', ProjectTypeFilter, 'project', 'manager', 'date']
+        filters = [ProjectTypeFilter, 'project', 'manager', 'date']
         if not request.user.is_superuser:
             filters.remove('manager')
         return filters
@@ -49,18 +49,18 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'get_forcast', 'payable']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'description', 'payable']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
 
-    @admin.display(description='Forcast', ordering='forcast')
-    def get_forcast(self, obj: ProjectHour):
-        html_template = get_template('admin/project_hour/col_forcast.html')
-        html_content = html_template.render({
-            'project_hour': obj
-        })
-        return format_html(html_content)
+    # @admin.display(description='Forcast', ordering='forcast')
+    # def get_forcast(self, obj: ProjectHour):
+    #     html_template = get_template('admin/project_hour/col_forcast.html')
+    #     html_content = html_template.render({
+    #         'project_hour': obj
+    #     })
+    #     return format_html(html_content)
 
     @admin.display(description='Resources')
     def get_resources(self, obj: ProjectHour):

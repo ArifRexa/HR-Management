@@ -102,11 +102,10 @@ def execute_birthday_notification():
     management.call_command('birthday_wish')
 
 
-from employee.models.employee import Employee
 def no_daily_update():
     
-    project_id = 92 # No Client Project - 92  # local No client Project id 2
-    manager_employee_id = 30 # Shahinur Rahman - 30   # local manager id himel vai 9
+    project_id = 2 # No Client Project - 92  # local No client Project id 2
+    manager_employee_id = 9 # Shahinur Rahman - 30   # local manager id himel vai 9
 
     today = timezone.now().date()
     daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee_id', flat=True)
@@ -157,7 +156,7 @@ def bonus__project_hour__monthly(date, project_id, manager_employee_id):
             date = date,
             hours = 0,
             description = 'Bonus for Monthly Feedback',
-            forcast = 'same',
+            # forcast = 'same',
             payable = True,
         )
     
@@ -231,7 +230,7 @@ def bonus__project_hour_add(target_date=None):
             date = target_date,
             hours = 0,
             description = 'Bonus for Entry / Exit / Exceeding 8 Hour / Prayer',
-            forcast = 'same',
+            # forcast = 'same',
             payable = True,
         )
 
