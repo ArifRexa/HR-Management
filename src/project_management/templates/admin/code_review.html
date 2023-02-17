@@ -107,11 +107,7 @@
                     <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">Employee</th>
                     {% for month in last_two_months %}
                         <th class="border text-dark bg-white text-center py-3">
-                            {% if forloop.counter0 == 0%}
-                                <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?order={% if order %}{{ order }}{% else %}monthly_total{% endif %}"><b>{{ month|date:"M Y" }}</b></a>
-                            {% else %}
-                                <span>{{ month|date:"M Y" }}</span>
-                            {% endif %}
+                                <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?monthly_total={% if order %}-{{ forloop.counter0 }}{% else %}{{ forloop.counter0 }}{% endif %}"><b>{{ month|date:"M Y" }}</b></a>
                         </th>
                     {% endfor %}
                 </tr>
@@ -169,7 +165,11 @@
                                                                 {{ review.comment | truncatewords:10 }}
                                                             </div>
                                                             <div class="popover-message long-content">
-                                                                {{ review.comment | linebreaks }}
+                                                                {{ review.created_by.employee }}: {{ review.comment | linebreaks }}
+                                                                {% for codereviewfb in review.codereviewemployeefeedback_set.all %}
+                                                                    <hr>
+                                                                    {{ codereviewfb.created_by.employee }}: {{ codereviewfb.comment | linebreaks }}
+                                                                {% endfor %}
                                                             </div>
                                                        </div>
                                                    </td>
@@ -205,7 +205,11 @@
                                                                 {{ review.comment | truncatewords:10 }}
                                                             </div>
                                                             <div class="popover-message long-content">
-                                                                {{ review.comment | linebreaks }}
+                                                                {{ review.created_by.employee }}: {{ review.comment | linebreaks }}
+                                                                {% for codereviewfb in review.codereviewemployeefeedback_set.all %}
+                                                                    <hr>
+                                                                    {{ codereviewfb.created_by.employee }}: {{ codereviewfb.comment | linebreaks }}
+                                                                {% endfor %}
                                                             </div>
                                                         </div>
                                                    </td>

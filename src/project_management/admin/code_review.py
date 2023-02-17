@@ -25,7 +25,7 @@ class CodeReviewEmployeeFeedbackInline(admin.StackedInline):
 
     # Returns true only when object owner or superuser
     def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser or obj.employee==request.user.employee:
+        if obj and (request.user.is_superuser or obj.employee==request.user.employee):
             return True
         return False
     
@@ -124,16 +124,15 @@ class CodeReviewAdmin(admin.ModelAdmin):
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
 
-        order = request.GET.get('order', None)
+        order = request.GET.get('monthly_total', None)
 
         if order:
-            # print(full_data_set.items()[-1].get(last_two_month[0]))
-            if order == 'monthly_total':
-                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0), reverse=True)
-                order = '-monthly_total'
-            elif order == '-monthly_total':
-                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[0], dict()).get('monthly_total', 0))
-                order = 'monthly_total'
+            if order in ['0', '1']:
+                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[int(order)], dict()).get('monthly_total', 0), reverse=True)
+                order = True
+            elif order in ['-0', '-1']:
+                full_data_set = sorted(full_data_set.items(), key=lambda x: x[-1].get(last_two_month[int(order)], dict()).get('monthly_total', 0))
+                order = False
             full_data_set = dict(full_data_set)
         else:
             full_data_set = dict(sorted(full_data_set.items(),
@@ -154,9 +153,9 @@ class CodeReviewAdmin(admin.ModelAdmin):
 
         return TemplateResponse(request, 'admin/code_review.html', context)
 
-    def add_view(self, request, form_url='', extra_context=None):
-        # employee_list = Employee.objects.filter(active=True, project_eligibility=True)
-        return self.changeform_view(request, None, form_url, extra_context)
+    # def add_view(self, request, form_url='', extra_context=None):
+    #     # employee_list = Employee.objects.filter(active=True, project_eligibility=True)
+    #     return self.changeform_view(request, None, form_url, extra_context)
 
     def get_urls(self):
         urls = super(CodeReviewAdmin, self).get_urls()
