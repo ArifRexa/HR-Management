@@ -25,7 +25,7 @@ class CodeReviewEmployeeFeedbackInline(admin.StackedInline):
 
     # Returns true only when object owner or superuser
     def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser or obj.employee==request.user.employee:
+        if obj and (request.user.is_superuser or obj.employee==request.user.employee):
             return True
         return False
     
@@ -153,9 +153,9 @@ class CodeReviewAdmin(admin.ModelAdmin):
 
         return TemplateResponse(request, 'admin/code_review.html', context)
 
-    def add_view(self, request, form_url='', extra_context=None):
-        # employee_list = Employee.objects.filter(active=True, project_eligibility=True)
-        return self.changeform_view(request, None, form_url, extra_context)
+    # def add_view(self, request, form_url='', extra_context=None):
+    #     # employee_list = Employee.objects.filter(active=True, project_eligibility=True)
+    #     return self.changeform_view(request, None, form_url, extra_context)
 
     def get_urls(self):
         urls = super(CodeReviewAdmin, self).get_urls()

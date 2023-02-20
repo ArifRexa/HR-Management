@@ -102,7 +102,6 @@ def execute_birthday_notification():
     management.call_command('birthday_wish')
 
 
-from employee.models.employee import Employee
 def no_daily_update():
     
     project_id = 92 # No Client Project - 92  # local No client Project id 2
@@ -157,7 +156,7 @@ def bonus__project_hour__monthly(date, project_id, manager_employee_id):
             date = date,
             hours = 0,
             description = 'Bonus for Monthly Feedback',
-            forcast = 'same',
+            # forcast = 'same',
             payable = True,
         )
     
@@ -231,7 +230,7 @@ def bonus__project_hour_add(target_date=None):
             date = target_date,
             hours = 0,
             description = 'Bonus for Entry / Exit / Exceeding 8 Hour / Prayer',
-            forcast = 'same',
+            # forcast = 'same',
             payable = True,
         )
 

@@ -126,7 +126,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     date = models.DateField()
     hours = models.FloatField()
     description = models.TextField(blank=True, verbose_name='Explanation')
-    forcast = models.CharField(max_length=40, choices=FORCAST_SELECTOR, verbose_name='Forecast next week hours')
+    forcast = models.CharField(max_length=40, choices=FORCAST_SELECTOR, verbose_name='Forecast next week hours', null=True, blank=True)
     payable = models.BooleanField(default=True)
 
     def __str__(self):
@@ -137,10 +137,10 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             raise ValidationError({
                 'hours': f"Hours filed is required"
             })
-        if self.hours <= 25 and self.description == "":
-            raise ValidationError({
-                'description': f"Please explain why the hours is less then or equal 25"
-            })
+        # if self.hours <= 25 and self.description == "":
+        #     raise ValidationError({
+        #         'description': f"Please explain why the hours is less then or equal 25"
+        #     })
 
     def save(self, *args, **kwargs):
         # if not self.manager.manager:

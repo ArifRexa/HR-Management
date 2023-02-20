@@ -58,6 +58,7 @@ urlpatterns = [
     path('reset/done/', auth_view.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     path('change-active-status/', employee.views.change_status, name='change-active-status'),
     path('change-employee-project/', employee.views.change_project, name='change-employee-project'),
+    path('projects/', include('project_management.urls'), name='project-hours'),
 
     path('tinymce/', include('tinymce.urls')),
 
