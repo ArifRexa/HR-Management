@@ -224,12 +224,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def update_status_approve(self, request, queryset):
         queryset.update(status='approved')
 
-    update_status_approve.short_description = "Approved selected status"
+    update_status_approve.short_description = "Approve selected daily project updates"
 
     def update_status_pending(self, request, queryset):
         queryset.update(status='pending')
 
-    update_status_pending.short_description = "Pending selected status"
+    update_status_pending.short_description = "Pending selected status daily project updates"
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
