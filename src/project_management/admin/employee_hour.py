@@ -113,6 +113,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     autocomplete_fields = ('employee', 'project', )
     change_list_template = 'admin/total_employee_hour.html'
     readonly_fields = ['status']
+    actions = ['update_status_approve', 'update_status_pending']
     fieldsets = (
       ('Standard info', {
           'fields': ('employee', 'manager', 'project', 'hours', 'update', 'status')
@@ -219,6 +220,16 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             f'<b style="color: {color}">{obj.get_status_display()}</b>'
         )
     
+
+    def update_status_approve(self, request, queryset):
+        queryset.update(status='approved')
+
+    update_status_approve.short_description = "Approve selected daily project updates"
+
+    def update_status_pending(self, request, queryset):
+        queryset.update(status='pending')
+
+    update_status_pending.short_description = "Pending selected status daily project updates"
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)

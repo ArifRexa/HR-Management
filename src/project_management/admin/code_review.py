@@ -77,6 +77,7 @@ class CodeReviewAdmin(admin.ModelAdmin):
 
         # employees_list = sorted(employees_list, key=lambda item: (item.is_online))
 
+
         user_data = None
         for (index, emp) in enumerate(employees_list):
             if emp.user == request.user:
@@ -86,12 +87,15 @@ class CodeReviewAdmin(admin.ModelAdmin):
             employees_list.insert(0, user_data)
 
         full_data_set = dict()
+        combined_monthly_total_datas = [[], []]
         last_date = None
+
         for index, employee in enumerate(employees_list):
             # code_review_set = employee.codereview_set.filter(created_at__gte=last_two_month[-1])
             temp = dict()
             last_date = None
-            for month in last_two_month:
+
+            for month_num, month in enumerate(last_two_month):
                 code_review_set = employee.codereview_set.filter(created_at__month=month.month, created_at__year=month.year).order_by('-created_at')
                 first_quarter = code_review_set.filter(for_first_quarter=True)
                 first_quarter_total = round(first_quarter.filter(for_first_quarter=True).aggregate(sum=Coalesce(Sum('avg_rating'), 0.0)).get("sum"), 1)
@@ -117,8 +121,13 @@ class CodeReviewAdmin(admin.ModelAdmin):
                     "monthly_total": monthly_total,
                     "crs": crs
                 }
+                combined_monthly_total_datas[month_num].append(monthly_total)
 
             full_data_set[employee] = temp
+
+        last_two_month_dict = dict()
+        for index, month in enumerate(last_two_month):
+            last_two_month_dict[month] = sum(combined_monthly_total_datas[index])
 
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
@@ -147,7 +156,7 @@ class CodeReviewAdmin(admin.ModelAdmin):
             self.admin_site.each_context(request),
             full_data_set=full_data_set,
             online_status_form=online_status_form,
-            last_two_months=last_two_month,
+            last_two_months=last_two_month_dict,
             order=order,
         )
 
