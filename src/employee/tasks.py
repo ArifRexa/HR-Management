@@ -12,7 +12,7 @@ from django.conf import settings
 from django.db.models import Prefetch, Q
 
 from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance, PrayerInfo, EmployeeFeedback
-from project_management.models import ProjectHour, EmployeeProjectHour, DailyProjectUpdate
+from project_management.models import ProjectHour, EmployeeProjectHour, DailyProjectUpdate, Project
 
 
 def set_default_exit_time():
@@ -132,11 +132,35 @@ def no_daily_update():
         # print("[Bot] Daily Update Done")
         
 
+def no_project_update():
+    today_date = timezone.now().date()
+    from_daily_update = DailyProjectUpdate.objects.filter(project__active = True, created_at__date=today_date).values_list('project__id', flat=True).distinct()
+    project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
+    
+    if not project_update_not_found.exists():
+        return 
+
+    emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+    man = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+
+    if project_update_not_found.exists():
+        punf = list()
+        for no_upd_project in project_update_not_found:
+            punf.append(DailyProjectUpdate(
+                employee=emp,
+                manager=man,
+                project_id=no_upd_project.id,
+                update='-',
+            ))
+        DailyProjectUpdate.objects.bulk_create(punf)
+        # print("[Bot] No project update")
+
 
 
 def all_employee_offline():
     set_default_exit_time()
     no_daily_update()
+    no_project_update()
     EmployeeOnline.objects.filter(active=True).update(active=False)
 
 
