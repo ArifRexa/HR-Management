@@ -4,6 +4,8 @@ from datetime import timedelta
 
 from django.contrib import admin
 
+from django.core.exceptions import ValidationError
+from django import forms
 # Register your models here.
 from django.db.models import Sum, Q, F
 from django.template.context_processors import request
@@ -30,6 +32,19 @@ class EmployeeHourAdmin(admin.TabularInline):
         return ()
 
 
+class ProjectHourAdminForm(forms.ModelForm):
+    
+    def clean(self):
+        data = super(ProjectHourAdminForm, self).clean()
+        if ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')).exists():
+            raise ValidationError({
+                'date': f"Project Hour for this date with this project and manager already exists",
+            })
+        
+        return data
+    
+    
+
 @admin.register(ProjectHour)
 class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin):
     date_hierarchy = 'date'
@@ -44,7 +59,13 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
       ('Standard info', {
           'fields': ('hour_type', 'project', 'date', 'hours')
       }),
-   )
+    )
+    form = ProjectHourAdminForm
+
+    def get_form(self, request, obj, change, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        form.request = request
+        return form
 
     # query for get total hour by query string
     def get_total_hour(self, request):
@@ -82,4 +103,5 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         """
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
-        super().save_model(request, obj, form, change)
+
+        super(ProjectHourAdmin, self).save_model(request, obj, form, change)
