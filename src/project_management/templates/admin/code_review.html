@@ -67,6 +67,9 @@
     .prayer_info__text{
         font-size: 10px;
     }
+    .table-bg-white tr{
+        background-color: #fff;
+    }
 </style>
 
 <div class="container-fluid">
@@ -101,13 +104,14 @@
 
     </div>
     <div class="table-responsive">
-        <table class="table w-100 table-bordered">
+        <table class="table w-100 table-bordered table-bg-white">
             <thead>
                 <tr class="table__row">
-                    <th scope="col" rowspan="2" class="border text-dark bg-white align-middle py-3" style="width: 16%;">Employee</th>
-                    {% for month in last_two_months %}
-                        <th class="border text-dark bg-white text-center py-3">
-                                <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?monthly_total={% if order %}-{{ forloop.counter0 }}{% else %}{{ forloop.counter0 }}{% endif %}"><b>{{ month|date:"M Y" }}</b></a>
+                    <th scope="col" rowspan="2" class="border text-dark bg-white align-middle" style="width: 16%;">Employee</th>
+                    {% for month, combined_total in last_two_months.items %}
+                        <th class="border text-dark bg-white text-center">
+                            <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?monthly_total={% if order %}-{{ forloop.counter0 }}{% else %}{{ forloop.counter0 }}{% endif %}"><b>{{ month|date:"M Y" }} <span>( Total - {{ combined_total }} )</span></b></a>
+
                         </th>
                     {% endfor %}
                 </tr>
