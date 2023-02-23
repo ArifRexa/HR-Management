@@ -109,6 +109,7 @@ def no_daily_update():
 
     today = timezone.now().date()
     daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee_id', flat=True)
+    emp_on_leave_today = Leave.objects.filter(status="approved", start_date__lte=today, end_date__gte=today).values_list('employee__id', flat=True)
 
     if not daily_update_emp_ids.exists():
         return 
@@ -116,7 +117,8 @@ def no_daily_update():
     missing_daily_upd_emp = Employee.objects.filter(active=True).\
         exclude(manager=True).\
         exclude(id__in=daily_update_emp_ids).\
-        exclude(project_eligibility=False)
+        exclude(project_eligibility=False).\
+        exclude(id__in=emp_on_leave_today)
 
     if missing_daily_upd_emp.exists():
         emps = list()
