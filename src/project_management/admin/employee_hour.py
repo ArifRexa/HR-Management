@@ -221,15 +221,33 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         )
     
 
-    def update_status_approve(self, request, queryset):
-        queryset.update(status='approved')
+    @admin.action(description='Approve selected status daily project updates')
+    def update_status_approve(modeladmin, request, queryset):
+        if request.user.is_superuser:
+            for obj in queryset:
+                obj.status='approved'
+                obj.save()
+        elif request.user.employee.manager:
+            queryset = queryset.filter(manager_id=request.user.employee.id)
+            for obj in queryset:
+                obj.status='approved'
+                obj.save()
+        
 
-    update_status_approve.short_description = "Approve selected daily project updates"
 
-    def update_status_pending(self, request, queryset):
-        queryset.update(status='pending')
+    @admin.action(description='Pending selected status daily project updates')
+    def update_status_pending(modeladmin, request, queryset):
+        if request.user.is_superuser:
+            for obj in queryset:
+                obj.status='pending'
+                obj.save()
+        elif request.user.employee.manager:
+            queryset = queryset.filter(manager_id=request.user.employee.id)
+            for obj in queryset:
+                obj.status='pending'
+                obj.save()
+        # return
 
-    update_status_pending.short_description = "Pending selected status daily project updates"
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
