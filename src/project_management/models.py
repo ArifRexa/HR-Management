@@ -105,8 +105,7 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
-
-
+      
 class ProjectHour(TimeStampMixin, AuthorMixin):
     FORCAST_SELECTOR = (
         ('increase', '✔ Increase'),
@@ -137,6 +136,9 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             raise ValidationError({
                 'hours': f"Hours filed is required"
             })
+        if self.date is not None and self.date.weekday() != 4:
+            raise ValidationError({"date": "Today is not Friday"})
+
         # if self.hours <= 25 and self.description == "":
         #     raise ValidationError({
         #         'description': f"Please explain why the hours is less then or equal 25"

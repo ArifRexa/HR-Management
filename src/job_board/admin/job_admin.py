@@ -43,6 +43,7 @@ class JobAdmin(admin.ModelAdmin):
     list_display = ('title', 'job_summery', 'active')
     form = JobForm
     actions = ('clone_job',)
+    search_fields = ['title' ]
 
     @admin.action(description='Clone Job')
     def clone_job(self, request, queryset):
