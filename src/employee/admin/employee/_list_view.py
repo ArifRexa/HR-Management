@@ -4,12 +4,13 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-
+from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 
 from employee.models import Employee
+from employee.models import TourAllowance
 
-
+import datetime
 class EmployeeAdminListView:
     def employee_info(self, obj: Employee):
         html_template = get_template('admin/employee/list/employee_info.html')
@@ -17,6 +18,73 @@ class EmployeeAdminListView:
             'employee': obj
         })
         return format_html(html_content)
+    
+    def tour_allowance(self,obj):
+        html_template = get_template('admin/employee/list/tour_allowance.html')
+        today = datetime.date.today()
+        first_day_of_this_month = timezone.now().replace(day=1)
+        first_day_of_next_month = (first_day_of_this_month + datetime.timedelta(days=32)).replace(day=1)
+        first_day_of_twelve_months_ago = first_day_of_next_month - relativedelta(years=1)
+        joining_date = obj.joining_date
+        employee_tour_allowance_per_year = 1000
+        total_days_from_joing = (today - joining_date).days
+        years = total_days_from_joing // 365
+        months = (total_days_from_joing - years * 365) // 30
+        total_months = years * 12 + months
+        last_day_of_twelve_months_ago_from_complete_a_year = first_day_of_this_month - relativedelta(months=months)
+        tour_list = obj.tourallowance_set.filter(tour_date__range=[ last_day_of_twelve_months_ago_from_complete_a_year , today])
+        days = (total_days_from_joing - years * 365 - months * 30)
+        total_month_from_joing = round(total_days_from_joing / 30)
+        total_cost =tour_list.aggregate(total=(Sum('expense_per_person'))).get('total')
+        if total_cost is not None:
+            installment = int(total_cost)/ 12
+            installment_per_month= round(installment, 2)
+            if installment_per_month > 1000:
+                installment = 1000
+                month = round(total_month_from_joing / 12)
+                due_float = total_cost - (months * installment)
+                due = round(due_float, 2)
+                paid_amount_float = total_cost - due
+                paid_amount = round(paid_amount_float, 2)
+                employee_total_tour_allowance_per_year = int(total_months * employee_tour_allowance_per_year)
+                remain_amount_after_paid_installment_float = employee_total_tour_allowance_per_year - paid_amount
+                remain_amount_after_paid_installment = round(remain_amount_after_paid_installment_float, 2)
+                htmt_content = html_template.render({
+                                'obj':obj,
+                                'total':total_cost,
+                                'installment_per_month':installment,
+                                'due':due,
+                                'paid_amount':paid_amount,
+                                'total_tour_allowance':remain_amount_after_paid_installment,
+                            })
+                return format_html(htmt_content)
+            month = round(total_month_from_joing / 12)
+            due_float = total_cost - (months * installment)
+            due = round(due_float, 2)
+            paid_amount_float = total_cost - due
+            paid_amount = round(paid_amount_float, 2)
+            employee_total_tour_allowance_per_year = int(total_months * employee_tour_allowance_per_year)
+            remain_amount_after_paid_installment_float = employee_total_tour_allowance_per_year - paid_amount
+            remain_amount_after_paid_installment = round(remain_amount_after_paid_installment_float, 2)
+            htmt_content = html_template.render({
+                            'obj':obj,
+                            'total':total_cost,
+                            'installment_per_month':installment_per_month,
+                            'due':due,
+                            'paid_amount':paid_amount,
+                            'total_tour_allowance':remain_amount_after_paid_installment,
+                        })
+            return format_html(htmt_content)   
+        employee_total_tour_allowance_per_year = int(total_months * employee_tour_allowance_per_year)    
+        htmt_content = html_template.render({
+                            'obj':'N/A',
+                            'total':'N/A',
+                            'installment_per_month':'N/A',
+                            'due':'N/A',
+                            'paid_amount':'N/A',
+                            'total_tour_allowance':employee_total_tour_allowance_per_year,
+                        })
+        return format_html(htmt_content) 
 
     def leave_info(self, obj: Employee):
         html_template = get_template('admin/employee/list/leave_info.html')
@@ -28,7 +96,6 @@ class EmployeeAdminListView:
             'non_paid': obj.leave_passed('non_paid'),
             'employee': obj
         })
-        # print(html_content)
         return format_html(html_content)
 
     def salary_history(self, obj):

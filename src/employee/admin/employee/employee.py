@@ -33,7 +33,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
         return qs, use_distinct
 
     def get_list_display(self, request):
-        list_display = ['employee_info', 'leave_info', 'salary_history', 'skill', 'permanent_status']
+        list_display = ['employee_info', 'leave_info', 'salary_history', 'skill', 'tour_allowance', 'permanent_status']
         if not request.user.is_superuser:
             list_display.remove('salary_history')
         return list_display
