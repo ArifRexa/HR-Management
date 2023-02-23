@@ -9,7 +9,10 @@
         }
 
         .d-flex div {
-            width: 33.33%;
+            width: 100%;
+        }
+        .d-flex div table{
+            width: 100%;
         }
 
     </style>
@@ -17,7 +20,7 @@
 
 {% block content %}
     <div class="d-flex">
-        <div>
+        {% comment %} <div>
             <h1>Birthday</h1>
             <ol>
                 {% for employee_birthday in birthday %}
@@ -34,8 +37,29 @@
                             ({{ employee_increment.current_salary.active_from | timesince }})</b></li>
                 {% endfor %}
             </ol>
-        </div>
+        </div> {% endcomment %}
         <div>
+            <h1>Salary Increment List</h1>
+            <table class="table table-striped table-dark">
+                <thead>
+                  <tr>
+                    <th scope="col">Employee Name</th>
+                    <th scope="col">Employee Email</th>
+                    <th scope="col">Increment Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for changes in salary_change %}
+                  <tr>
+                    <td>{{changes.full_name}}</td>
+                    <td>{{changes.email}}</td>
+                    <td>{{ changes.current_salary.active_from }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+        </div>
+        {% comment %} <div>
             <h1>Permanent</h1>
             <ol>
                 {% for permanent_employee in permanent %}
@@ -52,6 +76,6 @@
                     </li>
                 {% endfor %}
             </ol>
-        </div>
+        </div> {% endcomment %}
     </div>
 {% endblock %}

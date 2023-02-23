@@ -35,6 +35,7 @@ class FormalView(admin.ModelAdmin):
             birthday=nearby_summery.birthdays(),
             permanent=nearby_summery.permanents,
             increment=nearby_summery.increments(),
+            salary_change=nearby_summery.last_salary_change(),
             anniversaries=nearby_summery.anniversaries()
         )
         return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
@@ -56,12 +57,13 @@ class FormalView(admin.ModelAdmin):
 class EmployeeNearbySummery:
     """
     Employee nearby summery class
-    will return birthdays, permanents, and employee to have an increment nearby
+    will return birthdays, permanents, salary change list, and employee to have an increment nearby
     """
 
     def __init__(self):
         self.today = datetime.datetime.today()
         self.employees = Employee.objects.filter(active=True)
+
 
     def birthdays(self):
         now = datetime.datetime.now()
@@ -100,6 +102,15 @@ class EmployeeNearbySummery:
                     self.today - datetime.timedelta(days=150)).date():
                 increment_employee.append(inc_employee)
         return increment_employee
+
+    def last_salary_change(self):
+        salary_increment_list = []
+        for inc_salary_list in self.employees.all():
+            if inc_salary_list.current_salary.active_from >= (
+                    self.today - datetime.timedelta(days=29)).date() and inc_salary_list.current_salary.active_from <= (
+                    self.today + datetime.timedelta()).date():
+                salary_increment_list.append(inc_salary_list)
+        return salary_increment_list
 
     def anniversaries(self):
         return self.employees.filter(
