@@ -112,11 +112,18 @@ class ProfitShare(TimeStampMixin, AuthorMixin):
     payment_amount = models.FloatField()
     note = models.TextField(null=True, blank=True)
 
+class FundCategory(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=255)
+    note = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return self.title
+    
 class Fund(TimeStampMixin, AuthorMixin):
-    date = models.DateField()
-    amount = models.FloatField()
+    date = models.DateField(null=True, blank=True)
+    amount = models.FloatField(default=0.0)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+    fund_category = models.ForeignKey(FundCategory, on_delete=models.RESTRICT, null=True, blank=True)
     note = models.TextField(null=True, blank=True)
 
 
