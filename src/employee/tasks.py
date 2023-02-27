@@ -108,23 +108,30 @@ def no_daily_update():
     manager_employee_id = 30 # Shahinur Rahman - 30   # local manager id himel vai 9
 
     today = timezone.now().date()
-    daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee_id', flat=True)
-    emp_on_leave_today = Leave.objects.filter(status="approved", start_date__lte=today, end_date__gte=today).values_list('employee__id', flat=True)
 
-    if not daily_update_emp_ids.exists():
+    daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee__id', flat=True).distinct()
+    # emp_on_leave_today = Leave.objects.filter(status="approved", start_date__lte=today, end_date__gte=today).values_list('employee__id', flat=True)
+
+
+    daily_update_eligibility = Employee.objects.filter(active=True).\
+        exclude(manager=True).\
+        exclude(project_eligibility=False)
+
+
+    missing_daily_update = EmployeeAttendance.objects.filter(date=today).\
+        filter(employee__id__in = daily_update_eligibility).\
+        exclude(employee__id__in=daily_update_emp_ids)
+    
+    
+    if not missing_daily_update.exists():
         return 
 
-    missing_daily_upd_emp = Employee.objects.filter(active=True).\
-        exclude(manager=True).\
-        exclude(id__in=daily_update_emp_ids).\
-        exclude(project_eligibility=False).\
-        exclude(id__in=emp_on_leave_today)
 
-    if missing_daily_upd_emp.exists():
+    if missing_daily_update.exists():
         emps = list()
-        for employee in missing_daily_upd_emp:
+        for employee in missing_daily_update:
             emps.append(DailyProjectUpdate(
-                employee_id=employee.id,
+                employee_id=employee.employee_id,
                 manager_id=manager_employee_id,
                 project_id=project_id,
                 update='-',
