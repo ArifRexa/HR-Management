@@ -10,6 +10,7 @@ from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeActivity, EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
+from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 
 
@@ -26,6 +27,7 @@ def change_status(request, *args, **kwargs):
         created_at__date__year=now.year,
         created_at__date__month=now.month,
     )
+    # TODO : feedback should not be applied for Himel vai
 
     if not feedback.exists() and now.day > 25:
         messages.error(request, 'Please provide feedback first')
