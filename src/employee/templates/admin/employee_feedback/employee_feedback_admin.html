@@ -31,7 +31,28 @@
 </style>
 
 <div class="container">
-    <h2 class="h2 text-center py-3">Employee Feedback</h2>
+    <div class="row">
+        <div class="col-md-10">
+            <div class="text-center">
+                <h2 class="h2 text-center py-3">Employee Feedback</h2>
+            </div>
+        </div>
+        <div class="col">
+            <div class="row">
+                {% if online_status_form %}
+                <div class="col-12">
+                    <div class="pb-4 text-center">
+                        {% include 'admin/form/employee_status_form.html' %}
+                    </div>
+                </div>
+                {% endif %}
+                <div class="col-12">
+                    <div class="pb-4 text-center">
+                        <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_employeefeedback_changelist' %}admin/">Management View</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     <div class="table-responsive">
         <table class="table w-100 table-bordered">
             <thead>
