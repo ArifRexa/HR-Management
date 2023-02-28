@@ -10,4 +10,4 @@ from .employee_social import EmployeeSocial, EmployeeContent
 from .employee_activity import EmployeeOnline, EmployeeAttendance, EmployeeActivity
 from .employee_feedback import EmployeeFeedback
 from .tour_allowance import TourAllowance
-from .excuse_note import ExcuseNote
+from .excuse_note import ExcuseNote, ExcuseNoteAttachment

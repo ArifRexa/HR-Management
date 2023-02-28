@@ -19,3 +19,8 @@ class ExcuseNote(AuthorMixin, TimeStampMixin):
     class Meta:
         verbose_name = 'Excuse note'
         verbose_name_plural = 'Excuse notes'
+
+
+class ExcuseNoteAttachment(TimeStampMixin, AuthorMixin):
+    excuse_note = models.ForeignKey(ExcuseNote, on_delete=models.CASCADE)
+    attachment = models.FileField(help_text='Image , PDF or Docx file ')

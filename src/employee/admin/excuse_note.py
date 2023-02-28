@@ -1,9 +1,14 @@
 from django.contrib import admin
-from employee.models.excuse_note import ExcuseNote
+from employee.models.excuse_note import ExcuseNote, ExcuseNoteAttachment
 from django.template.loader import get_template
 from django.utils.html import format_html
 
 
+
+
+class ExcuseNoteAttachmentInline(admin.TabularInline):
+    model = ExcuseNoteAttachment
+    extra = 0
 
 
 @admin.register(ExcuseNote)
@@ -12,6 +17,7 @@ class ExcuseNoteAdmin(admin.ModelAdmin):
     list_filter = ('employee',)
     date_hierarchy = 'created_at'
     list_per_page = 20
+    inlines = (ExcuseNoteAttachmentInline,)
     # autocomplete_fields = ['employee']
 
 
