@@ -144,25 +144,28 @@ def no_daily_update():
 def no_project_update():
     today_date = timezone.now().date()
     from_daily_update = DailyProjectUpdate.objects.filter(project__active = True, created_at__date=today_date).values_list('project__id', flat=True).distinct()
-    project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
+
+    if from_daily_update.exists():
+        project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
     
-    if not project_update_not_found.exists():
-        return 
+        if not project_update_not_found.exists():
+            return 
 
-    emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
-    man = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+        emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+        man = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
 
-    if project_update_not_found.exists():
-        punf = list()
-        for no_upd_project in project_update_not_found:
-            punf.append(DailyProjectUpdate(
-                employee=emp,
-                manager=man,
-                project_id=no_upd_project.id,
-                update='-',
-            ))
-        DailyProjectUpdate.objects.bulk_create(punf)
-        # print("[Bot] No project update")
+        if project_update_not_found.exists():
+            punf = list()
+            for no_upd_project in project_update_not_found:
+                punf.append(DailyProjectUpdate(
+                    employee=emp,
+                    manager=man,
+                    project_id=no_upd_project.id,
+                    update='-',
+                ))
+            DailyProjectUpdate.objects.bulk_create(punf)
+            # print("[Bot] No project update")
+    return
 
 
 

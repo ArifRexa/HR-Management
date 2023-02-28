@@ -7,7 +7,7 @@ from django.template.defaultfilters import truncatewords
 
 
 class ExcuseNote(AuthorMixin, TimeStampMixin):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True})
     excuse_acts = models.TextField()
 
     def __str__(self) -> str:
