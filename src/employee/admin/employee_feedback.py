@@ -1,4 +1,5 @@
 import datetime
+from functools import update_wrapper
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 from config.settings import employee_ids
@@ -12,7 +13,7 @@ from django.db import models
 from django.db.models import Max, Subquery, OuterRef, Case, When, Value, Prefetch
 
 from django.shortcuts import redirect
-
+from employee.models.employee_feedback import CommentAgainstEmployeeFeedback
 from employee.models import EmployeeFeedback, Employee
 from employee.forms.employee_feedback import EmployeeFeedbackForm
 
@@ -22,16 +23,31 @@ def get_last_months(start_date):
         yield start_date.month
         start_date += relativedelta(months=-1)
 
+class CommentAgainstEmployeeFeedbackInline(admin.StackedInline):
+    model = CommentAgainstEmployeeFeedback
+    extra = 1
+
+    def has_change_permission(self, request, obj= None):
+        if obj and (request.user.is_superuser or request.user.has_perm('employee.can_see_employee_feedback_admin')):
+            return True
+        return False
+   
+    def has_add_permission(self, request, obj=None):
+        return self.has_change_permission(request, obj)
 
 @admin.register(EmployeeFeedback)
 class EmployeeFeedbackAdmin(admin.ModelAdmin):
-    # list_display = ('employee',)
+    # list_display = ('employee','feedback')
     # #list_editable = ('employee',)
     # list_filter = ('employee', 'rating')
     # search_fields = ('employee__full_name',)
     # autocomplete_fields = ('employee',)
 
-    def changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
+    inlines = (
+        CommentAgainstEmployeeFeedbackInline,
+    )
+
+    def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
         if str(request.user.employee.id) not in employee_ids and not request.user.has_perm('employee.can_see_employee_feedback_admin'):
             return redirect('/admin/')
 
@@ -104,14 +120,35 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
     search_fields = ('employee__full_name',)
     autocomplete_fields = ('employee',)
 
+    # def get_urls(self):
+    #     urls = super(EmployeeFeedbackAdmin, self).get_urls()
+
+    #     employee_online_urls = [
+    #         path('my-feedback/', self.employee_feedback_view, name='employee_feedback'),
+    #         path('my-feedback-form/', self.employee_feedback_form_view, name='employee_feedback_form'),
+    #     ]
+    #     return employee_online_urls + urls
+
     def get_urls(self):
         urls = super(EmployeeFeedbackAdmin, self).get_urls()
 
-        employee_online_urls = [
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+        custome_urls = [
+            path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
+
+            path("", self.custom_changelist_view, name='employee_feedback'),
+
             path('my-feedback/', self.employee_feedback_view, name='employee_feedback'),
             path('my-feedback-form/', self.employee_feedback_form_view, name='employee_feedback_form'),
         ]
-        return employee_online_urls + urls
+        return custome_urls + urls
 
 
     def employee_feedback_view(self, request, *args, **kwargs):
@@ -164,3 +201,14 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             
             return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_form_full.html', context)
 
+    def get_readonly_fields(self, request, obj):
+        if request.user.is_superuser and request.user.has_perm('employee.can_see_employee_feedback_admin'):
+           return ['employee','feedback','avg_rating','environmental_rating','facilities_rating','learning_growing_rating','happiness_index_rating','boss_rating']
+        return []
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+
+    #     # if request.user.is_superuser and request.user.has_perm('can_see_employee_feedback_admin'):
+    #     #     qs = qs.filter(employee = request.user.employee)
+
+    #     return qs 
