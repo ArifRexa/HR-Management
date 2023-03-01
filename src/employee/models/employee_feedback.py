@@ -38,3 +38,7 @@ class EmployeeFeedback(AuthorMixin, TimeStampMixin):
 
     def __str__(self) -> str:
         return f"{self.employee.full_name} ({str(self.avg_rating)})"
+
+class CommentAgainstEmployeeFeedback(TimeStampMixin, AuthorMixin):
+    employee_feedback = models.ForeignKey(EmployeeFeedback,on_delete=models.CASCADE)
+    comment = models.TextField(max_length=500)

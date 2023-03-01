@@ -52,7 +52,7 @@ class LeaveManagement(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
-        if not request.user.is_superuser:
+        if not request.user.has_perm("employee.can_approve_leave_applications"):
             admin_only = ['status', 'employee']
             for filed in admin_only:
                 fields.remove(filed)
@@ -61,14 +61,14 @@ class LeaveManagement(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
             leave = Leave.objects.filter(id=request.resolver_match.kwargs['object_id']).first()
-            if not leave.status == 'pending' and not request.user.is_superuser:
+            if not leave.status == 'pending' and not request.user.has_perm("employee.can_approve_leave_applications"):
                 return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
         return ['total_leave', 'note']
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
-        if request.user.is_superuser:
+        if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
@@ -76,13 +76,13 @@ class LeaveManagement(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser:
+        if request.user.has_perm("employee.can_approve_leave_applications"):
             return qs
         return qs.filter(employee_id=request.user.employee)
 
     def get_list_filter(self, request):
         list_filter = ['status', 'leave_type', 'employee', 'start_date']
-        if not request.user.is_superuser:
+        if not request.user.has_perm("employee.can_approve_leave_applications"):
             list_filter.remove('employee')
         return list_filter
 

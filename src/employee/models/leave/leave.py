@@ -21,6 +21,11 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     def short_message(self):
         return truncatewords(self.message, 10)
 
+    class Meta:
+        permissions = (
+            ("can_approve_leave_applications", "Can able to approve leave applications"),
+        )
+
 
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
