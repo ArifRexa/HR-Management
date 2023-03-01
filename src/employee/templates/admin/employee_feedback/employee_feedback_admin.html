@@ -120,6 +120,11 @@
                                         <div class="lh-lg">
                                             {{ em_fb.feedback | linebreaks }}
                                         </div>
+                                        {% for cmnt in em_fb.commentagainstemployeefeedback_set.all %}
+                                            <div class="lh-lg">
+                                                {{ cmnt.comment }}
+                                            </div>
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </td>
