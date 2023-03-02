@@ -37,12 +37,19 @@ class ProjectHourAdminForm(forms.ModelForm):
     def clean(self):
         data = super(ProjectHourAdminForm, self).clean()
         if data.get('hour_type') != "bonus":
-            if ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')).exists():
-                raise ValidationError({
-                    'date': f"Project Hour for this date with this project and manager already exists",
-                })
-        
-        return data
+            
+            if self.request.path_info[-5:-1] == "/add":
+                if ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')).exists():
+                    raise ValidationError({
+                        'date': f"Project Hour for this date with this project and manager already exists",
+                    })
+                
+            if self.request.path_info[-8:-1] == "/change":
+                if not ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')):
+                    raise ValidationError({
+                        'date': f"Don't override on date and project.",
+                    })
+            return data
     
     
 
