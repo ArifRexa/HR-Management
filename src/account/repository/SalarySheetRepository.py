@@ -11,6 +11,7 @@ from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAt
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate
 from django.db.models import Count, Sum, Avg
+from employee.models.config import Config
 
 
 class SalarySheetRepository:
@@ -256,16 +257,19 @@ class SalarySheetRepository:
                 created_at__year=salary_sheet.date.year,
             )
 
-        first_quarter = code_review_set.filter(created_at__day__lte=15).exists()
-        second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
+        # first_quarter = code_review_set.filter(created_at__day__lte=15).exists()
+        # second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
 
-        if first_quarter and second_quarter:
+        # if first_quarter and second_quarter:
+        if True:
             total_qc_point = employee.codereview_set.filter(
                     created_at__month=salary_sheet.date.month,
                     created_at__year=salary_sheet.date.year,
                 ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
-
-            return total_qc_point * 10
+            qc_ratio = Config.objects.first().qc_bonus_amount
+            ratio = qc_ratio if qc_ratio else 0
+            print(ratio)
+            return total_qc_point * ratio
         else:
             return 0.0
 
