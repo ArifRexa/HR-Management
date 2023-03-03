@@ -269,7 +269,7 @@ class SalarySheetRepository:
                 manager=employee,
                 created_at__month=salary_sheet.date.month,
                 created_at__year=salary_sheet.date.year,
-            ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
+            ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg") / 2
            
         qc_total_point += employee.codereview_set.filter(
             created_at__month=salary_sheet.date.month,
