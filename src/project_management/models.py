@@ -307,6 +307,7 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
 
 class CodeReview(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True})
+    manager = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True, 'manager': True}, null=True, related_name="mange")
     project = models.ForeignKey(Project, on_delete=models.CASCADE, limit_choices_to={'active': True})
 
     naming_convention = models.FloatField()
