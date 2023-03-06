@@ -37,7 +37,7 @@ class CodeReviewEmployeeFeedbackInline(admin.StackedInline):
 @admin.register(CodeReview)
 class CodeReviewAdmin(admin.ModelAdmin):
 
-    list_display = ['employee', 'project', 'avg_rating', 'comment']
+    list_display = ['employee', 'manager', 'project', 'avg_rating', 'comment']
     change_form_template = 'admin/code_review_form_full.html'
 
     inlines = (

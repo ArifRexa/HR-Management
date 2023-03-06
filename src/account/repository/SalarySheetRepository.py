@@ -265,11 +265,17 @@ class SalarySheetRepository:
             salary_sheet.date.year, salary_sheet.date.month)
         qc_total_point = 0
         if employee.manager:
-            qc_total_point += CodeReview.objects.filter(
+            reviews_avg = CodeReview.objects.filter(
                 manager=employee,
                 created_at__month=salary_sheet.date.month,
                 created_at__year=salary_sheet.date.year,
-            ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg") / 2
+            ).values('employee').annotate(Sum('avg_rating'), Count('id'))
+            total_point = 0
+            print(reviews_avg)
+            for review in reviews_avg:
+                total_point += review.get('avg_rating__sum') / review.get('id__count')  / 2
+            
+            qc_total_point += total_point
            
         qc_total_point += employee.codereview_set.filter(
             created_at__month=salary_sheet.date.month,
