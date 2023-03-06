@@ -143,12 +143,15 @@ def no_daily_update():
 
 def no_project_update():
     today_date = timezone.now().date()
+    today_day = today_date.strftime("%A")
+    sat_or_sun_day = today_day == "Saturday" or today_day == "Sunday"
+    # print(sat_or_sun_day)
     from_daily_update = DailyProjectUpdate.objects.filter(project__active = True, created_at__date=today_date).values_list('project__id', flat=True).distinct()
-
-    if from_daily_update.exists():
+    
+    if from_daily_update.exists() and not sat_or_sun_day:
         project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
     
-        if not project_update_not_found.exists():
+        if not project_update_not_found.exists():                                            
             return 
 
         emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
