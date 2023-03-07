@@ -1,23 +1,46 @@
 {% load i18n static %}
 {% load humanize %}
+{% block extrastyle %}
+<link rel="stylesheet" type="text/css" href="{% static " admin/css/forms.css" %}">{% endblock %}
+
 {% if result_hidden_fields %}
-  <div class="hiddenfields">
-    {# DIV for HTML validation #}
-    {% for item in result_hidden_fields %}
-      {{ item }}
-    {% endfor %}
-  </div>
+<div class="hiddenfields">
+  {# DIV for HTML validation #}
+  {% for item in result_hidden_fields %}
+  {{ item }}
+  {% endfor %}
+</div>
 {% endif %}
 {% block result_list %}
-  <div class="responsive">
-    <table class="table w-100 table-bordered table-bg-white">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Hours</th>
-          <th>Activity</th>
-        </tr>
-      </thead>
-    </table>
-  </div>
+<div class="responsive">
+  
+  <table class="table w-100 table-bordered">
+    <thead>
+      <tr class="table__row">
+        <th>Date</th>
+        <th>Employee</th>
+        <th>Project</th>
+        <th>Hours</th>
+      </tr>
+    </thead>
+    <tobdy>
+      {% for key, values in daily_project_hours_data.items %}
+      
+        {% for hour in values %}
+          <tr>
+            <td>{{ hour.created_at }} {{ key.id }} {{ hour.employee.id }} {{ forloop.last }}</td>
+            {% ifchanged  %} 
+            <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
+            {% endifchanged %}
+            <td>{{ hour.project }}</td>
+            {% ifchanged  %} 
+            <td rowspan="{{ values|length }}">{{ key.employee }}</td>
+            {% endifchanged %}
+          </tr>
+        {% endfor %}
+      {% endfor %}
+    </tbody> 
+  </table>
+ 
+</div>
 {% endblock %}

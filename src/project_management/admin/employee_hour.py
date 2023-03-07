@@ -294,20 +294,14 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
 
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
-        emps_data = []
-        employees = Employee.objects.all()
-        for employee in employees:
-            hours_data = employee.dailyprojectupdate_employee.filter(created_at__date=today)
-            if len(hours_data) > 0:
-                emps_data.append(hours_data.values())
-        
-        print(emps_data)
+        daily_project_update_data = dict()
+        employee_hours = self.get_queryset(request).filter(created_at__date=today)
+        for hours in employee_hours:
+            # print(hours)
+            daily_project_update_data.setdefault(hours.employee, []).append(hours)
 
-
-        # employees = self.get_queryset(request).filter(created_at__date=today).values(
-        #     'employee__full_name').annotate(Sum('hours'), Count('id'))
         my_context = {
-            'employees': employees
+            'daily_project_hours_data': daily_project_update_data 
         }
         return super().changelist_view(request, extra_context=my_context)
     
