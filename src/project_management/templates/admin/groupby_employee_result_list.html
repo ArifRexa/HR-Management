@@ -1,0 +1,23 @@
+{% load i18n static %}
+{% load humanize %}
+{% if result_hidden_fields %}
+  <div class="hiddenfields">
+    {# DIV for HTML validation #}
+    {% for item in result_hidden_fields %}
+      {{ item }}
+    {% endfor %}
+  </div>
+{% endif %}
+{% block result_list %}
+  <div class="responsive">
+    <table class="table w-100 table-bordered table-bg-white">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Hours</th>
+          <th>Activity</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+{% endblock %}

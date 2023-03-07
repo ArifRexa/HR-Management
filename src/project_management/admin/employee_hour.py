@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib import admin
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 
 from django.template.loader import get_template
 from django.utils import timezone
@@ -11,7 +11,11 @@ from employee.admin.employee._forms import DailyUpdateFilterForm
 
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
-from project_management.models import EmployeeProjectHour, DailyProjectUpdate
+from project_management.models import EmployeeProjectHour, DailyProjectUpdate, DailyProjectUpdateGroupByEmployee
+from django.template.response import TemplateResponse
+from functools import partial, update_wrapper, wraps
+from django.urls import path
+from employee.models.employee import Employee
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -255,3 +259,93 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             permitted = False
         return permitted
 
+@admin.register(DailyProjectUpdateGroupByEmployee)
+class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'employee', 'project', 'update', 'hours', 'manager', 'status')
+    list_filter = ('status', 'project', 'employee', 'manager', )
+    date_hierarchy = 'created_at'
+    autocomplete_fields = ('employee', 'project', )
+    search_fields = ('employee__full_name', 'project__title', 'manager__full_name', )
+    change_list_template  ='admin/project_update_groupby_employee.html'
+    readonly_fields = ['status']
+    fieldsets = (
+      ('Standard info', {
+          'fields': ('employee', 'manager', 'project', 'hours', 'status')
+      }),
+    )
+
+    class Media:
+        css = {
+            'all': ('css/list.css',)
+        }
+        js = ('js/list.js',)
+
+    # def get_search_results(self, request, queryset, search_term):
+    #     qs, use_distinct = super().get_search_results(request, queryset, search_term)
+    #     data = request.GET.dict()
+
+    #     app_label = data.get('app_label')
+    #     model_name = data.get('model_name')
+
+    #     if request.user.is_authenticated and app_label == 'project_management' and model_name == 'DailyProjectUpdateGroupByEmployee':
+    #         qs = DailyProjectUpdateGroupByEmployee.objects.filter(active=True, project_eligibility=True, full_name__icontains=search_term)
+    #     return qs, use_distinct
+
+
+    def custom_changelist_view(self, request, extra_context=None):
+        today = datetime.datetime.now().date()
+        emps_data = []
+        employees = Employee.objects.all()
+        for employee in employees:
+            hours_data = employee.dailyprojectupdate_employee.filter(created_at__date=today)
+            if len(hours_data) > 0:
+                emps_data.append(hours_data.values())
+        
+        print(emps_data)
+
+
+        # employees = self.get_queryset(request).filter(created_at__date=today).values(
+        #     'employee__full_name').annotate(Sum('hours'), Count('id'))
+        my_context = {
+            'employees': employees
+        }
+        return super().changelist_view(request, extra_context=my_context)
+    
+    
+
+    def get_urls(self):
+        urls = super(ProjectUpdateGroupByEmployeeAdmin, self).get_urls()
+
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+        custome_urls = [
+            path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
+            path("", self.custom_changelist_view, name='changelist_view'),
+        ]
+        return custome_urls + urls
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+
+        if obj:
+            if request.user.employee.manager:
+                if obj.manager != obj.employee and obj.manager == request.user.employee:
+                    return ['employee', 'manager', 'project', 'update']
+                else:
+                    return []
+            else:
+                return self.readonly_fields
+
+        else:
+            if request.user.employee.manager:
+                return []
+            else: 
+                return self.readonly_fields
+    
