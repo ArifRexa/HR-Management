@@ -297,8 +297,8 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
         daily_project_update_data = dict()
         employee_hours = self.get_queryset(request).filter(created_at__date=today)
         for hours in employee_hours:
-            # print(hours)
-            daily_project_update_data.setdefault(hours.employee, []).append(hours)
+            key =hours.employee
+            daily_project_update_data.setdefault(key, []).append(hours)
 
         my_context = {
             'daily_project_hours_data': daily_project_update_data 

@@ -21,6 +21,8 @@
         <th>Employee</th>
         <th>Project</th>
         <th>Hours</th>
+        <th>Manager</th>
+        <th>Status</th>
       </tr>
     </thead>
     <tobdy>
@@ -28,14 +30,17 @@
       
         {% for hour in values %}
           <tr>
-            <td>{{ hour.created_at }} {{ key.id }} {{ hour.employee.id }} {{ forloop.last }}</td>
+            <td>{{ hour.created_at }}</td>
             {% ifchanged  %} 
             <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
             {% endifchanged %}
             <td>{{ hour.project }}</td>
             {% ifchanged  %} 
-            <td rowspan="{{ values|length }}">{{ key.employee }}</td>
+            <td rowspan="{{ values|length }}">{{ key.daily_total_hours }}</td>
             {% endifchanged %}
+
+            <td>{{ hour.manager }}</td>
+            <td>{{ hour.status }}</td>
           </tr>
         {% endfor %}
       {% endfor %}

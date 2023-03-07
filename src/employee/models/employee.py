@@ -143,7 +143,12 @@ class Employee(TimeStampMixin, AuthorMixin):
         if salary:
             return salary
         return self.current_salary
-
+    @property
+    def daily_total_hours(self):
+        today = datetime.datetime.now().date()
+        totalHours = self.dailyprojectupdate_employee.filter(created_at__date=today).aggregate(total_hours=Sum('hours'))
+        return totalHours.get('total_hours')
+    
     def leave_passed(self, leave_type: str, year=timezone.datetime.now().year):
         return self.leave_set.filter(
             end_date__year=year,
