@@ -71,6 +71,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'employee.middleware.CheckUserHasEmployee'
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -88,7 +89,8 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'config.context_processors.employees.formal_summery',
                 'config.context_processors.employees.employee_status_form',
-                'config.context_processors.employees.employee_project_form'
+                'config.context_processors.employees.employee_project_form',
+                'config.context_processors.employees.favourite_menu_list'
             ],
         },
     },

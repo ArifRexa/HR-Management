@@ -9,8 +9,10 @@ from config.settings import employee_ids
 from datetime import datetime
 from django.contrib.auth.models import AnonymousUser
 from employee.models.employee import Employee
+from employee.models import FavouriteMenu
 from django.utils import timezone
-
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
@@ -111,3 +113,14 @@ def get_managed_birthday_image(request):
             else:
                 Employee.objects.filter(user=request.user).update(birthday_image_shown=False)
     return birthday
+
+
+def favourite_menu_list(request):
+    if request.user.is_authenticated and request.user.employee is not None:
+        f_menu = FavouriteMenu.objects.filter(employee_id=request.user.employee.id)
+        data = {}
+        data['object_list'] = f_menu
+        return data
+    return []
+    
+        
