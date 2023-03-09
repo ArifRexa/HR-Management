@@ -108,23 +108,30 @@ def no_daily_update():
     manager_employee_id = 30 # Shahinur Rahman - 30   # local manager id himel vai 9
 
     today = timezone.now().date()
-    daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee_id', flat=True)
-    emp_on_leave_today = Leave.objects.filter(status="approved", start_date__lte=today, end_date__gte=today).values_list('employee__id', flat=True)
 
-    if not daily_update_emp_ids.exists():
+    daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee__id', flat=True).distinct()
+    # emp_on_leave_today = Leave.objects.filter(status="approved", start_date__lte=today, end_date__gte=today).values_list('employee__id', flat=True)
+
+
+    daily_update_eligibility = Employee.objects.filter(active=True).\
+        exclude(manager=True).\
+        exclude(project_eligibility=False)
+
+
+    missing_daily_update = EmployeeAttendance.objects.filter(date=today).\
+        filter(employee__id__in = daily_update_eligibility).\
+        exclude(employee__id__in=daily_update_emp_ids)
+    
+    
+    if not missing_daily_update.exists():
         return 
 
-    missing_daily_upd_emp = Employee.objects.filter(active=True).\
-        exclude(manager=True).\
-        exclude(id__in=daily_update_emp_ids).\
-        exclude(project_eligibility=False).\
-        exclude(id__in=emp_on_leave_today)
 
-    if missing_daily_upd_emp.exists():
+    if missing_daily_update.exists():
         emps = list()
-        for employee in missing_daily_upd_emp:
+        for employee in missing_daily_update:
             emps.append(DailyProjectUpdate(
-                employee_id=employee.id,
+                employee_id=employee.employee_id,
                 manager_id=manager_employee_id,
                 project_id=project_id,
                 update='-',
@@ -137,32 +144,35 @@ def no_daily_update():
 def no_project_update():
     today_date = timezone.now().date()
     from_daily_update = DailyProjectUpdate.objects.filter(project__active = True, created_at__date=today_date).values_list('project__id', flat=True).distinct()
-    project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
+
+    if from_daily_update.exists():
+        project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
     
-    if not project_update_not_found.exists():
-        return 
+        if not project_update_not_found.exists():
+            return 
 
-    emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
-    man = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+        emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+        man = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
 
-    if project_update_not_found.exists():
-        punf = list()
-        for no_upd_project in project_update_not_found:
-            punf.append(DailyProjectUpdate(
-                employee=emp,
-                manager=man,
-                project_id=no_upd_project.id,
-                update='-',
-            ))
-        DailyProjectUpdate.objects.bulk_create(punf)
-        # print("[Bot] No project update")
+        if project_update_not_found.exists():
+            punf = list()
+            for no_upd_project in project_update_not_found:
+                punf.append(DailyProjectUpdate(
+                    employee=emp,
+                    manager=man,
+                    project_id=no_upd_project.id,
+                    update='-',
+                ))
+            DailyProjectUpdate.objects.bulk_create(punf)
+            # print("[Bot] No project update")
+    return
 
 
 
 def all_employee_offline():
     set_default_exit_time()
-    no_daily_update()
-    no_project_update()
+    # no_daily_update()
+    # no_project_update()
     EmployeeOnline.objects.filter(active=True).update(active=False)
 
 

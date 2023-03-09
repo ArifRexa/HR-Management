@@ -136,7 +136,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             raise ValidationError({
                 'hours': f"Hours filed is required"
             })
-        if self.date is not None and self.date.weekday() != 4:
+        if self.date is not None and self.date.weekday() != 4 and self.hour_type != 'bonus':
             raise ValidationError({"date": "Today is not Friday"})
 
         # if self.hours <= 25 and self.description == "":
@@ -319,6 +319,7 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
 
 class CodeReview(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True})
+    manager = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True, 'manager': True}, null=True, related_name="mange", blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, limit_choices_to={'active': True})
 
     naming_convention = models.FloatField()
