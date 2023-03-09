@@ -23,9 +23,6 @@
                    title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">Others</a>
             </caption>
             <tr>
-                <th><a href="{% url 'admin:employee.online.graph' %}">Break Graph</a></th>
-            </tr>
-            <tr>
                 <th scope="row"><a href="{% url 'admin:employee.summery' %}">Summary</a></th>
             </tr>
             <tr>
@@ -40,6 +37,10 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_feedback' %}">My Feedback</a></th>
             </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:groupbyemp_changelist_view' %}">Daily Update GroupBy Employee</a></th>
+            </tr>
+       
 
 
             <!-- Hidden from Main Index -->
@@ -73,7 +74,7 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_config_changelist' %}">Configs</a></th>
             </tr>
-            <!-- Hidden from Main Index -->
+        
 
         </table>
     </div>
