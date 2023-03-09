@@ -202,7 +202,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
             return TemplateResponse(request, 'admin/employee_feedback/employee_feedback_form_full.html', context)
 
     def get_readonly_fields(self, request, obj):
-        if request.user.is_superuser and request.user.has_perm('employee.can_see_employee_feedback_admin'):
+        if request.user.has_perm('employee.can_see_employee_feedback_admin'):
            return ['employee','feedback','avg_rating','environmental_rating','facilities_rating','learning_growing_rating','happiness_index_rating','boss_rating']
         return []
     # def get_queryset(self, request):
