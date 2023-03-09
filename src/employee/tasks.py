@@ -174,8 +174,8 @@ def no_project_update():
 
 def all_employee_offline():
     set_default_exit_time()
-    # no_daily_update()
-    # no_project_update()
+    no_daily_update()
+    no_project_update()
     EmployeeOnline.objects.filter(active=True).update(active=False)
 
 
