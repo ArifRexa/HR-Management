@@ -13,6 +13,7 @@ class CustomAdminSite(admin.AdminSite):
             leaves=employee_formal_summery.employee_leave_nearby,
             birthdays=employee_formal_summery.birthdays,
             increments=employee_formal_summery.increments,
+            increments=employee_formal_summery.last_salary_change,
             permanents=employee_formal_summery.permanents,
             anniversaries=employee_formal_summery.anniversaries
         )
