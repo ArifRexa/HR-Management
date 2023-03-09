@@ -392,10 +392,10 @@ class SalarySheetRepository:
         #         day_off += 1
         # day_off += employee_on_leave
         # payable_days = (date_range[1] - start_date.day) - day_off + employee_overtime
-
+        skipp_days = Config.objects.first().skip_lunch_amount
         payable_days = EmployeeAttendance.objects.filter(
             employee=employee,
             date__year=salary_date.year,
             date__month=salary_date.month,
         ).aggregate(total=Coalesce(Count('id'), 0))['total']
-        return payable_days * 140
+        return (payable_days - skipp_days) * 140
