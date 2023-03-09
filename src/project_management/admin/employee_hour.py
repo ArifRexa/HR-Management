@@ -262,10 +262,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 @admin.register(DailyProjectUpdateGroupByEmployee)
 class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'employee', 'project', 'update', 'hours', 'manager', 'status')
+    #search_fields = ('employee__full_name', 'project__title', 'manager__full_name',)
     list_filter = ('status', 'project', 'employee', 'manager', )
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
-    search_fields = ('employee__full_name', 'project__title', 'manager__full_name', )
     change_list_template  ='admin/project_update_groupby_employee.html'
     readonly_fields = ['status']
     fieldsets = (
@@ -280,18 +280,20 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
         }
         js = ('js/list.js',)
 
-    # def get_search_results(self, request, queryset, search_term):
-    #     qs, use_distinct = super().get_search_results(request, queryset, search_term)
-    #     data = request.GET.dict()
+    # def get_queryset(self, request):
+    #     query_set = super(ProjectUpdateGroupByEmployeeAdmin, self).get_queryset(request)
 
-    #     app_label = data.get('app_label')
-    #     model_name = data.get('model_name')
+    #     if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+    #         if request.user.employee.manager:
+    #             query_set = query_set.filter(
+    #                 Q(manager=request.user.employee) | 
+    #                 Q(employee=request.user.employee),
+    #             )
+    #         else:
+    #             query_set = query_set.filter(employee=request.user.employee)
 
-    #     if request.user.is_authenticated and app_label == 'project_management' and model_name == 'DailyProjectUpdateGroupByEmployee':
-    #         qs = DailyProjectUpdateGroupByEmployee.objects.filter(active=True, project_eligibility=True, full_name__icontains=search_term)
-    #     return qs, use_distinct
-
-
+    #     return query_set
+    
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
         filters = dict()
@@ -314,7 +316,14 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
         }
         return super().changelist_view(request, extra_context=my_context)
     
-    
+    def has_change_permission(self, request, obj=None):
+        permitted = super().has_change_permission(request, obj=obj)
+        if not request.user.is_superuser \
+            and obj \
+                and obj.employee != request.user.employee \
+                    and obj.manager != request.user.employee:
+                permitted = False
+        return permitted
 
     def get_urls(self):
         urls = super(ProjectUpdateGroupByEmployeeAdmin, self).get_urls()

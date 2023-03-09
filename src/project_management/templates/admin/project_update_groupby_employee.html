@@ -54,7 +54,7 @@
     {% endif %}
     <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
       <div class="changelist-form-container">
-        {% comment %} {% block search %}{% search_form cl %}{% endblock %} {% endcomment %}
+        {% block search %}{% search_form cl %}{% endblock %}
         {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
 
         <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
@@ -65,10 +65,55 @@
         {% block result_list %}
           {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
           {% comment %} {% result_list cl %} {% endcomment %}
-          {% include 'admin/groupby_employee_result_list.html' %}
+          {% comment %} {% include 'admin/groupby_employee_result_list.html' %} {% endcomment %}
+          <div class="responsive">
+  
+            <table class="table w-100 table-bordered">
+              <thead>
+                <tr class="table__row">
+                  <th>Date</th>
+                  <th>Employee</th>
+                  <th>Project</th>
+                  <th>Hours</th>
+                  <th>Manager</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tobdy>
+                {% for key, values in daily_project_hours_data.items %}
+                
+                  {% for hour in values %}
+                    <tr>
+                      <td>{{ hour.created_at }}</td>
+                      {% ifchanged  %} 
+                      <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
+                      {% endifchanged %}
+                      <td>{{ hour.project }}</td>
+                      {% ifchanged  %} 
+                      <td rowspan="{{ values|length }}">{{ key.daily_project_hours }}</td>
+                      {% endifchanged %}
+                      <td>{{ hour.manager }}</td>
+                      <td>
+                        {% if hour.status == "pending" %}
+                        <b style="color: red">
+                          {{ hour.get_status_display }}
+                        </b>
+                          {% else %}
+                          <b style="color: green">
+                          {{ hour.get_status_display }}
+                          </b>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% endfor %}
+              </tbody> 
+            </table>
+           
+          </div>
           {% if action_form and actions_on_bottom and cl.show_admin_actions %}{% admin_actions %}{% endif %}
         {% endblock %}
-        {% comment %} {% block pagination %}{% pagination cl %}{% endblock %} {% endcomment %}
+        {% block pagination %}{% pagination cl %}{% endblock %}
         </form>
       </div>
       {% block filters %}

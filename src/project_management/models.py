@@ -217,6 +217,10 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
 class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
     class Meta:
         proxy = True
+    
+        permissions = [
+                ("see_all_employee_update", "Can see all daily update"),
+            ]
 
     def __str__(self) -> str:
         return self.project.title

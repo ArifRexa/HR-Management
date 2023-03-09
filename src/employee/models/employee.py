@@ -200,6 +200,9 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     class Meta:
         db_table = 'employees'
+        permissions = (
+            ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
+        )
 
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
