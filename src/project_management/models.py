@@ -209,11 +209,23 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     #     return super().clean()
 
     class Meta:
+       
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
         ]
 
+class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
+    class Meta:
+        proxy = True
+    
+        permissions = [
+                ("see_all_employee_update", "Can see all daily update"),
+            ]
 
+    def __str__(self) -> str:
+        return self.project.title
+
+    
 
 class DurationUnit(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)

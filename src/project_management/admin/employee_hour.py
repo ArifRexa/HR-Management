@@ -1,7 +1,7 @@
 import datetime
 
 from django.contrib import admin
-from django.db.models import Q, Sum
+from django.db.models import Q, Sum, Count
 
 from django.template.loader import get_template
 from django.utils import timezone
@@ -11,7 +11,11 @@ from employee.admin.employee._forms import DailyUpdateFilterForm
 
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
-from project_management.models import EmployeeProjectHour, DailyProjectUpdate
+from project_management.models import EmployeeProjectHour, DailyProjectUpdate, DailyProjectUpdateGroupByEmployee
+from django.template.response import TemplateResponse
+from functools import partial, update_wrapper, wraps
+from django.urls import path
+from employee.models.employee import Employee
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -260,3 +264,105 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             permitted = False
         return permitted
 
+@admin.register(DailyProjectUpdateGroupByEmployee)
+class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'employee', 'project', 'update', 'hours', 'manager', 'status')
+    #search_fields = ('employee__full_name', 'project__title', 'manager__full_name',)
+    list_filter = ('status', 'project', 'employee', 'manager', )
+    date_hierarchy = 'created_at'
+    autocomplete_fields = ('employee', 'project', )
+    change_list_template  ='admin/project_update_groupby_employee.html'
+    readonly_fields = ['status']
+    fieldsets = (
+      ('Standard info', {
+          'fields': ('employee', 'manager', 'project', 'hours', 'status')
+      }),
+    )
+
+    class Media:
+        css = {
+            'all': ('css/list.css',)
+        }
+        js = ('js/list.js',)
+
+    # def get_queryset(self, request):
+    #     query_set = super(ProjectUpdateGroupByEmployeeAdmin, self).get_queryset(request)
+
+    #     if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+    #         if request.user.employee.manager:
+    #             query_set = query_set.filter(
+    #                 Q(manager=request.user.employee) | 
+    #                 Q(employee=request.user.employee),
+    #             )
+    #         else:
+    #             query_set = query_set.filter(employee=request.user.employee)
+
+    #     return query_set
+    
+    def custom_changelist_view(self, request, extra_context=None):
+        today = datetime.datetime.now().date()
+        filters = dict()
+        for key, value in request.GET.items():
+            if value != '':
+                filters[key] = value
+        if len(filters) == 0:
+            filters['created_at__date'] = today
+            
+        daily_project_update_data = dict()
+        employee_hours = self.get_queryset(request).filter(**filters)
+
+        for hours in employee_hours:
+            key =hours.employee
+            key.set_daily_hours(key.dailyprojectupdate_employee.filter(**filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
+            daily_project_update_data.setdefault(key, []).append(hours)
+
+        my_context = {
+            'daily_project_hours_data': daily_project_update_data 
+        }
+        return super().changelist_view(request, extra_context=my_context)
+    
+    def has_change_permission(self, request, obj=None):
+        permitted = super().has_change_permission(request, obj=obj)
+        if not request.user.is_superuser \
+            and obj \
+                and obj.employee != request.user.employee \
+                    and obj.manager != request.user.employee:
+                permitted = False
+        return permitted
+
+    def get_urls(self):
+        urls = super(ProjectUpdateGroupByEmployeeAdmin, self).get_urls()
+
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+        custome_urls = [
+            path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
+            path("", self.custom_changelist_view, name='changelist_view'),
+        ]
+        return custome_urls + urls
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return []
+
+        if obj:
+            if request.user.employee.manager:
+                if obj.manager != obj.employee and obj.manager == request.user.employee:
+                    return ['employee', 'manager', 'project', 'update']
+                else:
+                    return []
+            else:
+                return self.readonly_fields
+
+        else:
+            if request.user.employee.manager:
+                return []
+            else: 
+                return self.readonly_fields
+    

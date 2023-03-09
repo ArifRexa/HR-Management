@@ -144,6 +144,9 @@ class Employee(TimeStampMixin, AuthorMixin):
             return salary
         return self.current_salary
 
+    def set_daily_hours(self, value):
+        self.daily_project_hours = value
+    
     def leave_passed(self, leave_type: str, year=timezone.datetime.now().year):
         return self.leave_set.filter(
             end_date__year=year,
@@ -197,6 +200,9 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     class Meta:
         db_table = 'employees'
+        permissions = (
+            ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
+        )
 
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")

@@ -25,8 +25,10 @@ class FormalView(admin.ModelAdmin):
         )
         return TemplateResponse(request, "admin/employee/notice_board.html", context=context)
 
+    
+
     def formal_summery_view(self, request, *args, **kwargs):
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm("employee.can_see_formal_summery_view"):
             raise PermissionDenied
         nearby_summery = EmployeeNearbySummery()
         context = dict(
