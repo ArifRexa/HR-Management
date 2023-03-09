@@ -12,3 +12,4 @@ from .employee_feedback import EmployeeFeedback
 from .tour_allowance import TourAllowance
 from .excuse_note import ExcuseNote, ExcuseNoteAttachment
 from .config import Config
+from .favourite_menu import FavouriteMenu
