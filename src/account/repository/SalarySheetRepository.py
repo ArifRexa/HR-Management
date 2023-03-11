@@ -11,6 +11,8 @@ from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAt
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate
 from django.db.models import Count, Sum, Avg
+from employee.models.config import Config
+from project_management.models import CodeReview
 
 
 class SalarySheetRepository:
@@ -73,22 +75,29 @@ class SalarySheetRepository:
         )
         employee_salary.employee = employee
         employee_salary.salary_sheet = salary_sheet
-        employee_salary.net_salary = self.__calculate_net_salary(salary_sheet, employee)
-        employee_salary.overtime = self.__calculate_overtime(salary_sheet, employee)
+        employee_salary.net_salary = self.__calculate_net_salary(
+            salary_sheet, employee)
+        employee_salary.overtime = self.__calculate_overtime(
+            salary_sheet, employee)
         employee_salary.leave_bonus = self.__calculate_non_paid_leave(salary_sheet, employee) + \
-                                      self.__calculate_leave_in_cash(salary_sheet, employee)
-        employee_salary.project_bonus = self.__calculate_project_bonus(salary_sheet, employee)
-        employee_salary.code_quality_bonus = self.__calculate_code_quality_bonus(salary_sheet, employee)
-        employee_salary.festival_bonus = self.__calculate_festival_bonus(employee=employee)
+            self.__calculate_leave_in_cash(salary_sheet, employee)
+        employee_salary.project_bonus = self.__calculate_project_bonus(
+            salary_sheet, employee)
+        employee_salary.code_quality_bonus = self.__calculate_code_quality_bonus(
+            salary_sheet, employee)
+        employee_salary.festival_bonus = self.__calculate_festival_bonus(
+            employee=employee)
         employee_salary.food_allowance = self.__calculate_food_allowance(employee=employee,
                                                                          salary_date=salary_sheet.date)
-        employee_salary.loan_emi = self.__calculate_loan_emi(employee=employee, salary_date=salary_sheet.date)
-        employee_salary.provident_fund = self.__calculate_provident_fund(employee=employee, salary_date=salary_sheet.date)
+        employee_salary.loan_emi = self.__calculate_loan_emi(
+            employee=employee, salary_date=salary_sheet.date)
+        employee_salary.provident_fund = self.__calculate_provident_fund(
+            employee=employee, salary_date=salary_sheet.date)
         employee_salary.gross_salary = employee_salary.net_salary + employee_salary.overtime + \
-                                       employee_salary.festival_bonus + employee_salary.food_allowance + \
-                                       employee_salary.leave_bonus + employee_salary.project_bonus + \
-                                       employee_salary.code_quality_bonus + employee_salary.loan_emi + \
-                                       employee_salary.provident_fund
+            employee_salary.festival_bonus + employee_salary.food_allowance + \
+            employee_salary.leave_bonus + employee_salary.project_bonus + \
+            employee_salary.code_quality_bonus + employee_salary.loan_emi + \
+            employee_salary.provident_fund
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
 
@@ -104,9 +113,11 @@ class SalarySheetRepository:
         @param employee:
         @return number:
         """
-        working_days = calendar.monthrange(salary_sheet.date.year, salary_sheet.date.month)[1]
+        working_days = calendar.monthrange(
+            salary_sheet.date.year, salary_sheet.date.month)[1]
         joining_date = employee.joining_date.day
-        resigned = employee.resignation_set.filter(status='approved', date__lte=salary_sheet.date).first()
+        resigned = employee.resignation_set.filter(
+            status='approved', date__lte=salary_sheet.date).first()
         payable_days, working_days_after_join, working_days_after_resign = 0, 0, 0
         # if employee join at salary sheet making month
         if employee.joining_date.strftime('%Y-%m') == salary_sheet.date.strftime('%Y-%m'):
@@ -177,18 +188,18 @@ class SalarySheetRepository:
         if salary_sheet.date.month == 12 and employee.leave_in_cash_eligibility and employee.permanent_date != None:
             one_day_salary = self.__employee_current_salary.payable_salary / 31
             payable_medical_leave = employee.leave_available_leaveincash('medical_leave', salary_sheet.date) - \
-                                    employee.leave_passed('medical', salary_sheet.date.year)
+                employee.leave_passed('medical', salary_sheet.date.year)
             payable_medical_leave_amount = ((payable_medical_leave * employee.pay_scale.leave_in_cash_medical) / 100) \
-                                           * one_day_salary
+                * one_day_salary
 
             payable_casual_leave = employee.leave_available_leaveincash('casual_leave', salary_sheet.date) - \
-                                   employee.leave_passed('casual', salary_sheet.date.year)
+                employee.leave_passed('casual', salary_sheet.date.year)
             payable_casual_leave_amount = ((payable_casual_leave * employee.pay_scale.leave_in_cash_casual) / 100) \
-                                          * one_day_salary
+                * one_day_salary
 
             leave_in_cash = payable_medical_leave_amount + payable_casual_leave_amount
 
-            ## INLINE DEBUG
+            # INLINE DEBUG
             # print("="*30)
             # print()
             # print("", self.__employee_current_salary.payable_salary)
@@ -199,27 +210,27 @@ class SalarySheetRepository:
             # print("Payable Casual:", )
             # print("Leave Cash:", leave_in_cash)
             # print("="*30)
-            
+
             # text = f"""Employee: {employee.full_name}
-            
+
             # Payable Salary: {one_day_salary}
-            
+
             # Medical Cash: {employee.pay_scale.leave_in_cash_medical}
             # Casual Cash: {employee.pay_scale.leave_in_cash_casual}
-            
+
             # Payable Medial: {payable_medical_leave}
             # Payable Casual: {payable_casual_leave}
-            
+
             # Leave Cash: {leave_in_cash}"""
-            
+
             # file_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))) + '/media/temp_emp_salary'
-            
+
             # if not os.path.exists(file_dir):
             #     os.mkdir(file_dir)
-            
+
             # with open(f'{file_dir}/{employee.id}.txt', 'w') as f:
             #     f.write(text)
-            ## INLINE DEBUG
+            # INLINE DEBUG
 
         return leave_in_cash
 
@@ -234,9 +245,9 @@ class SalarySheetRepository:
         """
 
         project_hours = employee.employeeprojecthour_set.filter(
-                project_hour__date__month=salary_sheet.date.month,
-                project_hour__date__year=salary_sheet.date.year
-            ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
+            project_hour__date__month=salary_sheet.date.month,
+            project_hour__date__year=salary_sheet.date.year
+        ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
 
         if employee.manager:
             print(employee.full_name)
@@ -246,28 +257,41 @@ class SalarySheetRepository:
                 date__year=salary_sheet.date.year,
                 payable=True
             ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
-            
+
         return project_hours * 10
 
     def __calculate_code_quality_bonus(self, salary_sheet: SalarySheet, employee: Employee):
-        _, last_day = calendar.monthrange(salary_sheet.date.year, salary_sheet.date.month)
-        code_review_set = employee.codereview_set.filter(
+        _, last_day = calendar.monthrange(
+            salary_sheet.date.year, salary_sheet.date.month)
+        qc_total_point = 0
+        if employee.manager:
+            reviews_avg = CodeReview.objects.filter(
+                manager=employee,
                 created_at__month=salary_sheet.date.month,
                 created_at__year=salary_sheet.date.year,
-            )
+            ).values('employee').annotate(Sum('avg_rating'), Count('id'))
+            total_point = 0
+            print(reviews_avg)
+            for review in reviews_avg:
+                total_point += review.get('avg_rating__sum') / review.get('id__count')  / 2
+            
+            qc_total_point += total_point
+           
+        qc_total_point += employee.codereview_set.filter(
+            created_at__month=salary_sheet.date.month,
+            created_at__year=salary_sheet.date.year,
+        ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
+        
+        # first_quarter = code_review_set.filter(created_at__day__lte=15).exists()
+        # second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
 
-        first_quarter = code_review_set.filter(created_at__day__lte=15).exists()
-        second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
-
-        if first_quarter and second_quarter:
-            total_qc_point = employee.codereview_set.filter(
-                    created_at__month=salary_sheet.date.month,
-                    created_at__year=salary_sheet.date.year,
-                ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
-
-            return total_qc_point * 10
-        else:
-            return 0.0
+        # if first_quarter and second_quarter:
+        
+        qc_ratio = Config.objects.first().qc_bonus_amount
+        ratio = qc_ratio if qc_ratio else 0
+        
+        return round(qc_total_point * ratio, 2)
+        
 
     def __calculate_festival_bonus(self, employee: Employee):
         """Calculate festival bonus
@@ -302,7 +326,7 @@ class SalarySheetRepository:
             )
         emi_amount = employee_loans.aggregate(Sum('emi'))
         return -emi_amount['emi__sum'] if emi_amount['emi__sum'] else 0.0
-    
+
     def __calculate_provident_fund(self, employee: Employee, salary_date: datetime.date):
         """Calculate provident fund amount if have any
         """
@@ -312,9 +336,10 @@ class SalarySheetRepository:
         pf_account = employee.pf_account
         monthly_amount = 0
         note = f'This payment has been made automated when salary sheet generated at {salary_date}'
-        basic_salary = (employee.pay_scale.basic * self.__employee_current_salary.payable_salary) / 100
+        basic_salary = (employee.pay_scale.basic *
+                        self.__employee_current_salary.payable_salary) / 100
         monthly_amount = (basic_salary * pf_account.scale) / 100
-        
+
         monthly_entry = employee.pf_account.monthlyentry_set.create(
             tranx_date=salary_date,
             amount=monthly_amount,
@@ -335,11 +360,11 @@ class SalarySheetRepository:
         #     start_date = datetime.date(salary_date.year, salary_date.month, employee.joining_date.day)
         # else:
         #     start_date = datetime.date(salary_date.year, salary_date.month, 1)
-        
+
         # end_date = datetime.date(salary_date.year, salary_date.month, date_range[1])
         # office_holidays = PublicHolidayDate.objects.filter(date__gte=start_date,
         #                                                    date__lte=end_date).values_list('date', flat=True)
-        
+
         # # TODO: What if leave spans to next month
         # employee_on_leave = Leave.objects.filter(
         #     start_date__month=salary_date.month,
@@ -348,7 +373,7 @@ class SalarySheetRepository:
         #     end_date__month=salary_date.month,
         #     status='approved',
         #     employee=employee).aggregate(total_leave=Coalesce(Sum('total_leave'), 0.0))['total_leave']
-        
+
         # # employee_overtime = Overtime.objects.filter(date__gte=start_date, date__lte=end_date, status='approved',
         # #                                          employee=employee).aggregate(total=Coalesce(Count('id'), 0))['total']
 
@@ -356,7 +381,7 @@ class SalarySheetRepository:
         # employee_overtime = 0
         # if Overtime.objects.filter(date=datetime.date(2022, 12, 16), status='approved', employee=employee).exists() or employee.permanent_date:
         #     employee_overtime = 1
-        
+
         # # print(employee, employee_on_leave)
         # day_off = 0
         # for day in range(start_date.day, date_range[1] + 1):
@@ -367,7 +392,7 @@ class SalarySheetRepository:
         #         day_off += 1
         # day_off += employee_on_leave
         # payable_days = (date_range[1] - start_date.day) - day_off + employee_overtime
-        
+
         payable_days = EmployeeAttendance.objects.filter(
             employee=employee,
             date__year=salary_date.year,
