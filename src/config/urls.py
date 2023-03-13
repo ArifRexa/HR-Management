@@ -49,7 +49,6 @@ urlpatterns = [
     path('jsi18n/', JavaScriptCatalog.as_view(), name='js-catalog'),
     # path('admin/account/', include('account.urls')),
     path('admin/', admin.site.urls),
-    path('admin/test/', emp_views.test),
 
     path("password-change/", auth_view.PasswordChangeView.as_view(), name='password_change'),
     path("password-change/done/", auth_view.PasswordResetDoneView.as_view(), name='password_change_done'),
