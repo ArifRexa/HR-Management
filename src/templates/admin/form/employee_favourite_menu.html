@@ -7,7 +7,7 @@
             
         {% for f_menu in object_list %}
         <tr>
-            <td> <a href="employee/favouritemenu/{{f_menu.id}}/change/" target="_blank">{{ f_menu.menu_name }} </a></td>
+            <td> <a href="{{f_menu.menu_link}}" target="_blank">{{ f_menu.menu_name }} </a></td>
         </tr>
         {% endfor %}
            
