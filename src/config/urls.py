@@ -22,6 +22,7 @@ from django.conf import settings
 from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
 from rest_framework.schemas import get_schema_view
+from employee import views as emp_views
 
 import employee.views
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
