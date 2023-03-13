@@ -342,7 +342,7 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
 
         info = self.model._meta.app_label, self.model._meta.model_name
         custome_urls = [
-            path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info)
+            path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
         ]
         return custome_urls + urls
 
