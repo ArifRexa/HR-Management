@@ -12,7 +12,10 @@ from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
+from django.http import HttpResponse
 
+def test(request):
+    return HttpResponse('Hello Test')
 
 @white_listed_ip_check
 @require_http_methods(['POST', 'GET'])
