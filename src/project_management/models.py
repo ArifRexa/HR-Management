@@ -224,8 +224,16 @@ class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
 
     def __str__(self) -> str:
         return self.project.title
-
     
+class DailypProjectUpdateGroupByProject(DailyProjectUpdate):
+    class Meta:
+        proxy = True
+        permissions = [
+                ("see_all_employee_update", "Can see all daily update"),
+            ]
+
+    def __str__(self) -> str:
+        return self.project.title
 
 class DurationUnit(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
