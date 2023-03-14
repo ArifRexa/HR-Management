@@ -250,8 +250,6 @@ class SalarySheetRepository:
         ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
 
         if employee.manager:
-            print(employee.full_name)
-            print(project_hours)
             project_hours += employee.projecthour_set.filter(
                 date__month=salary_sheet.date.month,
                 date__year=salary_sheet.date.year,
@@ -271,27 +269,26 @@ class SalarySheetRepository:
                 created_at__year=salary_sheet.date.year,
             ).values('employee').annotate(Sum('avg_rating'), Count('id'))
             total_point = 0
-            print(reviews_avg)
             for review in reviews_avg:
-                total_point += review.get('avg_rating__sum') / review.get('id__count')  / 2
-            
+                total_point += review.get('avg_rating__sum') / \
+                    review.get('id__count') / 2
+
             qc_total_point += total_point
-           
+
         qc_total_point += employee.codereview_set.filter(
             created_at__month=salary_sheet.date.month,
             created_at__year=salary_sheet.date.year,
         ).aggregate(avg=Coalesce(Avg('avg_rating'), 0.0)).get("avg")
-        
+
         # first_quarter = code_review_set.filter(created_at__day__lte=15).exists()
         # second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
 
         # if first_quarter and second_quarter:
-        
+
         qc_ratio = Config.objects.first().qc_bonus_amount
         ratio = qc_ratio if qc_ratio else 0
-        
+
         return round(qc_total_point * ratio, 2)
-        
 
     def __calculate_festival_bonus(self, employee: Employee):
         """Calculate festival bonus
@@ -303,8 +300,27 @@ class SalarySheetRepository:
         """
         if self.festival_bonus:
             dtdelta = employee.joining_date + timedelta(days=180)
+            seventyFivePercent = employee.joining_date + timedelta(days=150)
+            fiftyPercent = employee.joining_date + timedelta(days=120)
+            twinteeFivePercent = employee.joining_date + timedelta(days=90)
+            tenPercent = employee.joining_date + timedelta(days=60)
+            fivePercet = employee.joining_date + timedelta(days=30)
+            
+            print("payable salary ", self.__employee_current_salary.payable_salary)
+            print("basic ", employee.pay_scale.basic)
+            basic_salary = (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
             if dtdelta < self.__salary_sheet.date:
-                return (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
+                return basic_salary
+            elif seventyFivePercent <= self.__salary_sheet.date:
+                return round((basic_salary * 75) / 100 , 2)
+            elif fiftyPercent <= self.__salary_sheet.date:
+                return round((basic_salary * 50) / 100 , 2)
+            elif twinteeFivePercent <= self.__salary_sheet.date:
+                return round((basic_salary * 25) / 100 , 2)
+            elif tenPercent <= self.__salary_sheet.date:
+                return round((basic_salary * 10) / 100 , 2)
+            elif fivePercet <= self.__salary_sheet.date:
+                return round((basic_salary * 5) / 100 , 2)
         return 0
 
     def __calculate_loan_emi(self, employee: Employee, salary_date: datetime.date):
