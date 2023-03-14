@@ -12,7 +12,7 @@ from employee.admin.employee._forms import DailyUpdateFilterForm
 
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
-from project_management.models import EmployeeProjectHour, DailyProjectUpdate, DailyProjectUpdateGroupByEmployee, DailypProjectUpdateGroupByProject
+from project_management.models import EmployeeProjectHour, DailyProjectUpdate, DailyProjectUpdateGroupByEmployee, DailyProjectUpdateGroupByProject
 from django.template.response import TemplateResponse
 from functools import partial, update_wrapper, wraps
 from django.urls import path
@@ -269,11 +269,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'employee', 'project',
                     'update', 'hours', 'manager', 'status')
-    # search_fields = ('employee__full_name', 'project__title', 'manager__full_name',)
     list_filter = ('status', 'project', 'employee', 'manager', )
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
-    change_list_template = 'admin/project_update_groupby_employee.html'
+    change_list_template = 'admin/daily_update_groupby_employee.html'
     readonly_fields = ['status']
     fieldsets = (
         ('Standard info', {
@@ -287,19 +286,6 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
         }
         js = ('js/list.js',)
 
-    # def get_queryset(self, request):
-    #     query_set = super(ProjectUpdateGroupByEmployeeAdmin, self).get_queryset(request)
-
-    #     if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
-    #         if request.user.employee.manager:
-    #             query_set = query_set.filter(
-    #                 Q(manager=request.user.employee) |
-    #                 Q(employee=request.user.employee),
-    #             )
-    #         else:
-    #             query_set = query_set.filter(employee=request.user.employee)
-
-    #     return query_set
 
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
@@ -315,6 +301,7 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
 
         for hours in employee_hours:
             key = hours.employee
+            print(key)
             key.set_daily_hours(key.dailyprojectupdate_employee.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
@@ -347,7 +334,7 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
         custome_urls = [
             path("admin/", wrap(self.changelist_view),
                  name="%s_%s_changelist" % info),
-            path("", self.custom_changelist_view, name='changelist_view'),
+            path("", self.custom_changelist_view, name='groupby_employee_changelist_view'),
         ]
         return custome_urls + urls
 
@@ -369,13 +356,15 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
                 return []
             else:
                 return self.readonly_fields
+            
+    def has_module_permission(self, request):
+        return False
 
 
-@admin.register(DailypProjectUpdateGroupByProject)
+@admin.register(DailyProjectUpdateGroupByProject)
 class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'employee', 'project',
                     'update', 'hours', 'manager', 'status')
-    # search_fields = ('employee__full_name', 'project__title', 'manager__full_name',)
     list_filter = ('status', 'project', 'employee', 'manager', )
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
@@ -393,20 +382,6 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
         }
         js = ('js/list.js',)
 
-    # def get_queryset(self, request):
-    #     query_set = super(ProjectUpdateGroupByProjectAdmin, self).get_queryset(request)
-
-    #     if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
-    #         if request.user.employee.manager:
-    #             query_set = query_set.filter(
-    #                 Q(manager=request.user.employee) |
-    #                 Q(employee=request.user.employee),
-    #             )
-    #         else:
-    #             query_set = query_set.filter(employee=request.user.employee)
-
-    #     return query_set
-
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
         filters = dict()
@@ -417,11 +392,11 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
             filters['created_at__date'] = today
 
         daily_project_update_data = dict()
-        employee_hours = self.get_queryset(request).filter(**filters)
+        project_hours = self.get_queryset(request).filter(**filters)
 
-        for hours in employee_hours:
-            key = hours.employee
-            key.set_daily_hours(key.dailyprojectupdate_employee.filter(
+        for hours in project_hours:
+            key = hours.project
+            key.set_project_hours(key.projects.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
             
@@ -475,3 +450,6 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
                 return []
             else:
                 return self.readonly_fields
+            
+    def has_module_permission(self, request):
+        return False

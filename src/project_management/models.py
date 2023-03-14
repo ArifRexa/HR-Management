@@ -66,6 +66,9 @@ class Project(TimeStampMixin, AuthorMixin):
     def created_at_timestamp(self):
         return int(self.created_at.strftime("%s")) * 1000
     
+    def set_project_hours(self, value):
+        self.total_project_hours = value
+    
     def last_x_weeks_feedback(self, x):
         today = datetime.datetime.today()
         last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x))
@@ -189,6 +192,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(
         Project,
         on_delete=models.RESTRICT,
+        related_name="projects",
         limit_choices_to={'active': True},
     )
     hours = models.FloatField(default=0.0)
@@ -225,7 +229,7 @@ class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
     def __str__(self) -> str:
         return self.project.title
     
-class DailypProjectUpdateGroupByProject(DailyProjectUpdate):
+class DailyProjectUpdateGroupByProject(DailyProjectUpdate):
     class Meta:
         proxy = True
         permissions = [
