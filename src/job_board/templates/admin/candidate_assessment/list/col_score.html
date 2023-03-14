@@ -1,5 +1,5 @@
 {% if candidate_assessment.score >= candidate_assessment.assessment.pass_score %}
-    <b style="color:green;">{{ candidate_assessment.score }}</b>
+    <b style="color:green; font-weight: bold; font-size: 20px; background: yellow; padding: 10px; display: inline-block;">{{ candidate_assessment.score }}</b>
 {% else %}
     <b style="color: red">{{ candidate_assessment.score }}</b>
 {% endif %}
