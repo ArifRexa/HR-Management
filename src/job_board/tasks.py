@@ -39,6 +39,28 @@ def send_exam_url(candidate_assessment: CandidateAssessment):
     email.from_email = 'Mediusware Ltd. <hr@mediusware.com>'
     email.send()
 
+def send_score_review_coding_test_mail(candidate_assessment: CandidateAssessment):
+    print('score send check')
+
+    reviews = []
+    for c_assesment_row in candidate_assessment.candidateassessmentreview_set.all():
+        final_review = c_assesment_row.note
+        reviews.append(final_review)
+
+    c_full_name = candidate_assessment.candidate_job.candidate.full_name
+    html_template = get_template('mail/score_review_email.html')
+    html_content = html_template.render({
+        'candidate_assessment': candidate_assessment,
+        'c_full_name': c_full_name,
+        'reviews': reviews
+    })
+
+    email = EmailMultiAlternatives(subject=f'{c_full_name} Score and Review.')
+    email.attach_alternative(html_content, 'text/html')
+    email.to = [candidate_assessment.candidate_job.candidate.email]
+    email.from_email = 'Mediusware Ltd. <hr@mediusware.com>'
+    email.send()
+
 
 def send_evaluation_url_to_admin(candidate_assessment: CandidateAssessment):
     html_template = get_template('mail/evaluation_url_to_admin.html')

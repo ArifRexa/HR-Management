@@ -304,14 +304,13 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
 
         daily_project_update_data = dict()
         employee_hours = self.get_queryset(request).filter(**filters)
-
+        print(employee_hours)
         for hours in employee_hours:
             key = hours.employee
-            print(key)
             key.set_daily_hours(key.dailyprojectupdate_employee.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
-            
+
         my_context = {
             'daily_project_hours_data': daily_project_update_data
         }
@@ -343,6 +342,13 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
             path("", self.custom_changelist_view, name='groupby_employee_changelist_view'),
         ]
         return custome_urls + urls
+    
+    def get_queryset(self, request):
+        query_set = super(ProjectUpdateGroupByEmployeeAdmin, self).get_queryset(request)
+
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+            return query_set.filter(employee=request.user.employee.id)
+        return query_set.filter(employee__active=True).exclude(employee_id__in=[30])
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
@@ -437,6 +443,13 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
             path("", self.custom_changelist_view, name='groupby_project_changelist_view'),
         ]
         return custome_urls + urls
+    
+    def get_queryset(self, request):
+        query_set = super(ProjectUpdateGroupByProjectAdmin, self).get_queryset(request)
+
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+            return query_set.filter(employee=request.user.employee.id)
+        return query_set.filter(employee__active=True).exclude(employee_id__in=[30])
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
@@ -495,7 +508,6 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
 
         for hours in manager_hours:
             key = hours.manager
-            print(key)
             key.set_daily_hours(key.dailyprojectupdate_manager.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
@@ -531,6 +543,13 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
             path("", self.custom_changelist_view, name='groupby_manager_changelist_view'),
         ]
         return custome_urls + urls
+    
+    def get_queryset(self, request):
+        query_set = super(ProjectUpdateGroupByManagerAdmin, self).get_queryset(request)
+
+        if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
+            return query_set.filter(manager=request.user.maanger.id)
+        return query_set.filter(manager__active=True).exclude(manager_id__in=[30])
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
