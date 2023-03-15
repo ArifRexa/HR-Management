@@ -23,6 +23,16 @@
                    title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">Others</a>
             </caption>
             <tr>
+                <th scope="row"><a href="{% url 'admin:groupby_employee_changelist_view' %}">Daily Update GroupBy Employee</a></th>
+            </tr>
+          
+            <tr>
+                <th scope="row"><a href="{% url 'admin:groupby_project_changelist_view' %}">Daily Update GroupBy Project</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:groupby_manager_changelist_view' %}">Daily Update GroupBy Manager</a></th>
+            </tr>
+            <tr>
                 <th scope="row"><a href="{% url 'admin:project_management.hour.graph' %}">Graph</a></th>
             </tr>
             <tr>
@@ -33,6 +43,7 @@
             </tr>
 
             <!-- Hidden from Main Index -->
+            
             <tr>
                 <th scope="row"><a href="{% url 'admin:project_management_client_changelist' %}">Clients</a></th>
             </tr>

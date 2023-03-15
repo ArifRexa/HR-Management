@@ -140,6 +140,13 @@ def candidate_assessment_pre_save(sender, instance, created, *args, **kwargs):
     elif not instance.assessment.open_to_start and instance.can_start_after and instance.exam_started_at is None:
         async_task('job_board.tasks.send_exam_url', instance)
 
+    if instance.score and instance.evaluation_url:
+        main_pass_score = instance.assessment.pass_score
+
+        if instance.score < main_pass_score:
+            if instance.candidateassessmentreview_set.all().exists():
+                async_task('job_board.tasks.send_score_review_coding_test_mail', instance)
+
 
 class CandidateAssessmentAnswer(TimeStampMixin):
     candidate_job = models.ForeignKey(CandidateJob, on_delete=models.CASCADE)
