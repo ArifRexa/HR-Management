@@ -1,0 +1,26 @@
+{% extends 'mail/basic_layout.html' %}
+
+{% block content %}
+
+    <p>
+        Dear <b>{{ c_full_name }}</b>
+    </p>
+
+    <p>
+        Your score are <b>{{score}}</b> <br>
+    </p>
+
+    <p>Review: <br>
+        {% for review in reviews %}
+        <b>{{ forloop.counter }}</b>. {{review}} <br> <br>
+        {% endfor %}
+    </p>
+
+    <p>Regards, <br>
+        Mediusware Ltd, <br>
+        +8801750020408 <br>
+        hr@mediusware.com
+    </p>
+
+
+{% endblock %}
