@@ -196,42 +196,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             'all': ('css/list.css',)
         }
         js = ('js/list.js',)
-
-    
-    def save_formset(self, request, form, formset, change):
-        super(CandidateAssessmentAdmin, self).save_formset(request, form, formset, change)
-
-        c_assesment = CandidateAssessment.objects.get(id=formset.instance.id)
-        c_full_name = c_assesment.candidate_job.candidate.full_name
-        c_email = c_assesment.candidate_job.candidate.email
-        main_pass_score = c_assesment.assessment.pass_score
-        # print(main_pass_score)
-
-        if formset.instance.score and formset.instance.evaluation_url:
-            if formset.instance.score < main_pass_score:
-                reviews = []
-                if c_assesment.candidateassessmentreview_set.all().exists():
-                    for c_assesment_row in formset.instance.candidateassessmentreview_set.all():
-                        final_review = c_assesment_row.note
-                        reviews.append(final_review)
-
-                    context = {
-                        "c_full_name":c_full_name,
-                        "reviews":reviews,
-                        "score":formset.instance.score
-                    }
-
-                    # send email
-                    email_html = render_to_string('mail/score_review_email.html', context)
-                    send_mail(
-                        'Score and Review.',
-                        '',
-                        settings.EMAIL_HOST_USER,
-                        [c_email],
-                        fail_silently=False,
-                        html_message=email_html
-                    )
-        
+ 
 
     def get_readonly_fields(self, request, obj=None):
         if not request.user.is_superuser:

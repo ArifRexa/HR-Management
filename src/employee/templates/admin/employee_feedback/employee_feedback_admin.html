@@ -79,50 +79,53 @@
                 {% for employee, monthly_feedback in monthly_feedbacks %}
                 <tr class="table__row">
                     <td class="align-middle">{{ employee.full_name }}</td>
-                    {% for em_fb in monthly_feedback %}
-                        {% if em_fb %}
+                    {% for employee_feedback in monthly_feedback %}
+                        {% if employee_feedback %}
                             <td>
                                 <div class="popover-wrapper">
                                     <div class="popover-title">
-                                        {% if em_fb.happiness_index_rating <= 3.5 %}
-                                            <div style="color: red; font-size:16px;"><strong>Avgerage Rating: {{ em_fb.avg_rating }}</strong></div><br>
-                                        {% elif em_fb.has_red_rating %}
-                                            <div style="color: red;"><strong>Avgerage Rating: {{ em_fb.avg_rating }}</strong></div><br>
+                                        {% if employee_feedback.happiness_index_rating <= 3.5 %}
+                                            <div style="color: red; font-size:16px;"><strong>Avgerage Rating: {{ employee_feedback.avg_rating }}</strong></div><br>
+                                        {% elif employee_feedback.has_red_rating %}
+                                            <div style="color: red;"><strong>Avgerage Rating: {{ employee_feedback.avg_rating }}</strong></div><br>
                                         {% else %}
-                                            <div style="color: green;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
+                                            <div style="color: green;"><strong>Avgerage Rating: {{ employee_feedback.avg_rating }} </strong></div><br>
                                         {% endif %}
                                         <div class="h6">
-                                            {{ em_fb.feedback | stringformat:".100s" }}
+                                            {{ employee_feedback.feedback | stringformat:".100s" }}
                                         </div>
                                     </div>
                                     <div class="popover-message">
-                                        {% if em_fb.has_red_rating %}
-                                            <div style="color: red;"><strong>Avgerage Rating: {{ em_fb.avg_rating }}</strong></div><br>
+                                        {% if employee_feedback.has_red_rating %}
+                                            <div style="color: red;"><strong>Avgerage Rating: {{ employee_feedback.avg_rating }}</strong></div><br>
                                         {% else %}
-                                            <div style="color: green;"><strong>Avgerage Rating: {{ em_fb.avg_rating }} </strong></div><br>
+                                            <div style="color: green;"><strong>Avgerage Rating: {{ employee_feedback.avg_rating }} </strong></div><br>
                                         {% endif %}
-                                        <div style="{% if em_fb.environmental_rating <= 3.5 %}color: red;{% endif %}">
-                                            Working Environment: {{ em_fb.environmental_rating}} 
+                                        <div style="{% if employee_feedback.environmental_rating <= 3.5 %}color: red;{% endif %}">
+                                            Working Environment: {{ employee_feedback.environmental_rating}} 
                                         </div>
-                                        <div style="{% if em_fb.facilities_rating <= 3.5 %}color: red;{% endif %}">
-                                            Benefits & Facilities: {{ em_fb.facilities_rating}} 
+                                        <div style="{% if employee_feedback.facilities_rating <= 3.5 %}color: red;{% endif %}">
+                                            Benefits & Facilities: {{ employee_feedback.facilities_rating}} 
                                         </div>
-                                        <div style="{% if em_fb.learning_growing_rating <= 3.5 %}color: red;{% endif %}">
-                                            Learning & Growing: {{ em_fb.learning_growing_rating}} 
+                                        <div style="{% if employee_feedback.learning_growing_rating <= 3.5 %}color: red;{% endif %}">
+                                            Learning & Growing: {{ employee_feedback.learning_growing_rating}} 
                                         </div>
-                                        <div style="{% if em_fb.happiness_index_rating <= 3.5 %}color: red;{% endif %}">
-                                            Happy Index: {{ em_fb.happiness_index_rating }} 
+                                        <div style="{% if employee_feedback.happiness_index_rating <= 3.5 %}color: red;{% endif %}">
+                                            Happy Index: {{ employee_feedback.happiness_index_rating }} 
                                         </div>
-                                        <div style="{% if em_fb.boss_rating <= 3.5 %}color: red;{% endif %}">
-                                            Management / Managers: {{ em_fb.boss_rating }} 
+                                        <div style="{% if employee_feedback.boss_rating <= 3.5 %}color: red;{% endif %}">
+                                            Management / Managers: {{ employee_feedback.boss_rating }} 
                                         </div>
                                         <br><br>
                                         <div class="lh-lg">
-                                            {{ em_fb.feedback | linebreaks }}
+                                            {{ employee_feedback.feedback | linebreaks }}
                                         </div>
-                                        {% for cmnt in em_fb.commentagainstemployeefeedback_set.all %}
+                                        {% for feedback_comment in employee_feedback.commentagainstemployeefeedback_set.all %}
+                                            <hr class="hr">
                                             <div class="lh-lg">
-                                                {{ cmnt.comment }}
+                                                <strong>Note from - {{  feedback_comment.created_by.employee.full_name }}</strong>
+                                                <br/>
+                                                {{ feedback_comment.comment }}
                                             </div>
                                         {% endfor %}
                                     </div>
