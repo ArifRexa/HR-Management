@@ -21,7 +21,12 @@ class Assessment(AuthorMixin, TimeStampMixin):
     description = HTMLField()
     type = models.CharField(max_length=40, choices=TYPE_CHOICE, default='mcq')
     open_to_start = models.BooleanField(default=False)
+    order_by = models.PositiveIntegerField(default=1)
 
+
+    class Meta:
+        ordering = ('-order_by', )
+    
     def __str__(self):
         return self.title
 
