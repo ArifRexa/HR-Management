@@ -3,18 +3,32 @@
 {% block content %}
 
     <p>
-        Dear <b>{{ c_full_name }}</b>
+        Hello <b>{{ c_full_name }},</b>
+    </p>
+    <p>
+        You have applied at <b>Mediusware Ltd.</b> in the position of <b>{{ candidate_assessment.candidate_job.job.title }}:</b>
+    </p>
+    <p>
+        Applied at: {{ candidate_assessment.created_at }}
+    </p>
+    <p>
+        Expected Salary : {{ candidate_assessment.candidate_job.expected_salary }} BDT
     </p>
 
     <p>
-        Your score are <b>{{ candidate_assessment.score }}</b> <br>
+        Your score are {{ candidate_assessment.score }}. Unfortunately you didn't pass the assessment. We wish best of luck and keep eyes on our job portal. You can apply again in 3 months. <br>
     </p>
 
-    <p>Review: <br>
+    
+    <h3>Reviews from Management: </h3>
+    <p>==============</p>
+
+    <p>
         {% for review in reviews %}
-        <b>{{ forloop.counter }}</b>. {{review}} <br> <br>
+        {{review}} <br>  <hr>
         {% endfor %}
     </p>
+    <p>==============</p>
 
     <p>Regards, <br>
         Mediusware Ltd, <br>
