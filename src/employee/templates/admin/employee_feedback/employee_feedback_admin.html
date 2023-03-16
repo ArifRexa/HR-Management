@@ -123,7 +123,7 @@
                                         {% for feedback_comment in employee_feedback.commentagainstemployeefeedback_set.all %}
                                             <hr class="hr">
                                             <div class="lh-lg">
-                                                <strong>Note from - {{  feedback_comment.created_by.employee.full_name }}</strong>
+                                                <strong>{{  feedback_comment.created_by.employee.full_name }}</strong>
                                                 <br/>
                                                 {{ feedback_comment.comment }}
                                             </div>

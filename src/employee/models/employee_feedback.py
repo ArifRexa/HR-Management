@@ -42,3 +42,6 @@ class EmployeeFeedback(AuthorMixin, TimeStampMixin):
 class CommentAgainstEmployeeFeedback(TimeStampMixin, AuthorMixin):
     employee_feedback = models.ForeignKey(EmployeeFeedback,on_delete=models.CASCADE)
     comment = models.TextField(max_length=500)
+
+    class Meta:
+        ordering = ('-created_at',)
