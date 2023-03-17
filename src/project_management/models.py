@@ -69,9 +69,9 @@ class Project(TimeStampMixin, AuthorMixin):
          return duration.days
     
     def colorize(self):
-        if self.durations() > 7 and self.durations() <= 14:
+        if self.durations() > 14 and self.durations() <= 28:
             return 'text-primary'
-        elif self.durations() <= 7:
+        elif self.durations() <= 14:
             return 'text-danger'
         return ''
 

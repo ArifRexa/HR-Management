@@ -197,6 +197,11 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     date_hierarchy = 'exam_started_at'
     autocomplete_fields = ['candidate_job', 'assessment']
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        self.request = request
+        return qs
+        
     class Media:
         css = {
             'all': ('css/list.css',)
@@ -217,7 +222,8 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         html_content = html_template.render({
             'candidate': obj.candidate_job.candidate,
             'candidate_job': obj.candidate_job,
-            'candidate_assessment': obj
+            'candidate_assessment': obj,
+            'request': self.request
         })
         return format_html(html_content)
 
