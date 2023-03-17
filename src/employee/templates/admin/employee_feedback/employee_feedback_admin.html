@@ -120,6 +120,7 @@
                                         <div class="lh-lg">
                                             {{ employee_feedback.feedback | linebreaks }}
                                         </div>
+                                       
                                         {% for feedback_comment in employee_feedback.commentagainstemployeefeedback_set.all %}
                                             <hr class="hr">
                                             <div class="lh-lg">
