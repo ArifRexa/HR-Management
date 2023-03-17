@@ -304,15 +304,19 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
 
         daily_project_update_data = dict()
         employee_hours = self.get_queryset(request).filter(**filters)
-        print(employee_hours)
+        
+        
         for hours in employee_hours:
             key = hours.employee
             key.set_daily_hours(key.dailyprojectupdate_employee.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
 
+        sorted_data_set = dict(sorted(daily_project_update_data.items(), key=lambda x: x[0].daily_project_hours))
+  
         my_context = {
-            'daily_project_hours_data': daily_project_update_data
+            'daily_project_hours_data': sorted_data_set,
+          
         }
         return super().changelist_view(request, extra_context=my_context)
 
@@ -411,9 +415,9 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
             key.set_project_hours(key.projects.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
-            
+        sorted_data_set = dict(sorted(daily_project_update_data.items(), key=lambda x: x[0].total_project_hours))   
         my_context = {
-            'daily_project_hours_data': daily_project_update_data
+            'daily_project_hours_data': sorted_data_set
         }
         return super().changelist_view(request, extra_context=my_context)
 
@@ -511,9 +515,11 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
             key.set_daily_hours(key.dailyprojectupdate_manager.filter(
                 **filters).aggregate(total_hours=Sum('hours')).get('total_hours'))
             daily_project_update_data.setdefault(key, []).append(hours)
-            
+
+        sorted_data_set = dict(sorted(daily_project_update_data.items(), key=lambda x: x[0].daily_project_hours))   
+
         my_context = {
-            'daily_project_hours_data': daily_project_update_data
+            'daily_project_hours_data': sorted_data_set
         }
         return super().changelist_view(request, extra_context=my_context)
 
@@ -525,6 +531,7 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
         and obj.manager != request.user.employee:
             permitted = False
         return permitted
+
 
     def get_urls(self):
         urls = super(ProjectUpdateGroupByManagerAdmin, self).get_urls()
