@@ -238,8 +238,8 @@ class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
         permissions = [
                 ("see_all_employee_update", "Can see all daily update"),
             ]
-        verbose_name = 'G By Emp'
-        verbose_name_plural = 'G By Emp'
+        verbose_name = 'Group By Employee'
+        verbose_name_plural = 'Group By Employee'
 
     def __str__(self) -> str:
         return self.project.title
@@ -250,8 +250,8 @@ class DailyProjectUpdateGroupByProject(DailyProjectUpdate):
         permissions = [
                 ("see_all_employee_update", "Can see all daily update"),
             ]
-        verbose_name = 'G By Project'
-        verbose_name_plural = 'G By Project'
+        verbose_name = 'Group By Project'
+        verbose_name_plural = 'Group By Project'
 
     def __str__(self) -> str:
         return self.project.title
@@ -262,8 +262,8 @@ class DailyProjectUpdateGroupByManager(DailyProjectUpdate):
         permissions = [
                 ("see_all_employee_update", "Can see all daily update"),
             ]
-        verbose_name = 'G By Manager'
-        verbose_name_plural = 'G By Manager'
+        verbose_name = 'Group By Manager'
+        verbose_name_plural = 'Group By Manager'
 
     def __str__(self) -> str:
         return self.project.title
