@@ -9,7 +9,8 @@ from employee.tasks import increment_notification
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
-        data_to_check = datetime.datetime.now() - datetime.timedelta(days=160)
+        data_to_check = datetime.datetime.now() - datetime.timedelta(days=100)
+        
         employees = Employee.objects.filter(
             salaryhistory__active_from__exact=data_to_check,
             active=True

@@ -37,7 +37,7 @@ class CandidateForm(forms.ModelForm):
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
-    list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
+    # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
     actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter')
     list_per_page = 50
@@ -48,6 +48,12 @@ class CandidateAdmin(admin.ModelAdmin):
             'all': ('css/list.css',)
         }
         js = ('js/list.js',)
+    
+    def get_list_display(self, request):
+        if request.user.is_superuser:
+            return ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
+        else:
+            return ('contact_information', 'assessment', 'note', 'review')
 
     @admin.display(ordering='candidatejob__expected_salary')
     def expected_salary(self, obj: Candidate):
@@ -206,7 +212,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         if not request.user.is_superuser:
             fields = [field.name for field in obj.__class__._meta.fields]
-            fields.remove('score')
+            fields.remove('score', )
             return fields
         return ['step', 'candidate_feedback']
 
