@@ -221,4 +221,7 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                 )
                 
                 return TemplateResponse(request, 'admin/client_feedback/client_feedback.html', context)
+            
+    def has_module_permission(self, request):
+        return False
 
