@@ -61,6 +61,14 @@ class Project(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
+    
+    def durations(self):
+         
+         duration =datetime.now()-self.created_at 
+         return duration.days
+    
+    def colorize(self):
+        pass 
 
     @property
     def created_at_timestamp(self):
