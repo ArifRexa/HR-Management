@@ -124,8 +124,6 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
             else:
                 return self.readonly_fields
 
-    def has_module_permission(self, request):
-        return False
 
 
 @admin.register(DailyProjectUpdateGroupByProject)
@@ -232,8 +230,6 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
             else:
                 return self.readonly_fields
 
-    def has_module_permission(self, request):
-        return False
 
 
 @admin.register(DailyProjectUpdateGroupByManager)
@@ -339,5 +335,3 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
             else:
                 return self.readonly_fields
 
-    def has_module_permission(self, request):
-        return False
