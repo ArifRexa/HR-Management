@@ -2,6 +2,7 @@ import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
+from datetime import datetime
 
 from dateutil.utils import today
 from django.contrib.auth.models import User
@@ -61,6 +62,18 @@ class Project(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
+    
+    def durations(self):
+         
+         duration =datetime.now()-self.created_at 
+         return duration.days
+    
+    def colorize(self):
+        if self.durations() > 7 and self.durations() <= 14:
+            return 'text-primary'
+        elif self.durations() <= 7:
+            return 'text-danger'
+        return ''
 
     @property
     def created_at_timestamp(self):
