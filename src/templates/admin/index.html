@@ -238,7 +238,7 @@
                                             <div class="text">
                                                 {% for project in employee_project.project.all %}
                                                     {% if forloop.counter0 != 0 %} | {% endif %}
-                                                    <b>{{ project.title }}</b>
+                                                    <span class="fw-blod {{ project.colorize }}">{{ project.title }}</span>
                                                 {% endfor %}
                                                 
                                                 {% if not employee_project.project_exists %}
