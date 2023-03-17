@@ -1,7 +1,7 @@
 <a href="{% url 'admin:job_board_candidate_change' candidate.id %}">{{ candidate.full_name }}</a> <br>
 <a href="tel:+880{{ candidate.phone }}">+880{{ candidate.phone }}</a> <br>
 {{ candidate.email }} <br>
-<b style="color: #985f0d">Expected Salary : {{ candidate_job.expected_salary }} </b><br>
+<b style="color: #985f0d">Expected Salary : {% if request.user.is_superuser %} {{ candidate_job.expected_salary }} {% else %} 00.00 {% endif %}</b><br>
 <u><a href="{{ candidate.cv.url }}" target="_blank" style="text-transform: uppercase">Resume</a></u>
 <br>
 <br>
