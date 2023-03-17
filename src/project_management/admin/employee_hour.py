@@ -1,8 +1,8 @@
 import datetime
-import operator
-from collections import OrderedDict
+from datetime import timedelta
+
 from django.contrib import admin
-from django.db.models import Q, Sum, Count
+from django.db.models import Q, Sum
 
 from django.template.loader import get_template
 from django.utils import timezone
@@ -295,12 +295,13 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
 
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
+        yesterday = today - timedelta(days = 1)
         filters = dict()
         for key, value in request.GET.items():
             if value != '':
                 filters[key] = value
         if len(filters) == 0:
-            filters['created_at__date'] = today
+            filters['created_at__date'] = yesterday
 
         daily_project_update_data = dict()
         employee_hours = self.get_queryset(request).filter(**filters)
@@ -400,12 +401,13 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
 
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
+        yesterday = today - timedelta(days = 1)
         filters = dict()
         for key, value in request.GET.items():
             if value != '':
                 filters[key] = value
         if len(filters) == 0:
-            filters['created_at__date'] = today
+            filters['created_at__date'] = yesterday
 
         daily_project_update_data = dict()
         project_hours = self.get_queryset(request).filter(**filters)
@@ -500,12 +502,13 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
 
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
+        yesterday = today - timedelta(days = 1)
         filters = dict()
         for key, value in request.GET.items():
             if value != '':
                 filters[key] = value
         if len(filters) == 0:
-            filters['created_at__date'] = today
+            filters['created_at__date'] = yesterday
 
         daily_project_update_data = dict()
         manager_hours = self.get_queryset(request).filter(**filters)
