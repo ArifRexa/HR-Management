@@ -39,7 +39,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = [ProjectTypeFilter, 'project', 'manager', 'date']
+        filters = ['manager', ProjectTypeFilter, 'project', 'date']
         if not request.user.is_superuser:
             filters.remove('manager')
         return filters
