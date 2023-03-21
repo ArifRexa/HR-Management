@@ -170,6 +170,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         return employee_id, total['hours__sum']
 
     class Meta:
+        verbose_name_plural = "Weekly Project Hours"
         permissions = [
             ('show_all_hours', 'Can show all hours just like admin'),
             ('select_hour_type', 'Can select Project Hour type'),
