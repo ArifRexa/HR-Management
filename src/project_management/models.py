@@ -143,7 +143,6 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     description = models.TextField(blank=True, verbose_name='Explanation')
     forcast = models.CharField(max_length=40, choices=FORCAST_SELECTOR, verbose_name='Forecast next week hours', null=True, blank=True)
     payable = models.BooleanField(default=True)
-    approved = models.BooleanField(default=False)
     cto_feedback = models.TextField(blank=True, null=True, verbose_name='Feedback')
 
     def __str__(self):
