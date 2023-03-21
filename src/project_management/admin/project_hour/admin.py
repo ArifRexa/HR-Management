@@ -67,11 +67,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
       ('Standard info', {
           'fields': ('hour_type', 'project', 'date', 'hours')
       }),
-      (
-        'Administration Process', {
-            'fields': ('cto_feedback', )
-        }
-      )
+    #   (
+    #     'Administration Process', {
+    #         'fields': ('cto_feedback', )
+    #     }
+    #   )
     )
     form = ProjectHourAdminForm
 
