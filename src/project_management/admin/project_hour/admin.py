@@ -69,7 +69,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
       }),
       (
         'Administration Process', {
-            'fields': ('approved', 'cto_feedback')
+            'fields': ('cto_feedback', )
         }
       )
     )
