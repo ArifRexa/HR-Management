@@ -143,6 +143,8 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     description = models.TextField(blank=True, verbose_name='Explanation')
     forcast = models.CharField(max_length=40, choices=FORCAST_SELECTOR, verbose_name='Forecast next week hours', null=True, blank=True)
     payable = models.BooleanField(default=True)
+    approved = models.BooleanField(default=False)
+    cto_feedback = models.TextField(blank=True, null=True, verbose_name='Feedback')
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
@@ -170,9 +172,11 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         return employee_id, total['hours__sum']
 
     class Meta:
+        verbose_name_plural = "Weekly Project Hours"
         permissions = [
             ('show_all_hours', 'Can show all hours just like admin'),
             ('select_hour_type', 'Can select Project Hour type'),
+            ('weekly_project_hours_approve', 'Can approved and give feedback from CTO'),
         ]
 
 

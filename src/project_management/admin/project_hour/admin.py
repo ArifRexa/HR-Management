@@ -67,6 +67,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
       ('Standard info', {
           'fields': ('hour_type', 'project', 'date', 'hours')
       }),
+      (
+        'Administration Process', {
+            'fields': ('approved', 'cto_feedback')
+        }
+      )
     )
     form = ProjectHourAdminForm
 
@@ -113,3 +118,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
             obj.manager_id = request.user.employee.id
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
+
+
+    def get_fieldsets(self, request, obj):
+        fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
+        if not request.user.has_perm('project_management.weekly_project_hours_approve'):
+            return (fieldsets[0], ) 
+    
+        return fieldsets
