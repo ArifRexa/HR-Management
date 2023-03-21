@@ -33,25 +33,24 @@ class EmployeeHourAdmin(admin.TabularInline):
 
 
 class ProjectHourAdminForm(forms.ModelForm):
-    
+
     def clean(self):
         data = super(ProjectHourAdminForm, self).clean()
         if data.get('hour_type') != "bonus":
-            
+
             if self.request.path_info[-5:-1] == "/add":
                 if ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')).exists():
                     raise ValidationError({
                         'date': f"Project Hour for this date with this project and manager already exists",
                     })
-                
+
             if self.request.path_info[-8:-1] == "/change":
                 if not ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')):
                     raise ValidationError({
                         'date': f"Don't override on date and project.",
                     })
             return data
-    
-    
+
 
 @admin.register(ProjectHour)
 class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin):
@@ -64,14 +63,14 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     ordering = ('-pk',)
     add_form_template = 'admin/project_hour/project_hour.html'
     fieldsets = (
-      ('Standard info', {
-          'fields': ('hour_type', 'project', 'date', 'hours')
-      }),
-    #   (
-    #     'Administration Process', {
-    #         'fields': ('cto_feedback', )
-    #     }
-    #   )
+        ('Standard info', {
+            'fields': ('hour_type', 'project', 'date', 'hours')
+        }),
+        (
+            'Administration Process', {
+                'fields': ('cto_feedback', 'approved_by_cto')
+            }
+        )
     )
     form = ProjectHourAdminForm
 
@@ -82,7 +81,8 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        qs = self.get_queryset(request).filter(**simple_request_filter(request))
+        qs = self.get_queryset(request).filter(
+            **simple_request_filter(request))
         if not request.user.is_superuser:
             qs.filter(manager__id__exact=request.user.employee.id)
         return qs.aggregate(tot=Sum('hours'))['tot']
@@ -105,7 +105,6 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         """
         query_set = super(ProjectHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser and not request.user.has_perm('project_management.show_all_hours'):
-            print('inside')
             return query_set.filter(manager_id=request.user.employee.id)
         return query_set
 
@@ -119,10 +118,9 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
 
-
     def get_fieldsets(self, request, obj):
         fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
         if not request.user.has_perm('project_management.weekly_project_hours_approve'):
-            return (fieldsets[0], ) 
-    
+            return (fieldsets[0], )
+
         return fieldsets
