@@ -44,11 +44,11 @@ class ProjectHourAdminForm(forms.ModelForm):
                         'date': f"Project Hour for this date with this project and manager already exists",
                     })
 
-            if self.request.path_info[-8:-1] == "/change":
-                if not ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')):
-                    raise ValidationError({
-                        'date': f"Don't override on date and project.",
-                    })
+            # if self.request.path_info[-8:-1] == "/change":
+            #     if not ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')):
+            #         raise ValidationError({
+            #             'date': f"Don't override on date and project.",
+            #         })
             return data
 
 
