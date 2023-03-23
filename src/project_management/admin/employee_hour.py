@@ -17,7 +17,8 @@ from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateGroupByEmployee,
     DailyProjectUpdateGroupByProject,
-    DailyProjectUpdateGroupByManager
+    DailyProjectUpdateGroupByManager,
+    DailyProjectUpdateAttachment
 )
 from django.template.response import TemplateResponse
 from functools import partial, update_wrapper, wraps
@@ -113,9 +114,13 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
             return []
         return super(EmployeeHourAdmin, self).get_list_filter(request)
 
+class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
+    model = DailyProjectUpdateAttachment
+    extra = 0
 
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
+    inlines = [DailyProjectUpdateDocumentAdmin, ]
     list_display = ('get_date', 'employee', 'project',
                     'get_hours', 'get_update', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )

@@ -91,6 +91,11 @@ class Project(TimeStampMixin, AuthorMixin):
             created_at__date__gt=last_xth_friday,
         ).order_by("-created_at").exclude(project__active=False)
 
+class ProjectDocument(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    title = models.CharField(max_length=220)
+    extra_note = models.TextField(null=True, blank=True)
+    document = models.FileField(upload_to="uploads/project_documents/%y/%m",)
 
 class ProjectToken(TimeStampMixin, AuthorMixin):
     project = models.OneToOneField(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
@@ -192,7 +197,6 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
             ("see_all_employee_hour", "Can see all emploployee project hour"),
         ]
 
-
 class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
         Employee,
@@ -215,7 +219,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField()
-
+    
     STATUS_CHOICE = (
         ('pending', '⌛ Pending'),
         ('approved', '✔ Approved')
@@ -234,6 +238,12 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
         ]
+
+class DailyProjectUpdateAttachment(TimeStampMixin, AuthorMixin):
+    daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True)
+    title = models.CharField(max_length=220)
+    attachment = models.FileField(verbose_name="Document", upload_to="uploads/daily_update/%y/%m", null=True, blank=True)
+
 
 class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
     class Meta:
