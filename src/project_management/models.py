@@ -91,6 +91,11 @@ class Project(TimeStampMixin, AuthorMixin):
             created_at__date__gt=last_xth_friday,
         ).order_by("-created_at").exclude(project__active=False)
 
+class ProjectDocument(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    title = models.CharField(max_length=220)
+    extra_note = models.TextField(null=True, blank=True)
+    document = models.FileField(upload_to="uploads/project_documents/%y/%m",)
 
 class ProjectToken(TimeStampMixin, AuthorMixin):
     project = models.OneToOneField(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)

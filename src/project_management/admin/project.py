@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed, Tag
+    ProjectNeed, Tag, ProjectDocument
 
 
 @admin.register(Technology)
@@ -30,13 +30,16 @@ class ProjectContentInline(admin.StackedInline):
     model = ProjectContent
     extra = 1
 
+class ProjectDocumentAdmin(admin.StackedInline):
+    model = ProjectDocument
+    extra = 0
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'client', 'active', 'show_in_website')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
-    inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline)
+    inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
