@@ -192,7 +192,6 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
             ("see_all_employee_hour", "Can see all emploployee project hour"),
         ]
 
-
 class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
         Employee,
@@ -215,7 +214,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField()
-
+    
     STATUS_CHOICE = (
         ('pending', '⌛ Pending'),
         ('approved', '✔ Approved')
@@ -234,6 +233,12 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
         ]
+
+class DailyProjectUpdateAttachment(TimeStampMixin, AuthorMixin):
+    daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True)
+    title = models.CharField(max_length=220)
+    attachment = models.FileField(verbose_name="Document", upload_to="uploads/daily_update/%y/%m", null=True, blank=True)
+
 
 class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
     class Meta:
