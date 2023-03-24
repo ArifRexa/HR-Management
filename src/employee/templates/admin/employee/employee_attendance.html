@@ -67,7 +67,7 @@
         <div class="col-md-10">
             <div class="text-center">
                 <h2 class="h2 fs-1 text-center">Employee Attendance</h2>
-                <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div>
+                {% comment %} <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div> {% endcomment %}
             </div>
         </div>
         {% if online_status_form %}
@@ -81,11 +81,11 @@
 
     <div class="pb-3">
         <div class="d-flex justify-content-between">
-            {% if form %}
+            {% comment %} {% if form %}
                 <div class="d-inline-block rounded p-2 bg-body-secondary">
                     {% include 'admin/form/employee_prayerinfo_form.html' %}
                 </div>
-            {% endif %}
+            {% endif %} {% endcomment %}
             {% if user.groups.all.0.name != "Employee" %}
             <div class="py-2">
                 <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>

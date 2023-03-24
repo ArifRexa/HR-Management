@@ -189,9 +189,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
                 for eph in reversed(empprojhours):
                     if eph.project_hour.date == date:
-                        temp[date].update({
-                            'bonus_hour': int(eph.hours),
-                        })
+                        pass 
+                        # temp[date].update({
+                        #     'bonus_hour': int(eph.hours),
+                        # })
                         break
 
                 for pinfo in prayerinfos:
