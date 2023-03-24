@@ -1,4 +1,4 @@
-<form action="{% url 'admin:waqt_select' %}" method="post" id="prayerWaqtForm">
+{% comment %} <form action="{% url 'admin:waqt_select' %}" method="post" id="prayerWaqtForm">
     {% csrf_token %}
     <!-- <div class="mb-1"> -->
         <span class="fw-bold px-1">Prayers Today:</span> 
@@ -14,7 +14,7 @@
         </div>
     {% endfor %}
     <button type="submit" class="btn btn-sm btn-primary mx-2">Submit</button>
-</form>
+</form> {% endcomment %}
 <script>
     // form = document.getElementById("prayerWaqtForm");
     // checkboxes = document.querySelectorAll(".waqt_check").forEach(checkbox => 
