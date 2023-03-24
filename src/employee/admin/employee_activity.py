@@ -179,79 +179,79 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
         date_datas = {}
 
-        # for emp in emps:
-        #     temp = {}
-        #     attendances = emp.employeeattendance_set.all()
-        #     prayerinfos = emp.prayerinfo_set.all()
-        #     empprojhours = emp.employeeprojecthour_set.all()
-        #     for date in last_x_dates:
-        #         temp[date] = dict()
+        for emp in emps:
+            temp = {}
+            attendances = emp.employeeattendance_set.all()
+            prayerinfos = emp.prayerinfo_set.all()
+            empprojhours = emp.employeeprojecthour_set.all()
+            for date in last_x_dates:
+                temp[date] = dict()
 
-        #         for eph in reversed(empprojhours):
-        #             if eph.project_hour.date == date:
-        #                 temp[date].update({
-        #                     'bonus_hour': int(eph.hours),
-        #                 })
-        #                 break
+                for eph in reversed(empprojhours):
+                    if eph.project_hour.date == date:
+                        temp[date].update({
+                            'bonus_hour': int(eph.hours),
+                        })
+                        break
 
-        #         for pinfo in prayerinfos:
-        #             if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
-        #                 waqts = []
-        #                 if pinfo.waqt_fajr: waqts.append('F')
-        #                 if pinfo.waqt_zuhr: waqts.append('Z')
-        #                 if pinfo.waqt_asr: waqts.append('A')
-        #                 if pinfo.waqt_maghrib: waqts.append('M')
-        #                 if pinfo.waqt_isha: waqts.append('E')
-        #                 prayer_info_text = '(' + ' '.join(waqts) +')'
-        #                 temp[date].update({
-        #                     'prayer_count': pinfo.num_of_waqt_done,
-        #                     'prayer_info': prayer_info_text,
-        #                 })
+                for pinfo in prayerinfos:
+                    if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
+                        waqts = []
+                        if pinfo.waqt_fajr: waqts.append('F')
+                        if pinfo.waqt_zuhr: waqts.append('Z')
+                        if pinfo.waqt_asr: waqts.append('A')
+                        if pinfo.waqt_maghrib: waqts.append('M')
+                        if pinfo.waqt_isha: waqts.append('E')
+                        prayer_info_text = '(' + ' '.join(waqts) +')'
+                        temp[date].update({
+                            'prayer_count': pinfo.num_of_waqt_done,
+                            'prayer_info': prayer_info_text,
+                        })
 
-        #         for attendance in attendances:
-        #             if attendance.date == date:
-        #                 activities = attendance.employeeactivity_set.all()
-        #                 if activities.exists():
-        #                     activities = list(activities)
-        #                     al = len(activities)
-        #                     start_time = activities[0].start_time
-        #                     end_time = activities[-1].end_time
-        #                     is_updated_by_bot = activities[-1].is_updated_by_bot
-        #                     break_time = 0
-        #                     inside_time = 0
+                for attendance in attendances:
+                    if attendance.date == date:
+                        activities = attendance.employeeactivity_set.all()
+                        if activities.exists():
+                            activities = list(activities)
+                            al = len(activities)
+                            start_time = activities[0].start_time
+                            end_time = activities[-1].end_time
+                            is_updated_by_bot = activities[-1].is_updated_by_bot
+                            break_time = 0
+                            inside_time = 0
 
-        #                     for i in range(al-1):
-        #                         et = activities[i].end_time
-        #                         if et and et.date() == activities[i+1].start_time.date():
-        #                             break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
-        #                     for i in range(al):
-        #                         st, et = activities[i].start_time, activities[i].end_time
-        #                         if not et:
-        #                             # if not now.hour < DEFAULT_EXIT_HOUR:
-        #                             #     if st.hour < DEFAULT_EXIT_HOUR:
-        #                             #         et = DEFAULT_EXIT_TIME
-        #                             #     else:
-        #                             #         et = st
-        #                             # else:
-        #                             et = timezone.now()
-        #                         inside_time += (et.timestamp() - st.timestamp())
+                            for i in range(al-1):
+                                et = activities[i].end_time
+                                if et and et.date() == activities[i+1].start_time.date():
+                                    break_time += (activities[i+1].start_time.timestamp() - et.timestamp())
+                            for i in range(al):
+                                st, et = activities[i].start_time, activities[i].end_time
+                                if not et:
+                                    # if not now.hour < DEFAULT_EXIT_HOUR:
+                                    #     if st.hour < DEFAULT_EXIT_HOUR:
+                                    #         et = DEFAULT_EXIT_TIME
+                                    #     else:
+                                    #         et = st
+                                    # else:
+                                    et = timezone.now()
+                                inside_time += (et.timestamp() - st.timestamp())
 
-        #                     break_time_s = sToTime(break_time)
-        #                     inside_time_s = sToTime(inside_time)
+                            break_time_s = sToTime(break_time)
+                            inside_time_s = sToTime(inside_time)
 
-        #                     temp[date].update({
-        #                         'entry_time': start_time.time() if start_time else '-',
-        #                         'exit_time': end_time.time() if end_time else '-',
-        #                         'is_updated_by_bot': is_updated_by_bot,
-        #                         'break_time': break_time_s,
-        #                         'break_time_hour': math.floor((break_time / (60 * 60)) % 24),
-        #                         'inside_time': inside_time_s,
-        #                         'inside_time_hour': math.floor((inside_time / (60 * 60)) % 24),
-        #                     })
-        #                 break
-        #     date_datas.update({emp: temp})
+                            temp[date].update({
+                                'entry_time': start_time.time() if start_time else '-',
+                                'exit_time': end_time.time() if end_time else '-',
+                                'is_updated_by_bot': is_updated_by_bot,
+                                'break_time': break_time_s,
+                                'break_time_hour': math.floor((break_time / (60 * 60)) % 24),
+                                'inside_time': inside_time_s,
+                                'inside_time_hour': math.floor((inside_time / (60 * 60)) % 24),
+                            })
+                        break
+            date_datas.update({emp: temp})
 
-        # prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
+        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
         form = EmployeePrayerInfoForm(instance=prayerobj)
 
         online_status_form = False
