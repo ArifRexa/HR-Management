@@ -14,7 +14,7 @@ from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 from django.http import HttpResponse
 
-@white_listed_ip_check
+# @white_listed_ip_check
 @require_http_methods(['POST', 'GET'])
 @login_required(login_url='/admin/login/')
 @not_for_management
