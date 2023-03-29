@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
-from employee.models import EmployeeActivity, EmployeeOnline
+from employee.models import EmployeeActivity, EmployeeOnline, Employee
 from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids
@@ -55,6 +55,7 @@ def change_status(request, *args, **kwargs):
 
 
 @require_http_methods(['POST'])
+@login_required(login_url='/admin/login/')
 @not_for_management
 def change_project(request, *args, **kwargs):
     employee_project = EmployeeProject.objects.get(employee=request.user.employee)
@@ -66,4 +67,23 @@ def change_project(request, *args, **kwargs):
     else:
         messages.error(request, 'Something went wrong')
         return redirect('/admin/')
+
+
+@require_http_methods(['POST', 'GET'])
+@login_required(login_url='/admin/login/')
+@not_for_management
+def need_cto_help(request, *args, **kwargs):
+    employee = Employee.objects.get(id=request.user.employee.id)
+    if request.user.employee.need_cto:
+        employee.need_cto = False
+        employee.save()
+        messages.success(request, 'I got help from CTO. Thank You.')
+        return redirect('/admin/')
+    else:
+        employee.need_cto = True
+        employee.save()
+
+        messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
+        return redirect('/admin/')
+
 
