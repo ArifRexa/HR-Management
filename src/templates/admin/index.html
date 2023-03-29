@@ -211,7 +211,7 @@
                         
                         {% for employee_project in employee_projects %}
                             <li class="list-group-item">
-                                <span class="float-start w-25">
+                                <span class="float-start w-50">
                                     {% if employee_project.project_exists %}
                                     <span style="color: green">🟢</span>
                                     {% else %}
@@ -224,7 +224,7 @@
                                 </span>
 
                                
-                                <span class="float-end w-75">
+                                <span class="float-end w-50">
                                     {% for project in employee_project.project.all %}
                                     {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
                                     <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
