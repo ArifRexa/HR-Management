@@ -89,25 +89,13 @@
             {% endif %}
         </div>
         <div class="col-md-7">
-           <div class="d-flex justify-content-md-end align-items-center gap-2 mt-3 mt-md-0 flex-wrap flex-sm-nowrap justify-content-center justify-content-md-start">
-            <div>
-                {% include 'admin/form/employee_project_form.html' %}
-            </div>        
-            <div>                
-                {% include 'admin/form/employee_status_form.html' %}
-            </div>
-           </div>
+            <ul class="list-group list-group-horizontal-md float-end">
+                <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
+                <li class="list-group-item"> {% include 'admin/form/employee_project_form.html' %}</li>
+                <li class="list-group-item"> {% include 'admin/form/employee_status_form.html' %}</li>
+            </ul>
         </div>
     </div>
-
-    <!-- <div class="row">
-        <div class="col-lg-8 text-end">
-            {% include 'admin/form/employee_project_form.html' %}
-        </div>
-        <div class="col-lg-4 text-center">
-            {% include 'admin/form/employee_status_form.html' %}
-        </div>
-    </div> -->
 
     <script>
         const feedback__marquee = document.getElementById("feedback__marquee");
@@ -151,6 +139,7 @@
             }
         }, 25);
 
+        
     </script>
 
 {% endblock %}
@@ -172,12 +161,30 @@
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header">Employee Status</div>
-                        <div class="card-body p-0">
-                            <ol class="list-group rounded-0">
+                    <ul class="list-group">
+                        <li class="list-group-item list-group-item-action active">
+                            <span class="fs-5 fw-bold">Employee Status</span>
+                        </li>
+                        {% for offline in employee_offline %}
+                            <li class="list-group-item list-group-item-action">
+                                {% if offline.active %}
+                                    <span style="color: green">🟢</span>
+                                {% else %}
+                                    <span>🔴</span>
+                                {% endif %}
+                                {{ offline.employee }}
+                                {% if offline.employee.need_cto %}
+                                <span class="badge bg-danger float-end rounded-pill">Need CTO</span>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    <!-- <div class="card rounded-0">
+                        <div class="card-header bg-success white">Employee Status</div>
+                        <div class="card-body p-0 border-0">
+                            <ol class="list-group">
                                 {% for offline in employee_offline %}
-                                    <li class="list-group-item">
+                                    <li class="list-group-item list-group-item-action">
                                         {% if offline.active %}
                                             <span style="color: green">🟢</span>
                                         {% else %}
@@ -188,7 +195,7 @@
                                 {% endfor %}
                             </ol>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class="col-md-6 mb-4">
@@ -388,6 +395,20 @@
 
 
     <script>
+        /**
+         * Need CTO Help form submit
+         * */
+        let helpCto = document.getElementById("cto_help");
+
+        helpCto.addEventListener('change', (e) => { 
+           document.getElementById("need_cto_form").submit()
+        });
+
+        //  $("#cto_help").change(() => {
+        //     let checked = $(this).is(':checked');
+        //     console.log(checked);
+        //  });
+
         function changeBtnStatus(event) {
             if (event.target.checked) {
                 document.querySelector('#switchLbl').innerHTML = 'Active'
