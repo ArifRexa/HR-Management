@@ -9,6 +9,10 @@
           integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
     <!-- CSS only -->
     <style>
+        .list-group-item.active {
+            background: var(--primary) !important;
+        }
+
         .module > table {
             width: 100%;
             caption-side: top !important;
@@ -161,7 +165,7 @@
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <ul class="list-group">
+                    <ul class="list-group rounded-0">
                         <li class="list-group-item list-group-item-action active">
                             <span class="fs-5 fw-bold">Employee Status</span>
                         </li>
@@ -179,86 +183,62 @@
                             </li>
                         {% endfor %}
                     </ul>
-                    <!-- <div class="card rounded-0">
-                        <div class="card-header bg-success white">Employee Status</div>
-                        <div class="card-body p-0 border-0">
-                            <ol class="list-group">
-                                {% for offline in employee_offline %}
-                                    <li class="list-group-item list-group-item-action">
-                                        {% if offline.active %}
-                                            <span style="color: green">🟢</span>
-                                        {% else %}
-                                            <span>🔴</span>
-                                        {% endif %}
-                                        {{ offline.employee }}
-                                    </li>
-                                {% endfor %}
-                            </ol>
-                        </div>
-                    </div> -->
+                    
                 </div>
 
                 <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header">Employee Projects</div>
-                        <div class="card-body p-0">
-                            <table class="table table-stripe">
-                                <thead>
-                                    <tr class="projects__row">
-                                        <th scope="col" class="sortable">
-                                            <div class="text">
-                                                {% if ord == '1' %}
-                                                    <a class="text-decoration-none text-dark" href="?ord=-1">Employee Name</a>
-                                                {% else %}
-                                                    <a class="text-decoration-none text-dark" href="?ord=1">Employee Name</a>
-                                                {% endif %}
-                                            </div>
-                                        </th>
-                                        <th scope="col" class="sortable">
-                                            <div class="text">
-                                                {% if ord == '2' %}
-                                                    <a class="text-decoration-none text-dark" href="?ord=-2">Projects</a>
-                                                {% else %}
-                                                    <a class="text-decoration-none text-dark" href="?ord=2">Projects</a>
-                                                {% endif %}
-                                            </div>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for employee_project in employee_projects %}
-                                    <tr class="projects__row">
-                                        <td>
-                                            <div class="text">
-                                                {% if employee_project.project_exists %}
-                                                    <span style="color: green">🟢</span>
-                                                {% else %}
-                                                    <span>🔴</span>
-                                                {% endif %}
-                                                {{ employee_project.employee }}
-                                                {% if employee_project.employee.top_one_skill %}
-                                                ( {{ employee_project.employee.top_one_skill.skill }} )
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div class="text">
-                                                {% for project in employee_project.project.all %}
-                                                    {% if forloop.counter0 != 0 %} | {% endif %}
-                                                    <b class="fw-blod {{ project.colorize }}">{{ project.title }}</b>
-                                                {% endfor %}
-                                                
-                                                {% if not employee_project.project_exists %}
-                                                    <b>None</b>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
+                    <ul class="list-group rounded-0">
+                        <li class="list-group-item active">
+                            <span class="fs-5 fw-bold">Employee's Projects</span>
+                        </li>
+                        <li class="list-group-item">
+                            <span class="float-start fs-6 fw-semibold px-5 my-1">
+                                {% if ord == '1' %}
+                                    <a class="text-decoration-none text-dark" href="?ord=-1">Employee Name</a>
+                                {% else %}
+                                <a class="text-decoration-none text-dark" href="?ord=1">Employee Name</a>
+                                {% endif %}
+                            </span>
+
+                            <span class="float-end fs-6 fw-bold px-5 my-1">
+                                {% if ord == '2' %}
+                                    <a class="text-decoration-none text-dark" href="?ord=-2">Projects</a>
+                                {% else %}
+                                    <a class="text-decoration-none text-dark" href="?ord=2">Projects</a>
+                                {% endif %}
+                            </span>
+                        </li>
+                        
+                        {% for employee_project in employee_projects %}
+                            <li class="list-group-item">
+                                <span class="float-start">
+                                    {% if employee_project.project_exists %}
+                                    <span style="color: green">🟢</span>
+                                    {% else %}
+                                        <span>🔴</span>
+                                    {% endif %}
+                                    {{ employee_project.employee }}
+                                    {% if employee_project.employee.top_one_skill %}
+                                    ( {{ employee_project.employee.top_one_skill.skill }} )
+                                    {% endif %}
+                                </span>
+
+                               <span class="float-end">
+                                {% for project in employee_project.project.all %}
+                                    <span class="badge bg-success rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
                                 {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                
+                                {% if not employee_project.project_exists %}
+                                    <span class="badge bg-danger rounded-pill">None</span>
+                                {% endif %}
+                               </span>
+
+                            </li>
+                        {% endfor %}
+                        
+
+                    </ul>
+                    
                 </div>
 
                 {% if leaves.count > 0 %}
