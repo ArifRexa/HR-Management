@@ -211,7 +211,7 @@
                         
                         {% for employee_project in employee_projects %}
                             <li class="list-group-item">
-                                <span class="float-start">
+                                <span class="float-start w-25">
                                     {% if employee_project.project_exists %}
                                     <span style="color: green">🟢</span>
                                     {% else %}
@@ -223,15 +223,18 @@
                                     {% endif %}
                                 </span>
 
-                               <span class="float-end">
-                                {% for project in employee_project.project.all %}
-                                    <span class="badge bg-success rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
-                                {% endfor %}
-                                
-                                {% if not employee_project.project_exists %}
-                                    <span class="badge bg-danger rounded-pill">None</span>
-                                {% endif %}
-                               </span>
+                               
+                                <span class="float-end w-75">
+                                    {% for project in employee_project.project.all %}
+                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
+                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
+                                    {% endfor %}
+                                    
+                                    {% if not employee_project.project_exists %}
+                                        <span class="badge bg-danger rounded-pill">None</span>
+                                    {% endif %}
+                                   </span>
+                               
 
                             </li>
                         {% endfor %}
