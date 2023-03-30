@@ -8,6 +8,7 @@
     <b>Phone &emsp; &emsp; :</b> <a href="tel:{{ employee.phone }}">{{ employee.phone }}</a> <br>
     <b>ID &emsp; &emsp; &emsp; &nbsp; &nbsp;: </b>
     {{ employee.joining_date | date:'Yd' }}{{ employee.id }}<br>
+    <b>Last 4 month project horus: </b> {{ employee.last_four_month_project_hours }}
 </div>
 
 <a href="{% url 'admin:hour_graph' employee.id %}">📈</a>

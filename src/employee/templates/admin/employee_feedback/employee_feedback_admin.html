@@ -96,6 +96,7 @@
                                         </div>
                                     </div>
                                     <div class="popover-message">
+                                        <a href="/admin/employee/employeefeedback/{{ employee_feedback.id }}/change/" class="btn btn-primary btn-sm text-white mx-5 my-1">Edit</a>
                                         {% if employee_feedback.has_red_rating %}
                                             <div style="color: red;"><strong>Avgerage Rating: {{ employee_feedback.avg_rating }}</strong></div><br>
                                         {% else %}

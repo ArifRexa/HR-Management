@@ -177,10 +177,14 @@
                                 {% else %}
                                     <span>🔴</span>
                                 {% endif %}
-                                {{ offline.employee }}
+                                <span class="{% if offline.employee.one_month_less %} text-primary fs-6 {% endif %}">
+                                    {{ offline.employee }}
+                                </span>
                                 {% if offline.employee.need_cto %}
                                 <span class="badge bg-danger float-end rounded-pill">Need CTO</span>
                                 {% endif %}
+
+                                {{ offline.employee.last_four_month_project_hours }}
                             </li>
                         {% endfor %}
                     </ul>
