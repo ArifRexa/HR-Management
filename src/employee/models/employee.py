@@ -83,6 +83,14 @@ class Employee(TimeStampMixin, AuthorMixin):
         return ''
     
     @property
+    def one_month_less(self):
+        current_month = datetime.datetime.today()
+        emp_month = self.created_at - relativedelta(months=-1)
+        if current_month < emp_month:
+            return True
+        return False
+    
+    @property
     def last_x_months_feedback(self):
         current_month = datetime.datetime.today()
         last_x_months = current_month + relativedelta(months=-6)
