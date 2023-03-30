@@ -98,6 +98,10 @@ class Employee(TimeStampMixin, AuthorMixin):
             created_at__lte=current_month,
             created_at__gte=last_x_months,
         ).order_by("-created_at").exclude(employee__active=False)
+    @property
+    def last_four_month_project_hours(self):
+        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4)).aggregate(total_hours = Sum('hours'))
+        return project_hours['total_hours']
 
     def save(self, *args, **kwargs, ):
         self.save_user()
