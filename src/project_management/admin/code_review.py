@@ -37,7 +37,7 @@ class CodeReviewEmployeeFeedbackInline(admin.StackedInline):
 @admin.register(CodeReview)
 class CodeReviewAdmin(admin.ModelAdmin):
 
-    list_display = ['employee', 'manager', 'project', 'avg_rating', 'comment']
+    list_display = ['employee', 'manager', 'project', 'avg_rating', 'comment',]
     change_form_template = 'admin/code_review_form_full.html'
 
     inlines = (
@@ -46,7 +46,7 @@ class CodeReviewAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic', {
-            'fields': ('employee', 'manager', 'project', )
+            'fields': ('employee', 'manager', 'project', 'review_at')
         }),
         ('Ratings', {
             'fields': ('naming_convention', 'code_reusability', 'oop_principal', 'design_pattern', 'standard_git_commit'),
@@ -190,7 +190,7 @@ class CodeReviewAdmin(admin.ModelAdmin):
         if not request.user.is_superuser and not request.user.has_perm('project_management.can_give_code_review'):
             ro_fields = (
                 'employee', 'project', 
-                'naming_convention', 'code_reusability', 'oop_principal', 'design_pattern', 'standard_git_commit',
+                'naming_convention', 'code_reusability', 'oop_principal', 'design_pattern', 'standard_git_commit', 'review_at',
                 'comment',
             )
 
