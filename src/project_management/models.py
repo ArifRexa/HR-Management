@@ -382,6 +382,7 @@ class CodeReview(TimeStampMixin, AuthorMixin):
     oop_principal = models.FloatField()
     design_pattern = models.FloatField()
     standard_git_commit = models.FloatField()
+    review_at = models.DateTimeField(auto_now_add=False)
 
     avg_rating = models.FloatField()
 
