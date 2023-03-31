@@ -228,7 +228,8 @@
 
                                
                                 <span class="float-end w-50">
-                                    {% for project in employee_project.project.all %}
+                                    
+                                    {% for project in employee_project.active_projects %}
                                     {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
                                     <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
                                     {% endfor %}
