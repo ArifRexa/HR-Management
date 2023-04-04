@@ -73,12 +73,12 @@ class Expense(TimeStampMixin, AuthorMixin):
     amount = models.FloatField()
     date = models.DateField(default=timezone.now)
     is_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approve_by', null=True, blank=True)
 
     class Meta:
         permissions = (
             ('can_approve_expense', 'Can Approve Expense', ),
         )
-
 
 
 class ExpanseAttachment(TimeStampMixin, AuthorMixin):
