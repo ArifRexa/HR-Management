@@ -21,6 +21,6 @@ class UserAdmin(BaseUserAdmin):
     @admin.display(description='Current Fund')
     def get_fund(self, obj):
         fund_added = obj.fund_set.aggregate(total_amount=Coalesce(Sum('amount'), 0.0))['total_amount']
-        fund_subtract = Expense.objects.filter(created_by_id=obj.id).aggregate(
+        fund_subtract = Expense.objects.filter(approved_by=obj).aggregate(
             total_amount=Coalesce(Sum('amount'), 0.0))['total_amount']
         return fund_added - fund_subtract

@@ -240,10 +240,10 @@ def bonus__project_hour_add(target_date=None):
     project_id = 20 # HR - 20 # Local HR - 4
     manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
     
-    bonushour_for_timelyentry = 1
-    bonushour_for_hroff = 1
-    bonushour_for_overtime = 1
-    bonushour_for_prayer = 1
+    bonushour_for_timelyentry = 0
+    bonushour_for_hroff = 0
+    bonushour_for_overtime = 0
+    bonushour_for_prayer = 0
     
     # Monthly bonus if it's the last day of the month
     _, last_day = calendar.monthrange(target_date.year, target_date.month)
@@ -269,16 +269,16 @@ def bonus__project_hour_add(target_date=None):
     )
 
     if len(attendances) > 0:
-        project_hour = ProjectHour.objects.create(
-            manager_id = manager_employee_id,
-            hour_type = 'bonus',
-            project_id = project_id,
-            date = target_date,
-            hours = 0,
-            description = 'Bonus for Entry / Exit / Exceeding 8 Hour / Prayer',
-            # forcast = 'same',
-            payable = True,
-        )
+        # project_hour = ProjectHour.objects.create(
+        #     manager_id = manager_employee_id,
+        #     hour_type = 'bonus',
+        #     project_id = project_id,
+        #     date = target_date,
+        #     hours = 0,
+        #     description = 'Bonus for Entry / Exit / Exceeding 8 Hour / Prayer',
+        #     # forcast = 'same',
+        #     payable = True,
+        # )
 
         eph = []
         total_hour = 0
@@ -320,15 +320,15 @@ def bonus__project_hour_add(target_date=None):
                         e_hour += bonushour_for_overtime
 
                 total_hour += e_hour
-                eph.append(EmployeeProjectHour(
-                    project_hour = project_hour,
-                    hours = e_hour,
-                    employee=attendance.employee,
-                ))
+                # eph.append(EmployeeProjectHour(
+                #     project_hour = project_hour,
+                #     hours = e_hour,
+                #     employee=attendance.employee,
+                # ))
         
-        project_hour.hours = total_hour
-        project_hour.save()
+        # project_hour.hours = total_hour
+        # project_hour.save()
 
-        EmployeeProjectHour.objects.bulk_create(eph)
+        # EmployeeProjectHour.objects.bulk_create(eph)
         print("[Bot] Bonus Done")
 
