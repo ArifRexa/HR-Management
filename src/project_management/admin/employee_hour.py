@@ -277,6 +277,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return permitted
     
     def save_model(self, request, obj, form, change) -> None:
-        if request.POST.get('hours') != obj.hours or obj.created_by is not request.user:
-            DailyProjectUpdateHistory.objects.create(hours=request.POST.get('hours'), daily_project_update=obj)
+        # if request.POST.get('hours') != obj.hours or obj.created_by is not request.user:
+        #     DailyProjectUpdateHistory.objects.create(hours=request.POST.get('hours'), daily_update=obj)
         return super().save_model(request, obj, form, change)
