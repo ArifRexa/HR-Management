@@ -300,8 +300,7 @@
 
                                 {% for project in employee_project.active_projects %}
                                 {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
-                                <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">{{
-                                    project.title }}</span>
+                                <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
                                 {% endfor %}
 
                                 {% if not employee_project.project_exists %}
@@ -381,8 +380,7 @@
                 {% if permanents.count > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
-                        <div class="card-header">Permanent Nearby <span class="float-end badge bg-secondary">{{
-                                permanents.count }}</span>
+                        <div class="card-header">Permanent Nearby <span class="float-end badge bg-secondary">{{ permanents.count }}</span>
                         </div>
                         <div class="card-body rounded-0 p-0">
                             <ul class="list-group list-group-flush">
