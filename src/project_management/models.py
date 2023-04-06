@@ -240,7 +240,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         ]
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
-    daily_project_update_hours = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
+    daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
     hours = models.FloatField(default=0.0)
 
 
