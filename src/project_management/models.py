@@ -240,13 +240,13 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         ]
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
-    daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
+    daily_project_update_hours = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
     hours = models.FloatField(default=0.0)
 
 
 
 class DailyProjectUpdateAttachment(TimeStampMixin, AuthorMixin):
-    daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True)
+    daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True, verbose_name="Daily Project Update")
     title = models.CharField(max_length=220)
     attachment = models.FileField(verbose_name="Document", upload_to="uploads/daily_update/%y/%m", null=True, blank=True)
 
