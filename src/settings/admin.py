@@ -13,6 +13,7 @@ from .models import Designation, PayScale, LeaveManagement, PublicHoliday, Publi
     FinancialYear
 from django_q import models as q_models
 from django_q import admin as q_admin
+from settings.models import EmployeeFaq
 
 admin.site.register(PayScale)
 admin.site.register(LeaveManagement)
@@ -94,3 +95,33 @@ admin.site.unregister([q_models.Success])
 class SuccessfulTask(q_admin.TaskAdmin):
     date_hierarchy = 'started'
     list_filter = ('started',)
+
+
+
+@admin.register(EmployeeFaq)
+class EmployeeFaqAdmin(admin.ModelAdmin):
+    list_display = ['question', 'active']
+    search_fields = ['question', 'answer']
+
+
+
+    
+from django.views.generic.list import ListView
+from django.urls import path, reverse
+from django.utils.html import format_html
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from settings.models import EmployeeFAQView
+
+class FAQEmployeeView(PermissionRequiredMixin, ListView):
+    # permission_required = "employee_faqs_view"
+    template_name = "admin/employee/faq.html" 
+    model = EmployeeFAQView
+
+
+@admin.register(EmployeeFAQView)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ['question', 'answer']
+    change_list_template = "admin/employee/faq.html"
+
+    class Media:
+        js = ("https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js", )

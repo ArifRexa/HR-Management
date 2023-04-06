@@ -87,3 +87,37 @@ def need_cto_help(request, *args, **kwargs):
         return redirect('/admin/')
 
 
+from rest_framework import serializers
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+
+from employee.models.employee import Task
+
+class TodoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Task
+        fields = "__all__"
+
+
+class TodoApiList(ListAPIView):
+    serializer_class = TodoSerializer
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
+    
+class TodoCreateAPI(CreateAPIView):
+    serializer_class = TodoSerializer
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class TodoRetriveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = TodoSerializer
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)

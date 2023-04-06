@@ -269,3 +269,16 @@ class PrayerInfo(AuthorMixin, TimeStampMixin):
                                 + self.waqt_isha
         
         return super(PrayerInfo, self).save(*args, **kwargs)
+    
+class Task(TimeStampMixin, AuthorMixin):
+    is_complete = models.BooleanField(default=False)
+    title = models.CharField(max_length=200, null=True)
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.title
+    
+    class Meta:
+        verbose_name = "Todo"
+        verbose_name_plural = "Todo List"
+

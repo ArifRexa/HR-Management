@@ -8,7 +8,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
 from employee.models.attachment import Attachment
-from employee.models.employee import EmployeeLunch
+from employee.models.employee import EmployeeLunch, Task
 
 
 @admin.register(Employee)
@@ -82,3 +82,11 @@ class EmployeeDetails(admin.ModelAdmin):
         elif request.user.employee == obj.employee:
             return ['employee']
         return ['employee', 'active']
+    
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    list_display = ['title', 'is_complete', 'note']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(created_by=request.user)
