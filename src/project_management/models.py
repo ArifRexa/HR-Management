@@ -239,6 +239,12 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
             ("see_all_employee_update", "Can see all daily update"),
         ]
 
+class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
+    daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
+    hours = models.FloatField(default=0.0)
+
+
+
 class DailyProjectUpdateAttachment(TimeStampMixin, AuthorMixin):
     daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=220)
