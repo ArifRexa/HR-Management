@@ -101,8 +101,8 @@
                     {{ key.daily_project_hours }}
                     {% endif %}
                 </td>
-                <td>{{ hour.get_hours_history }}</td>
                 {% endifchanged %}
+                <td>{{ hour.get_hours_history }}</td>
                 <td>{{ hour.manager }}</td>
                 <td>
                   {% if hour.status == "pending" %}
