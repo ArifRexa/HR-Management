@@ -26,6 +26,7 @@ from employee import views as emp_views
 
 import employee.views
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
+from settings.views import upload_image
 
 admin.site.site_header = settings.APP_SITE_HEADER
 admin.site.site_title = settings.APP_SITE_TITLE
@@ -44,6 +45,7 @@ extra_context = dict(
 urlpatterns = [
     path('', include('job_board.urls')),
     path('', include('website.urls')),
+    path('upload_image', upload_image, name="upload_image"),
     path('api-auth/', include('rest_framework.urls')),
     path('settings/', include('settings.urls')),
     path('jsi18n/', JavaScriptCatalog.as_view(), name='js-catalog'),

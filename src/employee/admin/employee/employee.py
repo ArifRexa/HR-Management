@@ -90,3 +90,20 @@ class TaskAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).filter(created_by=request.user)
+
+from employee.models import EmployeeFAQView, EmployeeFaq
+@admin.register(EmployeeFAQView)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ['question', 'answer']
+    change_list_template = "admin/employee/faq.html"
+    search_fields = ['question', 'answer']
+
+    # def changelist_view(self, request, extra_context):
+        # return super().changelist_view(request, extra_context)
+
+
+
+@admin.register(EmployeeFaq)
+class EmployeeFaqAdmin(admin.ModelAdmin):
+    list_display = ['question', 'active']
+    search_fields = ['question', 'answer']

@@ -207,6 +207,8 @@ Q_CLUSTER = {
     }
 }
 
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880 # 5 MB
+
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "height": 350,
@@ -218,7 +220,8 @@ TINYMCE_DEFAULT_CONFIG = {
                "bold italic backcolor forecolor | alignleft aligncenter "
                "alignright alignjustify | bullist numlist outdent indent table | "
                "removeformat codesample image | preview fullscreen help",
-    "contextmenu": "copy | paste | link"
+    "contextmenu": "copy | paste | link",
+    "images_upload_url": "/upload_image",
 }
 
 TINYMCE_SPELLCHECKER = True

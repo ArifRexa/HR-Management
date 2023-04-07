@@ -282,3 +282,19 @@ class Task(TimeStampMixin, AuthorMixin):
         verbose_name = "Todo"
         verbose_name_plural = "Todo List"
 
+
+from tinymce.models import HTMLField
+class EmployeeFaq(TimeStampMixin, AuthorMixin):
+    question = models.CharField(max_length=200)
+    answer = HTMLField()
+    active = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.question
+class EmployeeFAQView(EmployeeFaq):
+    class Meta:
+        proxy = True
+        permissions = (
+            ('employee_faqs_view', 'Can Employee FAQ list view.'),
+        )
+        verbose_name_plural = "FAQ List"
