@@ -44,7 +44,7 @@ class ProjectTypeFilter(admin.SimpleListFilter):
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ('get_date', 'employee', 'hours',
-                    'get_hour_type', 'project_hour', )
+                    'history', 'project_hour', )
     list_filter = (ProjectTypeFilter, 'employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
@@ -56,7 +56,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         return obj.project_hour.date
 
     @admin.display(description="Hour Type", ordering='project_hour__hour_type')
-    def get_hour_type(self, obj):
+    def history(self, obj):
         return obj.project_hour.hour_type.title()
 
     def manager(self, obj):
