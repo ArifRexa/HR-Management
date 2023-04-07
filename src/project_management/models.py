@@ -15,6 +15,7 @@ from tinymce.models import HTMLField
 from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
+from django.utils.html import format_html
 
 
 class Technology(TimeStampMixin, AuthorMixin):
@@ -238,6 +239,19 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
         ]
+
+    @property
+    def get_hours_history(self):
+        historyData = ""
+        if self.history is not None:
+            for history in self.history.order_by('-created_at'):
+                print(history)
+                historyData += f"{history.hours}"
+                if history != self.history.order_by('-created_at').last():
+                     historyData += f" > "
+            return format_html(historyData)
+
+        return 'No changes'
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
     daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")

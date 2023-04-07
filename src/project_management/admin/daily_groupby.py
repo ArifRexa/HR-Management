@@ -16,7 +16,7 @@ from employee.models.employee import Employee
 
 @admin.register(DailyProjectUpdateGroupByEmployee)
 class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'employee', 'project',
+    list_display = ('created_at', 'get_hours_history', 'employee', 'project',
                     'update', 'hours', 'manager', 'status')
     list_filter = ('status', 'project', 'employee', 'manager', )
     date_hierarchy = 'created_at'
