@@ -44,7 +44,7 @@ class ProjectTypeFilter(admin.SimpleListFilter):
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ('get_date', 'employee', 'hours',
-                    'history', 'project_hour', )
+                    'get_hour_type', 'project_hour', )
     list_filter = (ProjectTypeFilter, 'employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
@@ -56,7 +56,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         return obj.project_hour.date
 
     @admin.display(description="Hour Type", ordering='project_hour__hour_type')
-    def history(self, obj):
+    def get_hour_type(self, obj):
         return obj.project_hour.hour_type.title()
 
     def manager(self, obj):
@@ -114,7 +114,7 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
     list_display = ('get_date', 'employee', 'project',
-                    'get_hours', 'get_hours_history', 'get_update', 'manager', 'status_col')
+                    'get_hours', 'history', 'get_update', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
@@ -158,7 +158,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 return ['created_at']
             else:
                 return self.readonly_fields
-    def get_hours_history(self, obj):
+    def history(self, obj):
         historyData = ""
         if obj.history is not None:
             for history in obj.history.order_by('-created_at'):
