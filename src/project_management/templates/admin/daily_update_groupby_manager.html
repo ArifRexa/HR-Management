@@ -73,6 +73,7 @@
             <thead>
               <tr class="table__row" style = "height: 30px;">
                 <th>Date</th>
+                <th>History</th>
                 <th>Manager</th>
                 <th>Employee</th>
                 <th>Hour</th>
@@ -87,6 +88,7 @@
               {% for hour in values %}
               <tr>
                 <td>{{ hour.created_at }}</td>
+                <td>{{ hour.get_hours_history }}</td>
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}">{{ hour.manager }}</td>
                 {% endifchanged %}

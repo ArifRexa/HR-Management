@@ -92,22 +92,3 @@ class Letter(TimeStampMixin, AuthorMixin):
 class OpenLetter(TimeStampMixin):
     title = models.CharField(max_length=255)
     message = models.TextField()
-
-
-class EmployeeFaq(TimeStampMixin, AuthorMixin):
-    question = models.CharField(max_length=200)
-    answer = models.TextField()
-    active = models.BooleanField(default=False)
-
-    def __str__(self) -> str:
-        return self.question
-    
-
-class EmployeeFAQView(EmployeeFaq):
-
-    class Meta:
-        proxy = True
-        permissions = (
-            ('employee_faqs_view', 'Can Employee FAQ list view.'),
-        )
-        verbose_name_plural = "FAQ List"

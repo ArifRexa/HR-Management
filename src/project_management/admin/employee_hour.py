@@ -162,7 +162,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         historyData = ""
         if obj.history is not None:
             for history in obj.history.order_by('-created_at'):
-                historyData += f"> {history.created_by.first_name } {history.created_by.last_name } By {history.hours} <br>"
+                historyData += f"{history.hours}"
+                if history != obj.history.order_by('-created_at').last():
+                     historyData += f" > "
             return format_html(historyData)
 
         return 'No changes'
