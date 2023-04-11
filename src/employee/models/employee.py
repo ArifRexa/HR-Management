@@ -291,6 +291,10 @@ class EmployeeFaq(TimeStampMixin, AuthorMixin):
 
     def __str__(self) -> str:
         return self.question
+    
+    class Meta:
+         verbose_name = 'Set FAQ'
+         verbose_name_plural = "Set FAQ"
 class EmployeeFAQView(EmployeeFaq):
     class Meta:
         proxy = True
