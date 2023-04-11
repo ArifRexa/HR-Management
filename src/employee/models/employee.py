@@ -107,8 +107,8 @@ class Employee(TimeStampMixin, AuthorMixin):
         for index, hours in enumerate(project_hours):
             current_month = datetime.datetime.now().strftime("%B")
             month = hours['month'].strftime('%B')
-            # if month == current_month:
-            #     month = 'Current '
+            if month == current_month:
+                month = 'Current '
             format_str += f"{month} ({hours['total_hours']})"
             if (index + 1) != len(project_hours):
                 format_str += f"<br>"
