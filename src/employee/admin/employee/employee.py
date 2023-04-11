@@ -99,6 +99,9 @@ class FAQAdmin(admin.ModelAdmin):
     change_list_template = "admin/employee/faq.html"
     search_fields = ['question', 'answer']
 
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(active=True)
+
     # def changelist_view(self, request, extra_context):
         # return super().changelist_view(request, extra_context)
 
