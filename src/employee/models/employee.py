@@ -7,6 +7,7 @@ from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -18,7 +19,7 @@ from tinymce.models import HTMLField
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
-
+from django.utils.html import format_html
 
 class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -100,8 +101,18 @@ class Employee(TimeStampMixin, AuthorMixin):
         ).order_by("-created_at").exclude(employee__active=False)
     @property
     def last_four_month_project_hours(self):
-        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4)).aggregate(total_hours = Sum('hours'))
-        return project_hours['total_hours']
+        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4))\
+            .order_by('created_at').annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
+        format_str = "<hr>"
+        for index, hours in enumerate(project_hours):
+            current_month = datetime.datetime.now().strftime("%B")
+            month = hours['month'].strftime('%B')
+            if month == current_month:
+                month = 'Current '
+            format_str += f"{month} ({hours['total_hours']})"
+            if (index + 1) != len(project_hours):
+                format_str += f"<br>"
+        return format_html(format_str)
 
     def save(self, *args, **kwargs, ):
         self.save_user()
@@ -287,10 +298,14 @@ from tinymce.models import HTMLField
 class EmployeeFaq(TimeStampMixin, AuthorMixin):
     question = models.CharField(max_length=200)
     answer = HTMLField()
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return self.question
+    
+    class Meta:
+         verbose_name = 'Set FAQ'
+         verbose_name_plural = "Set FAQ"
 class EmployeeFAQView(EmployeeFaq):
     class Meta:
         proxy = True
