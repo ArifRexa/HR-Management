@@ -346,6 +346,7 @@ class SalarySheetRepository:
     def __calculate_provident_fund(self, employee: Employee, salary_date: datetime.date):
         """Calculate provident fund amount if have any
         """
+        return 0.0
         if not employee.pf_eligibility:
             return 0.0
 
