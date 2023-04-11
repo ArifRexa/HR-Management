@@ -19,6 +19,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
     list_filter = ['active', 'permanent_date']
     autocomplete_fields = ['user', 'designation']
     change_list_template = 'admin/employee/list/index.html'
+    exclude = ['pf_eligibility']
 
     def get_search_results(self, request, queryset, search_term):
         qs, use_distinct = super().get_search_results(request, queryset, search_term)
