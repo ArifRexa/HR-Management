@@ -85,12 +85,12 @@ class EmployeeDetails(admin.ModelAdmin):
         return ['employee', 'active']
     
 
-@admin.register(Task)
-class TaskAdmin(admin.ModelAdmin):
-    list_display = ['title', 'is_complete', 'note']
+# @admin.register(Task)
+# class TaskAdmin(admin.ModelAdmin):
+#     list_display = ['title', 'is_complete', 'note']
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).filter(created_by=request.user)
+#     def get_queryset(self, request):
+#         return super().get_queryset(request).filter(created_by=request.user)
 
 from employee.models import EmployeeFAQView, EmployeeFaq
 @admin.register(EmployeeFAQView)

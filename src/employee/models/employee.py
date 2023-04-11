@@ -7,6 +7,7 @@ from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -18,8 +19,7 @@ from tinymce.models import HTMLField
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
-from django.db.models.functions import TruncMonth
-
+from django.utils.html import format_html
 
 class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -102,13 +102,17 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def last_four_month_project_hours(self):
         project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4))\
-            .annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
-        format_str = ""
+            .order_by('created_at').annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
+        format_str = "<hr>"
         for index, hours in enumerate(project_hours):
-            format_str += f"{hours['month'].strftime('%B')} ({hours['total_hours']})"
+            current_month = datetime.datetime.now().strftime("%B")
+            month = hours['month'].strftime('%B')
+            if month == current_month:
+                month = 'Current '
+            format_str += f"{month} ({hours['total_hours']})"
             if (index + 1) != len(project_hours):
-                format_str += f" || "
-        return format_str
+                format_str += f"<br>"
+        return format_html(format_str)
 
     def save(self, *args, **kwargs, ):
         self.save_user()
@@ -277,17 +281,17 @@ class PrayerInfo(AuthorMixin, TimeStampMixin):
         
         return super(PrayerInfo, self).save(*args, **kwargs)
     
-# class Task(TimeStampMixin, AuthorMixin):
-#     is_complete = models.BooleanField(default=False)
-#     title = models.CharField(max_length=200, null=True)
-#     note = models.TextField(null=True, blank=True)
+class Task(TimeStampMixin, AuthorMixin):
+    is_complete = models.BooleanField(default=False)
+    title = models.CharField(max_length=200, null=True)
+    note = models.TextField(null=True, blank=True)
 
-#     def __str__(self) -> str:
-#         return self.title
+    def __str__(self) -> str:
+        return self.title
     
-#     class Meta:
-#         verbose_name = "Todo"
-#         verbose_name_plural = "Todo List"
+    class Meta:
+        verbose_name = "Todo"
+        verbose_name_plural = "Todo List"
 
 
 from tinymce.models import HTMLField
