@@ -18,6 +18,7 @@ from tinymce.models import HTMLField
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
+from django.db.models.functions import TruncMonth
 
 
 class Employee(TimeStampMixin, AuthorMixin):
@@ -100,8 +101,14 @@ class Employee(TimeStampMixin, AuthorMixin):
         ).order_by("-created_at").exclude(employee__active=False)
     @property
     def last_four_month_project_hours(self):
-        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4)).aggregate(total_hours = Sum('hours'))
-        return project_hours['total_hours']
+        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4))\
+            .annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
+        format_str = ""
+        for index, hours in enumerate(project_hours):
+            format_str += f"{hours['month'].strftime('%B')} ({hours['total_hours']})"
+            if (index + 1) != len(project_hours):
+                format_str += f" || "
+        return format_str
 
     def save(self, *args, **kwargs, ):
         self.save_user()
@@ -270,24 +277,24 @@ class PrayerInfo(AuthorMixin, TimeStampMixin):
         
         return super(PrayerInfo, self).save(*args, **kwargs)
     
-class Task(TimeStampMixin, AuthorMixin):
-    is_complete = models.BooleanField(default=False)
-    title = models.CharField(max_length=200, null=True)
-    note = models.TextField(null=True, blank=True)
+# class Task(TimeStampMixin, AuthorMixin):
+#     is_complete = models.BooleanField(default=False)
+#     title = models.CharField(max_length=200, null=True)
+#     note = models.TextField(null=True, blank=True)
 
-    def __str__(self) -> str:
-        return self.title
+#     def __str__(self) -> str:
+#         return self.title
     
-    class Meta:
-        verbose_name = "Todo"
-        verbose_name_plural = "Todo List"
+#     class Meta:
+#         verbose_name = "Todo"
+#         verbose_name_plural = "Todo List"
 
 
 from tinymce.models import HTMLField
 class EmployeeFaq(TimeStampMixin, AuthorMixin):
     question = models.CharField(max_length=200)
     answer = HTMLField()
-    active = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     def __str__(self) -> str:
         return self.question
