@@ -115,7 +115,7 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
     list_display = ('get_date', 'employee', 'project',
-                    'get_hours', 'history', 'manager', 'status_col')
+                    'get_hours', 'get_update','history', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
