@@ -43,7 +43,8 @@ class ProjectTypeFilter(admin.SimpleListFilter):
 
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'hours', 'project_hour', )
+    list_display = ('get_date', 'employee', 'hours',
+                    'get_hour_type', 'project_hour', )
     list_filter = (ProjectTypeFilter, 'employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
@@ -52,17 +53,14 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
 
     @admin.display(description="Date", ordering='project_hour__date')
     def get_date(self, obj):
-        if obj.project_hour is not None: 
-            return obj.project_hour.date
+        return obj.project_hour.date
 
-    # @admin.display(description="Hour Type", ordering='project_hour__hour_type')
-    # def get_hour_type(self, obj):
-    #     if obj.project_hour is not None:
-    #         return obj.project_hour.hour_type.title()
+    @admin.display(description="Hour Type", ordering='project_hour__hour_type')
+    def get_hour_type(self, obj):
+        return obj.project_hour.hour_type.title()
 
     def manager(self, obj):
-        if obj.project_hour is not None:
-            return obj.project_hour.manager
+        return obj.project_hour.manager
 
     # query for get total hour by query string
     def get_total_hour(self, request):
@@ -116,8 +114,7 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
-    list_display = ('get_date', 'employee', 'project',
-                    'get_hours', 'history', 'get_update', 'manager', 'status_col')
+    list_display = ('get_date', 'employee', 'project',  'history', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
@@ -176,14 +173,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def get_date(self, obj):
         return obj.created_at
 
-    @admin.display(description="Update")
-    def get_update(self, obj):
-        html_template = get_template(
-            'admin/project_management/list/col_dailyupdate.html')
-        html_content = html_template.render({
-            'update': obj.update,
-        })
-        return format_html(html_content)
+    # @admin.display(description="Update")
+    # def get_update(self, obj):
+    #     html_template = get_template(
+    #         'admin/project_management/list/col_dailyupdate.html')
+    #     html_content = html_template.render({
+    #         'update': obj.update,
+    #     })
+    #     return format_html(html_content)
 
     @admin.display(description="Hours", ordering='hours')
     def get_hours(self, obj):
