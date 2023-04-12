@@ -29,7 +29,7 @@
               <div class="accordion-item">
                 <h2 class="accordion-header" id="heading_{{ forloop.counter }}">
                   <button class="accordion-button  {% if forloop.counter0 != 0 %} collapsed {% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ forloop.counter }}" aria-expanded="true" aria-controls="collapse_{{ forloop.counter }}">
-                    {{ faq.question }} #{{ forloop.counter }}
+                    {{ faq.question }}
                   </button>
                 </h2>
                 <div id="collapse_{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.counter0 == 0 %} show {% endif %}" aria-labelledby="heading_{{ forloop.counter }}" data-bs-parent="#faq">
