@@ -1,4 +1,4 @@
-import json
+from django.core.mail import EmailMessage
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -13,6 +13,8 @@ from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 from django.http import HttpResponse
+import threading
+from employee.models import Config
 
 # @white_listed_ip_check
 @require_http_methods(['POST', 'GET'])
@@ -69,6 +71,20 @@ def change_project(request, *args, **kwargs):
         return redirect('/admin/')
 
 
+class EmailTread(threading.Thread):
+    def __init__(self, subject, html_content, recipient_list):
+        self.subject = subject
+        self.recipient_list = recipient_list
+        self.html_content = html_content
+        threading.Thread.__init__(self)
+
+    def run(self):
+        msg = EmailMessage(self.subject, self.html_content, '"Mediusware-HR" <hr@mediusware.com>', self.recipient_list)
+        msg.send()
+
+def send_mail(subject, html_content, recipient_list):
+    EmailTread(subject, html_content, recipient_list).start()
+
 @require_http_methods(['POST', 'GET'])
 @login_required(login_url='/admin/login/')
 @not_for_management
@@ -82,6 +98,9 @@ def need_cto_help(request, *args, **kwargs):
     else:
         employee.need_cto = True
         employee.save()
+
+        if Config.objects.first().cto_email is not None:
+            send_mail('I need CTO Help', 'When you get free time, Please check the HR.', [Config.objects.first().cto_email])
 
         messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
         return redirect('/admin/')
