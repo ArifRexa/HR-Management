@@ -43,8 +43,7 @@ class ProjectTypeFilter(admin.SimpleListFilter):
 
 @admin.register(EmployeeProjectHour)
 class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'hours',
-                    'get_hour_type', 'project_hour', )
+    list_display = ('get_date', 'employee', 'hours', 'project_hour', )
     list_filter = (ProjectTypeFilter, 'employee', 'created_at',)
     search_fields = ('hours', 'employee__full_name',)
     date_hierarchy = 'project_hour__date'
@@ -53,14 +52,17 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
 
     @admin.display(description="Date", ordering='project_hour__date')
     def get_date(self, obj):
-        return obj.project_hour.date
+        if obj.project_hour is not None: 
+            return obj.project_hour.date
 
-    @admin.display(description="Hour Type", ordering='project_hour__hour_type')
-    def get_hour_type(self, obj):
-        return obj.project_hour.hour_type.title()
+    # @admin.display(description="Hour Type", ordering='project_hour__hour_type')
+    # def get_hour_type(self, obj):
+    #     if obj.project_hour is not None:
+    #         return obj.project_hour.hour_type.title()
 
     def manager(self, obj):
-        return obj.project_hour.manager
+        if obj.project_hour is not None:
+            return obj.project_hour.manager
 
     # query for get total hour by query string
     def get_total_hour(self, request):
