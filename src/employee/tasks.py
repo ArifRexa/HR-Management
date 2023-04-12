@@ -332,3 +332,8 @@ def bonus__project_hour_add(target_date=None):
         # EmployeeProjectHour.objects.bulk_create(eph)
         print("[Bot] Bonus Done")
 
+
+
+def cto_help_pending_alert():
+    pass 
+
