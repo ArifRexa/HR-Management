@@ -113,6 +113,38 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     list_display = ( 'employee', 'project')
+    list_filter = ('status', 'project', 'employee', 'manager', )
+    readonly_fields = ['status', 'created_at']
+
+    fieldsets = (
+        ('Standard info', {
+            'fields': ('created_at', 'employee', 'manager', 'project', 'hours', 'update', 'status')
+        }),
+    )
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return ['created_at',]
+
+        if obj:
+            if request.user.employee.manager:
+                if obj.manager != obj.employee and obj.manager == request.user.employee:
+                    return ['created_at', 'employee', 'manager', 'project', 'update']
+                else:
+                    return ['created_at',]
+            if request.user.employee == obj.employee:
+                if obj.status == 'approved':
+                    return ['created_at', 'employee', 'manager', 'project', 'update', 'hours', 'status']
+                else:
+                    return self.readonly_fields
+            else:
+                return self.readonly_fields
+
+        else:
+            if request.user.employee.manager:
+                return ['created_at']
+            else:
+                return self.readonly_fields
 
 # @admin.register(DailyProjectUpdate)
 # class DailyProjectUpdateAdmin(admin.ModelAdmin):
