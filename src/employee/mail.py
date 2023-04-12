@@ -26,4 +26,4 @@ def cto_help_mail(employee, extra_data=None):
         watting_from = extra_data['waitting_at']
         subject = f"{employee.full_name}, needs CTO Help!!!"
         html_content = loader.render_to_string('mails/cto_help.html', {'title': subject, 'designation': designation, 'full_name': full_name, 'watting_from': watting_from})
-        send_mail(subject, html_content, [extra_data['receiver']])
+        send_mail(subject, html_content, extra_data['receiver'])

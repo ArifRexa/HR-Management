@@ -1,8 +1,6 @@
 import uuid
-
 import datetime
 from dateutil.relativedelta import relativedelta
-
 from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -15,7 +13,6 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.timesince import timesince
 from tinymce.models import HTMLField
-
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
