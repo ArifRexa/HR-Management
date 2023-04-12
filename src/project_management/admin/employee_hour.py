@@ -114,8 +114,7 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
-    list_display = ('get_date', 'employee', 'project',
-                    'get_hours', 'history', 'get_update', 'manager', 'status_col')
+    list_display = ('get_date', 'employee', 'project',  'history', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
@@ -174,14 +173,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def get_date(self, obj):
         return obj.created_at
 
-    @admin.display(description="Update")
-    def get_update(self, obj):
-        html_template = get_template(
-            'admin/project_management/list/col_dailyupdate.html')
-        html_content = html_template.render({
-            'update': obj.update,
-        })
-        return format_html(html_content)
+    # @admin.display(description="Update")
+    # def get_update(self, obj):
+    #     html_template = get_template(
+    #         'admin/project_management/list/col_dailyupdate.html')
+    #     html_content = html_template.render({
+    #         'update': obj.update,
+    #     })
+    #     return format_html(html_content)
 
     @admin.display(description="Hours", ordering='hours')
     def get_hours(self, obj):
