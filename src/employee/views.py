@@ -85,8 +85,9 @@ def need_cto_help(request, *args, **kwargs):
         employee.save()
 
         if Config.objects.first().cto_email is not None:
-            cto_help_mail(request.user.employee, {'waitting_at': timezone.now(), 'receiver' : Config.objects.first().cto_email})
-            #send_mail('I need CTO Help', 'When you get free time, Please check the HR.', [Config.objects.first().cto_email])
+            email_list = Config.objects.first().cto_email.strip()
+            email_list = email_list.split(',')
+            cto_help_mail(request.user.employee, {'waitting_at': timezone.now(), 'receiver' : email_list})
 
         messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
         return redirect('/admin/')
