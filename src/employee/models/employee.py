@@ -52,6 +52,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     birthday_image = models.ImageField(null=True, blank=True)
     birthday_image_shown = models.BooleanField(default=False)
     need_cto = models.BooleanField(verbose_name="I need help from CTO", default=False)
+    need_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
@@ -105,13 +106,11 @@ class Employee(TimeStampMixin, AuthorMixin):
             .annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
         format_str = "<hr>"
         for index, hours in enumerate(project_hours):
-            current_month = datetime.datetime.now().strftime("%B")
-            month = hours['month'].strftime('%B')
-            if month == current_month:
-                month = 'Current '
-            format_str += f"{month} ({hours['total_hours']})"
+            # current_month = datetime.datetime.now().strftime("%B")
+            # month = hours['month'].strftime('%B')
+            format_str += f"({hours['total_hours']})"
             if (index + 1) != len(project_hours):
-                format_str += f"<br>"
+                format_str += f" - "
         return format_html(format_str)
 
     def save(self, *args, **kwargs, ):
