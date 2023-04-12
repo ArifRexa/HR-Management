@@ -19,8 +19,7 @@ def send_mail(subject, html_content, recipient_list):
     EmailTread(subject, html_content, recipient_list).start()
 
 
-def cto_help_mail(request, extra_data=None):
-    employee = request.user.employee
+def cto_help_mail(employee, extra_data=None):
     designation = employee.designation
     full_name = employee.full_name
     if employee is not None and extra_data is not None:

@@ -333,7 +333,12 @@ def bonus__project_hour_add(target_date=None):
         print("[Bot] Bonus Done")
 
 
+from employee.models import Employee, Config
+from employee.mail import cto_help_mail
 
 def cto_help_pending_alert():
-    pass 
+    employees =  Employee.objects.filter(need_cto=True)
+    if Config.objects.first().cto_email is not None and employees is not None:
+        for employee in employees:
+            cto_help_mail(employee, {'waitting_at': employee.need_at, 'receiver': Config.objects.first().cto_email})
 
