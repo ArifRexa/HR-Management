@@ -159,13 +159,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             else:
                 return self.readonly_fields
     def history(self, obj):
-        historyData = ""
-        if obj.history is not None:
-            for history in obj.history.order_by('-created_at'):
-                historyData += f"{history.hours}"
-                if history != obj.history.order_by('-created_at').last():
-                     historyData += f" > "
-            return format_html(historyData)
+        # historyData = ""
+        # if obj.history is not None:
+        #     for history in obj.history.order_by('-created_at'):
+        #         historyData += f"{history.hours}"
+        #         if history != obj.history.order_by('-created_at').last():
+        #              historyData += f" > "
+        #     return format_html(historyData)
 
         return 'No changes'
 
