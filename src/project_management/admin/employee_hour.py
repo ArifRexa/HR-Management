@@ -176,6 +176,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.display(description="Update")
     def get_update(self, obj):
+        return obj.update
         html_template = get_template(
             'admin/project_management/list/col_dailyupdate.html')
         html_content = html_template.render({
