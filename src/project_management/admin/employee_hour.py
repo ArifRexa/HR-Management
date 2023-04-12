@@ -115,7 +115,7 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
     list_display = ('get_date', 'employee', 'project',
-                    'get_hours', 'history', 'manager', 'status_col')
+                    'get_hours', 'get_update','history', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
@@ -176,6 +176,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.display(description="Update")
     def get_update(self, obj):
+        return obj.update
         html_template = get_template(
             'admin/project_management/list/col_dailyupdate.html')
         html_content = html_template.render({
