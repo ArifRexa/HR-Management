@@ -99,13 +99,13 @@ class Employee(TimeStampMixin, AuthorMixin):
         ).order_by("-created_at").exclude(employee__active=False)
     @property
     def last_four_month_project_hours(self):
-        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=4))\
+        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=3))\
             .annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
         format_str = "<hr>"
         for index, hours in enumerate(project_hours):
             # current_month = datetime.datetime.now().strftime("%B")
             # month = hours['month'].strftime('%B')
-            format_str += f"({hours['total_hours']})"
+            format_str += f"{hours['total_hours']}"
             if (index + 1) != len(project_hours):
                 format_str += f" - "
         return format_html(format_str)

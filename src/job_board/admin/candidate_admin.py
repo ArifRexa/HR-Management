@@ -15,8 +15,7 @@ from django_q.tasks import async_task
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.template.loader import render_to_string
-
-import config
+from job_board.mails.mail import re_apply_alert_mail
 from config import settings
 from config.utils.pdf import PDF
 from job_board.management.commands.send_offer_letter import generate_attachment
@@ -39,7 +38,7 @@ class CandidateAdmin(admin.ModelAdmin):
     search_fields = ('full_name', 'email', 'phone')
     # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
     list_filter = ('candidatejob__merit', 'candidatejob__job')
-    actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter')
+    actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter', 'job_re_apply')
     list_per_page = 50
     date_hierarchy = 'created_at'
 
@@ -109,13 +108,17 @@ class CandidateAdmin(admin.ModelAdmin):
     @admin.action(description="Send Offer letter (Email)")
     def send_offer_letter(self, request, queryset):
         for candidate in queryset:
-            print(candidate.pk)
             management.call_command('send_offer_letter', candidate.pk)
 
     @admin.action(description='Download Offer Letter (PDF)')
     def download_offer_letter(self, request, queryset):
         for candidate in queryset:
             return generate_attachment(candidate).render_to_pdf()
+        
+    @admin.action(description="Job Application Re-Apply alert")
+    def job_re_apply(self, request, queryset):
+        for candidate in queryset:
+            re_apply_alert_mail(candidate) 
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
@@ -129,6 +132,7 @@ class CandidateAdmin(admin.ModelAdmin):
         except:
             obj.password = hashers.make_password(request.POST['password'], settings.CANDIDATE_PASSWORD_HASH)
             super(CandidateAdmin, self).save_model(request, obj, form, change)
+
 
 
 @admin.register(CandidateJob)
