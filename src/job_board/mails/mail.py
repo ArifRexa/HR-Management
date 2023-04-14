@@ -23,8 +23,8 @@ def send_mail(subject, html_content, recipient_list):
 
 def re_apply_alert_mail(candidate):
     if candidate is not None:
-        subject = f"{candidate.full_name}, Please complete your job application!!!"
-        html_content = loader.render_to_string('mail/re_apply_alert.html', {candidate: candidate})
+        subject = f"Request to Re-apply through the Job Portal"
+        html_content = loader.render_to_string('mail/re_apply_alert.html', {'candidate': candidate})
         send_mail(subject, html_content, [candidate.email])
 
 

@@ -89,6 +89,10 @@
     .btn-primary {
         background-color: var(--primary);
     }
+
+    .bg-primary {
+        background-color: var(--primary) !important;
+    }
 </style>
 {% endblock %}
 
@@ -237,7 +241,7 @@
                 <div class="col-md-6 mb-4">
                     <ul class="list-group rounded-0">
                         <li class="list-group-item list-group-item-action active">
-                            <span class="fs-5 fw-bold">Employee Status</span>
+                            <span class=" text-uppercase">Employee Status</span>
                         </li>
                         {% for offline in employee_offline %}
                         <li class="list-group-item list-group-item-action">
@@ -265,7 +269,7 @@
                 <div class="col-md-6 mb-4">
                     <ul class="list-group rounded-0">
                         <li class="list-group-item active">
-                            <span class="fs-5 fw-bold">Employee's Projects</span>
+                            <span class="text-uppercase">Employee's Projects</span>
                         </li>
                         <li class="list-group-item">
                             <span class="float-start fs-6 fw-semibold px-5 my-1">
@@ -344,7 +348,7 @@
                 {% if birthdays.count > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
-                        <div class="card-header">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
+                        <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
                         </div>
                         <div class="card-body rounded-0 p-0">
                             <ul class="list-group list-group-flush">
@@ -365,7 +369,7 @@
                 {% if increments|length > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
-                        <div class="card-header">Increment Nearby</div>
+                        <div class="card-header text-uppercase">Increment Nearby</div>
                         <div class="card-body rounded-0 p-0">
                             <ul class="list-group list-group-flush">
                                 {% for employee_increment in increments %}
@@ -382,7 +386,7 @@
                 {% if permanents.count > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
-                        <div class="card-header">Permanent Nearby <span class="float-end badge bg-secondary">{{ permanents.count }}</span>
+                        <div class="card-header text-uppercase bg-primary" >Permanent Nearby <span class="float-end badge bg-secondary">{{ permanents.count }}</span>
                         </div>
                         <div class="card-body rounded-0 p-0">
                             <ul class="list-group list-group-flush">
