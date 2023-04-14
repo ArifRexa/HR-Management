@@ -305,6 +305,7 @@ class EmployeeFaq(TimeStampMixin, AuthorMixin):
 class EmployeeFAQView(EmployeeFaq):
     class Meta:
         proxy = True
+        verbose_name = "FAQ List"
         permissions = (
             ('employee_faqs_view', 'Can Employee FAQ list view.'),
         )

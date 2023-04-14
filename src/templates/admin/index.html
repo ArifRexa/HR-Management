@@ -250,7 +250,11 @@
                                 {{ offline.employee }}
                             </span>
                             {% if offline.employee.need_cto %}
-                            <span class="badge bg-danger float-end rounded-pill">Need CTO</span>
+                            <span class="badge bg-success float-end rounded">
+                                Need CTO
+                                <br>
+                                 {{ offline.employee.need_at | timesince}} ago
+                            </span>
                             {% endif %}
                         </li>
                         {% endfor %}
