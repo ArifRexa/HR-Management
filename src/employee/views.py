@@ -10,7 +10,7 @@ from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
-from django.http import HttpResponse
+import datetime
 from employee.models import Config
 from employee.mail import cto_help_mail
 
@@ -84,10 +84,16 @@ def need_cto_help(request, *args, **kwargs):
         employee.need_at = timezone.now()
         employee.save()
 
-        if Config.objects.first().cto_email is not None:
-            email_list = Config.objects.first().cto_email.strip()
-            email_list = email_list.split(',')
-            cto_help_mail(request.user.employee, {'waitting_at': timezone.now(), 'receiver' : email_list})
+        today = datetime.date.today()
+        dayname = today.strftime("%A")
+        off_list = ["Saturday", "Sunday"]
+
+        if not dayname in off_list:
+            print('send email')
+            if Config.objects.first().cto_email is not None:
+                email_list = Config.objects.first().cto_email.strip()
+                email_list = email_list.split(',')
+                cto_help_mail(request.user.employee, {'waitting_at': timezone.now(), 'receiver' : email_list})
 
         messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
         return redirect('/admin/')
