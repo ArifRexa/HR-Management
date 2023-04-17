@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
+from django.contrib import messages
 
 import config.settings
 from account.models import EmployeeSalary, SalarySheet, SalaryDisbursement
@@ -57,6 +58,10 @@ class SalarySheetAction(admin.ModelAdmin):
     
     @admin.action(description='Export Bonus Account Disbursements (PDF)')
     def export_bonus_account_dis_pdf(self, request, queryset):
+        print(queryset.filter(festival_bonus=False).exists())
+        if queryset.filter(festival_bonus=False).exists():
+            return self.message_user(request, 'In this salary sheet does not include festival bonus !!!', level=messages.WARNING)
+        
         return self.bonus_pdf(
             queryset=queryset,
             filter=('disbursement_type', 'salary_account'),
