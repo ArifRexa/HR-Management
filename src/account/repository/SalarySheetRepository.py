@@ -306,8 +306,6 @@ class SalarySheetRepository:
             tenPercent = employee.joining_date + timedelta(days=60)
             fivePercet = employee.joining_date + timedelta(days=30)
             
-            print("payable salary ", self.__employee_current_salary.payable_salary)
-            print("basic ", employee.pay_scale.basic)
             basic_salary = (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
             if dtdelta < self.__salary_sheet.date:
                 return basic_salary

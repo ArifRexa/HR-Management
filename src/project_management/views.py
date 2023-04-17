@@ -26,17 +26,15 @@ def get_this_week_hour(request, project_id, hour_date):
         ), 0.0),
     ).exclude(total_hour=0.0).values('id', 'total_hour')
 
-    # final_hour = employee.hours
-    # print(final_hour)
+    totalHours = sum(hour['total_hour'] for hour in employee)
 
-            
+    employeeList = filter(lambda emp: emp['id'] != manager_id, employee)
 
-    # weekly_hour = DailyProjectUpdate.objects.filter(project=project_id, manager=manager_id, status='approved', created_at__gte=datetime.now()-timedelta(days=7)).values_list('hours', 'employee__user__username')
-    # print(list(weekly_hour))
 
     data = {
-        'manager_id,':manager_id,
-        'weekly_hour':list(employee),
+        'manager_id':manager_id,
+        'weekly_hour':list(employeeList),
+        'total_project_hours': totalHours
     }
     
     return JsonResponse(data)

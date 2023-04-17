@@ -1,4 +1,4 @@
-{% extends "letters/base/base.html" %}
+{% extends "letters/base/bonus_base.html" %}
 
 {% load salary_sheet_util %}
 {% block salary_table %}
@@ -17,14 +17,14 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ employee_salary.employee }}</td>
                 <td>{{ employee_salary.employee | get_account_number }}</td>
-                <td>{{ employee_salary.gross_amount | to_floor }}</td>
+                <td>{{ employee_salary.festival_bonus | to_floor }}</td>
             </tr>
         {% endfor %}
         </tbody>
         <tfoot>
         <tr style="padding-top: 4px">
             <th colspan="3" align="right">Total</th>
-            <th align="left">{{ employee_salary_set | _total_by_des_type }}</th>
+            <th align="left">{{ employee_salary_set | _total_bonus }}</th>
         </tr>
         </tfoot>
     </table>
