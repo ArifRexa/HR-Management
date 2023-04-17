@@ -39,6 +39,10 @@ class EmployeeSalary(TimeStampMixin):
     gross_salary = models.FloatField()
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
 
+    @property
+    def gross_amount(self):
+        return self.gross_salary - self.festival_bonus
+
 
 class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     disbursement_choice = (
