@@ -39,6 +39,10 @@ class EmployeeSalary(TimeStampMixin):
     gross_salary = models.FloatField()
     salary_sheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
 
+    @property
+    def gross_amount(self):
+        return self.gross_salary - self.festival_bonus
+
 
 class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     disbursement_choice = (
@@ -73,12 +77,12 @@ class Expense(TimeStampMixin, AuthorMixin):
     amount = models.FloatField()
     date = models.DateField(default=timezone.now)
     is_approved = models.BooleanField(default=False)
+    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approve_by', null=True, blank=True)
 
     class Meta:
         permissions = (
             ('can_approve_expense', 'Can Approve Expense', ),
         )
-
 
 
 class ExpanseAttachment(TimeStampMixin, AuthorMixin):

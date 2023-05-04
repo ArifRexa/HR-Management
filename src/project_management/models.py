@@ -15,6 +15,7 @@ from tinymce.models import HTMLField
 from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
+from django.utils.html import format_html
 
 
 class Technology(TimeStampMixin, AuthorMixin):
@@ -239,8 +240,27 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
             ("see_all_employee_update", "Can see all daily update"),
         ]
 
+    @property
+    def get_hours_history(self):
+        historyData = ""
+        if self.history is not None:
+            for history in self.history.order_by('-created_at'):
+                print(history)
+                historyData += f"{history.hours}"
+                if history != self.history.order_by('-created_at').last():
+                     historyData += f" > "
+            return format_html(historyData)
+
+        return 'No changes'
+
+class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
+    daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
+    hours = models.FloatField(default=0.0)
+
+
+
 class DailyProjectUpdateAttachment(TimeStampMixin, AuthorMixin):
-    daily_project_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True)
+    daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True, verbose_name="Daily Project Update")
     title = models.CharField(max_length=220)
     attachment = models.FileField(verbose_name="Document", upload_to="uploads/daily_update/%y/%m", null=True, blank=True)
 
@@ -382,6 +402,7 @@ class CodeReview(TimeStampMixin, AuthorMixin):
     oop_principal = models.FloatField()
     design_pattern = models.FloatField()
     standard_git_commit = models.FloatField()
+    review_at = models.DateTimeField(auto_now_add=False, null=True)
 
     avg_rating = models.FloatField()
 

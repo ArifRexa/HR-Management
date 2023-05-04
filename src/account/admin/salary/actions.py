@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from django.template.loader import get_template
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
+from django.contrib import messages
 
 import config.settings
 from account.models import EmployeeSalary, SalarySheet, SalaryDisbursement
@@ -12,8 +13,8 @@ from config.utils.pdf import PDF
 
 
 class SalarySheetAction(admin.ModelAdmin):
-    actions = ('export_excel', 'export_personal_account_dis', 'export_salary_account_dis',
-               'export_salary_account_dis_pdf', 'export_personal_account_dis_pdf')
+    actions = ('export_excel', 'export_salary_account_dis',
+               'export_salary_account_dis_pdf', 'export_bonus_account_dis_pdf')
 
     @admin.action(description='Export in Excel')
     def export_excel(self, request, queryset):
@@ -54,6 +55,22 @@ class SalarySheetAction(admin.ModelAdmin):
                 'account_number': '1481100038741'
             }
         )
+    
+    @admin.action(description='Export Bonus Account Disbursements (PDF)')
+    def export_bonus_account_dis_pdf(self, request, queryset):
+        print(queryset.filter(festival_bonus=False).exists())
+        if queryset.filter(festival_bonus=False).exists():
+            return self.message_user(request, 'In this salary sheet does not include festival bonus !!!', level=messages.WARNING)
+        
+        return self.bonus_pdf(
+            queryset=queryset,
+            filter=('disbursement_type', 'salary_account'),
+            bank={
+                'ref': 'Mediuswareltd',
+                'account_name': 'Mediusware Ltd.',
+                'account_number': '1481100038741'
+            }
+        )
 
     def export_in_pdf(self, queryset, filter=None, bank=None):
         salary_disbursement = SalaryDisbursement.objects.filter(filter).first()
@@ -67,6 +84,20 @@ class SalarySheetAction(admin.ModelAdmin):
             'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
         }
         pdf.template_path = 'letters/bank_salary.html'
+        return pdf.render_to_pdf()
+
+    def bonus_pdf(self, queryset, filter=None, bank=None):
+        salary_disbursement = SalaryDisbursement.objects.filter(filter).first()
+        pdf = PDF()
+        pdf.context = {
+            'salary_sheet': queryset.first(),
+            'employee_salary_set': queryset.first().employeesalary_set.filter(
+                employee__in=salary_disbursement.employee.all()
+            ).all(),
+            'bank': bank,
+            'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
+        }
+        pdf.template_path = 'letters/bonus_pdf.html'
         return pdf.render_to_pdf()
 
     def export_in_xl(self, queryset, query_filter=None):

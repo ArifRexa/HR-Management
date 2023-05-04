@@ -8,7 +8,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
 from employee.models.attachment import Attachment
-from employee.models.employee import EmployeeLunch
+from employee.models.employee import EmployeeLunch, Task
 
 
 @admin.register(Employee)
@@ -19,6 +19,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
     list_filter = ['active', 'permanent_date']
     autocomplete_fields = ['user', 'designation']
     change_list_template = 'admin/employee/list/index.html'
+    exclude = ['pf_eligibility']
 
     def get_search_results(self, request, queryset, search_term):
         qs, use_distinct = super().get_search_results(request, queryset, search_term)
@@ -82,3 +83,31 @@ class EmployeeDetails(admin.ModelAdmin):
         elif request.user.employee == obj.employee:
             return ['employee']
         return ['employee', 'active']
+    
+
+# @admin.register(Task)
+# class TaskAdmin(admin.ModelAdmin):
+#     list_display = ['title', 'is_complete', 'note']
+
+#     def get_queryset(self, request):
+#         return super().get_queryset(request).filter(created_by=request.user)
+
+from employee.models import EmployeeFAQView, EmployeeFaq
+@admin.register(EmployeeFAQView)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ['question', 'answer']
+    change_list_template = "admin/employee/faq.html"
+    search_fields = ['question', 'answer']
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).filter(active=True)
+
+    # def changelist_view(self, request, extra_context):
+        # return super().changelist_view(request, extra_context)
+
+
+
+@admin.register(EmployeeFaq)
+class EmployeeFaqAdmin(admin.ModelAdmin):
+    list_display = ['question', 'active']
+    search_fields = ['question', 'answer']

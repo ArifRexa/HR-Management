@@ -1,6 +1,4 @@
 import datetime
-from datetime import timedelta
-
 from django.contrib import admin
 from django.db.models import Q, Sum
 
@@ -15,16 +13,10 @@ from config.admin.utils import simple_request_filter
 from project_management.models import (
     EmployeeProjectHour,
     DailyProjectUpdate,
-    DailyProjectUpdateGroupByEmployee,
-    DailyProjectUpdateGroupByProject,
-    DailyProjectUpdateGroupByManager,
     DailyProjectUpdateAttachment
 )
-from django.template.response import TemplateResponse
-from functools import partial, update_wrapper, wraps
-from django.urls import path
-from employee.models.employee import Employee
 
+from project_management.models import DailyProjectUpdateHistory
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = 'hour type'
@@ -118,11 +110,12 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
     model = DailyProjectUpdateAttachment
     extra = 0
 
+
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
     list_display = ('get_date', 'employee', 'project',
-                    'get_hours', 'get_update', 'manager', 'status_col')
+                    'get_hours','history', 'manager', 'status_col')
     list_filter = ('status', 'project', 'employee', 'manager', )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
@@ -166,6 +159,16 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 return ['created_at']
             else:
                 return self.readonly_fields
+    def history(self, obj):
+        historyData = ""
+        if obj.history is not None:
+            for history in obj.history.order_by('-created_at'):
+                historyData += f"{history.hours}"
+                if history != obj.history.order_by('-created_at').last():
+                     historyData += f" > "
+            return format_html(historyData)
+
+        return 'No changes'
 
     @admin.display(description="Date", ordering='created_at')
     def get_date(self, obj):
@@ -173,6 +176,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.display(description="Update")
     def get_update(self, obj):
+        return obj.update
         html_template = get_template(
             'admin/project_management/list/col_dailyupdate.html')
         html_content = html_template.render({
@@ -274,3 +278,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if not request.user.is_superuser and obj and obj.employee != request.user.employee:
             permitted = False
         return permitted
+    
+    def save_model(self, request, obj, form, change) -> None:
+        super().save_model(request, obj, form, change)
+        
+        if change == False:
+            return DailyProjectUpdateHistory.objects.create(hours=request.POST.get('hours'), daily_update=obj)
+            
+        requested_hours = float(request.POST.get('hours'))
+        if requested_hours != obj.hours or obj.created_by is not request.user:
+            return DailyProjectUpdateHistory.objects.create(hours=request.POST.get('hours'), daily_update=obj)
+        

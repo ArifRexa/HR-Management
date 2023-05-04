@@ -5,6 +5,7 @@ from django.template.loader import get_template
 
 from account.models import Loan, LoanPayment, LoanGuarantor, LoanAttachment
 from config.utils.pdf import PDF
+from django.contrib import messages
 
 
 class LoadGuarantorInline(admin.StackedInline):
@@ -21,7 +22,7 @@ class LoadAttachmentInline(admin.TabularInline):
 class LoadAdmin(admin.ModelAdmin):
     list_display = ('employee', 'loan_amount', 'due', 'emi', 'tenor')
     inlines = (LoadGuarantorInline, LoadAttachmentInline)
-    actions = ('print_loan_agreement',)
+    actions = ('print_loan_agreement', 'duplicate')
     list_filter = ('employee',)
     search_fields = ('employee__full_name',)
 
@@ -32,6 +33,15 @@ class LoadAdmin(admin.ModelAdmin):
         pdf.template_path = 'agreements/loan_agreement.html'
         pdf.context = {'loans': queryset}
         return pdf.render_to_pdf(download=True)
+    
+    @admin.action(description="Duplicate selected items")
+    def duplicate(self, request, queryset):
+        for obj in queryset:
+            obj.id = None
+            obj.save()
+
+        self.message_user(request, 'Duplicated all selected items', messages.SUCCESS)
+         
 
     @admin.display(description='Due amount')
     def due(self, obj: Loan):

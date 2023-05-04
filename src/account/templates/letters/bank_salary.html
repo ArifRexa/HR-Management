@@ -17,7 +17,7 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ employee_salary.employee }}</td>
                 <td>{{ employee_salary.employee | get_account_number }}</td>
-                <td>{{ employee_salary.gross_salary | to_floor }}</td>
+                <td>{{ employee_salary.gross_amount | to_floor }}</td>
             </tr>
         {% endfor %}
         </tbody>

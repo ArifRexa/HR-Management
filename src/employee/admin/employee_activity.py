@@ -148,14 +148,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 queryset=PrayerInfo.objects.filter(
                     created_at__date__gte=last_x_date,
                 ),
-            ),
-            Prefetch(
-                "employeeprojecthour_set",
-                queryset=EmployeeProjectHour.objects.filter(
-                    project_hour__date__gte=last_x_date,
-                    project_hour__hour_type='bonus',
-                ).select_related("project_hour"),
-            ),
+            )
         ).annotate(
             last_month_attendance=Count(
                 "employeeattendance",
@@ -183,7 +176,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             temp = {}
             attendances = emp.employeeattendance_set.all()
             prayerinfos = emp.prayerinfo_set.all()
-            empprojhours = emp.employeeprojecthour_set.all()
+            empprojhours = emp.employeeprojecthour_set.filter(
+                    project_hour__date__gte=last_x_date,
+                    project_hour__hour_type='bonus',
+                )
             for date in last_x_dates:
                 temp[date] = dict()
 

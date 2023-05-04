@@ -1,0 +1,31 @@
+{% extends "letters/base/bonus_base.html" %}
+
+{% load salary_sheet_util %}
+{% block salary_table %}
+    <table width="100%" border="1" cellpadding="2">
+        <thead>
+        <tr>
+            <th width="40">Serial</th>
+            <th>Name</th>
+            <th>Account No.</th>
+            <th width="150">Amount</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for employee_salary in employee_salary_set %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ employee_salary.employee }}</td>
+                <td>{{ employee_salary.employee | get_account_number }}</td>
+                <td>{{ employee_salary.festival_bonus | to_floor }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        <tfoot>
+        <tr style="padding-top: 4px">
+            <th colspan="3" align="right">Total</th>
+            <th align="left">{{ employee_salary_set | _total_bonus }}</th>
+        </tr>
+        </tfoot>
+    </table>
+{% endblock %}

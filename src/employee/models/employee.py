@@ -1,12 +1,11 @@
 import uuid
-
 import datetime
 from dateutil.relativedelta import relativedelta
-
 from django.contrib.auth.models import User, Group
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -14,11 +13,10 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.utils.timesince import timesince
 from tinymce.models import HTMLField
-
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
-
+from django.utils.html import format_html
 
 class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -45,11 +43,13 @@ class Employee(TimeStampMixin, AuthorMixin):
     project_eligibility = models.BooleanField(default=True)
     leave_in_cash_eligibility = models.BooleanField(default=True)
     show_in_attendance_list = models.BooleanField(default=True)
-    pf_eligibility = models.BooleanField(default=True)
+    pf_eligibility = models.BooleanField(default=False)
     list_order = models.IntegerField(default=100)
 
     birthday_image = models.ImageField(null=True, blank=True)
     birthday_image_shown = models.BooleanField(default=False)
+    need_cto = models.BooleanField(verbose_name="I need help from CTO", default=False)
+    need_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
@@ -82,6 +82,14 @@ class Employee(TimeStampMixin, AuthorMixin):
         return ''
     
     @property
+    def one_month_less(self):
+        current_month = datetime.datetime.today()
+        emp_month = self.created_at - relativedelta(months=-1)
+        if current_month < emp_month:
+            return True
+        return False
+    
+    @property
     def last_x_months_feedback(self):
         current_month = datetime.datetime.today()
         last_x_months = current_month + relativedelta(months=-6)
@@ -89,6 +97,18 @@ class Employee(TimeStampMixin, AuthorMixin):
             created_at__lte=current_month,
             created_at__gte=last_x_months,
         ).order_by("-created_at").exclude(employee__active=False)
+    @property
+    def last_four_month_project_hours(self):
+        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=3), project_hour__hour_type="project")\
+            .annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
+        format_str = "<hr>"
+        for index, hours in enumerate(project_hours):
+            # current_month = datetime.datetime.now().strftime("%B")
+            # month = hours['month'].strftime('%B')
+            format_str += f"{hours['total_hours']}"
+            if (index + 1) != len(project_hours):
+                format_str += f" - "
+        return format_html(format_str)
 
     def save(self, *args, **kwargs, ):
         self.save_user()
@@ -256,3 +276,37 @@ class PrayerInfo(AuthorMixin, TimeStampMixin):
                                 + self.waqt_isha
         
         return super(PrayerInfo, self).save(*args, **kwargs)
+    
+class Task(TimeStampMixin, AuthorMixin):
+    is_complete = models.BooleanField(default=False)
+    title = models.CharField(max_length=200, null=True)
+    note = models.TextField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.title
+    
+    class Meta:
+        verbose_name = "Todo"
+        verbose_name_plural = "Todo List"
+
+
+from tinymce.models import HTMLField
+class EmployeeFaq(TimeStampMixin, AuthorMixin):
+    question = models.CharField(max_length=200)
+    answer = HTMLField()
+    active = models.BooleanField(default=True)
+
+    def __str__(self) -> str:
+        return self.question
+    
+    class Meta:
+         verbose_name = 'Set FAQ'
+         verbose_name_plural = "Set FAQ"
+class EmployeeFAQView(EmployeeFaq):
+    class Meta:
+        proxy = True
+        verbose_name = "FAQ List"
+        permissions = (
+            ('employee_faqs_view', 'Can Employee FAQ list view.'),
+        )
+        verbose_name_plural = "FAQ List"

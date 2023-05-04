@@ -76,6 +76,7 @@
                 <th>Project</th>
                 <th>Employee</th>
                 <th>Hours</th>
+                <th>History</th>
                 <th>Manager</th>
                 <th>Status</th>
               
@@ -87,6 +88,7 @@
               {% for hour in values %}
               <tr>
                 <td>{{ hour.created_at }}</td>
+               
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}">{{ hour.project }}</td>
                 {% endifchanged %}
@@ -101,6 +103,7 @@
                     {% endif %}
                 </td>
                 {% endifchanged %}
+                <td>{{ hour.get_hours_history }}</td>
                 <td>{{ hour.manager }}</td>
                 <td>
                   {% if hour.status == "pending" %}

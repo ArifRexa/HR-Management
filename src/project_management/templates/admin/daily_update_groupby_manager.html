@@ -76,6 +76,7 @@
                 <th>Manager</th>
                 <th>Employee</th>
                 <th>Hour</th>
+                <th>History</th>
                 <th>Project</th>
                 <th>Status</th>
               
@@ -95,12 +96,13 @@
                 <td rowspan="{{ values|length }}">
                   {% if key.daily_project_hours <= 4 %} <b style="color: red; font-weight: bold">
                     {{ key.daily_project_hours }}
-                    </b>
-                    {% else %}
-                    {{ key.daily_project_hours }}
-                    {% endif %}
+                  </b>
+                  {% else %}
+                  {{ key.daily_project_hours }}
+                  {% endif %}
                 </td>
                 {% endifchanged %}
+                <td>{{ hour.get_hours_history }}</td>
                 <td>{{ hour.project }}</td>
                 <td>
                   {% if hour.status == "pending" %}

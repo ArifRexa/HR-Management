@@ -45,7 +45,7 @@ class ExpanseAttachmentInline(admin.TabularInline):
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by', 'is_approved')
     date_hierarchy = 'date'
-    list_filter = ['expanse_group', 'expense_category', 'date']
+    list_filter = ['is_approved', 'expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
     search_fields = ['note']
@@ -54,7 +54,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj):
         rfs = super().get_readonly_fields(request, obj)
-
+        rfs += ('approved_by', )
         if not request.user.is_superuser and not request.user.has_perm("account.can_approve_expense"):
             rfs += ('is_approved', )
         return rfs
@@ -106,7 +106,8 @@ class ExpenseAdmin(admin.ModelAdmin):
     @admin.action()
     def approve_expense(self, request, queryset):
         if request.user.is_superuser or request.user.has_perm("account.can_approve_expense"):
-            queryset.update(is_approved=True)
+            queryset.update(is_approved=True, approved_by=request.user)
+
             messages.success(request, 'Updated Successfully')
         else:
             messages.error(request, "You don't have enough permission")
@@ -122,3 +123,15 @@ class ExpenseAdmin(admin.ModelAdmin):
             )
             mapped_date.append(context)
         return mapped_date
+    
+    def get_form(self, request, obj, **kwargs):
+        if not request.user.has_perm('account.can_approve_expense'):
+            self.exclude = ['is_approved']
+        return super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
+    
+    def save_model(self, request, obj, form, change) -> None:
+        if obj.is_approved == True: 
+            obj.approved_by = request.user
+        else:
+            obj.approved_by = None
+        return super().save_model(request, obj, form, change)

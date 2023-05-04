@@ -1,5 +1,3 @@
-import json
-
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.shortcuts import redirect, render
@@ -7,12 +5,14 @@ from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
-from employee.models import EmployeeActivity, EmployeeOnline
+from employee.models import EmployeeActivity, EmployeeOnline, Employee
 from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
-from django.http import HttpResponse
+import datetime
+from employee.models import Config
+from employee.mail import cto_help_mail
 
 # @white_listed_ip_check
 @require_http_methods(['POST', 'GET'])
@@ -55,6 +55,7 @@ def change_status(request, *args, **kwargs):
 
 
 @require_http_methods(['POST'])
+@login_required(login_url='/admin/login/')
 @not_for_management
 def change_project(request, *args, **kwargs):
     employee_project = EmployeeProject.objects.get(employee=request.user.employee)
@@ -67,3 +68,68 @@ def change_project(request, *args, **kwargs):
         messages.error(request, 'Something went wrong')
         return redirect('/admin/')
 
+@require_http_methods(['POST', 'GET'])
+@login_required(login_url='/admin/login/')
+@not_for_management
+def need_cto_help(request, *args, **kwargs):
+    employee = Employee.objects.get(id=request.user.employee.id)
+    if request.user.employee.need_cto:
+        employee.need_cto = False
+        employee.need_at = None
+        employee.save()
+        messages.success(request, 'I got help from CTO. Thank You.')
+        return redirect('/admin/')
+    else:
+        employee.need_cto = True
+        employee.need_at = timezone.now()
+        employee.save()
+
+        today = datetime.date.today()
+        dayname = today.strftime("%A")
+        off_list = ["Saturday", "Sunday"]
+
+        if not dayname in off_list:
+            print('send email')
+            if Config.objects.first().cto_email is not None:
+                email_list = Config.objects.first().cto_email.strip()
+                email_list = email_list.split(',')
+                cto_help_mail(request.user.employee, {'waitting_at': timezone.now(), 'receiver' : email_list})
+
+        messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
+        return redirect('/admin/')
+
+
+from rest_framework import serializers
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
+
+from employee.models.employee import Task
+
+class TodoSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Task
+        fields = "__all__"
+
+
+class TodoApiList(ListAPIView):
+    serializer_class = TodoSerializer
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
+    
+class TodoCreateAPI(CreateAPIView):
+    serializer_class = TodoSerializer
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+class TodoRetriveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
+    serializer_class = TodoSerializer
+    queryset = Task.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return super().get_queryset().filter(created_by=self.request.user)
