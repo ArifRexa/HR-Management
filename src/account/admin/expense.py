@@ -76,7 +76,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super(ExpenseAdmin, self).get_queryset(request)
-        if not request.user.is_superuser or not request.user.has_perm("can_approve_expense"):
+        if not request.user.is_superuser and not request.user.has_perm("account.can_approve_expense"):
             return qs.filter(created_by__id=request.user.id)
         return qs
 
