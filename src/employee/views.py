@@ -14,7 +14,7 @@ import datetime
 from employee.models import Config
 from employee.mail import cto_help_mail
 
-# @white_listed_ip_check
+@white_listed_ip_check
 @require_http_methods(['POST', 'GET'])
 @login_required(login_url='/admin/login/')
 @not_for_management
