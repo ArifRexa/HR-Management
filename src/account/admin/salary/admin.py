@@ -17,9 +17,16 @@ from account.repository.SalarySheetRepository import SalarySheetRepository
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
     extra = 0
+    exclude = [
+        'provident_fund',
+        'code_quality_bonus',
+    ]
     readonly_fields = ('employee', 'net_salary', 'overtime',
                        'project_bonus', 'leave_bonus', 'festival_bonus', 
-                       'food_allowance', 'loan_emi', 'provident_fund', 'code_quality_bonus', 'gross_salary', ) #'get_details'
+                       'food_allowance', 'loan_emi', 
+                       # 'provident_fund', 'code_quality_bonus', 
+                       'gross_salary', #'get_details'
+    ) 
     can_delete = False
 
     @admin.display(description="More Info")
