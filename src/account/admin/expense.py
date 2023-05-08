@@ -45,7 +45,7 @@ class ExpanseAttachmentInline(admin.TabularInline):
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by', 'is_approved')
     date_hierarchy = 'date'
-    list_filter = ['is_approved', 'expanse_group', 'expense_category', 'date']
+    list_filter = ['is_approved', 'created_by','expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
     search_fields = ['note']
