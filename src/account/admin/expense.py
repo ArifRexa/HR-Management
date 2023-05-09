@@ -3,7 +3,7 @@ from datetime import date
 
 from dateutil.utils import today
 from django.contrib import admin
-from django.contrib.admin import AdminSite
+from django.contrib.admin import AdminSite, RelatedOnlyFieldListFilter
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q, Value, QuerySet, Func, F, CharField
 from django.template.loader import get_template
@@ -45,7 +45,7 @@ class ExpanseAttachmentInline(admin.TabularInline):
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = ('date', 'expanse_group', 'expense_category', 'get_amount', 'note', 'created_by', 'is_approved')
     date_hierarchy = 'date'
-    list_filter = ['is_approved', 'created_by','expanse_group', 'expense_category', 'date']
+    list_filter = ['is_approved', ('created_by', RelatedOnlyFieldListFilter,),'expanse_group', 'expense_category', 'date']
     change_list_template = 'admin/expense/list.html'
     inlines = [ExpanseAttachmentInline]
     search_fields = ['note']
