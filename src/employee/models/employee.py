@@ -99,15 +99,44 @@ class Employee(TimeStampMixin, AuthorMixin):
         ).order_by("-created_at").exclude(employee__active=False)
     @property
     def last_four_month_project_hours(self):
-        project_hours = self.employeeprojecthour_set.filter(created_at__gte=timezone.now() - relativedelta(months=3), project_hour__hour_type="project")\
-            .annotate(month=TruncMonth('created_at')).values('month').annotate(total_hours=Sum('hours')).values('month', 'total_hours')
-        format_str = "<hr>"
-        for index, hours in enumerate(project_hours):
-            # current_month = datetime.datetime.now().strftime("%B")
-            # month = hours['month'].strftime('%B')
-            format_str += f"{hours['total_hours']}"
-            if (index + 1) != len(project_hours):
-                format_str += f" - "
+        project_hours = self.employeeprojecthour_set.filter(
+            project_hour__date__gte=timezone.now() - relativedelta(months=3), 
+            project_hour__hour_type="project",
+        ).annotate(
+            month=TruncMonth('project_hour__date')
+        ).values('month').annotate(
+            total_hours=Sum('hours')
+        ).values('month', 'total_hours')
+
+        x=4
+        now=timezone.now().date().replace(day=1)
+        last_x_months = [(now - relativedelta(months=i)) for i in range(x)]
+
+        project_hour_list = []
+        for month_date in last_x_months:
+            for hours in project_hours:
+                month = hours['month'].replace(day=1)
+                if month == month_date:
+                    project_hour_list.append(hours['total_hours'])
+                    break
+            else:
+                project_hour_list.append(0.0)
+        
+        # print(project_hour_list)
+        format_str = "<hr>" + (" - ".join(map(str, project_hour_list)))
+
+
+        # format_str = "<hr>"
+        # for index, hours in enumerate(project_hours):
+        #     # current_month = datetime.datetime.now().strftime("%B")
+        #     # month = hours['month'].strftime('%B')
+
+        #     # First day of that month
+        #     # month = hours['month'].date().replace(day=1)
+
+        #     format_str += f"{hours['total_hours']}"
+        #     if (index + 1) != len(project_hours):
+        #         format_str += f" - "
         return format_html(format_str)
 
     def save(self, *args, **kwargs, ):
