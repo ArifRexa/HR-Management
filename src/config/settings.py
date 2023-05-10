@@ -235,7 +235,7 @@ if DEBUG:
             'MIN_TIME_TO_LOG':0,
             'MIN_QUERY_COUNT_TO_LOG':0
         },
-        'IGNORE_REQUEST_PATTERNS': [],
+        'IGNORE_REQUEST_PATTERNS': [r'^/admin/jsi18n/'],
         'IGNORE_SQL_PATTERNS': [r'silk_'],
         'DISPLAY_DUPLICATES': None,
         'RESPONSE_HEADER': 'X-DjangoQueryCount-Count',
