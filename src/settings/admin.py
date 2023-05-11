@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from config.utils.pdf import PDF
 from employee.models import Employee
 from .models import Designation, PayScale, LeaveManagement, PublicHoliday, PublicHolidayDate, Bank, Letter, OpenLetter, \
-    FinancialYear
+    FinancialYear, Announcement
 from django_q import models as q_models
 from django_q import admin as q_admin
 
@@ -94,3 +94,18 @@ admin.site.unregister([q_models.Success])
 class SuccessfulTask(q_admin.TaskAdmin):
     date_hierarchy = 'started'
     list_filter = ('started',)
+
+
+
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ('created_at', 'get_date', 'description',)
+    date_hierarchy = 'start_datetime'
+
+    @admin.display(description='Active Date')
+    def get_date(self, obj):
+        
+        data = obj.start_datetime if obj.start_datetime == obj.end_datetime  else f"{obj.start_datetime} - {obj.end_datetime}"
+
+        return data
+

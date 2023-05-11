@@ -1,18 +1,27 @@
+from django.contrib.auth.models import AnonymousUser
 from django.db.models import Count, BooleanField, Case, When, Value, Min
+from django.http import HttpResponseRedirect
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.html import format_html
+
+from config.settings import employee_ids
+
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
 from employee.models import EmployeeOnline
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
-from config.settings import employee_ids
-from datetime import datetime
-from django.contrib.auth.models import AnonymousUser
 from employee.models.employee import Employee
 from employee.models import FavouriteMenu
-from django.utils import timezone
-from django.http import HttpResponseRedirect
-from django.urls import reverse
+
+from settings.models import Announcement
+
+from datetime import datetime
+
+
+
 
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
@@ -66,7 +75,8 @@ def formal_summery(request):
         "employee_projects": employee_projects,
         "ord": order_by,
         "birthday_today": get_managed_birthday_image(request),
-        "current_month_feedback_done": current_month_feedback_done,
+        "birthdays_today": current_month_feedback_done,
+        "announcement": get_announcement(request),
     }
 
 
@@ -92,6 +102,32 @@ def employee_project_form(request):
         return {
             'employee_project_form': None
         }
+
+
+def get_announcement(request):
+    data = []
+    now = timezone.now()
+    
+    # Get Birthdays
+    birthdays_today = Employee.objects.filter(date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
+    if birthdays_today.exists():
+        birthdays = [emp.full_name for emp in birthdays_today]
+        birthdays_text = ', '.join(birthdays)
+        data.append(f"{birthdays_text} {'has' if len(birthdays)==1 else 'have'} birthday today.")
+
+    # Get Announcements
+    announcements = Announcement.objects.filter(start_datetime__lte=now, end_datetime__gte=now)
+    if announcements.exists():
+        data.extend(announcement.description for announcement in announcements)
+    
+    # Format Data
+    if data:
+        data = 'Announcements: ' + '  |  '.join(
+            [f'<span class="single_announcement">{d}</span>' for d in data]
+        )
+        data = format_html(data)
+
+    return data if data else None
 
 
 def get_managed_birthday_image(request):
