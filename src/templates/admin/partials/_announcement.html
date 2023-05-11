@@ -1,0 +1,49 @@
+{% if announcement %}
+
+<style>
+    #_announcement {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        background: #264b5d;
+        padding: 0.8rem 2rem;
+
+        overflow: hidden;
+    }
+    #_announcement__inner {
+        color: white;
+        white-space: nowrap;
+        font-size: 1.2rem;
+        font-weight: 600;
+    }
+</style>
+
+<section id="_announcement">
+    <span id="_announcement__inner">
+        {{ announcement }}
+    </span>
+</section>
+
+<script>
+    const announcement = document.getElementById("_announcement");
+    const announcement__inner = document.getElementById("_announcement__inner");
+
+    function animate(element) {
+        let elementWidth = element.offsetWidth;
+        let parentWidth = element.parentElement.offsetWidth;
+        let flag = parentWidth;
+
+        setInterval(() => {
+            element.style.marginLeft = --flag + "px";
+
+            if (elementWidth == -flag) {
+                flag = parentWidth;
+            }
+        }, 15);
+    }
+    animate(announcement__inner);
+</script>
+
+{% endif %}
+

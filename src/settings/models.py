@@ -92,3 +92,12 @@ class Letter(TimeStampMixin, AuthorMixin):
 class OpenLetter(TimeStampMixin):
     title = models.CharField(max_length=255)
     message = models.TextField()
+
+
+
+class Announcement(TimeStampMixin, AuthorMixin):
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+
+    description = models.TextField()
+
