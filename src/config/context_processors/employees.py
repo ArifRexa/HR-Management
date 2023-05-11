@@ -109,7 +109,7 @@ def get_announcement(request):
     now = timezone.now()
     
     # Get Birthdays
-    birthdays_today = Employee.objects.filter(date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
+    birthdays_today = Employee.objects.filter(active=True, date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
     if birthdays_today.exists():
         birthdays = [emp.full_name for emp in birthdays_today]
         birthdays_text = ', '.join(birthdays)
