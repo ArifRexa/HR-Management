@@ -75,7 +75,7 @@ def formal_summery(request):
         "employee_projects": employee_projects,
         "ord": order_by,
         "birthday_today": get_managed_birthday_image(request),
-        "birthdays_today": current_month_feedback_done,
+        "current_month_feedback_done": current_month_feedback_done,
         "announcement": get_announcement(request),
     }
 
