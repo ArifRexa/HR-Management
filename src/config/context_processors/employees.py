@@ -115,7 +115,7 @@ def get_announcement(request):
     
 
     # Get Leaves
-    leaves_today = Leave.objects.filter(start_date__lte=now, end_date__gte=now)
+    leaves_today = Leave.objects.filter(start_date__lte=now, end_date__gte=now).select_related("employee")
     if leaves_today.exists():
         leaves = [leave.employee.full_name for leave in leaves_today]
         leaves_text = ', '.join(leaves)
