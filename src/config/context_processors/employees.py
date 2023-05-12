@@ -122,7 +122,8 @@ def get_announcement(request):
     
     # Format Data
     if data:
-        data = 'Announcements: ' + '  |  '.join(
+        initial = f'<span style="background-color:tomato;padding:0.4rem 0.8rem;border-radius:0.4rem;">ANNOUNCEMENTS</span> {"&nbsp;"*8}🚨'
+        data = initial + f' {"&nbsp;"*8}🚨'.join(
             [f'<span class="single_announcement">{d}</span>' for d in data]
         )
         data = format_html(data)
