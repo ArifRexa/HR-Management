@@ -337,6 +337,12 @@ from employee.models import Employee, Config
 from employee.mail import cto_help_mail
 
 def cto_help_pending_alert():
+    current_time = timezone.now()
+
+    # Send an email if the hour is even or between 12 and 10.
+    if current_time.hour%2 != 0 or current_time.hour > 22 or current_time.hour<12:
+        return
+
     employees =  Employee.objects.filter(need_cto=True)
     if Config.objects.first().cto_email is not None and employees is not None:
         email_list = Config.objects.first().cto_email.strip()
