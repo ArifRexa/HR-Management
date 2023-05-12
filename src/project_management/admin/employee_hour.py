@@ -187,7 +187,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.display(description="Hours", ordering='hours')
     def get_hours(self, obj):
         custom_style = ''
-        if obj.hours <= 4:
+        if obj.hours <= 5:
             custom_style = ' style="color:red; font-weight: bold;"'
         html_content = f'<span{custom_style}>{obj.hours}</span>'
         return format_html(html_content)

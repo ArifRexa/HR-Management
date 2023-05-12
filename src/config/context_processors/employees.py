@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AnonymousUser
-from django.db.models import Count, BooleanField, Case, When, Value, Min
+from django.db.models import Count, BooleanField, Case, When, Value, Min, Q
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -10,7 +10,7 @@ from config.settings import employee_ids
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
-from employee.models import EmployeeOnline
+from employee.models import EmployeeOnline, Leave
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from employee.models.employee import Employee
@@ -107,22 +107,32 @@ def employee_project_form(request):
 def get_announcement(request):
     data = []
     now = timezone.now()
-    
-    # Get Birthdays
-    birthdays_today = Employee.objects.filter(active=True, date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
-    if birthdays_today.exists():
-        birthdays = [emp.full_name for emp in birthdays_today]
-        birthdays_text = ', '.join(birthdays)
-        data.append(f"{birthdays_text} {'has' if len(birthdays)==1 else 'have'} birthday today.")
 
     # Get Announcements
     announcements = Announcement.objects.filter(start_datetime__lte=now, end_datetime__gte=now)
     if announcements.exists():
         data.extend(announcement.description for announcement in announcements)
     
+
+    # Get Leaves
+    leaves_today = Leave.objects.filter(start_date__lte=now, end_date__gte=now).select_related("employee")
+    if leaves_today.exists():
+        leaves = [leave.employee.full_name for leave in leaves_today]
+        leaves_text = ', '.join(leaves)
+        data.append(f"{leaves_text} {'is' if len(leaves)==1 else 'are'} on leave today.")
+    
+
+    # Get Birthdays
+    birthdays_today = Employee.objects.filter(active=True, date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
+    if birthdays_today.exists():
+        birthdays = [emp.full_name for emp in birthdays_today]
+        birthdays_text = ', '.join(birthdays)
+        data.append(f"{birthdays_text} {'has' if len(birthdays)==1 else 'have'} birthday today.")
+    
     # Format Data
     if data:
-        data = 'Announcements: ' + '  |  '.join(
+        initial = f'<span style="background-color:tomato;padding:0.4rem 0.8rem;border-radius:0.4rem;">ANNOUNCEMENTS</span> {"&nbsp;"*8}🚨'
+        data = initial + f' {"&nbsp;"*8}🚨'.join(
             [f'<span class="single_announcement">{d}</span>' for d in data]
         )
         data = format_html(data)

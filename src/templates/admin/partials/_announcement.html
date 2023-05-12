@@ -40,9 +40,15 @@
             if (elementWidth == -flag) {
                 flag = parentWidth;
             }
-        }, 15);
+        }, 10);
     }
     animate(announcement__inner);
+
+
+    setTimeout(() => {
+        announcement.style.display="None";
+    }, 1000 * 60 * 5);
+
 </script>
 
 {% endif %}
