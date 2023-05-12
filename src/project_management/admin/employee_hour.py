@@ -182,7 +182,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_content = html_template.render({
             'update': obj.update,
         })
-        return format_html(html_content)
+
+        try:
+            data = format_html(html_content)
+        except:
+            data = "-"
+
+        return data
 
     @admin.display(description="Hours", ordering='hours')
     def get_hours(self, obj):
