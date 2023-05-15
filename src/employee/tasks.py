@@ -337,6 +337,15 @@ from employee.models import Employee, Config
 from employee.mail import cto_help_mail
 
 def cto_help_pending_alert():
+    current_time = timezone.now()
+
+    # Send an email on office day every 2 hour.
+    if (
+        current_time.weekday() > 4
+        or current_time.hour not in [12, 15, 18, 21]
+    ):
+        return
+
     employees =  Employee.objects.filter(need_cto=True)
     if Config.objects.first().cto_email is not None and employees is not None:
         email_list = Config.objects.first().cto_email.strip()

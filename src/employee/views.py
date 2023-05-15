@@ -29,7 +29,7 @@ def change_status(request, *args, **kwargs):
     )
     # TODO : feedback should not be applied for Himel vai
 
-    if not feedback.exists() and now.day > 25:
+    if not feedback.exists() and now.day > 20:
         messages.error(request, 'Please provide feedback first')
         return redirect('/admin/')
 
