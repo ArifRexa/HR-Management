@@ -339,8 +339,11 @@ from employee.mail import cto_help_mail
 def cto_help_pending_alert():
     current_time = timezone.now()
 
-    # Send an email if the hour is even or between 12 and 10.
-    if current_time.hour%2 != 0 or current_time.hour > 22 or current_time.hour<12:
+    # Send an email on office day every 2 hour.
+    if (
+        current_time.weekday() > 4
+        or current_time.hour not in [12, 15, 18, 21]
+    ):
         return
 
     employees =  Employee.objects.filter(need_cto=True)
