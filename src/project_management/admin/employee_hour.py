@@ -4,7 +4,8 @@ from django.db.models import Q, Sum
 
 from django.template.loader import get_template
 from django.utils import timezone
-from django.utils.html import format_html, linebreaks
+from django.utils.html import format_html, linebreaks, escape
+from django.utils.safestring import mark_safe
 
 from employee.admin.employee._forms import DailyUpdateFilterForm
 
@@ -178,9 +179,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def get_update(self, obj):
         # return obj.update
         html_template = get_template(
-            'admin/project_management/list/col_dailyupdate.html')
+            'admin/project_management/list/col_dailyupdate.html'
+        )
         html_content = html_template.render({
-            'update': obj.update,
+            'update': obj.update.replace('{', '_').replace('}', '_'),
         })
 
         try:
