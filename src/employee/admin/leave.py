@@ -36,6 +36,10 @@ class LeaveForm(forms.ModelForm):
     class Meta:
         model = Leave
         fields = '__all__'
+    
+    def __init__(self, *args, **kwargs):
+        super(LeaveForm, self).__init__(*args, **kwargs)
+        self.fields['message'].initial = self.placeholder
 
 
 @admin.register(Leave)
