@@ -226,6 +226,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         ('approved', '✔ Approved')
     )
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
+    note = models.TextField(null=True, blank=True, help_text="Manager's note / remarks")
 
     # def clean(self):
     #     if self.hours < 4 and self.description == "":
