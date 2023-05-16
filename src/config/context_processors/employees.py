@@ -109,7 +109,9 @@ def get_announcement(request):
     now = timezone.now()
 
     # Get Announcements
-    announcements = Announcement.objects.filter(start_datetime__lte=now, end_datetime__gte=now)
+    announcements = Announcement.objects.filter(
+        start_datetime__lte=now, end_datetime__gte=now
+    ).order_by('-rank', '-created_at')
     if announcements.exists():
         data.extend(announcement.description for announcement in announcements)
     

@@ -98,6 +98,8 @@ class OpenLetter(TimeStampMixin):
 class Announcement(TimeStampMixin, AuthorMixin):
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
-
+    
+    rank = models.SmallIntegerField(default=0)
+    
     description = models.TextField()
 
