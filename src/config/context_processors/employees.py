@@ -110,8 +110,11 @@ def get_announcement(request):
 
     # Get Announcements
     announcements = Announcement.objects.filter(
-        start_datetime__lte=now, end_datetime__gte=now
-    ).order_by('-rank', '-created_at')
+        start_datetime__lte=now, 
+        end_datetime__gte=now,
+    ).order_by(
+        '-rank',
+    )
     if announcements.exists():
         data.extend(announcement.description for announcement in announcements)
     
