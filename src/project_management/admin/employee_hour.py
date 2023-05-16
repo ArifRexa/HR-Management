@@ -123,11 +123,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     autocomplete_fields = ('employee', 'project', )
     change_list_template = 'admin/total_employee_hour.html'
-    readonly_fields = ['status', 'created_at']
+    readonly_fields = ['status', 'created_at', 'note',]
     actions = ['update_status_approve', 'update_status_pending']
     fieldsets = (
-        ('Standard info', {
-            'fields': ('created_at', 'employee', 'manager', 'project', 'hours', 'update', 'status')
+        ('Standard Info', {
+            'fields': ('created_at', 'employee', 'manager', 'project', 'hours', 'update', 'status'),
+        }),
+        ('Extras', {
+            'fields': ('note',),
         }),
     )
 
@@ -149,7 +152,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     return ['created_at',]
             if request.user.employee == obj.employee:
                 if obj.status == 'approved':
-                    return ['created_at', 'employee', 'manager', 'project', 'update', 'hours', 'status']
+                    return ['created_at', 'employee', 'manager', 'project', 'update', 'hours', 'status', 'note',]
                 else:
                     return self.readonly_fields
             else:
