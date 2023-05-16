@@ -34,7 +34,9 @@
 
 {% block footer %}
 <div id="footer">
-    {% include 'admin/partials/_announcement.html' %}
+    {% if request.user.is_authenticated %}
+        {% include 'admin/partials/_announcement.html' %}
+    {% endif %}
 </div>
 {% endblock %}
 
