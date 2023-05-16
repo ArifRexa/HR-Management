@@ -242,8 +242,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 'is_updated_by_bot': is_updated_by_bot,
                                 'break_time': break_time_s,
                                 'break_time_hour': math.floor((break_time / (60 * 60)) % 24),
+                                'break_time_minute': math.floor(break_time / 60),
                                 'inside_time': inside_time_s,
                                 'inside_time_hour': math.floor((inside_time / (60 * 60)) % 24),
+                                'inside_time_minute': math.floor(inside_time / 60),
                             })
                         break
             date_datas.update({emp: temp})

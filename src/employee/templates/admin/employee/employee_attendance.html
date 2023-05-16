@@ -174,7 +174,7 @@
                                     </span>
                                 </p>
                                 <p class="text-center mb-1">
-                                    <span {% if data.break_time_hour >= 1 %}{% endif %}>
+                                    <span {% if data.break_time_minute <= 30 %}class="text-danger fw-bold"{% endif %}>
                                         {{ data.break_time }}
                                     </span>
                                 </p>

@@ -94,7 +94,7 @@
                 <td>{{ hour.project }} || ({{hour.hours}})</td>
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}">
-                  {% if key.daily_project_hours <= 4 %} <b style="color: red; font-weight: bold">
+                  {% if key.daily_project_hours <= 5 %} <b style="color: red; font-weight: bold">
                     {{ key.daily_project_hours }}
                     </b>
                     {% else %}

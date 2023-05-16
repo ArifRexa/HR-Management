@@ -4,7 +4,7 @@ from django.contrib import admin
 
 # Register your models here.
 from django.template.defaultfilters import truncatewords, truncatechars, truncatechars_html
-from django.utils.html import strip_tags
+from django.utils.html import strip_tags, format_html
 from django.utils.safestring import mark_safe
 
 from config.utils.pdf import PDF
@@ -99,13 +99,11 @@ class SuccessfulTask(q_admin.TaskAdmin):
 
 @admin.register(Announcement)
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'get_date', 'description',)
+    list_display = ('created_at', 'get_date', 'rank', 'description',)
     date_hierarchy = 'start_datetime'
 
     @admin.display(description='Active Date')
     def get_date(self, obj):
-        
-        data = obj.start_datetime if obj.start_datetime == obj.end_datetime  else f"{obj.start_datetime} - {obj.end_datetime}"
-
-        return data
+        data = f"{obj.start_datetime}<br>{obj.end_datetime}"
+        return format_html(data)
 
