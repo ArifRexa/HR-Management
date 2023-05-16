@@ -12,7 +12,8 @@ class LeaveMixin(models.Model):
     LEAVE_CHOICE = (
         ('casual', 'Casual Leave'),
         ('medical', 'Medical Leave'),
-        ('non_paid', 'Non Paid Leave')
+        ('non_paid', 'Non Paid Leave'),
+        ('half_day', 'Half Day Leave'),
     )
     LEAVE_STATUS = (
         ('pending', '⏳ Pending'),
