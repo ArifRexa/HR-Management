@@ -335,14 +335,20 @@ from tinymce.models import HTMLField
 class EmployeeFaq(TimeStampMixin, AuthorMixin):
     question = models.CharField(max_length=200)
     answer = HTMLField()
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.question
     
     class Meta:
-         verbose_name = 'Set FAQ'
-         verbose_name_plural = "Set FAQ"
+        permissions = (
+            ("can_approve_faq", "Can approve FAQ"),
+        )
+        
+        verbose_name = 'Set FAQ'
+        verbose_name_plural = "Set FAQ"
+
+
 class EmployeeFAQView(EmployeeFaq):
     class Meta:
         proxy = True
@@ -351,3 +357,4 @@ class EmployeeFAQView(EmployeeFaq):
             ('employee_faqs_view', 'Can Employee FAQ list view.'),
         )
         verbose_name_plural = "FAQ List"
+
