@@ -97,8 +97,10 @@ class Employee(TimeStampMixin, AuthorMixin):
             created_at__lte=current_month,
             created_at__gte=last_x_months,
         ).order_by("-created_at").exclude(employee__active=False)
+    
     @property
     def last_four_month_project_hours(self):
+        # Employee Project Hour
         project_hours = self.employeeprojecthour_set.filter(
             project_hour__date__gte=timezone.now() - relativedelta(months=3), 
             project_hour__hour_type="project",
@@ -108,37 +110,47 @@ class Employee(TimeStampMixin, AuthorMixin):
             total_hours=Sum('hours')
         ).values('month', 'total_hours')
 
-        x=4
-        now=timezone.now().date().replace(day=1)
-        last_x_months = [(now - relativedelta(months=i)) for i in range(x)]
+        # Manager Project Hour (Weekly Ones)
+        manager_project_hours = self.projecthour_set.filter(
+            date__gte=timezone.now() - relativedelta(months=3), 
+            hour_type="project",
+        ).annotate(
+            month=TruncMonth('date')
+        ).values('month').annotate(
+            total_hours=Coalesce(Sum('hours'), 0.0),
+        ).values('month', 'total_hours')
 
+        # Generate 4 months first day
+        now=timezone.now().date().replace(day=1)
+        last_x_months = [(now - relativedelta(months=i)) for i in range(4)]
+
+        # Empty list for storing 4 months hour
         project_hour_list = []
+
+        # Iterate through months and store the hours
         for month_date in last_x_months:
+
+            temp_hours = 0.0
+
+            # Employee Hour
             for hours in project_hours:
                 month = hours['month'].replace(day=1)
                 if month == month_date:
-                    project_hour_list.append(hours['total_hours'])
+                    temp_hours += hours['total_hours']
                     break
-            else:
-                project_hour_list.append(0.0)
+            
+            # Manager Hour
+            if manager_project_hours.exists():
+                for manager_project_hour in manager_project_hours:
+                    if month_date == manager_project_hour['month'].replace(day=1):
+                        temp_hours += manager_project_hour['total_hours']
+                        break
+            
+            project_hour_list.append(temp_hours)
         
-        # print(project_hour_list)
         format_str = "<hr>" + (" - ".join(map(str, project_hour_list)))
-
-
-        # format_str = "<hr>"
-        # for index, hours in enumerate(project_hours):
-        #     # current_month = datetime.datetime.now().strftime("%B")
-        #     # month = hours['month'].strftime('%B')
-
-        #     # First day of that month
-        #     # month = hours['month'].date().replace(day=1)
-
-        #     format_str += f"{hours['total_hours']}"
-        #     if (index + 1) != len(project_hours):
-        #         format_str += f" - "
         return format_html(format_str)
-
+    
     def save(self, *args, **kwargs, ):
         self.save_user()
         if not self.slug:
@@ -323,14 +335,20 @@ from tinymce.models import HTMLField
 class EmployeeFaq(TimeStampMixin, AuthorMixin):
     question = models.CharField(max_length=200)
     answer = HTMLField()
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.question
     
     class Meta:
-         verbose_name = 'Set FAQ'
-         verbose_name_plural = "Set FAQ"
+        permissions = (
+            ("can_approve_faq", "Can approve FAQ"),
+        )
+        
+        verbose_name = 'Set FAQ'
+        verbose_name_plural = "Set FAQ"
+
+
 class EmployeeFAQView(EmployeeFaq):
     class Meta:
         proxy = True
@@ -339,3 +357,4 @@ class EmployeeFAQView(EmployeeFaq):
             ('employee_faqs_view', 'Can Employee FAQ list view.'),
         )
         verbose_name_plural = "FAQ List"
+

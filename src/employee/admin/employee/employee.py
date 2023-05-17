@@ -111,3 +111,14 @@ class FAQAdmin(admin.ModelAdmin):
 class EmployeeFaqAdmin(admin.ModelAdmin):
     list_display = ['question', 'active']
     search_fields = ['question', 'answer']
+    readonly_fields = ['active']
+    list_filter = ('active', )
+
+    def  get_readonly_fields(self, request, obj=None):
+        ro_fields = super().get_readonly_fields(request, obj)
+        print(ro_fields)
+
+        if request.user.is_superuser or request.user.has_perm('employee.can_approve_faq'):
+            ro_fields = filter(lambda x: x not in ['active'], ro_fields)
+
+        return ro_fields
