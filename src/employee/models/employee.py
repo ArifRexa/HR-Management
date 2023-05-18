@@ -48,8 +48,13 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     birthday_image = models.ImageField(null=True, blank=True)
     birthday_image_shown = models.BooleanField(default=False)
+
     need_cto = models.BooleanField(verbose_name="I need help from CTO", default=False)
-    need_at = models.DateTimeField(null=True, blank=True)
+    need_cto_at = models.DateTimeField(null=True, blank=True)
+
+    need_hr = models.BooleanField(verbose_name="I need help from HR", default=False)
+    need_hr_at = models.DateTimeField(null=True, blank=True)
+    
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()

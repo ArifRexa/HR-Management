@@ -334,7 +334,7 @@ def bonus__project_hour_add(target_date=None):
 
 
 from employee.models import Employee, Config
-from employee.mail import cto_help_mail
+from employee.mail import cto_help_mail, hr_help_mail
 
 def cto_help_pending_alert():
     current_time = timezone.now()
@@ -352,5 +352,30 @@ def cto_help_pending_alert():
         email_list = email_list.split(',')
         
         for employee in employees:
-            cto_help_mail(employee, {'waitting_at': employee.need_at, 'receiver': email_list })
+            cto_help_mail(employee, {'waitting_at': employee.need_cto_at, 'receiver': email_list })
+
+
+def hr_help_pending_alert():
+    current_time = timezone.now()
+
+    # Send an email on office day every 2 hour.
+    if (
+        current_time.weekday() > 4
+        or current_time.hour not in [12, 15, 18, 21]
+    ):
+        return
+
+    employees =  Employee.objects.filter(need_hr=True)
+    if Config.objects.first().hr_email is not None and employees is not None:
+        email_list = Config.objects.first().hr_email.strip()
+        email_list = email_list.split(',')
+        
+        for employee in employees:
+            hr_help_mail(
+                employee, 
+                {
+                    'waiting_at': employee.need_hr_at, 
+                    'receiver': email_list 
+                }
+            )
 

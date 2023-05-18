@@ -12,7 +12,7 @@ from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 import datetime
 from employee.models import Config
-from employee.mail import cto_help_mail
+from employee.mail import cto_help_mail, hr_help_mail
 
 @white_listed_ip_check
 @require_http_methods(['POST', 'GET'])
@@ -75,13 +75,13 @@ def need_cto_help(request, *args, **kwargs):
     employee = Employee.objects.get(id=request.user.employee.id)
     if request.user.employee.need_cto:
         employee.need_cto = False
-        employee.need_at = None
+        employee.need_cto_at = None
         employee.save()
         messages.success(request, 'I got help from CTO. Thank You.')
         return redirect('/admin/')
     else:
         employee.need_cto = True
-        employee.need_at = timezone.now()
+        employee.need_cto_at = timezone.now()
         employee.save()
 
         today = datetime.date.today()
@@ -97,6 +97,44 @@ def need_cto_help(request, *args, **kwargs):
 
         messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
         return redirect('/admin/')
+
+
+
+@require_http_methods(['POST', 'GET'])
+@login_required(login_url='/admin/login/')
+@not_for_management
+def need_hr_help(request, *args, **kwargs):
+    employee = Employee.objects.get(id=request.user.employee.id)
+    if request.user.employee.need_hr:
+        employee.need_hr = False
+        employee.need_hr_at = None
+        employee.save()
+        messages.success(request, 'Got help from CTO. Thank You.')
+        return redirect('/admin/')
+    else:
+        employee.need_hr = True
+        employee.need_hr_at = timezone.now()
+        employee.save()
+
+        today = datetime.date.today()
+        dayname = today.strftime("%A")
+        off_list = ["Saturday", "Sunday"]
+
+        if not dayname in off_list:
+            if Config.objects.first().hr_email is not None:
+                email_list = Config.objects.first().hr_email.strip()
+                email_list = email_list.split(',')
+                hr_help_mail(
+                    request.user.employee, 
+                    {
+                        'waiting_at': timezone.now(), 
+                        'receiver' : email_list
+                    },
+                )
+
+        messages.success(request, 'Your request has successfully submited. HR will contact with you.')
+        return redirect('/admin/')
+
 
 
 from rest_framework import serializers
