@@ -26,7 +26,15 @@ from datetime import datetime
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
     employee_offline = EmployeeOnline.objects.filter(
-        employee__active=True).order_by('-employee__need_cto', 'active', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
+        employee__active=True
+    ).order_by(
+        '-employee__need_cto', 
+        '-employee__need_hr', 
+        'active', 
+        'employee__full_name'
+    ).exclude(
+        employee_id__in=employee_ids
+    )
 
     employee_projects = EmployeeProject.objects.filter(
         employee__active=True, employee__project_eligibility=True

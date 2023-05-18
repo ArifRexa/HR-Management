@@ -1,0 +1,9 @@
+<form action="{% url 'hr_help' %}" method="post" id="need_hr_form">
+    {% csrf_token %}
+    <div class="form-check mt-2">
+        <input class="form-check-input" type="checkbox" {% if user.employee.need_hr %} checked {% endif %} style="width:20px; height:20px" name="hr_help" id="hr_help">
+        <label class="form-check-label fs-6 fw-semibold ms-2 mt-1" for="need_hr_form">
+          Need HR
+        </label>
+      </div>
+</form>

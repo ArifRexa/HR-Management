@@ -123,6 +123,7 @@
     <div class="col-md-7">
         <ul class="list-group list-group-horizontal-md float-end">
             <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
+            <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_project_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_status_form.html' %}</li>
         </ul>
@@ -256,11 +257,18 @@
                             <span class="{% if offline.employee.one_month_less %} text-primary fs-6 {% endif %}">
                                 {{ offline.employee }}
                             </span>
+                            {% if offline.employee.need_hr %}
+                            <span class="badge float-end rounded text-dark" style="background:#B399D4;">
+                                Need HR
+                                <br>
+                                 {{ offline.employee.need_hr_at | timesince}} ago
+                            </span>
+                            {% endif %}
                             {% if offline.employee.need_cto %}
                             <span class="badge bg-success float-end rounded">
                                 Need CTO
                                 <br>
-                                 {{ offline.employee.need_at | timesince}} ago
+                                 {{ offline.employee.need_cto_at | timesince}} ago
                             </span>
                             {% endif %}
                         </li>
@@ -465,9 +473,13 @@
          * Need CTO Help form submit
          * */
         let helpCto = document.getElementById("cto_help");
-
         helpCto.addEventListener('change', (e) => {
-            document.getElementById("need_cto_form").submit()
+            document.getElementById("need_cto_form").submit();
+        });
+
+        let helpHR = document.getElementById("hr_help");
+        helpHR.addEventListener('change', (e) => {
+            document.getElementById("need_hr_form").submit();
         });
 
         function changeBtnStatus(event) {
