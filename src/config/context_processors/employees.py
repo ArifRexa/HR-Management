@@ -129,14 +129,14 @@ def get_announcement(request):
     if get_cto_needed.exists():
         cto_needers = [emp.full_name for emp in get_cto_needed]
         cto_needers_text = ', '.join(cto_needers)
-        data.append(f"{cto_needers_text} need{'s' if len(cto_needers)==1 else ''} CTO help.")
+        data.append(f"{cto_needers_text} need{'s' if len(cto_needers)==1 else ''} the CTO's help.")
     
     # Get HR
     get_hr_needed = Employee.objects.filter(active=True, need_hr=True)
     if get_hr_needed.exists():
         hr_needers = [emp.full_name for emp in get_hr_needed]
         hr_needers_text = ', '.join(hr_needers)
-        data.append(f"{hr_needers_text} need{'s' if len(hr_needers)==1 else ''} HR help.")
+        data.append(f"{hr_needers_text} need{'s' if len(hr_needers)==1 else ''} the HR's help.")
 
     # Announcements
     if announcements.exists():
