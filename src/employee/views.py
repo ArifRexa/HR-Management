@@ -109,7 +109,7 @@ def need_hr_help(request, *args, **kwargs):
         employee.need_hr = False
         employee.need_hr_at = None
         employee.save()
-        messages.success(request, 'Got help from CTO. Thank You.')
+        messages.success(request, 'Got help from HR. Thank You.')
         return redirect('/admin/')
     else:
         employee.need_hr = True
