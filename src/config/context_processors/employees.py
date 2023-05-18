@@ -123,9 +123,24 @@ def get_announcement(request):
     ).order_by(
         '-rank',
     )
+
+    # Get CTO
+    get_cto_needed = Employee.objects.filter(active=True, need_cto=True)
+    if get_cto_needed.exists():
+        cto_needers = [emp.full_name for emp in get_cto_needed]
+        cto_needers_text = ', '.join(cto_needers)
+        data.append(f"{cto_needers_text} need{'s' if len(cto_needers)==1 else ''} CTO help.")
+    
+    # Get HR
+    get_hr_needed = Employee.objects.filter(active=True, need_hr=True)
+    if get_hr_needed.exists():
+        hr_needers = [emp.full_name for emp in get_hr_needed]
+        hr_needers_text = ', '.join(hr_needers)
+        data.append(f"{hr_needers_text} need{'s' if len(hr_needers)==1 else ''} HR help.")
+
+    # Announcements
     if announcements.exists():
         data.extend(announcement.description for announcement in announcements)
-    
 
     # Get Leaves
     leaves_today = Leave.objects.filter(start_date__lte=now, end_date__gte=now).select_related("employee")
@@ -134,7 +149,6 @@ def get_announcement(request):
         for leave in leaves:
             data.append(f"{leave[0]} is on {leave[1]} today.")
     
-
     # Get Birthdays
     birthdays_today = Employee.objects.filter(active=True, date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
     if birthdays_today.exists():
