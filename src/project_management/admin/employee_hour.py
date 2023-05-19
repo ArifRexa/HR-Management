@@ -139,30 +139,28 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             'all': ('css/list.css',)
         }
         js = ('js/list.js',)
-
+    
+    
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
             return ['created_at',]
-
+        
+        if not obj:
+            return self.readonly_fields
+        
         if obj:
-            if request.user.employee.manager:
-                if obj.manager != obj.employee and obj.manager == request.user.employee:
-                    return ['created_at', 'employee', 'manager', 'project', 'update']
-                else:
-                    return ['created_at',]
-            if request.user.employee == obj.employee:
-                if obj.status == 'approved':
-                    return ['created_at', 'employee', 'manager', 'project', 'update', 'hours', 'status', 'note',]
-                else:
-                    return self.readonly_fields
-            else:
-                return self.readonly_fields
-
-        else:
-            if request.user.employee.manager:
-                return ['created_at']
-            else:
-                return self.readonly_fields
+            # If interact  as selected manager for that project
+            if obj.manager == request.user.employee:
+                return ['created_at', 'employee', 'manager', 'project', 'update', ]
+            
+            # If interact as the project employee and status approved
+            if obj.employee == request.user.employee and obj.status == 'approved':
+                return self.get_fields()
+            
+            # If interact as the project employee and status not approved
+            return self.readonly_fields
+    
+    
     def history(self, obj):
         historyData = ""
         if obj.history is not None:
@@ -243,11 +241,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
-        if not request.user.is_superuser \
-            and obj \
-                and obj.employee != request.user.employee \
-        and obj.manager != request.user.employee:
+
+        if (
+            not request.user.is_superuser
+            and obj
+            and obj.employee != request.user.employee
+            and obj.manager != request.user.employee
+        ):
             permitted = False
+        
         return permitted
 
     @admin.action(description='Status')
