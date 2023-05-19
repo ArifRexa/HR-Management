@@ -155,7 +155,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             
             # If interact as the project employee and status approved
             if obj.employee == request.user.employee and obj.status == 'approved':
-                return self.get_fields()
+                return self.get_fields(request)
             
             # If interact as the project employee and status not approved
             return self.readonly_fields
