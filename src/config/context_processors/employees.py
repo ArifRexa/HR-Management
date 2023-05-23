@@ -143,7 +143,13 @@ def get_announcement(request):
         data.extend(announcement.description for announcement in announcements)
 
     # Get Leaves
-    leaves_today = Leave.objects.filter(start_date__lte=now, end_date__gte=now).select_related("employee")
+    leaves_today = Leave.objects.filter(
+        start_date__lte=now, end_date__gte=now,
+    ).exclude(
+        status='rejected',
+    ).select_related(
+        'employee',
+    )
     if leaves_today.exists():
         leaves = [(leave.employee.full_name, dict(Leave.LEAVE_CHOICE).get(leave.leave_type),) for leave in leaves_today]
         for leave in leaves:
