@@ -39,7 +39,8 @@ class LeaveForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
-        self.fields['message'].initial = self.placeholder
+        if self.fields.get('message'):
+            self.fields['message'].initial = self.placeholder
 
 
 @admin.register(Leave)
