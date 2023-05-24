@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django import forms
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -39,7 +39,8 @@ class LeaveForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
-        self.fields['message'].initial = self.placeholder
+        if self.fields.get('message'):
+            self.fields['message'].initial = self.placeholder
 
 
 @admin.register(Leave)
@@ -98,7 +99,15 @@ class LeaveManagement(admin.ModelAdmin):
 
     @admin.action()
     def approve_selected(self, request, queryset):
-        return queryset.update(status='approved')
+        if (
+            request.user.is_superuser 
+            or request.user.has_perm("employee.can_approve_leave_applications")
+        ):
+            messages.success(request, 'Leaves approved.')
+            queryset.update(status='approved')
+        else:
+            messages.error(request, 'You don\' have permission.')
+
 
     @admin.display()
     def leave_info(self, leave: Leave):
