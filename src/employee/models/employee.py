@@ -36,7 +36,10 @@ class Employee(TimeStampMixin, AuthorMixin):
     pay_scale = models.ForeignKey(PayScale, on_delete=models.RESTRICT)
     tax_info = models.CharField(null=True, blank=True, max_length=255,
                                 help_text='i.e: 59530389237, Circle–138, Zone-11, Dhaka')
+    
     manager = models.BooleanField(default=False)
+    lead = models.BooleanField(default=False)
+
     active = models.BooleanField(default=True)
     show_in_web = models.BooleanField(default=True)
     lunch_allowance = models.BooleanField(default=True)
