@@ -68,11 +68,16 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         qs = self.get_queryset(request).filter(
             **simple_request_filter(request))
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
-            if request.user.employee.manager:
-                qs.filter(Q(project_hour__manager=request.user.employee.id) | Q(
-                    employee=request.user.employee))
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
+                qs = qs.filter(
+                    Q(project_hour__manager=request.user.employee.id) 
+                    | Q(employee=request.user.employee)
+                )
             else:
-                qs.filter(employee=request.user.employee)
+                qs = qs.filter(employee=request.user.employee)
         return qs.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view
@@ -93,7 +98,10 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         """
         query_set = super(EmployeeHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 return query_set.filter(
                     Q(project_hour__manager=request.user.employee.id) |
                     Q(employee=request.user.employee)
