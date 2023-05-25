@@ -39,7 +39,11 @@ class ProjectHourAdminForm(forms.ModelForm):
         if data.get('hour_type') != "bonus":
 
             if self.request.path_info[-5:-1] == "/add":
-                if ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')).exists():
+                if ProjectHour.objects.filter(
+                    manager_id=self.request.user.employee.id, 
+                    project_id=data.get('project').id, 
+                    date=data.get('date')
+                ).exists():
                     raise ValidationError({
                         'date': f"Project Hour for this date with this project and manager already exists",
                     })
