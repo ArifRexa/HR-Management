@@ -8,7 +8,7 @@ from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F
+from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from tinymce.models import HTMLField
 
@@ -208,8 +208,15 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     manager = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to={'active': True, 'manager': True},
+        limit_choices_to=(
+            Q(active=True)
+            & (
+                Q(manager=True)
+                | Q(lead=True)
+            )
+        ),
         related_name="dailyprojectupdate_manager",
+        help_text="Manager / Lead"
     )
     project = models.ForeignKey(
         Project,

@@ -221,7 +221,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request)
 
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 query_set = query_set.filter(
                     Q(manager=request.user.employee) |
                     Q(employee=request.user.employee),
@@ -267,7 +270,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             for obj in queryset:
                 obj.status = 'approved'
                 obj.save()
-        elif request.user.employee.manager:
+        elif (
+            request.user.employee.manager
+            or request.user.employee.lead
+        ):
             queryset = queryset.filter(manager_id=request.user.employee.id)
             for obj in queryset:
                 obj.status = 'approved'
@@ -279,7 +285,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             for obj in queryset:
                 obj.status = 'pending'
                 obj.save()
-        elif request.user.employee.manager:
+        elif (
+            request.user.employee.manager
+            or request.user.employee.lead
+        ):
             queryset = queryset.filter(manager_id=request.user.employee.id)
             for obj in queryset:
                 obj.status = 'pending'
