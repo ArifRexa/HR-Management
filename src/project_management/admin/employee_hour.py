@@ -68,11 +68,16 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         qs = self.get_queryset(request).filter(
             **simple_request_filter(request))
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
-            if request.user.employee.manager:
-                qs.filter(Q(project_hour__manager=request.user.employee.id) | Q(
-                    employee=request.user.employee))
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
+                qs = qs.filter(
+                    Q(project_hour__manager=request.user.employee.id) 
+                    | Q(employee=request.user.employee)
+                )
             else:
-                qs.filter(employee=request.user.employee)
+                qs = qs.filter(employee=request.user.employee)
         return qs.aggregate(tot=Sum('hours'))['tot']
 
     # override change list view
@@ -93,7 +98,10 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         """
         query_set = super(EmployeeHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_hour"):
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 return query_set.filter(
                     Q(project_hour__manager=request.user.employee.id) |
                     Q(employee=request.user.employee)
@@ -151,6 +159,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if obj:
             # If interact  as selected manager for that project
             if obj.manager == request.user.employee:
+                # If interacts also as the employee and manager of that project
+                if obj.employee == request.user.employee:
+                    return ['created_at',]
+                
+                # If not the employee
                 return ['created_at', 'employee', 'manager', 'project', 'update', ]
             
             # If interact as the project employee and status approved
@@ -221,7 +234,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request)
 
         if not request.user.is_superuser and not request.user.has_perm("project_management.see_all_employee_update"):
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 query_set = query_set.filter(
                     Q(manager=request.user.employee) |
                     Q(employee=request.user.employee),
@@ -267,7 +283,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             for obj in queryset:
                 obj.status = 'approved'
                 obj.save()
-        elif request.user.employee.manager:
+        elif (
+            request.user.employee.manager
+            or request.user.employee.lead
+        ):
             queryset = queryset.filter(manager_id=request.user.employee.id)
             for obj in queryset:
                 obj.status = 'approved'
@@ -279,7 +298,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             for obj in queryset:
                 obj.status = 'pending'
                 obj.save()
-        elif request.user.employee.manager:
+        elif (
+            request.user.employee.manager
+            or request.user.employee.lead
+        ):
             queryset = queryset.filter(manager_id=request.user.employee.id)
             for obj in queryset:
                 obj.status = 'pending'

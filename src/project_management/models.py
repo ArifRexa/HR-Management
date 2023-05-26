@@ -8,7 +8,7 @@ from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F
+from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from tinymce.models import HTMLField
 
@@ -140,7 +140,18 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         ('bonus', 'Bonus Project Hour'),
     )
 
-    manager = models.ForeignKey(Employee, limit_choices_to={'manager': True}, on_delete=models.CASCADE)
+    manager = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to=(
+            Q(active=True)
+            & (
+                Q(manager=True)
+                | Q(lead=True)
+            )
+        ),
+    )
+    
     hour_type = models.CharField(max_length=40, choices=HOUR_TYPE_SELECTOR, default='project', verbose_name='Project Hour Type')
     project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.SET_NULL, null=True,
                                 blank=True)
@@ -189,8 +200,11 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
     hours = models.FloatField()
-    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT,
-                                 limit_choices_to={'active': True})
+    employee = models.ForeignKey(
+        Employee, 
+        on_delete=models.RESTRICT,
+        limit_choices_to={'active': True},
+    )
 
     class Meta:
         permissions = [
@@ -208,8 +222,15 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     manager = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to={'active': True, 'manager': True},
+        limit_choices_to=(
+            Q(active=True)
+            & (
+                Q(manager=True)
+                | Q(lead=True)
+            )
+        ),
         related_name="dailyprojectupdate_manager",
+        help_text="Manager / Lead"
     )
     project = models.ForeignKey(
         Project,

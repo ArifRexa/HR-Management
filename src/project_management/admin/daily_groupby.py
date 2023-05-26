@@ -110,7 +110,10 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
             return []
 
         if obj:
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 if obj.manager != obj.employee and obj.manager == request.user.employee:
                     return ['employee', 'manager', 'project', 'update']
                 else:
@@ -119,7 +122,10 @@ class ProjectUpdateGroupByEmployeeAdmin(admin.ModelAdmin):
                 return self.readonly_fields
 
         else:
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 return []
             else:
                 return self.readonly_fields
@@ -216,7 +222,10 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
             return []
 
         if obj:
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 if obj.manager != obj.employee and obj.manager == request.user.employee:
                     return ['employee', 'manager', 'project', 'update']
                 else:
@@ -225,7 +234,10 @@ class ProjectUpdateGroupByProjectAdmin(admin.ModelAdmin):
                 return self.readonly_fields
 
         else:
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 return []
             else:
                 return self.readonly_fields
@@ -321,7 +333,10 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
             return []
 
         if obj:
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 if obj.manager != obj.employee and obj.manager == request.user.employee:
                     return ['employee', 'manager', 'project', 'update']
                 else:
@@ -330,7 +345,10 @@ class ProjectUpdateGroupByManagerAdmin(admin.ModelAdmin):
                 return self.readonly_fields
 
         else:
-            if request.user.employee.manager:
+            if (
+                request.user.employee.manager
+                or request.user.employee.lead
+            ):
                 return []
             else:
                 return self.readonly_fields

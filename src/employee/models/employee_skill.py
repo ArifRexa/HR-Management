@@ -1,4 +1,6 @@
 from django.db import models
+from django.db.models import Q
+
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -22,11 +24,17 @@ class Learning(AuthorMixin, TimeStampMixin):
     asigned_to = models.ForeignKey(Employee,
                                    on_delete=models.CASCADE,
                                    limit_choices_to={'project_eligibility': True, 'active': True},
-                                   related_name='skill_acquisition_asigned_to')
+                                   related_name='learning_to')
     asigned_by = models.ForeignKey(Employee,
-                                   on_delete=models.CASCADE,
-                                   limit_choices_to={'manager': True, 'active': True},
-                                   related_name='skill_acquisition_asigned_by')
+                                    on_delete=models.CASCADE,
+                                    limit_choices_to=(
+                                        Q(active=True)
+                                        & (
+                                            Q(manager=True)
+                                            | Q(lead=True)
+                                        )
+                                    ),
+                                    related_name='learning_by')
     details = models.TextField(blank=False, null=True)
 
     def __str__(self):
