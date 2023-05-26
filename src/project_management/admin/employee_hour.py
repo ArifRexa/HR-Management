@@ -14,10 +14,11 @@ from config.admin.utils import simple_request_filter
 from project_management.models import (
     EmployeeProjectHour,
     DailyProjectUpdate,
-    DailyProjectUpdateAttachment
+    DailyProjectUpdateAttachment,
+    DailyProjectUpdateHistory,
 )
+from project_management.admin.project_hour.options import ProjectManagerFilter, ProjectLeadFilter
 
-from project_management.models import DailyProjectUpdateHistory
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = 'hour type'
@@ -125,7 +126,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     inlines = [DailyProjectUpdateDocumentAdmin, ]
     list_display = ('get_date', 'employee', 'project',
                     'get_hours','history', 'get_update', 'manager', 'status_col')
-    list_filter = ('status', 'project', 'employee', 'manager', )
+    list_filter = ('status', 'project', 'employee', ProjectManagerFilter, ProjectLeadFilter, )
     search_fields = ('employee__full_name', 'project__title',
                      'manager__full_name', )
     date_hierarchy = 'created_at'

@@ -5,6 +5,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 
 from project_management.models import ProjectHour
+from employee.models import Employee
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -26,6 +27,36 @@ class ProjectTypeFilter(admin.SimpleListFilter):
             )
 
 
+class ProjectManagerFilter(admin.SimpleListFilter):
+    title = 'manager'
+    parameter_name = 'manager__id__exact'
+
+    def lookups(self, request, model_admin):
+        employees = Employee.objects.filter(active=True, manager=True).values('id', 'full_name')
+        return tuple(
+            [(emp.get('id'), emp.get('full_name'),) for emp in employees]
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(manager__id__exact=self.value())
+
+
+class ProjectLeadFilter(admin.SimpleListFilter):
+    title = 'lead'
+    parameter_name = 'manager__id__exact'
+
+    def lookups(self, request, model_admin):
+        employees = Employee.objects.filter(active=True, lead=True).values('id', 'full_name')
+        return tuple(
+            [(emp.get('id'), emp.get('full_name'),) for emp in employees]
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(manager__id__exact=self.value())
+
+
 class ProjectHourOptions(admin.ModelAdmin):
     # override create / edit fields
     # manager filed will not appear if the authenticate user is not super user
@@ -39,7 +70,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = [ProjectTypeFilter, 'project', 'manager', 'date']
+        filters = [ProjectTypeFilter, 'project', ProjectManagerFilter, ProjectLeadFilter, 'date']
         # if not request.user.is_superuser:
         #     filters.remove('manager')
         return filters
