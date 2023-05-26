@@ -159,6 +159,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if obj:
             # If interact  as selected manager for that project
             if obj.manager == request.user.employee:
+                # If interacts also as the employee and manager of that project
+                if obj.employee == request.user.employee:
+                    return ['created_at',]
+                
+                # If not the employee
                 return ['created_at', 'employee', 'manager', 'project', 'update', ]
             
             # If interact as the project employee and status approved
