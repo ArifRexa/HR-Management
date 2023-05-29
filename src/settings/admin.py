@@ -99,11 +99,17 @@ class SuccessfulTask(q_admin.TaskAdmin):
 
 @admin.register(Announcement)
 class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = ('created_at', 'get_date', 'rank', 'description',)
+    list_display = (
+        'created_at',
+        'get_date',
+        'rank',
+        'description',
+        'is_active',
+    )
     date_hierarchy = 'start_datetime'
 
     list_filter = ('is_active',)
-    
+
     actions = (
         "mark_active",
         "mark_inactive",
