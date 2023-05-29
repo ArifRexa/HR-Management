@@ -103,6 +103,11 @@ class AnnouncementAdmin(admin.ModelAdmin):
     date_hierarchy = 'start_datetime'
 
     list_filter = ('is_active',)
+    
+    actions = (
+        "mark_active",
+        "mark_inactive",
+    )
 
     @admin.display(description='Active Date')
     def get_date(self, obj):
@@ -110,12 +115,12 @@ class AnnouncementAdmin(admin.ModelAdmin):
         return format_html(data)
     
     @admin.action(description='Mark Inactive')
-    def make_published(modeladmin, request, queryset):
+    def mark_inactive(modeladmin, request, queryset):
         queryset.update(is_active=False)
         messages.success(request, "Announcements marked as inactive.")
     
     @admin.action(description='Mark Active')
-    def make_published(modeladmin, request, queryset):
+    def mark_active(modeladmin, request, queryset):
         queryset.update(is_active=True)
         messages.success(request, "Announcements marked as active.")
 
