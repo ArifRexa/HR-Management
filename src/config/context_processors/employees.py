@@ -118,6 +118,7 @@ def get_announcement(request):
 
     # Get Announcements
     announcements = Announcement.objects.filter(
+        is_active=True,
         start_datetime__lte=now, 
         end_datetime__gte=now,
     ).order_by(

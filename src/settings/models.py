@@ -103,3 +103,5 @@ class Announcement(TimeStampMixin, AuthorMixin):
     
     description = models.TextField()
 
+    is_active = models.BooleanField(default=True)
+

@@ -1,6 +1,6 @@
 import datetime
 
-from django.contrib import admin
+from django.contrib import admin, messages
 
 # Register your models here.
 from django.template.defaultfilters import truncatewords, truncatechars, truncatechars_html
@@ -102,8 +102,20 @@ class AnnouncementAdmin(admin.ModelAdmin):
     list_display = ('created_at', 'get_date', 'rank', 'description',)
     date_hierarchy = 'start_datetime'
 
+    list_filter = ('is_active',)
+
     @admin.display(description='Active Date')
     def get_date(self, obj):
         data = f"{obj.start_datetime}<br>{obj.end_datetime}"
         return format_html(data)
+    
+    @admin.action(description='Mark Inactive')
+    def make_published(modeladmin, request, queryset):
+        queryset.update(is_active=False)
+        messages.success(request, "Announcements marked as inactive.")
+    
+    @admin.action(description='Mark Active')
+    def make_published(modeladmin, request, queryset):
+        queryset.update(is_active=True)
+        messages.success(request, "Announcements marked as active.")
 
