@@ -1,0 +1,18 @@
+{% load salary_sheet_util %}
+<p>
+    Ref: {{ bank.ref }}/SD/{{ festival_bonus_sheet.date | date:'Ym' }}{{ festival_bonus_sheet.id }} <br>
+    Date: {{ festival_bonus_sheet.updated_at.date | date:'F d Y' }} <br>
+    To, <br>
+    Dutch Bangla Bank Limited <br>
+    Shyamoli Branch, Dhaka <br>
+    <br>
+    Subject: <b>Application for Salary Disbursement of {{ festival_bonus_sheet.date | date:'F Y' }} </b> <br>
+    Dear Sir, <br>
+    {% if bank.ref == 'Mediuswareltd' %} On behalf of {{ bank.account_name }}, {% endif %} I request you to distribute
+    the total salary BDT [{{ employee_festival_bonus_set | _total_festival_bonus }}] of
+    the
+    month, {{ festival_bonus_sheet.date | date:'F Y' }}, to
+    our employees from the bank account
+    {{ bank.account_name }} [{{ bank.account_number }}]. Employees account name, account number and the amount have
+    given below:
+</p>
