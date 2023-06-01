@@ -173,13 +173,24 @@
                                         {% endif %}
                                     </span>
                                 </p>
-                                <p class="text-center mb-1">
-                                    <span {% if data.break_time_minute <= 30 %}class="text-primary fw-bold"{% endif %}>
+                                <p class="text-center mb-2">
+                                    <span 
+                                        {% if data.break_time_minute <= 30 %}
+                                            style="background: #50e0ff;border-radius: 3px;padding: 1px 4px;"
+                                        {% endif %}
+                                    >
                                         {{ data.break_time }}
                                     </span>
                                 </p>
                                 <p class="text-center mb-1">
-                                    <span {% if data.inside_time_hour >= 8 %}class="text-success fw-bold" {% else %} class="p-1 bg-warning fw-bold"{% endif %}>
+                                    <span
+                                        {% if data.inside_time_hour >= 8 %}
+                                            class="text-success fw-bold" 
+                                        {% else %}
+                                            class="p-1 bg-warning fw-bold"
+                                            style="border-radius: 3px;"
+                                        {% endif %}
+                                    >
                                         {{ data.inside_time }}
                                     </span>
                                 </p>

@@ -44,6 +44,25 @@ class EmployeeSalary(TimeStampMixin):
         return self.gross_salary - self.festival_bonus
 
 
+
+class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
+    date = models.DateField(blank=False)
+    total_value = models.FloatField(null=True)
+    approved_by = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
+
+    @property
+    def total(self):
+        return floor(self.employeefestivalbonus_set.aggregate(Sum('amount'))['amount__sum'])
+
+
+class EmployeeFestivalBonus(TimeStampMixin):
+    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT)
+    festival_bonus_sheet = models.ForeignKey(FestivalBonusSheet, on_delete=models.CASCADE)
+
+    amount = models.FloatField(default=0)
+
+
+
 class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     disbursement_choice = (
         ('salary_account', 'Salary Account'),

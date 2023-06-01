@@ -40,6 +40,16 @@ def _total_bonus(employee_salary_set):
 
 
 @register.filter
+def _total_festival_bonus(employee_festival_bonus_set):
+    return floor(employee_festival_bonus_set.aggregate(Sum('amount'))['amount__sum'])
+
+    total = 0
+    for employee_festival_bonus in employee_festival_bonus_set:
+        total += floor(employee_festival_bonus.amount)
+    return floor(total)
+
+
+@register.filter
 def _in_dollar(value):
     return value / 80
 
