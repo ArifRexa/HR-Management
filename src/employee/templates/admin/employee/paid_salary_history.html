@@ -3,6 +3,7 @@
 {% block content %}
     <h1>{{ employee.full_name }}</h1>
 
+    <h3>Monthly Salary</h3>
     <div style="overflow-x:auto;">
         <table style="min-width: 100%">
             <thead>
@@ -38,5 +39,26 @@
         </table>
     </div>
 
+    <br> <br> <br>
+
+    <h3>Festival Bonus</h3>
+    <div style="overflow-x:auto;">
+        <table style="min-width: 100%">
+            <thead>
+            <tr>
+                <th>Date</th>
+                <th>Bonus Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for employee_festival_bonus in employee_festival_bonuses %}
+                <tr>
+                    <td>{{ employee_festival_bonus.festival_bonus_sheet.date }}</td>
+                    <td>{{ employee_festival_bonus.amount }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
 {% endblock %}
