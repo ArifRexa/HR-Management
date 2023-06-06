@@ -249,7 +249,10 @@ class SalarySheetRepository:
             project_hour__date__year=salary_sheet.date.year
         ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
 
-        if employee.manager:
+        if (
+            employee.manager 
+            or employee.lead
+        ):
             project_hours += employee.projecthour_set.filter(
                 date__month=salary_sheet.date.month,
                 date__year=salary_sheet.date.year,
