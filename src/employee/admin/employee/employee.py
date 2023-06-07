@@ -79,7 +79,7 @@ class EmployeeDetails(admin.ModelAdmin):
     def get_blood_group(self, obj: EmployeeLunch):
         return obj.employee.blood_group
 
-    @admin.display(description="Job Duration", ordering='employee__joining_date_human')
+    @admin.display(description="Job Duration")
     def get_joining_date_human(self, obj: EmployeeLunch):
         return obj.employee.joining_date_human
 
