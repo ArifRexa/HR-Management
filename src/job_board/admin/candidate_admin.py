@@ -188,18 +188,50 @@ class CandidateAssessmentReviewAdmin(admin.StackedInline):
 @admin.register(CandidateAssessment)
 class CandidateAssessmentAdmin(admin.ModelAdmin):
     list_display = (
-        'candidate', 'get_score', 'meta_information', 'get_candidate_feedback', 'meta_review', 'preview_url')
-    search_fields = ('score', 'candidate_job__candidate__full_name', 'candidate_job__candidate__email',
-                     'candidate_job__candidate__phone', 'note')
-    list_filter = ('candidate_job__job__title', 'assessment', 'exam_started_at',
-                   'can_start_after', CandidateHasUrlFilter)
-    list_display_links = ('get_score',)
-    ordering = ('-exam_started_at',)
-    actions = ('send_default_sms', 'mark_as_fail', 'send_ct_time_extend_email', )
+        'candidate', 
+        'get_score', 
+        'meta_information', 
+        'get_candidate_feedback', 
+        'meta_review', 
+        'preview_url',
+    )
+    search_fields = (
+        'score',
+        'note',
+        
+        'candidate_job__candidate__full_name', 
+        'candidate_job__candidate__email',
+        'candidate_job__candidate__phone', 
+        
+        'candidateassessmentreview__note',
+    )
+    list_filter = (
+        'candidate_job__job__title', 
+        'assessment', 
+        'exam_started_at',
+        'can_start_after', 
+        CandidateHasUrlFilter,
+    )
+    list_display_links = (
+        'get_score',
+    )
+    ordering = (
+        '-exam_started_at',
+    )
+    actions = (
+        'send_default_sms', 
+        'mark_as_fail', 
+        'send_ct_time_extend_email', 
+    )
     list_per_page = 50
-    inlines = (CandidateAssessmentReviewAdmin,)
+    inlines = (
+        CandidateAssessmentReviewAdmin,
+    ) 
+    autocomplete_fields = (
+        'candidate_job', 
+        'assessment',
+    )
     date_hierarchy = 'exam_started_at'
-    autocomplete_fields = ['candidate_job', 'assessment']
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
