@@ -303,8 +303,8 @@ class EmployeeLunch(TimeStampMixin):
         permissions = (
             ("can_see_all_lunch", "Can able to see all lunch"),
         )
-        verbose_name = 'Employee detail'
-        verbose_name_plural = 'Employee details'
+        verbose_name = 'Employee List'
+        verbose_name_plural = 'Employee List'
 
 
 class PrayerInfo(AuthorMixin, TimeStampMixin):
