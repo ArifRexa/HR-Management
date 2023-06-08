@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'provident_fund',
 
     # Custom App
-    'silk',
+    # 'silk',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +75,7 @@ MIDDLEWARE = [
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django.middleware.common.CommonMiddleware',
     'employee.middleware.CheckUserHasEmployee',
-    'silk.middleware.SilkyMiddleware',
+    # 'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
