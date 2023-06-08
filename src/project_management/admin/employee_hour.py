@@ -1,5 +1,5 @@
 import datetime
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db.models import Q, Sum
 
 from django.template.loader import get_template
@@ -269,7 +269,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         
         return permitted
 
-    @admin.action(description='Status')
+    @admin.display(description='Status')
     def status_col(self, obj):
         color = 'red'
         if obj.status == 'approved':
@@ -281,33 +281,29 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.action(description='Approve selected status daily project updates')
     def update_status_approve(modeladmin, request, queryset):
         if request.user.is_superuser:
-            for obj in queryset:
-                obj.status = 'approved'
-                obj.save()
+            qs_count = queryset.update(status='approved')
         elif (
             request.user.employee.manager
             or request.user.employee.lead
         ):
-            queryset = queryset.filter(manager_id=request.user.employee.id)
-            for obj in queryset:
-                obj.status = 'approved'
-                obj.save()
+            qs_count = queryset.filter(manager_id=request.user.employee.id).update(status='approved')
+        
+        messages.success(request, f"Marked Approved {qs_count} daily update(s).")
+
 
     @admin.action(description='Pending selected status daily project updates')
     def update_status_pending(modeladmin, request, queryset):
         if request.user.is_superuser:
-            for obj in queryset:
-                obj.status = 'pending'
-                obj.save()
+            qs_count = queryset.update(status='pending')
         elif (
             request.user.employee.manager
             or request.user.employee.lead
         ):
+            qs_count = queryset.filter(manager_id=request.user.employee.id).update(status='pending')
             queryset = queryset.filter(manager_id=request.user.employee.id)
-            for obj in queryset:
-                obj.status = 'pending'
-                obj.save()
-        # return
+           
+        messages.success(request, f"Marked Pending {qs_count} daily update(s).")
+        
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)

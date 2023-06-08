@@ -81,6 +81,8 @@ urlpatterns = [
         extra_context={'schema_url': 'openapi-schema'}
     ), name='swagger-ui'),
     path('', lambda request: redirect('/admin')),
+
+    path('ghorardim/', include('silk.urls', namespace='silk'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -58,6 +58,9 @@ INSTALLED_APPS = [
     'asset_management',
     'website',
     'provident_fund',
+
+    # Custom App
+    'silk',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +74,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_userforeignkey.middleware.UserForeignKeyMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'employee.middleware.CheckUserHasEmployee'
+    'employee.middleware.CheckUserHasEmployee',
+    'silk.middleware.SilkyMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
