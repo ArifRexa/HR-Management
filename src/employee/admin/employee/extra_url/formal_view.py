@@ -127,10 +127,11 @@ class EmployeeNearbySummery:
         )
 
     def employee_leave_nearby(self):
-        return Leave.objects.filter(
+        qs = Leave.objects.filter(
             end_date__gte=self.today,
             status='approved'
-        )
+        ).select_related('employee')
+        return qs, qs.count()
 
     def employees_on_leave_today(self):
         return self.employees.filter(

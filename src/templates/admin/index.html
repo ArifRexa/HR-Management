@@ -336,16 +336,16 @@
 
                 </div>
 
-                {% if leaves.count > 0 %}
+                {% if leaves_count > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
-                        <div class="card-header">Leave Nearby <span class="float-end badge bg-secondary">{{ leaves.count }}</span>
+                        <div class="card-header">Leave Nearby <span class="float-end badge bg-secondary">{{ leaves_count }}</span>
                         </div>
                         <div class="card-body rounded-0 p-0">
                             <ul class="list-group list-group-flush">
                                 {% for employee_leave in leaves %}
                                 <li class="list-group-item">
-                                    {{ employee_leave.employee }}
+                                    {{ employee_leave.employee.full_name }}
                                     <b>{{ employee_leave.start_date|date:'j M' }} to
                                         {{ employee_leave.end_date|date:'j M' }}</b>
                                 </li>

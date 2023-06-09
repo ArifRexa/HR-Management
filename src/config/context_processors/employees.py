@@ -25,66 +25,86 @@ from datetime import datetime
 
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
-    employee_offline = EmployeeOnline.objects.filter(
-        employee__active=True
-    ).order_by(
-        '-employee__need_cto', 
-        '-employee__need_hr', 
-        'active', 
-        'employee__full_name'
-    ).exclude(
-        employee_id__in=employee_ids
-    )
 
-    employee_projects = EmployeeProject.objects.filter(
-        employee__active=True, employee__project_eligibility=True
-    ).annotate(
-        project_count=Count("project"),
-        project_order=Min("project"),
-        project_exists=Case(
-            When(project_count=0, then=Value(False)),
-            default=Value(True),
-            output_field=BooleanField()
-        )
-    ).order_by('project_exists', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
+    leaves_nearby, leaves_nearby_count  = employee_formal_summery.employee_leave_nearby()
 
-    order_keys = {
-        '1': 'employee__full_name',
-        '-1': '-employee__full_name',
-        '2': 'project_order',
-        '-2': '-project_order',
-    }
 
-    order_by = request.GET.get('ord', None)
-    if order_by:
-        order_by_list = ['project_exists', order_keys.get(order_by, '1')]
-        if order_by not in ['1', '-1']:
-            order_by_list.append('employee__full_name')
+    # employee_offline = EmployeeOnline.objects.filter(
+    #     employee__active=True
+    # ).order_by(
+    #     '-employee__need_cto', 
+    #     '-employee__need_hr', 
+    #     'active', 
+    #     'employee__full_name'
+    # ).exclude(
+    #     employee_id__in=employee_ids
+    # )
 
-        employee_projects = employee_projects.order_by(*order_by_list)
+    # employee_projects = EmployeeProject.objects.filter(
+    #     employee__active=True, employee__project_eligibility=True
+    # ).annotate(
+    #     project_count=Count("project"),
+    #     project_order=Min("project"),
+    #     project_exists=Case(
+    #         When(project_count=0, then=Value(False)),
+    #         default=Value(True),
+    #         output_field=BooleanField()
+    #     )
+    # ).order_by('project_exists', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
+
+    # order_keys = {
+    #     '1': 'employee__full_name',
+    #     '-1': '-employee__full_name',
+    #     '2': 'project_order',
+    #     '-2': '-project_order',
+    # }
+
+    # order_by = request.GET.get('ord', None)
+    # if order_by:
+    #     order_by_list = ['project_exists', order_keys.get(order_by, '1')]
+    #     if order_by not in ['1', '-1']:
+    #         order_by_list.append('employee__full_name')
+
+    #     employee_projects = employee_projects.order_by(*order_by_list)
     
-    current_month_feedback_done = False
-    if not isinstance(request.user, AnonymousUser):
-        if str(request.user.employee.id) in employee_ids:
-            current_month_feedback_done = True
-        else:
-            current_month_feedback_done = EmployeeFeedback.objects.filter(
-                employee=request.user.employee,
-                created_at__date__month=timezone.now().date().month,
-            ).exists()
+    # current_month_feedback_done = False
+    # if not isinstance(request.user, AnonymousUser):
+    #     if str(request.user.employee.id) in employee_ids:
+    #         current_month_feedback_done = True
+    #     else:
+    #         current_month_feedback_done = EmployeeFeedback.objects.filter(
+    #             employee=request.user.employee,
+    #             created_at__date__month=timezone.now().date().month,
+    #         ).exists()
+
+    # return {
+    #     "leaves": employee_formal_summery.employee_leave_nearby,
+    #     "birthdays": employee_formal_summery.birthdays,
+    #     "increments": employee_formal_summery.increments,
+    #     "permanents": employee_formal_summery.permanents,
+    #     "anniversaries": employee_formal_summery.anniversaries,
+    #     'employee_offline': employee_offline,
+    #     "employee_projects": employee_projects,
+    #     "ord": order_by,
+    #     "birthday_today": get_managed_birthday_image(request),
+    #     "current_month_feedback_done": current_month_feedback_done,
+    #     "announcement": get_announcement(request),
+    # }
 
     return {
-        "leaves": employee_formal_summery.employee_leave_nearby,
-        "birthdays": employee_formal_summery.birthdays,
-        "increments": employee_formal_summery.increments,
-        "permanents": employee_formal_summery.permanents,
-        "anniversaries": employee_formal_summery.anniversaries,
-        'employee_offline': employee_offline,
-        "employee_projects": employee_projects,
-        "ord": order_by,
-        "birthday_today": get_managed_birthday_image(request),
-        "current_month_feedback_done": current_month_feedback_done,
-        "announcement": get_announcement(request),
+        "leaves": leaves_nearby,
+        "leaves_count": leaves_nearby_count,
+
+        "birthdays": [],
+        "increments": [],
+        "permanents": [],
+        "anniversaries": [],
+        'employee_offline': [],
+        "employee_projects": [],
+        "ord": [],
+        "birthday_today": [],
+        "current_month_feedback_done": [],
+        "announcement": [],
     }
 
 
