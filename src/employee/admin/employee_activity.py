@@ -175,7 +175,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         for emp in emps:
             temp = {}
             attendances = emp.employeeattendance_set.all()
-            prayerinfos = emp.prayerinfo_set.all()
+            # prayerinfos = emp.prayerinfo_set.all()
             empprojhours = emp.employeeprojecthour_set.filter(
                     project_hour__date__gte=last_x_date,
                     project_hour__hour_type='bonus',
@@ -191,19 +191,19 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         # })
                         break
 
-                for pinfo in prayerinfos:
-                    if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
-                        waqts = []
-                        if pinfo.waqt_fajr: waqts.append('F')
-                        if pinfo.waqt_zuhr: waqts.append('Z')
-                        if pinfo.waqt_asr: waqts.append('A')
-                        if pinfo.waqt_maghrib: waqts.append('M')
-                        if pinfo.waqt_isha: waqts.append('E')
-                        prayer_info_text = '(' + ' '.join(waqts) +')'
-                        temp[date].update({
-                            'prayer_count': pinfo.num_of_waqt_done,
-                            'prayer_info': prayer_info_text,
-                        })
+                # for pinfo in prayerinfos:
+                #     if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
+                #         waqts = []
+                #         if pinfo.waqt_fajr: waqts.append('F')
+                #         if pinfo.waqt_zuhr: waqts.append('Z')
+                #         if pinfo.waqt_asr: waqts.append('A')
+                #         if pinfo.waqt_maghrib: waqts.append('M')
+                #         if pinfo.waqt_isha: waqts.append('E')
+                #         prayer_info_text = '(' + ' '.join(waqts) +')'
+                #         temp[date].update({
+                #             'prayer_count': pinfo.num_of_waqt_done,
+                #             'prayer_info': prayer_info_text,
+                #         })
 
                 for attendance in attendances:
                     if attendance.date == date:
@@ -250,8 +250,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         break
             date_datas.update({emp: temp})
 
-        prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
-        form = EmployeePrayerInfoForm(instance=prayerobj)
+        # prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
+        # form = EmployeePrayerInfoForm(instance=prayerobj)
 
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
@@ -277,7 +277,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 last_month=last_month,
                 date_datas=date_datas,
                 o=o, # order key
-                form=form,
+                # form=form,
                 online_status_form=online_status_form
             )
         return TemplateResponse(request, 'admin/employee/employee_attendance.html', context)
