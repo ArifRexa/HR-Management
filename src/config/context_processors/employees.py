@@ -167,7 +167,9 @@ def get_announcement(request):
 
     # Get Leaves
     leaves_today = Leave.objects.filter(
-        start_date__lte=now, end_date__gte=now,
+        employee__active=True,
+        start_date__lte=now, 
+        end_date__gte=now,
     ).exclude(
         status='rejected',
     ).select_related(
