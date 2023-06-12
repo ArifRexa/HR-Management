@@ -308,22 +308,22 @@
                                 {% else %}
                                 <span>🔴</span>
                                 {% endif %}
-                                {{ employee_project.employee }}
-                                {% if employee_project.employee.top_one_skill %}
-                                ( {{ employee_project.employee.top_one_skill.skill }} )
-                                {% endif %}
+                                {{ employee_project.employee.full_name }}
+                                ( {{ employee_project.employee.employeeskill_set.first.skill.title }} )
                             </span>
 
 
                             <span class="float-end w-50">
 
-                                {% for project in employee_project.active_projects %}
-                                {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
-                                <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">{{ project.title }}</span>
+                                {% for project in employee_project.project.all %}
+                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
+                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">
+                                        {{ project.title }}
+                                    </span>
                                 {% endfor %}
 
                                 {% if not employee_project.project_exists %}
-                                <span class="badge bg-danger rounded-pill">None</span>
+                                    <span class="badge bg-danger rounded-pill">None</span>
                                 {% endif %}
                             </span>
 

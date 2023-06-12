@@ -1,5 +1,5 @@
 from django.contrib.auth.models import AnonymousUser
-from django.db.models import Count, BooleanField, Case, When, Value, Min, Q
+from django.db.models import Count, BooleanField, Case, When, Value, Min, Q, Prefetch
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
@@ -10,11 +10,12 @@ from config.settings import employee_ids
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
-from employee.models import EmployeeOnline, Leave
+from employee.models import EmployeeOnline, Leave, EmployeeSkill
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from employee.models.employee import Employee
 from employee.models import FavouriteMenu
+from project_management.models import Project
 
 from settings.models import Announcement
 
@@ -27,7 +28,6 @@ def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
 
     leaves_nearby, leaves_nearby_count  = employee_formal_summery.employee_leave_nearby()
-
 
     employee_online = EmployeeOnline.objects.filter(
         employee__active=True,
@@ -43,16 +43,34 @@ def formal_summery(request):
     )
 
     employee_projects = EmployeeProject.objects.filter(
-        employee__active=True, employee__project_eligibility=True
+        employee__active=True,
+        employee__project_eligibility=True,
+    ).exclude(
+        employee_id__in=employee_ids
     ).annotate(
         project_count=Count("project"),
         project_order=Min("project"),
         project_exists=Case(
             When(project_count=0, then=Value(False)),
             default=Value(True),
-            output_field=BooleanField()
-        )
-    ).order_by('project_exists', 'employee__full_name').exclude(employee_id__in=employee_ids).all()
+            output_field=BooleanField(),
+        ),
+    ).order_by(
+        'project_exists', 
+        'employee__full_name',
+    ).select_related(
+        'employee',
+    ).prefetch_related(
+        Prefetch(
+            'employee__employeeskill_set',
+            queryset=EmployeeSkill.objects.order_by('-percentage'),
+        ),
+        Prefetch('employee__employeeskill_set__skill'),
+        Prefetch(
+            'project',
+            queryset=Project.objects.filter(active=True),
+        ),
+    )
 
     order_keys = {
         '1': 'employee__full_name',
@@ -83,13 +101,13 @@ def formal_summery(request):
         "leaves": leaves_nearby,
         "leaves_count": leaves_nearby_count,
         'employee_online': employee_online,
+        "employee_projects": employee_projects,
+        "ord": order_by,
         
         "birthdays": employee_formal_summery.birthdays,
         "increments": employee_formal_summery.increments,
         "permanents": employee_formal_summery.permanents,
         "anniversaries": employee_formal_summery.anniversaries,
-        "employee_projects": employee_projects,
-        "ord": order_by,
         "birthday_today": get_managed_birthday_image(request),
         "current_month_feedback_done": current_month_feedback_done,
         "announcement": get_announcement(request),
@@ -101,14 +119,13 @@ def formal_summery(request):
         "leaves_count": leaves_nearby_count,
 
         'employee_online': employee_online,
+        "employee_projects": employee_projects,
+        "ord": order_by,
 
         "birthdays": [],
         "increments": [],
         "permanents": [],
         "anniversaries": [],
-        
-        "employee_projects": [],
-        "ord": [],
         "birthday_today": [],
         "current_month_feedback_done": [],
         "announcement": [],
