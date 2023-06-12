@@ -29,8 +29,8 @@ def formal_summery(request):
     leaves_nearby, leaves_nearby_count  = employee_formal_summery.employee_leave_nearby()
 
 
-    employee_offline = EmployeeOnline.objects.filter(
-        employee__active=True
+    employee_online = EmployeeOnline.objects.filter(
+        employee__active=True,
     ).order_by(
         '-employee__need_cto', 
         '-employee__need_hr', 
@@ -38,6 +38,8 @@ def formal_summery(request):
         'employee__full_name'
     ).exclude(
         employee_id__in=employee_ids
+    ).select_related(
+        'employee',
     )
 
     employee_projects = EmployeeProject.objects.filter(
@@ -76,16 +78,16 @@ def formal_summery(request):
                 employee=request.user.employee,
                 created_at__date__month=timezone.now().date().month,
             ).exists()
-
+    
     return {
         "leaves": leaves_nearby,
         "leaves_count": leaves_nearby_count,
+        'employee_online': employee_online,
         
         "birthdays": employee_formal_summery.birthdays,
         "increments": employee_formal_summery.increments,
         "permanents": employee_formal_summery.permanents,
         "anniversaries": employee_formal_summery.anniversaries,
-        'employee_offline': employee_offline,
         "employee_projects": employee_projects,
         "ord": order_by,
         "birthday_today": get_managed_birthday_image(request),
@@ -93,21 +95,24 @@ def formal_summery(request):
         "announcement": get_announcement(request),
     }
 
-    # return {
-    #     "leaves": leaves_nearby,
-    #     "leaves_count": leaves_nearby_count,
+    # FIXME: This return is temporary for query optimization
+    return {
+        "leaves": leaves_nearby,
+        "leaves_count": leaves_nearby_count,
 
-    #     "birthdays": [],
-    #     "increments": [],
-    #     "permanents": [],
-    #     "anniversaries": [],
-    #     'employee_offline': [],
-    #     "employee_projects": [],
-    #     "ord": [],
-    #     "birthday_today": [],
-    #     "current_month_feedback_done": [],
-    #     "announcement": [],
-    # }
+        'employee_online': employee_online,
+
+        "birthdays": [],
+        "increments": [],
+        "permanents": [],
+        "anniversaries": [],
+        
+        "employee_projects": [],
+        "ord": [],
+        "birthday_today": [],
+        "current_month_feedback_done": [],
+        "announcement": [],
+    }
 
 
 def employee_status_form(request):

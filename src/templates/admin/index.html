@@ -247,28 +247,28 @@
                         <li class="list-group-item list-group-item-action active">
                             <span class=" text-uppercase">Employee Status</span>
                         </li>
-                        {% for offline in employee_offline %}
+                        {% for online in employee_online %}
                         <li class="list-group-item list-group-item-action">
-                            {% if offline.active %}
+                            {% if online.active %}
                             <span style="color: green">🟢</span>
                             {% else %}
                             <span>🔴</span>
                             {% endif %}
-                            <span class="{% if offline.employee.one_month_less %} text-primary fs-6 {% endif %}">
-                                {{ offline.employee }}
+                            <span class="{% if online.employee.one_month_less %} text-primary fs-6 {% endif %}">
+                                {{ online.employee.full_name }}
                             </span>
-                            {% if offline.employee.need_hr %}
+                            {% if online.employee.need_hr %}
                             <span class="badge float-end rounded" style="background:#0d6efd;">
                                 Need HR
                                 <br>
-                                 {{ offline.employee.need_hr_at | timesince}} ago
+                                 {{ online.employee.need_hr_at | timesince}} ago
                             </span>
                             {% endif %}
-                            {% if offline.employee.need_cto %}
+                            {% if online.employee.need_cto %}
                             <span class="badge bg-success float-end rounded">
                                 Need CTO
                                 <br>
-                                 {{ offline.employee.need_cto_at | timesince}} ago
+                                 {{ online.employee.need_cto_at | timesince}} ago
                             </span>
                             {% endif %}
                         </li>
