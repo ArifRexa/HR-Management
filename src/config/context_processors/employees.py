@@ -25,6 +25,10 @@ from datetime import datetime
 
 def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
+
+    leaves_nearby, leaves_nearby_count  = employee_formal_summery.employee_leave_nearby()
+
+
     employee_offline = EmployeeOnline.objects.filter(
         employee__active=True
     ).order_by(
@@ -74,7 +78,9 @@ def formal_summery(request):
             ).exists()
 
     return {
-        "leaves": employee_formal_summery.employee_leave_nearby,
+        "leaves": leaves_nearby,
+        "leaves_count": leaves_nearby_count,
+        
         "birthdays": employee_formal_summery.birthdays,
         "increments": employee_formal_summery.increments,
         "permanents": employee_formal_summery.permanents,
@@ -86,6 +92,22 @@ def formal_summery(request):
         "current_month_feedback_done": current_month_feedback_done,
         "announcement": get_announcement(request),
     }
+
+    # return {
+    #     "leaves": leaves_nearby,
+    #     "leaves_count": leaves_nearby_count,
+
+    #     "birthdays": [],
+    #     "increments": [],
+    #     "permanents": [],
+    #     "anniversaries": [],
+    #     'employee_offline': [],
+    #     "employee_projects": [],
+    #     "ord": [],
+    #     "birthday_today": [],
+    #     "current_month_feedback_done": [],
+    #     "announcement": [],
+    # }
 
 
 def employee_status_form(request):

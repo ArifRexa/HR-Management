@@ -194,7 +194,7 @@
                                         {{ data.inside_time }}
                                     </span>
                                 </p>
-                                <p class="text-center mb-1">
+                                {% comment %} <p class="text-center mb-1">
                                     <span>
                                         {% if data.prayer_info %}
                                             <span class="">{{ data.prayer_count }}</span>
@@ -203,7 +203,7 @@
                                             -
                                         {% endif %}
                                     </span>
-                                </p>
+                                </p> {% endcomment %}
                             </td>
                         {% else %}
                             <td class="align-middle text-center color-muted"> - </td>
