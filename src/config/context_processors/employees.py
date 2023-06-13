@@ -25,6 +25,9 @@ from datetime import datetime
 
 
 def formal_summery(request):
+    if not request.user.is_authenticated:
+        return {}
+
     employee_formal_summery = EmployeeNearbySummery()
 
     leaves_nearby, leaves_nearby_count  = employee_formal_summery.employee_leave_nearby()
@@ -37,7 +40,7 @@ def formal_summery(request):
         'active', 
         'employee__full_name'
     ).exclude(
-        employee_id__in=employee_ids
+        employee_id__in=employee_ids,
     ).select_related(
         'employee',
     )
@@ -87,15 +90,12 @@ def formal_summery(request):
 
         employee_projects = employee_projects.order_by(*order_by_list)
     
-    current_month_feedback_done = False
-    if not isinstance(request.user, AnonymousUser):
-        if str(request.user.employee.id) in employee_ids:
-            current_month_feedback_done = True
-        else:
-            current_month_feedback_done = EmployeeFeedback.objects.filter(
-                employee=request.user.employee,
-                created_at__date__month=timezone.now().date().month,
-            ).exists()
+    current_month_feedback_done = True
+    if str(request.user.employee.id) not in employee_ids:
+        current_month_feedback_done = EmployeeFeedback.objects.filter(
+            employee_id=request.user.employee.id,
+            created_at__date__month=timezone.now().date().month,
+        ).exists()
     
     return {
         "leaves": leaves_nearby,
@@ -103,32 +103,30 @@ def formal_summery(request):
         'employee_online': employee_online,
         "employee_projects": employee_projects,
         "ord": order_by,
-        
+        "current_month_feedback_done": current_month_feedback_done,
+        "announcement": get_announcement(),
         "birthdays": employee_formal_summery.birthdays,
         "increments": employee_formal_summery.increments,
         "permanents": employee_formal_summery.permanents,
         "anniversaries": employee_formal_summery.anniversaries,
         "birthday_today": get_managed_birthday_image(request),
-        "current_month_feedback_done": current_month_feedback_done,
-        "announcement": get_announcement(request),
     }
 
     # FIXME: This return is temporary for query optimization
     return {
         "leaves": leaves_nearby,
         "leaves_count": leaves_nearby_count,
-
         'employee_online': employee_online,
         "employee_projects": employee_projects,
         "ord": order_by,
+        "current_month_feedback_done": current_month_feedback_done,
+        "announcement": get_announcement(),
 
         "birthdays": [],
         "increments": [],
         "permanents": [],
         "anniversaries": [],
         "birthday_today": [],
-        "current_month_feedback_done": [],
-        "announcement": [],
     }
 
 
@@ -156,7 +154,7 @@ def employee_project_form(request):
         }
 
 
-def get_announcement(request):
+def get_announcement():
     data = []
     now = timezone.now()
 
@@ -166,26 +164,24 @@ def get_announcement(request):
         start_datetime__lte=now, 
         end_datetime__gte=now,
     ).order_by(
+        '-updated_at',
         '-rank',
-    )
+    ).values_list('description', flat=True)
 
     # Get CTO
-    get_cto_needed = Employee.objects.filter(active=True, need_cto=True)
-    if get_cto_needed.exists():
-        cto_needers = [emp.full_name for emp in get_cto_needed]
-        cto_needers_text = ', '.join(cto_needers)
-        data.append(f"{cto_needers_text} need{'s' if len(cto_needers)==1 else ''} the CTO's help.")
+    get_cto_needed = Employee.objects.filter(active=True, need_cto=True).values_list('full_name', flat=True)
+    if get_cto_needed:
+        cto_needers_text = ', '.join(get_cto_needed)
+        data.append(f"{cto_needers_text} need{'s' if len(get_cto_needed)==1 else ''} the CTO's help.")
     
     # Get HR
-    get_hr_needed = Employee.objects.filter(active=True, need_hr=True)
-    if get_hr_needed.exists():
-        hr_needers = [emp.full_name for emp in get_hr_needed]
-        hr_needers_text = ', '.join(hr_needers)
-        data.append(f"{hr_needers_text} need{'s' if len(hr_needers)==1 else ''} the HR's help.")
+    get_hr_needed = Employee.objects.filter(active=True, need_hr=True).values_list('full_name', flat=True)
+    if get_hr_needed:
+        hr_needers_text = ', '.join(get_hr_needed)
+        data.append(f"{hr_needers_text} need{'s' if len(get_hr_needed)==1 else ''} the HR's help.")
 
     # Announcements
-    if announcements.exists():
-        data.extend(announcement.description for announcement in announcements)
+    data.extend(announcements)
 
     # Get Leaves
     leaves_today = Leave.objects.filter(
@@ -199,15 +195,17 @@ def get_announcement(request):
     )
     if leaves_today.exists():
         leaves = [(leave.employee.full_name, dict(Leave.LEAVE_CHOICE).get(leave.leave_type),) for leave in leaves_today]
-        for leave in leaves:
-            data.append(f"{leave[0]} is on {leave[1]} today.")
+        data.append(*[f"{leave[0]} is on {leave[1]} today." for leave in leaves])
     
     # Get Birthdays
-    birthdays_today = Employee.objects.filter(active=True, date_of_birth__day=now.date().day, date_of_birth__month=now.date().month)
-    if birthdays_today.exists():
-        birthdays = [emp.full_name for emp in birthdays_today]
-        birthdays_text = ', '.join(birthdays)
-        data.append(f"{birthdays_text} {'has' if len(birthdays)==1 else 'have'} birthday today.")
+    birthdays_today = Employee.objects.filter(
+        active=True, 
+        date_of_birth__day=now.date().day, 
+        date_of_birth__month=now.date().month
+    ).values_list('full_name', flat=True)
+    if birthdays_today:
+        birthdays_text = ', '.join(birthdays_today)
+        data.append(f"{birthdays_text} {'has' if len(birthdays_today)==1 else 'have'} birthday today.")
     
     # Format Data
     if data:
