@@ -105,11 +105,14 @@ def formal_summery(request):
         "ord": order_by,
         "current_month_feedback_done": current_month_feedback_done,
         "announcement": get_announcement(),
-        "birthdays": employee_formal_summery.birthdays,
+        "birthday_today": get_managed_birthday_image(request),
         "increments": employee_formal_summery.increments,
+
         "permanents": employee_formal_summery.permanents,
         "anniversaries": employee_formal_summery.anniversaries,
         "birthday_today": get_managed_birthday_image(request),
+
+        "birthdays": employee_formal_summery.birthdays,
     }
 
     # FIXME: This return is temporary for query optimization
@@ -121,12 +124,14 @@ def formal_summery(request):
         "ord": order_by,
         "current_month_feedback_done": current_month_feedback_done,
         "announcement": get_announcement(),
-
-        "birthdays": [],
-        "increments": [],
+        
+        "increments": employee_formal_summery.increments,
+        
         "permanents": [],
         "anniversaries": [],
-        "birthday_today": [],
+
+        # Not Optimized
+        "birthdays": employee_formal_summery.birthdays,
     }
 
 

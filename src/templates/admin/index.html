@@ -377,7 +377,7 @@
 
                 {% if request.user.is_superuser %}
 
-                {% if increments|length > 0 %}
+                {% if increments.exists %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
                         <div class="card-header text-uppercase">Increment Nearby</div>
@@ -385,7 +385,7 @@
                             <ul class="list-group list-group-flush">
                                 {% for employee_increment in increments %}
                                 <li class="list-group-item">
-                                    {{ employee_increment }}
+                                    {{ employee_increment.full_name }}
                                 </li>
                                 {% endfor %}
                             </ul>
