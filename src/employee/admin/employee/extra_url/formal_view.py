@@ -5,7 +5,7 @@ import operator
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db import models
-from django.db.models import Q, Case, When, Value
+from django.db.models import Q, Case, When, Value, Count, Max
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
@@ -97,19 +97,23 @@ class EmployeeNearbySummery:
         ).order_by('year_change', 'date_of_birth__month', 'date_of_birth__day')
 
     def permanents(self):
-        return self.employees.filter(
+        qs = self.employees.filter(
             permanent_date__isnull=True,
             active=True,
             joining_date__lte=(datetime.date.today() - datetime.timedelta(days=80))
-        ).order_by('joining_date')
+        ).order_by('joining_date').values('full_name')
+        return qs, qs.count()
 
     def increments(self):
-        increment_employee = []
-        for inc_employee in self.employees.all():
-            if inc_employee.salaryhistory_set.count() > 0 and inc_employee.current_salary.active_from <= (
-                    self.today - datetime.timedelta(days=150)).date():
-                increment_employee.append(inc_employee)
-        return increment_employee
+        qs = self.employees.annotate(
+            salaryhistory_count=Count("salaryhistory"),
+            current_salary_active_from=Max('salaryhistory__active_from'),
+        ).filter(
+            salaryhistory_count__gte=0,
+            current_salary_active_from__lte=(self.today-datetime.timedelta(days=120)),
+        )
+        return qs
+    
 
     def last_salary_change(self):
         salary_increment_list = []
@@ -121,10 +125,11 @@ class EmployeeNearbySummery:
         return salary_increment_list
 
     def anniversaries(self):
-        return self.employees.filter(
+        qs = self.employees.filter(
             joining_date__month__in=[self.today.month, self.today.month + 1],
-            permanent_date__isnull=False
-        )
+            permanent_date__isnull=False,
+        ).values('full_name')
+        return qs, qs.count()
 
     def employee_leave_nearby(self):
         qs = Leave.objects.filter(
