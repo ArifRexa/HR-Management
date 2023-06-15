@@ -97,11 +97,12 @@ class EmployeeNearbySummery:
         ).order_by('year_change', 'date_of_birth__month', 'date_of_birth__day')
 
     def permanents(self):
-        return self.employees.filter(
+        qs = self.employees.filter(
             permanent_date__isnull=True,
             active=True,
             joining_date__lte=(datetime.date.today() - datetime.timedelta(days=80))
-        ).order_by('joining_date')
+        ).order_by('joining_date').values('full_name')
+        return qs, qs.count()
 
     def increments(self):
         qs = self.employees.annotate(
@@ -124,10 +125,11 @@ class EmployeeNearbySummery:
         return salary_increment_list
 
     def anniversaries(self):
-        return self.employees.filter(
+        qs = self.employees.filter(
             joining_date__month__in=[self.today.month, self.today.month + 1],
-            permanent_date__isnull=False
-        )
+            permanent_date__isnull=False,
+        ).values('full_name')
+        return qs, qs.count()
 
     def employee_leave_nearby(self):
         qs = Leave.objects.filter(

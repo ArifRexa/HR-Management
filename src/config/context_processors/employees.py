@@ -31,6 +31,8 @@ def formal_summery(request):
     employee_formal_summery = EmployeeNearbySummery()
 
     leaves_nearby, leaves_nearby_count  = employee_formal_summery.employee_leave_nearby()
+    permanents, permanents_count = employee_formal_summery.permanents()
+    anniversaries, anniversaries_count = employee_formal_summery.anniversaries()
 
     employee_online = EmployeeOnline.objects.filter(
         employee__active=True,
@@ -107,30 +109,12 @@ def formal_summery(request):
         "announcement": get_announcement(),
         "birthday_today": get_managed_birthday_image(request),
         "increments": employee_formal_summery.increments,
+        "permanents": permanents,
+        "permanents_count": permanents_count,
+        "anniversaries": anniversaries,
+        "anniversaries_count": anniversaries_count,
 
-        "permanents": employee_formal_summery.permanents,
-        "anniversaries": employee_formal_summery.anniversaries,
-        "birthday_today": get_managed_birthday_image(request),
-
-        "birthdays": employee_formal_summery.birthdays,
-    }
-
-    # FIXME: This return is temporary for query optimization
-    return {
-        "leaves": leaves_nearby,
-        "leaves_count": leaves_nearby_count,
-        'employee_online': employee_online,
-        "employee_projects": employee_projects,
-        "ord": order_by,
-        "current_month_feedback_done": current_month_feedback_done,
-        "announcement": get_announcement(),
-        
-        "increments": employee_formal_summery.increments,
-        
-        "permanents": [],
-        "anniversaries": [],
-
-        # Not Optimized
+        # TODO: Need Optimization
         "birthdays": employee_formal_summery.birthdays,
     }
 
