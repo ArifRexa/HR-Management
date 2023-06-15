@@ -82,7 +82,7 @@ urlpatterns = [
     ), name='swagger-ui'),
     path('', lambda request: redirect('/admin')),
 
-    path('ghorardim/', include('silk.urls', namespace='silk')),
+    # path('ghorardim/', include('silk.urls', namespace='silk')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
