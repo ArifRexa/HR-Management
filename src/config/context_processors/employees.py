@@ -100,22 +100,22 @@ def formal_summery(request):
         ).exists()
     
     return {
-        "leaves": [],
-        "leaves_count": [],
-        'employee_online': [],
-        "employee_projects": [],
-        "ord": [],
-        "current_month_feedback_done": [],
-        "announcement": [],
-        "birthday_today": [],
-        "increments": [],
-        "permanents": [],
-        "permanents_count": [],
-        "anniversaries": [],
-        "anniversaries_count": [],
+        "leaves": leaves_nearby,
+        "leaves_count": leaves_nearby_count,
+        'employee_online': employee_online,
+        "employee_projects": employee_projects,
+        "ord": order_by,
+        "current_month_feedback_done": current_month_feedback_done,
+        "announcement": get_announcement(),
+        "birthday_today": get_managed_birthday_image(request),
+        "increments": employee_formal_summery.increments,
+        "permanents": permanents,
+        "permanents_count": permanents_count,
+        "anniversaries": anniversaries,
+        "anniversaries_count": anniversaries_count,
 
         # TODO: Need Optimization
-        "birthdays": [],
+        "birthdays": employee_formal_summery.birthdays,
     }
 
 
