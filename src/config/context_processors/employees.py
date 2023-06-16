@@ -184,7 +184,7 @@ def get_announcement():
     )
     if leaves_today.exists():
         leaves = [(leave.employee.full_name, dict(Leave.LEAVE_CHOICE).get(leave.leave_type),) for leave in leaves_today]
-        data.append(*[f"{leave[0]} is on {leave[1]} today." for leave in leaves])
+        data.extend([f"{leave[0]} is on {leave[1]} today." for leave in leaves])
     
     # Get Birthdays
     birthdays_today = Employee.objects.filter(
