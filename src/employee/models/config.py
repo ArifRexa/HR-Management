@@ -3,7 +3,7 @@ from django.db import models
 class Config(models.Model):
     qc_bonus_amount = models.PositiveIntegerField(verbose_name="QC Bonus Ratio", default=10)
     skip_lunch_amount = models.PositiveBigIntegerField(verbose_name="Number of lunch skipp from salary", default=0)
-    cto_email = models.TextField(null=True, verbose_name="CTO Alert Emails")
+    cto_email = models.TextField(null=True, verbose_name="Tech Lead Alert Emails")
     hr_email = models.TextField(null=True, verbose_name="HR Alert Emails")
 
 

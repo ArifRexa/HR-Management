@@ -77,7 +77,7 @@ def need_cto_help(request, *args, **kwargs):
         employee.need_cto = False
         employee.need_cto_at = None
         employee.save()
-        messages.success(request, 'I got help from CTO. Thank You.')
+        messages.success(request, 'I got help from Tech Lead. Thank You.')
         return redirect('/admin/')
     else:
         employee.need_cto = True
@@ -95,7 +95,7 @@ def need_cto_help(request, *args, **kwargs):
                 email_list = email_list.split(',')
                 cto_help_mail(request.user.employee, {'waitting_at': timezone.now(), 'receiver' : email_list})
 
-        messages.success(request, 'Your request has successfully submited. CTO will contact with you.')
+        messages.success(request, 'Your request has successfully submited. Tech Lead will contact with you.')
         return redirect('/admin/')
 
 

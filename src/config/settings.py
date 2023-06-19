@@ -260,3 +260,7 @@ white_listed_ips = os.environ.get('WHITELISTED_IP', '103.180.244.213, 127.0.0.1,
 employee_ids = os.environ.get('MANAGEMENT_EMPLOYEE_IDS', '7, 30, 76, 49, 1').split(', ')
 
 CLIENT_FEEDBACK_VIDEO_EMBED_URL = os.environ.get('CLIENT_FEEDBACK_VIDEO_EMBED_URL', 'https://www.youtube.com/embed/zrt7SWJXriY')
+
+
+COMPANY_ACCOUNT_NAME = os.environ.get('COMPANY_ACCOUNT_NAME', 'Mediusware Ltd')
+COMPANY_ACCOUNT_NO = os.environ.get('COMPANY_ACCOUNT_NO', '-')
