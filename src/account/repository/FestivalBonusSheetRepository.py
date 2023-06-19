@@ -48,7 +48,8 @@ class FestivalBonusSheetRepository:
         self.__festival_bonus_sheet.save()
         employees = Employee.objects.filter(
             active=True,
-            joining_date__lte=festival_bonus_date
+            joining_date__lte=festival_bonus_date,
+            festival_bonus_eligibility=True,
         ).exclude(salaryhistory__isnull=True)
         for employee in employees:
             self.__save_employee_festival_bonus(self.__festival_bonus_sheet, employee)
