@@ -105,11 +105,11 @@ class FestivalBonusAction(admin.ModelAdmin):
             for employee_festival_bonus in employee_festival_bonuses.all():
 
                 festival_bonus_sheet.total_value += floor(employee_festival_bonus.amount)
-                bank_account = employee_festival_bonus.employee.bankaccount_set.filter(default=True).first()
-
+                bank_account = employee_festival_bonus.employee.bankaccount_set.filter(default=True, is_approved=True).last()
+                
                 work_sheet.append([
                     employee_festival_bonus.employee.full_name,
-                    bank_account.account_number if bank_account else '',
+                    bank_account.account_number if bank_account else '-',
                     "C",
                     floor(employee_festival_bonus.amount),
                     "", "", "",
@@ -147,7 +147,7 @@ class FestivalBonusAction(admin.ModelAdmin):
             
             for employee_festival_bonus in employee_festival_bonuses.all():
                 festival_bonus_sheet.total_value += floor(employee_festival_bonus.amount)
-                bank_account = employee_festival_bonus.employee.bankaccount_set.filter(default=True).first()
+                bank_account = employee_festival_bonus.employee.bankaccount_set.filter(default=True, is_approved=True).last()
 
                 salary_history = employee_festival_bonus.employee.salaryhistory_set.filter(
                     active_from__lte=festival_bonus_sheet.date.replace(day=1)
