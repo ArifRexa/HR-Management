@@ -161,7 +161,7 @@ def get_announcement():
     get_cto_needed = Employee.objects.filter(active=True, need_cto=True).values_list('full_name', flat=True)
     if get_cto_needed:
         cto_needers_text = ', '.join(get_cto_needed)
-        data.append(f"{cto_needers_text} need{'s' if len(get_cto_needed)==1 else ''} the CTO's help.")
+        data.append(f"{cto_needers_text} need{'s' if len(get_cto_needed)==1 else ''} the Tech Lead's help.")
     
     # Get HR
     get_hr_needed = Employee.objects.filter(active=True, need_hr=True).values_list('full_name', flat=True)
