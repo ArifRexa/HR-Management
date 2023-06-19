@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 
-from config.settings import employee_ids
+from config.settings import employee_ids as management_ids
 
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
@@ -27,6 +27,8 @@ from datetime import datetime
 def formal_summery(request):
     if not request.user.is_authenticated:
         return {}
+    
+    employee_id = request.user.employee.id
 
     employee_formal_summery = EmployeeNearbySummery()
 
@@ -42,7 +44,7 @@ def formal_summery(request):
         'active', 
         'employee__full_name'
     ).exclude(
-        employee_id__in=employee_ids,
+        employee_id__in=management_ids,
     ).select_related(
         'employee',
     )
@@ -51,7 +53,7 @@ def formal_summery(request):
         employee__active=True,
         employee__project_eligibility=True,
     ).exclude(
-        employee_id__in=employee_ids
+        employee_id__in=management_ids
     ).annotate(
         project_count=Count("project"),
         project_order=Min("project"),
@@ -93,9 +95,9 @@ def formal_summery(request):
         employee_projects = employee_projects.order_by(*order_by_list)
     
     current_month_feedback_done = True
-    if str(request.user.employee.id) not in employee_ids:
+    if str(employee_id) not in management_ids:
         current_month_feedback_done = EmployeeFeedback.objects.filter(
-            employee_id=request.user.employee.id,
+            employee_id=employee_id,
             created_at__date__month=timezone.now().date().month,
         ).exists()
     
@@ -114,13 +116,15 @@ def formal_summery(request):
         "anniversaries": anniversaries,
         "anniversaries_count": anniversaries_count,
 
+        "is_management": str(employee_id) in management_ids,
+
         # TODO: Need Optimization
         "birthdays": employee_formal_summery.birthdays,
     }
 
 
 def employee_status_form(request):
-    if request.user.is_authenticated and str(request.user.employee.id) not in employee_ids:
+    if request.user.is_authenticated and str(request.user.employee.id) not in management_ids:
         employee_online = EmployeeOnline.objects.get(employee_id=request.user.employee.id)
         return {
             'status_form': EmployeeStatusForm(instance=employee_online)
@@ -132,7 +136,7 @@ def employee_status_form(request):
 
 
 def employee_project_form(request):
-    if request.user.is_authenticated and not str(request.user.employee.id) in employee_ids:
+    if request.user.is_authenticated and not str(request.user.employee.id) in management_ids:
         employee_project = EmployeeProject.objects.get(employee_id=request.user.employee.id)
         return {
             'employee_project_form': EmployeeProjectForm(instance=employee_project)
