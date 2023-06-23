@@ -5,7 +5,7 @@ from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
-from django.db.models import Sum, QuerySet
+from django.db.models import Sum, QuerySet, Q
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.urls import path
@@ -180,6 +180,26 @@ class CandidateHasUrlFilter(SimpleListFilter):
             return dd
 
 
+class CandidateHasMetaReviewFilter(SimpleListFilter):
+    title = 'Has Meta Review'
+    parameter_name = 'meta_review__isnull'
+
+    def lookups(self, request, model_admin):
+        return (
+            (False, 'No Meta Review'),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is not None:
+            has_meta_review_value = bool(strtobool(self.value()))
+            if not has_meta_review_value:
+                queryset = queryset.filter(
+                    Q(note__isnull=True) | Q(note=''),
+                    candidateassessmentreview__isnull=True,
+                )
+        return queryset
+
+
 class CandidateAssessmentReviewAdmin(admin.StackedInline):
     model = CandidateAssessmentReview
     extra = 1
@@ -211,6 +231,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         'exam_started_at',
         'can_start_after', 
         CandidateHasUrlFilter,
+        CandidateHasMetaReviewFilter,
     )
     list_display_links = (
         'get_score',
