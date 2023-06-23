@@ -186,7 +186,8 @@ class CandidateHasMetaReviewFilter(SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            (False, 'No Meta Review'),
+            (False, 'Has No Meta Review'),
+            (True, 'Has Meta Review'),
         )
 
     def queryset(self, request, queryset):
@@ -194,6 +195,11 @@ class CandidateHasMetaReviewFilter(SimpleListFilter):
             has_meta_review_value = bool(strtobool(self.value()))
             if not has_meta_review_value:
                 queryset = queryset.filter(
+                    Q(note__isnull=True) | Q(note=''),
+                    candidateassessmentreview__isnull=True,
+                )
+            else:
+                queryset = queryset.exclude(
                     Q(note__isnull=True) | Q(note=''),
                     candidateassessmentreview__isnull=True,
                 )
