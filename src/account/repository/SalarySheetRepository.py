@@ -1,6 +1,7 @@
 import os
 import calendar
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
@@ -89,6 +90,10 @@ class SalarySheetRepository:
             employee=employee)
         employee_salary.food_allowance = self.__calculate_food_allowance(employee=employee,
                                                                          salary_date=salary_sheet.date)
+        employee_salary.device_allowance = self.__calculate_device_allowance(
+            employee=employee,
+            salary_date=salary_sheet.date
+        )
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date)
         employee_salary.provident_fund = self.__calculate_provident_fund(
@@ -97,7 +102,7 @@ class SalarySheetRepository:
             employee_salary.festival_bonus + employee_salary.food_allowance + \
             employee_salary.leave_bonus + employee_salary.project_bonus + \
             employee_salary.code_quality_bonus + employee_salary.loan_emi + \
-            employee_salary.provident_fund
+            employee_salary.provident_fund + employee_salary.device_allowance
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
 
@@ -258,8 +263,23 @@ class SalarySheetRepository:
                 date__year=salary_sheet.date.year,
                 payable=True
             ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
-
-        return project_hours * 10
+        
+        # Hour Bonus Amount Calculation
+        project_hours_amount = 0
+        if (
+            employee.manager 
+            or employee.lead
+        ):
+            project_hours_amount = project_hours * 13
+        else:
+            MAXIMUM_AMOUNT = 16
+            bonus_per_hour = defaultdict(lambda: MAXIMUM_AMOUNT, {
+                **dict.fromkeys(range(0, 100), 10),
+                **dict.fromkeys(range(100, 120), 13),
+            })
+            project_hours_amount = project_hours * bonus_per_hour[project_hours]
+        
+        return project_hours_amount
 
     def __calculate_code_quality_bonus(self, salary_sheet: SalarySheet, employee: Employee):
         _, last_day = calendar.monthrange(
@@ -417,3 +437,8 @@ class SalarySheetRepository:
             date__month=salary_date.month,
         ).aggregate(total=Coalesce(Count('id'), 0))['total']
         return (payable_days - skipp_days) * 140
+    
+
+    def __calculate_device_allowance(self, employee: Employee, salary_date: datetime.date):
+        return 3000.0 if employee.device_allowance else 0.0
+

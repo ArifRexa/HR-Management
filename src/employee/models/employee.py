@@ -48,6 +48,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     show_in_attendance_list = models.BooleanField(default=True)
     pf_eligibility = models.BooleanField(default=False)
     festival_bonus_eligibility = models.BooleanField(default=True)
+    device_allowance = models.BooleanField(default=False)
 
 
     list_order = models.IntegerField(default=100)

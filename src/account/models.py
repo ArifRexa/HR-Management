@@ -34,6 +34,7 @@ class EmployeeSalary(TimeStampMixin):
     leave_bonus = models.FloatField(null=True, default=0.0)
     festival_bonus = models.FloatField(null=True, default=0.0)
     food_allowance = models.FloatField(null=True, default=0.0)
+    device_allowance = models.FloatField(null=True, default=0.0)
     loan_emi = models.FloatField(null=True, default=0.0)
     provident_fund = models.FloatField(null=True, default=0.0)
     gross_salary = models.FloatField()
