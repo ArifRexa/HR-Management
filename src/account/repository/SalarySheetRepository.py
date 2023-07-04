@@ -1,6 +1,7 @@
 import os
 import calendar
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
@@ -258,8 +259,23 @@ class SalarySheetRepository:
                 date__year=salary_sheet.date.year,
                 payable=True
             ).aggregate(total_hour=Coalesce(Sum('hours'), 0.0))['total_hour']
-
-        return project_hours * 10
+        
+        # Hour Bonus Amount Calculation
+        project_hours_amount = 0
+        if (
+            employee.manager 
+            or employee.lead
+        ):
+            project_hours_amount = project_hours * 13
+        else:
+            MAXIMUM_AMOUNT = 16
+            bonus_per_hour = defaultdict(lambda: MAXIMUM_AMOUNT, {
+                **dict.fromkeys(range(0, 100), 10),
+                **dict.fromkeys(range(100, 120), 13),
+            })
+            project_hours_amount = project_hours * bonus_per_hour[project_hours]
+        
+        return project_hours_amount
 
     def __calculate_code_quality_bonus(self, salary_sheet: SalarySheet, employee: Employee):
         _, last_day = calendar.monthrange(
