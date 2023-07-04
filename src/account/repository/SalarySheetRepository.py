@@ -90,6 +90,10 @@ class SalarySheetRepository:
             employee=employee)
         employee_salary.food_allowance = self.__calculate_food_allowance(employee=employee,
                                                                          salary_date=salary_sheet.date)
+        employee_salary.device_allowance = self.__calculate_device_allowance(
+            employee=employee,
+            salary_date=salary_sheet.date
+        )
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date)
         employee_salary.provident_fund = self.__calculate_provident_fund(
@@ -98,7 +102,7 @@ class SalarySheetRepository:
             employee_salary.festival_bonus + employee_salary.food_allowance + \
             employee_salary.leave_bonus + employee_salary.project_bonus + \
             employee_salary.code_quality_bonus + employee_salary.loan_emi + \
-            employee_salary.provident_fund
+            employee_salary.provident_fund + employee_salary.device_allowance
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
 
@@ -433,3 +437,8 @@ class SalarySheetRepository:
             date__month=salary_date.month,
         ).aggregate(total=Coalesce(Count('id'), 0))['total']
         return (payable_days - skipp_days) * 140
+    
+
+    def __calculate_device_allowance(self, employee: Employee, salary_date: datetime.date):
+        return 3000.0 if employee.device_allowance else 0.0
+
