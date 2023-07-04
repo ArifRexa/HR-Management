@@ -1,4 +1,3 @@
-import os
 import calendar
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -277,7 +276,7 @@ class SalarySheetRepository:
                 **dict.fromkeys(range(0, 100), 10),
                 **dict.fromkeys(range(100, 120), 13),
             })
-            project_hours_amount = project_hours * bonus_per_hour[project_hours]
+            project_hours_amount = project_hours * bonus_per_hour[round(project_hours)]
         
         return project_hours_amount
 
