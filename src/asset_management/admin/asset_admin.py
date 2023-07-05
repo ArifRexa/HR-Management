@@ -11,13 +11,17 @@ class AssetCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'description', 'is_active', 'is_available', )
+    list_display = ('title', 'code', 'category', 'description', 'is_active', 'is_available', )
+    search_fields = ('title', 'code', 'description', )
+    list_filter = (
+        'category',
+    )
 
 
 @admin.register(EmployeeAssignedAsset)
 class EmployeeAssignedAssetAdmin(admin.ModelAdmin):
     list_display = ('employee', 'asset')
-
+    autocomplete_fields = ('asset', )
     list_filter = (
         'asset__category', 
         ('employee', admin.RelatedOnlyFieldListFilter),

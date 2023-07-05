@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from django.db import models
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, post_save
+from django.db.models.signals import pre_save, pre_delete
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -36,12 +36,12 @@ class Asset(AuthorMixin, TimeStampMixin):
     note = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return f"{self.title} | {self.code}"
 
 
 
 class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
-    employee = models.ForeignKey(Employee, models.CASCADE)
+    employee = models.ForeignKey(Employee, models.CASCADE, limit_choices_to={"active": True})
     asset = models.ForeignKey(Asset, models.CASCADE, limit_choices_to={"is_available":True})
 
     def __str__(self):
@@ -49,7 +49,7 @@ class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
 
 
 @receiver(pre_save, sender=EmployeeAssignedAsset)
-def make_default(sender, instance, update_fields=None, **kwargs):
+def assset_assign(sender, instance, update_fields=None, **kwargs):
     old_instance = sender.objects.filter(id=instance.id).first()
 
     # TODO: Handle asset assign date here
@@ -62,6 +62,13 @@ def make_default(sender, instance, update_fields=None, **kwargs):
     new_asset = instance.asset
     new_asset.is_available = False
     new_asset.save()
+
+
+@receiver(pre_delete, sender=EmployeeAssignedAsset)
+def asset_unassign(sender, instance, **kwargs):
+    asset = instance.asset
+    asset.is_available = True
+    asset.save()
 
 
 # class EmployeeAsset(Employee):
