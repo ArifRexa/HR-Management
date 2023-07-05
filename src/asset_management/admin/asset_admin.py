@@ -20,10 +20,14 @@ class AssetAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeAssignedAsset)
 class EmployeeAssignedAssetAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'asset')
+    list_display = ('employee', 'asset', 'get_asset_category', )
     autocomplete_fields = ('asset', )
     list_filter = (
         'asset__category', 
         ('employee', admin.RelatedOnlyFieldListFilter),
     )
+
+    @admin.display(description="Category")
+    def get_asset_category(self, obj):
+        return obj.asset.category.title
 
