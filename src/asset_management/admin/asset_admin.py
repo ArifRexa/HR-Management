@@ -15,6 +15,8 @@ class AssetAdmin(admin.ModelAdmin):
     search_fields = ('title', 'code', 'description', )
     list_filter = (
         'category',
+        'is_active',
+        'is_available',
     )
 
 
