@@ -31,6 +31,7 @@ def save_employee_attendance(sender, instance, created, **kwargs):
         LOAN_AMOUNT = 500
         LOAN_DATE = instance.active_from + relativedelta(day=31) # Gets the maximum month of that  day
         
+        # TODO: Try Catch for first employee or local
         Loan.objects.create(
             employee=instance.employee,
             witness_id=30, # Must change  to 30
