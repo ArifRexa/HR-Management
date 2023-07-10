@@ -7,18 +7,30 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from django.contrib import messages
 
-import config.settings
+from django.conf import settings
 from account.models import EmployeeSalary, SalarySheet, SalaryDisbursement
 from config.utils.pdf import PDF
 
 
 class SalarySheetAction(admin.ModelAdmin):
-    actions = ('export_excel', 'export_salary_account_dis',
-               'export_salary_account_dis_pdf', 'export_bonus_account_dis_pdf')
+    actions = (
+        'export_excel', 
+        'export_bankasia_salary_acc_dis_excel',
+        'export_salary_account_dis',
+        'export_salary_account_dis_pdf',
+        'export_bonus_account_dis_pdf'
+    )
 
     @admin.action(description='Export in Excel')
     def export_excel(self, request, queryset):
         return self.export_in_xl(queryset)
+    
+    @admin.action(description='Export Bank Asia Salary Account Disbursements (Excel)')
+    def export_bankasia_salary_acc_dis_excel(self, request, queryset):
+        salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='salary_account').first()
+        return self.export_in_xl_bankasia(
+            queryset, ('employee__in', salary_disbursement.employee.all()),
+        )
 
     @admin.action(description='Export Personal Account Disbursements (Excel)')
     def export_personal_account_dis(self, request, queryset):
@@ -81,7 +93,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 employee__in=salary_disbursement.employee.all()
             ).all(),
             'bank': bank,
-            'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
+            'seal': f"{settings.STATIC_ROOT}/stationary/sign_md.png"
         }
         pdf.template_path = 'letters/bank_salary.html'
         return pdf.render_to_pdf()
@@ -95,7 +107,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 employee__in=salary_disbursement.employee.all()
             ).all(),
             'bank': bank,
-            'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
+            'seal': f"{settings.STATIC_ROOT}/stationary/sign_md.png"
         }
         pdf.template_path = 'letters/bonus_pdf.html'
         return pdf.render_to_pdf()
@@ -139,3 +151,60 @@ class SalarySheetAction(admin.ModelAdmin):
         response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
         response['Content-Disposition'] = 'attachment; filename=SalarySheet.xlsx'
         return response
+    
+    def export_in_xl_bankasia(self, queryset, query_filter=None):
+        wb = Workbook()
+        work_sheets = {}
+        for salary_sheet in queryset:
+
+            salary_sheet.total_value = 0
+
+            work_sheet = wb.create_sheet(title=str(salary_sheet.date))
+
+            work_sheet.append([
+                'Employee Name', 
+                'Account Number', 
+                'Dr./Cr.',  
+                'Transaction Amount', 
+                'Chqser',
+                'Chqnum',
+                'Chqdat',
+                'Remarks',
+            ])
+
+            work_sheet.append([
+                settings.COMPANY_ACCOUNT_NAME,
+                settings.COMPANY_ACCOUNT_NO,
+                'D',
+                '0',
+                '',
+                '',
+                '',
+                f'Salary of {salary_sheet.date.strftime("%b, %Y")}',
+            ])
+
+            employee_festival_bonuses = salary_sheet.employeesalary_set
+            if query_filter is not None:
+                employee_festival_bonuses = salary_sheet.employeesalary_set.filter(query_filter).all()
+            
+            for employee_salary in employee_festival_bonuses.all():
+
+                salary_sheet.total_value += floor(employee_salary.gross_salary)
+                bank_account = employee_salary.employee.bankaccount_set.filter(default=True, is_approved=True).last()
+                
+                work_sheet.append([
+                    employee_salary.employee.full_name,
+                    bank_account.account_number if bank_account else '-',
+                    "C",
+                    floor(employee_salary.gross_salary),
+                    "", "", "",
+                    f'Salary of {salary_sheet.date.strftime("%b, %Y")}',
+                ])
+            
+            work_sheet["D2"] = salary_sheet.total_value
+            work_sheets[str(salary_sheet.id)] = work_sheet
+        wb.remove(wb['Sheet'])
+        response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=SalarySheet.xlsx'
+        return response
+
