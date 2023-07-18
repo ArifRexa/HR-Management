@@ -73,7 +73,7 @@ def permanent_notification(employees):
     email.subject = f"Permanent Notification there are {len(employees)} employee in the list of permanent"
     email.attach_alternative(html_body, 'text/html')
     email.to = ['hr@mediusware.com']
-    email.bcc = ['kmrifat@gmail.com', 'coredeveloper.2013@gmail.com']
+    email.bcc = ['coredeveloper.2013@gmail.com',]
     email.from_email = 'no-reply@mediusware.com'
     email.send()
 
@@ -85,7 +85,7 @@ def increment_notification(employees):
     email.subject = f"Increment Notification there are {len(employees)} employee(s) in the lis of increment"
     email.attach_alternative(html_body, 'text/html')
     email.to = ['hr@mediusware.com']
-    email.bcc = ['kmrifat@gmail.com', 'coredeveloper.2013@gmail.com']
+    email.bcc = ['coredeveloper.2013@gmail.com',]
     email.from_email = 'no-reply@mediusware.com'
     email.send()
 
