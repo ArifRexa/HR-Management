@@ -28,6 +28,12 @@ class EmployeeAssignedAssetAdmin(admin.ModelAdmin):
         'asset__category', 
         ('employee', admin.RelatedOnlyFieldListFilter),
     )
+    search_fields = (
+        'employee__full_name',
+        'asset__title',
+        'asset__category__title',
+        'asset__code',
+    )
 
     @admin.display(description="Category")
     def get_asset_category(self, obj):
