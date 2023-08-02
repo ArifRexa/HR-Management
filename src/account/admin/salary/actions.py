@@ -1,7 +1,10 @@
+from collections import OrderedDict
 from math import floor
+from typing import Any
 
 from django.contrib import admin
 from django.http import HttpResponse
+from django.http.request import HttpRequest
 from django.template.loader import get_template
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
@@ -20,6 +23,12 @@ class SalarySheetAction(admin.ModelAdmin):
         'export_salary_account_dis_pdf',
         'export_bonus_account_dis_pdf'
     )
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if request.user.is_superuser:
+            return actions
+        return tuple()
 
     @admin.action(description='Export in Excel')
     def export_excel(self, request, queryset):
