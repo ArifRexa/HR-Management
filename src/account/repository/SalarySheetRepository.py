@@ -435,7 +435,8 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             date__month=salary_date.month,
         ).aggregate(total=Coalesce(Count('id'), 0))['total']
-        return (payable_days - skipp_days) * 140
+        total_allowance = (payable_days - skipp_days) * 140
+        return max(total_allowance, 0)
     
 
     def __calculate_device_allowance(self, employee: Employee, salary_date: datetime.date):
