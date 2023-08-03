@@ -221,11 +221,22 @@ class Employee(TimeStampMixin, AuthorMixin):
         self.daily_project_hours = value
     
     def leave_passed(self, leave_type: str, year=timezone.datetime.now().year):
-        return self.leave_set.filter(
+        half_day_leaves = 0.0
+        if leave_type == "casual":
+            # Half day will be counted as half casual
+            half_day_leaves = self.leave_set.filter(
+                end_date__year=year,
+                leave_type="half_day",
+                status='approved',
+            ).aggregate(total=Coalesce(Sum('total_leave'), 0.0))['total']*0.5
+        
+        leaves_taken = self.leave_set.filter(
             end_date__year=year,
             leave_type=leave_type,
-            status='approved'
+            status='approved',
         ).aggregate(total=Coalesce(Sum('total_leave'), 0.0))['total']
+        
+        return half_day_leaves + leaves_taken
 
     def leave_available_leaveincash(self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()):
         available_leave = 0
