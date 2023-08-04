@@ -256,9 +256,6 @@ class Employee(TimeStampMixin, AuthorMixin):
         
         return round(available_leave)
 
-    class Meta:
-        db_table = 'employees'
-
 
     def leave_available(self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()):
         available_leave = 0
@@ -286,6 +283,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         db_table = 'employees'
         permissions = (
             ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
+            ("can_access_all_employee", "Can acccess all employee"),
         )
 
 
