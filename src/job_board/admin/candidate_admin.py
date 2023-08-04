@@ -238,6 +238,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         'can_start_after', 
         CandidateHasUrlFilter,
         CandidateHasMetaReviewFilter,
+        'candidate_job__candidate__gender',
     )
     list_display_links = (
         'get_score',
