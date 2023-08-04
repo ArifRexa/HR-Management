@@ -40,7 +40,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
         return list_display
 
     def get_queryset(self, request):
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm("employee.can_access_all_employee"):
             return super(EmployeeAdmin, self).get_queryset(request).filter(user__id=request.user.id)
         return super(EmployeeAdmin, self).get_queryset(request)
 
