@@ -20,8 +20,11 @@ class CandidateSerializer(ModelSerializer):
 
     class Meta:
         model = Candidate
-        fields = ('id', 'full_name', 'email', 'password', 'phone', 'avatar', 'cv')
-        extra_kwargs = {'password': {"write_only": True}}
+        fields = ('id', 'full_name', 'email', 'password', 'phone', 'avatar', 'cv', 'gender')
+        extra_kwargs = {
+            'password': {"write_only": True},
+            'gender': {"required": True},
+        }
 
     def create(self, validated_data):
         candidate = Candidate(**validated_data)

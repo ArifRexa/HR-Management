@@ -35,6 +35,11 @@ class Candidate(TimeStampMixin):
         ('active', 'Active'),
         ('banned', 'Banned')
     )
+    GENDER_CHOICE = (
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    )
     full_name = models.CharField(max_length=150)
     email = models.EmailField(max_length=40, unique=True)
     email_otp = models.CharField(max_length=10, null=True, blank=True)
@@ -44,6 +49,7 @@ class Candidate(TimeStampMixin):
     avatar = models.ImageField(upload_to='candidate/avatar/', null=True, blank=True)
     cv = models.FileField(upload_to=candidate_email_path, validators=[validate_file_extension])
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICE, null=True, blank=False)
 
     def __str__(self):
         return self.full_name
