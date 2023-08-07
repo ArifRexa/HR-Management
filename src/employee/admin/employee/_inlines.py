@@ -55,3 +55,16 @@ class EmployeeContentInline(admin.StackedInline):
 class EmployeeInline(admin.ModelAdmin):
     inlines = (SkillInline, AttachmentInline, SalaryHistoryInline, BankAccountInline,
                EmployeeSocialInline, EmployeeContentInline)
+
+    def get_inline_instances(self, request, obj):
+        inlines = super().get_inline_instances(request, obj)
+        if (
+            not request.user.is_superuser
+            and obj  and request.user != obj.user
+            and self.has_module_permission
+        ):
+            for inline_obj in inlines.copy():
+                if isinstance(inline_obj, SalaryHistoryInline):
+                    inlines.remove(inline_obj)
+        return inlines
+
