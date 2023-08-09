@@ -21,6 +21,33 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
     change_list_template = 'admin/employee/list/index.html'
     exclude = ['pf_eligibility']
 
+
+    def get_readonly_fields(self, request, obj):
+        if (
+            request.user.is_superuser 
+            or request.user.has_perm("employee.can_access_all_employee")
+        ):
+            return []
+        
+        all_fields = [f.name for f in Employee._meta.fields]
+        
+        ignore_fields = [
+            "id", 
+            "created_by", 
+            "created_at",
+        ]
+        editable_fields = [
+            "date_of_birth",
+        ]
+        
+        for field in editable_fields:
+            if field in all_fields: all_fields.remove(field)
+        for field in ignore_fields:
+            if field in all_fields: all_fields.remove(field)
+        
+        return all_fields
+    
+
     def get_search_results(self, request, queryset, search_term):
         qs, use_distinct = super().get_search_results(request, queryset, search_term)
         data = request.GET.dict()
