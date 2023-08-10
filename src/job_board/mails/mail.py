@@ -11,7 +11,7 @@ class EmailTread(Thread):
         Thread.__init__(self)
 
     def run(self):
-        msg = EmailMultiAlternatives(self.subject, self.html_content, '"Mediusware-HR" <hr@mediusware.com>', self.recipient_list)
+        msg = EmailMultiAlternatives(self.subject, self.html_content, '"Mediusware-Admin" <admin@mediusware.com>', self.recipient_list)
         msg.attach_alternative(self.html_content, "text/html")
         msg.send()
 

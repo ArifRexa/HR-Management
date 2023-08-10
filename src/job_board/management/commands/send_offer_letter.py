@@ -40,5 +40,5 @@ def send_mail(candidate: Candidate, pdf_location):
     email.attach_alternative(html_content, 'text/html')
     email.attach_file(pdf_location)
     email.to = [candidate.email]
-    email.from_email = 'hr@mediusware.com'
+    email.from_email = 'admin@mediusware.com'
     email.send()
