@@ -44,7 +44,7 @@ def send_mail_to_employee(employee, pdf, html_body, subject):
     email.subject = f'{subject} of {employee.full_name}'
     email.attach_alternative(html_body, 'text/html')
     email.to = [employee.email]
-    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
     email.send()
 
@@ -72,8 +72,8 @@ def permanent_notification(employees):
     email = EmailMultiAlternatives()
     email.subject = f"Permanent Notification there are {len(employees)} employee in the list of permanent"
     email.attach_alternative(html_body, 'text/html')
-    email.to = ['hr@mediusware.com']
-    email.bcc = ['coredeveloper.2013@gmail.com',]
+    email.to = ['admin@mediusware.com']
+    # email.bcc = ['coredeveloper.2013@gmail.com',]
     email.from_email = 'no-reply@mediusware.com'
     email.send()
 
@@ -84,8 +84,8 @@ def increment_notification(employees):
     email = EmailMultiAlternatives()
     email.subject = f"Increment Notification there are {len(employees)} employee(s) in the lis of increment"
     email.attach_alternative(html_body, 'text/html')
-    email.to = ['hr@mediusware.com']
-    email.bcc = ['coredeveloper.2013@gmail.com',]
+    email.to = ['admin@mediusware.com']
+    # email.bcc = ['coredeveloper.2013@gmail.com',]
     email.from_email = 'no-reply@mediusware.com'
     email.send()
 
