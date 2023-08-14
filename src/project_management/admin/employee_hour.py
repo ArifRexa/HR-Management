@@ -312,10 +312,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return permitted
     
     def save_model(self, request, obj, form, change) -> None:
-        super().save_model(request, obj, form, change)
-
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
+        
+        super().save_model(request, obj, form, change)
         
         if change == False:
             return DailyProjectUpdateHistory.objects.create(hours=request.POST.get('hours'), daily_update=obj)
