@@ -11,3 +11,4 @@ from .excuse_note import ExcuseNoteAdmin
 from .config import ConfigAdmin
 from .favourite_menu import FavouriteMenuAdmin
 from .employee_bank import BankAccountAdmin
+from .home_office import HomeOfficeManagement

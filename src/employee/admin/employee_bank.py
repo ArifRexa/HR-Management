@@ -39,6 +39,7 @@ class BankAccountAdmin(admin.ModelAdmin):
         if (
             request.user.is_superuser 
             or request.user.has_perm('employee.can_edit_all_bank_account')
+            or request.user.has_perm("employee.can_approve_bank_account_info")
         ):
             return super().get_list_filter(request)
         return []

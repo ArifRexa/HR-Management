@@ -136,7 +136,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     actions = ['update_status_approve', 'update_status_pending']
     fieldsets = (
         ('Standard Info', {
-            'fields': ('created_at', 'employee', 'manager', 'project', 'hours', 'update', 'status'),
+            'fields': ('created_at', 'manager', 'project', 'hours', 'update', 'status'),
         }),
         ('Extras', {
             'fields': ('note',),
@@ -312,6 +312,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return permitted
     
     def save_model(self, request, obj, form, change) -> None:
+        if not obj.employee_id:
+            obj.employee_id = request.user.employee.id
+        
         super().save_model(request, obj, form, change)
         
         if change == False:
@@ -320,4 +323,4 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         requested_hours = float(request.POST.get('hours'))
         if requested_hours != obj.hours or obj.created_by is not request.user:
             return DailyProjectUpdateHistory.objects.create(hours=request.POST.get('hours'), daily_update=obj)
-        
+

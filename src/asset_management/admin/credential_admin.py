@@ -30,8 +30,8 @@ class CredentialAdminForm(forms.ModelForm):
 class CredentialAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'created_by', 'access_count','status_col',)
     form = CredentialAdminForm
-    list_filter = ('category','status')
-    search_fields = ('title', 'description')
+    list_filter = ('category','status', 'privileges__employee',)
+    search_fields = ('title', 'description', 'privileges__employee__full_name',)
     actions = ['mark_as_active', 'mark_as_inactive',]
     change_form_template = 'admin/credentials/change_form.html'
 
