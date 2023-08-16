@@ -42,7 +42,7 @@ class Asset(AuthorMixin, TimeStampMixin):
 
 class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
     employee = models.ForeignKey(Employee, models.CASCADE, limit_choices_to={"active": True})
-    asset = models.ForeignKey(Asset, models.CASCADE, limit_choices_to={"is_available":True})
+    asset = models.ForeignKey(Asset, models.CASCADE)
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.asset.title}"
@@ -71,9 +71,9 @@ def asset_unassign(sender, instance, **kwargs):
     asset.save()
 
 
-# class EmployeeAsset(Employee):
-#     class Meta:
-#         proxy=True
+class EmployeeAsset(Employee):
+    class Meta:
+        proxy=True
 
 
 class SubAsset(AuthorMixin, TimeStampMixin):
