@@ -72,6 +72,21 @@ class EmployeeAssignedAssetAdmin(admin.StackedInline):
     autocomplete_fields = ('asset',)
 
 
+class EmployeeAssetCategoryFilter(admin.SimpleListFilter):
+    title = 'Asset Category'
+    parameter_name = 'employeeassignedasset__asset__category_id'
+
+    def lookups(self, request, model_admin):
+        objs = AssetCategory.objects.all()
+        lookups = [(ac.id, ac.title,) for ac in objs]
+        return tuple(lookups)
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value is not None:
+            return queryset.filter(employeeassignedasset__asset__category_id=value)
+        return queryset
+
 
 @admin.register(EmployeeAsset)
 class EmployeeAssetAdmin(admin.ModelAdmin):
@@ -81,12 +96,16 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
     inlines = (EmployeeAssignedAssetAdmin,)
 
     list_display = ('full_name', 'get_assets',)
-
-    list_filter = ('full_name',)
+    list_filter = ('full_name', EmployeeAssetCategoryFilter,)
 
     @admin.display(description="Assigned Assets")
     def get_assets(self, obj):
         assigned_assets = obj.employeeassignedasset_set.all()
         assets_str = "<br>".join([f'{assignedasset.asset.title} | {assignedasset.asset.code}' for assignedasset in assigned_assets])
         return format_html(assets_str)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.filter(active=True)
+        return qs
 
