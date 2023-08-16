@@ -38,12 +38,12 @@ class AssetAdmin(admin.ModelAdmin):
         referer = request.META.get('HTTP_REFERER', '')
         
         if request.user.is_authenticated and app_label == 'asset_management' and model_name == 'employeeassignedasset':
-            employee_id=None
             if 'asset_management/employeeasset' in referer:
                 url_parts = urlparse(referer).path.split('/')
-                if len(url_parts)>=3:employee_id = url_parts[-3]
-            assined_assets = EmployeeAssignedAsset.objects.filter(employee_id=employee_id).values_list('asset_id', flat=True)
-            qs = Asset.objects.filter(Q(is_available=True) | Q(id__in=assined_assets))
+                if len(url_parts)>=3:
+                    employee_id = url_parts[-3]
+                    assined_assets = list(EmployeeAssignedAsset.objects.filter(employee_id=employee_id).values_list('asset_id', flat=True))
+                    qs = Asset.objects.filter(Q(is_available=True) | Q(id__in=assined_assets))
         return qs, use_distinct
 
 # @admin.register(EmployeeAssignedAsset)
