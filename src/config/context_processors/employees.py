@@ -10,7 +10,7 @@ from config.settings import employee_ids as management_ids
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_online import EmployeeStatusForm
 from employee.forms.employee_project import EmployeeProjectForm
-from employee.models import EmployeeOnline, Leave, EmployeeSkill
+from employee.models import EmployeeOnline, Leave, EmployeeSkill, HomeOffice
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from employee.models.employee import Employee
@@ -189,6 +189,20 @@ def get_announcement():
     if leaves_today.exists():
         leaves = [(leave.employee.full_name, dict(Leave.LEAVE_CHOICE).get(leave.leave_type),) for leave in leaves_today]
         data.extend([f"{leave[0]} is on {leave[1]} today." for leave in leaves])
+    
+    # Get Home Offices
+    home_offices_today = HomeOffice.objects.filter(
+        employee__active=True,
+        start_date__lte=now, 
+        end_date__gte=now,
+    ).exclude(
+        status='rejected',
+    ).select_related(
+        'employee',
+    )
+    if home_offices_today.exists():
+        homeoffices = [homeoffice.employee.full_name for homeoffice in home_offices_today]
+        data.extend([f"{homeoffice} is on Home Office today." for homeoffice in homeoffices])
     
     # Get Birthdays
     birthdays_today = Employee.objects.filter(
