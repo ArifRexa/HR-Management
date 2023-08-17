@@ -43,7 +43,13 @@ class AssetAdmin(admin.ModelAdmin):
                 if len(url_parts)>=3:
                     employee_id = url_parts[-3]
                     assined_assets = list(EmployeeAssignedAsset.objects.filter(employee_id=employee_id).values_list('asset_id', flat=True))
-                    qs = Asset.objects.filter(Q(is_available=True) | Q(id__in=assined_assets))
+                    qs = Asset.objects.filter(
+                        Q(title__icontains=search_term)
+                        | Q(code__icontains=search_term)
+                        | Q(category__title__icontains=search_term),
+                        Q(is_available=True)
+                        | Q(id__in=assined_assets),
+                    )
         return qs, use_distinct
 
 # @admin.register(EmployeeAssignedAsset)
