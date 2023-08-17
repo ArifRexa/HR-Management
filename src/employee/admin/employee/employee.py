@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import models
+from django.db.models import Q
 from django.forms import Textarea
 
 from employee.admin.employee._actions import EmployeeActions
@@ -50,6 +51,16 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
 
     def get_search_results(self, request, queryset, search_term):
         qs, use_distinct = super().get_search_results(request, queryset, search_term)
+        
+        # Override select2 auto relation to employee
+        if request.user.is_authenticated:
+            return Employee.objects.filter(
+                Q(active=True),
+                Q(full_name__icontains=search_term)
+                | Q(email__icontains=search_term),
+            ), use_distinct
+        return qs, use_distinct
+        
         data = request.GET.dict()
 
         app_label = data.get('app_label')
