@@ -80,7 +80,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def employee_project_list(self):
         from employee.models.employee_activity import EmployeeProject
-        return EmployeeProject.objects.filter(employee_id=self.id).first().project.all().values('title')
+        return EmployeeProject.objects.filter(employee_id=self.id).first().project.filter(active=True).values('title')
 
     @property
     def top_one_skill(self):
