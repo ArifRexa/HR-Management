@@ -53,7 +53,7 @@ class EmployeeAdmin(EmployeeAdminListView, EmployeeActions, EmployeeExtraUrls, E
         qs, use_distinct = super().get_search_results(request, queryset, search_term)
         
         # Override select2 auto relation to employee
-        if request.user.is_authenticated:
+        if request.user.is_authenticated and "autocomplete" in request.get_full_path():
             return Employee.objects.filter(
                 Q(active=True),
                 Q(full_name__icontains=search_term)
