@@ -26,3 +26,12 @@ class DailyUpdateFilterForm(forms.Form):
     created_at__date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type':'date'}))
     created_at__date__lte = forms.DateField(label='To', widget=AdminDateWidget(attrs={'type':'date'}))
 
+
+class NOCIntermediateForm(forms.Form):
+    noc_body = forms.CharField(label="NOC Body Text", widget=forms.Textarea)
+
+    def __init__(self, *args, **kwargs):
+        noc_body = kwargs.pop('noc_body', '')
+        super().__init__(*args, **kwargs)
+        self.fields["noc_body"].initial = noc_body
+

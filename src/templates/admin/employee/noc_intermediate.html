@@ -1,0 +1,25 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n static %}
+
+{% block content %}
+
+
+<link href="{% static 'tinymce/css/prism.css' %}" rel="stylesheet">
+
+<form action="" method="POST">
+    {% csrf_token %}
+    {% for field in form %}
+        <p>{{ field.label }}:</p>
+        <p>{{ field }}</p>
+    {% endfor %}
+    
+    {% comment %} Required for Admin Context {% endcomment %}
+    {% for obj in queryset %}
+        <input type="hidden" name="{{ action_checkbox_name }}" value="{{ obj.pk|unlocalize }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="{{ action_name }}" />
+    {% comment %} END Admin Context Values {% endcomment %}
+
+    <input type="submit" name="noc_intermediate" value="submit">
+</form>
+{% endblock %}
