@@ -7,6 +7,8 @@ from django.utils.html import format_html
 from asset_management.models import CredentialCategory, Credential
 from config.widgets.mw_select_multiple import UserFilteredSelectMultiple
 
+from employee.models import Employee
+
 
 @admin.register(CredentialCategory)
 class CredentialCategoryAdmin(admin.ModelAdmin):
@@ -26,11 +28,28 @@ class CredentialAdminForm(forms.ModelForm):
         fields = "__all__"
 
 
+
+class CredentialEmployeeFilter(admin.SimpleListFilter):
+    title = 'Employee'
+    parameter_name = 'privileges__employee__id'
+
+    def lookups(self, request, model_admin):
+        objs = Employee.objects.filter(active=True)
+        lookups = [(emp.id, emp.full_name,) for emp in objs]
+        return tuple(lookups)
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value is not None:
+            return queryset.filter(privileges__employee__id=value)
+        return queryset
+
+
 @admin.register(Credential)
 class CredentialAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'created_by', 'access_count','status_col',)
     form = CredentialAdminForm
-    list_filter = ('category','status', 'privileges__employee',)
+    list_filter = ('category','status', CredentialEmployeeFilter,)
     search_fields = ('title', 'description', 'privileges__employee__full_name',)
     actions = ['mark_as_active', 'mark_as_inactive',]
     change_form_template = 'admin/credentials/change_form.html'
