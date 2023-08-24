@@ -9,17 +9,26 @@ class ServiceAdmin(admin.ModelAdmin):
     list_display = ('title', 'slug', 'order', 'active')
     search_fields = ('title',)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(Category)
 class Category(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(Tag)
 class Tag(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
+
+    def has_module_permission(self, request):
+        return False
 
 
 class BlogCategoryInline(admin.StackedInline):
@@ -44,3 +53,6 @@ class BlogAdmin(admin.ModelAdmin):
     readonly_fields = ('read_time_minute', )
     search_fields = ('title', )
     list_display = ('title', 'slug', 'active', )
+
+    # def has_module_permission(self, request):
+    #     return False

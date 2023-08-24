@@ -24,20 +24,17 @@
             </caption>
             
             <!-- Hidden from Main Index -->
+            {% comment %} <tr>
+                <th scope="row"><a href="{% url 'admin:website_blog_changelist' %}">Blogs</a></th>
+            </tr> {% endcomment %}
             <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_assessmentquestion_changelist' %}">Assessment Questions</a></th>
+                <th scope="row"><a href="{% url 'admin:website_category_changelist' %}">Categories</a></th>
             </tr>
             <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_assessment_changelist' %}">Assessments</a></th>
+                <th scope="row"><a href="{% url 'admin:website_service_changelist' %}">Services</a></th>
             </tr>
             <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_candidatejob_changelist' %}">Candidate Jobs</a></th>
-            </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_resetpassword_changelist' %}">Reset Passwords</a></th>
-            </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_smspromotion_changelist' %}">SMS Promotions</a></th>
+                <th scope="row"><a href="{% url 'admin:website_tag_changelist' %}">Tags</a></th>
             </tr>
             <!-- Hidden from Main Index -->
 
