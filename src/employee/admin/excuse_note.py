@@ -14,6 +14,7 @@ class ExcuseNoteAttachmentInline(admin.TabularInline):
 @admin.register(ExcuseNote)
 class ExcuseNoteAdmin(admin.ModelAdmin):
     list_display = ('get_date', 'category', 'employee', 'get_short_excuse_acts')
+    search_fields = ('employee__full_name', 'category__title', 'excuse_acts',)
     list_filter = ('employee', 'category',)
     date_hierarchy = 'created_at'
     list_per_page = 20
