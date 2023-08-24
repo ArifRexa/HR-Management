@@ -18,7 +18,7 @@ class ExcuseNoteAdmin(admin.ModelAdmin):
     date_hierarchy = 'created_at'
     list_per_page = 20
     inlines = (ExcuseNoteAttachmentInline,)
-    # autocomplete_fields = ['employee']
+    autocomplete_fields = ('employee', 'category',)
 
 
     class Media:
@@ -50,4 +50,5 @@ class ExcuseNoteAdmin(admin.ModelAdmin):
 @admin.register(HRReportNoteCategory)
 class HRReportNoteCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'active',)
+    search_fields = ('title',)
 
