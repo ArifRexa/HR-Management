@@ -24,7 +24,7 @@ def get_this_week_hour(request, project_id, hour_date):
                 dailyprojectupdate_employee__created_at__date__gte=hour_date-timedelta(days=6),
             ),
         ), 0.0),
-    ).exclude(total_hour=0.0).values('id', 'total_hour')
+    ).exclude(total_hour=0.0).values('id', 'full_name', 'total_hour')
 
     totalHours = sum(hour['total_hour'] for hour in employee)
 
