@@ -116,7 +116,20 @@
                     employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
 
                     hour_input.value = hours[i].total_hour;
-                    employee_select.value = hours[i].id;
+
+                    var optionNode = document.createElement("option");
+                    optionNode.value = hours[i].id;
+                    optionNode.textContent = hours[i].full_name;
+                    employee_select.appendChild(optionNode);
+                    
+                    {% comment %} employee_select.value = hours[i].id;  {% endcomment %}
+                    {% comment %} console.log(hours[i].id, i); {% endcomment %}
+
+                    {% comment %} employee_select.val('54');
+                    employee_select.trigger('change'); {% endcomment %}
+                    {% comment %} console.log($(`#id_employeeprojecthour_set-${i}-employee`)); {% endcomment %}
+
+                    {% comment %} $(`#id_employeeprojecthour_set-${i}-employee`).val(hours[i].id).trigger('change'); {% endcomment %}
 
                     add_btn.click();
                 }

@@ -27,5 +27,6 @@ class Credential(AuthorMixin, TimeStampMixin):
 
     class Meta:
         permissions = [
-            ("access_all_credentials", "Can able to see all credentials")
+            ("access_all_credentials", "Can able to see all credentials"),
+            ("can_edit_credential", "Can edit credential"),
         ]

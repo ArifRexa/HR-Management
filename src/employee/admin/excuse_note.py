@@ -1,5 +1,5 @@
 from django.contrib import admin
-from employee.models.excuse_note import ExcuseNote, ExcuseNoteAttachment
+from employee.models.excuse_note import ExcuseNote, ExcuseNoteAttachment, HRReportNoteCategory
 from django.template.loader import get_template
 from django.utils.html import format_html
 
@@ -13,12 +13,13 @@ class ExcuseNoteAttachmentInline(admin.TabularInline):
 
 @admin.register(ExcuseNote)
 class ExcuseNoteAdmin(admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'get_short_excuse_acts')
-    list_filter = ('employee',)
+    list_display = ('get_date', 'category', 'employee', 'get_short_excuse_acts')
+    search_fields = ('employee__full_name', 'category__title', 'excuse_acts',)
+    list_filter = ('employee', 'category',)
     date_hierarchy = 'created_at'
     list_per_page = 20
     inlines = (ExcuseNoteAttachmentInline,)
-    # autocomplete_fields = ['employee']
+    autocomplete_fields = ('employee', 'category',)
 
 
     class Media:
@@ -43,5 +44,12 @@ class ExcuseNoteAdmin(admin.ModelAdmin):
     
 
     def has_module_permission(self, request): 
-        return False
+        return super().has_module_permission(request)
+        # return False
+
+
+@admin.register(HRReportNoteCategory)
+class HRReportNoteCategoryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'active',)
+    search_fields = ('title',)
 

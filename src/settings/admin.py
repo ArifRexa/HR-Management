@@ -28,6 +28,9 @@ class DesignationAdmin(admin.ModelAdmin):
 class FinancialYearAdmin(admin.ModelAdmin):
     list_display = ('start_date', 'end_date', 'active')
 
+    def has_module_permission(self, request):
+        return False
+
 
 class PublicHolidayDateInline(admin.TabularInline):
     model = PublicHolidayDate
@@ -44,6 +47,9 @@ class PublicHolidayAdmin(admin.ModelAdmin):
         date_list = [dt for dt in obj.public_holiday.values_list('date', flat=True)]
         print(date_list)
         return "({}) \n {}".format(total_days, date_list)
+
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Bank)
@@ -85,6 +91,9 @@ class LetterAdmin(admin.ModelAdmin):
 @admin.register(OpenLetter)
 class OpenLetterAdmin(admin.ModelAdmin):
     list_display = ('title', 'message')
+
+    def has_module_permission(self, request):
+        return False
 
 
 admin.site.unregister([q_models.Success])
