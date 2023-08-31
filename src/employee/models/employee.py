@@ -1,22 +1,22 @@
-import uuid
 import datetime
+
 from dateutil.relativedelta import relativedelta
-from django.contrib.auth.models import User, Group
-from django.core.validators import FileExtensionValidator
+from django.contrib.auth.models import Group, User
 from django.db import models
 from django.db.models import Sum
-from django.db.models.functions import TruncMonth
-from django.db.models.functions import Coalesce
+from django.db.models.functions import Coalesce, TruncMonth
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timesince import timesince
 from tinymce.models import HTMLField
+
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
-from django.utils.html import format_html
+
 
 class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -352,10 +352,10 @@ class Task(TimeStampMixin, AuthorMixin):
         verbose_name_plural = "Todo List"
 
 
-from tinymce.models import HTMLField
 class EmployeeFaq(TimeStampMixin, AuthorMixin):
     question = models.CharField(max_length=200)
     answer = HTMLField()
+    rank = models.IntegerField(default=0)
     active = models.BooleanField(default=False)
 
     def __str__(self) -> str:

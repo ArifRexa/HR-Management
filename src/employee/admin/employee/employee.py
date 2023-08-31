@@ -148,7 +148,7 @@ class FAQAdmin(admin.ModelAdmin):
     search_fields = ['question', 'answer']
 
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(active=True)
+        return super().get_queryset(request).filter(active=True).order_by('-rank')
 
     # def changelist_view(self, request, extra_context):
         # return super().changelist_view(request, extra_context)
@@ -157,7 +157,7 @@ class FAQAdmin(admin.ModelAdmin):
 
 @admin.register(EmployeeFaq)
 class EmployeeFaqAdmin(admin.ModelAdmin):
-    list_display = ['question', 'active']
+    list_display = ['question', 'rank', 'active']
     search_fields = ['question', 'answer']
     readonly_fields = ['active']
     list_filter = ('active', )
