@@ -25,6 +25,6 @@ class HRContractPolicies(admin.ModelAdmin):
             super()
             .get_queryset(request)
             .filter(active=True)
-            .prefetch_related("hrpolicysection_set")[:1]
+            .prefetch_related("hrpolicysection_set")
         )
         return qs
