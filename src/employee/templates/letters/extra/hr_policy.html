@@ -1,0 +1,10 @@
+<p style="line-height: 20px">
+    {% for policy in hr_policies %}
+
+    <p>
+        <h3 class="">{{ policy.title }}</h3>
+        {{ policy.description | safe }}
+    </p>
+    <br>
+    {% endfor %}
+</p>
