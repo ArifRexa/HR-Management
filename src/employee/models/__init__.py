@@ -15,3 +15,9 @@ from .config import Config
 from .favourite_menu import FavouriteMenu
 from .employee import EmployeeFAQView, EmployeeFaq
 from .home_office import HomeOffice, HomeOfficeAttachment
+
+from .hr_policy import (
+    HRPolicy,
+    HRPolicySection,
+    HRPolicyPublic,
+)
