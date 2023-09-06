@@ -198,7 +198,14 @@ class Employee(TimeStampMixin, AuthorMixin):
 
             project_hour_list.append(temp_hours)
 
-        format_str = "<hr>" + (" - ".join(map(str, project_hour_list)))
+        format_str = "<hr>" + (
+            " - ".join(
+                map(
+                    lambda x: f"{x:.2f}" if x != int(x) else f"{x:.1f}",
+                    project_hour_list,
+                )
+            )
+        )
         return format_html(format_str)
 
     def save(
