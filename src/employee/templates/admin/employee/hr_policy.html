@@ -54,12 +54,24 @@ HR Contract Policies
               {% for hrpolicy in cl.result_list %}
                 {% for hrplicysection in hrpolicy.hrpolicysection_set.all %}
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="heading_{{ forloop.counter }}">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ forloop.counter }}" aria-expanded="true" aria-controls="collapse_{{ forloop.counter }}">
+                        <h2 class="accordion-header" id="heading_{{ forloop.counter }}_{{ forloop.parentloop.counter }}">
+                        <button 
+                          class="accordion-button collapsed" 
+                          type="button" 
+                          data-bs-toggle="collapse" 
+                          data-bs-target="#collapse_{{ forloop.counter }}_{{ forloop.parentloop.counter }}" 
+                          aria-expanded="true" 
+                          aria-controls="collapse_{{ forloop.counter }}_{{ forloop.parentloop.counter }}"
+                        >
                             {{ hrplicysection.title }}
                         </button>
                         </h2>
-                        <div id="collapse_{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ forloop.counter }}" data-bs-parent="#faq">
+                        <div 
+                          id="collapse_{{ forloop.counter }}_{{ forloop.parentloop.counter }}" 
+                          class="accordion-collapse collapse" 
+                          aria-labelledby="heading_{{ forloop.counter }}_{{ forloop.parentloop.counter }}" 
+                          data-bs-parent="#policy"
+                        >
                         <div class="accordion-body overflow-hidden">
                             {{ hrplicysection.description | safe }}
                         </div>
