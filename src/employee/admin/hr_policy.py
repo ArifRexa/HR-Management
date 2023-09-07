@@ -19,6 +19,10 @@ class HRPolicyAdmin(admin.ModelAdmin):
 @admin.register(HRPolicyPublic)
 class HRContractPolicies(admin.ModelAdmin):
     change_list_template = "admin/employee/hr_policy.html"
+    search_fields = (
+        "hrpolicysection__title",
+        "hrpolicysection__description",
+    )
 
     def get_queryset(self, request):
         qs = (
