@@ -3,6 +3,7 @@ from math import floor
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
+
 # Create your models here.
 from django.db.models import Sum
 from django.utils import timezone
@@ -22,7 +23,9 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
 
     @property
     def total(self):
-        return floor(self.employeesalary_set.aggregate(Sum('gross_salary'))['gross_salary__sum'])
+        return floor(
+            self.employeesalary_set.aggregate(Sum("gross_salary"))["gross_salary__sum"]
+        )
 
 
 class EmployeeSalary(TimeStampMixin):
@@ -45,7 +48,6 @@ class EmployeeSalary(TimeStampMixin):
         return self.gross_salary - self.festival_bonus
 
 
-
 class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
     date = models.DateField(blank=False)
     total_value = models.FloatField(null=True)
@@ -53,21 +55,24 @@ class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
 
     @property
     def total(self):
-        return floor(self.employeefestivalbonus_set.aggregate(Sum('amount'))['amount__sum'])
+        return floor(
+            self.employeefestivalbonus_set.aggregate(Sum("amount"))["amount__sum"]
+        )
 
 
 class EmployeeFestivalBonus(TimeStampMixin):
     employee = models.ForeignKey(Employee, on_delete=models.RESTRICT)
-    festival_bonus_sheet = models.ForeignKey(FestivalBonusSheet, on_delete=models.CASCADE)
+    festival_bonus_sheet = models.ForeignKey(
+        FestivalBonusSheet, on_delete=models.CASCADE
+    )
 
     amount = models.FloatField(default=0)
 
 
-
 class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     disbursement_choice = (
-        ('salary_account', 'Salary Account'),
-        ('personal_account', 'Personal Account')
+        ("salary_account", "Salary Account"),
+        ("personal_account", "Personal Account"),
     )
     title = models.CharField(max_length=100)
     employee = models.ManyToManyField(Employee)
@@ -97,33 +102,37 @@ class Expense(TimeStampMixin, AuthorMixin):
     amount = models.FloatField()
     date = models.DateField(default=timezone.now)
     is_approved = models.BooleanField(default=False)
-    approved_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='approve_by', null=True, blank=True)
+    approved_by = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="approve_by", null=True, blank=True
+    )
 
     class Meta:
         permissions = (
-            ('can_approve_expense', 'Can Approve Expense', ),
+            (
+                "can_approve_expense",
+                "Can Approve Expense",
+            ),
         )
 
 
 class ExpanseAttachment(TimeStampMixin, AuthorMixin):
     expanse = models.ForeignKey(Expense, on_delete=models.CASCADE)
-    attachment = models.FileField(upload_to='uploads/expanse/%y/%m')
+    attachment = models.FileField(upload_to="uploads/expanse/%y/%m")
 
 
 class Income(TimeStampMixin, AuthorMixin):
-    STATUS_CHOICE = (
-        ('pending', '⌛ Pending'),
-        ('approved', '✔ Approved')
+    STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+    project = models.ForeignKey(
+        Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
     )
-    project = models.ForeignKey(Project, on_delete=models.RESTRICT, limit_choices_to={'active': True})
     hours = models.FloatField()
     loss_hours = models.FloatField(default=0)
     hour_rate = models.FloatField(default=10.0)
-    convert_rate = models.FloatField(default=90.0, help_text='BDT convert rate')
+    convert_rate = models.FloatField(default=90.0, help_text="BDT convert rate")
     payment = models.FloatField()
     date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
 
     def save(self, *args, **kwargs):
         self.payment = self.hours * (self.hour_rate * self.convert_rate)
@@ -131,10 +140,13 @@ class Income(TimeStampMixin, AuthorMixin):
 
 
 class ProfitShare(TimeStampMixin, AuthorMixin):
-    user = UserForeignKey(limit_choices_to={'is_superuser': True}, on_delete=models.CASCADE)
+    user = UserForeignKey(
+        limit_choices_to={"is_superuser": True}, on_delete=models.CASCADE
+    )
     date = models.DateField()
     payment_amount = models.FloatField()
     note = models.TextField(null=True, blank=True)
+
 
 class FundCategory(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
@@ -142,38 +154,46 @@ class FundCategory(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
-    
+
+
 class Fund(TimeStampMixin, AuthorMixin):
     date = models.DateField(null=True, blank=True)
     amount = models.FloatField(default=0.0)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
-    fund_category = models.ForeignKey(FundCategory, on_delete=models.RESTRICT, null=True, blank=True)
+    fund_category = models.ForeignKey(
+        FundCategory, on_delete=models.RESTRICT, null=True, blank=True
+    )
     note = models.TextField(null=True, blank=True)
 
 
 class Loan(TimeStampMixin, AuthorMixin):
-    PAYMENT_METHOD = (
-        ('salary', 'Bank/Cash/Salary'),
-    )
+    PAYMENT_METHOD = (("salary", "Bank/Cash/Salary"),)
     LOAN_TYPE = (
-        ('salary', 'Salary Against Loan'),
-        ('security', 'Security Loan'),
-        ('collateral', 'Collateral Loan'),
+        ("salary", "Salary Against Loan"),
+        ("tds", "Tax Deduction at Source"),
+        ("security", "Security Loan"),
+        ("collateral", "Collateral Loan"),
     )
-    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'active': True})
-    witness = models.ForeignKey(Employee, on_delete=models.RESTRICT, related_name='witness',
-                                limit_choices_to={'active': True})
-    loan_amount = models.FloatField(help_text='Load amount')
-    emi = models.FloatField(help_text='Installment amount', verbose_name='EMI')
+    employee = models.ForeignKey(
+        Employee, on_delete=models.RESTRICT, limit_choices_to={"active": True}
+    )
+    witness = models.ForeignKey(
+        Employee,
+        on_delete=models.RESTRICT,
+        related_name="witness",
+        limit_choices_to={"active": True},
+    )
+    loan_amount = models.FloatField(help_text="Load amount")
+    emi = models.FloatField(help_text="Installment amount", verbose_name="EMI")
     effective_date = models.DateField(default=timezone.now)
     start_date = models.DateField()
     end_date = models.DateField()
-    tenor = models.IntegerField(help_text='Period month')
+    tenor = models.IntegerField(help_text="Period month")
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD)
     loan_type = models.CharField(max_length=50, choices=LOAN_TYPE)
 
     def __str__(self):
-        return f'{self.employee}-{self.loan_amount}'
+        return f"{self.employee}-{self.loan_amount}"
 
 
 class LoanGuarantor(TimeStampMixin, AuthorMixin):
@@ -219,6 +239,10 @@ class InvoiceDetail(TimeStampMixin, AuthorMixin):
 
 class ProjectCommission(TimeStampMixin, AuthorMixin):
     date = models.DateField(default=timezone.now)
-    employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'active': True})
-    project = models.ForeignKey(Project, on_delete=models.RESTRICT, limit_choices_to={'active': True})
+    employee = models.ForeignKey(
+        Employee, on_delete=models.RESTRICT, limit_choices_to={"active": True}
+    )
+    project = models.ForeignKey(
+        Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
+    )
     payment = models.FloatField()
