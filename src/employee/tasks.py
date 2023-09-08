@@ -9,7 +9,15 @@ from django.template import Context, loader
 from django.template.loader import get_template
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Prefetch, F, Max, ExpressionWrapper, FloatField, Q
+from django.db.models import (
+    Prefetch,
+    F,
+    ExpressionWrapper,
+    FloatField,
+    Q,
+    Subquery,
+    OuterRef,
+)
 
 from employee.models import (
     Employee,
@@ -18,6 +26,7 @@ from employee.models import (
     EmployeeAttendance,
     PrayerInfo,
     EmployeeFeedback,
+    SalaryHistory,
 )
 from project_management.models import (
     ProjectHour,
@@ -421,12 +430,21 @@ def hr_help_pending_alert():
 
 
 def create_tds():
+    today = timezone.now().date()
+    recent_salary = (
+        SalaryHistory.objects.filter(
+            employee=OuterRef("pk"),
+            active_from__lte=today,
+        )
+        .order_by("-active_from", "-id")
+        .values("payable_salary")[:1]
+    )
+
     employees = (
         Employee.objects.annotate(
-            max_payable_salary=Max("salaryhistory__payable_salary"),
-            basic_pay_scale=F("pay_scale__basic"),
+            max_payable_salary=Subquery(recent_salary),
             counted_salary_amount=ExpressionWrapper(
-                F("max_payable_salary") * (F("basic_pay_scale") / 100.0),
+                F("max_payable_salary") * (F("pay_scale__basic") / 100.0),
                 output_field=FloatField(),
             ),
         )
@@ -439,16 +457,14 @@ def create_tds():
     )
 
     LOAN_AMOUNT = 417
-    LOAN_DATE = datetime.datetime.now().date() + relativedelta(
-        day=31
-    )  # Gets the maximum month of that  day
+    LOAN_DATE = today + relativedelta(day=31)  # Gets the maximum month of that  day
 
     loans = list()
     for employee in employees:
         loans.append(
             Loan(
                 employee=employee,
-                witness_id=30,  # Must change  to 30
+                witness_id=1,  # Must change  to 30
                 loan_amount=LOAN_AMOUNT,
                 emi=LOAN_AMOUNT,
                 effective_date=LOAN_DATE,
