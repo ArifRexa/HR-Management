@@ -9,15 +9,37 @@ from django.template import Context, loader
 from django.template.loader import get_template
 from django.utils import timezone
 from django.conf import settings
-from django.db.models import Prefetch, Q
+from django.db.models import (
+    Prefetch,
+    F,
+    ExpressionWrapper,
+    FloatField,
+    Q,
+    Subquery,
+    OuterRef,
+)
 
-from employee.models import Employee, Leave, EmployeeOnline, EmployeeAttendance, PrayerInfo, EmployeeFeedback
-from project_management.models import ProjectHour, EmployeeProjectHour, DailyProjectUpdate, Project
+from employee.models import (
+    Employee,
+    Leave,
+    EmployeeOnline,
+    EmployeeAttendance,
+    PrayerInfo,
+    EmployeeFeedback,
+    SalaryHistory,
+)
+from project_management.models import (
+    ProjectHour,
+    EmployeeProjectHour,
+    DailyProjectUpdate,
+    Project,
+)
+from account.models import Loan
 
 
 def set_default_exit_time():
     NOW = datetime.datetime.now()
-    DEFAULT_EXIT_HOUR = 12 + 9 # 24 hour time == 9pm
+    DEFAULT_EXIT_HOUR = 12 + 9  # 24 hour time == 9pm
     DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
     employee_onlines = EmployeeOnline.objects.filter(active=True)
@@ -41,8 +63,8 @@ def set_default_exit_time():
 
 def send_mail_to_employee(employee, pdf, html_body, subject):
     email = EmailMultiAlternatives()
-    email.subject = f'{subject} of {employee.full_name}'
-    email.attach_alternative(html_body, 'text/html')
+    email.subject = f"{subject} of {employee.full_name}"
+    email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
@@ -52,13 +74,13 @@ def send_mail_to_employee(employee, pdf, html_body, subject):
 def leave_mail(leave: Leave):
     # leave = Leave.objects.get(id=leave_id)
     email = EmailMessage()
-    message_body = f'{leave.message} \n {leave.note} \n Status : {leave.status}'
-    if leave.status == 'pending':
-        email.from_email = f'{leave.employee.full_name} <{leave.employee.email}>'
+    message_body = f"{leave.message} \n {leave.note} \n Status : {leave.status}"
+    if leave.status == "pending":
+        email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
         email.to = ['"Mediusware-HR" <hr@mediusware.com>']
     else:
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
-        email.to = [f'{leave.employee.full_name} <{leave.employee.email}>']
+        email.to = [f"{leave.employee.full_name} <{leave.employee.email}>"]
     email.subject = f"Leave application {leave.leave_type}, {leave.status}"
     email.body = message_body
     email.send()
@@ -66,110 +88,135 @@ def leave_mail(leave: Leave):
 
 # TODO : Resignation notification
 
+
 def permanent_notification(employees):
-    html_body = loader.render_to_string('mails/permanent_notification.html',
-                                        context={'employees': employees, 'total_emp': len(employees)})
+    html_body = loader.render_to_string(
+        "mails/permanent_notification.html",
+        context={"employees": employees, "total_emp": len(employees)},
+    )
     email = EmailMultiAlternatives()
     email.subject = f"Permanent Notification there are {len(employees)} employee in the list of permanent"
-    email.attach_alternative(html_body, 'text/html')
-    email.to = ['admin@mediusware.com']
+    email.attach_alternative(html_body, "text/html")
+    email.to = ["admin@mediusware.com"]
     # email.bcc = ['coredeveloper.2013@gmail.com',]
-    email.from_email = 'no-reply@mediusware.com'
+    email.from_email = "no-reply@mediusware.com"
     email.send()
 
 
 def increment_notification(employees):
-    html_body = loader.render_to_string('mails/increment_notification.html',
-                                        context={'employees': employees, 'total_emp': len(employees)})
+    html_body = loader.render_to_string(
+        "mails/increment_notification.html",
+        context={"employees": employees, "total_emp": len(employees)},
+    )
     email = EmailMultiAlternatives()
     email.subject = f"Increment Notification there are {len(employees)} employee(s) in the lis of increment"
-    email.attach_alternative(html_body, 'text/html')
-    email.to = ['admin@mediusware.com']
+    email.attach_alternative(html_body, "text/html")
+    email.to = ["admin@mediusware.com"]
     # email.bcc = ['coredeveloper.2013@gmail.com',]
-    email.from_email = 'no-reply@mediusware.com'
+    email.from_email = "no-reply@mediusware.com"
     email.send()
 
 
 def execute_increment_notification():
-    management.call_command('increment_notifi')
+    management.call_command("increment_notifi")
 
 
 def execute_permanent_notification():
-    management.call_command('permanent_notifi')
+    management.call_command("permanent_notifi")
 
 
 def execute_birthday_notification():
-    management.call_command('birthday_wish')
+    management.call_command("birthday_wish")
 
 
 def no_daily_update():
-    
-    project_id = 92 # No Client Project - 92  # local No client Project id 2
-    manager_employee_id = 30 # Shahinur Rahman - 30   # local manager id himel vai 9
+    project_id = 92  # No Client Project - 92  # local No client Project id 2
+    manager_employee_id = 30  # Shahinur Rahman - 30   # local manager id himel vai 9
 
     today = timezone.now().date()
 
-    daily_update_emp_ids = DailyProjectUpdate.objects.filter(created_at__date=today).values_list('employee__id', flat=True).distinct()
+    daily_update_emp_ids = (
+        DailyProjectUpdate.objects.filter(created_at__date=today)
+        .values_list("employee__id", flat=True)
+        .distinct()
+    )
     # emp_on_leave_today = Leave.objects.filter(status="approved", start_date__lte=today, end_date__gte=today).values_list('employee__id', flat=True)
 
+    daily_update_eligibility = (
+        Employee.objects.filter(active=True)
+        .exclude(manager=True)
+        .exclude(project_eligibility=False)
+    )
 
-    daily_update_eligibility = Employee.objects.filter(active=True).\
-        exclude(manager=True).\
-        exclude(project_eligibility=False)
+    missing_daily_update = (
+        EmployeeAttendance.objects.filter(date=today)
+        .filter(employee__id__in=daily_update_eligibility)
+        .exclude(employee__id__in=daily_update_emp_ids)
+    )
 
-
-    missing_daily_update = EmployeeAttendance.objects.filter(date=today).\
-        filter(employee__id__in = daily_update_eligibility).\
-        exclude(employee__id__in=daily_update_emp_ids)
-    
-    
     if not missing_daily_update.exists():
-        return 
-
+        return
 
     if missing_daily_update.exists():
         emps = list()
         for employee in missing_daily_update:
-            emps.append(DailyProjectUpdate(
-                employee_id=employee.employee_id,
-                manager_id=manager_employee_id,
-                project_id=project_id,
-                update='-',
-            ))
+            emps.append(
+                DailyProjectUpdate(
+                    employee_id=employee.employee_id,
+                    manager_id=manager_employee_id,
+                    project_id=project_id,
+                    update="-",
+                )
+            )
         DailyProjectUpdate.objects.bulk_create(emps)
 
         # print("[Bot] Daily Update Done")
-        
+
 
 def no_project_update():
     today_date = timezone.now().date()
     today_day = today_date.strftime("%A")
     sat_or_sun_day = today_day == "Saturday" or today_day == "Sunday"
     # print(sat_or_sun_day)
-    from_daily_update = DailyProjectUpdate.objects.filter(project__active = True, created_at__date=today_date).values_list('project__id', flat=True).distinct()
-    
-    if from_daily_update.exists() and not sat_or_sun_day:
-        project_update_not_found = Project.objects.filter(active=True).exclude(id__in=from_daily_update).distinct()
-    
-        if not project_update_not_found.exists():                                            
-            return 
+    from_daily_update = (
+        DailyProjectUpdate.objects.filter(
+            project__active=True, created_at__date=today_date
+        )
+        .values_list("project__id", flat=True)
+        .distinct()
+    )
 
-        emp = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
-        man = Employee.objects.filter(id=30).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+    if from_daily_update.exists() and not sat_or_sun_day:
+        project_update_not_found = (
+            Project.objects.filter(active=True)
+            .exclude(id__in=from_daily_update)
+            .distinct()
+        )
+
+        if not project_update_not_found.exists():
+            return
+
+        emp = Employee.objects.filter(
+            id=30
+        ).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
+        man = Employee.objects.filter(
+            id=30
+        ).first()  # Shahinur Rahman - 30   # local manager id himel vai 9
 
         if project_update_not_found.exists():
             punf = list()
             for no_upd_project in project_update_not_found:
-                punf.append(DailyProjectUpdate(
-                    employee=emp,
-                    manager=man,
-                    project_id=no_upd_project.id,
-                    update='-',
-                ))
+                punf.append(
+                    DailyProjectUpdate(
+                        employee=emp,
+                        manager=man,
+                        project_id=no_upd_project.id,
+                        update="-",
+                    )
+                )
             DailyProjectUpdate.objects.bulk_create(punf)
             # print("[Bot] No project update")
     return
-
 
 
 def all_employee_offline():
@@ -196,16 +243,16 @@ def bonus__project_hour__monthly(date, project_id, manager_employee_id):
     )
 
     project_hour = ProjectHour.objects.create(
-            manager_id = manager_employee_id,
-            hour_type = 'bonus',
-            project_id = project_id,
-            date = date,
-            hours = 0,
-            description = 'Bonus for Monthly Feedback',
-            # forcast = 'same',
-            payable = True,
-        )
-    
+        manager_id=manager_employee_id,
+        hour_type="bonus",
+        project_id=project_id,
+        date=date,
+        hours=0,
+        description="Bonus for Monthly Feedback",
+        # forcast = 'same',
+        payable=True,
+    )
+
     eph = []
     total_hour = 0
 
@@ -217,12 +264,14 @@ def bonus__project_hour__monthly(date, project_id, manager_employee_id):
 
         if e_hour > 0:
             total_hour += e_hour
-            eph.append(EmployeeProjectHour(
-                project_hour = project_hour,
-                hours = e_hour,
-                employee=emp,
-            ))
-    
+            eph.append(
+                EmployeeProjectHour(
+                    project_hour=project_hour,
+                    hours=e_hour,
+                    employee=emp,
+                )
+            )
+
     project_hour.hours = total_hour
     project_hour.save()
 
@@ -230,25 +279,25 @@ def bonus__project_hour__monthly(date, project_id, manager_employee_id):
     print("[Bot] Monthly Bonus Done")
 
 
-
 def bonus__project_hour_add(target_date=None):
     if not target_date:
         target_date = timezone.now().date()
     else:
-        target_date = datetime.datetime.strptime(target_date, '%Y-%m-%d').date()
-    
-    project_id = 20 # HR - 20 # Local HR - 4
-    manager_employee_id = 30 # Shahinur Rahman - 30 # Local ID - 1
-    
+        target_date = datetime.datetime.strptime(target_date, "%Y-%m-%d").date()
+
+    project_id = 20  # HR - 20 # Local HR - 4
+    manager_employee_id = 30  # Shahinur Rahman - 30 # Local ID - 1
+
     bonushour_for_timelyentry = 0
     bonushour_for_hroff = 0
     bonushour_for_overtime = 0
     bonushour_for_prayer = 0
-    
+
     # Monthly bonus if it's the last day of the month
     _, last_day = calendar.monthrange(target_date.year, target_date.month)
-    if target_date.day == last_day: bonus__project_hour__monthly(target_date, project_id, manager_employee_id)
-    
+    if target_date.day == last_day:
+        bonus__project_hour__monthly(target_date, project_id, manager_employee_id)
+
     attendances = EmployeeAttendance.objects.filter(
         employee__active=True,
         employee__project_eligibility=True,
@@ -264,7 +313,7 @@ def bonus__project_hour_add(target_date=None):
                     "prayerinfo_set",
                     queryset=PrayerInfo.objects.filter(created_at__date=target_date),
                 ),
-            )
+            ),
         ),
     )
 
@@ -289,20 +338,27 @@ def bonus__project_hour_add(target_date=None):
                 al = len(activities)
 
                 e_hour = 0
-                
+
                 # If takes entry before 01:00 PM
-                if al > 0 and activities[0].start_time.time() < datetime.time(hour=13, minute=0, second=1):
+                if al > 0 and activities[0].start_time.time() < datetime.time(
+                    hour=13, minute=0, second=1
+                ):
                     # print(attendance.employee.full_name, " - entry bonus")
                     e_hour += bonushour_for_timelyentry
-                
+
                 # Prayer Bonus
                 if attendance.employee.prayerinfo_set.exists():
                     prayer_info = attendance.employee.prayerinfo_set.all()[0]
                     # print(attendance.employee.full_name, " - prayer bonus:", ((prayer_info.num_of_waqt_done // 2) * bonushour_for_prayer))
-                    e_hour += ((prayer_info.num_of_waqt_done // 2) * bonushour_for_prayer)
-                
+                    e_hour += (prayer_info.num_of_waqt_done // 2) * bonushour_for_prayer
+
                 # If HR OFF for that date
-                if al > 0 and activities[-1].end_time and activities[-1].end_time.time() < datetime.time(hour=23, minute=45, second=1):
+                if (
+                    al > 0
+                    and activities[-1].end_time
+                    and activities[-1].end_time.time()
+                    < datetime.time(hour=23, minute=45, second=1)
+                ):
                     # print(attendance.employee.full_name, " - hr off bonus")
                     e_hour += bonushour_for_hroff
 
@@ -311,11 +367,11 @@ def bonus__project_hour_add(target_date=None):
                     for i in range(al):
                         st, et = activities[i].start_time, activities[i].end_time
                         if et:
-                            inside_time += (et.timestamp() - st.timestamp())
+                            inside_time += et.timestamp() - st.timestamp()
 
-                    inside_time = math.floor(inside_time / 60) # convert to minute
+                    inside_time = math.floor(inside_time / 60)  # convert to minute
 
-                    if inside_time >= 480: # 8 hours = 480 minute
+                    if inside_time >= 480:  # 8 hours = 480 minute
                         # print(attendance.employee.full_name, " - 8 hours bonus")
                         e_hour += bonushour_for_overtime
 
@@ -325,7 +381,7 @@ def bonus__project_hour_add(target_date=None):
                 #     hours = e_hour,
                 #     employee=attendance.employee,
                 # ))
-        
+
         # project_hour.hours = total_hour
         # project_hour.save()
 
@@ -336,46 +392,87 @@ def bonus__project_hour_add(target_date=None):
 from employee.models import Employee, Config
 from employee.mail import cto_help_mail, hr_help_mail
 
+
 def cto_help_pending_alert():
     current_time = timezone.now()
 
     # Send an email on office day every 2 hour.
-    if (
-        current_time.weekday() > 4
-        or current_time.hour not in [12, 15, 18, 21]
-    ):
+    if current_time.weekday() > 4 or current_time.hour not in [12, 15, 18, 21]:
         return
 
-    employees =  Employee.objects.filter(need_cto=True)
+    employees = Employee.objects.filter(need_cto=True)
     if Config.objects.first().cto_email is not None and employees is not None:
         email_list = Config.objects.first().cto_email.strip()
-        email_list = email_list.split(',')
-        
+        email_list = email_list.split(",")
+
         for employee in employees:
-            cto_help_mail(employee, {'waitting_at': employee.need_cto_at, 'receiver': email_list })
+            cto_help_mail(
+                employee, {"waitting_at": employee.need_cto_at, "receiver": email_list}
+            )
 
 
 def hr_help_pending_alert():
     current_time = timezone.now()
 
     # Send an email on office day every 2 hour.
-    if (
-        current_time.weekday() > 4
-        or current_time.hour not in [12, 15, 18, 21]
-    ):
+    if current_time.weekday() > 4 or current_time.hour not in [12, 15, 18, 21]:
         return
 
-    employees =  Employee.objects.filter(need_hr=True)
+    employees = Employee.objects.filter(need_hr=True)
     if Config.objects.first().hr_email is not None and employees is not None:
         email_list = Config.objects.first().hr_email.strip()
-        email_list = email_list.split(',')
-        
+        email_list = email_list.split(",")
+
         for employee in employees:
             hr_help_mail(
-                employee, 
-                {
-                    'waiting_at': employee.need_hr_at, 
-                    'receiver': email_list 
-                }
+                employee, {"waiting_at": employee.need_hr_at, "receiver": email_list}
             )
 
+
+def create_tds():
+    today = timezone.now().date()
+    recent_salary = (
+        SalaryHistory.objects.filter(
+            employee=OuterRef("pk"),
+            active_from__lte=today,
+        )
+        .order_by("-active_from", "-id")
+        .values("payable_salary")[:1]
+    )
+
+    employees = (
+        Employee.objects.annotate(
+            max_payable_salary=Subquery(recent_salary),
+            counted_salary_amount=ExpressionWrapper(
+                F("max_payable_salary") * (F("pay_scale__basic") / 100.0),
+                output_field=FloatField(),
+            ),
+        )
+        .filter(
+            Q(active=True),
+            Q(gender="male", counted_salary_amount__gte=25000.0)
+            | Q(gender="female", counted_salary_amount__gte=28571.0),
+        )
+        .order_by("id")
+    )
+
+    LOAN_AMOUNT = 417
+    LOAN_DATE = today + relativedelta(day=31)  # Gets the maximum month of that  day
+
+    loans = list()
+    for employee in employees:
+        loans.append(
+            Loan(
+                employee=employee,
+                witness_id=30,  # Must change  to 30
+                loan_amount=LOAN_AMOUNT,
+                emi=LOAN_AMOUNT,
+                effective_date=LOAN_DATE,
+                start_date=LOAN_DATE,
+                end_date=LOAN_DATE,
+                tenor=1,
+                payment_method="salary",
+                loan_type="tds",
+            )
+        )
+    Loan.objects.bulk_create(loans)
