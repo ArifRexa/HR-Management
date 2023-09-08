@@ -464,7 +464,7 @@ def create_tds():
         loans.append(
             Loan(
                 employee=employee,
-                witness_id=1,  # Must change  to 30
+                witness_id=30,  # Must change  to 30
                 loan_amount=LOAN_AMOUNT,
                 emi=LOAN_AMOUNT,
                 effective_date=LOAN_DATE,
