@@ -62,7 +62,7 @@ class EmployeeContentInline(admin.StackedInline):
 
 class EmployeeNOCInlineAdmin(admin.StackedInline):
     model = EmployeeNOC
-    readonly_fields = ("noc_pdf",)
+    readonly_fields = ("uuid", "noc_pdf")
     extra = 0
 
     def get_fields(self, request, obj=None):

@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Group, User
@@ -442,5 +443,6 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
         on_delete=models.CASCADE,
         limit_choices_to={"active": True},
     )
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     noc_body = HTMLField()
-    noc_pdf = models.FileField(upload_to="noc/",null=True, blank=True)
+    noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
