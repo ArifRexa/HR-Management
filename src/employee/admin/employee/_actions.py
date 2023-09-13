@@ -1,7 +1,8 @@
 import os
 
-from django.core.files import File
+import qrcode
 
+from django.core.files import File
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.template import loader
@@ -266,6 +267,19 @@ class EmployeeActions:
     def generate_pdf(
         self, request, queryset, letter_type="EAL", context=None, extra_context={}
     ):
+        qr_root = f"{config.settings.MEDIA_ROOT}/noc_qr"
+        os.makedirs(qr_root, exist_ok=True)
+
+        if letter_type == "NOC":
+            extra_context["qr_root"] = qr_root
+            for emp in queryset:
+                if getattr(emp, "employeenoc"):
+                    emp_uuid = emp.employeenoc.uuid
+                    qr_loc = f"{qr_root}/qr_{emp.slug}_{emp_uuid}.png"
+                    url = f"{os.environ.get('NOC_VERIFY_URL')}/{emp_uuid}"
+                    qr = qrcode.make(url)
+                    qr.save(qr_loc)
+
         pdf = PDF()
         pdf.file_name = f"{self.create_file_name(queryset)}{letter_type}"
         pdf.template_path = self.get_letter_type(letter_type)
