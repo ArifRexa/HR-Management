@@ -7,10 +7,7 @@
 <body>
 {% load humanize_extra %}
 
-
-{{ noc_body|safe }}
-
-{% comment %} <h3>Dear {{ employee.full_name | title }},</h3>
+<h3>Dear {{ employee.full_name | title }},</h3>
 <p>This is to certify that {{ employee.full_name | title }}, who was working as {{ employee.designation }} at
     Mediusware Ltd
     since {{ employee.joining_date }}
@@ -21,7 +18,7 @@
     and he provides his services to any other firm as his employment period with our organization is over. This
     certificate is issued on the request of employee and therefore we hold no further responsibility. During his
     working span with us he proves to be sincere. We wish him good luck.
-</p> {% endcomment %}
+</p>
 
 </body>
 </html>

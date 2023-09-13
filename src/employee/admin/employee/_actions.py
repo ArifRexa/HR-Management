@@ -1,8 +1,10 @@
-from django.shortcuts import render
+import os
+
+from django.core.files import File
 
 from django.contrib import admin, messages
 from django.http import HttpResponse
-from django.template import loader, Context, Template
+from django.template import loader
 from django.utils.text import slugify
 from django_q.tasks import async_task
 from openpyxl import Workbook
@@ -10,12 +12,8 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 import config.settings
 from config.utils.pdf import PDF
-from employee.models import Employee, HRPolicy
+from employee.models import Employee, HRPolicy, EmployeeNOC
 from settings.models import FinancialYear
-
-from django.contrib.admin import helpers
-
-from ._forms import NOCIntermediateForm
 
 
 NOC_MAIL_DATA = """
@@ -50,6 +48,7 @@ NOC_PDF_DATA = """
 
 class EmployeeActions:
     actions = [
+        "generate_noc_letter",
         "print_appointment_letter",
         "print_permanent_letter",
         "print_increment_letter",
@@ -65,6 +64,22 @@ class EmployeeActions:
         "mail_noc_letter",
         "download_employee_info",
     ]
+
+    @admin.action(description="Generate NOC Letter")
+    def generate_noc_letter(self, request, queryset):
+        names: list[str] = []
+        for obj in queryset:
+            html_body = loader.render_to_string(
+                "letters/noc_letter_template.html", context={"employee": obj}
+            )
+            enoc, enoc_created = EmployeeNOC.objects.update_or_create(
+                employee_id=obj.id,
+                defaults={
+                    "noc_body": html_body,
+                },
+            )
+            names.append(obj.full_name)
+        messages.success(request, f"Successfully Generated NOC for {', '.join(names)}.")
 
     @admin.action(description="Print Appointment Letter")
     def print_appointment_letter(self, request, queryset):
@@ -105,38 +120,11 @@ class EmployeeActions:
 
     @admin.action(description="Print NOC Letter")
     def print_noc_letter(self, request, queryset):
-        employee = queryset.first()
-
-        if "noc_intermediate" in request.POST:
-            form = NOCIntermediateForm(data=request.POST)
-            if form.is_valid():
-                return self.generate_pdf(
-                    request,
-                    queryset=(employee,),
-                    letter_type="NOC",
-                    extra_context={
-                        "noc_body": form.cleaned_data.get("noc_body", ""),
-                    },
-                ).render_to_pdf()
-
-        from django.template import Context, Template
-
-        t = Template(NOC_PDF_DATA)
-        c = Context({"employee": employee})
-        html = t.render(c)
-
-        form = NOCIntermediateForm(noc_body=html)
-        return render(
-            request,
-            "admin/employee/noc_intermediate.html",
-            context={
-                **self.admin_site.each_context(request),
-                "action_name": "print_noc_letter",
-                "queryset": queryset,
-                "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
-                "form": form,
-            },
-        )
+        return self.generate_pdf(
+            queryset=queryset,
+            letter_type="NOC",
+            request=request,
+        ).render_to_pdf()
 
     def print_resignation_letter(self, request, queryset):
         return self.generate_pdf(
@@ -194,38 +182,12 @@ class EmployeeActions:
 
     @admin.action(description="Mail NOC letter")
     def mail_noc_letter(self, request, queryset):
-        employee = queryset.first()
-
-        if "noc_intermediate" in request.POST:
-            form = NOCIntermediateForm(data=request.POST)
-            if form.is_valid():
-                self.__send_mail(
-                    (employee,),
-                    letter_type="NOC",
-                    subject="No Objection Certificate (NOC)",
-                    mail_template="mails/noc.html",
-                    extra_context={
-                        "noc_body": form.cleaned_data.get("noc_body", ""),
-                    },
-                    request=request,
-                )
-                return
-
-        t = Template(NOC_MAIL_DATA)
-        c = Context({"employee": employee})
-        html = t.render(c)
-
-        form = NOCIntermediateForm(noc_body=html)
-        return render(
-            request,
-            "admin/employee/noc_intermediate.html",
-            context={
-                **self.admin_site.each_context(request),
-                "action_name": "mail_noc_letter",
-                "queryset": queryset,
-                "action_checkbox_name": helpers.ACTION_CHECKBOX_NAME,
-                "form": form,
-            },
+        self.__send_mail(
+            queryset=queryset,
+            letter_type="NOC",
+            subject="No Objection Certificate (NOC)",
+            mail_template="mails/noc.html",
+            request=request,
         )
 
     @admin.action()
@@ -278,6 +240,13 @@ class EmployeeActions:
                 letter_type=letter_type,
                 extra_context=extra_context,
             ).create()
+            enoc = EmployeeNOC.objects.filter(employee_id=employee.id)
+            if enoc.exists():
+                enoc = enoc.first()
+                with open(file=pdf, mode="rb") as file_obj:
+                    file_name = os.path.basename(file_obj.name)
+                    enoc.noc_pdf.save(file_name, File(file_obj, file_name))
+                    enoc.save()
             context = {
                 "employee": employee,
                 **extra_context,
