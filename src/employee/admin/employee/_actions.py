@@ -273,7 +273,7 @@ class EmployeeActions:
         if letter_type == "NOC":
             extra_context["qr_root"] = qr_root
             for emp in queryset:
-                if getattr(emp, "employeenoc"):
+                if getattr(emp, "employeenoc", None):
                     emp_uuid = emp.employeenoc.uuid
                     qr_loc = f"{qr_root}/qr_{emp.slug}_{emp_uuid}.png"
                     url = f"{os.environ.get('NOC_VERIFY_URL')}/{emp_uuid}"
