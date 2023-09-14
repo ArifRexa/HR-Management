@@ -68,7 +68,7 @@ class EmployeeNOCInlineAdmin(admin.StackedInline):
     def get_fields(self, request, obj=None):
         fields: list = super().get_fields(request, obj)
         if (
-            getattr(obj, "employeenoc")
+            getattr(obj, "employeenoc", None)
             and obj.employeenoc.noc_pdf
             and "noc_body" in fields
         ):
