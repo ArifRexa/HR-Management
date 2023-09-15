@@ -133,9 +133,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         if not request.user.is_authenticated:
             return redirect("/")
 
-        # from account.tasks import create_all_pfaccount
-        # create_all_pfaccount()
-
         now = timezone.now()
         DEFAULT_EXIT_HOUR = 12 + 9  # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
@@ -151,20 +148,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 show_in_attendance_list=True,
             )
             .order_by("full_name")
-            .prefetch_related(
-                Prefetch(
-                    "employeeattendance_set",
-                    queryset=EmployeeAttendance.objects.filter(
-                        date__gte=last_x_date
-                    ).prefetch_related("employeeactivity_set"),
-                ),
-                Prefetch(
-                    "prayerinfo_set",
-                    queryset=PrayerInfo.objects.filter(
-                        created_at__date__gte=last_x_date,
-                    ),
-                ),
-            )
             .annotate(
                 last_month_attendance=Count(
                     "employeeattendance",
@@ -175,8 +158,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 )
             )
         )
-
-        # dates = [*range(1, calendar.monthrange(now.year, now.month)[1]+1)]
 
         emps = sorted(emps, key=lambda item: (item.is_online))
         user_data = None
@@ -192,35 +173,19 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         for emp in emps:
             temp = {}
             attendances = emp.employeeattendance_set.all()
-            # prayerinfos = emp.prayerinfo_set.all()
-            empprojhours = emp.employeeprojecthour_set.filter(
-                project_hour__date__gte=last_x_date,
-                project_hour__hour_type="bonus",
+
+            empdailyhours = emp.dailyprojectupdate_employee.filter(
+                created_at__date__gte=last_x_date,
             )
+
             for date in last_x_dates:
                 temp[date] = dict()
 
-                for eph in reversed(empprojhours):
-                    if eph.project_hour.date == date:
-                        pass
-                        # temp[date].update({
-                        #     'bonus_hour': int(eph.hours),
-                        # })
-                        break
-
-                # for pinfo in prayerinfos:
-                #     if pinfo.created_at.date() == date and pinfo.num_of_waqt_done > 0:
-                #         waqts = []
-                #         if pinfo.waqt_fajr: waqts.append('F')
-                #         if pinfo.waqt_zuhr: waqts.append('Z')
-                #         if pinfo.waqt_asr: waqts.append('A')
-                #         if pinfo.waqt_maghrib: waqts.append('M')
-                #         if pinfo.waqt_isha: waqts.append('E')
-                #         prayer_info_text = '(' + ' '.join(waqts) +')'
-                #         temp[date].update({
-                #             'prayer_count': pinfo.num_of_waqt_done,
-                #             'prayer_info': prayer_info_text,
-                #         })
+                for edh in reversed(empdailyhours):
+                    if edh.created_at.date() == date:
+                        temp[date]["accepted_hour"] = (
+                            temp[date].get("accepted_hour", 0) + edh.hours
+                        )
 
                 for attendance in attendances:
                     if attendance.date == date:
@@ -250,12 +215,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     activities[i].end_time,
                                 )
                                 if not et:
-                                    # if not now.hour < DEFAULT_EXIT_HOUR:
-                                    #     if st.hour < DEFAULT_EXIT_HOUR:
-                                    #         et = DEFAULT_EXIT_TIME
-                                    #     else:
-                                    #         et = st
-                                    # else:
                                     et = timezone.now()
                                 inside_time += et.timestamp() - st.timestamp()
 
@@ -283,9 +242,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             )
                         break
             date_datas.update({emp: temp})
-
-        # prayerobj = PrayerInfo.objects.filter(employee=request.user.employee, created_at__date=now.date()).last()
-        # form = EmployeePrayerInfoForm(instance=prayerobj)
 
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
@@ -320,7 +276,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             last_month=last_month,
             date_datas=date_datas,
             o=o,  # order key
-            # form=form,
             online_status_form=online_status_form,
         )
         return TemplateResponse(
