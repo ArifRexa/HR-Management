@@ -20,29 +20,31 @@ class EmployeeOnline(TimeStampMixin, AuthorMixin):
     active = models.BooleanField(default=False)
 
     class Meta:
-        permissions = (
-            ("can_see_all_break", "Can able to see all break"),
-        )
+        permissions = (("can_see_all_break", "Can able to see all break"),)
 
 
 @receiver(post_save, sender=EmployeeOnline)
 def save_employee_attendance(sender, **kwargs):
-    instance = kwargs['instance']
+    instance = kwargs["instance"]
     # TODO : set data in employee attendance if it's first attempt of active
     attendance, created = EmployeeAttendance.objects.get_or_create(
         employee=instance.employee,
         date=timezone.now().date(),
-        defaults={'date': timezone.now().date()}
+        defaults={"date": timezone.now().date()},
     )
     if instance.active:
-        activity = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True).last()
+        activity = EmployeeActivity.objects.filter(
+            employee_attendance=attendance, end_time__isnull=True
+        ).last()
         if not activity:
             EmployeeActivity.objects.create(
                 employee_attendance=attendance,
                 start_time=datetime.datetime.now(),
             )
     else:
-        activities = EmployeeActivity.objects.filter(employee_attendance=attendance, end_time__isnull=True)
+        activities = EmployeeActivity.objects.filter(
+            employee_attendance=attendance, end_time__isnull=True
+        )
         if activities.exists():
             activities.update(end_time=timezone.now())
 
@@ -58,16 +60,23 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
 
 
 class EmployeeActivity(TimeStampMixin, AuthorMixin):
-    employee_attendance = models.ForeignKey(EmployeeAttendance, on_delete=models.CASCADE)
+    employee_attendance = models.ForeignKey(
+        EmployeeAttendance, on_delete=models.CASCADE
+    )
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True, blank=True)
-    
-    updated_by = UserForeignKey(auto_user=True, verbose_name="Updated By", related_name="activities_updated")
+
+    updated_by = UserForeignKey(
+        auto_user=True, verbose_name="Updated By", related_name="activities_updated"
+    )
     is_updated_by_bot = models.BooleanField(default=False)
+
 
 class EmployeeProject(TimeStampMixin, AuthorMixin):
     employee = models.OneToOneField(Employee, on_delete=models.CASCADE)
-    project = models.ManyToManyField(Project, limit_choices_to={'active': True}, blank=True)
+    project = models.ManyToManyField(
+        Project, limit_choices_to={"active": True}, blank=True
+    )
 
     @property
     def active_projects(self):
