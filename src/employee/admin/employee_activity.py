@@ -176,6 +176,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
             empdailyhours = emp.dailyprojectupdate_employee.filter(
                 created_at__date__gte=last_x_date,
+                status="approved",
             )
 
             for date in last_x_dates:
