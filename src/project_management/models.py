@@ -58,52 +58,66 @@ class Project(TimeStampMixin, AuthorMixin):
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag)
-    on_boarded_by = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, blank=True,
-                                      limit_choices_to={'active': True})
+    on_boarded_by = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        limit_choices_to={"active": True},
+    )
 
     def __str__(self):
         return self.title
-    
+
     def durations(self):
-         
-         duration =datetime.now()-self.created_at 
-         return duration.days
-    
+        duration = datetime.now() - self.created_at
+        return duration.days
+
     def colorize(self):
         if self.durations() > 14 and self.durations() <= 28:
-            return 'text-primary'
+            return "text-primary"
         elif self.durations() <= 14:
-            return 'text-danger'
-        return ''
+            return "text-danger"
+        return ""
 
     @property
     def created_at_timestamp(self):
         return int(self.created_at.strftime("%s")) * 1000
-    
+
     def set_project_hours(self, value):
         self.total_project_hours = value
-    
+
     def last_x_weeks_feedback(self, x):
         today = datetime.datetime.today()
         last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x))
-        
-        return self.clientfeedback_set.filter(
-            created_at__date__lte=today,
-            created_at__date__gt=last_xth_friday,
-        ).order_by("-created_at").exclude(project__active=False)
+
+        return (
+            self.clientfeedback_set.filter(
+                created_at__date__lte=today,
+                created_at__date__gt=last_xth_friday,
+            )
+            .order_by("-created_at")
+            .exclude(project__active=False)
+        )
+
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=220)
     extra_note = models.TextField(null=True, blank=True)
-    document = models.FileField(upload_to="uploads/project_documents/%y/%m",)
+    document = models.FileField(
+        upload_to="uploads/project_documents/%y/%m",
+    )
+
 
 class ProjectToken(TimeStampMixin, AuthorMixin):
-    project = models.OneToOneField(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-    token = models.CharField(default = uuid4, max_length=255)
+    project = models.OneToOneField(
+        Project, limit_choices_to={"active": True}, on_delete=models.CASCADE
+    )
+    token = models.CharField(default=uuid4, max_length=255)
 
     def __str__(self) -> str:
-        return f'{self.project.title} - {self.token[:-8]}'
+        return f"{self.project.title} - {self.token[:-8]}"
 
 
 class ProjectTechnology(TimeStampMixin, AuthorMixin):
@@ -127,51 +141,64 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
-      
+
+
 class ProjectHour(TimeStampMixin, AuthorMixin):
     FORCAST_SELECTOR = (
-        ('increase', '✔ Increase'),
-        ('decrease', '⌛ Decrease'),
-        ('same', '⌛ Same'),
-        ('confused', '😕 Confused'),
+        ("increase", "✔ Increase"),
+        ("decrease", "⌛ Decrease"),
+        ("same", "⌛ Same"),
+        ("confused", "😕 Confused"),
     )
     HOUR_TYPE_SELECTOR = (
-        ('project', 'Project Hour'),
-        ('bonus', 'Bonus Project Hour'),
+        ("project", "Project Hour"),
+        ("bonus", "Bonus Project Hour"),
     )
 
     manager = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
-        limit_choices_to=(
-            Q(active=True)
-            & (
-                Q(manager=True)
-                | Q(lead=True)
-            )
-        ),
+        limit_choices_to=(Q(active=True) & (Q(manager=True) | Q(lead=True))),
     )
-    
-    hour_type = models.CharField(max_length=40, choices=HOUR_TYPE_SELECTOR, default='project', verbose_name='Project Hour Type')
-    project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.SET_NULL, null=True,
-                                blank=True)
+
+    hour_type = models.CharField(
+        max_length=40,
+        choices=HOUR_TYPE_SELECTOR,
+        default="project",
+        verbose_name="Project Hour Type",
+    )
+    project = models.ForeignKey(
+        Project,
+        limit_choices_to={"active": True},
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     date = models.DateField()
     hours = models.FloatField()
-    description = models.TextField(blank=True, verbose_name='Explanation')
-    forcast = models.CharField(max_length=40, choices=FORCAST_SELECTOR, verbose_name='Forecast next week hours', null=True, blank=True)
+    description = models.TextField(blank=True, verbose_name="Explanation")
+    forcast = models.CharField(
+        max_length=40,
+        choices=FORCAST_SELECTOR,
+        verbose_name="Forecast next week hours",
+        null=True,
+        blank=True,
+    )
     payable = models.BooleanField(default=True)
     approved_by_cto = models.BooleanField(default=False)
-    cto_feedback = models.TextField(blank=True, null=True, verbose_name='Feedback')
+    cto_feedback = models.TextField(blank=True, null=True, verbose_name="Feedback")
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
 
     def clean(self):
         if self.hours is None:
-            raise ValidationError({
-                'hours': f"Hours filed is required"
-            })
-        if self.date is not None and self.date.weekday() != 4 and self.hour_type != 'bonus':
+            raise ValidationError({"hours": f"Hours filed is required"})
+        if (
+            self.date is not None
+            and self.date.weekday() != 4
+            and self.hour_type != "bonus"
+        ):
             raise ValidationError({"date": "Today is not Friday"})
 
         # if self.hours <= 25 and self.description == "":
@@ -185,15 +212,15 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         super(ProjectHour, self).save(*args, **kwargs)
 
     def employee_hour(self, employee_id):
-        total = self.employeeprojecthour_set.aggregate(Sum('hours'))
-        return employee_id, total['hours__sum']
+        total = self.employeeprojecthour_set.aggregate(Sum("hours"))
+        return employee_id, total["hours__sum"]
 
     class Meta:
         verbose_name_plural = "Weekly Project Hours"
         permissions = [
-            ('show_all_hours', 'Can show all hours just like admin'),
-            ('select_hour_type', 'Can select Project Hour type'),
-            ('weekly_project_hours_approve', 'Can approved and give feedback from CTO'),
+            ("show_all_hours", "Can show all hours just like admin"),
+            ("select_hour_type", "Can select Project Hour type"),
+            ("weekly_project_hours_approve", "Can approved and give feedback from CTO"),
         ]
 
 
@@ -201,9 +228,9 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
     hours = models.FloatField()
     employee = models.ForeignKey(
-        Employee, 
+        Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to={'active': True},
+        limit_choices_to={"active": True},
     )
 
     class Meta:
@@ -212,41 +239,36 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
             ("see_all_employee_hour", "Can see all emploployee project hour"),
         ]
 
+
 class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to={'active': True},
+        limit_choices_to={"active": True},
         related_name="dailyprojectupdate_employee",
     )
     manager = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to=(
-            Q(active=True)
-            & (
-                Q(manager=True)
-                | Q(lead=True)
-            )
-        ),
+        limit_choices_to=(Q(active=True) & (Q(manager=True) | Q(lead=True))),
         related_name="dailyprojectupdate_manager",
-        help_text="Manager / Lead"
+        help_text="Manager / Lead",
     )
     project = models.ForeignKey(
         Project,
         on_delete=models.RESTRICT,
         related_name="projects",
-        limit_choices_to={'active': True},
+        limit_choices_to={"active": True},
     )
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField()
-    
+
     STATUS_CHOICE = (
-        ('pending', '⌛ Pending'),
-        ('approved', '✔ Approved')
+        ("pending", "⌛ Pending"),
+        ("approved", "✔ Approved"),
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
     note = models.TextField(null=True, blank=True, help_text="Manager's note / remarks")
 
     # def clean(self):
@@ -257,7 +279,6 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     #     return super().clean()
 
     class Meta:
-       
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
         ]
@@ -266,63 +287,78 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     def get_hours_history(self):
         historyData = ""
         if self.history is not None:
-            for history in self.history.order_by('-created_at'):
+            for history in self.history.order_by("-created_at"):
                 print(history)
                 historyData += f"{history.hours}"
-                if history != self.history.order_by('-created_at').last():
-                     historyData += f" > "
+                if history != self.history.order_by("-created_at").last():
+                    historyData += f" > "
             return format_html(historyData)
 
-        return 'No changes'
+        return "No changes"
+
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
-    daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, related_name="history")
+    daily_update = models.ForeignKey(
+        DailyProjectUpdate, on_delete=models.CASCADE, related_name="history"
+    )
     hours = models.FloatField(default=0.0)
 
 
-
 class DailyProjectUpdateAttachment(TimeStampMixin, AuthorMixin):
-    daily_update = models.ForeignKey(DailyProjectUpdate, on_delete=models.CASCADE, null=True, verbose_name="Daily Project Update")
+    daily_update = models.ForeignKey(
+        DailyProjectUpdate,
+        on_delete=models.CASCADE,
+        null=True,
+        verbose_name="Daily Project Update",
+    )
     title = models.CharField(max_length=220)
-    attachment = models.FileField(verbose_name="Document", upload_to="uploads/daily_update/%y/%m", null=True, blank=True)
+    attachment = models.FileField(
+        verbose_name="Document",
+        upload_to="uploads/daily_update/%y/%m",
+        null=True,
+        blank=True,
+    )
 
 
 class DailyProjectUpdateGroupByEmployee(DailyProjectUpdate):
     class Meta:
         proxy = True
-    
+
         permissions = [
-                ("see_all_employee_update", "Can see all daily update"),
-            ]
-        verbose_name = 'Group By Employee'
-        verbose_name_plural = 'Group By Employee'
+            ("see_all_employee_update", "Can see all daily update"),
+        ]
+        verbose_name = "Group By Employee"
+        verbose_name_plural = "Group By Employee"
 
     def __str__(self) -> str:
         return self.project.title
-    
+
+
 class DailyProjectUpdateGroupByProject(DailyProjectUpdate):
     class Meta:
         proxy = True
         permissions = [
-                ("see_all_employee_update", "Can see all daily update"),
-            ]
-        verbose_name = 'Group By Project'
-        verbose_name_plural = 'Group By Project'
+            ("see_all_employee_update", "Can see all daily update"),
+        ]
+        verbose_name = "Group By Project"
+        verbose_name_plural = "Group By Project"
 
     def __str__(self) -> str:
         return self.project.title
-    
+
+
 class DailyProjectUpdateGroupByManager(DailyProjectUpdate):
     class Meta:
         proxy = True
         permissions = [
-                ("see_all_employee_update", "Can see all daily update"),
-            ]
-        verbose_name = 'Group By Manager'
-        verbose_name_plural = 'Group By Manager'
+            ("see_all_employee_update", "Can see all daily update"),
+        ]
+        verbose_name = "Group By Manager"
+        verbose_name_plural = "Group By Manager"
 
     def __str__(self) -> str:
         return self.project.title
+
 
 class DurationUnit(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
@@ -335,24 +371,55 @@ class DurationUnit(TimeStampMixin, AuthorMixin):
 
 
 class ProjectResource(TimeStampMixin, AuthorMixin):
-    project = models.ForeignKey(Project, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-    manager = models.ForeignKey(Employee, limit_choices_to={'manager': True, 'active': True}, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, limit_choices_to={"active": True}, on_delete=models.CASCADE
+    )
+    manager = models.ForeignKey(
+        Employee,
+        limit_choices_to={"manager": True, "active": True},
+        on_delete=models.CASCADE,
+    )
     active = models.BooleanField(default=True)
 
 
 class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
-    project_resource = models.ForeignKey(ProjectResource, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-    employee = models.ForeignKey(Employee,
-                                 limit_choices_to={'active': True, 'manager': False, 'employeeskill__isnull': False},
-                                 on_delete=models.CASCADE)
-    duration = models.FloatField(max_length=200, help_text='Estimated Project End Duration')
-    duration_unit = models.ForeignKey(DurationUnit, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    project_resource = models.ForeignKey(
+        ProjectResource, limit_choices_to={"active": True}, on_delete=models.CASCADE
+    )
+    employee = models.ForeignKey(
+        Employee,
+        limit_choices_to={
+            "active": True,
+            "manager": False,
+            "employeeskill__isnull": False,
+        },
+        on_delete=models.CASCADE,
+    )
+    duration = models.FloatField(
+        max_length=200, help_text="Estimated Project End Duration"
+    )
+    duration_unit = models.ForeignKey(
+        DurationUnit, limit_choices_to={"active": True}, on_delete=models.CASCADE
+    )
     duration_hour = models.FloatField()
-    hour = models.FloatField(max_length=200, help_text='Estimated hours for each week', null=True, default=True)
+    hour = models.FloatField(
+        max_length=200,
+        help_text="Estimated hours for each week",
+        null=True,
+        default=True,
+    )
 
     def clean(self):
-        if ProjectResourceEmployee.objects.filter(employee=self.employee).exclude(id=self.id).first():
-            raise ValidationError({'employee': f'{self.employee} is already been taken in another project'})
+        if (
+            ProjectResourceEmployee.objects.filter(employee=self.employee)
+            .exclude(id=self.id)
+            .first()
+        ):
+            raise ValidationError(
+                {
+                    "employee": f"{self.employee} is already been taken in another project"
+                }
+            )
 
     def save(self, *args, **kwargs):
         self.duration_hour = self.duration * self.duration_unit.duration_in_hour
@@ -390,21 +457,29 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
     @property
     def has_red_rating(self):
         red_line = 3.5
-        
-        return self.rating_communication <= red_line \
-            or self.rating_output <= red_line \
-            or self.rating_time_management <= red_line \
-            or self.rating_billing <= red_line \
+
+        return (
+            self.rating_communication <= red_line
+            or self.rating_output <= red_line
+            or self.rating_time_management <= red_line
+            or self.rating_billing <= red_line
             or self.rating_long_term_interest <= red_line
-    
+        )
+
     class Meta:
         permissions = (
             ("can_see_client_feedback_admin", "Can see Client Feedback admin"),
         )
 
     def save(self, *args, **kwargs):
-        avg_rating = self.rating_communication + self.rating_output + self.rating_time_management + self.rating_billing + self.rating_long_term_interest
-        avg_rating = round(avg_rating/5, 1)
+        avg_rating = (
+            self.rating_communication
+            + self.rating_output
+            + self.rating_time_management
+            + self.rating_billing
+            + self.rating_long_term_interest
+        )
+        avg_rating = round(avg_rating / 5, 1)
         self.avg_rating = avg_rating
         super(ClientFeedback, self).save(*args, **kwargs)
         self.feedback_week = self.created_at + relativedelta(weekday=FR(-1))
@@ -415,9 +490,20 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
 
 
 class CodeReview(TimeStampMixin, AuthorMixin):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True})
-    manager = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True, 'manager': True}, null=True, related_name="mange", blank=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, limit_choices_to={'active': True})
+    employee = models.ForeignKey(
+        Employee, on_delete=models.CASCADE, limit_choices_to={"active": True}
+    )
+    manager = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True, "manager": True},
+        null=True,
+        related_name="mange",
+        blank=True,
+    )
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, limit_choices_to={"active": True}
+    )
 
     naming_convention = models.FloatField()
     code_reusability = models.FloatField()
@@ -433,7 +519,13 @@ class CodeReview(TimeStampMixin, AuthorMixin):
     for_first_quarter = models.BooleanField(default=True)
 
     def save(self, *args, **kwargs):
-        avg_rating = self.naming_convention + self.code_reusability + self.oop_principal + self.design_pattern + self.standard_git_commit
+        avg_rating = (
+            self.naming_convention
+            + self.code_reusability
+            + self.oop_principal
+            + self.design_pattern
+            + self.standard_git_commit
+        )
         avg_rating = round(avg_rating / 5, 1)
         self.avg_rating = avg_rating
 
@@ -443,12 +535,9 @@ class CodeReview(TimeStampMixin, AuthorMixin):
             self.for_first_quarter = False
 
         super(CodeReview, self).save(*args, **kwargs)
-    
-    class Meta:
-        permissions = (
-            ("can_give_code_review", "Can give code review"),
-        )
 
+    class Meta:
+        permissions = (("can_give_code_review", "Can give code review"),)
 
 
 class CodeReviewEmployeeFeedback(TimeStampMixin, AuthorMixin):

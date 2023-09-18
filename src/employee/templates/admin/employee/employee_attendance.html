@@ -147,9 +147,9 @@
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
                                 <p class="text-center mb-1">
-                                    {% if data.bonus_hour %}
-                                        <span class="fs-6 fw-bold text-primary">
-                                            {{ data.bonus_hour }} H
+                                    {% if data.accepted_hour %}
+                                        <span class="text-primary">
+                                            {{ data.accepted_hour }} H
                                         </span>
                                     {% else %}
                                         <span>

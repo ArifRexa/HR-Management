@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Group, User
@@ -434,3 +435,14 @@ class EmployeeFAQView(EmployeeFaq):
         verbose_name = "FAQ List"
         permissions = (("employee_faqs_view", "Can Employee FAQ list view."),)
         verbose_name_plural = "FAQ List"
+
+
+class EmployeeNOC(TimeStampMixin, AuthorMixin):
+    employee = models.OneToOneField(
+        to=Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+    )
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    noc_body = HTMLField()
+    noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)

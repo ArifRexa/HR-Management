@@ -12,11 +12,17 @@ import config.settings
 
 class PDF:
     __FILE_PATH = config.settings.MEDIA_ROOT
-    __FILE_EXTENSION = '.pdf'
+    __FILE_EXTENSION = ".pdf"
     _letter_head = f"{config.settings.STATIC_ROOT}/stationary/letter_head.jpg"
     _font = f"{config.settings.STATIC_ROOT}/stationary/bangla/Siyamrupali.ttf"
 
-    def __init__(self, file_name=get_random_string(length=12), context=None, template_path=None, letter_head=None):
+    def __init__(
+        self,
+        file_name=get_random_string(length=12),
+        context=None,
+        template_path=None,
+        letter_head=None,
+    ):
         if context is None:
             context = {}
         self.file_name = file_name
@@ -28,8 +34,8 @@ class PDF:
 
         @return:
         """
-        self.context['watermark'] = self._letter_head
-        self.context['font'] = self._font
+        self.context["watermark"] = self._letter_head
+        self.context["font"] = self._font
         template = get_template(self.template_path)
         html = template.render(self.context)
         result = BytesIO()
@@ -43,9 +49,11 @@ class PDF:
         @return:
         """
         bytecode = self.__get_string_from_template()
-        response = HttpResponse(bytecode.getvalue(), content_type='application/pdf')
+        response = HttpResponse(bytecode.getvalue(), content_type="application/pdf")
         if download:
-            response['Content-Disposition'] = f'attachment; filename="{self.file_name}.pdf"'
+            response[
+                "Content-Disposition"
+            ] = f'attachment; filename="{self.file_name}.pdf"'
         return response
 
     def create(self) -> str:
@@ -54,13 +62,13 @@ class PDF:
         @return:
         """
         bytecode = self.__get_string_from_template()
-        file = open(self.absolute_file_path(), 'wb')
+        file = open(self.absolute_file_path(), "wb")
         file.write(bytecode.getvalue())
         file.close()
         return self.absolute_file_path()
 
     def absolute_file_path(self):
-        return f'{self.__FILE_PATH}/{self.file_name}{self.__FILE_EXTENSION}'
+        return f"{self.__FILE_PATH}/{self.file_name}{self.__FILE_EXTENSION}"
 
     def delete(self) -> bool:
         """

@@ -9,7 +9,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
 from employee.models.attachment import Attachment
-from employee.models.employee import EmployeeLunch, Task
+from employee.models.employee import EmployeeLunch, Task, EmployeeNOC
 
 
 @admin.register(Employee)
@@ -205,3 +205,8 @@ class EmployeeFaqAdmin(admin.ModelAdmin):
             ro_fields = filter(lambda x: x not in ["active"], ro_fields)
 
         return ro_fields
+
+
+@admin.register(EmployeeNOC)
+class EmployeeNOCAdmin(admin.ModelAdmin):
+    readonly_fields = ("noc_pdf",)

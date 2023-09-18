@@ -1,4 +1,4 @@
-from .employee import Employee, PrayerInfo
+from .employee import Employee, PrayerInfo, EmployeeNOC
 from .salary_history import SalaryHistory
 from .leave import Leave, LeaveAttachment
 from .overtime import Overtime
