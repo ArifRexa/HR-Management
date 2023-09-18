@@ -73,13 +73,15 @@ class EmployeeActions:
             html_body = loader.render_to_string(
                 "letters/noc_letter_template.html", context={"employee": obj}
             )
-            enoc, enoc_created = EmployeeNOC.objects.update_or_create(
+            enoc, enoc_created = EmployeeNOC.objects.get_or_create(
                 employee_id=obj.id,
                 defaults={
                     "noc_body": html_body,
                 },
             )
-            names.append(obj.full_name)
+            if not enoc.noc_pdf:
+                enoc.noc_body = html_body
+                names.append(obj.full_name)
         messages.success(request, f"Successfully Generated NOC for {', '.join(names)}.")
 
     @admin.action(description="Print Appointment Letter")
