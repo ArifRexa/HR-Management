@@ -240,6 +240,17 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         ]
 
 
+class EmployeeProjectHourGroupByEmployee(EmployeeProjectHour):
+    class Meta:
+        proxy = True
+
+        verbose_name = "Employee Project Hour Group by Employee"
+        verbose_name_plural = "Employee Project Hours Group by Employee"
+
+    def __str__(self) -> str:
+        return self.project_hour.project.title
+
+
 class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
         Employee,
