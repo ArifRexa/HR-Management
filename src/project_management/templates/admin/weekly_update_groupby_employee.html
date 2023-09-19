@@ -76,13 +76,11 @@
                 <th>Employee</th>
                 <th>Project</th>
                 <th>Hours</th>
-                <th>History</th>
                 <th>Manager</th>
-                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {% for key, values in daily_project_hours_data.items %}
+              {% for key, values in employee_hours_data.items %}
 
               {% for hour in values %}
               <tr>
@@ -91,30 +89,18 @@
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}"> {{hour.employee}} {% if hour.employee.top_one_skill.skill %} ({{ hour.employee.top_one_skill.skill }}) {% endif %}</td>
                 {% endifchanged %}
-                <td>{{ hour.project }} || ({{hour.hours}})</td>
+                <td>{{ hour.project_hour.project }} || ({{hour.hours}})</td>
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}">
-                  {% if key.daily_project_hours <= 5 %} <b style="color: red; font-weight: bold">
-                    {{ key.daily_project_hours }}
+                  {% if key.employee_hours <= 5 %} <b style="color: red; font-weight: bold">
+                    {{ key.employee_hours }}
                     </b>
                     {% else %}
-                    {{ key.daily_project_hours }}
+                    {{ key.employee_hours }}
                     {% endif %}
                 </td>
                 {% endifchanged %}
-                <td>{{ hour.get_hours_history }}</td>
-                <td>{{ hour.manager }}</td>
-                <td>
-                  {% if hour.status == "pending" %}
-                  <b style="color: red">
-                    {{ hour.get_status_display }}
-                  </b>
-                  {% else %}
-                  <b style="color: green">
-                    {{ hour.get_status_display }}
-                  </b>
-                  {% endif %}
-                </td>
+                <td>{{ hour.project_hour.manager }}</td>
               </tr>
               {% endfor %}
               {% endfor %}

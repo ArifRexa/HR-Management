@@ -3,6 +3,7 @@ from datetime import timedelta
 
 from django.contrib import admin
 from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from project_management.models import (
     EmployeeProjectHourGroupByEmployee,
 )
@@ -19,6 +20,7 @@ class EmployeeProjectHourGroupByEmployeeAdmin(admin.ModelAdmin):
         "employee",
         "get_project",
         "hours",
+        "get_manager",
     )
     list_filter = (
         "project_hour__project",
@@ -30,6 +32,10 @@ class EmployeeProjectHourGroupByEmployeeAdmin(admin.ModelAdmin):
     @admin.display(description="Project")
     def get_project(self, instance):
         return instance.project_hour.project.title
+
+    @admin.display(description="Manager")
+    def get_manager(self, instance):
+        return instance.project_hour.manager.full_name
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -46,27 +52,27 @@ class EmployeeProjectHourGroupByEmployeeAdmin(admin.ModelAdmin):
         if len(filters) == 0:
             filters["created_at__date"] = yesterday
 
-        daily_project_update_data = dict()
+        employee_hours_data = dict()
         employee_hours = self.get_queryset(request).filter(**filters)
 
         for hours in employee_hours:
             key = hours.employee
-            key.set_daily_hours(
+            key.set_employee_hours(
                 key.employeeprojecthour_set.filter(**filters)
-                .aggregate(total_hours=Sum("hours"))
+                .aggregate(total_hours=Coalesce(Sum("hours"), 0.0))
                 .get("total_hours")
             )
-            daily_project_update_data.setdefault(key, []).append(hours)
+            employee_hours_data.setdefault(key, []).append(hours)
 
         sorted_data_set = dict(
             sorted(
-                daily_project_update_data.items(),
-                key=lambda x: x[0].daily_project_hours,
+                employee_hours_data.items(),
+                key=lambda x: x[0].employee_hours,
             )
         )
 
         my_context = {
-            "daily_project_hours_data": sorted_data_set,
+            "employee_hours_data": sorted_data_set,
         }
         return super().changelist_view(request, extra_context=my_context)
 
