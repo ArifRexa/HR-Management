@@ -449,3 +449,4 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     noc_body = HTMLField()
     noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
+    noc_image = models.ImageField(upload_to="noc_images/", null=True, blank=True)

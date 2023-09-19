@@ -315,6 +315,7 @@ class EmployeeDetailforNOCSerializer(serializers.ModelSerializer):
 class EmployeeNOCSerializer(serializers.ModelSerializer):
     document_type = serializers.SerializerMethodField()
     document_url = serializers.FileField(source="noc_pdf")
+    document_preview = serializers.ImageField(source="noc_image")
 
     employee = EmployeeDetailforNOCSerializer(read_only=True)
 
@@ -324,8 +325,9 @@ class EmployeeNOCSerializer(serializers.ModelSerializer):
             "uuid",
             "document_type",
             "document_url",
+            "document_preview",
             "employee",
         )
 
-    def get_document_type(self, instance):
+    def get_document_type(self, *args, **kwargs):
         return "NOC"

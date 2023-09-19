@@ -1,8 +1,11 @@
 import os
+from io import BytesIO
 
 import qrcode
+import pdf2image
 
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.template import loader
@@ -248,8 +251,17 @@ class EmployeeActions:
                 enoc = enoc.first()
                 with open(file=pdf, mode="rb") as file_obj:
                     file_name = os.path.basename(file_obj.name)
+                    image_name = file_name[:-4] + ".jpg"
                     enoc.noc_pdf.save(file_name, File(file_obj, file_name))
-                    enoc.save()
+                    image_file = pdf2image.convert_from_path(pdf)[0]
+                    image_io = BytesIO()
+                    image_file.save(image_io, format="jpeg", quality=100)
+                    enoc.noc_image.save(
+                        name=image_name,
+                        content=ContentFile(image_io.getvalue()),
+                    )
+                    enoc.save(update_fields=["noc_pdf", "noc_image"])
+
             context = {
                 "employee": employee,
                 **extra_context,
