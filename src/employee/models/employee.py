@@ -270,6 +270,9 @@ class Employee(TimeStampMixin, AuthorMixin):
     def set_daily_hours(self, value):
         self.daily_project_hours = value
 
+    def set_employee_hours(self, value):
+        self.employee_hours = value
+
     def leave_passed(self, leave_type: str, year=timezone.datetime.now().year):
         half_day_leaves = 0.0
         if leave_type == "casual":
@@ -446,3 +449,4 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     noc_body = HTMLField()
     noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
+    noc_image = models.ImageField(upload_to="noc_images/", null=True, blank=True)

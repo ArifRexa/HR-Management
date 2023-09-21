@@ -148,7 +148,9 @@
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
                                 <p class="text-center mb-1">
                                     {% if data.accepted_hour %}
-                                        <span class="text-primary">
+                                        <span 
+                                            class="{% if data.accepted_hour <= 5 %}text-danger{% else %}text-primary{% endif %}"
+                                        >
                                             {{ data.accepted_hour }} H
                                         </span>
                                     {% else %}

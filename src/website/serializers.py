@@ -291,11 +291,33 @@ class BlogDetailsSerializer(serializers.ModelSerializer):
         return "-"
 
 
+class EmployeeDetailforNOCSerializer(serializers.ModelSerializer):
+    designation = serializers.StringRelatedField()
+    resignation_date = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Employee
+        fields = (
+            "slug",
+            "full_name",
+            "joining_date",
+            "permanent_date",
+            "resignation_date",
+            "designation",
+            "image",
+        )
+
+    def get_resignation_date(self, instance):
+        res = instance.resignation_set.last()
+        return res.date if res else None
+
+
 class EmployeeNOCSerializer(serializers.ModelSerializer):
     document_type = serializers.SerializerMethodField()
     document_url = serializers.FileField(source="noc_pdf")
+    document_preview = serializers.ImageField(source="noc_image")
 
-    employee = EmployeeDetailsSerializer(read_only=True)
+    employee = EmployeeDetailforNOCSerializer(read_only=True)
 
     class Meta:
         model = EmployeeNOC
@@ -303,8 +325,9 @@ class EmployeeNOCSerializer(serializers.ModelSerializer):
             "uuid",
             "document_type",
             "document_url",
+            "document_preview",
             "employee",
         )
 
-    def get_document_type(self, instance):
+    def get_document_type(self, *args, **kwargs):
         return "NOC"

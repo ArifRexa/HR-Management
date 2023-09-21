@@ -65,3 +65,4 @@ wcwidth==0.2.5
 webencodings==0.5.1
 xhtml2pdf==0.2.5
 qrcode==7.4.2
+pdf2image==1.16.3
