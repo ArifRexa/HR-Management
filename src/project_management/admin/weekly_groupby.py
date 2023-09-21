@@ -14,7 +14,7 @@ from employee.models.employee import Employee
 
 
 @admin.register(EmployeeProjectHourGroupByEmployee)
-class WeeklyHoursByEmployeeAdmin(admin.ModelAdmin):
+class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
     list_display = (
         "created_at",
         "employee",
