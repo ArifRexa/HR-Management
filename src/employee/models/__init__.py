@@ -21,3 +21,7 @@ from .hr_policy import (
     HRPolicySection,
     HRPolicyPublic,
 )
+from .needhelp_positions import (
+    NeedHelpPosition,
+    EmployeeNeedHelp,
+)

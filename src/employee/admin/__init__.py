@@ -18,3 +18,4 @@ from .hr_policy import (
     HRPolicyAdmin,
     HRContractPolicies,
 )
+from .needhelp_position import EmployeeNeedHelpAdmin
