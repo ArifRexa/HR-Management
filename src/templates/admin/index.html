@@ -123,8 +123,9 @@
     <div class="col-md-7">
         {% if not is_management %}
         <ul class="list-group list-group-horizontal-md float-end">
-            <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
-            <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li>
+            {% comment %} <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
+            <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li> {% endcomment %}
+            <li class="list-group-item"> {% include 'admin/form/employee_need_help_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_project_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_status_form.html' %}</li>
         </ul>

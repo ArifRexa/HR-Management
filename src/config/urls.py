@@ -39,49 +39,84 @@ extra_context = dict(
     birthdays=employee_formal_summery.birthdays,
     increments=employee_formal_summery.increments,
     permanents=employee_formal_summery.permanents,
-    anniversaries=employee_formal_summery.anniversaries
+    anniversaries=employee_formal_summery.anniversaries,
 )
 
 urlpatterns = [
-    path('', include('job_board.urls')),
-    path('', include('website.urls')),
-    path('upload_image', upload_image, name="upload_image"),
-    path('api-auth/', include('rest_framework.urls')),
-    path('settings/', include('settings.urls')),
-    path('jsi18n/', JavaScriptCatalog.as_view(), name='js-catalog'),
+    path("", include("job_board.urls")),
+    path("", include("website.urls")),
+    path("upload_image", upload_image, name="upload_image"),
+    path("api-auth/", include("rest_framework.urls")),
+    path("settings/", include("settings.urls")),
+    path("jsi18n/", JavaScriptCatalog.as_view(), name="js-catalog"),
     # path('admin/account/', include('account.urls')),
-    path('', include('employee.urls')),
-    path('admin/', admin.site.urls),
-
-    path("password-change/", auth_view.PasswordChangeView.as_view(), name='password_change'),
-    path("password-change/done/", auth_view.PasswordResetDoneView.as_view(), name='password_change_done'),
-
-    path('password-reset/', auth_view.PasswordResetView.as_view(), name="admin_password_reset"),
-    path('password-reset/done/', auth_view.PasswordResetDoneView.as_view(), name="password_reset_done"),
-    path('reset/<uidb64>/<token>/', auth_view.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
-    path('reset/done/', auth_view.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
-    path('change-active-status/', employee.views.change_status, name='change-active-status'),
-
-    path('need-cto', employee.views.need_cto_help, name='cto_help'),
-    path('need-hr', employee.views.need_hr_help, name='hr_help'),
-
-    path('change-employee-project/', employee.views.change_project, name='change-employee-project'),
-    path('projects/', include('project_management.urls'), name='project-hours'),
-
-    path('tinymce/', include('tinymce.urls')),
-
-    path('openapi', get_schema_view(
-        title="Mediusware Ltd",
-        description="API for all …",
-        version="1.0.0"
-    ), name='openapi-schema'),
-
-    path('all-api-doc/', TemplateView.as_view(
-        template_name='docs/swagger-ui.html',
-        extra_context={'schema_url': 'openapi-schema'}
-    ), name='swagger-ui'),
-    path('', lambda request: redirect('/admin')),
-
+    path("", include("employee.urls")),
+    path("admin/", admin.site.urls),
+    path(
+        "password-change/",
+        auth_view.PasswordChangeView.as_view(),
+        name="password_change",
+    ),
+    path(
+        "password-change/done/",
+        auth_view.PasswordResetDoneView.as_view(),
+        name="password_change_done",
+    ),
+    path(
+        "password-reset/",
+        auth_view.PasswordResetView.as_view(),
+        name="admin_password_reset",
+    ),
+    path(
+        "password-reset/done/",
+        auth_view.PasswordResetDoneView.as_view(),
+        name="password_reset_done",
+    ),
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_view.PasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset/done/",
+        auth_view.PasswordResetCompleteView.as_view(),
+        name="password_reset_complete",
+    ),
+    path(
+        "change-active-status/",
+        employee.views.change_status,
+        name="change-active-status",
+    ),
+    path("need-cto", employee.views.need_cto_help, name="cto_help"),
+    path("need-hr", employee.views.need_hr_help, name="hr_help"),
+    path(
+        "change-employee-project/",
+        employee.views.change_project,
+        name="change-employee-project",
+    ),
+    path(
+        "change-help-need/",
+        employee.views.change_help_need,
+        name="change_help_need",
+    ),
+    path("projects/", include("project_management.urls"), name="project-hours"),
+    path("tinymce/", include("tinymce.urls")),
+    path(
+        "openapi",
+        get_schema_view(
+            title="Mediusware Ltd", description="API for all …", version="1.0.0"
+        ),
+        name="openapi-schema",
+    ),
+    path(
+        "all-api-doc/",
+        TemplateView.as_view(
+            template_name="docs/swagger-ui.html",
+            extra_context={"schema_url": "openapi-schema"},
+        ),
+        name="swagger-ui",
+    ),
+    path("", lambda request: redirect("/admin")),
     # path('ghorardim/', include('silk.urls', namespace='silk')),
 ]
 

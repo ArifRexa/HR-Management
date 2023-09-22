@@ -11,14 +11,14 @@ class NeedHelpPositionAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(EmployeeNeedHelp)
-class EmployeeNeedHelpAdmin(admin.ModelAdmin):
-    list_display = (
-        "employee",
-        "need_help_position",
-        "active",
-    )
-    autocomplete_fields = (
-        "employee",
-        "need_help_position",
-    )
+# @admin.register(EmployeeNeedHelp)
+# class EmployeeNeedHelpAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "employee",
+#         # "need_help_position",
+#         # "active",
+#     )
+#     autocomplete_fields = (
+#         "employee",
+#         "need_help_position",
+#     )

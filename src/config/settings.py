@@ -21,98 +21,100 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'f&xx*e46f#670*h0512(%hn7*5t=5cg2@8vg0dhl+fcll77n8@'
+SECRET_KEY = "f&xx*e46f#670*h0512(%hn7*5t=5cg2@8vg0dhl+fcll77n8@"
 
-APP_SITE_HEADER = os.environ.get('APP_SITE_HEADER', 'Mediusware Ltd')
-APP_SITE_TITLE = os.environ.get('APP_SITE_TITLE', 'Mediusware Admin Portal')
-APP_INDEX_TITLE = os.environ.get('APP_INDEX_TITLE', 'Welcome to Mediusware Admin Portal')
+APP_SITE_HEADER = os.environ.get("APP_SITE_HEADER", "Mediusware Ltd")
+APP_SITE_TITLE = os.environ.get("APP_SITE_TITLE", "Mediusware Admin Portal")
+APP_INDEX_TITLE = os.environ.get(
+    "APP_INDEX_TITLE", "Welcome to Mediusware Admin Portal"
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', False).lower() in ('true', 1, 't')
+DEBUG = os.environ.get("DEBUG", False).lower() in ("true", 1, "t")
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(' ')
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'django.contrib.humanize',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "django.contrib.humanize",
     # 'gdstorage',
-    'corsheaders',
-    'django_extensions',
-    'rest_framework',
-    'django_filters',
-    'django_userforeignkey',
-    'django_q',
-    'tinymce',
-    'job_board',
-    'settings',
-    'employee',
-    'project_management',
-    'account',
-    'asset_management',
-    'website',
-    'provident_fund',
-
+    "corsheaders",
+    "django_extensions",
+    "rest_framework",
+    "django_filters",
+    "django_userforeignkey",
+    "django_q",
+    "tinymce",
+    "job_board",
+    "settings",
+    "employee",
+    "project_management",
+    "account",
+    "asset_management",
+    "website",
+    "provident_fund",
     # Custom App
     # 'silk',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_userforeignkey.middleware.UserForeignKeyMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'employee.middleware.CheckUserHasEmployee',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_userforeignkey.middleware.UserForeignKeyMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "employee.middleware.CheckUserHasEmployee",
     # 'silk.middleware.SilkyMiddleware',
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-                'config.context_processors.employees.formal_summery',
-                'config.context_processors.employees.employee_status_form',
-                'config.context_processors.employees.employee_project_form',
-                'config.context_processors.employees.favourite_menu_list'
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "config.context_processors.employees.formal_summery",
+                "config.context_processors.employees.employee_status_form",
+                "config.context_processors.employees.employee_project_form",
+                "config.context_processors.employees.employee_need_help_form",
+                "config.context_processors.employees.favourite_menu_list",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 # hr_mediusware
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.' + os.environ.get('DB_ENGINE', 'mysql'),
-        'NAME': os.environ.get('DB_NAME', 'hr_mediusware'),
-        'USER': os.environ.get('DB_USERNAME', 'root'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
+    "default": {
+        "ENGINE": "django.db.backends." + os.environ.get("DB_ENGINE", "mysql"),
+        "NAME": os.environ.get("DB_NAME", "hr_mediusware"),
+        "USER": os.environ.get("DB_USERNAME", "root"),
+        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+        "HOST": os.environ.get("DB_HOST", "localhost"),
+        "PORT": os.environ.get("DB_PORT", "3306"),
     }
 }
 
@@ -121,29 +123,29 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
 AUTH_PASSWORD_VALIDATORS = []
 
-DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = os.environ.get('TIME_ZONE')
+TIME_ZONE = os.environ.get("TIME_ZONE")
 
 USE_I18N = True
 
@@ -156,74 +158,76 @@ USE_TZ = False
 
 STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get('STATIC_URL'))
+STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
 
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static')
 # ]
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
 
 # alert message here
 from django.contrib.messages import constants as messages
 
 MESSAGE_TAGS = {
-    messages.DEBUG: 'alert-info',
-    messages.INFO: 'alert-info',
-    messages.SUCCESS: 'alert-success',
-    messages.WARNING: 'alert-warning',
-    messages.ERROR: 'alert-danger',
+    messages.DEBUG: "alert-info",
+    messages.INFO: "alert-info",
+    messages.SUCCESS: "alert-success",
+    messages.WARNING: "alert-warning",
+    messages.ERROR: "alert-danger",
 }
 
-GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.environ.get('GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE')
-GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = os.environ.get('GOOGLE_DRIVE_STORAGE_MEDIA_ROOT ')
+GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.environ.get(
+    "GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE"
+)
+GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = os.environ.get("GOOGLE_DRIVE_STORAGE_MEDIA_ROOT ")
 
-EMAIL_HOST = os.environ.get('EMAIL_HOST')
-EMAIL_PORT = os.environ.get('EMAIL_PORT')
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
+EMAIL_PORT = os.environ.get("EMAIL_PORT")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 EMAIL_USE_TLS = True
 
-SMS_API_KEY = os.environ.get('SMS_API_KEY')
-SMS_SENDER_ID = os.environ.get('SMS_SENDER_ID')
+SMS_API_KEY = os.environ.get("SMS_API_KEY")
+SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID")
 
-CORS_ALLOWED_ORIGINS = os.environ.get('CORS_ALLOWED_ORIGINS').split(' ')
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
 
-CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS').split(' ')
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
 # GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.path.join(os.getcwd(), 'mediusware-erp-1b1e4ddb35a5.json')
 # GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = 'AUTOMATED_HR'
 Q_CLUSTER = {
-    'name': 'mediusware_erp',
-    'workers': 2,
-    'recycle': 500,
-    'timeout': 60,
-    'compress': True,
-    'save_limit': 0,
-    'queue_limit': 500,
-    'cpu_affinity': 1,
-    'label': 'Django Q',
-    'redis': {
-        'host': '127.0.0.1',
-        'port': 6379,
-        'db': 0,
-    }
+    "name": "mediusware_erp",
+    "workers": 2,
+    "recycle": 500,
+    "timeout": 60,
+    "compress": True,
+    "save_limit": 0,
+    "queue_limit": 500,
+    "cpu_affinity": 1,
+    "label": "Django Q",
+    "redis": {
+        "host": "127.0.0.1",
+        "port": 6379,
+        "db": 0,
+    },
 }
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880 # 5 MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "height": 350,
     "menubar": False,
     "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
-               "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
-               "code,help,wordcount,codesample,spellchecker",
+    "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
+    "code,help,wordcount,codesample,spellchecker",
     "toolbar": "undo redo | formatselect | "
-               "bold italic backcolor forecolor | alignleft aligncenter "
-               "alignright alignjustify | bullist numlist outdent indent table | "
-               "removeformat codesample image | preview fullscreen help",
+    "bold italic backcolor forecolor | alignleft aligncenter "
+    "alignright alignjustify | bullist numlist outdent indent table | "
+    "removeformat codesample image | preview fullscreen help",
     "contextmenu": "copy | paste | link",
     "images_upload_url": "/upload_image",
 }
@@ -233,16 +237,16 @@ TINYMCE_SPELLCHECKER = True
 # Only for django-querycount
 if DEBUG:
     QUERYCOUNT = {
-        'THRESHOLDS': {
-            'MEDIUM': 50,
-            'HIGH': 100,
-            'MIN_TIME_TO_LOG':0,
-            'MIN_QUERY_COUNT_TO_LOG':0
+        "THRESHOLDS": {
+            "MEDIUM": 50,
+            "HIGH": 100,
+            "MIN_TIME_TO_LOG": 0,
+            "MIN_QUERY_COUNT_TO_LOG": 0,
         },
-        'IGNORE_REQUEST_PATTERNS': [r'^/admin/jsi18n/'],
-        'IGNORE_SQL_PATTERNS': [r'silk_'],
-        'DISPLAY_DUPLICATES': None,
-        'RESPONSE_HEADER': 'X-DjangoQueryCount-Count',
+        "IGNORE_REQUEST_PATTERNS": [r"^/admin/jsi18n/"],
+        "IGNORE_SQL_PATTERNS": [r"silk_"],
+        "DISPLAY_DUPLICATES": None,
+        "RESPONSE_HEADER": "X-DjangoQueryCount-Count",
     }
 
     MIDDLEWARE.append("querycount.middleware.QueryCountMiddleware")
@@ -252,15 +256,19 @@ APPLY_SAME_JOB_AFTER = 90
 
 CANDIDATE_PASSWORD_HASH = "mediusware_hr"
 
-X_FRAME_OPTIONS = 'ALLOW-FROM http://localhost'
+X_FRAME_OPTIONS = "ALLOW-FROM http://localhost"
 
-DOWNLOAD_PDF = os.environ.get('DOWNLOAD_PDF', True).lower() in ('true', 1, 't')
+DOWNLOAD_PDF = os.environ.get("DOWNLOAD_PDF", True).lower() in ("true", 1, "t")
 
-white_listed_ips = os.environ.get('WHITELISTED_IP', '103.180.244.213, 127.0.0.1, 134.209.155.127, 45.248.151.196').split(', ')
-employee_ids = os.environ.get('MANAGEMENT_EMPLOYEE_IDS', '7, 30, 76, 49, 1').split(', ')
+white_listed_ips = os.environ.get(
+    "WHITELISTED_IP", "103.180.244.213, 127.0.0.1, 134.209.155.127, 45.248.151.196"
+).split(", ")
+employee_ids = os.environ.get("MANAGEMENT_EMPLOYEE_IDS", "7, 30, 76, 49, 1").split(", ")
 
-CLIENT_FEEDBACK_VIDEO_EMBED_URL = os.environ.get('CLIENT_FEEDBACK_VIDEO_EMBED_URL', 'https://www.youtube.com/embed/zrt7SWJXriY')
+CLIENT_FEEDBACK_VIDEO_EMBED_URL = os.environ.get(
+    "CLIENT_FEEDBACK_VIDEO_EMBED_URL", "https://www.youtube.com/embed/zrt7SWJXriY"
+)
 
 
-COMPANY_ACCOUNT_NAME = os.environ.get('COMPANY_ACCOUNT_NAME', 'Mediusware Ltd')
-COMPANY_ACCOUNT_NO = os.environ.get('COMPANY_ACCOUNT_NO', '-')
+COMPANY_ACCOUNT_NAME = os.environ.get("COMPANY_ACCOUNT_NAME", "Mediusware Ltd")
+COMPANY_ACCOUNT_NO = os.environ.get("COMPANY_ACCOUNT_NO", "-")
