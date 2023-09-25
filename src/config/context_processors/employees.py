@@ -17,6 +17,7 @@ from employee.models import (
     EmployeeSkill,
     HomeOffice,
     EmployeeNeedHelp,
+    NeedHelpPosition,
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
@@ -195,25 +196,26 @@ def get_announcement():
         .values_list("description", flat=True)
     )
 
-    # Get CTO
-    get_cto_needed = Employee.objects.filter(active=True, need_cto=True).values_list(
-        "full_name", flat=True
-    )
-    if get_cto_needed:
-        cto_needers_text = ", ".join(get_cto_needed)
-        data.append(
-            f"{cto_needers_text} need{'s' if len(get_cto_needed)==1 else ''} the Tech Lead's help."
+    need_help_positions = (
+        NeedHelpPosition.objects.filter(
+            employeeneedhelp__employee__active=True,
         )
-
-    # Get HR
-    get_hr_needed = Employee.objects.filter(active=True, need_hr=True).values_list(
-        "full_name", flat=True
+        .distinct()
+        .order_by("id")
     )
-    if get_hr_needed:
-        hr_needers_text = ", ".join(get_hr_needed)
-        data.append(
-            f"{hr_needers_text} need{'s' if len(get_hr_needed)==1 else ''} the HR's help."
+    for need_help_position in need_help_positions:
+        title = need_help_position.title
+        names = list(
+            need_help_position.employeeneedhelp_set.values_list(
+                "employee__full_name",
+                flat=True,
+            )
         )
+        if names:
+            names_str = ", ".join(names)
+            data.append(
+                f"{names_str} need{'s' if len(names)==1 else ''} the {title}'s help."
+            )
 
     # Announcements
     data.extend(announcements)
