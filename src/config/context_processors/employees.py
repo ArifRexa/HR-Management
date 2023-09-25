@@ -124,7 +124,7 @@ def formal_summery(request):
         "employee_projects": employee_projects,
         "ord": order_by,
         "current_month_feedback_done": current_month_feedback_done,
-        "announcement": get_announcement(),
+        "announcement": get_announcement(request=request),
         "birthday_today": get_managed_birthday_image(request),
         "increments": employee_formal_summery.increments,
         "permanents": permanents,
@@ -178,7 +178,7 @@ def employee_need_help_form(request):
         return {"employee_need_help_form": None}
 
 
-def get_announcement():
+def get_announcement(request):
     data = []
     now = timezone.now()
 
@@ -211,7 +211,13 @@ def get_announcement():
                 flat=True,
             )
         )
-        if names:
+        if names and (
+            title != "CEO"
+            or (
+                title == "CEO"
+                and request.user.employee.id == 30  # Employee ID must be 30
+            )
+        ):
             names_str = ", ".join(names)
             data.append(
                 f"{names_str} need{'s' if len(names)==1 else ''} the {title}'s help."
