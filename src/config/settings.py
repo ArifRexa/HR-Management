@@ -230,6 +230,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "removeformat codesample image | preview fullscreen help",
     "contextmenu": "copy | paste | link",
     "images_upload_url": "/upload_image",
+    "default_link_target": "_blank",
 }
 
 TINYMCE_SPELLCHECKER = True

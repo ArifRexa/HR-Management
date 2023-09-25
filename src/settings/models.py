@@ -104,7 +104,7 @@ class Announcement(TimeStampMixin, AuthorMixin):
 
     rank = models.SmallIntegerField(default=0)
 
-    description = models.TextField()
+    description = tinymce_models.HTMLField()
 
     is_active = models.BooleanField(default=True)
 
