@@ -260,7 +260,18 @@
                             <span class="{% if online.employee.one_month_less %} text-primary fs-6 {% endif %}">
                                 {{ online.employee.full_name }}
                             </span>
-                            {% if online.employee.need_hr %}
+                            
+                            {% with needhelptime=online.employee.employeeneedhelp.updated_at|timesince %}
+                            {% for need_help in online.employee.employeeneedhelp.need_help_position.all %}
+                                <span class="badge float-end rounded" style="background:#0d6efd;">
+                                    Need {{ need_help.title }}
+                                    <br>
+                                    {{ needhelptime }} ago
+                                </span>
+                            {% endfor %}
+                            {% endwith %}
+
+                            {% comment %} {% if online.employee.need_hr %}
                             <span class="badge float-end rounded" style="background:#0d6efd;">
                                 Need HR
                                 <br>
@@ -273,7 +284,7 @@
                                 <br>
                                  {{ online.employee.need_cto_at | timesince}} ago
                             </span>
-                            {% endif %}
+                            {% endif %} {% endcomment %}
                         </li>
                         {% endfor %}
                     </ul>
