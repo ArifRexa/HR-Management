@@ -27,6 +27,7 @@ from employee.models import (
     PrayerInfo,
     EmployeeFeedback,
     SalaryHistory,
+    NeedHelpPosition,
 )
 from project_management.models import (
     ProjectHour,
@@ -390,7 +391,7 @@ def bonus__project_hour_add(target_date=None):
 
 
 from employee.models import Employee, Config
-from employee.mail import cto_help_mail, hr_help_mail
+from employee.mail import cto_help_mail, hr_help_mail, send_need_help_mails
 
 
 def cto_help_pending_alert():
@@ -427,6 +428,20 @@ def hr_help_pending_alert():
             hr_help_mail(
                 employee, {"waiting_at": employee.need_hr_at, "receiver": email_list}
             )
+
+
+def need_help_pending_alert():
+    current_time = timezone.now()
+
+    # Send an email on office day every 2 hour.
+    if current_time.weekday() > 4 or current_time.hour not in [12, 14, 15, 18, 21]:
+        return
+
+    need_help_positions = NeedHelpPosition.objects.filter(active=True)
+    for need_help_position in need_help_positions:
+        employee_need_helps = need_help_position.employeeneedhelp_set.all()
+        for employee_need_help in employee_need_helps:
+            send_need_help_mails(employee_need_help)
 
 
 def create_tds():
