@@ -19,4 +19,7 @@ from .hr_policy import (
     HRContractPolicies,
 )
 
-# from .needhelp_position import EmployeeNeedHelpAdmin
+from .needhelp_position import (
+    # EmployeeNeedHelpAdmin,
+    NeedHelpPosition,
+)
