@@ -14,7 +14,7 @@ from config.settings import employee_ids as management_ids
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 import datetime
 from employee.models import Config
-from employee.mail import cto_help_mail, hr_help_mail
+from employee.mail import cto_help_mail, hr_help_mail, send_need_help_mails
 
 
 @white_listed_ip_check
@@ -81,7 +81,14 @@ def change_help_need(request, *args, **kwargs):
     )
     form = EmployeeNeedHelpForm(request.POST, instance=employee_help_need)
     if form.is_valid():
-        form.save()
+        obj = form.save()
+
+        today = datetime.date.today()
+        dayname = today.strftime("%A")
+        off_list = ["Saturday", "Sunday"]
+        if not dayname in off_list:
+            send_need_help_mails(obj)
+
         messages.success(request, "Your need help statuses updated successfully")
         return redirect("/admin/")
     else:
