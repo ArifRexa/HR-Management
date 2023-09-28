@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <style>
+        .wrapper {
+            width: 80%;
+            margin: auto;
+            padding-top: 15px;
+        }
+
+        p {
+            font-size: 17px;
+            text-align: left;
+            padding: 10px 0px;
+        }
+        .closing {
+            padding-top: 15px;
+            font-weight: bold;
+        }
+        .closing p {
+            padding: 0px;
+            line-height: 12px;
+        }
+        .dear {
+            font-size: 20px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <strong class="dear">
+            Dear {position},
+        </strong>
+        <br><br>
+
+        <p>
+            I hope this message finds you well. I am writing to request your assistance with a complicated issue. I believe that you have the expertise and knowledge necessary to guide me
+            through this challenge, and I would greatly appreciate your help.
+        </p>
+
+        <p>
+            I understand that your time is valuable, and I would be happy to schedule a time that is convenient for you
+            to
+            discuss the matter in further detail. I am available to meet in person, speak over the skype, or communicate
+            through email or come to my desk, whichever method is most convenient for you.
+        </p>
+
+        <p></p>
+        <p>
+            Thank you in advance for considering my request for assistance. Your guidance would be immensely appreciated
+            and
+            would make a significant impact on my ability to overcome this challenge.
+        </p>
+
+        <div class="closing">
+            <p>Best regards,</p>
+
+            <p>{{ full_name }}</p>
+            <p>{{ designation }}</p>
+            <p style="color:#b70909">Waiting from: {{ waiting_from }}</p>
+        </div>
+    </div>
+</body>
+
+</html>

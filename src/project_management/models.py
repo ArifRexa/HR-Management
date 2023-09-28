@@ -244,8 +244,8 @@ class EmployeeProjectHourGroupByEmployee(EmployeeProjectHour):
     class Meta:
         proxy = True
 
-        verbose_name = "Weekly Hours by Employee"
-        verbose_name_plural = "Weekly Hours by Employees"
+        verbose_name = "Weekly Employee Hours"
+        verbose_name_plural = "Weekly Employee Hours"
 
     def __str__(self) -> str:
         return self.project_hour.project.title

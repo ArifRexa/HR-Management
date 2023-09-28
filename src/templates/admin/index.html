@@ -123,8 +123,9 @@
     <div class="col-md-7">
         {% if not is_management %}
         <ul class="list-group list-group-horizontal-md float-end">
-            <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
-            <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li>
+            {% comment %} <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
+            <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li> {% endcomment %}
+            <li class="list-group-item"> {% include 'admin/form/employee_need_help_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_project_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_status_form.html' %}</li>
         </ul>
@@ -259,7 +260,18 @@
                             <span class="{% if online.employee.one_month_less %} text-primary fs-6 {% endif %}">
                                 {{ online.employee.full_name }}
                             </span>
-                            {% if online.employee.need_hr %}
+                            
+                            {% with needhelptime=online.employee.employeeneedhelp.updated_at|timesince %}
+                            {% for need_help in online.employee.employeeneedhelp.need_help_position.all %}
+                                <span class="badge float-end rounded" style="background:#0d6efd;">
+                                    Need {{ need_help.title }}
+                                    <br>
+                                    {{ needhelptime }} ago
+                                </span>
+                            {% endfor %}
+                            {% endwith %}
+
+                            {% comment %} {% if online.employee.need_hr %}
                             <span class="badge float-end rounded" style="background:#0d6efd;">
                                 Need HR
                                 <br>
@@ -272,7 +284,7 @@
                                 <br>
                                  {{ online.employee.need_cto_at | timesince}} ago
                             </span>
-                            {% endif %}
+                            {% endif %} {% endcomment %}
                         </li>
                         {% endfor %}
                     </ul>
