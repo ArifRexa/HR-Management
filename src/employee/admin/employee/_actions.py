@@ -158,11 +158,23 @@ class EmployeeActions:
 
     @admin.action(description="Mail Appointment Letter")
     def mail_appointment_letter(self, request, queryset):
+        hr_policy = (
+            HRPolicy.objects.filter(active=True)
+            .order_by("-created_at")
+            .prefetch_related("hrpolicysection_set")
+            .first()
+        )
+        if not hr_policy:
+            hr_policies = []
+        else:
+            hr_policies = hr_policy.hrpolicysection_set.all()
+
         self.__send_mail(
             queryset,
             letter_type="EAL",
             subject="Appointment letter",
             mail_template="mails/appointment.html",
+            extra_context={"hr_policies": hr_policies},
             request=request,
         )
 
