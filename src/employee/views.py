@@ -61,7 +61,9 @@ def change_status(request, *args, **kwargs):
 @login_required(login_url="/admin/login/")
 @not_for_management
 def change_project(request, *args, **kwargs):
-    employee_project = EmployeeProject.objects.get(employee=request.user.employee)
+    employee_project = EmployeeProject.objects.get(
+        employee=request.user.employee
+    )
     form = EmployeeProjectForm(request.POST, instance=employee_project)
     if form.is_valid():
         form.save()
@@ -72,7 +74,7 @@ def change_project(request, *args, **kwargs):
         return redirect("/admin/")
 
 
-@require_http_methods(["POST", "GET"])
+@require_http_methods(["POST"])
 @login_required(login_url="/admin/login/")
 @not_for_management
 def change_help_need(request, *args, **kwargs):
@@ -87,7 +89,10 @@ def change_help_need(request, *args, **kwargs):
         dayname = today.strftime("%A")
         off_list = ["Saturday", "Sunday"]
         if not dayname in off_list:
-            send_need_help_mails(obj)
+            try:
+                send_need_help_mails(obj)
+            except Exception as e:
+                print('Email error, ',e)
 
         messages.success(request, "Your need help statuses updated successfully")
         return redirect("/admin/")
