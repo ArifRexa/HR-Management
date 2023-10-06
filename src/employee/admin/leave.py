@@ -129,7 +129,8 @@ class LeaveManagement(admin.ModelAdmin):
     def leave_type_(self, leave: Leave):
         html_template = get_template('admin/leave/list/col_leave_day.html')
         html_content = html_template.render({
-            'data': leave.leave_type,
+            # 'use_get_display':True,
+            'data': leave.get_leave_type_display(),
             'leave_day': leave.end_date.strftime("%A"),
             'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
         })
@@ -149,8 +150,8 @@ class LeaveManagement(admin.ModelAdmin):
     def status_(self, leave: Leave):
         html_template = get_template('admin/leave/list/col_leave_day.html')
         html_content = html_template.render({
-            'status':True,
-            'data': leave,
+            # 'use_get_display':True,
+            'data': leave.get_status_display(),
             'leave_day': leave.end_date.strftime("%A"),
             'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
         })
