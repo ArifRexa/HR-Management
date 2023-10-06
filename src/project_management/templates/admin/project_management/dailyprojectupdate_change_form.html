@@ -1,0 +1,38 @@
+{% extends "admin/change_form.html" %}
+
+{% block after_field_sets %}
+    {{ block.super }}
+    <div class="related-widget-wrapper">
+        <h2>Add Key-Value Pair</h2>
+        <div class="inline-related">
+            <div class="form-row">
+                <div class="field-box">
+                    {{ adminform.form.key.label_tag }}
+                    {{ adminform.form.key }}
+                </div>
+                <div class="field-box">
+                    {{ adminform.form.value.label_tag }}
+                    {{ adminform.form.value }}
+                </div>
+                <div class="add-row">
+                    <a href="#" class="add-related" id="add-key-value">Add</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var keyValueIndex = {{ adminform.form|length }};
+        $('#add-key-value').click(function() {
+            var newKeyValue = $('.inline-related:first').clone();
+            newKeyValue.find('input[type="text"]').val('');
+            newKeyValue.insertAfter('.inline-related:last');
+            keyValueIndex++;
+            newKeyValue.find('input[type="text"]').each(function() {
+                var newName = $(this).attr('name').replace(/\d+/, keyValueIndex);
+                $(this).attr('name', newName);
+                $(this).attr('id', 'id_' + newName);
+            });
+            return false;
+        });
+    </script>
+{% endblock %}
