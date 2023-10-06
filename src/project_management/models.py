@@ -273,7 +273,8 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     )
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
-    update = models.TextField()
+    update = models.TextField(null=True, blank=True)
+    updates_json = models.JSONField(null=True)
 
     STATUS_CHOICE = (
         ("pending", "⌛ Pending"),

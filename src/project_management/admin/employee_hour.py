@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks, escape
 from django.utils.safestring import mark_safe
+from django import forms
 
 from employee.admin.employee._forms import DailyUpdateFilterForm
 
@@ -21,6 +22,7 @@ from project_management.admin.project_hour.options import (
     ProjectManagerFilter,
     ProjectLeadFilter,
 )
+from project_management.forms import AddDDailyProjectUpdateForm
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -178,28 +180,30 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "note",
     ]
     actions = ["update_status_approve", "update_status_pending"]
-    fieldsets = (
-        (
-            "Standard Info",
-            {
-                "fields": (
-                    "created_at",
-                    "employee",
-                    "manager",
-                    "project",
-                    "hours",
-                    "update",
-                    "status",
-                ),
-            },
-        ),
-        (
-            "Extras",
-            {
-                "fields": ("note",),
-            },
-        ),
-    )
+    # form = AddDDailyProjectUpdateForm
+    change_form_template = 'admin/project_management/dailyprojectupdate_change_form.html'
+    # fieldsets = (
+    #     (
+    #         "Standard Info",
+    #         {
+    #             "fields": (
+    #                 "created_at",
+    #                 "employee",
+    #                 "manager",
+    #                 "project",
+    #                 "hours",
+    #                 "updates_json",
+    #                 "status",
+    #             ),
+    #         },
+    #     ),
+    #     (
+    #         "Extras",
+    #         {
+    #             "fields": ("note",),
+    #         },
+    #     ),
+    # )
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -399,3 +403,36 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             return DailyProjectUpdateHistory.objects.create(
                 hours=request.POST.get("hours"), daily_update=obj
             )
+
+    # def add_view(self, request, form_url='', extra_context=None):
+    #     print('Inside form update view..')
+    #     # Customize the form instance
+    #     self.form = AddDDailyProjectUpdateForm
+    #
+    #     return super().add_view(request, form_url, extra_context)
+
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super().get_form(request, obj, **kwargs)
+    #
+    #     # Add a hidden field to track the number of key-value pairs
+    #     form.base_fields["_total_key_value_pairs"] = forms.IntegerField(
+    #         widget=forms.HiddenInput(attrs={"id": "id_total_key_value_pairs"}),
+    #         initial=len(obj.updates_json) if obj else 0,
+    #         required=False,
+    #     )
+    #
+    #     return form
+    #
+    # def save_model(self, request, obj, form, change):
+    #     # Process the key-value pairs and update the updates_json field
+    #     num_pairs = form.cleaned_data.get("_total_key_value_pairs", 0)
+    #     updates = {}
+    #
+    #     for i in range(num_pairs):
+    #         key = form.cleaned_data.get(f"key_{i}", "")
+    #         value = form.cleaned_data.get(f"value_{i}", "")
+    #         if key:
+    #             updates[key] = value
+    #
+    #     obj.updates_json = updates
+    #     super().save_model(request, obj, form, change)
