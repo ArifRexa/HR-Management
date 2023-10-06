@@ -138,8 +138,8 @@ class LeaveManagement(admin.ModelAdmin):
     def end_date_(self, leave: Leave):
         html_template = get_template('admin/leave/list/col_leave_day.html')
         html_content = html_template.render({
-            'leave_date': leave.start_date,
-            'leave_day': leave.start_date.strftime("%A"),
+            'leave_date': leave.end_date,
+            'leave_day': leave.end_date.strftime("%A"),
             'has_friday':has_friday_between_dates(leave.start_date, leave.end_date)
         })
         return format_html(html_content)
