@@ -45,8 +45,8 @@ class LeaveForm(forms.ModelForm):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = ('employee', 'leave_info', 'leave_type', 'total_leave',
-                    'status', 'start_date_', 'end_date_')
+    list_display = ('employee', 'leave_info', 'leave_type_', 'total_leave_',
+                    'status_', 'start_date_', 'end_date_')
     actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
@@ -124,11 +124,43 @@ class LeaveManagement(admin.ModelAdmin):
         })
         return format_html(html_content)
 
+
+    @admin.display()
+    def leave_type_(self, leave: Leave):
+        html_template = get_template('admin/leave/list/col_leave_day.html')
+        html_content = html_template.render({
+            'data': leave.leave_type,
+            'leave_day': leave.end_date.strftime("%A"),
+            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
+        })
+        return format_html(html_content)
+
+    @admin.display()
+    def total_leave_(self, leave: Leave):
+        html_template = get_template('admin/leave/list/col_leave_day.html')
+        html_content = html_template.render({
+            'data': leave.total_leave,
+            'leave_day': leave.end_date.strftime("%A"),
+            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
+        })
+        return format_html(html_content)
+
+    @admin.display()
+    def status_(self, leave: Leave):
+        html_template = get_template('admin/leave/list/col_leave_day.html')
+        html_content = html_template.render({
+            'status':True,
+            'data': leave,
+            'leave_day': leave.end_date.strftime("%A"),
+            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
+        })
+        return format_html(html_content)
+
     @admin.display()
     def start_date_(self, leave: Leave):
         html_template = get_template('admin/leave/list/col_leave_day.html')
         html_content = html_template.render({
-            'leave_date': leave.start_date,
+            'data': leave.start_date,
             'leave_day': leave.start_date.strftime("%A"),
             'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
         })
@@ -138,11 +170,12 @@ class LeaveManagement(admin.ModelAdmin):
     def end_date_(self, leave: Leave):
         html_template = get_template('admin/leave/list/col_leave_day.html')
         html_content = html_template.render({
-            'leave_date': leave.end_date,
+            'data': leave.end_date,
             'leave_day': leave.end_date.strftime("%A"),
             'has_friday':has_friday_between_dates(leave.start_date, leave.end_date)
         })
         return format_html(html_content)
+        
 
 def has_friday_between_dates(start_date, end_date):
     # Create a timedelta of one day

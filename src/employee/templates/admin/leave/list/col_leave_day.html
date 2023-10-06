@@ -1,3 +1,7 @@
 <span {% if has_friday  %} style="color: red" {% endif %}>
-    {{ leave_date }}
+    {% if status %}
+        {{ data.get_status_display }}
+    {% else %}
+        {{ data }}
+    {% endif %}
 </span>
