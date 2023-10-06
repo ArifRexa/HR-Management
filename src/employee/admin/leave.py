@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, timedelta
 
 from django.contrib import admin, messages
 from django import forms
@@ -46,7 +46,7 @@ class LeaveForm(forms.ModelForm):
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
     list_display = ('employee', 'leave_info', 'leave_type', 'total_leave',
-                    'status', 'start_date', 'end_date')
+                    'status', 'start_date_', 'end_date_')
     actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
@@ -112,12 +112,49 @@ class LeaveManagement(admin.ModelAdmin):
     @admin.display()
     def leave_info(self, leave: Leave):
         year_end_date = leave.end_date.replace(month=12, day=31)
-
+        print(leave.start_date.strftime("%A"))
         html_template = get_template('admin/leave/list/col_leave_info.html')
         html_content = html_template.render({
             'casual_passed': leave.employee.leave_passed('casual', year_end_date.year),
             'casual_remain': leave.employee.leave_available('casual_leave', year_end_date),
             'medical_passed': leave.employee.leave_passed('medical', year_end_date.year),
             'medical_remain': leave.employee.leave_available('medical_leave', year_end_date),
+
+            # 'leave_day':leave.start_date.strftime("%A")
         })
         return format_html(html_content)
+
+    @admin.display()
+    def start_date_(self, leave: Leave):
+        html_template = get_template('admin/leave/list/col_leave_day.html')
+        html_content = html_template.render({
+            'leave_date': leave.start_date,
+            'leave_day': leave.start_date.strftime("%A"),
+            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
+        })
+        return format_html(html_content)
+
+    @admin.display()
+    def end_date_(self, leave: Leave):
+        html_template = get_template('admin/leave/list/col_leave_day.html')
+        html_content = html_template.render({
+            'leave_date': leave.start_date,
+            'leave_day': leave.start_date.strftime("%A"),
+            'has_friday':has_friday_between_dates(leave.start_date, leave.end_date)
+        })
+        return format_html(html_content)
+
+def has_friday_between_dates(start_date, end_date):
+    # Create a timedelta of one day
+    one_day = timedelta(days=1)
+
+    # Initialize the current date with the start date
+    current_date = start_date
+
+    while current_date <= end_date:
+        # Check if the current date is a Friday (day number 4, where Monday is 0 and Sunday is 6)
+        if current_date.weekday() == 4:
+            return True
+        current_date += one_day  # Move to the next day
+
+    return False
