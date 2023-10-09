@@ -180,8 +180,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "note",
     ]
     actions = ["update_status_approve", "update_status_pending"]
-    # form = AddDDailyProjectUpdateForm
-    change_form_template = 'admin/project_management/dailyprojectupdate_change_form.html'
+    form = AddDDailyProjectUpdateForm
+    # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     # fieldsets = (
     #     (
     #         "Standard Info",
@@ -207,7 +207,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css",)}
-        js = ("js/list.js",)
+        js = ("js/list.js", "js/add_daily_update.js")
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
@@ -391,6 +391,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
+        print('#########\n\n',form.cleaned_data)
+
         super().save_model(request, obj, form, change)
 
         if change == False:
@@ -408,31 +410,5 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     #     print('Inside form update view..')
     #     # Customize the form instance
     #     self.form = AddDDailyProjectUpdateForm
-    #
+    #     extra_context = {'form':self.form}
     #     return super().add_view(request, form_url, extra_context)
-
-    # def get_form(self, request, obj=None, **kwargs):
-    #     form = super().get_form(request, obj, **kwargs)
-    #
-    #     # Add a hidden field to track the number of key-value pairs
-    #     form.base_fields["_total_key_value_pairs"] = forms.IntegerField(
-    #         widget=forms.HiddenInput(attrs={"id": "id_total_key_value_pairs"}),
-    #         initial=len(obj.updates_json) if obj else 0,
-    #         required=False,
-    #     )
-    #
-    #     return form
-    #
-    # def save_model(self, request, obj, form, change):
-    #     # Process the key-value pairs and update the updates_json field
-    #     num_pairs = form.cleaned_data.get("_total_key_value_pairs", 0)
-    #     updates = {}
-    #
-    #     for i in range(num_pairs):
-    #         key = form.cleaned_data.get(f"key_{i}", "")
-    #         value = form.cleaned_data.get(f"value_{i}", "")
-    #         if key:
-    #             updates[key] = value
-    #
-    #     obj.updates_json = updates
-    #     super().save_model(request, obj, form, change)

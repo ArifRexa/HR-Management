@@ -1,0 +1,30 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="module">
+    <form enctype="multipart/form-data" method="post" action="">
+        {% csrf_token %}
+        <fieldset class="module aligned ">
+            {% for field in form %}
+                <div class="form-row">
+                <div></div>
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
+
+            {% endfor %}
+        </fieldset>
+{#        {{ form.as_p }}#}
+
+        <div id="json-fields-container">
+            <!-- JSON fields will be added here dynamically -->
+        </div>
+
+        <button type="button" id="add-json-field">Add JSON Field</button>
+
+        <input type="submit" value="Save">
+    </form>
+</div>
+<script src="{% static 'js/add_daily_update.js' %}"></script>
+{% endblock %}

@@ -25,8 +25,8 @@ class ClientFeedbackForm(forms.ModelForm):
 
 
 class AddDDailyProjectUpdateForm(forms.ModelForm):
-    key = forms.CharField(max_length=50, required=False)
-    value = forms.CharField(max_length=255, required=False)
+    # key = forms.CharField(max_length=50, required=False)
+    # value = forms.CharField(max_length=255, required=False)
 
     class Meta:
         model = DailyProjectUpdate
