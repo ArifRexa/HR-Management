@@ -137,8 +137,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         DEFAULT_EXIT_HOUR = 12 + 9  # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
-        last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(30)]
-        last_x_date = (now - datetime.timedelta(30)).date()
+        last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(10)]
+        last_x_date = (now - datetime.timedelta(10)).date()
 
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
