@@ -11,4 +11,4 @@ class EmployeeNeedHelpForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(EmployeeNeedHelpForm, self).__init__(*args, **kwargs)
         self.fields["need_help_position"].widget.attrs.update({"hidden": "hidden"})
-        self.fields['need_help_position'].required = False
+        # self.fields['need_help_position'].required = False

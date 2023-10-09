@@ -24,4 +24,5 @@ class EmployeeNeedHelp(TimeStampMixin, AuthorMixin):
     need_help_position = models.ManyToManyField(
         to=NeedHelpPosition,
         limit_choices_to={"active": True},
+        blank=True
     )
