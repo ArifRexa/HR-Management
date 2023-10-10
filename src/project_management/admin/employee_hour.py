@@ -391,6 +391,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
+        print('$$$$$$$$\n\n',obj)
         print('#########\n\n',form.cleaned_data)
 
         super().save_model(request, obj, form, change)
