@@ -392,10 +392,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
-        form.cleaned_data['update'] = ' '
-        print('$$$$$$$$\n\n',obj)
-        print('#########\n\n',form.cleaned_data)
 
+        print('$$$$$$$$\n\n', obj)
+        print('#########\n\n', form.cleaned_data)
+
+        # obj.hours = 100
+        # todo: hour needed to be calculated from json
         super().save_model(request, obj, form, change)
 
         if change == False:

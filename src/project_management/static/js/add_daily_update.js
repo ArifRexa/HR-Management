@@ -14,7 +14,7 @@ let input_updates_individuals = []
 let input_time_individuals = []
 let updates_json_output = []
 document.addEventListener("DOMContentLoaded", function () {
-    // document.getElementById('id_hours').disabled = true
+    document.getElementById('id_hours').readonly = true
     let updates_old = document.getElementsByClassName('form-row field-update')[0]
     let updates_json = document.getElementsByClassName('form-row field-updates_json')[0]
     let updates_json_input_field = document.getElementsByName('updates_json')[0]
@@ -48,16 +48,17 @@ document.addEventListener("DOMContentLoaded", function () {
         dynamicInputsContainer.appendChild(update_hour);
         dynamicInputsContainer.appendChild(document.createElement('br'))
 
-        let calculate_btn = document.createElement('button')
-        calculate_btn.type = "button"
-        calculate_btn.id = "calculate-btn"
-        calculate_btn.textContent = 'Calculate Hours'
+        // let calculate_btn = document.createElement('button')
+        // calculate_btn.type = "button"
+        // calculate_btn.id = "calculate-btn"
+        // calculate_btn.textContent = 'Calculate Hours'
+        //
+        //
+        // dynamicInputsContainer.appendChild(calculate_btn)
 
 
-        dynamicInputsContainer.appendChild(calculate_btn)
-
-
-        calculate_btn.addEventListener('click', function (event){
+        update_hour.addEventListener('keyup', function (event){
+        // calculate_btn.addEventListener('click', function (event){
             // console.log('keystroke : ', event.target.value)
             all_updates = document.getElementsByName('input_update')
             all_times = document.getElementsByName('input_time')

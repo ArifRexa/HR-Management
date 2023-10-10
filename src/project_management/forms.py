@@ -31,6 +31,11 @@ class AddDDailyProjectUpdateForm(forms.ModelForm):
     class Meta:
         model = DailyProjectUpdate
         fields = '__all__'  # Include all fields or specify the fields you want
-
+        
     # Customize form fields here
+    def __init__(self, *args, **kwargs):
+        # first call parent's constructor
+        super(AddDDailyProjectUpdateForm, self).__init__(*args, **kwargs)
+        # there's a `fields` property now
+        self.fields['hours'].required = False
 
