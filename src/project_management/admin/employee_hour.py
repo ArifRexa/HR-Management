@@ -152,6 +152,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "get_hours",
         "history",
         "get_update",
+        # "get_updates_json",
         "manager",
         "status_col",
     )
@@ -182,28 +183,28 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     actions = ["update_status_approve", "update_status_pending"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
-    # fieldsets = (
-    #     (
-    #         "Standard Info",
-    #         {
-    #             "fields": (
-    #                 "created_at",
-    #                 "employee",
-    #                 "manager",
-    #                 "project",
-    #                 "hours",
-    #                 "updates_json",
-    #                 "status",
-    #             ),
-    #         },
-    #     ),
-    #     (
-    #         "Extras",
-    #         {
-    #             "fields": ("note",),
-    #         },
-    #     ),
-    # )
+    fieldsets = (
+        (
+            "Standard Info",
+            {
+                "fields": (
+                    "created_at",
+                    "employee",
+                    "manager",
+                    "project",
+                    "hours",
+                    "updates_json",
+                    "status",
+                ),
+            },
+        ),
+        (
+            "Extras",
+            {
+                "fields": ("note",),
+            },
+        ),
+    )
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -266,7 +267,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         )
         html_content = html_template.render(
             {
-                "update": obj.update.replace("{", "_").replace("}", "_"),
+                "update": obj.str_updates_json.replace("{", "_").replace("}", "_"),
             }
         )
 
@@ -391,6 +392,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
+        form.cleaned_data['update'] = ' '
         print('$$$$$$$$\n\n',obj)
         print('#########\n\n',form.cleaned_data)
 

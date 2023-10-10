@@ -273,7 +273,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     )
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
-    update = models.TextField(null=True, blank=True)
+    update = models.TextField(null=True, blank=True, default=' ')
     updates_json = models.JSONField(null=True, blank=True)
 
     STATUS_CHOICE = (
@@ -308,6 +308,9 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
 
         return "No changes"
 
+    @property
+    def str_updates_json(self):
+        return str(self.updates_json)
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
     daily_update = models.ForeignKey(
