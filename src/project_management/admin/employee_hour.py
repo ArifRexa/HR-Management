@@ -23,7 +23,7 @@ from project_management.admin.project_hour.options import (
     ProjectLeadFilter,
 )
 from project_management.forms import AddDDailyProjectUpdateForm
-
+from icecream import ic
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
@@ -393,22 +393,24 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             obj.employee_id = request.user.employee.id
 
 
-        print('$$$$$$$$\n\n', obj)
-        print('#########\n\n', form.cleaned_data)
+        json_updates = form.cleaned_data.get('updates_json')
+        total_hour = sum(float(item[1]) for item in json_updates)
 
-        # obj.hours = 100
-        # todo: hour needed to be calculated from json
+        obj.hours = total_hour
+
         super().save_model(request, obj, form, change)
 
         if change == False:
             return DailyProjectUpdateHistory.objects.create(
-                hours=request.POST.get("hours"), daily_update=obj
+                # hours=request.POST.get("hours"), daily_update=obj
+                hours=total_hour, daily_update=obj
             )
 
         requested_hours = float(request.POST.get("hours"))
         if requested_hours != obj.hours or obj.created_by is not request.user:
             return DailyProjectUpdateHistory.objects.create(
-                hours=request.POST.get("hours"), daily_update=obj
+                # hours=request.POST.get("hours"), daily_update=obj
+                hours=total_hour, daily_update=obj
             )
 
     # def add_view(self, request, form_url='', extra_context=None):

@@ -16,7 +16,7 @@ from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
-
+from icecream import ic
 
 class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
@@ -310,7 +310,21 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
 
     @property
     def str_updates_json(self):
-        return str(self.updates_json)
+        # ic(self.updates_json)
+        # out = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
+        # ic(out)
+        if self.updates_json is not None:
+            return '\n'.join([f"{index+1}. {i[0]} [{i[1]}]" for index, i in enumerate(self.updates_json)])
+        else:
+            return str(self.update)
+        # try:
+        #     ot = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
+        #     ic(ot)
+        #     return ot
+        # except Exception:
+        #     ic(Exception)
+        #     ic(self.updates_json)
+        #     return str(self.update)
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
     daily_update = models.ForeignKey(
