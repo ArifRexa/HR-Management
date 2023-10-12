@@ -277,7 +277,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         )
         html_content = html_template.render(
             {
-                "update": obj.update.replace("{", "_").replace("}", "_"),
+                "update": obj.update.replace("{", "_").replace("}", "_") if obj.updates_json is None else obj.str_updates_json.replace("{", "_").replace("}", "_"),
             }
         )
 
