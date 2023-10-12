@@ -25,49 +25,51 @@ document.addEventListener("DOMContentLoaded", function () {
     formType = formType[formType.length - 2]
     console.log(formType)
 
+    document.getElementsByClassName('form-row field-updates_json')[0].getElementsByTagName('label')[0].innerText = 'Updates:'
+
     // document.getElementById('id_hours').readonly = true
     if (document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0] != null){
         console.log('cannot edit updates')
         let updates = document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerText
         updates = JSON.parse(updates)
-        // let html_updates = "<ol name='updates_json'>"
-        // for (i=1; i<=updates.length; i++){
-        //     html_updates += `<li> ${updates[i-1][0]} [${updates[i-1][1]}] </li>`
-        // }
-        // html_updates += "</ol>"
-        // document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerHTML = html_updates
-        // console.log(updates)
+        let html_updates = "<ol name='updates_json'>"
+        for (i=1; i<=updates.length; i++){
+            html_updates += `<li> ${updates[i-1][0]} [${updates[i-1][1]}] </li>`
+        }
+        html_updates += "</ol>"
+        document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerHTML = html_updates
+        console.log(updates)
 
         // ref-here
-        document.getElementById('id_hours') && (document.getElementById('id_hours').style.display = 'None')
-        let hours_div = document.getElementsByClassName('form-row field-hours')[0]
-        let updates_old = document.getElementsByClassName('form-row field-update')[0]
-        let updates_json = document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0]
-        updates_json.innerText = ''
-        updates_json.style.marginLeft = 0
-        // updates_json_input_field = document.getElementsByName('updates_json')[0]
-        // let updates_json_input_field = document.getElementsByName('updates_json')[0]
-        // updates_old.style.display = 'None'
-
-        updates_json.appendChild(input_container)
-        // updates_json.style.display = 'none'
-        // console.log(updates_json_input_field.innerText)
-
-        const addButton = document.getElementById("add-button");
-        // const dynamicInputsContainer = document.getElementById("input-container");
-        dynamicInputsContainer = document.getElementById("input-container");
-
-        let show_hour = document.createElement('span')
-        show_hour.id = 'show-hour'
-        show_hour.textContent = document.getElementById('id_hours').value.toString()
-        hours_div.appendChild(show_hour)
-
-        // let existing_updates = JSON.parse(updates_json_input_field.innerText)
-        // console.log(existing_updates)
-        updates.forEach((line_updates) => {
-            add_update_element(line_updates)
-
-        })
+        // document.getElementById('id_hours') && (document.getElementById('id_hours').style.display = 'None')
+        // let hours_div = document.getElementsByClassName('form-row field-hours')[0]
+        // let updates_old = document.getElementsByClassName('form-row field-update')[0]
+        // let updates_json = document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0]
+        // updates_json.innerText = ''
+        // updates_json.style.marginLeft = 0
+        // // updates_json_input_field = document.getElementsByName('updates_json')[0]
+        // // let updates_json_input_field = document.getElementsByName('updates_json')[0]
+        // // updates_old.style.display = 'None'
+        //
+        // updates_json.appendChild(input_container)
+        // // updates_json.style.display = 'none'
+        // // console.log(updates_json_input_field.innerText)
+        //
+        // const addButton = document.getElementById("add-button");
+        // // const dynamicInputsContainer = document.getElementById("input-container");
+        // dynamicInputsContainer = document.getElementById("input-container");
+        //
+        // let show_hour = document.createElement('span')
+        // show_hour.id = 'show-hour'
+        // show_hour.textContent = document.getElementById('id_hours').value.toString()
+        // hours_div.appendChild(show_hour)
+        //
+        // // let existing_updates = JSON.parse(updates_json_input_field.innerText)
+        // // console.log(existing_updates)
+        // updates.forEach((line_updates) => {
+        //     add_update_element(line_updates)
+        //
+        // })
 
     }
     else {
