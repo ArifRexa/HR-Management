@@ -6,6 +6,7 @@ from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks, escape
 from django.utils.safestring import mark_safe
+from django import forms
 
 from employee.admin.employee._forms import DailyUpdateFilterForm
 
@@ -21,7 +22,8 @@ from project_management.admin.project_hour.options import (
     ProjectManagerFilter,
     ProjectLeadFilter,
 )
-
+from project_management.forms import AddDDailyProjectUpdateForm
+from icecream import ic
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
@@ -150,6 +152,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "get_hours",
         "history",
         "get_update",
+        # "get_updates_json",
         "manager",
         "status_col",
     )
@@ -178,6 +181,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "note",
     ]
     actions = ["update_status_approve", "update_status_pending"]
+    form = AddDDailyProjectUpdateForm
+    # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
         (
             "Standard Info",
@@ -188,10 +193,18 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "manager",
                     "project",
                     "hours",
-                    "update",
+                    # "updates_json",
                     "status",
                 ),
             },
+        ),
+        (
+            "Updates",
+            {
+                "fields": (
+                    "updates_json",
+                )
+            }
         ),
         (
             "Extras",
@@ -202,8 +215,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     )
 
     class Media:
-        css = {"all": ("css/list.css",)}
-        js = ("js/list.js",)
+        css = {"all": ("css/list.css", "css/daily-update.css")}
+        js = ("js/list.js", "js/add_daily_update.js")
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
@@ -229,7 +242,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "employee",
                     "manager",
                     "project",
-                    "update",
+                    # "updates_json",
                 ]
 
             # If interact as the project employee and status approved
@@ -262,7 +275,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         )
         html_content = html_template.render(
             {
-                "update": obj.update.replace("{", "_").replace("}", "_"),
+                "update": obj.str_updates_json.replace("{", "_").replace("}", "_"),
             }
         )
 
@@ -387,15 +400,34 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
+
+        json_updates = form.cleaned_data.get('updates_json')
+        if json_updates:
+            total_hour = sum(float(item[1]) for item in json_updates)
+
+            obj.hours = total_hour
+        else:
+            total_hour = request.POST.get('hours')
+            ic(total_hour)
+
         super().save_model(request, obj, form, change)
 
         if change == False:
             return DailyProjectUpdateHistory.objects.create(
-                hours=request.POST.get("hours"), daily_update=obj
+                # hours=request.POST.get("hours"), daily_update=obj
+                hours=total_hour, daily_update=obj
             )
 
         requested_hours = float(request.POST.get("hours"))
         if requested_hours != obj.hours or obj.created_by is not request.user:
             return DailyProjectUpdateHistory.objects.create(
-                hours=request.POST.get("hours"), daily_update=obj
+                # hours=request.POST.get("hours"), daily_update=obj
+                hours=total_hour, daily_update=obj
             )
+
+    # def add_view(self, request, form_url='', extra_context=None):
+    #     print('Inside form update view..')
+    #     # Customize the form instance
+    #     self.form = AddDDailyProjectUpdateForm
+    #     extra_context = {'form':self.form}
+    #     return super().add_view(request, form_url, extra_context)

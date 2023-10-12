@@ -1,0 +1,59 @@
+#input-container {
+    position: relative;
+    padding-bottom: 50px;
+}
+.cs-form-group {
+    margin-left: 170px;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+#add-button{
+    background: var(--button-bg);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    color: var(--button-fg);
+    cursor: pointer;
+    transition: background 0.15s;
+    position: absolute;
+    bottom: 0;
+}
+.cs-form-control{
+    width: 100px;
+    height: 20px;
+}
+.cs-form-control-text{
+    width: 850px;
+    min-height: 60px;
+    resize: vertical;
+}
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+@media (max-width: 767px) {
+    .cs-form-control-text{
+        width: 100%;
+        min-height: 30px;
+    }
+
+    .cs-form-group {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+.remove-update-btn{
+    background: var(--button-bg);
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    color: var(--button-fg);
+    cursor: pointer;
+    transition: background 0.15s;
+    bottom: 0;
+    height: 35px;
+}

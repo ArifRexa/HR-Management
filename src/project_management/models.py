@@ -16,7 +16,7 @@ from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
-
+from icecream import ic
 
 class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
@@ -273,7 +273,8 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     )
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
-    update = models.TextField()
+    update = models.TextField(null=True, blank=True, default=' ')
+    updates_json = models.JSONField(null=True, blank=True)
 
     STATUS_CHOICE = (
         ("pending", "⌛ Pending"),
@@ -307,6 +308,23 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
 
         return "No changes"
 
+    @property
+    def str_updates_json(self):
+        # ic(self.updates_json)
+        # out = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
+        # ic(out)
+        if self.updates_json is not None:
+            return '\n'.join([f"{index+1}. {i[0]} - {i[1]}H. " for index, i in enumerate(self.updates_json)])
+        else:
+            return str(self.update)
+        # try:
+        #     ot = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
+        #     ic(ot)
+        #     return ot
+        # except Exception:
+        #     ic(Exception)
+        #     ic(self.updates_json)
+        #     return str(self.update)
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
     daily_update = models.ForeignKey(
