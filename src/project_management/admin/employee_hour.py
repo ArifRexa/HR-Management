@@ -242,7 +242,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "employee",
                     "manager",
                     "project",
-                    "updates_json",
+                    # "updates_json",
                 ]
 
             # If interact as the project employee and status approved
