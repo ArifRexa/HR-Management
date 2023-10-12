@@ -193,6 +193,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "manager",
                     "project",
                     "hours",
+                    "update",
                     # "updates_json",
                     "status",
                 ),
@@ -242,6 +243,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "employee",
                     "manager",
                     "project",
+                    "update"
                     # "updates_json",
                 ]
 
@@ -275,7 +277,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         )
         html_content = html_template.render(
             {
-                "update": obj.str_updates_json.replace("{", "_").replace("}", "_"),
+                "update": obj.update.replace("{", "_").replace("}", "_"),
             }
         )
 
