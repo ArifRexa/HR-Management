@@ -138,6 +138,10 @@ function add_update_element(existing_values=null){
     update_hour.addEventListener('wheel', function (event) {
         event.preventDefault()
     })
+    update_text.addEventListener('keyup', function (event) {
+        calculate_hours()
+    })
+
     remove_update_btn.addEventListener('click', function (){
         let no_id = remove_update_btn.id.split('-')
         no_id = no_id[no_id.length-1]
