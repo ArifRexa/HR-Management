@@ -314,7 +314,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         # out = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
         # ic(out)
         if self.updates_json is not None:
-            return '\n'.join([f"{index+1}. {i[0]} [{i[1]}]" for index, i in enumerate(self.updates_json)])
+            return '\n'.join([f"{index+1}. {i[0]} - {i[1]}H. " for index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
         # try:

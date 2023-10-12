@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function () {
         updates = JSON.parse(updates)
         let html_updates = "<ol name='updates_json'>"
         for (i=1; i<=updates.length; i++){
-            html_updates += `<li> ${updates[i-1][0]} [${updates[i-1][1]}] </li>`
+            html_updates += `<li> ${updates[i-1][0]} - ${updates[i-1][1]}H. </li>`
         }
         html_updates += "</ol>"
         document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerHTML = html_updates
