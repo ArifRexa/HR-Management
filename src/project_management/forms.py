@@ -37,5 +37,5 @@ class AddDDailyProjectUpdateForm(forms.ModelForm):
         # first call parent's constructor
         super(AddDDailyProjectUpdateForm, self).__init__(*args, **kwargs)
         # there's a `fields` property now
-        self.fields['hours'].required = False
+        # self.fields['hours'].required = False
 

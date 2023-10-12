@@ -193,10 +193,18 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "manager",
                     "project",
                     "hours",
-                    "updates_json",
+                    # "updates_json",
                     "status",
                 ),
             },
+        ),
+        (
+            "Updates",
+            {
+                "fields": (
+                    "updates_json",
+                )
+            }
         ),
         (
             "Extras",
@@ -207,7 +215,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     )
 
     class Media:
-        css = {"all": ("css/list.css",)}
+        css = {"all": ("css/list.css", "css/daily-update.css")}
         js = ("js/list.js", "js/add_daily_update.js")
 
     def get_readonly_fields(self, request, obj=None):
@@ -234,7 +242,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "employee",
                     "manager",
                     "project",
-                    "update",
+                    "updates_json",
                 ]
 
             # If interact as the project employee and status approved
@@ -394,9 +402,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
 
         json_updates = form.cleaned_data.get('updates_json')
-        total_hour = sum(float(item[1]) for item in json_updates)
+        if json_updates:
+            total_hour = sum(float(item[1]) for item in json_updates)
 
-        obj.hours = total_hour
+            obj.hours = total_hour
+        else:
+            total_hour = request.POST.get('hours')
+            ic(total_hour)
 
         super().save_model(request, obj, form, change)
 
