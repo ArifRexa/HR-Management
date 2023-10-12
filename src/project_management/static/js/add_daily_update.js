@@ -90,6 +90,7 @@ document.addEventListener("DOMContentLoaded", function () {
         dynamicInputsContainer = document.getElementById("input-container");
 
         if (formType == 'add') {
+            document.getElementsByClassName('form-row field-update')[0].style.display = 'None'
             let show_hour = document.createElement('span')
             show_hour.id = 'show-hour'
             show_hour.textContent = '0.0'
