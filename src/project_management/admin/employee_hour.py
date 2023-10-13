@@ -100,7 +100,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     # return total hour count
     def changelist_view(self, request, extra_context=None):
         my_context = {
-            "total": self.get_total_hour(request),
+            "total": self.get_total_hour(request)
         }
         return super(EmployeeHourAdmin, self).changelist_view(
             request, extra_context=my_context
@@ -311,6 +311,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         my_context = {
             "total": self.get_total_hour(request),
             "filter_form": filter_form,
+            # "export_csv":'hello'
         }
         return super(DailyProjectUpdateAdmin, self).changelist_view(
             request, extra_context=my_context
