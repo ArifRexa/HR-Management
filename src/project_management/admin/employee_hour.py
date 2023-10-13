@@ -311,7 +311,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         my_context = {
             "total": self.get_total_hour(request),
             "filter_form": filter_form,
-            # "export_csv":'hello'
+            "export_report":'hello'
         }
         return super(DailyProjectUpdateAdmin, self).changelist_view(
             request, extra_context=my_context
