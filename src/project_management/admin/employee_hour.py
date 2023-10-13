@@ -405,7 +405,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         json_updates = form.cleaned_data.get('updates_json')
         if json_updates:
-            total_hour = sum(float(item[1]) for item in json_updates)
+            total_hour = 0
+            for index, item in enumerate(json_updates):
+                if float(item[1]) > 2:
+                    json_updates[index][1] = 2
+                    total_hour += 2
+                else:
+                    total_hour += float(item[1])
+
+            # total_hour = sum(float(item[1]) if float(item[1]) <= 2 else 2 for item in json_updates)
 
             obj.hours = total_hour
         else:
