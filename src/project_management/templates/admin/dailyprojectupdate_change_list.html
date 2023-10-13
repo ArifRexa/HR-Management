@@ -1,0 +1,28 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+    {{ block.super }}
+    {% if export_report %}
+        <div class="module">
+            <a href="/mycsv/" class="link">Export as CSV</a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+<script>
+    document.getElementById("redirectLink").addEventListener("click", function(event) {
+        event.preventDefault();
+
+        // Get the current URL
+        var currentURL = window.location.href;
+
+        // Extract the GET parameters from the current URL
+        var queryParams = window.location.search;
+
+        // Construct the new URL to which you want to redirect
+        var newURL = "https://example.com/target-page" + queryParams;
+
+        // Redirect to the new URL
+        window.location.href = newURL;
+  });
+</script>

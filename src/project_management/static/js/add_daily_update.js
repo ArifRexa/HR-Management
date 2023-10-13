@@ -145,6 +145,9 @@ function add_update_element(existing_values=null){
     update_hour.className = "cs-form-control"
     update_hour.placeholder = "Time";
     update_hour.required = true
+    update_hour.max = '2.0'
+    update_hour.min = "0.0"
+    update_hour.value = '0.0'
 
     const remove_update_btn = document.createElement('button')
     remove_update_btn.type = "button"
@@ -205,6 +208,13 @@ function calculate_hours(){
     // console.log('updates: ', JSON.stringify(updates))
     let total_hour = 0.0
     all_times.forEach((time_of_one)=>{
+        if (time_of_one.value && time_of_one.value > 2.0){
+            time_of_one.value = 2.0
+        }
+        else if (time_of_one.value && time_of_one.value < 0){
+            time_of_one.value = 0.0
+        }
+
         total_hour += time_of_one.value?parseFloat(time_of_one.value):0
         console.log(time_of_one.value)
     })
