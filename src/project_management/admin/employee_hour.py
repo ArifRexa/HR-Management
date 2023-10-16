@@ -193,7 +193,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "manager",
                     "project",
                     "hours",
-                    "update",
+                    # "update",
                     # "updates_json",
                     "status",
                 ),
