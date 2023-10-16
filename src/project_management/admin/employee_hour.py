@@ -1,6 +1,8 @@
 import datetime
+import openpyxl
 from django.contrib import admin, messages
 from django.db.models import Q, Sum
+from django.http import HttpResponse
 
 from django.template.loader import get_template
 from django.utils import timezone
@@ -180,7 +182,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "created_at",
         "note",
     ]
-    actions = ["update_status_approve", "update_status_pending"]
+    actions = ["update_status_approve", "update_status_pending", "export_selected"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
@@ -387,6 +389,28 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             queryset = queryset.filter(manager_id=request.user.employee.id)
 
         messages.success(request, f"Marked Pending {qs_count} daily update(s).")
+
+    @admin.action(description="Export selected update(s) in .xlsx file")
+    def export_selected(modeladmin, request, queryset):
+        ic(queryset)
+        messages.success(request, "Exported successfully.")
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="exported_data.csv"'
+
+        # Create a new workbook and add a worksheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+
+        # Customize this section to format and populate the worksheet with your data
+        # For example:
+        ws.append(['Column1', 'Column2', 'Column3'])
+        for obj in queryset:
+            ws.append([obj.field1, obj.field2, obj.field3])
+
+        # Save the workbook to the response
+        wb.save(response)
+
+        return response
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
