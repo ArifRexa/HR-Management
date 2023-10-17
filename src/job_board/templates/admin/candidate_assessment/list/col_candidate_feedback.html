@@ -1,9 +1,9 @@
 {% load remove_curly_bracs %}
 <div class="popover-wrapper">
     <div class="popover-title">
-        {{ candidate_assessment.candidate_feedback|stringformat:".150s" | linebreaks | remove_curly_bracs }}
+        {{ candidate_assessment.candidate_feedback | remove_curly_bracs |stringformat:".150s" | linebreaks  }}
     </div>
     <div class="popover-message">
-        {{ candidate_assessment.candidate_feedback | linebreaks | remove_curly_bracs }}
+        {{ candidate_assessment.candidate_feedback | remove_curly_bracs | linebreaks  }}
     </div>
 </div>
