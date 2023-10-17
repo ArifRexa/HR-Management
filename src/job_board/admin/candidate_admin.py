@@ -338,9 +338,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         return format_html(html_content)
         # html_content = html_template.render(
         #     {
-        #         "candidate_assessment": obj.update.replace("{", "_").replace("}",
-        #                                                        "_") if obj.updates_json is None else obj.str_updates_json.replace(
-        #             "{", "_").replace("}", "_"),
+        #         "candidate_assessment": obj.candidate_feedback.replace("{", "_").replace("}", "_") if obj.candidate_feedback is not None else None
         #     }
         # )
         #

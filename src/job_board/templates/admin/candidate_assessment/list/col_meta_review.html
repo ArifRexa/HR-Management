@@ -1,14 +1,15 @@
 {% load humanize %}
+{% load remove_curly_bracs %}
 <div class="popover-wrapper">
     <div class="popover-title">
         {% if candidate_assessment.note %}
             {{ candidate_assessment.updated_at }} <br>
-            {{ candidate_assessment.note|stringformat:".50s" | linebreaks }}
+            {{ candidate_assessment.note|stringformat:".50s" | linebreaks | remove_curly_bracs }}
         {% elif reviews|length > 0 %}
             {% with reviews|first as review %}
             <b>- {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>
                 <sub>&nbsp;&nbsp;{{ review.created_at | naturaltime }}</sub> </b>  <br>
-            {{ review.note|stringformat:".50s" | linebreaks }} <br>
+            {{ review.note|stringformat:".50s" | linebreaks | remove_curly_bracs }} <br>
 
             {% endwith %}
         {% else %}
@@ -17,12 +18,12 @@
 
     </div>
     <div class="popover-message">
-        {{ candidate_assessment.note | linebreaks }}
+        {{ candidate_assessment.note | linebreaks | remove_curly_bracs }}
 
         {% for review in reviews %}
             <b>- {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>
                 <sub>&nbsp;&nbsp;{{ review.created_at | naturaltime }}</sub> </b>  <br>
-            {{ review.note | linebreaks }} <br>
+            {{ review.note | linebreaks | remove_curly_bracs }} <br>
         {% endfor %}
     </div>
 </div>
