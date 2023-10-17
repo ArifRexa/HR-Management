@@ -409,16 +409,17 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # Create a new workbook and add a worksheet
         wb = openpyxl.Workbook()
         sheet = wb.active
+        # sheet.column_dimensions['A'].width = 13
         sheet.column_dimensions['A'].width = 13
-        sheet.column_dimensions['B'].width = 13
-        sheet.column_dimensions['C'].width = 98
+        sheet.column_dimensions['B'].width = 98
+        sheet.column_dimensions['C'].width = 13
         sheet.column_dimensions['D'].width = 13
-        sheet.column_dimensions['E'].width = 13
-        sheet.column_dimensions['F'].width = 20
+        sheet.column_dimensions['E'].width = 20
 
         # Customize this section to format and populate the worksheet with your data
         # For example:
-        sheet.append(['  Week  ', '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
+        # sheet.append(['  Week  ', '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
+        sheet.append([ '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
 
         week_starting_date: str
         week_starting_index: int
@@ -442,24 +443,25 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 week_start_ref = week_ending_index
 
             for index_update, update in enumerate(obj.updates_json):
-                sheet.append([f'{week_starting_date} - {week_ending_date}', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
+                sheet.append([obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
+                # sheet.append([f'{week_starting_date} - {week_ending_date}', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
                 # sheet.append([f'', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
 
 
             start_merge = 1 + start_ref
-            week_ending_index = start_merge + index_update
-            week_cells = f'A{week_starting_index}:A{week_ending_index}'
+            # week_ending_index = start_merge + index_update
+            # week_cells = f'A{week_starting_index}:A{week_ending_index}'
             end_merge = start_merge + index_update
             start_ref = end_merge
             # ic(start_merge, end_merge)
             ic(week_starting_index, week_ending_index)
-            date_cells = f'B{start_merge}:B{end_merge}'
-            day_hour_cells = f'E{start_merge}:E{end_merge}'
+            date_cells = f'A{start_merge}:A{end_merge}'
+            day_hour_cells = f'D{start_merge}:D{end_merge}'
             # ic(date_cells, day_hour_cells, index+2, index_update)
-            sheet.merge_cells(week_cells)
+            # sheet.merge_cells(week_cells)
             sheet.merge_cells(date_cells)
             sheet.merge_cells(day_hour_cells)
-            ic(index, week_cells, date_cells, day_hour_cells)
+            # ic(index, week_cells, date_cells, day_hour_cells)
 
 
 
@@ -480,20 +482,20 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         for cell in sheet.iter_rows(min_row=2):
             for index, cell in enumerate(cell):
-                if index == 0:
-                    cell.alignment = Alignment(vertical='top')
                 if index == 1:
+                    cell.alignment = Alignment(vertical='top')
+                if index == 2:
                     cell.alignment = Alignment(horizontal='center',
                                                vertical='center')
-                if index == 2:
+                if index == 3:
                     cell.alignment = Alignment(wrap_text=True, indent=0)
 
-                if index == 3:
-                    cell.alignment = Alignment(horizontal='center',
-                                               vertical='center')
                 if index == 4:
                     cell.alignment = Alignment(horizontal='center',
                                                vertical='center')
+                # if index == 4:
+                #     cell.alignment = Alignment(horizontal='center',
+                #                                vertical='center')
 
 
 
