@@ -4,4 +4,7 @@ register = template.Library()
 
 @register.filter
 def remove_curly_bracs(value):
-    return value.replace("{", "_").replace("}", "_")
+    try:
+        return value.replace("{", "_").replace("}", "_")
+    except:
+        return None

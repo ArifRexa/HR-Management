@@ -88,7 +88,7 @@ class CandidateAdmin(admin.ModelAdmin):
         candidate_job = obj.candidatejob_set.last()
         if candidate_job is not None:
             for candidate_assessment in candidate_job.candidate_assessment.all():
-                review += f'{candidate_assessment.note if candidate_assessment.note is not None else ""} <br>'
+                review += f'{candidate_assessment.note.replace("{","_").replace("}", "_") if candidate_assessment.note is not None else ""} <br>'
         return format_html(review)
 
     @admin.display()
