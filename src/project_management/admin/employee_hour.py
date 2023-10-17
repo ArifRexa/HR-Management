@@ -394,17 +394,18 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.action(description="Export selected update(s) in .xlsx file")
     def export_selected(modeladmin, request, queryset):
-        ic(queryset)
+        # ic(queryset)
 
         project_name = queryset[0].project.title.replace(' ', '_')
-        start_date = request.GET.get('created_at__date__gte', '_')
-        end_date = request.GET.get('created_at__date__lte', '_')
-        ic(request)
-        ic(start_date)
-        ic(end_date)
+        start_date = request.GET.get('created_at__date__gte', 'not_selected')
+        end_date = request.GET.get('created_at__date__lte', 'not_selected')
+        date_range = f'{start_date}_to_{end_date}' if start_date != 'not_selected' and end_date != 'not_selected' else 'selective'
+        # ic(request)
+        # ic(start_date)
+        # ic(end_date)
         messages.success(request, "Exported successfully.")
         response = HttpResponse(content_type='application/ms-excel')
-        response['Content-Disposition'] = f'attachment; filename="{project_name}__{start_date}_to_{end_date}__exported.xlsx"'
+        response['Content-Disposition'] = f'attachment; filename="{project_name}__{date_range}__exported.xlsx"'
 
         # Create a new workbook and add a worksheet
         wb = openpyxl.Workbook()
@@ -419,59 +420,37 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # Customize this section to format and populate the worksheet with your data
         # For example:
         # sheet.append(['  Week  ', '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
-        sheet.append([ '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
+        sheet.append([ '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  '])
 
         week_starting_date: str
         week_starting_index: int
 
-        week_ending_date: str = 'None'
-        week_ending_index: int = 2
         start_ref = 1
-        week_start_ref = 1
+        total_hours = 0
         for index, obj in enumerate(queryset, start=2):
             if obj.updates_json is None:
                 continue
-
-            # Get the weekday as an integer (0 = Monday, 6 = Sunday)
-            # weekday = obj.created_at.weekday()
-            # if index == 2 or weekday == 0:
-            #     week_starting_date = obj.created_at.strftime('%d-%m-%Y')
-            #     # week_starting_index = start_ref + 1
-            #     week_starting_index = index
-            #     # week_start_ref = week_starting_index
-            # if weekday >= 4:
-            #     week_ending_date = obj.created_at.strftime('%d-%m-%Y')
-            #     week_ending_index = week_starting_index
-            #     week_start_ref = week_ending_index
-
+            total_hours += obj.hours
             for index_update, update in enumerate(obj.updates_json):
-                sheet.append([obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
-                # sheet.append([f'{week_starting_date} - {week_ending_date}', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
-                # sheet.append([f'', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
-
+                sheet.append([obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours])
 
             start_merge = 1 + start_ref
-            # week_ending_index = start_merge + index_update
-            # week_cells = f'A{week_starting_index}:A{week_ending_index}'
             end_merge = start_merge + index_update
             start_ref = end_merge
-            # ic(start_merge, end_merge)
-            ic(week_starting_index, week_ending_index)
             date_cells = f'A{start_merge}:A{end_merge}'
             day_hour_cells = f'D{start_merge}:D{end_merge}'
-            # ic(date_cells, day_hour_cells, index+2, index_update)
-            # sheet.merge_cells(week_cells)
             sheet.merge_cells(date_cells)
             sheet.merge_cells(day_hour_cells)
             # ic(index, week_cells, date_cells, day_hour_cells)
 
+        sheet.append([ '', '', 'Total: ', f'{total_hours} Hours'])
 
 
         # Make styles
         for cell in sheet.iter_rows(min_row=1, max_row=1):
             for index, cell in enumerate(cell):
                 cell.font = Font(name='Arial',
-                                 size=10,
+                                 size=12,
                                  bold=True,
                                  color='ffffff')
                 cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
@@ -484,22 +463,37 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         for cell in sheet.iter_rows(min_row=2):
             for index, cell in enumerate(cell):
+                cell.alignment = Alignment(horizontal='center',
+                                           vertical='center')
+                # if index == 0:
+                #     cell.alignment = Alignment(vertical='top')
                 if index == 1:
-                    cell.alignment = Alignment(vertical='top')
-                if index == 2:
-                    cell.alignment = Alignment(horizontal='center',
-                                               vertical='center')
-                if index == 3:
-                    cell.alignment = Alignment(wrap_text=True, indent=0)
-
-                if index == 4:
-                    cell.alignment = Alignment(horizontal='center',
-                                               vertical='center')
+                    cell.alignment = Alignment(horizontal='left',
+                                               vertical='top')
+                # if index == 2:
+                #     cell.alignment = Alignment(wrap_text=True, indent=0)
+                #
+                # if index == 3:
+                #     cell.alignment = Alignment(horizontal='center',
+                #                                vertical='center')
                 # if index == 4:
                 #     cell.alignment = Alignment(horizontal='center',
                 #                                vertical='center')
 
-
+        for cell in sheet.iter_rows(min_row=sheet.max_row ):
+            ic(cell)
+            for index, cell in enumerate(cell):
+                ic(index,cell)
+                if index == 3 or index == 2:
+                    ic('if ',index, cell)
+                    cell.font = Font(name='Arial',
+                                     size=12,
+                                     bold=True,
+                                     color='ffffff')
+                    cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
+                    cell.alignment = Alignment(horizontal='center',
+                                               vertical='center',
+                                               indent=0)
 
 
         # Save the workbook to the response
@@ -507,6 +501,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         return response
         # messages.success(request, f"Exported successfully.")
+
+
+    @admin.action(description="Get selected update in .txt file")
+    def export_updated_in_txt(modeladmin, request, queryset):
+        project_name = queryset[0].project.title.replace(' ', '_')
+
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
