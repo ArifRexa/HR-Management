@@ -1,6 +1,10 @@
 import datetime
+import openpyxl
+from openpyxl.styles import Font, PatternFill, Alignment
+
 from django.contrib import admin, messages
 from django.db.models import Q, Sum
+from django.http import HttpResponse
 
 from django.template.loader import get_template
 from django.utils import timezone
@@ -180,7 +184,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "created_at",
         "note",
     ]
-    actions = ["update_status_approve", "update_status_pending"]
+    actions = ["update_status_approve", "update_status_pending", "export_selected"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
@@ -387,6 +391,118 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             queryset = queryset.filter(manager_id=request.user.employee.id)
 
         messages.success(request, f"Marked Pending {qs_count} daily update(s).")
+
+    @admin.action(description="Export selected update(s) in .xlsx file")
+    def export_selected(modeladmin, request, queryset):
+        ic(queryset)
+
+        project_name = queryset[0].project.title.replace(' ', '_')
+        start_date = request.GET.get('created_at__date__gte', '_')
+        end_date = request.GET.get('created_at__date__lte', '_')
+        ic(request)
+        ic(start_date)
+        ic(end_date)
+        messages.success(request, "Exported successfully.")
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'attachment; filename="{project_name}__{start_date}_to_{end_date}__exported.xlsx"'
+
+        # Create a new workbook and add a worksheet
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.column_dimensions['A'].width = 13
+        sheet.column_dimensions['B'].width = 13
+        sheet.column_dimensions['C'].width = 98
+        sheet.column_dimensions['D'].width = 13
+        sheet.column_dimensions['E'].width = 13
+        sheet.column_dimensions['F'].width = 20
+
+        # Customize this section to format and populate the worksheet with your data
+        # For example:
+        sheet.append(['  Week  ', '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
+
+        week_starting_date: str
+        week_starting_index: int
+
+        week_ending_date: str = 'None'
+        week_ending_index: int = 2
+        start_ref = 1
+        week_start_ref = 1
+        for index, obj in enumerate(queryset, start=2):
+
+            # Get the weekday as an integer (0 = Monday, 6 = Sunday)
+            weekday = obj.created_at.weekday()
+            if index == 2 or weekday == 0:
+                week_starting_date = obj.created_at.strftime('%d-%m-%Y')
+                # week_starting_index = start_ref + 1
+                week_starting_index = index
+                # week_start_ref = week_starting_index
+            if weekday >= 4:
+                week_ending_date = obj.created_at.strftime('%d-%m-%Y')
+                week_ending_index = week_starting_index
+                week_start_ref = week_ending_index
+
+            for index_update, update in enumerate(obj.updates_json):
+                sheet.append([f'{week_starting_date} - {week_ending_date}', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
+                # sheet.append([f'', obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
+
+
+            start_merge = 1 + start_ref
+            week_ending_index = start_merge + index_update
+            week_cells = f'A{week_starting_index}:A{week_ending_index}'
+            end_merge = start_merge + index_update
+            start_ref = end_merge
+            # ic(start_merge, end_merge)
+            ic(week_starting_index, week_ending_index)
+            date_cells = f'B{start_merge}:B{end_merge}'
+            day_hour_cells = f'E{start_merge}:E{end_merge}'
+            # ic(date_cells, day_hour_cells, index+2, index_update)
+            sheet.merge_cells(week_cells)
+            sheet.merge_cells(date_cells)
+            sheet.merge_cells(day_hour_cells)
+            ic(index, week_cells, date_cells, day_hour_cells)
+
+
+
+        # Make styles
+        for cell in sheet.iter_rows(min_row=1, max_row=1):
+            for index, cell in enumerate(cell):
+                cell.font = Font(name='Arial',
+                                 size=10,
+                                 bold=True,
+                                 color='ffffff')
+                cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
+                cell.alignment=Alignment(horizontal='center',
+                                         vertical='center',
+                                         # text_rotation=0,
+                                         # wrap_text=False,
+                                         # shrink_to_fit=True,
+                                         indent=0)
+
+        for cell in sheet.iter_rows(min_row=2):
+            for index, cell in enumerate(cell):
+                if index == 0:
+                    cell.alignment = Alignment(vertical='top')
+                if index == 1:
+                    cell.alignment = Alignment(horizontal='center',
+                                               vertical='center')
+                if index == 2:
+                    cell.alignment = Alignment(wrap_text=True, indent=0)
+
+                if index == 3:
+                    cell.alignment = Alignment(horizontal='center',
+                                               vertical='center')
+                if index == 4:
+                    cell.alignment = Alignment(horizontal='center',
+                                               vertical='center')
+
+
+
+
+        # Save the workbook to the response
+        wb.save(response)
+
+        return response
+        # messages.success(request, f"Exported successfully.")
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)

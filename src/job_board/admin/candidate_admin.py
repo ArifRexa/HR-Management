@@ -336,6 +336,18 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
             'candidate_assessment': obj
         })
         return format_html(html_content)
+        # html_content = html_template.render(
+        #     {
+        #         "candidate_assessment": obj.candidate_feedback.replace("{", "_").replace("}", "_") if obj.candidate_feedback is not None else None
+        #     }
+        # )
+        #
+        # try:
+        #     data = format_html(html_content)
+        # except:
+        #     data = "-"
+        #
+        # return data
 
     @admin.display(ordering='updated_at')
     def meta_review(self, obj: CandidateAssessment):
