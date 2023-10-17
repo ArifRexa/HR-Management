@@ -429,18 +429,20 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         start_ref = 1
         week_start_ref = 1
         for index, obj in enumerate(queryset, start=2):
+            if obj.updates_json is None:
+                continue
 
             # Get the weekday as an integer (0 = Monday, 6 = Sunday)
-            weekday = obj.created_at.weekday()
-            if index == 2 or weekday == 0:
-                week_starting_date = obj.created_at.strftime('%d-%m-%Y')
-                # week_starting_index = start_ref + 1
-                week_starting_index = index
-                # week_start_ref = week_starting_index
-            if weekday >= 4:
-                week_ending_date = obj.created_at.strftime('%d-%m-%Y')
-                week_ending_index = week_starting_index
-                week_start_ref = week_ending_index
+            # weekday = obj.created_at.weekday()
+            # if index == 2 or weekday == 0:
+            #     week_starting_date = obj.created_at.strftime('%d-%m-%Y')
+            #     # week_starting_index = start_ref + 1
+            #     week_starting_index = index
+            #     # week_start_ref = week_starting_index
+            # if weekday >= 4:
+            #     week_ending_date = obj.created_at.strftime('%d-%m-%Y')
+            #     week_ending_index = week_starting_index
+            #     week_start_ref = week_ending_index
 
             for index_update, update in enumerate(obj.updates_json):
                 sheet.append([obj.created_at.strftime('%d-%m-%Y'), update[0], update[1], obj.hours, ''])
