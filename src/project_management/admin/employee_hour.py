@@ -507,7 +507,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # messages.success(request, f"Exported successfully.")
 
 
-    @admin.action(description="Get selected update(s) in .txt file")
+    @admin.action(description="Export today's update(s) in .txt file")
     def export_updated_in_txt(modeladmin, request, queryset):
         project_name = queryset[0].project.title.replace(' ', '_')
         date = queryset.first().created_at.strftime('%d-%m-%Y')
@@ -517,7 +517,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         ).values('date').annotate(count=Count('id'))
 
         if date_count.count() > 1:
-            return HttpResponseBadRequest("Dates are not the same")
+            return messages.error(request, "Only one day's update can be exported here.")
+            # return HttpResponseBadRequest("Dates are not the same")
 
         all_updates = (f"Today's Update\n" +
                        "-----------------\n" +
