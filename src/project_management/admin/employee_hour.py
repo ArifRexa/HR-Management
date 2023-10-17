@@ -2,6 +2,10 @@ import datetime
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+from django.http import HttpResponseBadRequest
+
 from django.contrib import admin, messages
 from django.db.models import Q, Sum
 from django.http import HttpResponse
@@ -184,7 +188,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "created_at",
         "note",
     ]
-    actions = ["update_status_approve", "update_status_pending", "export_selected"]
+    actions = ["update_status_approve", "update_status_pending", "export_updated_in_txt", "export_selected"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
@@ -403,7 +407,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # ic(request)
         # ic(start_date)
         # ic(end_date)
-        messages.success(request, "Exported successfully.")
+        # messages.success(request, "Exported successfully.")
         response = HttpResponse(content_type='application/ms-excel')
         response['Content-Disposition'] = f'attachment; filename="{project_name}__{date_range}__exported.xlsx"'
 
@@ -506,7 +510,37 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.action(description="Get selected update in .txt file")
     def export_updated_in_txt(modeladmin, request, queryset):
         project_name = queryset[0].project.title.replace(' ', '_')
+        date = queryset.first().created_at.strftime('%d-%m-%Y')
+        # Annotate the queryset to count the distinct dates
+        date_count = queryset.annotate(
+            date=TruncDate('created_at')
+        ).values('date').annotate(count=Count('id'))
 
+        if date_count.count() > 1:
+            return HttpResponseBadRequest("Dates are not the same")
+
+        all_updates = (f"Today's Update\n" +
+                       "-----------------\n" +
+                       f"{date}\n\n")
+
+
+        for index, obj in enumerate(queryset):
+            if obj.updates_json is None:
+                continue
+            updates = ''
+            for index, update in enumerate(obj.updates_json):
+                updates += f'{index + 1}. {update[0]}\n'
+
+            tmp_add = (f"{obj.employee.full_name}\n\n" +
+                       f"{updates}\n" +
+                       "-------------------------------------------------------------\n\n")
+
+            all_updates += tmp_add
+
+        response = HttpResponse(all_updates, content_type='text/plain')
+        response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
+
+        return response
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
