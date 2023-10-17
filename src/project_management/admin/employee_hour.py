@@ -507,7 +507,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # messages.success(request, f"Exported successfully.")
 
 
-    @admin.action(description="Get selected update in .txt file")
+    @admin.action(description="Get selected update(s) in .txt file")
     def export_updated_in_txt(modeladmin, request, queryset):
         project_name = queryset[0].project.title.replace(' ', '_')
         date = queryset.first().created_at.strftime('%d-%m-%Y')
