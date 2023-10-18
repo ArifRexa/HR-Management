@@ -429,7 +429,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         total_hours = 0
         for index, obj in enumerate(queryset, start=2):
             ic('outside if, ',obj.updates_json)
-            if obj.updates_json is None or obj.updates_json.__len__() == 0 :
+            if obj.updates_json is None or obj.updates_json.__len__() == 0 or obj.status != 'approved':
                 ic(obj.updates_json)
                 continue
             total_hours += obj.hours
