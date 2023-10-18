@@ -404,10 +404,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         start_date = request.GET.get('created_at__date__gte', 'not_selected')
         end_date = request.GET.get('created_at__date__lte', 'not_selected')
         date_range = f'{start_date}_to_{end_date}' if start_date != 'not_selected' and end_date != 'not_selected' else 'selective'
-        # ic(request)
-        # ic(start_date)
-        # ic(end_date)
-        # messages.success(request, "Exported successfully.")
         response = HttpResponse(content_type='application/ms-excel')
         response['Content-Disposition'] = f'attachment; filename="{project_name}__{date_range}__exported.xlsx"'
 
@@ -432,7 +428,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         start_ref = 1
         total_hours = 0
         for index, obj in enumerate(queryset, start=2):
-            if obj.updates_json is None:
+            ic('outside if, ',obj.updates_json)
+            if obj.updates_json is None or obj.updates_json.__len__() == 0 :
+                ic(obj.updates_json)
                 continue
             total_hours += obj.hours
             for index_update, update in enumerate(obj.updates_json):
@@ -469,20 +467,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             for index, cell in enumerate(cell):
                 cell.alignment = Alignment(horizontal='center',
                                            vertical='center')
-                # if index == 0:
-                #     cell.alignment = Alignment(vertical='top')
+
                 if index == 1:
                     cell.alignment = Alignment(horizontal='left',
                                                vertical='top')
-                # if index == 2:
-                #     cell.alignment = Alignment(wrap_text=True, indent=0)
-                #
-                # if index == 3:
-                #     cell.alignment = Alignment(horizontal='center',
-                #                                vertical='center')
-                # if index == 4:
-                #     cell.alignment = Alignment(horizontal='center',
-                #                                vertical='center')
 
         for cell in sheet.iter_rows(min_row=sheet.max_row ):
             ic(cell)
@@ -504,7 +492,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         wb.save(response)
 
         return response
-        # messages.success(request, f"Exported successfully.")
+
 
 
     @admin.action(description="Export today's update(s) in .txt file")
