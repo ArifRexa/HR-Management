@@ -145,7 +145,7 @@ def no_daily_update():
 
     daily_update_eligibility = (
         Employee.objects.filter(active=True)
-        .exclude(manager=True)
+        .exclude(manager=True, lead=True)
         .exclude(project_eligibility=False)
     )
 
