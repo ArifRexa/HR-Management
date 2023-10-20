@@ -188,7 +188,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "created_at",
         "note",
     ]
-    actions = ["update_status_approve", "update_status_pending", "export_updated_in_txt", "export_selected"]
+    actions = ["update_status_approve", "update_status_pending", "export_updated_in_txt", "export_selected", "export_selected_merged"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
@@ -493,6 +493,132 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         return response
 
+    @admin.action(description="Export selected update(s) in .xlsx file [Merged Team]")
+    def export_selected_merged(modeladmin, request, queryset):
+        merged_set = []
+        for obj in queryset:
+            if merged_set.__len__() > 0:
+                ic(merged_set[-1].get('created_at').date() == obj.created_at.date(), merged_set[-1].get('created_at').date(), obj.created_at.date())
+                if merged_set[-1].get('created_at').date() == obj.created_at.date():
+                    ic('inside merge')
+                    tmp_obj = {
+                        'created_at':obj.created_at,
+                        'updates_json':merged_set[-1].get('updates_json') + obj.updates_json,
+                        'hours':obj.hours + merged_set[-1].get('hours'),
+                        'status':obj.status
+                    }
+                    merged_set[-1] = tmp_obj
+                else:
+                    tmp_obj = {
+                        'created_at': obj.created_at,
+                        'updates_json': obj.updates_json,
+                        'hours': obj.hours,
+                        'status': obj.status
+                    }
+                    merged_set.append(tmp_obj)
+            else:
+                tmp_obj = {
+                    'created_at': obj.created_at,
+                    'updates_json': obj.updates_json,
+                    'hours': obj.hours,
+                    'status': obj.status
+                }
+                merged_set.append(tmp_obj)
+        ic(merged_set)
+
+        project_name = queryset[0].project.title.replace(' ', '_')
+        start_date = request.GET.get('created_at__date__gte', 'not_selected')
+        end_date = request.GET.get('created_at__date__lte', 'not_selected')
+        date_range = f'{start_date}_to_{end_date}' if start_date != 'not_selected' and end_date != 'not_selected' else 'selective'
+        response = HttpResponse(content_type='application/ms-excel')
+        response['Content-Disposition'] = f'attachment; filename="{project_name}__{date_range}__exported.xlsx"'
+
+        # Create a new workbook and add a worksheet
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        # sheet.column_dimensions['A'].width = 13
+        sheet.column_dimensions['A'].width = 13
+        sheet.column_dimensions['B'].width = 98
+        sheet.column_dimensions['C'].width = 13
+        sheet.column_dimensions['D'].width = 13
+        sheet.column_dimensions['E'].width = 20
+
+        # Customize this section to format and populate the worksheet with your data
+        # For example:
+        # sheet.append(['  Week  ', '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
+        sheet.append(['  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  '])
+
+        week_starting_date: str
+        week_starting_index: int
+
+        start_ref = 1
+        total_hours = 0
+        for index, obj in enumerate(merged_set, start=2):
+            # ic('outside if, ', obj.get('updates_json'))
+            if obj.get('updates_json') is None or obj.get('updates_json').__len__() == 0 or obj.get('status') != 'approved':
+                # ic(obj.get('updates_json'))
+                continue
+            total_hours += obj.get('hours')
+            for index_update, update in enumerate(obj.get('updates_json')):
+                sheet.append([obj.get('created_at').strftime('%d-%m-%Y'), update[0], update[1], obj.get('hours')])
+
+
+
+            start_merge = 1 + start_ref
+            end_merge = start_merge + index_update
+            start_ref = end_merge
+            date_cells = f'A{start_merge}:A{end_merge}'
+            day_hour_cells = f'D{start_merge}:D{end_merge}'
+            sheet.merge_cells(date_cells)
+            sheet.merge_cells(day_hour_cells)
+
+            # ic(index, week_cells, date_cells, day_hour_cells)
+
+        sheet.append(['', '', 'Total: ', f'{total_hours} Hours'])
+
+        # Make styles
+        for cell in sheet.iter_rows(min_row=1, max_row=1):
+            for index, cell in enumerate(cell):
+                cell.font = Font(name='Arial',
+                                 size=12,
+                                 bold=True,
+                                 color='ffffff')
+                cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
+                cell.alignment = Alignment(horizontal='center',
+                                           vertical='center',
+                                           # text_rotation=0,
+                                           # wrap_text=False,
+                                           # shrink_to_fit=True,
+                                           indent=0)
+
+        for cell in sheet.iter_rows(min_row=2):
+            for index, cell in enumerate(cell):
+                cell.alignment = Alignment(horizontal='center',
+                                           vertical='center')
+
+                if index == 1:
+                    cell.alignment = Alignment(horizontal='left',
+                                               vertical='top')
+
+        for cell in sheet.iter_rows(min_row=sheet.max_row):
+            # ic(cell)
+            for index, cell in enumerate(cell):
+                # ic(index, cell)
+                if index == 3 or index == 2:
+                    # ic('if ', index, cell)
+                    cell.font = Font(name='Arial',
+                                     size=12,
+                                     bold=True,
+                                     color='ffffff')
+                    cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
+                    cell.alignment = Alignment(horizontal='center',
+                                               vertical='center',
+                                               indent=0)
+
+        # Save the workbook to the response
+        wb.save(response)
+
+        return response
 
 
     @admin.action(description="Export today's update(s) in .txt file")
@@ -561,7 +687,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             obj.hours = total_hour
         else:
             total_hour = request.POST.get('hours')
-            ic(total_hour)
+            # ic(total_hour)
 
         super().save_model(request, obj, form, change)
 
