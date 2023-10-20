@@ -276,21 +276,23 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
  
 
     def get_readonly_fields(self, request, obj=None):
-        group_name = 'Job Board Evaluation URL Editable'
-        if not request.user.is_superuser and not request.user.groups.filter(name=group_name).exists():
+        # group_name = 'Job Board Evaluation URL Editable'
+        # ic(request.user.username)
+        # ic(request.user.has_perm('job_board.access_candidate_evaluation_url'))
+        # ic(request.user.user_permissions.all())
+        if not request.user.is_superuser and not request.user.has_perm('job_board.access_candidate_evaluation_url'):
             fields = [field.name for field in obj.__class__._meta.fields]
             fields.remove('score', )
-            ic(request.user.groups.all())
+            ic('not',fields)
+            return fields
+
+        if not request.user.is_superuser and request.user.has_perm('job_board.access_candidate_evaluation_url'):
+            fields = [field.name for field in obj.__class__._meta.fields]
+            fields.remove('score', )
+            fields.remove('evaluation_url', )
             ic(fields)
             return fields
 
-        if request.user.groups.filter(name=group_name).exists():
-            fields = [field.name for field in obj.__class__._meta.fields]
-            fields.remove('score',  )
-            fields.remove('evaluation_url' )
-            return fields
-
-        # if request.user.
         return ['step', 'candidate_feedback']
 
     @admin.display()
