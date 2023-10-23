@@ -1,0 +1,19 @@
+{% extends 'mail/basic_layout.html' %}
+
+{% block content %}
+
+    <p>
+        Dear <b>{{ employee.full_name }}</b>
+    </p>
+
+    <p>
+        Ammount <b>{{ fund.amount }}</b> has been added on category of {{ fund.fund_category.title }}.
+    </p>
+
+    <p>
+        Sincerely, <br>
+        Md Shahinur Rahman <br>
+        Managing Director <br>
+        Mediusware Ltd.
+    </p>
+{% endblock %}

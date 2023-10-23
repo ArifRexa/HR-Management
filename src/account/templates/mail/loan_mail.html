@@ -1,0 +1,19 @@
+{% extends 'mail/basic_layout.html' %}
+
+{% block content %}
+
+    <p>
+        Dear <b>{{ loan.employee.full_name }}</b>
+    </p>
+
+    <p>
+        You have taken <b>{{ loan.loan_amount }}</b> taka as loan with EMI of {{ loan.emi }}
+    </p>
+
+    <p>
+        Sincerely, <br>
+        Md Shahinur Rahman <br>
+        Managing Director <br>
+        Mediusware Ltd.
+    </p>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.template.loader import get_template
+from django.core.mail import EmailMultiAlternatives
 
 from account.models import Loan, LoanPayment, LoanGuarantor, LoanAttachment
 from config.utils.pdf import PDF
@@ -52,6 +53,20 @@ class LoadAdmin(admin.ModelAdmin):
     
     def has_module_permission(self, request):
         return False
+
+    def save_model(self, request, obj, form, change) -> None:
+        html_template = get_template('mail/loan_mail.html')
+        html_content = html_template.render({
+            'loan': obj
+        })
+
+        email = EmailMultiAlternatives(subject=f'Loan Approved  ')
+        email.attach_alternative(html_content, 'text/html')
+        email.to = [obj.employee.email]
+        email.from_email = 'admin@mediusware.com'
+        email.send()
+
+        return super().save_model(request, obj, form, change)
 
 
 @admin.register(LoanPayment)
