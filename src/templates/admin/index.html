@@ -101,28 +101,28 @@
 {#{% block bodyclass %}{{ block.super }} dashboard{% endblock %}#}
 
 {% block content_title %}
-{#{% if not current_month_feedback_done %}#}
-{#<div id="feedback__marquee">#}
-{#    <span id="feedback__marquee__inner">#}
-{#        <span>Please provide last months feedback#}
-{#            <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline"#}
-{#                id="feedback__marquee__link">HERE</a>.#}
-{#            So I can be vanished &#128578;</span>#}
-{#    </span>#}
-{#</div>#}
-{#{% endif %}#}
+{% if not current_month_feedback_done %}
+<div id="feedback__marquee">
+    <span id="feedback__marquee__inner">
+        <span>Please provide last months feedback
+            <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline"
+                id="feedback__marquee__link">HERE</a>.
+            So I can be vanished &#128578;</span>
+    </span>
+</div>
+{% endif %}
 
 
 
 <div class="row mb-4">
-    <div class="col-lg-5 d-flex justify-content-center justify-content-lg-start align-items-center">
+    <div class="col-md-5 d-flex justify-content-center justify-content-md-start align-items-center">
         {% if title %}
-        <h2 class="title-h1">{{ title }}</h2>
+        <h2 class="title-h1 mb-0">{{ title }}</h2>
         {% endif %}
     </div>
-    <div class="col-sm-8 mx-auto col-md-12 col-lg-7">
+    <div class="col-md-7">
         {% if not is_management %}
-        <ul class="list-group list-group-horizontal-md float-lg-end justify-content-center">
+        <ul class="list-group list-group-horizontal-md float-end">
             {% comment %} <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li> {% endcomment %}
             <li class="list-group-item"> {% include 'admin/form/employee_need_help_form.html' %}</li>
@@ -133,57 +133,57 @@
     </div>
 </div>
 
-{#<script>#}
-{#    const feedback__marquee = document.getElementById("feedback__marquee");#}
-{#    const feedback__marquee_inner = document.getElementById("feedback__marquee__inner");#}
-{#    const feedback__marquee__link = document.getElementById("feedback__marquee__link");#}
-{##}
-{#    function animate(element) {#}
-{#        let elementWidth = element.offsetWidth;#}
-{#        let parentWidth = element.parentElement.offsetWidth;#}
-{#        let flag = parentWidth;#}
-{##}
-{#        setInterval(() => {#}
-{#            element.style.marginLeft = --flag + "px";#}
-{##}
-{#            if (elementWidth == -flag) {#}
-{#                flag = parentWidth;#}
-{#            }#}
-{#        }, 10);#}
-{#    }#}
-{#    animate(feedback__marquee__inner);#}
-{##}
-{#    let red, green, blue;#}
-{#    let c;#}
-{##}
-{#    setInterval(() => {#}
-{#        red = Math.floor(Math.random() * 255);#}
-{#        green = Math.floor(Math.random() * 255);#}
-{#        blue = Math.floor(Math.random() * 255);#}
-{##}
-{#        c = red * 0.299 + green * 0.587 + blue * 0.114;#}
-{##}
-{#        feedback__marquee.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, 1)`;#}
-{##}
-{#        if (c > 150) {#}
-{#            feedback__marquee__inner.style.color = '#000';#}
-{#            feedback__marquee__link.style.color = '#000';#}
-{#        }#}
-{#        else {#}
-{#            feedback__marquee__inner.style.color = '#fff';#}
-{#            feedback__marquee__link.style.color = '#fff';#}
-{#        }#}
-{#    }, 25);#}
-{##}
-{##}
-{#</script>#}
+<script>
+    const feedback__marquee = document.getElementById("feedback__marquee");
+    const feedback__marquee_inner = document.getElementById("feedback__marquee__inner");
+    const feedback__marquee__link = document.getElementById("feedback__marquee__link");
+
+    function animate(element) {
+        let elementWidth = element.offsetWidth;
+        let parentWidth = element.parentElement.offsetWidth;
+        let flag = parentWidth;
+
+        setInterval(() => {
+            element.style.marginLeft = --flag + "px";
+
+            if (elementWidth == -flag) {
+                flag = parentWidth;
+            }
+        }, 10);
+    }
+    animate(feedback__marquee__inner);
+
+    let red, green, blue;
+    let c;
+
+    setInterval(() => {
+        red = Math.floor(Math.random() * 255);
+        green = Math.floor(Math.random() * 255);
+        blue = Math.floor(Math.random() * 255);
+
+        c = red * 0.299 + green * 0.587 + blue * 0.114;
+
+        feedback__marquee.style.backgroundColor = `rgba(${red}, ${green}, ${blue}, 1)`;
+
+        if (c > 150) {
+            feedback__marquee__inner.style.color = '#000';
+            feedback__marquee__link.style.color = '#000';
+        }
+        else {
+            feedback__marquee__inner.style.color = '#fff';
+            feedback__marquee__link.style.color = '#fff';
+        }
+    }, 25);
+
+
+</script>
 
 {% endblock %}
 
 {% block nav-sidebar %}{% endblock %}
 
 {% block content %}
-<div class="">
+<div class="container-fluid">
 
     <div class="row">
         <div class="col-md-4">
@@ -245,7 +245,7 @@
         </div>
         <div class="col-md-8">
             <div class="row">
-                <div class="col-md-6 col-lg-4 mb-4">
+                <div class="col-md-6 mb-4">
                     <ul class="list-group rounded-0">
                         <li class="list-group-item list-group-item-action active">
                             <span class=" text-uppercase">Employee Status</span>
@@ -291,7 +291,7 @@
 
                 </div>
 
-                <div class="col-md-6 col-lg-8 mb-4">
+                <div class="col-md-6 mb-4">
                     <ul class="list-group rounded-0">
                         <li class="list-group-item active">
                             <span class="text-uppercase">Employee's Projects</span>

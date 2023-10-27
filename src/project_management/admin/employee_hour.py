@@ -644,7 +644,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 continue
             updates = ''
             for index, update in enumerate(obj.updates_json):
-                updates += f'{update[0]} - {update[1]}H.\n'
+                updates += f'{index + 1}. {update[0]} - {update[1]}H.\n'
 
             tmp_add = (f"{obj.employee.full_name}\n\n" +
                        f"{updates}\n" +
