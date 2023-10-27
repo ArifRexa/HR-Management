@@ -24,6 +24,8 @@ from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, C
     CandidateAssessmentReview
 
 
+from icecream import ic
+
 class CandidateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), strip=False, required=False)
 
@@ -274,10 +276,17 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
  
 
     def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm('job_board.access_candidate_evaluation_url'):
             fields = [field.name for field in obj.__class__._meta.fields]
             fields.remove('score', )
             return fields
+
+        if not request.user.is_superuser and request.user.has_perm('job_board.access_candidate_evaluation_url'):
+            fields = [field.name for field in obj.__class__._meta.fields]
+            fields.remove('score', )
+            fields.remove('evaluation_url', )
+            return fields
+
         return ['step', 'candidate_feedback']
 
     @admin.display()
