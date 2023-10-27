@@ -60,7 +60,6 @@ INSTALLED_APPS = [
     "asset_management",
     "website",
     "provident_fund",
-    "client_management"
     # Custom App
     # 'silk',
 ]

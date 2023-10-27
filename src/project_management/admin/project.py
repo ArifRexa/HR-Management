@@ -36,7 +36,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client', 'active', 'show_in_website', 'identifier')
+    list_display = ('title', 'client', 'active', 'show_in_website')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
