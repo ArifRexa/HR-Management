@@ -18,6 +18,7 @@ from employee.models import Employee
 from django.utils.html import format_html
 from icecream import ic
 
+
 class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
     name = models.CharField(max_length=200)
@@ -61,7 +62,8 @@ class Project(TimeStampMixin, AuthorMixin):
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag)
     identifier = models.CharField(
-        max_length=50, null=True, blank=True
+        max_length=50,
+        default=uuid4
     )
     on_boarded_by = models.ForeignKey(
         Employee,
