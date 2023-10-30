@@ -117,6 +117,7 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("", lambda request: redirect("/admin")),
+    path("clients/", include('client_management.urls'))
     # path('ghorardim/', include('silk.urls', namespace='silk')),
 ]
 
