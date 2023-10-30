@@ -1,7 +1,4 @@
 import datetime
-import random
-import string
-import uuid
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
@@ -20,20 +17,6 @@ from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
 from icecream import ic
-
-
-def create_project_identifier():
-    # Generate a random UUID
-    return uuid.uuid4()
-
-    # Generate a UUID based on a name and namespace using MD5 or SHA-1
-    # namespace_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, "example.com")
-    # print("Namespace UUID:", namespace_uuid)
-
-def generate_random_string():
-    length = 20
-    characters = string.ascii_lowercase + string.digits
-    return ''.join(random.choice(characters) for _ in range(length))
 
 class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
@@ -68,19 +51,13 @@ class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     slug = models.SlugField(null=True, blank=True, unique=True)
     description = models.TextField()
-    client = models.ForeignKey(
-        Client, on_delete=models.SET_NULL, null=True, blank=True
-    )
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
     active = models.BooleanField(default=True)
     in_active_at = models.DateField(null=True, blank=True)
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag)
-    identifier = models.CharField(
-        # max_length=50, default=generate_random_string
-        max_length=50, null=True, blank=True
-    )
     on_boarded_by = models.ForeignKey(
         Employee,
         on_delete=models.SET_NULL,
@@ -337,7 +314,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         # out = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
         # ic(out)
         if self.updates_json is not None:
-            return '\n'.join([f"{i[0]} - {i[1]}H. " for index, i in enumerate(self.updates_json)])
+            return '\n'.join([f"{index+1}. {i[0]} - {i[1]}H. " for index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
         # try:
