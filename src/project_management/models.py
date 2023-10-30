@@ -51,13 +51,18 @@ class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     slug = models.SlugField(null=True, blank=True, unique=True)
     description = models.TextField()
-    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
+    client = models.ForeignKey(
+        Client, on_delete=models.SET_NULL, null=True, blank=True
+    )
     active = models.BooleanField(default=True)
     in_active_at = models.DateField(null=True, blank=True)
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag)
+    identifier = models.CharField(
+        max_length=50, null=True, blank=True
+    )
     on_boarded_by = models.ForeignKey(
         Employee,
         on_delete=models.SET_NULL,
