@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "provident_fund",
     # Custom App
     # 'silk',
+    "client_management"
 ]
 
 MIDDLEWARE = [
