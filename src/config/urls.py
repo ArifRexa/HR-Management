@@ -118,6 +118,7 @@ urlpatterns = [
     ),
     path("", lambda request: redirect("/admin")),
     # path('ghorardim/', include('silk.urls', namespace='silk')),
+    path("clients/", include('client_management.urls'))
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
