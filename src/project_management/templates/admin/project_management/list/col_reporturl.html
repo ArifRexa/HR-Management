@@ -1,0 +1,8 @@
+<div class="popover-wrapper">
+    <div class="popover-title">
+        <a href="{% url 'project-update-for-client' project_hash=identifier|urlencode %}" target="_blank">
+            {{ request.META.HTTPS|default:"http:/" }}{{ request.META.HTTP_HOST }}{% url 'project-update-for-client' project_hash=identifier|urlencode %}
+        </a>
+    </div>
+</div>
+
