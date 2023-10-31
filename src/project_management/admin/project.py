@@ -52,21 +52,6 @@ class ProjectAdmin(admin.ModelAdmin):
             return ['on_boarded_by']
         return []
 
-    # @admin.display(description='Report URL')
-    # def get_report_url(self, obj):
-    #     # ic(self.opts.__dict__)
-    #     html_template = get_template(
-    #         "admin/project_management/list/col_reporturl.html"
-    #     )
-    #     html_content = html_template.render(
-    #         {
-    #             'identifier': obj.identifier,
-    #             # 'request': request,
-    #         }
-    #     )
-    #
-    #     return format_html(html_content)
-
 
     def get_report_url(self, obj, request):
         html_template = get_template(
