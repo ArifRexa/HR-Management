@@ -22,7 +22,7 @@ def get_project_updates(request, project_hash):
     daily_updates = DailyProjectUpdate.objects.filter(project=project_obj)
     if from_date is not None and to_date is not None:
         daily_updates = daily_updates.filter(created_at__date__lte=to_date, created_at__date__gte=from_date)
-    distinct_dates = daily_updates.values('created_at__date').distinct()
+    distinct_dates = daily_updates.values('created_at__date').distinct()[::-1]
 
 
     daily_update_list = []
