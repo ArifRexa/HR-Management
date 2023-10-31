@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Project Details</title>
+    <title>{{ project.title }} | Details</title>
 
 {#    <style>#}
 {#        #project-details {#}
@@ -49,6 +49,8 @@
 <body>
 
 <h2>{{ project.title }}</h2>
+
+<h3>Total Hours: {{ total_hour }}</h3>
 <br>
 <form method="get" >
   <label for="From">From:</label>
@@ -84,34 +86,23 @@
 
 </table>
 
+<div class="pagination">
+    <span class="step-links">
+        {% if daily_updates.has_previous %}
+            <a href="?page=1">&laquo; first</a>
+            <a href="?page={{ daily_updates.previous_page_number }}">previous</a>
+        {% endif %}
+
+        <span class="current">
+            Page {{ daily_updates.number }} of {{ daily_updates.paginator.num_pages }}.
+        </span>
+
+        {% if daily_updates.has_next %}
+            <a href="?page={{ daily_updates.next_page_number }}">next</a>
+            <a href="?page={{ daily_updates.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
 </body>
 </html>
-
-{#<td>#}
-{#    <table>#}
-{#        {% for update in daily_update %}#}
-{#            <tr>#}
-{#                <td>{{ update.0 }}</td>#}
-{#                <td>{{ update.1 }}</td>#}
-{#            </tr>#}
-{#        {% endfor %}#}
-{#    </table>#}
-{#</td>#}
-
-
-{# v2 #}
-{#{% for date, daily_update in daily_updates.items %}#}
-{#    <tr>#}
-{#        <td class="col1" rowspan="{{ daily_update | length | add:1 }}">{{ date }}</td>#}
-{#        <td class="col4" rowspan="{{ daily_update | length | add:1 }}">time</td>#}
-{#            <td>#}
-{#            {% for update in daily_update %}#}
-{#                <tr>#}
-{#                    <td class="col2">{{ update.0 }}</td>#}
-{#                    <td class="col3">{{ update.1 }}</td>#}
-{#                </tr>#}
-{#            {% endfor %}#}
-{#            </td>#}
-{#            <td class="col4" rowspan="{{ daily_update | length | add:1 }}">time</td>#}
-{#    </tr>#}
-{#{% endfor %}#}

@@ -6,7 +6,7 @@ from django.db.models import Sum, F, ExpressionWrapper, FloatField
 from django.db.models import Count
 from django.db.models import Func
 from django.db.models import Value, JSONField
-
+from django.core.paginator import Paginator
 
 class TruncDate(Func):
     function = 'DATE'
@@ -15,6 +15,7 @@ class TruncDate(Func):
 
 # Create your views here.
 def get_project_updates(request, project_hash):
+
     print(project_hash)
     from_date, to_date = request.GET.get('from-date'), request.GET.get('to-date')
     ic(from_date, to_date)
@@ -26,6 +27,7 @@ def get_project_updates(request, project_hash):
 
 
     daily_update_list = []
+    total_hour = 0
     for u_date in distinct_dates:
         obj = {'created_at':u_date.get('created_at__date').strftime("%d-%m-%Y")}
         # ic(u_date, u_date.get('created_at__date'))
@@ -38,14 +40,18 @@ def get_project_updates(request, project_hash):
                 time += update.hours
         obj['update'] = updates
         obj['total_hour'] = time
-
+        total_hour += time
         daily_update_list.append(obj)
 
     # ic(daily_update_list)
 
+    paginator = Paginator(daily_update_list, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+
     out_dict = {
+        'total_hour':total_hour,
         'project': project_obj,
-        'daily_updates': daily_update_list,
+        'daily_updates': page_obj,
     }
 
     return render(request, 'client_management/project_details.html', out_dict)
