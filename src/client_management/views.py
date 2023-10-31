@@ -1,21 +1,13 @@
-from django.shortcuts import render
 from icecream import ic
 
-from project_management.models import Project, DailyProjectUpdate
-from django.db.models import Sum, F, ExpressionWrapper, FloatField
-from django.db.models import Count
-from django.db.models import Func
-from django.db.models import Value, JSONField
 from django.core.paginator import Paginator
+from django.shortcuts import render
 
-class TruncDate(Func):
-    function = 'DATE'
-    template = '%(function)s(%(expressions)s)'
+from project_management.models import Project, DailyProjectUpdate
 
 
 # Create your views here.
 def get_project_updates(request, project_hash):
-
     print(project_hash)
     from_date, to_date = request.GET.get('from-date'), request.GET.get('to-date')
     ic(from_date, to_date)
