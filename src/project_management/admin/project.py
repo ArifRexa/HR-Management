@@ -1,4 +1,7 @@
 from django.contrib import admin
+from django.template.loader import get_template
+from django.utils.html import format_html
+from icecream import ic
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
     ProjectNeed, Tag, ProjectDocument
@@ -36,7 +39,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client', 'active', 'show_in_website', 'identifier')
+    list_display = ('title', 'client', 'active', 'show_in_website', 'get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
@@ -48,6 +51,46 @@ class ProjectAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return ['on_boarded_by']
         return []
+
+    # @admin.display(description='Report URL')
+    # def get_report_url(self, obj):
+    #     # ic(self.opts.__dict__)
+    #     html_template = get_template(
+    #         "admin/project_management/list/col_reporturl.html"
+    #     )
+    #     html_content = html_template.render(
+    #         {
+    #             'identifier': obj.identifier,
+    #             # 'request': request,
+    #         }
+    #     )
+    #
+    #     return format_html(html_content)
+
+
+    def get_report_url(self, obj, request):
+        html_template = get_template(
+            "admin/project_management/list/col_reporturl.html"
+        )
+        html_content = html_template.render(
+            {
+                'identifier': obj.identifier,
+                'request': request,  # Pass the request to the template context
+            }
+        )
+
+        return format_html(html_content)
+
+    get_report_url.short_description = 'Report URL'
+
+    def get_list_display(self, request):
+        # Override get_list_display to pass the request to the method
+        list_display = super().get_list_display(request)
+        if 'get_report_url' in list_display:
+            list_display = list(list_display)  # Convert to a list if it's a tuple
+            idx = list_display.index('get_report_url')
+            list_display[idx] = lambda obj: self.get_report_url(obj, request)
+        return list_display
 
 
 @admin.register(ProjectNeed)
