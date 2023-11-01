@@ -20,6 +20,9 @@ let dynamicInputsContainer
 let updates_json_input_field
 let count = 1
 
+// icons
+const git_icon = `<svg xmlns="http://www.w3.org/2000/svg" height="1em" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M80 104a24 24 0 1 0 0-48 24 24 0 1 0 0 48zm80-24c0 32.8-19.7 61-48 73.3v87.8c18.8-10.9 40.7-17.1 64-17.1h96c35.3 0 64-28.7 64-64v-6.7C307.7 141 288 112.8 288 80c0-44.2 35.8-80 80-80s80 35.8 80 80c0 32.8-19.7 61-48 73.3V160c0 70.7-57.3 128-128 128H176c-35.3 0-64 28.7-64 64v6.7c28.3 12.3 48 40.5 48 73.3c0 44.2-35.8 80-80 80s-80-35.8-80-80c0-32.8 19.7-61 48-73.3V352 153.3C19.7 141 0 112.8 0 80C0 35.8 35.8 0 80 0s80 35.8 80 80zm232 0a24 24 0 1 0 -48 0 24 24 0 1 0 48 0zM80 456a24 24 0 1 0 0-48 24 24 0 1 0 0 48z"/></svg>`
+
 document.addEventListener("DOMContentLoaded", function () {
     let formType = window.location.pathname.split('/')
     formType = formType[formType.length - 2]
@@ -28,13 +31,15 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementsByClassName('form-row field-updates_json')[0].getElementsByTagName('label')[0].innerText = 'Updates:'
 
     // document.getElementById('id_hours').readonly = true
+    // employee view
     if (document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0] != null){
         console.log('cannot edit updates')
         let updates = document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerText
         updates = JSON.parse(updates)
         let html_updates = "<ol name='updates_json'>"
         for (i=1; i<=updates.length; i++){
-            html_updates += `<li> ${updates[i-1][0]} - ${updates[i-1][1]}H. </li>`
+            let git_link = updates[i-1][2] ? ` - <a href="${updates[i-1][2]}">${git_icon}</a>` : ""
+            html_updates += `<li> ${updates[i-1][0]} - ${updates[i-1][1]}H  ${git_link} </li>`
         }
         html_updates += "</ol>"
         document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerHTML = html_updates
@@ -72,6 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
         // })
 
     }
+    // admin view
     else {
 
         document.getElementById('id_hours') && (document.getElementById('id_hours').style.display = 'None')
@@ -136,7 +142,16 @@ function add_update_element(existing_values=null){
     update_text.id = `input_update-${count}`;
     update_text.className = "cs-form-control-text"
     update_text.placeholder = "Update";
-    update_text.required = true;
+    update_text.required = false;
+
+    const update_github_link = document.createElement("textarea");
+    update_github_link.type = "text";
+    update_github_link.name = "input_github_link";
+    update_github_link.id = `input_github_link-${count}`;
+    update_github_link.className = "cs-form-control-text fa-solid fa-code-branch"
+
+    update_github_link.placeholder = "Commit Link";
+    update_github_link.required = true;
 
     const update_hour = document.createElement("input");
     update_hour.type = "number";
@@ -158,10 +173,12 @@ function add_update_element(existing_values=null){
     if (existing_values != null){
         update_text.value = existing_values[0]
         update_hour.value = existing_values[1]
+        update_github_link.value = existing_values[2] ? existing_values[2] : ""
     }
 
     // Append new input fields to the container
     cs_form_group_div.appendChild(update_text)
+    cs_form_group_div.appendChild(update_github_link)
     cs_form_group_div.appendChild(update_hour)
     cs_form_group_div.appendChild(remove_update_btn)
 
@@ -179,6 +196,9 @@ function add_update_element(existing_values=null){
     update_text.addEventListener('keyup', function (event) {
         calculate_hours()
     })
+    update_github_link.addEventListener('keyup', function (event){
+        calculate_hours()
+    })
 
     remove_update_btn.addEventListener('click', function (){
         let no_id = remove_update_btn.id.split('-')
@@ -192,13 +212,14 @@ function add_update_element(existing_values=null){
 
 function calculate_hours(){
     all_updates = document.getElementsByName('input_update')
+    all_github_links = document.getElementsByName('input_github_link')
     all_times = document.getElementsByName('input_time')
     // let json__ = {}
     let updates = []
     for (i=0; i<all_updates.length; i++){
         // console.log(all_updates[i].value.toString())
         // console.log(all_times[i].value.toString())
-        let individual_update = [all_updates[i].value, all_times[i].value]
+        let individual_update = [all_updates[i].value, all_times[i].value, all_github_links[i].value]
         updates.push(individual_update)
     }
     if(updates_json_input_field != null){
