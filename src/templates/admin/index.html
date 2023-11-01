@@ -101,16 +101,16 @@
 {#{% block bodyclass %}{{ block.super }} dashboard{% endblock %}#}
 
 {% block content_title %}
-{% if not current_month_feedback_done %}
-<div id="feedback__marquee">
-    <span id="feedback__marquee__inner">
-        <span>Please provide last months feedback
-            <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline"
-                id="feedback__marquee__link">HERE</a>.
-            So I can be vanished &#128578;</span>
-    </span>
-</div>
-{% endif %}
+{#{% if not current_month_feedback_done %}#}
+{#<div id="feedback__marquee">#}
+{#    <span id="feedback__marquee__inner">#}
+{#        <span>Please provide last months feedback#}
+{#            <a href="{% url 'admin:employee_feedback' %}" class="alert-link text-underline"#}
+{#                id="feedback__marquee__link">HERE</a>.#}
+{#            So I can be vanished &#128578;</span>#}
+{#    </span>#}
+{#</div>#}
+{#{% endif %}#}
 
 
 

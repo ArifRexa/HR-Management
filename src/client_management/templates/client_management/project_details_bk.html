@@ -71,6 +71,7 @@
     </tr>
 
     {% for update in daily_updates %}
+
         <tr>
             <td rowspan="{{ update.update | length | add:1 }}">{{ update.created_at }}</td>
             <td rowspan="{{ update.update | length | add:1 }}">{{ update.total_hour }}</td>

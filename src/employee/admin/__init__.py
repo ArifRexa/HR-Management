@@ -5,7 +5,7 @@ from .resignation import ResignationAdmin
 from .user import UserAdmin
 from .skill import SkillAdmin, LearningAdmin
 from .employee_activity import *
-from .employee_feedback import EmployeeFeedbackAdmin
+# from .employee_feedback import EmployeeFeedbackAdmin
 from .tour_allowance import TourAllowanceAdmin
 from .excuse_note import ExcuseNoteAdmin
 from .config import ConfigAdmin
