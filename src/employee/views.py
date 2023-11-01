@@ -26,15 +26,15 @@ def change_status(request, *args, **kwargs):
 
     now = timezone.now().date()
 
-    feedback = request.user.employee.employeefeedback_set.filter(
-        created_at__date__year=now.year,
-        created_at__date__month=now.month,
-    )
+    # feedback = request.user.employee.employeefeedback_set.filter(
+    #     created_at__date__year=now.year,
+    #     created_at__date__month=now.month,
+    # )
     # TODO : feedback should not be applied for Himel vai
 
-    if not feedback.exists() and now.day > 20:
-        messages.error(request, "Please provide feedback first")
-        return redirect("/admin/")
+    # if not feedback.exists() and now.day > 20:
+    #     messages.error(request, "Please provide feedback first")
+    #     return redirect("/admin/")
 
     if request.method == "POST":
         form = EmployeeStatusForm(request.POST, instance=employee_status)
