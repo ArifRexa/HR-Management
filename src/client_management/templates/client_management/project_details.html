@@ -53,12 +53,21 @@
                         <div class="d-flex flex-column flex-sm-row flex-wrap gap-3 justify-content-end">
                             <div class="d-flex gap-2">
                                 <label for="inputFrom" class="col-form-label">From</label>
-                                <input type="date" class="form-control" id="inputFrom" name="from-date">
+                                {% if request.GET.fromdate %}
+                                    <input type="date" class="form-control" id="inputFrom" name="fromdate" value="{{ request.GET.fromdate }}">
+                                {% else %}
+                                    <input type="date" class="form-control" id="inputFrom" name="fromdate">
+                                {% endif %}
+
                             </div>
 
                             <div class="d-flex gap-2">
                                 <label for="inputTo" class="col-form-label">To</label>
-                                <input type="date" class="form-control" id="inputTo" name="to-date">
+                                {% if request.GET.todate %}
+                                    <input type="date" class="form-control" id="inputFrom" name="todate" value="{{ request.GET.todate }}">
+                                {% else %}
+                                    <input type="date" class="form-control" id="inputFrom" name="todate">
+                                {% endif %}
                             </div>
                             <button class="btn btn-primary">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
