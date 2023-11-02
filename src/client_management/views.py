@@ -9,14 +9,28 @@ from project_management.models import Project, DailyProjectUpdate
 # Create your views here.
 def get_project_updates(request, project_hash):
     from_date, to_date = request.GET.get('fromdate'), request.GET.get('todate')
+    ic(from_date, to_date)
     project_obj = Project.objects.filter(identifier=project_hash).first()
-    daily_updates = DailyProjectUpdate.objects.filter(project=project_obj)
-    if from_date is not None and to_date is not None:
+    daily_updates = DailyProjectUpdate.objects.filter(
+        project=project_obj,
+        status='approved'
+    )
+
+    if to_date and not from_date:
         daily_updates = daily_updates.filter(
             created_at__date__lte=to_date,
-            created_at__date__gte=from_date,
-            status='approved'
         )
+
+    elif from_date and not to_date:
+        daily_updates = daily_updates.filter(
+            created_at__date__gte=from_date
+        )
+    elif from_date and to_date:
+        daily_updates = daily_updates.filter(
+            created_at__date__lte=to_date,
+            created_at__date__gte=from_date
+        )
+
     distinct_dates = daily_updates.values('created_at__date').distinct()[::-1]
 
     daily_update_list = []
@@ -26,8 +40,7 @@ def get_project_updates(request, project_hash):
         updates = []
         time = 0
         update_objects = daily_updates.filter(
-            created_at__date=u_date.get('created_at__date'),
-            status='approved'
+            created_at__date=u_date.get('created_at__date')
         )
         for update in update_objects:
 
