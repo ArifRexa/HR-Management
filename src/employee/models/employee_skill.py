@@ -19,6 +19,9 @@ class EmployeeSkill(AuthorMixin, TimeStampMixin):
     skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
     percentage = models.FloatField(max_length=100)
 
+    def __str__(self):
+        return self.skill.title
+
 
 class Learning(AuthorMixin, TimeStampMixin):
     asigned_to = models.ForeignKey(Employee,
