@@ -8,7 +8,7 @@ from project_management.models import Project, DailyProjectUpdate
 
 # Create your views here.
 def get_project_updates(request, project_hash):
-    from_date, to_date = request.GET.get('from-date'), request.GET.get('to-date')
+    from_date, to_date = request.GET.get('fromdate'), request.GET.get('todate')
     project_obj = Project.objects.filter(identifier=project_hash).first()
     daily_updates = DailyProjectUpdate.objects.filter(project=project_obj)
     if from_date is not None and to_date is not None:
@@ -18,13 +18,19 @@ def get_project_updates(request, project_hash):
     daily_update_list = []
     total_hour = 0
     for u_date in distinct_dates:
-        obj = {'created_at':u_date.get('created_at__date').strftime("%d-%m-%Y")}
+        obj = {'created_at':u_date.get('created_at__date').strftime("%m-%d-%Y")}
         updates = []
         time = 0
-        for update in daily_updates.filter(created_at__date=u_date.get('created_at__date')):
+        update_objects = daily_updates.filter(
+            created_at__date=u_date.get('created_at__date'),
+            status='approved'
+        )
+        for update in update_objects:
             if update.updates_json is not None:
                 updates.extend(update.updates_json)
-            # if update.hours
+                time += update.hours
+            else:
+                updates.extend([[update.update, update.hours]])
                 time += update.hours
         obj['update'] = updates
         obj['total_hour'] = time
