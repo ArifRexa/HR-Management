@@ -1,108 +1,151 @@
 {% load replace_newline %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ project.title }} | Details</title>
-
-{#    <style>#}
-{#        #project-details {#}
-{#          font-family: Arial, Helvetica, sans-serif;#}
-{#          border-collapse: collapse;#}
-{#          width: 100%;#}
-{#        }#}
-{##}
-{#        #project-details td, #project-details th {#}
-{#          border: 1px solid #ddd;#}
-{#          padding: 8px;#}
-{#        }#}
-{##}
-{#        #project-details tr:nth-child(even){background-color: #f2f2f2;}#}
-{##}
-{#        #project-details tr:hover {background-color: #ddd;}#}
-{##}
-{#        #project-details th {#}
-{#          padding-top: 12px;#}
-{#          padding-bottom: 12px;#}
-{#          text-align: left;#}
-{#          background-color: #04AA6D;#}
-{#          color: white;#}
-{#        }#}
-{#    </style>#}
-    <style>
-        table, td, th {
-          border: 1px solid;
-        }
-
-        table {
-          width: 100%;
-          border-collapse: collapse;
-        }
-    {#.col1 {#}
-    {#    background-color: #00feff;#}
-    {#}#}
-    {#.col4 {#}
-    {#    background-color: #00ff80;#}
-    {#}#}
-    </style>
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
 </head>
+
+
+<style>
+    table, td, th {
+        border: 1px solid rgb(222, 226, 230);
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
+    .form-control:focus {
+        box-shadow: none
+    }
+
+    .page-link:focus {
+        box-shadow: none;
+    }
+
+    @media (max-width: 575px) {
+        label.col-form-label {
+            width: 46px;
+        }
+    }
+</style>
+
 <body>
 
-<h2>{{ project.title }}</h2>
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center my-4 pb-3 border-bottom">
+                <h3>{{ project.title }}</h3>
+                <h5>Total Hours: <span>{{ total_hour }}</span></h5>
+            </div>
+        </div>
 
-<h3>Total Hours: {{ total_hour }}</h3>
-<br>
-<form method="get" >
-  <label for="From">From:</label>
-  <input type="date" id="from-date" name="from-date">
-  <label for="To">To:</label>
-  <input type="date" id="to-date" name="to-date">
-  <input type="submit" value="Filter">
-</form>
-<br>
-<table id="project-details">
-    <tr>
-        <th class="col1">Date</th>
-        <th class="col4">Day Hours</th>
-        <th class="col2">Updates</th>
-        <th class="col3">Task Hours</th>
+        <!--FILTER SECTION-->
+        <div class="col-12">
+            <form method="get">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="d-flex flex-column flex-sm-row flex-wrap gap-3 justify-content-end">
+                            <div class="d-flex gap-2">
+                                <label for="inputFrom" class="col-form-label">From</label>
+                                <input type="date" class="form-control" id="inputFrom" name="from-date">
+                            </div>
 
-    </tr>
+                            <div class="d-flex gap-2">
+                                <label for="inputTo" class="col-form-label">To</label>
+                                <input type="date" class="form-control" id="inputTo" name="to-date">
+                            </div>
+                            <button class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" class="feather feather-filter">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                </svg>
+                                <span class="d-sm-none">Filter</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
 
-    {% for update in daily_updates %}
-        <tr>
-            <td rowspan="{{ update.update | length | add:1 }}">{{ update.created_at }}</td>
-            <td rowspan="{{ update.update | length | add:1 }}">{{ update.total_hour }}</td>
-            {% for line_update in update.update %}
-                <tr>
-                <td>{{ line_update.0 | replace_newline_wth_br }}</td>
-                <td>{{ line_update.1 }}</td>
-                </tr>
-            {% endfor %}
-        </tr>
 
-    {% endfor %}
+        <!-- TABLE -->
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover table-border" id="project-details">
+                    <tr class="table-secondary">
+                        <th class="text-center" style="min-width: 110px;">Date</th>
+                        <th class="text-center" style="min-width: 110px">Day Hours</th>
+                        <th class="text-center" style="min-width: 400px;">Updates</th>
+                        <th class="text-center" style="min-width: 110px;">Task Hours</th>
 
-</table>
+                    </tr>
 
-<div class="pagination">
-    <span class="step-links">
-        {% if daily_updates.has_previous %}
-            <a href="?page=1">&laquo; first</a>
-            <a href="?page={{ daily_updates.previous_page_number }}">previous</a>
-        {% endif %}
+                    <!--ROW 01-->
+                    {% for update in daily_updates %}
+                        <tr>
+                            <td rowspan="{{ update.update | length | add:1 }}" class="text-center">{{ update.created_at }}</td>
+                            <td rowspan="{{ update.update | length | add:1 }}" class="text-center">{{ update.total_hour }}</td>
+                            {% for line_update in update.update %}
+                                <tr>
+                                <td>{{ line_update.0 | replace_newline_wth_br }}</td>
+                                <td class="text-center">{{ line_update.1 }}</td>
+                                </tr>
+                            {% endfor %}
 
-        <span class="current">
-            Page {{ daily_updates.number }} of {{ daily_updates.paginator.num_pages }}.
-        </span>
+                        <tr>
+                    {% endfor %}
 
-        {% if daily_updates.has_next %}
-            <a href="?page={{ daily_updates.next_page_number }}">next</a>
-            <a href="?page={{ daily_updates.paginator.num_pages }}">last &raquo;</a>
-        {% endif %}
-    </span>
+
+                </table>
+            </div>
+        </div>
+
+
+        <!--  PAGINATION SECTION -->
+        <div class="col-12">
+            <nav aria-label="Page navigation justify-content-end">
+                <ul class="pagination mt-2 mt-md-0">
+                    {% if daily_updates.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <li class="page-item"><a class="page-link" href="?page={{ daily_updates.previous_page_number }}"> &#8249; </a></li>
+                    {% endif %}
+
+                    <li class="page-item">
+                        <div class="page-link text-dark">Page <span>{{ daily_updates.number }}</span> of <span>{{ daily_updates.paginator.num_pages }}</span></div>
+                    </li>
+
+                    {% if daily_updates.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ daily_updates.next_page_number }}"> &#8250; </a></li>
+
+
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ daily_updates.paginator.num_pages }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+        </div>
+    </div>
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
 </body>
 </html>
