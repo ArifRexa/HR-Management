@@ -12,7 +12,11 @@ def get_project_updates(request, project_hash):
     project_obj = Project.objects.filter(identifier=project_hash).first()
     daily_updates = DailyProjectUpdate.objects.filter(project=project_obj)
     if from_date is not None and to_date is not None:
-        daily_updates = daily_updates.filter(created_at__date__lte=to_date, created_at__date__gte=from_date)
+        daily_updates = daily_updates.filter(
+            created_at__date__lte=to_date,
+            created_at__date__gte=from_date,
+            status='approved'
+        )
     distinct_dates = daily_updates.values('created_at__date').distinct()[::-1]
 
     daily_update_list = []
@@ -26,6 +30,7 @@ def get_project_updates(request, project_hash):
             status='approved'
         )
         for update in update_objects:
+
             if update.updates_json is not None:
                 updates.extend(update.updates_json)
                 time += update.hours
