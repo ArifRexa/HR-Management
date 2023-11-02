@@ -21,10 +21,16 @@ def get_project_updates(request, project_hash):
         obj = {'created_at':u_date.get('created_at__date').strftime("%m-%d-%Y")}
         updates = []
         time = 0
-        for update in daily_updates.filter(created_at__date=u_date.get('created_at__date')):
+        update_objects = daily_updates.filter(
+            created_at__date=u_date.get('created_at__date'),
+            status='approved'
+        )
+        for update in update_objects:
             if update.updates_json is not None:
                 updates.extend(update.updates_json)
-            # if update.hours
+                time += update.hours
+            else:
+                updates.extend([[update.update, update.hours]])
                 time += update.hours
         obj['update'] = updates
         obj['total_hour'] = time
