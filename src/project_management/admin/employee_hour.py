@@ -656,7 +656,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         all_updates = (f"Today's Update\n" +
                        "-----------------\n" +
                        f"{date}\n\n" +
-                       f"Total Hours: {total_hour}H\n\n")
+                       f"Total Hours: {round(total_hour,3)}H\n\n")
         all_updates += update_list_str
         response = HttpResponse(all_updates, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
