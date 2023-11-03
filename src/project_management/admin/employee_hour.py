@@ -645,7 +645,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 continue
             updates = ''
             for index, update in enumerate(obj.updates_json):
-                total_hour += int(update[1])
+                total_hour += float(update[1])
                 updates += f'{update[0]} - {update[1]}H.\n'
 
             tmp_add = (f"{obj.employee.full_name}\n\n" +
@@ -656,7 +656,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         all_updates = (f"Today's Update\n" +
                        "-----------------\n" +
                        f"{date}\n\n" +
-                       f"Total Hours: {total_hour}H\n\n")
+                       f"Total Hours: {round(total_hour,3)}H\n\n")
         all_updates += update_list_str
         response = HttpResponse(all_updates, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
