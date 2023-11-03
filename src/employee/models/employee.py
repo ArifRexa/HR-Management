@@ -253,7 +253,6 @@ class Employee(TimeStampMixin, AuthorMixin):
             return is_resigned.date
         return None
 
-
     @property
     def current_salary(self):
         return self.salaryhistory_set.latest("id")
