@@ -133,7 +133,7 @@ class EmployeeDetails(admin.ModelAdmin):
         "get_skill",
         "get_email",
         "get_phone",
-        "get_address",
+        "get_present_address",
         "get_blood_group",
         "get_joining_date_human",
     )
@@ -157,8 +157,8 @@ class EmployeeDetails(admin.ModelAdmin):
         return obj.employee.top_one_skill
 
     @admin.display(description="Present Address")
-    def get_address(self, obj: EmployeeLunch):
-        return obj.employee.address
+    def get_present_address(self, obj: EmployeeLunch):
+        return obj.employee.present_address
 
     @admin.display(description="Blood Group", ordering="employee__blood_group")
     def get_blood_group(self, obj: EmployeeLunch):
