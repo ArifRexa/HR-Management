@@ -39,7 +39,8 @@ class Employee(TimeStampMixin, AuthorMixin):
     date_of_birth = models.DateField(null=True, blank=True)
     blood_group = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True)
-    address = models.TextField(null=True)
+    address = models.TextField(verbose_name="Permanent Address", null=True)
+    present_address = models.TextField(verbose_name='Present Address', null=True)
     phone = models.CharField(
         max_length=60, help_text="Use (,) comma for separate phone numbers"
     )

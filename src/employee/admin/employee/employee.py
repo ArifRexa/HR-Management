@@ -130,7 +130,10 @@ class EmployeeDetails(admin.ModelAdmin):
     list_display = (
         "employee",
         "get_designation",
+        "get_skill",
+        "get_email",
         "get_phone",
+        "get_present_address",
         "get_blood_group",
         "get_joining_date_human",
     )
@@ -144,6 +147,18 @@ class EmployeeDetails(admin.ModelAdmin):
     @admin.display(description="Phone")
     def get_phone(self, obj: EmployeeLunch):
         return obj.employee.phone
+
+    @admin.display(description="Email")
+    def get_email(self, obj: EmployeeLunch):
+        return obj.employee.email
+
+    @admin.display(description="Skill")
+    def get_skill(self, obj: EmployeeLunch):
+        return obj.employee.top_one_skill
+
+    @admin.display(description="Present Address")
+    def get_present_address(self, obj: EmployeeLunch):
+        return obj.employee.present_address
 
     @admin.display(description="Blood Group", ordering="employee__blood_group")
     def get_blood_group(self, obj: EmployeeLunch):

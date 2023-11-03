@@ -286,9 +286,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_content = html_template.render(
             {
                 "update": obj.update.replace("{", "_").replace("}", "_") if obj.updates_json is None else obj.str_updates_json.replace("{", "_").replace("}", "_"),
-                "update_json": None if obj.updates_json is None else obj.updates_json
+                "update_json": None if obj.updates_json is None else obj.updates_json,
+                "obj": obj
             }
         )
+
+
 
         try:
             data = format_html(html_content)
@@ -634,25 +637,27 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if date_count.count() > 1:
             return messages.error(request, "Only one day's update can be exported here.")
             # return HttpResponseBadRequest("Dates are not the same")
+        total_hour = 0
 
-        all_updates = (f"Today's Update\n" +
-                       "-----------------\n" +
-                       f"{date}\n\n")
-
-
+        update_list_str = ''
         for index, obj in enumerate(queryset):
             if obj.updates_json is None:
                 continue
             updates = ''
             for index, update in enumerate(obj.updates_json):
+                total_hour += int(update[1])
                 updates += f'{update[0]} - {update[1]}H.\n'
 
             tmp_add = (f"{obj.employee.full_name}\n\n" +
                        f"{updates}\n" +
                        "-------------------------------------------------------------\n\n")
 
-            all_updates += tmp_add
-
+            update_list_str += tmp_add
+        all_updates = (f"Today's Update\n" +
+                       "-----------------\n" +
+                       f"{date}\n\n" +
+                       f"Total Hours: {total_hour}H\n\n")
+        all_updates += update_list_str
         response = HttpResponse(all_updates, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
 
