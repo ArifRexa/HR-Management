@@ -30,7 +30,7 @@ def get_project_updates(request, project_hash):
             created_at__date__lte=to_date,
             created_at__date__gte=from_date
         )
-    print(dir(daily_updates[0]))
+
     distinct_dates = daily_updates.values('created_at__date').distinct()[::-1]
 
     daily_update_list = []

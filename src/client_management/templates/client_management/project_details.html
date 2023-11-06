@@ -105,7 +105,7 @@
                             {% for line_update in update.update %}
                                 <tr>
                                 <td>{{ line_update.0 | replace_newline_wth_br }}
-                                    {% if line_update.2 %}
+                                    {% if line_update.2 and line_update.2|check_valid_url %}
                                         <br><a href="{{line_update.2}}" target="_blank">{{github_icon}}</a>
                                     {% endif %}
                                 </td>
