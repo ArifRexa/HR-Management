@@ -283,11 +283,16 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_template = get_template(
             "admin/project_management/list/col_dailyupdate.html"
         )
+        # is_github_link_show = True
+        if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa', 'ui/ux']:
+            is_github_link_show = False
+        else:
+            is_github_link_show = True
         html_content = html_template.render(
             {
                 "update": obj.update.replace("{", "_").replace("}", "_") if obj.updates_json is None else obj.str_updates_json.replace("{", "_").replace("}", "_"),
                 "update_json": None if obj.updates_json is None else obj.updates_json,
-                "obj": obj
+                "is_github_link_show": is_github_link_show
             }
         )
 

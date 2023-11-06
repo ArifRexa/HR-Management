@@ -13,8 +13,8 @@ jobs:
       uses: appleboy/ssh-action@v0.1.6
       with:
         host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        username: ${{ secrets.STAGING_USERNAME }}
+        password: ${{ secrets.STAGING_PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
           cd /var/www/staging.mediusware.xyz
