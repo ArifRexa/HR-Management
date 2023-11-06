@@ -36,7 +36,7 @@ def get_project_updates(request, project_hash):
     daily_update_list = []
     total_hour = 0
     for u_date in distinct_dates:
-        obj = {'created_at':u_date.get('created_at__date').strftime("%d-%m-%Y")}
+        obj = {'created_at':u_date.get('created_at__date').strftime("%d-%b-%Y")}
         updates = []
         time = 0
         update_objects = daily_updates.filter(
