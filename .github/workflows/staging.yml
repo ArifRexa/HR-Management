@@ -22,5 +22,5 @@ jobs:
           venv/bin/python -m pip install -r requirements.txt
           venv/bin/python /var/www/staging.mediusware.xyz/src/manage.py migrate
           venv/bin/python /var/www/staging.mediusware.xyz/src/manage.py collectstatic --noinput
-          service apache2 reload
-          service supervisor reload
+          sudo service apache2 reload
+          sudo service supervisor reload
