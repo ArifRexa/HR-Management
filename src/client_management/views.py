@@ -30,13 +30,13 @@ def get_project_updates(request, project_hash):
             created_at__date__lte=to_date,
             created_at__date__gte=from_date
         )
-
+    print(dir(daily_updates[0]))
     distinct_dates = daily_updates.values('created_at__date').distinct()[::-1]
 
     daily_update_list = []
     total_hour = 0
     for u_date in distinct_dates:
-        obj = {'created_at':u_date.get('created_at__date').strftime("%m-%d-%Y")}
+        obj = {'created_at':u_date.get('created_at__date').strftime("%d-%m-%Y")}
         updates = []
         time = 0
         update_objects = daily_updates.filter(
@@ -61,7 +61,7 @@ def get_project_updates(request, project_hash):
     page_obj = paginator.get_page(request.GET.get("page"))
 
     out_dict = {
-        'total_hour':total_hour,
+        'total_hour': total_hour,
         'project': project_obj,
         'daily_updates': page_obj,
     }
