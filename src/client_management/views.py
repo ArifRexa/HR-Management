@@ -46,13 +46,23 @@ def get_project_updates(request, project_hash):
         for update in update_objects:
 
             if update.updates_json is not None:
-                updates.append({'update': update.updates_json, 'update_by': update.employee.full_name})
+                updates.append({
+                        'update': update.updates_json,
+                        'update_by': update.employee.full_name,
+                        'hours': update.hours
+                    })
                 row_span += len(update.updates_json)
                 time += update.hours
             else:
-                updates.extend([[update.update, update.hours]])
-                row_span +=1
+
+                updates.append({
+                        'update': [update.update, update.hours],
+                        'update_by': update.employee.full_name,
+                        'hours': update.hours
+                    })
+                row_span += 1
                 time += update.hours
+            print(row_span)
         obj['update'] = updates
         obj['total_hour'] = time
         obj['row_span'] = row_span
