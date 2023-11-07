@@ -18,7 +18,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           cd /var/www/hr.mediusware.xyz
-          git pull
+          git pull origin master:master
           venv/bin/python -m pip install -r requirements.txt
           venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py migrate
           venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py collectstatic --noinput
