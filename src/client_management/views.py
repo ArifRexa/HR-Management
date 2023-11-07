@@ -56,7 +56,7 @@ def get_project_updates(request, project_hash):
             else:
 
                 updates.append({
-                        'update': [update.update, update.hours],
+                        'update': [[update.update, update.hours]],
                         'update_by': update.employee.full_name,
                         'hours': update.hours
                     })
