@@ -14,6 +14,15 @@
     table, td, th {
         border: 1px solid rgb(222, 226, 230);
     }
+    .cs-border-none td, th {
+        border: none
+    }
+    .emp {
+        border-bottom: 1px solid rgb(222, 226, 230) !important;
+    }
+    .time-r {
+        border-left: 1px solid rgb(222, 226, 230) !important;
+    }
 
     td {
         vertical-align: middle;
@@ -90,35 +99,52 @@
             <div class="table-responsive">
                 <table class="table table-hover table-border" id="project-details">
                     <tr class="table-secondary">
+                        <th class="text-center" style="min-width: 110px;">SL</th>
                         <th class="text-center" style="min-width: 110px;">Date</th>
                         <th class="text-center" style="min-width: 110px;">Day Hours</th>
-                        <th class="text-center" style="min-width: 110px;">Developer</th>
+<!--                        <th class="text-center" style="min-width: 110px;">Developer</th>-->
                         <th class="text-center" style="min-width: 400px;">Updates</th>
-                        <th class="text-center" style="min-width: 110px;">Task Hours</th>
+<!--                        <th class="text-center" style="min-width: 110px;">Task Hours</th>-->
                     </tr>
 
                     <!--ROW 01-->
                     {% for update in daily_updates %}
                         <tr>
-                            <td rowspan="{{ update.row_span | add:2 }}" class="text-center">
+                            <td class="text-center">
+                                {{ forloop.counter }}
+                            </td>
+                            <td class="text-center">
                                 {{ update.created_at }}
                             </td>
-                            <td rowspan="{{ update.row_span | add:2 }}" class="text-center">
+                            <td class="text-center">
                                 {{ update.total_hour | floatformat:2 }}
                             </td>
-                            {% for line_update in update.update %}
-                                <td rowspan="{{ line_update.update | length | add:1 }}"
-                                    class="text-center color3">
-                                    {{ line_update.update_by }} <br>
-                                    {{ line_update.hours | floatformat:2 }}
-                                </td>
-                                {% for update_data in line_update.update %}
-                                    <tr>
-                                        <td>{{ update_data.0 }}</td>
-                                        <td class="text-center">{{ update_data.1 }}</td>
-                                    </tr>
-                                {% endfor %}
-                            {% endfor %}
+                            <td>
+                                <table class="cs-border-none w-100">
+                                    {% for line_update in update.update %}
+                                        <tr class="text-center color3">
+                                            <td class="emp" style="width: 110px;">
+                                                {{ line_update.update_by }} <br>
+                                                {{ line_update.hours | floatformat:2 }}
+                                            </td>
+                                            <td>
+
+                                            {% for update_data in line_update.update %}
+                                                <table class="cs-border-none w-100">
+
+                                                <tr>
+                                                    <td style="width: 210px; max-width: 210px; text-align: left" class="ps-2">{{ update_data.0 }}</td>
+                                                    <td style="width: 50px;" class="time-r text-center">{{ update_data.1 }}</td>
+                                                </tr>
+                                                </table>
+                                            {% endfor %}
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+                                </table>
+                            </td>
                         <tr>
                     {% endfor %}
 
