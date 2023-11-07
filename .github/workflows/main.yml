@@ -13,8 +13,8 @@ jobs:
       uses: appleboy/ssh-action@v0.1.6
       with:
         host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
+        username: ${{ secrets.PROD_USERNAME }}
+        password: ${{ secrets.PROD_PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
           cd /var/www/hr.mediusware.xyz
@@ -22,5 +22,5 @@ jobs:
           venv/bin/python -m pip install -r requirements.txt
           venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py migrate
           venv/bin/python /var/www/hr.mediusware.xyz/src/manage.py collectstatic --noinput
-          service apache2 reload
-          service supervisor reload
+          sudo service apache2 reload
+          sudo service supervisor reload
