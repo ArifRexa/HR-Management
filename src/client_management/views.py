@@ -42,16 +42,20 @@ def get_project_updates(request, project_hash):
         update_objects = daily_updates.filter(
             created_at__date=u_date.get('created_at__date')
         )
+        row_span = 0
         for update in update_objects:
 
             if update.updates_json is not None:
-                updates.extend(update.updates_json)
+                updates.append({'update': update.updates_json, 'update_by': update.employee.full_name})
+                row_span += len(update.updates_json)
                 time += update.hours
             else:
                 updates.extend([[update.update, update.hours]])
+                row_span +=1
                 time += update.hours
         obj['update'] = updates
         obj['total_hour'] = time
+        obj['row_span'] = row_span
         total_hour += time
         daily_update_list.append(obj)
 
