@@ -99,20 +99,14 @@
             <div class="table-responsive">
                 <table class="table table-hover table-border" id="project-details">
                     <tr class="table-secondary">
-                        <th class="text-center" style="min-width: 110px;">SL</th>
                         <th class="text-center" style="min-width: 110px;">Date</th>
                         <th class="text-center" style="min-width: 110px;">Day Hours</th>
-<!--                        <th class="text-center" style="min-width: 110px;">Developer</th>-->
                         <th class="text-center" style="min-width: 400px;">Updates</th>
-<!--                        <th class="text-center" style="min-width: 110px;">Task Hours</th>-->
                     </tr>
 
                     <!--ROW 01-->
                     {% for update in daily_updates %}
                         <tr>
-                            <td class="text-center">
-                                {{ forloop.counter }}
-                            </td>
                             <td class="text-center">
                                 {{ update.created_at }}
                             </td>
