@@ -99,8 +99,8 @@
             <div class="table-responsive">
                 <table class="table table-hover table-border" id="project-details">
                     <tr class="table-secondary">
-                        <th class="text-center" style="min-width: 110px;">Date</th>
-                        <th class="text-center" style="min-width: 110px;">Day Hours</th>
+                        <th class="text-center" style="width: 120px;">Date</th>
+                        <th class="text-center" style="width: 80px;">Hours</th>
                         <th class="text-center" style="min-width: 400px;">Updates</th>
                     </tr>
 
@@ -125,11 +125,10 @@
 
                                             {% for update_data in line_update.update %}
                                                 <table class="cs-border-none w-100">
-
-                                                <tr>
-                                                    <td style="width: 210px; max-width: 210px; text-align: left" class="ps-2">{{ update_data.0 }}</td>
-                                                    <td style="width: 50px;" class="time-r text-center">{{ update_data.1 }}</td>
-                                                </tr>
+                                                    <tr>
+                                                        <td style="width: 210px; max-width: 210px; text-align: left" class="ps-2">{{ update_data.0 }}</td>
+                                                        <td style="max-width: 50px; width: 30px;" class="time-r text-center">{{ update_data.1 }}</td>
+                                                    </tr>
                                                 </table>
                                             {% endfor %}
                                             </td>
