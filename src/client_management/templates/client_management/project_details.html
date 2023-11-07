@@ -111,8 +111,8 @@
                     {% for update in daily_updates %}
                         <tr>
 <!--{{ update.row_span }}<br>-->
-                            <td rowspan="{{ update.update | length | add:2 }}" class="text-center color1">{{ update.created_at }}</td>
-                            <td rowspan="{{ update.update | length | add:2 }}" class="text-center color2">{{ update.total_hour }}</td>
+                            <td rowspan="{{ update.row_span | add:2 }}" class="text-center color1">{{ update.created_at }}</td>
+                            <td rowspan="{{ update.row_span | add:2 }}" class="text-center color2">{{ update.total_hour }}</td>
                             {% for line_update in update.update %}
 <!--                            {{line_update.update}}{{line_update.update_by}}<br>-->
                                 <td rowspan="{{ line_update.update | length | add:1 }}" class="text-center color3">{{ line_update.update_by }}</td>

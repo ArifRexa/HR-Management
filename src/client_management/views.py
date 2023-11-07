@@ -50,9 +50,11 @@ def get_project_updates(request, project_hash):
                 row_span += len(update.updates_json)
                 time += update.hours
             else:
+
                 updates.extend([[update.update, update.hours]])
                 row_span +=1
                 time += update.hours
+            print(row_span)
         obj['update'] = updates
         obj['total_hour'] = time
         obj['row_span'] = row_span
