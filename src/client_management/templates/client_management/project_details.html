@@ -26,6 +26,16 @@
     .page-link:focus {
         box-shadow: none;
     }
+    .color1{
+    color:red
+    }
+    .color2{
+    color:red
+    }
+    .color3{
+    color:red
+    }
+
 
     @media (max-width: 575px) {
         label.col-form-label {
@@ -91,6 +101,7 @@
                     <tr class="table-secondary">
                         <th class="text-center" style="min-width: 110px;">Date</th>
                         <th class="text-center" style="min-width: 110px">Day Hours</th>
+                        <th class="text-center" style="min-width: 110px">Developer</th>
                         <th class="text-center" style="min-width: 400px;">Updates</th>
                         <th class="text-center" style="min-width: 110px;">Task Hours</th>
 
@@ -99,13 +110,19 @@
                     <!--ROW 01-->
                     {% for update in daily_updates %}
                         <tr>
-                            <td rowspan="{{ update.update | length | add:1 }}" class="text-center">{{ update.created_at }}</td>
-                            <td rowspan="{{ update.update | length | add:1 }}" class="text-center">{{ update.total_hour }}</td>
+<!--{{ update.row_span }}<br>-->
+                            <td rowspan="{{ update.update | length | add:2 }}" class="text-center color1">{{ update.created_at }}</td>
+                            <td rowspan="{{ update.update | length | add:2 }}" class="text-center color2">{{ update.total_hour }}</td>
                             {% for line_update in update.update %}
-                                <tr>
-                                <td>{{ line_update.0 | replace_newline_wth_br }}</td>
-                                <td class="text-center">{{ line_update.1 }}</td>
-                                </tr>
+<!--                            {{line_update.update}}{{line_update.update_by}}<br>-->
+                                <td rowspan="{{ line_update.update | length | add:1 }}" class="text-center color3">{{ line_update.update_by }}</td>
+                                {% for update_data in line_update.update %}
+
+                                            <tr>
+                                            <td>{{ update_data.0 }}</td>
+                                            <td class="text-center">{{ update_data.1 }}</td>
+                                            </tr>
+                                {% endfor %}
                             {% endfor %}
 
                         <tr>
