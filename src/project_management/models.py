@@ -72,6 +72,7 @@ class Project(TimeStampMixin, AuthorMixin):
         blank=True,
         limit_choices_to={"active": True},
     )
+    is_team = models.BooleanField(verbose_name="Is Team?", default=False)
 
     def __str__(self):
         return self.title
@@ -207,11 +208,6 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             and self.hour_type != "bonus"
         ):
             raise ValidationError({"date": "Today is not Friday"})
-
-        # if self.hours <= 25 and self.description == "":
-        #     raise ValidationError({
-        #         'description': f"Please explain why the hours is less then or equal 25"
-        #     })
 
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
