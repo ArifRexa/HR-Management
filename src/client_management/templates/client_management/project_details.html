@@ -118,8 +118,9 @@
                                     {% for line_update in update.update %}
                                         <tr class="text-center color3">
                                             <td class="emp" style="width: 110px;">
-                                                {{ line_update.update_by }} <br>
-                                                {{ line_update.hours | floatformat:2 }}
+                                                {{ line_update.hours | floatformat:2 }}<br>
+                                                {{ line_update.update_by }} 
+                                                
                                             </td>
                                             <td>
 
