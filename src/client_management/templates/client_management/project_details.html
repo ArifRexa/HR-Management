@@ -110,7 +110,7 @@
                             <td class="text-center">
                                 {{ update.created_at }}
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" style="font-size:20px; font-weight: bold;">
                                 {{ update.total_hour | floatformat:2 }}
                             </td>
                             <td>
@@ -128,7 +128,7 @@
                                                 <table class="cs-border-none w-100">
                                                     <tr>
                                                         <td style="width: 210px; max-width: 210px; text-align: left" class="ps-2">{{ update_data.0 }}</td>
-                                                        <td style="max-width: 50px; width: 30px;" class="time-r text-center">{{ update_data.1 }}</td>
+                                                        <td style="max-width: 50px; width: 30px;" class="time-r text-center">{{ update_data.1 | floatformat:2 }}</td>
                                                     </tr>
                                                 </table>
                                             {% endfor %}
