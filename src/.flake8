@@ -1,0 +1,42 @@
+[flake8]
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist,
+    venv,
+    env,
+    .venv,
+    .env,
+    .env.example,
+    alembic
+    migrations
+
+# Maximum line length (pep8 E501)
+# max-line-length = 120
+
+# Ignore certain errors or warnings
+ignore =
+    # E501: Line too long (handled by max-line-length)
+    # E501,
+
+    # W503: Line break occurred before a binary operator
+    W503,
+
+
+# Plugins
+plugins = mccabe, pyflakes
+
+# McCabe complexity checker options
+[mccabe]
+complexity = 10
+
+# Exclude specific file patterns from complexity checking
+[mccabe-complexity]
+exclude = tests/*, migrations/*, alembic/*
+
+# Flask-specific configurations (if applicable)
+# application-import-names = your_flask_app_name
+# application-import-names = main
