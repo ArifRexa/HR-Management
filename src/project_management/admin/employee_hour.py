@@ -266,7 +266,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         historyData = ""
         if obj.history is not None:
             for history in obj.history.order_by("-created_at"):
-                historyData += f"{history.hours}"
+                historyData += f"{round(history.hours, 2)}"
                 if history != obj.history.order_by("-created_at").last():
                     historyData += f" > "
             return format_html(historyData)
@@ -310,7 +310,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         custom_style = ""
         if obj.hours <= 5:
             custom_style = ' style="color:red; font-weight: bold;"'
-        html_content = f"<span{custom_style}>{obj.hours}</span>"
+        html_content = f"<span{custom_style}>{round(obj.hours, 2)}</span>"
         return format_html(html_content)
 
     def changelist_view(self, request, extra_context=None):

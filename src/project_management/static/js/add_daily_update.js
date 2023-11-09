@@ -239,6 +239,7 @@ function calculate_hours(){
         total_hour += time_of_one.value?parseFloat(time_of_one.value):0
         console.log(time_of_one.value)
     })
+    total_hour = total_hour.toFixed(2)
     document.getElementById('id_hours').value = total_hour
     document.getElementById('show-hour').textContent = total_hour.toString()
 }

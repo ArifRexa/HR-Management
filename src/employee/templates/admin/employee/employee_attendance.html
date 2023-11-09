@@ -151,7 +151,7 @@
                                         <span 
                                             class="{% if data.accepted_hour <= 5 %}text-danger{% else %}text-primary{% endif %}"
                                         >
-                                            {{ data.accepted_hour }} H
+                                            {{ data.accepted_hour | floatformat:2 }} H
                                         </span>
                                     {% else %}
                                         <span>
