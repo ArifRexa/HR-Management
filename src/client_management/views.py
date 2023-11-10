@@ -35,35 +35,83 @@ def get_project_updates(request, project_hash):
 
     daily_update_list = []
     total_hour = 0
-    for u_date in distinct_dates:
-        obj = {'created_at':u_date.get('created_at__date').strftime("%d-%b-%Y")}
-        updates = []
-        time = 0
-        update_objects = daily_updates.filter(
-            created_at__date=u_date.get('created_at__date')
-        )
-        for update in update_objects:
+    if project_obj.is_team:
+        print('team')
+        for u_date in distinct_dates:
+            obj = {'created_at':u_date.get('created_at__date').strftime("%d-%b-%Y")}
+            updates = []
+            time = 0
+            update_objects = daily_updates.filter(
+                created_at__date=u_date.get('created_at__date')
+            )
+            row_span = 0
+            for update in update_objects:
 
-            if update.updates_json is not None:
-                updates.extend(update.updates_json)
-                time += update.hours
-            else:
-                updates.extend([[update.update, update.hours]])
-                time += update.hours
-        obj['update'] = updates
-        obj['total_hour'] = time
-        total_hour += time
-        daily_update_list.append(obj)
+                if update.updates_json is not None:
+                    updates.append({
+                            'update': update.updates_json,
+                            'update_by': update.employee.full_name,
+                            'hours': update.hours
+                        })
+                    row_span += len(update.updates_json)
+                    time += update.hours
+                else:
 
-    # ic(daily_update_list)
+                    updates.append({
+                            'update': [[update.update, update.hours]],
+                            'update_by': update.employee.full_name,
+                            'hours': update.hours
+                        })
+                    row_span += 1
+                    time += update.hours
+            obj['update'] = updates
+            obj['total_hour'] = time
+            obj['row_span'] = row_span
+            total_hour += time
+            daily_update_list.append(obj)
 
-    paginator = Paginator(daily_update_list, 10)
-    page_obj = paginator.get_page(request.GET.get("page"))
+        # ic(daily_update_list)
+        print(daily_update_list)
+        paginator = Paginator(daily_update_list, 10)
+        page_obj = paginator.get_page(request.GET.get("page"))
 
-    out_dict = {
-        'total_hour': total_hour,
-        'project': project_obj,
-        'daily_updates': page_obj,
-    }
+        out_dict = {
+            'total_hour': total_hour,
+            'project': project_obj,
+            'daily_updates': page_obj,
+        }
+        return render(request, 'client_management/project_details.html', out_dict)
+    else:
+        print('team not')
+        for u_date in distinct_dates:
+            obj = {'created_at': u_date.get('created_at__date').strftime("%d-%b-%Y")}
+            updates = []
+            time = 0
+            update_objects = daily_updates.filter(
+                created_at__date=u_date.get('created_at__date')
+            )
+            for update in update_objects:
 
-    return render(request, 'client_management/project_details.html', out_dict)
+                if update.updates_json is not None:
+                    updates.extend(update.updates_json)
+                    time += update.hours
+                else:
+                    updates.extend([[update.update, update.hours]])
+                    time += update.hours
+            obj['update'] = updates
+            obj['total_hour'] = time
+            total_hour += time
+            daily_update_list.append(obj)
+
+        # ic(daily_update_list)
+
+        paginator = Paginator(daily_update_list, 10)
+        page_obj = paginator.get_page(request.GET.get("page"))
+
+        out_dict = {
+            'total_hour': total_hour,
+            'project': project_obj,
+            'daily_updates': page_obj,
+        }
+
+        return render(request, 'client_management/project_details.html', out_dict)

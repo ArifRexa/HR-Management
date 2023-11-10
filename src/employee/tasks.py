@@ -40,7 +40,7 @@ from account.models import Loan
 
 def set_default_exit_time():
     NOW = datetime.datetime.now()
-    DEFAULT_EXIT_HOUR = 12 + 9  # 24 hour time == 9pm
+    DEFAULT_EXIT_HOUR = 12 + 8  # 24 hour time == 9pm
     DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
     employee_onlines = EmployeeOnline.objects.filter(active=True)

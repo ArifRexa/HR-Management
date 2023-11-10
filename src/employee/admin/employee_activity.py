@@ -134,7 +134,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             return redirect("/")
 
         now = timezone.now()
-        DEFAULT_EXIT_HOUR = 12 + 9  # 24 Hour time == 9 pm
+        DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
         last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(10)]
