@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from icecream import ic
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed, Tag, ProjectDocument
+    ProjectNeed, Tag, ProjectDocument, ProjectReport
 
 
 @admin.register(Technology)
@@ -84,3 +84,8 @@ class ProjectNeedAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+
+@admin.register(ProjectReport)
+class ProjectReportAdmin(admin.ModelAdmin):
+    list_display = ['id', 'send_to', 'api_token']

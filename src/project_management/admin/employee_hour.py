@@ -17,7 +17,7 @@ from django.utils.safestring import mark_safe
 from django import forms
 
 from employee.admin.employee._forms import DailyUpdateFilterForm
-
+from project_management.utils.send_report import send_report_slack
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
 from project_management.models import (
@@ -25,6 +25,7 @@ from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
+    ProjectReport,
 )
 from project_management.admin.project_hour.options import (
     ProjectManagerFilter,
@@ -32,6 +33,7 @@ from project_management.admin.project_hour.options import (
 )
 from project_management.forms import AddDDailyProjectUpdateForm
 from icecream import ic
+from client_management.templatetags.replace_newline import check_valid_url
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
@@ -93,7 +95,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
     def get_total_hour(self, request):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser and not request.user.has_perm(
-            "project_management.see_all_employee_hour"
+                "project_management.see_all_employee_hour"
         ):
             if request.user.employee.manager or request.user.employee.lead:
                 qs = qs.filter(
@@ -124,7 +126,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
         """
         query_set = super(EmployeeHourAdmin, self).get_queryset(request)
         if not request.user.is_superuser and not request.user.has_perm(
-            "project_management.see_all_employee_hour"
+                "project_management.see_all_employee_hour"
         ):
             if request.user.employee.manager or request.user.employee.lead:
                 return query_set.filter(
@@ -137,7 +139,7 @@ class EmployeeHourAdmin(RecentEdit, admin.ModelAdmin):
 
     def get_list_filter(self, request):
         if not request.user.is_superuser and not request.user.has_perm(
-            "project_management.see_all_employee_hour"
+                "project_management.see_all_employee_hour"
         ):
             return []
         return super(EmployeeHourAdmin, self).get_list_filter(request)
@@ -188,7 +190,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "created_at",
         "note",
     ]
-    actions = ["update_status_approve", "update_status_pending", "export_updated_in_txt", "export_selected", "export_selected_merged"]
+    actions = ["update_status_approve", "update_status_pending", "export_updated_in_txt", "export_selected",
+               "export_selected_merged", "send_report_slack"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
@@ -284,19 +287,20 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             "admin/project_management/list/col_dailyupdate.html"
         )
         # is_github_link_show = True
-        if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa', 'ui/ux']:
+        if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa',
+                                                                                                         'ui/ux']:
             is_github_link_show = False
         else:
             is_github_link_show = True
         html_content = html_template.render(
             {
-                "update": obj.update.replace("{", "_").replace("}", "_") if obj.updates_json is None else obj.str_updates_json.replace("{", "_").replace("}", "_"),
+                "update": obj.update.replace("{", "_").replace("}",
+                                                               "_") if obj.updates_json is None else obj.str_updates_json.replace(
+                    "{", "_").replace("}", "_"),
                 "update_json": None if obj.updates_json is None else obj.updates_json,
                 "is_github_link_show": is_github_link_show
             }
         )
-
-
 
         try:
             data = format_html(html_content)
@@ -341,7 +345,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request)
 
         if not request.user.is_superuser and not request.user.has_perm(
-            "project_management.see_all_employee_update"
+                "project_management.see_all_employee_update"
         ):
             if request.user.employee.manager or request.user.employee.lead:
                 query_set = query_set.filter(
@@ -356,7 +360,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def get_list_filter(self, request):
         filters = list(super(DailyProjectUpdateAdmin, self).get_list_filter(request))
         if not request.user.is_superuser and not request.user.has_perm(
-            "project_management.see_all_employee_update"
+                "project_management.see_all_employee_update"
         ):
             if "employee" in filters:
                 filters.remove("employee")
@@ -366,10 +370,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         permitted = super().has_change_permission(request, obj=obj)
 
         if (
-            not request.user.is_superuser
-            and obj
-            and obj.employee != request.user.employee
-            and obj.manager != request.user.employee
+                not request.user.is_superuser
+                and obj
+                and obj.employee != request.user.employee
+                and obj.manager != request.user.employee
         ):
             permitted = False
 
@@ -429,7 +433,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # Customize this section to format and populate the worksheet with your data
         # For example:
         # sheet.append(['  Week  ', '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  ', '  Weekly Hours  '])
-        sheet.append([ '  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  '])
+        sheet.append(['  Date  ', '  Updates  ', '  Task Hours  ', '  Day Hours  '])
 
         week_starting_date: str
         week_starting_index: int
@@ -437,7 +441,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         start_ref = 1
         total_hours = 0
         for index, obj in enumerate(queryset, start=2):
-            ic('outside if, ',obj.updates_json)
+            ic('outside if, ', obj.updates_json)
             if obj.updates_json is None or obj.updates_json.__len__() == 0 or obj.status != 'approved':
                 ic(obj.updates_json)
                 continue
@@ -454,8 +458,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             sheet.merge_cells(day_hour_cells)
             # ic(index, week_cells, date_cells, day_hour_cells)
 
-        sheet.append([ '', '', 'Total: ', f'{total_hours} Hours'])
-
+        sheet.append(['', '', 'Total: ', f'{total_hours} Hours'])
 
         # Make styles
         for cell in sheet.iter_rows(min_row=1, max_row=1):
@@ -465,12 +468,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                                  bold=True,
                                  color='ffffff')
                 cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
-                cell.alignment=Alignment(horizontal='center',
-                                         vertical='center',
-                                         # text_rotation=0,
-                                         # wrap_text=False,
-                                         # shrink_to_fit=True,
-                                         indent=0)
+                cell.alignment = Alignment(horizontal='center',
+                                           vertical='center',
+                                           # text_rotation=0,
+                                           # wrap_text=False,
+                                           # shrink_to_fit=True,
+                                           indent=0)
 
         for cell in sheet.iter_rows(min_row=2):
             for index, cell in enumerate(cell):
@@ -481,12 +484,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     cell.alignment = Alignment(horizontal='left',
                                                vertical='top')
 
-        for cell in sheet.iter_rows(min_row=sheet.max_row ):
+        for cell in sheet.iter_rows(min_row=sheet.max_row):
             ic(cell)
             for index, cell in enumerate(cell):
-                ic(index,cell)
+                ic(index, cell)
                 if index == 3 or index == 2:
-                    ic('if ',index, cell)
+                    ic('if ', index, cell)
                     cell.font = Font(name='Arial',
                                      size=12,
                                      bold=True,
@@ -495,7 +498,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     cell.alignment = Alignment(horizontal='center',
                                                vertical='center',
                                                indent=0)
-
 
         # Save the workbook to the response
         wb.save(response)
@@ -507,14 +509,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         merged_set = []
         for obj in queryset:
             if merged_set.__len__() > 0:
-                ic(merged_set[-1].get('created_at').date() == obj.created_at.date(), merged_set[-1].get('created_at').date(), obj.created_at.date())
+                ic(merged_set[-1].get('created_at').date() == obj.created_at.date(),
+                   merged_set[-1].get('created_at').date(), obj.created_at.date())
                 if merged_set[-1].get('created_at').date() == obj.created_at.date():
                     ic('inside merge')
                     tmp_obj = {
-                        'created_at':obj.created_at,
-                        'updates_json':merged_set[-1].get('updates_json') + obj.updates_json,
-                        'hours':obj.hours + merged_set[-1].get('hours'),
-                        'status':obj.status
+                        'created_at': obj.created_at,
+                        'updates_json': merged_set[-1].get('updates_json') + obj.updates_json,
+                        'hours': obj.hours + merged_set[-1].get('hours'),
+                        'status': obj.status
                     }
                     merged_set[-1] = tmp_obj
                 else:
@@ -564,14 +567,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         total_hours = 0
         for index, obj in enumerate(merged_set, start=2):
             # ic('outside if, ', obj.get('updates_json'))
-            if obj.get('updates_json') is None or obj.get('updates_json').__len__() == 0 or obj.get('status') != 'approved':
+            if obj.get('updates_json') is None or obj.get('updates_json').__len__() == 0 or obj.get(
+                    'status') != 'approved':
                 # ic(obj.get('updates_json'))
                 continue
             total_hours += obj.get('hours')
             for index_update, update in enumerate(obj.get('updates_json')):
                 sheet.append([obj.get('created_at').strftime('%d-%m-%Y'), update[0], update[1], obj.get('hours')])
-
-
 
             start_merge = 1 + start_ref
             end_merge = start_merge + index_update
@@ -629,7 +631,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         return response
 
-
     @admin.action(description="Export today's update(s) in .txt file")
     def export_updated_in_txt(modeladmin, request, queryset):
         project_name = queryset[0].project.title.replace(' ', '_')
@@ -661,19 +662,82 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         all_updates = (f"Today's Update\n" +
                        "-----------------\n" +
                        f"{date}\n\n" +
-                       f"Total Hours: {round(total_hour,3)}H\n\n")
+                       f"Total Hours: {round(total_hour, 3)}H\n\n")
         all_updates += update_list_str
         response = HttpResponse(all_updates, content_type='text/plain')
         response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
 
         return response
 
+    @admin.action(description="Send Report to slack")
+    def send_report_slack(modeladmin, request, queryset):
+        date = queryset.first().created_at.strftime('%d-%m-%Y')
+        # Annotate the queryset to count the distinct dates
+        date_count = queryset.annotate(
+            date=TruncDate('created_at')
+        ).values('date').annotate(count=Count('id'))
+
+        if date_count.count() > 1:
+            return messages.error(
+                request,
+                "Only one day's update can send to slack."
+            )
+
+        # Annotate the queryset to count the distinct project
+        project_count = (queryset.values('project')
+                         .annotate(count=Count('project')))
+
+        if project_count.count() > 1:
+            return messages.error(request, "Only one project select to send report.")
+
+        try:
+            to_report = ProjectReport.objects.get(project=queryset[0].project)
+        except ProjectReport.DoesNotExist:
+            return messages.error(
+                request,
+                "slack credential not set yet for this project"
+            )
+        total_hour = 0
+
+        update_list_str = ''
+        for obj in queryset:
+            if obj.updates_json is None:
+                continue
+            updates = ''
+            for update in obj.updates_json:
+
+                total_hour += float(update[1])
+                link = f"-{update[2]}" if update[2] and check_valid_url(update[2]) else ""
+                print('link', link)
+                updates += f'{update[0]} \n' + f"({update[1]}H){link}\n"
+            if obj.project.is_team:
+
+                tmp_add = (f"{obj.employee.full_name}\n\n" +
+                           f"{updates}\n" +
+                           "-----------------------------------------\n\n")
+            else:
+                tmp_add = (
+                           f"{updates}\n" +
+                           "-----------------------------------------\n\n")
+
+            update_list_str += tmp_add
+        all_updates = (f"Today's Update({date})\n" +
+                       f"Total Hours: {round(total_hour, 3)}H\n\n"+
+                       "-----------------\n")
+        all_updates += update_list_str
+        send_report_slack(
+            token=to_report.api_token,
+            channel=to_report.send_to,
+            message=all_updates
+        )
+        return messages.success(request, f"Report send to #{to_report.send_to} channel")
+
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
         if (
-            not request.user.is_superuser
-            and obj
-            and obj.employee != request.user.employee
+                not request.user.is_superuser
+                and obj
+                and obj.employee != request.user.employee
         ):
             permitted = False
         return permitted
@@ -681,7 +745,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change) -> None:
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
-
 
         json_updates = form.cleaned_data.get('updates_json')
         if json_updates:
