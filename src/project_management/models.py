@@ -323,14 +323,6 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         #      index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
-        # try:
-        #     ot = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
-        #     ic(ot)
-        #     return ot
-        # except Exception:
-        #     ic(Exception)
-        #     ic(self.updates_json)
-        #     return str(self.update)
 
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
