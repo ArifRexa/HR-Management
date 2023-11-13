@@ -203,9 +203,9 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         if self.hours is None:
             raise ValidationError({"hours": f"Hours filed is required"})
         if (
-            self.date is not None
-            and self.date.weekday() != 4
-            and self.hour_type != "bonus"
+                self.date is not None
+                and self.date.weekday() != 4
+                and self.hour_type != "bonus"
         ):
             raise ValidationError({"date": "Today is not Friday"})
 
@@ -332,6 +332,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         #     ic(self.updates_json)
         #     return str(self.update)
 
+
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
     daily_update = models.ForeignKey(
         DailyProjectUpdate, on_delete=models.CASCADE, related_name="history"
@@ -446,9 +447,9 @@ class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
 
     def clean(self):
         if (
-            ProjectResourceEmployee.objects.filter(employee=self.employee)
-            .exclude(id=self.id)
-            .first()
+                ProjectResourceEmployee.objects.filter(employee=self.employee)
+                        .exclude(id=self.id)
+                        .first()
         ):
             raise ValidationError(
                 {
@@ -494,11 +495,11 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
         red_line = 3.5
 
         return (
-            self.rating_communication <= red_line
-            or self.rating_output <= red_line
-            or self.rating_time_management <= red_line
-            or self.rating_billing <= red_line
-            or self.rating_long_term_interest <= red_line
+                self.rating_communication <= red_line
+                or self.rating_output <= red_line
+                or self.rating_time_management <= red_line
+                or self.rating_billing <= red_line
+                or self.rating_long_term_interest <= red_line
         )
 
     class Meta:
@@ -508,11 +509,11 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
 
     def save(self, *args, **kwargs):
         avg_rating = (
-            self.rating_communication
-            + self.rating_output
-            + self.rating_time_management
-            + self.rating_billing
-            + self.rating_long_term_interest
+                self.rating_communication
+                + self.rating_output
+                + self.rating_time_management
+                + self.rating_billing
+                + self.rating_long_term_interest
         )
         avg_rating = round(avg_rating / 5, 1)
         self.avg_rating = avg_rating
@@ -555,11 +556,11 @@ class CodeReview(TimeStampMixin, AuthorMixin):
 
     def save(self, *args, **kwargs):
         avg_rating = (
-            self.naming_convention
-            + self.code_reusability
-            + self.oop_principal
-            + self.design_pattern
-            + self.standard_git_commit
+                self.naming_convention
+                + self.code_reusability
+                + self.oop_principal
+                + self.design_pattern
+                + self.standard_git_commit
         )
         avg_rating = round(avg_rating / 5, 1)
         self.avg_rating = avg_rating
@@ -578,3 +579,17 @@ class CodeReview(TimeStampMixin, AuthorMixin):
 class CodeReviewEmployeeFeedback(TimeStampMixin, AuthorMixin):
     code_review = models.ForeignKey(CodeReview, on_delete=models.CASCADE)
     comment = models.TextField()
+
+
+class ProjectReport(TimeStampMixin):
+    project = models.OneToOneField(
+        Project, related_name='project_reports',
+        on_delete=models.CASCADE
+    )
+    send_to = models.CharField(
+        verbose_name="Send To", max_length=255
+    )
+    api_token = models.TextField(verbose_name='API Token')
+
+    def __str__(self):
+        return f"{self.project} update to {self.send_to}"
