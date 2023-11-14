@@ -88,4 +88,10 @@ class ProjectNeedAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectReport)
 class ProjectReportAdmin(admin.ModelAdmin):
-    list_display = ['id', 'send_to', 'api_token']
+    list_display = ['id', 'project', 'send_to', 'api_token']
+    list_display_links = ['project']
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'project':
+            kwargs['queryset'] = Project.objects.filter(active=True)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
