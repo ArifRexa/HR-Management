@@ -38,4 +38,10 @@ def get_this_week_hour(request, project_id, hour_date):
     }
     
     return JsonResponse(data)
-    
+
+
+def slack_callback(request):
+    code = request.GET.get('code')
+    state = request.GET.get('state')
+
+    return JsonResponse({'code': code, 'state': state})
