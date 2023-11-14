@@ -35,6 +35,7 @@ from project_management.forms import AddDDailyProjectUpdateForm
 from icecream import ic
 from client_management.templatetags.replace_newline import check_valid_url
 
+
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
     parameter_name = "project_hour__hour_type"
@@ -191,7 +192,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "note",
     ]
     actions = ["update_status_approve", "update_status_pending", "export_updated_in_txt", "export_selected",
-               "export_selected_merged", "send_report_slack"]
+               "export_selected_merged"]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
     fieldsets = (
@@ -670,7 +671,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return response
 
     @admin.action(description="Send Report to slack")
-    def send_report_slack(modeladmin, request, queryset):
+    def send_report_to_slack(self, modeladmin, request, queryset, **kwargs):
         date = queryset.first().created_at.strftime('%d-%m-%Y')
         # Annotate the queryset to count the distinct dates
         date_count = queryset.annotate(
@@ -701,15 +702,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         update_list_str = ''
         for obj in queryset:
-            if obj.updates_json is None:
+            if obj.updates_json is None or obj.status == "pending":
                 continue
             updates = ''
             for update in obj.updates_json:
-
                 total_hour += float(update[1])
                 link = f"-{update[2]}" if update[2] and check_valid_url(update[2]) else ""
-                print('link', link)
-                updates += f'{update[0]} \n' + f"({update[1]}H){link}\n"
+                updates += f'{update[0]} \n' + f"({round(float(update[1]), 2)}H){link}\n"
             if obj.project.is_team:
 
                 tmp_add = (f"{obj.employee.full_name}\n\n" +
@@ -717,20 +716,27 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                            "-----------------------------------------\n\n")
             else:
                 tmp_add = (
-                           f"{updates}\n" +
-                           "-----------------------------------------\n\n")
+                        f"{updates}\n" +
+                        "-----------------------------------------\n\n")
 
             update_list_str += tmp_add
-        all_updates = (f"Today's Update({date})\n" +
-                       f"Total Hours: {round(total_hour, 3)}H\n\n"+
+        if not update_list_str:
+            return messages.success(request, "Select update not approved yet")
+        #todo: if need then add f"Today's Update({date})\n" +
+        all_updates = (
+                       f"\nTotal Hours: {round(total_hour, 3)}H\n\n" +
                        "-----------------\n")
         all_updates += update_list_str
-        send_report_slack(
+
+        response = send_report_slack(
             token=to_report.api_token,
             channel=to_report.send_to,
             message=all_updates
         )
-        return messages.success(request, f"Report send to #{to_report.send_to} channel")
+        if response.get('ok'):
+            return messages.success(request, f"Report send to #{to_report.send_to} channel")
+        else:
+            return messages.error(request, f"#{to_report.send_to} {response.get('error')}")
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)
@@ -778,6 +784,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 hours=total_hour, daily_update=obj
             )
 
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+            actions['send_report_to_slack'] = (self.send_report_to_slack, "send_report_to_slack", "Send report to slack")
+        return actions
     # def add_view(self, request, form_url='', extra_context=None):
     #     print('Inside form update view..')
     #     # Customize the form instance
