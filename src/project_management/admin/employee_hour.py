@@ -369,14 +369,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
-
-        if (
-                not request.user.is_superuser
-                and obj
-                and obj.employee != request.user.employee
-                and obj.manager != request.user.employee
-        ):
-            permitted = False
+        if obj is not None and obj.pk:
+            if (
+                    not request.user.is_superuser
+                    and obj
+                    and obj.employee != request.user.employee
+                    and obj.manager != request.user.employee
+            ):
+                permitted = False
 
         return permitted
 
@@ -749,6 +749,29 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return permitted
 
     def save_model(self, request, obj, form, change) -> None:
+
+        from django.utils import timezone
+        if form.cleaned_data.get('employee'):
+            employee = form.cleaned_data.get('employee')
+        else:
+            employee = request.user.employee
+        update_obj = DailyProjectUpdate.objects.filter(
+            employee=employee,
+            manager=form.cleaned_data.get('manager'),
+            project=form.cleaned_data.get('project'),
+            created_at__date=timezone.now().date()
+        )
+        if update_obj.exists():
+            storage = messages.get_messages(request)
+            storage.used = True
+            self.message_user(
+                request,
+                f"{request.user.employee} \
+                Already give today update for {form.cleaned_data.get('project')} project"
+            )
+            # self.has_change_permission(request, obj=update_obj.first())
+            return #messages.info(request, f"{request.user.employee} Already give update {form.cleaned_data.get('project')}")
+        # print('create object')
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
@@ -768,7 +791,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         else:
             total_hour = request.POST.get('hours')
             # ic(total_hour)
-
         super().save_model(request, obj, form, change)
 
         if change == False:
@@ -795,3 +817,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     #     self.form = AddDDailyProjectUpdateForm
     #     extra_context = {'form':self.form}
     #     return super().add_view(request, form_url, extra_context)
+
+    def response_post_save_add(self, request, obj):
+        print('response', obj)
+        if obj:
+            return super().response_post_save_add(request, obj)
+    
+    def response_add(self, request, obj, post_url_continue=None):
+        if obj:
+            print('sdsdfsd', obj)
+            return super().response_add(request, obj, post_url_continue=post_url_continue)
