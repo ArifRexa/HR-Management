@@ -42,3 +42,6 @@ class LearningAdmin(admin.ModelAdmin):
             data = "-"
 
         return data
+
+    def has_module_permission(self, request):
+        return False

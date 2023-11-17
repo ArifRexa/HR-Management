@@ -25,3 +25,6 @@ class SalaryDisbursementAdmin(admin.ModelAdmin):
 
     def total_employee(self, obj):
         return obj.employee.count()
+
+    def has_module_permission(self, request):
+        return False

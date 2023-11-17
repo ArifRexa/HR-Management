@@ -22,26 +22,14 @@
                 <a href="{{ app.app_url }}" class="section"
                    title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">Others</a>
             </caption>
-            
+
             <!-- Hidden from Main Index -->
+            {% if "provident_fund.view_account" in perms %}
             <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_assessmentquestion_changelist' %}">Assessment Questions</a></th>
+                <th scope="row"><a href="{% url 'admin:provident_fund_account_changelist' %}">Accounts</a></th>
             </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_assessment_changelist' %}">Assessments</a></th>
-            </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_candidatejob_changelist' %}">Candidate Jobs</a></th>
-            </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_resetpassword_changelist' %}">Reset Passwords</a></th>
-            </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_smspromotion_changelist' %}">SMS Promotions</a></th>
-            </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:job_board_smspromotion_changelist' %}">Sms promotions</a></th>
-            </tr>
+            {% endif %}
+
             <!-- Hidden from Main Index -->
 
         </table>

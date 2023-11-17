@@ -37,18 +37,60 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee.notice_board' %}">Notice Board</a></th>
             </tr>
-{#            <tr>#}
-{#                <th scope="row"><a href="{% url 'admin:employee_feedback' %}">My Feedback</a></th>#}
-{#            </tr>#}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_bankaccount_changelist' %}">Bank Account</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeeactivity_changelist' %}">Employee Activities</a></th>
+            </tr>
+            {% if "employee.view_employeenoc" in perms %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeenoc_changelist' %}">Employee Nocs</a></th>
+            </tr>
+            {% endif %}
+            {% if "employee.view_hrpolicypublic" in prems %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_hrpolicypublic_changelist' %}">HR Contract Policies</a></th>
+            </tr>
+            {% endif %}
+            {% if "employee.view_hrreportnotecategory" in perms %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_hrreportnotecategory_changelist' %}">HR Report Note Categories</a></th>
+            </tr>
+            {% endif %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_homeoffice_changelist' %}">Home offices</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_learning_changelist' %}">Learning</a></th>
+            </tr>
+            {% if "employee.view_needhelpposition" in perms %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_needhelpposition_changelist' %}">Need help positions</a></th>
+            </tr>
+            {% endif %}
+            {% if "employee.view_employeefaq" in perms %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_employeefaq_changelist' %}">Set FAQ</a></th>
+            </tr>
+            {% endif %}
+            {% if "employee.view_hrpolicy" in perms %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee_hrpolicy_changelist' %}">Set HR Policies</a></th>
+            </tr>
+            {% endif %}
 
+            {% comment %}
+             <tr>
+                 <th scope="row"><a href="{% url 'admin:employee_employeefeedback_changelist' %}">My Feedback</a></th>#}
+             </tr>
+            {% endcomment %}
             
            
 
 
             <!-- Hidden from Main Index -->
-            {% comment %} <tr>
-                <th scope="row"><a href="{% url 'admin:employee_employeeactivity_changelist' %}">Employee Activities</a></th>
-            </tr> {% endcomment %}
+
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_employeeonline_changelist' %}">Employee Onlines</a></th>
             </tr>

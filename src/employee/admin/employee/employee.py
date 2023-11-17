@@ -221,7 +221,13 @@ class EmployeeFaqAdmin(admin.ModelAdmin):
 
         return ro_fields
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(EmployeeNOC)
 class EmployeeNOCAdmin(admin.ModelAdmin):
     readonly_fields = ("noc_pdf",)
+
+    def has_module_permission(self, request):
+        return False
