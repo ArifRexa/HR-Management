@@ -37,12 +37,16 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee.notice_board' %}">Notice Board</a></th>
             </tr>
+            {% if "employee.view_bankaccount" in perms %}
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_bankaccount_changelist' %}">Bank Account</a></th>
             </tr>
+            {% endif %}
+            {% if "employee.view_employeeactivity" in perms %}
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_employeeactivity_changelist' %}">Employee Activities</a></th>
             </tr>
+            {% endif %}
             {% if "employee.view_employeenoc" in perms %}
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_employeenoc_changelist' %}">Employee Nocs</a></th>
