@@ -46,3 +46,5 @@ class ProvidentFundAccountAdmin(admin.ModelAdmin):
     def get_employee(self, obj:Account):
         return obj.__str__()
 
+    def has_module_permission(self, request):
+        return False
