@@ -27,3 +27,6 @@ class ProjectCommissionAdmin(admin.ModelAdmin):
             employees=Employee.objects.filter(active=True, pk__in=employee_ids).all()
         )
         return TemplateResponse(request, "admin/commission/summery.html", context)
+
+    def has_module_permission(self, request):
+        return False
