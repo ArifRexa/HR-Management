@@ -28,14 +28,27 @@ from .models import (
 from django_q import models as q_models
 from django_q import admin as q_admin
 
-admin.site.register(PayScale)
-admin.site.register(LeaveManagement)
+@admin.register(PayScale)
+class PayScaleAdmin(admin.ModelAdmin):
+
+    def has_module_permission(self, request):
+        return False
+
+
+@admin.register(LeaveManagement)
+class LeaveManagementAdmin(admin.ModelAdmin):
+
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Designation)
 class DesignationAdmin(admin.ModelAdmin):
     list_display = ("title", "description")
     search_fields = ["title"]
+
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(FinancialYear)
@@ -69,6 +82,9 @@ class PublicHolidayAdmin(admin.ModelAdmin):
 @admin.register(Bank)
 class BankAdmin(admin.ModelAdmin):
     list_display = ("name", "address", "default")
+
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Letter)
@@ -177,12 +193,12 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         urls = [
-            path(
-                route="generate/",
-                view=self.xxx_view,
-                name="settings_employeefoodallowance_generate",
-            )
-        ] + urls
+                   path(
+                       route="generate/",
+                       view=self.xxx_view,
+                       name="settings_employeefoodallowance_generate",
+                   )
+               ] + urls
         return urls
 
     def xxx_view(self, request, **kwargs):
