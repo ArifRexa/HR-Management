@@ -15,6 +15,9 @@ class HRPolicyAdmin(admin.ModelAdmin):
     list_filter = ("active",)
     inlines = (HRPolicySectionAdmin,)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(HRPolicyPublic)
 class HRContractPolicies(admin.ModelAdmin):
@@ -32,3 +35,6 @@ class HRContractPolicies(admin.ModelAdmin):
             .prefetch_related("hrpolicysection_set")
         )
         return qs
+
+    def has_module_permission(self, request):
+        return False

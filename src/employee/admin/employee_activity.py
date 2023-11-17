@@ -374,8 +374,8 @@ class EmployeeBreakAdmin(admin.ModelAdmin):
         return format_html(end_time)
 
     # To hide from main menu
-    # def has_module_permission(self, request):
-    #     return False
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(EmployeeProject)

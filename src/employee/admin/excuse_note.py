@@ -53,3 +53,6 @@ class HRReportNoteCategoryAdmin(admin.ModelAdmin):
     list_display = ('title', 'active',)
     search_fields = ('title',)
 
+    def has_module_permission(self, request):
+        return False
+
