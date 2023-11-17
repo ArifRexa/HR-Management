@@ -52,7 +52,7 @@
                 <th scope="row"><a href="{% url 'admin:employee_employeenoc_changelist' %}">Employee Nocs</a></th>
             </tr>
             {% endif %}
-            {% if "employee.view_hrpolicypublic" in prems %}
+            {% if "employee.view_hrpolicypublic" in perms %}
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee_hrpolicypublic_changelist' %}">HR Contract Policies</a></th>
             </tr>
