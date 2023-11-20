@@ -7,8 +7,6 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.leave.LeaveMixin import LeaveMixin
 from employee.models.employee import Employee
-
-
 # TODO : leave calculation by permanent date
 # TODO : leave in cash in every january
 class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
@@ -30,3 +28,20 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     attachment = models.FileField(help_text='Image , PDF or Docx file ')
+
+
+class LeaveManagement(TimeStampMixin):
+    LEAVE_STATUS = (
+        ('pending', '⏳ Pending'),
+        ('approved', '✔ Approved'),
+        ('rejected', '⛔ Rejected'),
+    )
+    leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
+    manager = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
+    approval_time = models.DateTimeField(blank=True, null=True)
+

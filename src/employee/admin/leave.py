@@ -4,15 +4,21 @@ from django.contrib import admin, messages
 from django import forms
 from django.template.loader import get_template
 from django.utils.html import format_html
+from django.utils import timezone
 from django_q.tasks import async_task
-
+from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
-
+from employee.models.leave import leave
 
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
     extra = 0
 
+
+class LeaveManagementInline(admin.TabularInline):
+    model = leave.LeaveManagement
+    extra = 0
+    exclude = ['approval_time']
 
 class LeaveForm(forms.ModelForm):
     placeholder = """
@@ -50,7 +56,7 @@ class LeaveManagement(admin.ModelAdmin):
     actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
     exclude = ['status_changed_at', 'status_changed_by']
-    inlines = (LeaveAttachmentInline,)
+    inlines = (LeaveAttachmentInline, LeaveManagementInline)
     search_fields = ('employee__full_name', 'leave_type')
     form = LeaveForm
     date_hierarchy = 'start_date'
@@ -78,6 +84,23 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
         self.__send_leave_mail(request, obj, form, change)
+        employee = request.user.employee or form.changed_data.get('employee')
+        if not change and not employee.manager:
+            projects = EmployeeProject.objects.get(employee=request.user.employee)
+            # o = projects.project.filter(employee__manager=True)
+            print('manager_with project')
+            for project in projects.project.all():
+                project_managers = EmployeeProject.objects.filter(
+                    project=project,
+                    employee__manager=True
+                )
+                for project_manager in project_managers:
+                        leave_manage = leave.LeaveManagement(
+                            manager=project_manager.employee,
+                            leave=obj
+                        )
+                        leave_manage.save()
+
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -192,3 +215,30 @@ def has_friday_between_dates(start_date, end_date):
         current_date += one_day  # Move to the next day
 
     return False
+
+
+
+@admin.register(leave.LeaveManagement)
+class LeaveManagementAdmin(admin.ModelAdmin):
+    list_display = ['get_employee', 'manager', 'status', 'approval_time']
+    readonly_fields = ('manager', 'leave')
+    fields = ('leave', 'manager', 'status')
+    list_filter = ('status', 'manager')
+    search_fields = ('manager__full_name', 'status')
+    date_hierarchy = 'created_at'
+
+    @admin.display(description="Employee")
+    def get_employee(self, obj):
+        return obj.leave.employee.full_name
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if change:
+            obj.approval_time = timezone.now()
+            obj.save()
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(manager=request.user.employee)
