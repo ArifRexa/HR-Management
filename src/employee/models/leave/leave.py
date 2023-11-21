@@ -2,13 +2,11 @@ from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.template.defaultfilters import truncatewords
-
+from django.db.models import Q
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.leave.LeaveMixin import LeaveMixin
 from employee.models.employee import Employee
-
-
 # TODO : leave calculation by permanent date
 # TODO : leave in cash in every january
 class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
@@ -30,3 +28,25 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     attachment = models.FileField(help_text='Image , PDF or Docx file ')
+
+
+class LeaveManagement(TimeStampMixin):
+    LEAVE_STATUS = (
+        ('pending', '⏳ Pending'),
+        ('approved', '✔ Approved'),
+        ('rejected', '⛔ Rejected'),
+    )
+    leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
+    manager = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        limit_choices_to=(Q(active=True) & (Q(manager=True) | Q(lead=True)))
+    )
+    status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
+    approval_time = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Leave Approval'
+        verbose_name_plural = "Leave Approvals"
+

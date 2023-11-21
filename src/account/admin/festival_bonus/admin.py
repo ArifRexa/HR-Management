@@ -50,3 +50,5 @@ class FestivalBonusSheetAdmin(FestivalBonusAction, admin.ModelAdmin):
     def total_employee(self, obj):
         return obj.employeefestivalbonus_set.count()
 
+    def has_module_permission(self, request):
+        return False

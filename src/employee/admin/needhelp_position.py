@@ -10,6 +10,9 @@ class NeedHelpPositionAdmin(admin.ModelAdmin):
         "email",
     )
 
+    def has_module_permission(self, request):
+        return False
+
 
 # @admin.register(EmployeeNeedHelp)
 # class EmployeeNeedHelpAdmin(admin.ModelAdmin):

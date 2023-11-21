@@ -42,3 +42,6 @@ class InvoiceAdmin(admin.ModelAdmin):
             'seal': f"{config.settings.STATIC_ROOT}/stationary/sign_md.png"
         }
         return pdf.render_to_pdf(download=True)
+
+    def has_module_permission(self, request):
+        return False

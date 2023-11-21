@@ -106,3 +106,5 @@ class HomeOfficeManagement(admin.ModelAdmin):
         else:
             messages.error(request, 'You don\' have permission.')
 
+    def has_module_permission(self, request):
+        return False
