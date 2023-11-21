@@ -54,7 +54,7 @@ class LeaveForm(forms.ModelForm):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = ('employee', 'leave_info', 'leave_type_', 'total_leave_',
+    list_display = ('employee', 'leave_info', 'leave_type_', 'total_leave_', 'manager_approval',
                     'status_', 'start_date_', 'end_date_')
     actions = ('approve_selected',)
     readonly_fields = ('note', 'total_leave')
@@ -145,6 +145,17 @@ class LeaveManagement(admin.ModelAdmin):
             # 'leave_day':leave.start_date.strftime("%A")
         })
         return format_html(html_content)
+
+    @admin.display()
+    def manager_approval(self, obj):
+        leave_management = leave.LeaveManagement.objects.filter(leave=obj)
+        html_template = get_template('admin/leave/list/col_manager_approval.html')
+        html_content = html_template.render({
+            'leave_management': leave_management
+        })
+
+        return format_html(html_content)
+
 
     @admin.display()
     def leave_type_(self, leave: Leave):
