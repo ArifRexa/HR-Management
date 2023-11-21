@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.template.defaultfilters import truncatewords
-
+from django.db.models import Q
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.leave.LeaveMixin import LeaveMixin
@@ -40,8 +40,13 @@ class LeaveManagement(TimeStampMixin):
     manager = models.ForeignKey(
         Employee,
         on_delete=models.SET_NULL,
-        null=True
+        null=True,
+        limit_choices_to=(Q(active=True) & (Q(manager=True) | Q(lead=True)))
     )
     status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
     approval_time = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = 'Leave Approval'
+        verbose_name_plural = "Leave Approvals"
 
