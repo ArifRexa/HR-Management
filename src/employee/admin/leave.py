@@ -19,7 +19,8 @@ class LeaveAttachmentInline(admin.TabularInline):
 class LeaveManagementInline(admin.TabularInline):
     model = leave.LeaveManagement
     extra = 0
-    exclude = ['approval_time']
+    can_delete = False
+    readonly_fields = ('manager', 'status', 'approval_time')
 
 
 class LeaveForm(forms.ModelForm):
@@ -219,7 +220,7 @@ class LeaveManagementAdmin(admin.ModelAdmin):
     list_display = ['get_employee', 'manager', 'status', 'approval_time']
     readonly_fields = ('manager', 'leave')
     fields = ('leave', 'manager', 'status')
-    list_filter = ('status', 'manager', 'leave__leave_type')
+    list_filter = ('status', 'leave__leave_type', 'manager', 'leave__employee')
     search_fields = ('manager__full_name', 'status')
     date_hierarchy = 'created_at'
 
