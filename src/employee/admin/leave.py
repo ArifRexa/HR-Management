@@ -10,6 +10,7 @@ from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
 
+
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
     extra = 0
@@ -19,6 +20,7 @@ class LeaveManagementInline(admin.TabularInline):
     model = leave.LeaveManagement
     extra = 0
     exclude = ['approval_time']
+
 
 class LeaveForm(forms.ModelForm):
     placeholder = """
@@ -42,7 +44,7 @@ class LeaveForm(forms.ModelForm):
     class Meta:
         model = Leave
         fields = '__all__'
-    
+
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get('message'):
@@ -84,23 +86,20 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
         self.__send_leave_mail(request, obj, form, change)
-        employee = request.user.employee or form.changed_data.get('employee')
+        employee = form.cleaned_data.get('employee') or request.user.employee
         if not change and not employee.manager:
-            projects = EmployeeProject.objects.get(employee=request.user.employee)
-            # o = projects.project.filter(employee__manager=True)
-            print('manager_with project')
-            for project in projects.project.all():
-                project_managers = EmployeeProject.objects.filter(
-                    project=project,
-                    employee__manager=True
-                )
-                for project_manager in project_managers:
-                        leave_manage = leave.LeaveManagement(
-                            manager=project_manager.employee,
-                            leave=obj
-                        )
-                        leave_manage.save()
+            projects = EmployeeProject.objects.get(employee=employee)
+            project_managers = EmployeeProject.objects.filter(
+                project__in=projects.project.all(),
+                employee__manager=True
+            ).distinct()
 
+            for project_manager in project_managers:
+                leave_manage = leave.LeaveManagement(
+                    manager=project_manager.employee,
+                    leave=obj
+                )
+                leave_manage.save()
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -123,14 +122,13 @@ class LeaveManagement(admin.ModelAdmin):
     @admin.action()
     def approve_selected(self, request, queryset):
         if (
-            request.user.is_superuser 
-            or request.user.has_perm("employee.can_approve_leave_applications")
+                request.user.is_superuser
+                or request.user.has_perm("employee.can_approve_leave_applications")
         ):
             messages.success(request, 'Leaves approved.')
             queryset.update(status='approved')
         else:
             messages.error(request, 'You don\' have permission.')
-
 
     @admin.display()
     def leave_info(self, leave: Leave):
@@ -146,7 +144,6 @@ class LeaveManagement(admin.ModelAdmin):
             # 'leave_day':leave.start_date.strftime("%A")
         })
         return format_html(html_content)
-
 
     @admin.display()
     def leave_type_(self, leave: Leave):
@@ -196,10 +193,10 @@ class LeaveManagement(admin.ModelAdmin):
         html_content = html_template.render({
             'data': leave.end_date,
             'leave_day': leave.end_date.strftime("%A"),
-            'has_friday':has_friday_between_dates(leave.start_date, leave.end_date)
+            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
         })
         return format_html(html_content)
-        
+
 
 def has_friday_between_dates(start_date, end_date):
     # Create a timedelta of one day
@@ -217,13 +214,12 @@ def has_friday_between_dates(start_date, end_date):
     return False
 
 
-
 @admin.register(leave.LeaveManagement)
 class LeaveManagementAdmin(admin.ModelAdmin):
     list_display = ['get_employee', 'manager', 'status', 'approval_time']
     readonly_fields = ('manager', 'leave')
     fields = ('leave', 'manager', 'status')
-    list_filter = ('status', 'manager')
+    list_filter = ('status', 'manager', 'leave__leave_type')
     search_fields = ('manager__full_name', 'status')
     date_hierarchy = 'created_at'
 
