@@ -5,7 +5,7 @@ from openpyxl.styles import Font, PatternFill, Alignment
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.http import HttpResponseBadRequest
-
+from django.shortcuts import redirect
 from django.contrib import admin, messages
 from django.db.models import Q, Sum
 from django.http import HttpResponse
@@ -369,14 +369,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
-
-        if (
-                not request.user.is_superuser
-                and obj
-                and obj.employee != request.user.employee
-                and obj.manager != request.user.employee
-        ):
-            permitted = False
+        if obj is not None and obj.pk:
+            if (
+                    not request.user.is_superuser
+                    and obj
+                    and obj.employee != request.user.employee
+                    and obj.manager != request.user.employee
+            ):
+                permitted = False
 
         return permitted
 
@@ -495,7 +495,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                                      size=12,
                                      bold=True,
                                      color='ffffff')
-                    cell.fill = PatternFill(start_color='6aa84f', end_color='6aa84f', fill_type='solid')
+                    cell.fill = PatternFill(
+                                                start_color='6aa84f',
+                                                end_color='6aa84f',
+                                                fill_type='solid'
+                                            )
                     cell.alignment = Alignment(horizontal='center',
                                                vertical='center',
                                                indent=0)
@@ -709,6 +713,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 total_hour += float(update[1])
                 link = f"-{update[2]}" if update[2] and check_valid_url(update[2]) else ""
                 updates += f'{update[0]} \n' + f"({round(float(update[1]), 2)}H){link}\n"
+
             if obj.project.is_team:
 
                 tmp_add = (f"{obj.employee.full_name}\n\n" +
@@ -749,6 +754,24 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return permitted
 
     def save_model(self, request, obj, form, change) -> None:
+        if not change:
+            from django.utils import timezone
+            if form.cleaned_data.get('employee'):
+                employee = form.cleaned_data.get('employee')
+            else:
+                employee = request.user.employee
+            update_obj = DailyProjectUpdate.objects.filter(
+                employee=employee,
+                manager=form.cleaned_data.get('manager'),
+                project=form.cleaned_data.get('project'),
+                created_at__date=timezone.now().date()
+            )
+            if update_obj.exists():
+                messages.error(
+                    request,
+                    "Already you have given today's update for this project"
+                )
+                return
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
@@ -768,7 +791,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         else:
             total_hour = request.POST.get('hours')
             # ic(total_hour)
-
         super().save_model(request, obj, form, change)
 
         if change == False:
@@ -795,3 +817,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     #     self.form = AddDDailyProjectUpdateForm
     #     extra_context = {'form':self.form}
     #     return super().add_view(request, form_url, extra_context)
+    
+    def response_add(self, request, obj, post_url_continue=None):
+        if obj.pk:
+            return super().response_add(
+                request,
+                obj,
+                post_url_continue=post_url_continue
+            )
+        else:
+            return redirect('/admin/project_management/dailyprojectupdate/')
