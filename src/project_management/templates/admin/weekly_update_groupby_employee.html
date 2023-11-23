@@ -89,14 +89,14 @@
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}"> {{hour.employee}} {% if hour.employee.top_one_skill.skill %} ({{ hour.employee.top_one_skill.skill }}) {% endif %}</td>
                 {% endifchanged %}
-                <td>{{ hour.project_hour.project }} || ({{hour.hours}})</td>
+                <td>{{ hour.project_hour.project }} || ({{hour.hours|floatformat:2}})</td>
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}">
                   {% if key.employee_hours <= 5 %} <b style="color: red; font-weight: bold">
-                    {{ key.employee_hours }}
+                    {{ key.employee_hours|floatformat:2 }}
                     </b>
                     {% else %}
-                    {{ key.employee_hours }}
+                    {{ key.employee_hours|floatformat:2 }}
                     {% endif %}
                 </td>
                 {% endifchanged %}
