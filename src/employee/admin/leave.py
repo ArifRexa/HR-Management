@@ -92,9 +92,10 @@ class LeaveManagement(admin.ModelAdmin):
             projects = EmployeeProject.objects.get(employee=employee)
             project_managers = EmployeeProject.objects.filter(
                 project__in=projects.project.all(),
-                employee__manager=True
+                employee__manager=True,
+                employee__active=True
             ).distinct()
-
+            print(project_managers)
             for project_manager in project_managers:
                 leave_manage = leave.LeaveManagement(
                     manager=project_manager.employee,
