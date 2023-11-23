@@ -30,7 +30,7 @@
                 <th scope="row"><a href="{% url 'admin:project_management.project.graph' %}">Project Graph</a></th>
             </tr>
             <tr>
-                <th scope="row"><a href="{% url 'admin:project_management_employeeprojecthourgroupbyemployee_changelist' %}?created_at__month={{month}}&created_at__year={{year}}">Weekly Employee Hours</a></th>
+                <th scope="row"><a href="{% url 'admin:project_management_employeeprojecthourgroupbyemployee_changelist' %}?project_hour__date__month={{month}}&project_hour__date__year={{year}}">Weekly Employee Hours</a></th>
             </tr>
             <tr>
                 <th scope="row"><a href="{% url 'admin:activity' %}">Activity</a></th>

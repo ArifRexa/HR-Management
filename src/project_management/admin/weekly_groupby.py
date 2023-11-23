@@ -26,7 +26,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         "project_hour__project",
         "employee",
     )
-    date_hierarchy = "created_at"
+    date_hierarchy = "project_hour__date"
     change_list_template = "admin/weekly_update_groupby_employee.html"
 
     @admin.display(description="Project")
@@ -70,7 +70,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
                 key=lambda x: x[0].employee_hours,
             )
         )
-
+        
         my_context = {
             "employee_hours_data": sorted_data_set,
         }

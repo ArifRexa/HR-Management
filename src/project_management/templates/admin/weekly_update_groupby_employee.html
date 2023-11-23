@@ -84,7 +84,7 @@
 
               {% for hour in values %}
               <tr>
-                <td>{{ hour.created_at }}</td>
+                <td>{{ hour.project_hour.date }}</td>
                 
                 {% ifchanged %}
                 <td rowspan="{{ values|length }}"> {{hour.employee}} {% if hour.employee.top_one_skill.skill %} ({{ hour.employee.top_one_skill.skill }}) {% endif %}</td>
