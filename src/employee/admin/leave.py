@@ -86,7 +86,7 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
-        self.__send_leave_mail(request, obj, form, change)
+
         employee = form.cleaned_data.get('employee') or request.user.employee
         if not change and not employee.manager:
             projects = EmployeeProject.objects.get(employee=employee)
@@ -101,6 +101,7 @@ class LeaveManagement(admin.ModelAdmin):
                     leave=obj
                 )
                 leave_manage.save()
+        self.__send_leave_mail(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
