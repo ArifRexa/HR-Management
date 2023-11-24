@@ -36,7 +36,7 @@ class LeaveAttachment(TimeStampMixin, AuthorMixin):
 class LeaveManagement(TimeStampMixin):
     LEAVE_STATUS = (
         ('pending', '⏳ Pending'),
-        ('approved', '✔ Approved'),
+        ('approved', '\u2705 Approved'),
         ('rejected', '⛔ Rejected'),
     )
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
