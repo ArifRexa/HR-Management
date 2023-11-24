@@ -26,7 +26,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         "project_hour__project",
         "employee",
     )
-    date_hierarchy = "created_at"
+    date_hierarchy = "project_hour__date"
     change_list_template = "admin/weekly_update_groupby_employee.html"
 
     @admin.display(description="Project")
@@ -70,7 +70,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
                 key=lambda x: x[0].employee_hours,
             )
         )
-
+        
         my_context = {
             "employee_hours_data": sorted_data_set,
         }
@@ -78,22 +78,23 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
 
     def get_urls(self):
         urls = super().get_urls()
-
+        
         def wrap(view):
             def wrapper(*args, **kwargs):
                 return self.admin_site.admin_view(view)(*args, **kwargs)
 
             wrapper.model_admin = self
             return update_wrapper(wrapper, view)
-
+        
         info = self.model._meta.app_label, self.model._meta.model_name
-        custome_urls = [
+        custom_urls = [
             path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
             path(
                 "", self.custom_changelist_view, name="groupby_employee_changelist_view"
             ),
         ]
-        return custome_urls + urls
+
+        return custom_urls + urls
 
     def get_queryset(self, request):
         query_set = super().get_queryset(request)
@@ -103,6 +104,9 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         ):
             return query_set.filter(employee=request.user.employee.id)
         return query_set.filter(employee__active=True).exclude(employee_id__in=[30])
+
+    def has_module_permission(self, request):
+        return False
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:

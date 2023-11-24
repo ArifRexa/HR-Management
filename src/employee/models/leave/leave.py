@@ -19,6 +19,9 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
     def short_message(self):
         return truncatewords(self.message, 10)
 
+    def __str__(self):
+        return f"{self.employee.full_name} : {self.created_at.strftime('%Y-%m-%d %I:%M %P')}"
+
     class Meta:
         permissions = (
             ("can_approve_leave_applications", "Can able to approve leave applications"),
@@ -46,6 +49,8 @@ class LeaveManagement(TimeStampMixin):
     status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
     approval_time = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.leave.employee.full_name} : {self.manager.full_name}"
     class Meta:
         verbose_name = 'Leave Approval'
         verbose_name_plural = "Leave Approvals"

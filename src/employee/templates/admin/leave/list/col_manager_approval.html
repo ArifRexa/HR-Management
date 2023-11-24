@@ -1,5 +1,5 @@
 {% for leave in leave_management %}
     <div style="margin:8px">
-        <b>{{leave.get_status_display.0}} - {{leave.manager}}</b> </br>
+        <b>{{leave.get_status_display.0}} {{leave.manager}}</b> </br>
     </div>
 {% endfor %}
