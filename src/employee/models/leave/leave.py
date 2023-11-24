@@ -20,7 +20,7 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
         return truncatewords(self.message, 10)
 
     def __str__(self):
-        return f"{self.employee.full_name} : {self.created_at.strftime('%Y-%m-%d %I:%M')}"
+        return f"{self.employee.full_name} : {self.created_at.strftime('%Y-%m-%d %I:%M %P')}"
 
     class Meta:
         permissions = (
