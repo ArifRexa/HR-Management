@@ -86,7 +86,7 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
-        self.__send_leave_mail(request, obj, form, change)
+
         employee = form.cleaned_data.get('employee') or request.user.employee
         if not change and not employee.manager:
             projects = EmployeeProject.objects.get(employee=employee)
@@ -95,13 +95,13 @@ class LeaveManagement(admin.ModelAdmin):
                 employee__manager=True,
                 employee__active=True
             ).distinct()
-            print(project_managers)
             for project_manager in project_managers:
                 leave_manage = leave.LeaveManagement(
                     manager=project_manager.employee,
                     leave=obj
                 )
                 leave_manage.save()
+        self.__send_leave_mail(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -130,7 +130,7 @@ class LeaveManagement(admin.ModelAdmin):
             messages.success(request, 'Leaves approved.')
             queryset.update(status='approved')
         else:
-            messages.error(request, 'You don\' have permission.')
+            messages.error(request, 'You don\'t have permission.')
 
     @admin.display()
     def leave_info(self, leave: Leave):
@@ -156,7 +156,6 @@ class LeaveManagement(admin.ModelAdmin):
         })
 
         return format_html(html_content)
-
 
     @admin.display()
     def leave_type_(self, leave: Leave):
@@ -229,9 +228,10 @@ def has_friday_between_dates(start_date, end_date):
 
 @admin.register(leave.LeaveManagement)
 class LeaveManagementAdmin(admin.ModelAdmin):
-    list_display = ['get_employee', 'get_apply_date', 'get_leave_type', 'manager', 'status', 'get_leave_date', 'approval_time']
+    list_display = ['get_employee', 'get_apply_date', 'get_leave_type', 'manager', 'status', 'get_leave_date',
+                    'approval_time']
     readonly_fields = ('manager', 'leave')
-    actions = ('approve_selected',)
+    actions = ('approve_selected', 'pending_selected', 'rejected_selected')
     fields = ('leave', 'manager', 'status')
     list_filter = ('status', 'leave__leave_type', 'manager', 'leave__employee')
     search_fields = ('manager__full_name', 'status')
@@ -278,5 +278,27 @@ class LeaveManagementAdmin(admin.ModelAdmin):
         ):
             messages.success(request, 'Leaves approved.')
             queryset.update(status='approved', approval_time=timezone.now())
+        else:
+            messages.error(request, 'You don\'t have permission.')
+
+    @admin.action()
+    def pending_selected(self, request, queryset):
+        if (
+                request.user.is_superuser
+                or request.user.has_perm("employee.change_leavemanagement")
+        ):
+            messages.success(request, 'Leaves pending.')
+            queryset.update(status='pending')
+        else:
+            messages.error(request, 'You don\'t have permission.')
+
+    @admin.action()
+    def rejected_selected(self, request, queryset):
+        if (
+                request.user.is_superuser
+                or request.user.has_perm("employee.change_leavemanagement")
+        ):
+            messages.success(request, 'Leaves rejected.')
+            queryset.update(status='rejected')
         else:
             messages.error(request, 'You don\'t have permission.')

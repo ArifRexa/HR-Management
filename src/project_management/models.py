@@ -57,6 +57,7 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     active = models.BooleanField(default=True)
     in_active_at = models.DateField(null=True, blank=True)
+    emergency_operation = models.BooleanField(default=False)
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
@@ -82,10 +83,10 @@ class Project(TimeStampMixin, AuthorMixin):
         return duration.days
 
     def colorize(self):
-        if self.durations() > 14 and self.durations() <= 28:
-            return "text-primary"
-        elif self.durations() <= 14:
+        if self.emergency_operation:
             return "text-danger"
+        elif self.durations() <= 28:
+            return "text-primary"
         return ""
 
     @property

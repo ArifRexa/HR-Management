@@ -17,7 +17,7 @@ class LeaveMixin(models.Model):
     )
     LEAVE_STATUS = (
         ('pending', '⏳ Pending'),
-        ('approved', '✔ Approved'),
+        ('approved', '\u2705 Approved'),
         ('rejected', '⛔ Rejected'),
     )
     start_date = models.DateField()
