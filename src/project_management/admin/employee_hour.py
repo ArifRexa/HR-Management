@@ -694,9 +694,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         if project_count.count() > 1:
             return messages.error(request, "Only one project select to send report.")
-
         try:
-            to_report = ProjectReport.objects.get(project=queryset[0].project)
+            user_type = ""
+            if request.user.employee.manager:
+                user_type = "manager"
+            elif request.user.employee.lead:
+                user_type = "lead"
+            elif request.user.employee.top_one_skill.skill.title.lower() == "sqa":
+                user_type = "sqa"
+            to_report = ProjectReport.objects.get(project=queryset[0].project, type=user_type)
         except ProjectReport.DoesNotExist:
             return messages.error(
                 request,
@@ -808,7 +814,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+        if (
+                request.user.is_superuser or
+                request.user.employee.manager or
+                request.user.employee.lead or
+                request.user.employee.top_one_skill.skill.title.lower() == "sqa"
+        ):
             actions['send_report_to_slack'] = (
                 self.send_report_to_slack,
                 "send_report_to_slack",
