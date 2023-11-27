@@ -575,10 +575,18 @@ class CodeReviewEmployeeFeedback(TimeStampMixin, AuthorMixin):
 
 
 class ProjectReport(TimeStampMixin):
-    project = models.OneToOneField(
+    TYPE_CHOICE = (
+        ("manager", "Manager"),
+        ("lead", "Lead"),
+        ("sqa", "SQA")
+    )
+    name = models.CharField(max_length=255, null=True)
+    project = models.ForeignKey(
         Project, related_name='project_reports',
+        limit_choices_to={"active": True},
         on_delete=models.CASCADE
     )
+    type = models.CharField(max_length=10, choices=TYPE_CHOICE, default="manager")
     send_to = models.CharField(
         verbose_name="Send To", max_length=255
     )
