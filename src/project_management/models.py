@@ -576,6 +576,7 @@ class CodeReviewEmployeeFeedback(TimeStampMixin, AuthorMixin):
 
 class ProjectReport(TimeStampMixin):
     TYPE_CHOICE = (
+        ("admin", "Admin"),
         ("manager", "Manager"),
         ("lead", "Lead"),
         ("sqa", "SQA")
