@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.html import format_html, linebreaks, escape
 from django.utils.safestring import mark_safe
 from django import forms
+from employee.models.employee_activity import EmployeeProject
 
 from employee.admin.employee._forms import DailyUpdateFilterForm
 from project_management.utils.send_report import send_report_slack
@@ -678,6 +679,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def send_report_to_slack(self, modeladmin, request, queryset, **kwargs):
         date = queryset.first().created_at.strftime('%d-%m-%Y')
         # Annotate the queryset to count the distinct dates
+        projects = EmployeeProject.objects.filter(employee=request.user.employee, project=queryset[0].project)
+        if not projects.exists() and not request.user.is_superuser:
+            return messages.error(
+                request,
+                "You are not assign this project"
+            )
+
         date_count = queryset.annotate(
             date=TruncDate('created_at')
         ).values('date').annotate(count=Count('id'))
@@ -696,7 +704,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             return messages.error(request, "Only one project select to send report.")
         try:
             user_type = ""
-            if request.user.employee.manager:
+            if request.user.is_superuser:
+                user_type = "admin"
+            elif request.user.employee.manager:
                 user_type = "manager"
             elif request.user.employee.lead:
                 user_type = "lead"

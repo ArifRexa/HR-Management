@@ -91,7 +91,7 @@ class ProjectReportAdmin(admin.ModelAdmin):
     list_display = ['id', 'project', 'name', 'type', 'send_to', 'api_token']
     list_display_links = ['project']
     list_filter = ('project', 'type')
-    search_fields = ()
+    search_fields = ('project', 'name', 'type')
 
     # def formfield_for_foreignkey(self, db_field, request, **kwargs):
     #     if db_field.name == 'project':
