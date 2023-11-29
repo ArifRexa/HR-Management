@@ -778,7 +778,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 employee = request.user.employee
             update_obj = DailyProjectUpdate.objects.filter(
                 employee=employee,
-                manager=form.cleaned_data.get('manager'),
                 project=form.cleaned_data.get('project'),
                 created_at__date=timezone.now().date()
             )
