@@ -22,12 +22,14 @@
 
         {% for update_line in update_json %}
             {{ update_line.0 | stringformat:".80s" }} - {{ update_line.1 | stringformat:".80s" }}H
-        {% if update_line.2 %}
-                <a href="{{ update_line.2 }}" target="_blank">{{ github_icon }}.</a>
-        {% else %}
-        {% if is_github_link_show %}
-            <a href="{{ update_line.2 }}" target="_blank">{{ github_icon_red }}.</a>
-        {% endif %}
+            {% if update_line.2 %}
+                    <a href="{{ update_line.2 }}" target="_blank">
+                        {% link_icon url=update_line.2 %}
+                    </a>
+            {% else %}
+                {% if is_github_link_show %}
+                    <a href="{{ update_line.2 }}" target="_blank">{{ github_icon_red }}.</a>
+                {% endif %}
             {% endif %}
         {% endfor %}
     </div>
