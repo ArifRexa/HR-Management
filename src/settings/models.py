@@ -136,5 +136,9 @@ class EmployeeFoodAllowance(TimeStampMixin, AuthorMixin):
     date = models.DateField()
     amount = models.IntegerField()
 
+    class Meta:
+        verbose_name = "Employee Food Allowance"
+        verbose_name_plural = "Employee Food Allowances"
+
     def __str__(self) -> str:
         return f"{self.employee.full_name} | {self.amount} | {self.date.strftime('%B %d, %Y')}"

@@ -14,7 +14,11 @@ class MonthlyEntry(TimeStampMixin, AuthorMixin):
     amount = models.FloatField()
     basic_salary = models.FloatField()
     note = models.TextField(null=True, blank=True)
-    
+
+    class Meta:
+        verbose_name = "Monthly Entry"
+        verbose_name_plural = "Monthly Entries"
+
     def __str__(self):
         return self.account.__str__() + self.tranx_date.strftime("%b %d, %Y")
     

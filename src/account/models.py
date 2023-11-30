@@ -27,6 +27,10 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
             self.employeesalary_set.aggregate(Sum("gross_salary"))["gross_salary__sum"]
         )
 
+    class Meta:
+        verbose_name = "Salary Sheet"
+        verbose_name_plural = "Salary Sheets"
+
 
 class EmployeeSalary(TimeStampMixin):
     employee = models.ForeignKey(Employee, on_delete=models.RESTRICT)
