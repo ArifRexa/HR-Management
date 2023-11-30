@@ -29,16 +29,54 @@ class Learning(AuthorMixin, TimeStampMixin):
                                    limit_choices_to={'project_eligibility': True, 'active': True},
                                    related_name='learning_to')
     asigned_by = models.ForeignKey(Employee,
-                                    on_delete=models.CASCADE,
-                                    limit_choices_to=(
-                                        Q(active=True)
-                                        & (
-                                            Q(manager=True)
-                                            | Q(lead=True)
-                                        )
-                                    ),
-                                    related_name='learning_by')
+                                   on_delete=models.CASCADE,
+                                   limit_choices_to=(
+                                           Q(active=True)
+                                           & (
+                                                   Q(manager=True)
+                                                   | Q(lead=True)
+                                           )
+                                   ),
+                                   related_name='learning_by')
     details = models.TextField(blank=False, null=True)
 
     def __str__(self):
         return self.asigned_to.full_name
+
+
+class EmployeeTechnology(TimeStampMixin):
+    name = models.CharField(max_length=255, unique=True)
+    icon = models.ImageField(null=True, blank=True)
+    url = models.URLField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Employee Technology"
+        verbose_name_plural = "Employee Technologies"
+        ordering = ('name', '-created_at')
+
+    def __str__(self):
+        return self.name
+
+
+class EmployeeExpertise(TimeStampMixin):
+    LEVEL_CHOICE = (
+        ('basic', 'Basic'),
+        ('intermediate', 'Intermediate'),
+        ('advance', 'Advance'),
+        ('master', 'Master'),
+    )
+    technology = models.ForeignKey(EmployeeTechnology, on_delete=models.SET_NULL, null=True)
+    level = models.CharField(max_length=15, choices=LEVEL_CHOICE)
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={'active': True}
+    )
+
+    class Meta:
+        verbose_name = "Employee Expertise"
+        verbose_name_plural = "Employee Expertises"
+        ordering = ('-created_at', )
+
+    def __str__(self):
+        return f"{self.technology.name}({self.level})"
