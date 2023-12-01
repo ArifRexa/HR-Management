@@ -184,7 +184,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "employee",
         "project",
-        "manager"
     )
     change_list_template = "admin/total_employee_hour.html"
     readonly_fields = [
