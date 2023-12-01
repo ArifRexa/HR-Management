@@ -75,6 +75,9 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
 
+    class Meta:
+        ordering = ['title']
+
     def __str__(self):
         return self.title
 

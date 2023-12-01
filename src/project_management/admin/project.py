@@ -51,7 +51,10 @@ class ProjectAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return ['on_boarded_by']
         return []
+    
 
+    def get_ordering(self, request):
+        return ['title']
 
     def get_report_url(self, obj, request):
         html_template = get_template(
