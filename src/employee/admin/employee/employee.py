@@ -90,6 +90,9 @@ class EmployeeAdmin(
             )
         return qs, use_distinct
 
+    def get_ordering(self, request):
+        return ['full_name']
+
     def get_list_display(self, request):
         list_display = [
             "employee_info",

@@ -347,7 +347,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
             ("can_access_all_employee", "Can acccess all employee"),
         )
-
+        ordering = ['full_name']
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
