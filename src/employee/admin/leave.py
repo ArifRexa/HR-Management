@@ -90,11 +90,14 @@ class LeaveManagement(admin.ModelAdmin):
         employee = form.cleaned_data.get('employee') or request.user.employee
         if not change and not employee.manager:
             projects = EmployeeProject.objects.get(employee=employee)
-            project_managers = EmployeeProject.objects.filter(
+            project_obj = EmployeeProject.objects.filter(
                 project__in=projects.project.all(),
-                employee__manager=True,
                 employee__active=True
-            ).distinct()
+            )
+            from django.db.models import Q
+            project_managers = project_obj.filter(
+                Q(employee__manager=True) | Q(employee__lead=True)
+            )
             for project_manager in project_managers:
                 leave_manage = leave.LeaveManagement(
                     manager=project_manager.employee,
