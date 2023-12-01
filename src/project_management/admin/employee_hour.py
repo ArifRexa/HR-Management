@@ -15,6 +15,7 @@ from django.utils import timezone
 from django.utils.html import format_html, linebreaks, escape
 from django.utils.safestring import mark_safe
 from django import forms
+from employee.models.employee_activity import EmployeeProject
 
 from employee.admin.employee._forms import DailyUpdateFilterForm
 from project_management.utils.send_report import send_report_slack
@@ -183,6 +184,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "employee",
         "project",
+        "manager"
     )
     change_list_template = "admin/total_employee_hour.html"
     readonly_fields = [
@@ -678,6 +680,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def send_report_to_slack(self, modeladmin, request, queryset, **kwargs):
         date = queryset.first().created_at.strftime('%d-%m-%Y')
         # Annotate the queryset to count the distinct dates
+        projects = EmployeeProject.objects.filter(employee=request.user.employee, project=queryset[0].project)
+        if not projects.exists() and not request.user.is_superuser:
+            return messages.error(
+                request,
+                "You are not assign this project"
+            )
+
         date_count = queryset.annotate(
             date=TruncDate('created_at')
         ).values('date').annotate(count=Count('id'))
@@ -694,9 +703,17 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         if project_count.count() > 1:
             return messages.error(request, "Only one project select to send report.")
-
         try:
-            to_report = ProjectReport.objects.get(project=queryset[0].project)
+            user_type = ""
+            if request.user.is_superuser:
+                user_type = "admin"
+            elif request.user.employee.manager:
+                user_type = "manager"
+            elif request.user.employee.lead:
+                user_type = "lead"
+            elif request.user.employee.top_one_skill.skill.title.lower() == "sqa":
+                user_type = "sqa"
+            to_report = ProjectReport.objects.get(project=queryset[0].project, type=user_type)
         except ProjectReport.DoesNotExist:
             return messages.error(
                 request,
@@ -762,7 +779,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 employee = request.user.employee
             update_obj = DailyProjectUpdate.objects.filter(
                 employee=employee,
-                manager=form.cleaned_data.get('manager'),
                 project=form.cleaned_data.get('project'),
                 created_at__date=timezone.now().date()
             )
@@ -808,7 +824,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+        if (
+                request.user.is_superuser or
+                request.user.employee.manager or
+                request.user.employee.lead or
+                request.user.employee.top_one_skill.skill.title.lower() == "sqa"
+        ):
             actions['send_report_to_slack'] = (
                 self.send_report_to_slack,
                 "send_report_to_slack",

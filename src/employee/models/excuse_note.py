@@ -35,8 +35,8 @@ class ExcuseNote(AuthorMixin, TimeStampMixin):
     #     return truncatewords(self.excuse_acts, 10)
     
     class Meta:
-        verbose_name = 'HR Report note'
-        verbose_name_plural = 'HR Report notes'
+        verbose_name = 'HR Report Note'
+        verbose_name_plural = 'HR Report Notes'
 
 
 class ExcuseNoteAttachment(TimeStampMixin, AuthorMixin):

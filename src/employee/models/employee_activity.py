@@ -58,6 +58,10 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return f"{self.employee.full_name} - {self.date}"
 
+    class Meta:
+        verbose_name = "Employee Attendance"
+        verbose_name_plural = "Employee Attendances"
+
 
 class EmployeeActivity(TimeStampMixin, AuthorMixin):
     employee_attendance = models.ForeignKey(

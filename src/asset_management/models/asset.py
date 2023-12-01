@@ -73,7 +73,9 @@ def asset_unassign(sender, instance, **kwargs):
 
 class EmployeeAsset(Employee):
     class Meta:
-        proxy=True
+        proxy = True
+        verbose_name = "Employee Asset"
+        verbose_name_plural = "Employee Assets"
 
 
 class SubAsset(AuthorMixin, TimeStampMixin):

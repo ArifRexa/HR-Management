@@ -51,7 +51,10 @@ class ProjectAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return ['on_boarded_by']
         return []
+    
 
+    def get_ordering(self, request):
+        return ['title']
 
     def get_report_url(self, obj, request):
         html_template = get_template(
@@ -88,10 +91,12 @@ class ProjectNeedAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectReport)
 class ProjectReportAdmin(admin.ModelAdmin):
-    list_display = ['id', 'project', 'send_to', 'api_token']
+    list_display = ['id', 'project', 'name', 'type', 'send_to', 'api_token']
     list_display_links = ['project']
+    list_filter = ('project', 'type')
+    search_fields = ('project__title', 'name', 'type')
 
-    def formfield_for_foreignkey(self, db_field, request, **kwargs):
-        if db_field.name == 'project':
-            kwargs['queryset'] = Project.objects.filter(active=True)
-        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    # def formfield_for_foreignkey(self, db_field, request, **kwargs):
+    #     if db_field.name == 'project':
+    #         kwargs['queryset'] = Project.objects.filter(active=True)
+    #     return super().formfield_for_foreignkey(db_field, request, **kwargs)

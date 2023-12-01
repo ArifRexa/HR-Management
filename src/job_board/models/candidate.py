@@ -117,7 +117,9 @@ class CandidateAssessment(TimeStampMixin):
         permissions = [
             ("access_candidate_evaluation_url", "Can access candidate's evaluation url"),
         ]
-    
+        verbose_name = "Candidate Assessment"
+        verbose_name_plural = "Candidate Assessments"
+
     @property
     def time_spend(self):
         if self.exam_end_at is not None:

@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
-from employee.models import Skill, Learning
-
+from employee.models import Skill, Learning, EmployeeTechnology, EmployeeExpertise
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
@@ -45,3 +44,44 @@ class LearningAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+
+@admin.register(EmployeeTechnology)
+class EmployeeTechAdmin(admin.ModelAdmin):
+    list_display = ('name', 'icon', 'url')
+    search_fields = ('name',)
+
+
+@admin.register(EmployeeExpertise)
+class EmployeeExpertise(admin.ModelAdmin):
+    list_display = ('employee', 'get_tech', 'level', 'created_at')
+    search_fields = ('employee__full_name', 'technology__name')
+    list_filter = ('level', 'technology', 'employee')
+    autocomplete_fields = ('technology', 'employee')
+    readonly_fields = ['employee']
+
+    def get_fields(self, request, obj=None):
+        if request.user.is_superuser:
+            return ['employee', 'technology', 'level']
+        return ['technology', 'level']
+
+    def get_readonly_fields(self, request, obj=None):
+        if not obj:
+            return []
+        if request.user.is_superuser:
+            return []
+        if obj and request.user.employee == obj.employee:
+            return []
+        return ['employee', 'technology', 'level']
+
+    @admin.display(description="Skill")
+    def get_tech(self, obj):
+        return obj.technology.name
+
+    def save_model(self, request, obj, form, change):
+        if request.user.is_superuser:
+            obj.employee = form.cleaned_data.get('employee')
+        else:
+            obj.employee = request.user.employee
+
+        super().save_model(request, obj, form, change)
