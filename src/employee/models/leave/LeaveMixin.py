@@ -34,7 +34,12 @@ class LeaveMixin(models.Model):
         super().clean_fields(exclude=exclude)
         # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
-            if not user.is_superuser:
+            from django.contrib.auth.models import Group
+            try:
+                group = Group.objects.get(name='HR-Operation')
+            except Group.DoesNotExist:
+                Group.objects.create(name='HR-Operation')
+            if not user.is_superuser and not user.groups.filter(name='HR-Operation').exists():
                 if self.leave_type != 'medical' and self.leave_type != 'half_day':
                     if datetime.date.today() >= self.start_date:
                         # Skipped Validation
