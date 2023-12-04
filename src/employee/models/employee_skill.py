@@ -4,7 +4,7 @@ from django.db.models import Q
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
-
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 class Skill(AuthorMixin, TimeStampMixin):
     title = models.CharField(unique=True, max_length=255)
@@ -48,6 +48,7 @@ class EmployeeTechnology(TimeStampMixin):
     name = models.CharField(max_length=255, unique=True)
     icon = models.ImageField(null=True, blank=True)
     url = models.URLField(null=True, blank=True)
+    active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name = "Employee Technology"
@@ -59,15 +60,7 @@ class EmployeeTechnology(TimeStampMixin):
 
 
 class EmployeeExpertise(TimeStampMixin):
-    LEVEL_CHOICE = (
-        ('basic', 'Basic'),
-        ('intermediate', 'Intermediate'),
-        ('advance', 'Advance'),
-        ('master', 'Master'),
-    )
-    technology = models.ForeignKey(EmployeeTechnology, on_delete=models.SET_NULL, null=True)
-    level = models.CharField(max_length=15, choices=LEVEL_CHOICE)
-    employee = models.ForeignKey(
+    employee = models.OneToOneField(
         Employee,
         on_delete=models.CASCADE,
         limit_choices_to={'active': True}
@@ -77,6 +70,32 @@ class EmployeeExpertise(TimeStampMixin):
         verbose_name = "Employee Expertise"
         verbose_name_plural = "Employee Expertises"
         ordering = ('-created_at', )
+
+    # def __str__(self):
+    #     return f"{self.employee.full_name}"
+
+
+class EmployeeExpertTech(TimeStampMixin):
+    LEVEL_CHOICE = (
+        ('basic', 'Basic'),
+        ('intermediate', 'Intermediate'),
+        ('advance', 'Advance'),
+        ('master', 'Master'),
+    )
+    employee_expertise = models.ForeignKey(
+        EmployeeExpertise,
+        on_delete=models.CASCADE,
+        related_name='employee_expertise',
+        null=True
+    )
+    technology = models.ForeignKey(EmployeeTechnology, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    level = models.CharField(max_length=15, choices=LEVEL_CHOICE)
+    percentage = models.IntegerField(validators=[MaxValueValidator(100), MinValueValidator(0)], default=0)
+
+    class Meta:
+        verbose_name = "Employee Expert Tech"
+        verbose_name_plural = "Employee Expert Techs"
+        ordering = ('technology__name', )
 
     def __str__(self):
         return f"{self.technology.name}({self.level})"
