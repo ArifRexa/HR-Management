@@ -45,25 +45,38 @@ def get_project_updates(request, project_hash):
                 created_at__date=u_date.get('created_at__date')
             )
             row_span = 0
+            employee_id = None
             for update in update_objects:
 
-                if update.updates_json is not None:
-                    updates.append({
-                            'update': update.updates_json,
-                            'update_by': update.employee.full_name,
-                            'hours': update.hours
-                        })
-                    row_span += len(update.updates_json)
-                    time += update.hours
+                if employee_id == update.employee.id:
+                    if update.updates_json is not None:
+                        updates[-1]['update'] += update.updates_json
+                        row_span += len(update.updates_json)
+                        time += update.hours
+                    else:
+                        updates[-1]['update'] += [[update.update, update.hours]]
+                        row_span += 1
+                        time += update.hours
                 else:
+                    employee_id = update.employee.id
 
-                    updates.append({
-                            'update': [[update.update, update.hours]],
-                            'update_by': update.employee.full_name,
-                            'hours': update.hours
-                        })
-                    row_span += 1
-                    time += update.hours
+                    if update.updates_json is not None:
+                        updates.append({
+                                'update': update.updates_json,
+                                'update_by': update.employee.full_name,
+                                'hours': update.hours
+                            })
+                        row_span += len(update.updates_json)
+                        time += update.hours
+                    else:
+
+                        updates.append({
+                                'update': [[update.update, update.hours]],
+                                'update_by': update.employee.full_name,
+                                'hours': update.hours
+                            })
+                        row_span += 1
+                        time += update.hours
             obj['update'] = updates
             obj['total_hour'] = time
             obj['row_span'] = row_span
@@ -71,7 +84,7 @@ def get_project_updates(request, project_hash):
             daily_update_list.append(obj)
 
         # ic(daily_update_list)
-        print(daily_update_list)
+        # print(daily_update_list)
         paginator = Paginator(daily_update_list, 10)
         page_obj = paginator.get_page(request.GET.get("page"))
 

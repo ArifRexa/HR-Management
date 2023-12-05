@@ -779,6 +779,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             update_obj = DailyProjectUpdate.objects.filter(
                 employee=employee,
                 project=form.cleaned_data.get('project'),
+                manager=form.cleaned_data.get('manager'),
                 created_at__date=timezone.now().date()
             )
             if update_obj.exists():
