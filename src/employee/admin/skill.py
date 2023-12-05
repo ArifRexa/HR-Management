@@ -49,37 +49,92 @@ class LearningAdmin(admin.ModelAdmin):
 @admin.register(EmployeeTechnology)
 class EmployeeTechnologyAdmin(admin.ModelAdmin):
     list_display = ('name', 'icon', 'url', 'active')
+    list_filter = ('active', 'name')
     search_fields = ('name',)
+    actions = ('approve_selected',)
 
     def get_fields(self, request, obj=None):
         if request.user.is_superuser or request.user.employee.manager:
             return ['name', 'icon', 'url', 'active']
         return ['name', 'icon', 'url']
-#
+
+    @admin.action()
+    def active_selected(self, request, queryset):
+        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+            queryset.update(active=True)
+
+    def get_actions(self, request):
+        action = super().get_actions(request)
+        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+            action['Active all selected'] = (
+                self.active_selected,
+                'Active all selected',
+                'Active all selected'
+            )
+            action['Inactive all selected'] = (
+                self.inactive_selected,
+                'Inactive all selected',
+                'Inactive all selected'
+            )
+        return action
+
+    @admin.action()
+    def inactive_selected(self, request, queryset):
+        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+            queryset.update(active=True)
 
     def save_model(self, request, obj, form, change):
 
         if change:
             obj.active = form.cleaned_data.get('active')
-            expert = EmployeeExpertTech.objects.get(id=obj.id)
-            if not form.cleaned_data.get('active'):
-                expert.delete()
+            if EmployeeExpertTech.objects.filter(technology=obj).exists():
+                expert = EmployeeExpertTech.objects.get(technology=obj)
+                if not form.cleaned_data.get('active'):
+                    expert.delete()
         super().save_model(request, obj, form, change)
 
 
 @admin.register(EmployeeExpertTech)
 class EmployeeExpertiseLevelAdmin(admin.ModelAdmin):
-    list_display = ('level', )
+    list_display = ('technology', 'get_employee', 'level', 'percentage', 'get_active')
+    search_fields = ('technology__name', 'level', 'employee_expertise__employee__full_name')
+    list_filter = ('level', 'technology__name',  'employee_expertise__employee__full_name')
+
+    @admin.display(description="Employee")
+    def get_employee(self, obj):
+        return obj.employee_expertise.employee.full_name
+
+    @admin.display(description='Active')
+    def get_active(self, obj):
+        return '\u2705' if obj.technology.active else '\u274C'
 
 
 class EmployeeExpertTechInlineAdmin(admin.TabularInline):
 
     model = EmployeeExpertTech
     extra = 0
-    # autocomplete_fields = ('technology__name',)
+    autocomplete_fields = ('technology',)
 
+    def get_readonly_fields(self, request, obj=None):
+        if not obj:
+            return []
+        if request.user.employee == obj.employee or request.user.is_superuser:
+            return []
+        return ['technology', 'level', 'percentage']
 
+    def has_add_permission(self, request, obj):
+        if not obj:
+            return True
+        if request.user.employee == obj.employee or request.user.is_superuser:
+            return True
+        return False
 
+    def has_delete_permission(self, request, obj=None):
+        if not obj:
+            return True
+        if request.user.employee == obj.employee or request.user.is_superuser:
+            return True
+        return False
 
 
 @admin.register(EmployeeExpertise)
@@ -103,36 +158,24 @@ class EmployeeExpertiseAdmin(admin.ModelAdmin):
     @admin.display(description="Expertise")
     def get_tech(self, obj):
         html_template = get_template('admin/col_expertise.html')
-        print()
         html_content = html_template.render({
             'obj': obj.employee_expertise.all()
         })
 
         return format_html(html_content)
 
+    def has_add_permission(self, request):
+        if request.user.is_superuser:
+            return True
+        if EmployeeExpertise.objects.filter(employee=request.user.employee).exists():
+            return False
+        return True
+
     def save_model(self, request, obj, form, change):
-        from django.shortcuts import redirect
-        from django.contrib import messages
         if request.user.is_superuser:
             obj.employee = form.cleaned_data.get('employee')
         else:
             obj.employee = request.user.employee
-        employee_expert = EmployeeExpertise.objects.filter(employee=obj.employee)
-        if not change:
-            if employee_expert.exists():
-                obj.id = employee_expert[0].id
-                messages.error(request, 'You have Expertise just add technology')
-                return #self.message_user(request, 'You have Expertise just add technology')
+
         super().save_model(request, obj, form, change)
 
-    def response_add(self, request, obj, post_url_continue=None):
-        print('hello world')
-        from django.shortcuts import redirect
-        if obj.pk:
-            return super().response_add(
-                request,
-                obj,
-                post_url_continue=post_url_continue
-            )
-        else:
-            return redirect('/admin/employee/employeeexpertise/')
