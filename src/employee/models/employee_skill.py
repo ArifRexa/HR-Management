@@ -71,15 +71,15 @@ class EmployeeExpertise(TimeStampMixin):
         verbose_name_plural = "Employee Expertises"
         ordering = ('-created_at', )
 
-    # def __str__(self):
-    #     return f"{self.employee.full_name}"
+    def __str__(self):
+        return f"{self.employee.full_name}'s Expertises"
 
 
 class EmployeeExpertTech(TimeStampMixin):
     LEVEL_CHOICE = (
         ('basic', 'Basic'),
         ('intermediate', 'Intermediate'),
-        ('advance', 'Advance'),
+        ('advanced', 'Advanced'),
         ('master', 'Master'),
     )
     employee_expertise = models.ForeignKey(
@@ -98,4 +98,4 @@ class EmployeeExpertTech(TimeStampMixin):
         ordering = ('technology__name', )
 
     def __str__(self):
-        return f"{self.technology.name}({self.level})"
+        return f"{self.technology.name} ({self.get_level_display()})"
