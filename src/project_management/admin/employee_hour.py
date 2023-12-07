@@ -829,20 +829,20 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 hours=total_hour, daily_update=obj
             )
 
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if (
-                request.user.is_superuser or
-                request.user.employee.manager or
-                request.user.employee.lead or
-                request.user.employee.top_one_skill.skill.title.lower() == "sqa"
-        ):
-            actions['send_report_to_slack'] = (
-                self.send_report_to_slack,
-                "send_report_to_slack",
-                "Send report to slack"
-            )
-        return actions
+    # def get_actions(self, request):
+    #     actions = super().get_actions(request)
+    #     if (
+    #             request.user.is_superuser or
+    #             request.user.employee.manager or
+    #             request.user.employee.lead or
+    #             request.user.employee.top_one_skill.skill.title.lower() == "sqa"
+    #     ):
+    #         actions['send_report_to_slack'] = (
+    #             self.send_report_to_slack,
+    #             "send_report_to_slack",
+    #             "Send report to slack"
+    #         )
+    #     return actions
 
     # def add_view(self, request, form_url='', extra_context=None):
     #     print('Inside form update view..')
