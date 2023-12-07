@@ -297,15 +297,15 @@
                             <span class="text-uppercase">Employee's Projects</span>
                         </li>
                         <li class="list-group-item">
-                            <span class="float-start w-50 fs-6 fw-semibold">
+                            <span class="float-start w-60 fs-6 fw-semibold">
                                 {% if ord == '1' %}
                                 <a class="text-decoration-none text-dark" href="?ord=-1">Employee Name</a>
                                 {% else %}
-                                <a class="text-decoration-none text-dark" href="?ord=1">Employee Name</a>
+                                <a class="text-decoration-none text-dark text-wrap" href="?ord=1">Employee Name</a>
                                 {% endif %}
                             </span>
 
-                            <span class="float-end w-50 fs-6 fw-bold">
+                            <span class="float-end  fs-6 fw-bold">
                                 {% if ord == '2' %}
                                 <a class="text-decoration-none text-dark" href="?ord=-2">Projects</a>
                                 {% else %}
@@ -322,18 +322,40 @@
                                 {% else %}
                                 <span>🔴</span>
                                 {% endif %}
+<!--                                {{ employee_project.employee.full_name }}-->
+<!--                                <br>-->
+<!--                                ( {{ employee_project.employee.employeeskill_set.first.skill.title }} )-->
                                 {{ employee_project.employee.full_name }}
-                                ( {{ employee_project.employee.employeeskill_set.first.skill.title }} )
+
+                                {% if employee_project.employee.employeeskill_set.first.skill.title %}
+
+                                <!-- Visible on small screens -->
+                                <small class="d-block d-lg-none">
+                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})
+                                </small>
+
+                                <!-- Visible on large screens -->
+                                <span class="d-none d-lg-inline">
+                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})
+                                </span>
+                                {% endif %}
                             </span>
 
 
-                            <span class="float-end w-50">
-
+                            <span class="float-end">
                                 {% for project in employee_project.project.all %}
-                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}
-                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }}">
+<!--                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}-->
+                                <div class="d-none d-lg-inline">
+                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }} ">
                                         {{ project.title }}
                                     </span>
+                                    {% if not forloop.last %}
+                                            |
+                                        {% endif %}
+                                </div>
+                                    <ul class="list-group d-lg-none ">
+                                        <li class="list-group-item border-0 pb-0">{{ project.title }}</li>
+                                    </ul>
                                 {% endfor %}
 
                                 {% if not employee_project.project_exists %}
