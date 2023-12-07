@@ -308,11 +308,6 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         verbose_name = "Daily Project Update"
         verbose_name_plural = "Daily Project Updates"
 
-    # class Meta:
-    #     verbose_name = "Daily Project Update"
-    #     verbose_name_plural = "Daily Project Updates"
-        verbose_name = "Daily Project Update"
-        verbose_name_plural = "Daily Project Updates"
 
     @property
     def get_hours_history(self):
