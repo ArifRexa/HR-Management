@@ -89,11 +89,12 @@
                 <td>{{ hour.created_at }}</td>
                 
                 {% ifchanged %}
-                <td rowspan="{{ values|length }}"> {{hour.employee}} {% if hour.employee.top_one_skill.skill %} ({{ hour.employee.top_one_skill.skill }}) {% endif %}</td>
+<!--                <td rowspan="{{ values|length }}" style="text-align:center; padding-top:500px"> {{hour.employee}} {% if hour.employee.top_one_skill.skill %} ({{ hour.employee.top_one_skill.skill }}) {% endif %}</td>-->
+                <td rowspan="{{ values|length }}" style="text-align:center; vertical-align: middle;" > {{hour.employee}} {% if hour.employee.top_one_skill.skill %} ({{ hour.employee.top_one_skill.skill }}) {% endif %}</td>
                 {% endifchanged %}
                 <td>{{ hour.project }} || ({{hour.hours}})</td>
                 {% ifchanged %}
-                <td rowspan="{{ values|length }}">
+                <td rowspan="{{ values|length }}" style="text-align:center; vertical-align: middle;">
                   {% if key.daily_project_hours <= 5 %} <b style="color: red; font-weight: bold">
                     {{ key.daily_project_hours }}
                     </b>

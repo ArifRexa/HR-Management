@@ -241,14 +241,12 @@ def get_announcement(request):
         )
     )
     if leaves_today.exists():
-        leaves = [
-            (
-                leave.employee.full_name,
-                dict(Leave.LEAVE_CHOICE).get(leave.leave_type),
-            )
-            for leave in leaves_today
-        ]
-        data.extend([f"{leave[0]} is on {leave[1]} today." for leave in leaves])
+        approved_leaves = Leave.objects.filter(status='Approved')
+        count = approved_leaves.count()
+        for i in range(0, count):
+            today_date = datetime.now().date()
+            if today_date == approved_leaves[i].start_date:
+                data.extend([f"{approved_leaves[i].employee.full_name} is on {approved_leaves[i].leave_type} leave today."])
 
     # Get Home Offices
     home_offices_today = (

@@ -31,40 +31,81 @@ FAQ List
 {% endblock %}
 
 {% block content %}
+
 <div id="content-main" class="container">
-  <hr>
+    <hr>
     <div class="row mt-5">
         <div class="col-md-12">
 
-          <form class="d-flex">
-            {{ cl.search_form }}
-            <input class="form-control me-2" type="search" placeholder="Search from FAQ..." aria-label="Search" name="q" value="{{ cl.query }}">
-            <button class="btn btn-outline-success" type="submit">Search</button>
-          </form>
-           
-          <div class="accordion mt-4" id="faq">
-            {% if cl.result_count != 0 %}
-              {% for faq in cl.result_list %}
-              <div class="accordion-item">
-                <h2 class="accordion-header" id="heading_{{ forloop.counter }}">
-                  <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ forloop.counter }}" aria-expanded="true" aria-controls="collapse_{{ forloop.counter }}">
-                    {{ faq.question }}
-                  </button>
-                </h2>
-                <div id="collapse_{{ forloop.counter }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ forloop.counter }}" data-bs-parent="#faq">
-                  <div class="accordion-body overflow-hidden">
-                    {{ faq.answer | safe }}
-                  </div>
+            <form class="d-flex position-relative" method="get">
+                {{ cl.search_form }}
+                <div class="input-group">
+                    <input class="form-control me-2" placeholder="Search from FAQ...." aria-label="Search" name="q" value="{{ cl.query }}">
+                    <button class="btn btn-outline-success" type="submit">Search</button>
+                    {% if cl.query %}
+                        <a href="#" id="reset-search" class="btn position-absolute end-0 top-0 mt-0 " style="margin-right: 80px;">
+                            X
+                        </a>
+                    {% endif %}
                 </div>
-              </div>
-              {% endfor %}
-              {% else %}
-              <div class="alert alert-info text-center">
-                <strong>Not Found. </strong> No FAQ found. 
-              </div>
-              {% endif %}
+            </form>
+
+            <div class="accordion mt-4" id="faq">
+                {% if cl.query %}
+                    {% if cl.result_count != 0 %}
+                        {% for faq in cl.result_list %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading_{{ forloop.counter }}">
+                                    <button class="accordion-button collapsed" type="button"
+                                            data-bs-toggle="collapse"
+                                            data-bs-target="#collapse_{{ forloop.counter }}" aria-expanded="true"
+                                            aria-controls="collapse_{{ forloop.counter }}">
+                                        {{ faq.question }}
+                                    </button>
+                                </h2>
+                                <div id="collapse_{{ forloop.counter }}" class="accordion-collapse collapse"
+                                     aria-labelledby="heading_{{ forloop.counter }}" data-bs-parent="#faq">
+                                    <div class="accordion-body overflow-hidden">
+                                        {{ faq.answer | safe }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <strong>Not Found. </strong> No FAQ found.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    {% for faq in cl.queryset %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading_{{ forloop.counter }}">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#collapse_{{ forloop.counter }}" aria-expanded="true"
+                                        aria-controls="collapse_{{ forloop.counter }}">
+                                    {{ faq.question }}
+                                </button>
+                            </h2>
+                            <div id="collapse_{{ forloop.counter }}" class="accordion-collapse collapse"
+                                 aria-labelledby="heading_{{ forloop.counter }}" data-bs-parent="#faq">
+                                <div class="accordion-body overflow-hidden">
+                                    {{ faq.answer | safe }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
-    {% endblock %}
+
+<script>
+    document.getElementById('reset-search').addEventListener('click', function () {
+        document.querySelector('input[name="q"]').value = '';
+        document.querySelector('form').submit();
+    });
+</script>
+
+{% endblock %}
