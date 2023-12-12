@@ -245,6 +245,10 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
             ("change_recent_activity", "Can change if inserted recently (3days)"),
             ("see_all_employee_hour", "Can see all emploployee project hour"),
         ]
+        verbose_name = "Employee Project Hour"
+        verbose_name_plural = "Employee Project Hours"
+        verbose_name = "Employee Project Hour"
+        verbose_name_plural = "Employee Project Hours"
 
 
 class EmployeeProjectHourGroupByEmployee(EmployeeProjectHour):
@@ -301,6 +305,9 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
         ]
+        verbose_name = "Daily Project Update"
+        verbose_name_plural = "Daily Project Updates"
+
 
     @property
     def get_hours_history(self):
@@ -596,5 +603,13 @@ class ProjectReport(TimeStampMixin):
     )
     api_token = models.TextField(verbose_name='API Token')
 
+    class Meta:
+        verbose_name = "Project Report"
+        verbose_name_plural = "Project Reports"
+
     def __str__(self):
         return f"{self.project} update to {self.send_to}"
+
+    class Meta:
+        verbose_name = "Project Report"
+        verbose_name_plural = "Project Reports"

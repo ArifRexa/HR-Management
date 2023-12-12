@@ -497,10 +497,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                                      bold=True,
                                      color='ffffff')
                     cell.fill = PatternFill(
-                                                start_color='6aa84f',
-                                                end_color='6aa84f',
-                                                fill_type='solid'
-                                            )
+                        start_color='6aa84f',
+                        end_color='6aa84f',
+                        fill_type='solid'
+                    )
                     cell.alignment = Alignment(horizontal='center',
                                                vertical='center',
                                                indent=0)
@@ -674,7 +674,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
 
         return response
-
+    #
     @admin.action(description="Send Report to slack")
     def send_report_to_slack(self, modeladmin, request, queryset, **kwargs):
         date = queryset.first().created_at.strftime('%d-%m-%Y')
@@ -719,41 +719,48 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 "slack credential not set yet for this project"
             )
         total_hour = 0
-
-        update_list_str = ''
+        updates_list = []
+        links_list = []
         for obj in queryset:
             if obj.updates_json is None or obj.status == "pending":
                 continue
-            updates = ''
+
             for update in obj.updates_json:
                 total_hour += float(update[1])
-                link = f"-{update[2]}" if update[2] and check_valid_url(update[2]) else ""
-                updates += f'{update[0]} \n' + f"({round(float(update[1]), 2)}H){link}\n"
+                updates_list.append(f"{update[0]} ({update[1]}H)")  # Combine update and hours
+                links_list.append(update[2]) if len(update) > 2 else ""
 
-            if obj.project.is_team:
+        # Prepare the updates section
+        updates_section = "\n".join([f"{i}. {update}" for i, update in enumerate(updates_list, start=1)])
 
-                tmp_add = (f"{obj.employee.full_name}\n\n" +
-                           f"{updates}\n" +
-                           "-----------------------------------------\n\n")
-            else:
-                tmp_add = (
-                        f"{updates}\n" +
-                        "-----------------------------------------\n\n")
+        # Prepare the links section
+        links_section = "\n".join([f"{i}. {link}" for i, link in enumerate(links_list, start=1)])
 
-            update_list_str += tmp_add
-        if not update_list_str:
-            return messages.success(request, "Select update not approved yet")
-        #todo: if need then add f"Today's Update({date})\n" +
-        all_updates = (
-                       f"\nTotal Hours: {round(total_hour, 3)}H\n\n" +
-                       "-----------------\n")
-        all_updates += update_list_str
+        # Combine updates, links, and total hours in the final format
+        formatted_message = (
+            # f"\nTotal Hours: {round(total_hour, 3)}H\n\n"
+            # "Updates:\n" + updates_section + "\n\n"
+            #                                  "Links:\n" + links_section
+
+            f"Updates:\n" + updates_section + "\n\n"
+                                              "Links:\n" + links_section
+        )
+
+        # Add other sections as needed
+
+        # Combine all sections
+        all_sections = (
+            f"Today's Update\n-----------------\n\nTotal Hours: {round(total_hour, 3)}H\n\n"
+            "\n"
+            f"{formatted_message}"
+        )
 
         response = send_report_slack(
             token=to_report.api_token,
             channel=to_report.send_to,
-            message=all_updates
+            message=all_sections
         )
+
         if response.get('ok'):
             return messages.success(request, f"Report send to #{to_report.send_to} channel")
         else:
@@ -779,6 +786,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             update_obj = DailyProjectUpdate.objects.filter(
                 employee=employee,
                 project=form.cleaned_data.get('project'),
+                manager=form.cleaned_data.get('manager'),
                 created_at__date=timezone.now().date()
             )
             if update_obj.exists():
@@ -821,27 +829,28 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 hours=total_hour, daily_update=obj
             )
 
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if (
-                request.user.is_superuser or
-                request.user.employee.manager or
-                request.user.employee.lead or
-                request.user.employee.top_one_skill.skill.title.lower() == "sqa"
-        ):
-            actions['send_report_to_slack'] = (
-                self.send_report_to_slack,
-                "send_report_to_slack",
-                "Send report to slack"
-            )
-        return actions
+    # def get_actions(self, request):
+    #     actions = super().get_actions(request)
+    #     if (
+    #             request.user.is_superuser or
+    #             request.user.employee.manager or
+    #             request.user.employee.lead or
+    #             request.user.employee.top_one_skill.skill.title.lower() == "sqa"
+    #     ):
+    #         actions['send_report_to_slack'] = (
+    #             self.send_report_to_slack,
+    #             "send_report_to_slack",
+    #             "Send report to slack"
+    #         )
+    #     return actions
+
     # def add_view(self, request, form_url='', extra_context=None):
     #     print('Inside form update view..')
     #     # Customize the form instance
     #     self.form = AddDDailyProjectUpdateForm
     #     extra_context = {'form':self.form}
     #     return super().add_view(request, form_url, extra_context)
-    
+
     def response_add(self, request, obj, post_url_continue=None):
         if obj.pk:
             return super().response_add(
