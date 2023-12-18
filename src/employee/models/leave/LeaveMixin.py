@@ -39,11 +39,11 @@ class LeaveMixin(models.Model):
                 group = Group.objects.get(name='HR-Operation')
             except Group.DoesNotExist:
                 Group.objects.create(name='HR-Operation')
-            if not user.is_superuser and not user.groups.filter(name='HR-Operation').exists():
-                if self.leave_type != 'medical' and self.leave_type != 'half_day':
-                    if datetime.date.today() >= self.start_date:
-                        # Skipped Validation
-                        raise ValidationError({'start_date': 'Start date must be greater then today'})
+            # if not user.is_superuser and not user.groups.filter(name='HR-Operation').exists():
+            #     if self.leave_type != 'medical' and self.leave_type != 'half_day':
+            #         if datetime.date.today() >= self.start_date:
+            #             # Skipped Validation
+            #             raise ValidationError({'start_date': 'Start date must be greater then today'})
             if self.start_date > self.end_date:
                 raise ValidationError({'end_date': "End date must be greater then or equal {}".format(self.start_date)})
 
