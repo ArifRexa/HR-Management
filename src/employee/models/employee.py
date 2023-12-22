@@ -82,6 +82,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     need_hr = models.BooleanField(verbose_name="I need help from HR", default=False)
     need_hr_at = models.DateTimeField(null=True, blank=True)
+    entry_pass_id = models.CharField(null=True, blank=True, max_length=255)
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
