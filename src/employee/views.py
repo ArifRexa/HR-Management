@@ -226,6 +226,11 @@ class TodoSerializer(serializers.ModelSerializer):
         model = Task
         fields = "__all__"
 
+class EntryPassSerializer(serializers.ModelSerializer):
+    mechine_code = serializers.CharField()
+    entry_pass_id = serializers.CharField()
+    intent = serializers.CharField()
+
 
 class TodoApiList(ListAPIView):
     serializer_class = TodoSerializer
@@ -235,6 +240,41 @@ class TodoApiList(ListAPIView):
     def get_queryset(self):
         return super().get_queryset().filter(created_by=self.request.user)
 
+from rest_framework.response import Response
+class ChangeEmployeeEntryPass(CreateAPIView):
+    serializer_class = EntryPassSerializer
+    queryset = EmployeeOnline.objects.all()
+    authentication_classes = []
+    permission_classes = []
+
+    def post(request, *args, **kwargs):
+        mechine_secrets = "SuperSecretMechineCode"
+        data = request.data
+
+        mechine_token = data.get("mechine_token")
+        if not mechine_token:
+            return Response(data={"message": "mechine_token missing"}, status=403)
+
+        if not mechine_token == mechine_secrets:
+            return Response(data={"message": "Wrong Machine"}, status=403)
+
+        entry_pass_id = data.get("entry_pass_id")
+        if not entry_pass_id:
+            return Response(data={"message": "entry_pass_id missing"}, status=403)
+
+        intent = data.get("intent")
+        if not intent:
+            return Response(data={"message": "intent missing"}, status=403)
+        
+        employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
+
+
+        employee_status = EmployeeOnline.objects.get(employee=employee)
+        status = True if intent==1 else False
+
+        employee_status.active = status
+        employee_status.save()
+        return Response(data={"message": "Success"}, status=201) 
 
 class TodoCreateAPI(CreateAPIView):
     serializer_class = TodoSerializer
