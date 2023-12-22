@@ -56,6 +56,40 @@ def change_status(request, *args, **kwargs):
         messages.success(request, "Your status has been change successfully")
         return redirect("/admin/")
 
+from django.http import HttpResponse
+
+@require_http_methods(["POST"])
+def employee_entry_pass_api(request, *args, **kwargs):
+    if request.method == "POST":
+        mechine_secrets = "SuperSecretMechineCode"
+        data = request.data
+
+        mechine_token = data.get("mechine_token")
+        if not mechine_token:
+            return HttpResponse("mechine_token missing", status=403)
+
+        if not mechine_token == mechine_secrets:
+            return HttpResponse("Wrong mechine", status=403)
+
+        entry_pass_id = data.get("entry_pass_id")
+        if not entry_pass_id:
+            return HttpResponse("entrypass missing", status=403)
+
+        intent = data.get("intent")
+        if not intent:
+            return HttpResponse("intent missing", status=403)
+        
+        employee = Employee.objects.filter(entry_pass_id=entry_pass_id).first()
+
+
+        employee_status = EmployeeOnline.objects.get(employee=employee)
+        status = True if intent=='on' else False
+
+        employee_status.active = status
+        employee_status.save()
+    else:
+        return HttpResponse("Wrong Method!", status=400)
+
 
 @require_http_methods(["POST"])
 @login_required(login_url="/admin/login/")
