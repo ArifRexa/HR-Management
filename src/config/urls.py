@@ -87,11 +87,6 @@ urlpatterns = [
         employee.views.change_status,
         name="change-active-status",
     ),
-    path(
-        "change-employee-entry-pass/",
-        employee.views.employee_entry_pass_api,
-        name="change_employee_entry_pass_api",
-    ),
     path("need-cto", employee.views.need_cto_help, name="cto_help"),
     path("need-hr", employee.views.need_hr_help, name="hr_help"),
     path(
