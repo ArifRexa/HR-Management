@@ -67,18 +67,18 @@ def employee_entry_pass_api(request, *args, **kwargs):
 
         mechine_token = data.get("mechine_token")
         if not mechine_token:
-            return JsonResponse({"message": "mechine_token missing"}, status=403)
+            return JsonResponse(data={"message": "mechine_token missing"}, status=403)
 
         if not mechine_token == mechine_secrets:
-            return JsonResponse({"message": "Wrong Machine"}, status=403)
+            return JsonResponse(data={"message": "Wrong Machine"}, status=403)
 
         entry_pass_id = data.get("entry_pass_id")
         if not entry_pass_id:
-            return JsonResponse({"message": "entry_pass_id missing"}, status=403)
+            return JsonResponse(data={"message": "entry_pass_id missing"}, status=403)
 
         intent = data.get("intent")
         if not intent:
-            return JsonResponse({"message": "intent missing"}, status=403)
+            return JsonResponse(data={"message": "intent missing"}, status=403)
         
         employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
 
@@ -88,8 +88,9 @@ def employee_entry_pass_api(request, *args, **kwargs):
 
         employee_status.active = status
         employee_status.save()
+        return JsonResponse(data={"message": "Success"}, status=201)
     else:
-        return HttpResponse("Wrong Method!", status=400)
+        return JsonResponse(data={"message": "Wrong Method"}, status=400)
 
 
 @require_http_methods(["POST"])
