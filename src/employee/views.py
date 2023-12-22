@@ -56,7 +56,8 @@ def change_status(request, *args, **kwargs):
         messages.success(request, "Your status has been change successfully")
         return redirect("/admin/")
 
-from django.http import HttpResponse
+from django.http import JsonResponse
+
 
 @require_http_methods(["POST"])
 def employee_entry_pass_api(request, *args, **kwargs):
@@ -66,24 +67,24 @@ def employee_entry_pass_api(request, *args, **kwargs):
 
         mechine_token = data.get("mechine_token")
         if not mechine_token:
-            return HttpResponse("mechine_token missing", status=403)
+            return JsonResponse({"message": "mechine_token missing"}, status=403)
 
         if not mechine_token == mechine_secrets:
-            return HttpResponse("Wrong mechine", status=403)
+            return JsonResponse({"message": "Wrong Machine"}, status=403)
 
         entry_pass_id = data.get("entry_pass_id")
         if not entry_pass_id:
-            return HttpResponse("entrypass missing", status=403)
+            return JsonResponse({"message": "entry_pass_id missing"}, status=403)
 
         intent = data.get("intent")
         if not intent:
-            return HttpResponse("intent missing", status=403)
+            return JsonResponse({"message": "intent missing"}, status=403)
         
-        employee = Employee.objects.filter(entry_pass_id=entry_pass_id).first()
+        employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
 
 
         employee_status = EmployeeOnline.objects.get(employee=employee)
-        status = True if intent=='on' else False
+        status = True if intent==1 else False
 
         employee_status.active = status
         employee_status.save()
