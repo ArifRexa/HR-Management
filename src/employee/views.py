@@ -247,7 +247,7 @@ class ChangeEmployeeEntryPass(CreateAPIView):
     authentication_classes = []
     permission_classes = []
 
-    def post(request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         mechine_secrets = "SuperSecretMechineCode"
         data = request.data
 
