@@ -268,6 +268,9 @@ class ChangeEmployeeEntryPass(CreateAPIView):
         
         employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
 
+        if not employee:
+            return Response(data={"message": "Employee not found!"}, status=403) 
+
 
         employee_status = EmployeeOnline.objects.get(employee=employee)
         status = True if intent==1 else False
