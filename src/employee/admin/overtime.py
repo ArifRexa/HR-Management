@@ -22,7 +22,8 @@ class OvertimeAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request)
-        if not request.user.is_superuser:
+
+        if not (request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime')):
             fields.remove('employee')
             fields.remove('status')
         return fields
@@ -36,6 +37,7 @@ class OvertimeAdmin(admin.ModelAdmin):
         if obj is not None:
             overtime = Overtime.objects.filter(id=request.resolver_match.kwargs['object_id']).first()
             if not request.user.is_superuser:
+                print([item.name for item in obj._meta.fields])
                 if overtime.status != 'pending':
                     return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
         return ()
