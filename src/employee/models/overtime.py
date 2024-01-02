@@ -7,6 +7,11 @@ from employee.models.employee import Employee
 
 
 class Overtime(TimeStampMixin, AuthorMixin):
+    class Meta:
+        permissions = [
+            ('can_approve_overtime', 'Can Approve Overtime'),
+        ]
+
     STATUS_CHOICE = (
         ('pending', '⌛ Pending'),
         ('approved', '👍 Approved'),
