@@ -305,10 +305,10 @@ class Employee(TimeStampMixin, AuthorMixin):
         if self.leave_in_cash_eligibility and self.permanent_date:
             if self.resignation_date:
                 total_days_of_permanent = (
-                    self.resignation_date - self.permanent_date
+                    self.resignation_date - self.joining_date
                 ).days
             else:
-                total_days_of_permanent = (year_end - self.permanent_date).days
+                total_days_of_permanent = (year_end - self.joining_date).days
 
             month_of_permanent = round(total_days_of_permanent / 30)
             if month_of_permanent < 12:
