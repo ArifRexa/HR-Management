@@ -10,7 +10,7 @@ class OvertimeAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser:
+        if request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime'):
             return qs
         return qs.filter(employee_id=request.user.employee)
 
