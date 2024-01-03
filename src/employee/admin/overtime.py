@@ -8,7 +8,7 @@ class OvertimeAdmin(admin.ModelAdmin):
     list_display = ('employee', 'date', 'short_note', 'status')
     date_hierarchy = 'date'
     list_filter = ("employee",)
-    actions = ('approve_selected',)
+    # actions = ('approve_selected',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -43,6 +43,14 @@ class OvertimeAdmin(admin.ModelAdmin):
                 if overtime.status != 'pending':
                     return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
         return ()
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'approve_selected' in actions:
+            del actions['approve_selected']
+        if request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime'):
+            actions['approve_selected'] = (self.approve_selected, 'approve_selected', 'Approve Selected Overtimes')
+        return actions
 
     @admin.action(description='Approve Selected Overtimes')
     def approve_selected(self, request, queryset):
