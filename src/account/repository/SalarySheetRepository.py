@@ -171,7 +171,7 @@ class SalarySheetRepository:
 
         # 31 / 1.5
         return (
-            self.__employee_current_salary.payable_salary / 20.67
+            self.__employee_current_salary.payable_salary / 20
         ) * employee.overtime_set.filter(
             date__month=salary_sheet.date.month,
             date__year=salary_sheet.date.year,
