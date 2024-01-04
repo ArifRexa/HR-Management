@@ -273,7 +273,7 @@ class ChangeEmployeeEntryPass(CreateAPIView):
 
 
         employee_status = EmployeeOnline.objects.get(employee=employee)
-        status = True if intent==1 else False
+        status = True if intent=='1' else False
 
         employee_status.active = status
         employee_status.save()

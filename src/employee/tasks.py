@@ -496,3 +496,13 @@ def create_tds():
             )
         )
     Loan.objects.bulk_create(loans)
+
+
+# onetime call function for creating all entry_pass_id
+def save_entry_pass_id():
+    all_employees = Employee.objects.all()
+    for employee in all_employees:
+        if employee.entry_pass_id is None:
+            employee.entry_pass_id = f"{employee.joining_date.strftime('%Y%d')}{employee.id}"
+            employee.save()
+    print('All Saved.')

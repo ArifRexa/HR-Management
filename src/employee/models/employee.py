@@ -84,6 +84,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     need_hr_at = models.DateTimeField(null=True, blank=True)
     entry_pass_id = models.CharField(null=True, blank=True, max_length=255)
 
+
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
         return self.full_name
@@ -211,6 +212,11 @@ class Employee(TimeStampMixin, AuthorMixin):
         )
         return format_html(format_str)
 
+
+    @property
+    def get_entry_pass_id(self):
+        return f"{self.joining_date.strftime('%Y%d')}{self.id}"
+
     def save(
         self,
         *args,
@@ -219,6 +225,8 @@ class Employee(TimeStampMixin, AuthorMixin):
         self.save_user()
         if not self.slug:
             self.slug = f"{slugify(self.full_name)}-{self.email}"
+        if not self.entry_pass_id:
+            self.entry_pass_id = f"{self.joining_date.strftime('%Y%d')}{self.id}"
         super().save(*args, **kwargs)
 
     def save_user(self):
