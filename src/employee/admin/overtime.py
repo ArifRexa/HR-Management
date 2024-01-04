@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from employee.models import Overtime
+from django.contrib import messages
 
 
 @admin.register(Overtime)
@@ -8,7 +9,7 @@ class OvertimeAdmin(admin.ModelAdmin):
     list_display = ('employee', 'date', 'short_note', 'status')
     date_hierarchy = 'date'
     list_filter = ("employee",)
-    # actions = ('approve_selected',)
+    actions = ('approve_selected',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -44,20 +45,20 @@ class OvertimeAdmin(admin.ModelAdmin):
                     return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
         return ()
 
-    def get_actions(self, request):
-        actions = super().get_actions(request)
-        if 'approve_selected' in actions:
-            del actions['approve_selected']
-        if request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime'):
-            actions['approve_selected'] = (self.approve_selected, 'approve_selected', 'Approve Selected Overtimes')
-        return actions
+    # def get_actions(self, request):
+    #     actions = super().get_actions(request)
+    #     if 'approve_selected' in actions:
+    #         del actions['approve_selected']
+    #     if request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime'):
+    #         actions['approve_selected'] = (self.approve_selected, 'approve_selected', 'Approve Selected Overtimes')
+    #     return actions
 
     @admin.action(description='Approve Selected Overtimes')
     def approve_selected(self, request, queryset):
         if request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime'):
             queryset.update(status='approved')
         else:
-            pass
+            messages.error(request, "You don't have enough permission")
 
     def has_module_permission(self, request):
         return False
