@@ -29,7 +29,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(null=True, blank=True)
     full_name = models.CharField(max_length=255)
-    slug = models.SlugField(null=True, blank=True, unique=True)
+    slug = models.SlugField(max_length=200, null=True, blank=True, unique=True)
     gender = models.CharField(
         max_length=10,
         choices=GENDER_CHOICES,
@@ -224,7 +224,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     ):
         self.save_user()
         if not self.slug:
-            self.slug = f"{slugify(self.full_name)}-{self.email}"[:250]
+            self.slug = f"{slugify(self.full_name)}-{self.email}"[:180]
         if not self.entry_pass_id:
             self.entry_pass_id = f"{self.joining_date.strftime('%Y%d')}{self.id}"
         super().save(*args, **kwargs)
