@@ -19,7 +19,7 @@ class OvertimeAdmin(admin.ModelAdmin):
 
     def get_list_filter(self, request):
         list_filter = ['employee', 'date', 'status']
-        if not request.user.is_superuser:
+        if not request.user.is_superuser or request.user.has_perm('employee.can_approve_overtime'):
             list_filter.remove('employee')
         return list_filter
 
