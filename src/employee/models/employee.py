@@ -224,7 +224,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     ):
         self.save_user()
         if not self.slug:
-            self.slug = f"{slugify(self.full_name)}-{self.email}"
+            self.slug = f"{slugify(self.full_name)}-{self.email}"[:250]
         if not self.entry_pass_id:
             self.entry_pass_id = f"{self.joining_date.strftime('%Y%d')}{self.id}"
         super().save(*args, **kwargs)
