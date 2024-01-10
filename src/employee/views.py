@@ -9,7 +9,8 @@ from employee.forms.employee_need_help import EmployeeNeedHelpForm
 from employee.models import EmployeeActivity, EmployeeOnline, Employee, EmployeeNeedHelp
 from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
-from config.settings import employee_ids as management_ids
+from config.settings import employee_ids as management_ids, MACHINE_SECRETS
+
 
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 import datetime
@@ -56,6 +57,7 @@ def change_status(request, *args, **kwargs):
         messages.success(request, "Your status has been change successfully")
         return redirect("/admin/")
 
+
 from django.http import JsonResponse
 
 
@@ -79,12 +81,11 @@ def employee_entry_pass_api(request, *args, **kwargs):
         intent = data.get("intent")
         if not intent:
             return JsonResponse(data={"message": "intent missing"}, status=403)
-        
+
         employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
 
-
         employee_status = EmployeeOnline.objects.get(employee=employee)
-        status = True if intent==1 else False
+        status = True if intent == 1 else False
 
         employee_status.active = status
         employee_status.save()
@@ -97,9 +98,7 @@ def employee_entry_pass_api(request, *args, **kwargs):
 @login_required(login_url="/admin/login/")
 @not_for_management
 def change_project(request, *args, **kwargs):
-    employee_project = EmployeeProject.objects.get(
-        employee=request.user.employee
-    )
+    employee_project = EmployeeProject.objects.get(employee=request.user.employee)
     form = EmployeeProjectForm(request.POST, instance=employee_project)
     if form.is_valid():
         form.save()
@@ -128,7 +127,7 @@ def change_help_need(request, *args, **kwargs):
             try:
                 send_need_help_mails(obj)
             except Exception as e:
-                print('Email error, ',e)
+                print("Email error, ", e)
 
         messages.success(request, "Your need help statuses updated successfully")
         return redirect("/admin/")
@@ -226,6 +225,7 @@ class TodoSerializer(serializers.ModelSerializer):
         model = Task
         fields = "__all__"
 
+
 class EntryPassSerializer(serializers.ModelSerializer):
     mechine_code = serializers.CharField()
     entry_pass_id = serializers.CharField()
@@ -240,7 +240,10 @@ class TodoApiList(ListAPIView):
     def get_queryset(self):
         return super().get_queryset().filter(created_by=self.request.user)
 
+
 from rest_framework.response import Response
+
+
 class ChangeEmployeeEntryPass(CreateAPIView):
     serializer_class = EntryPassSerializer
     queryset = EmployeeOnline.objects.all()
@@ -248,7 +251,7 @@ class ChangeEmployeeEntryPass(CreateAPIView):
     permission_classes = []
 
     def post(self, request, *args, **kwargs):
-        mechine_secrets = "SuperSecretMechineCode"
+        mechine_secrets = MACHINE_SECRETS
         data = request.data
 
         mechine_token = data.get("mechine_token")
@@ -265,19 +268,19 @@ class ChangeEmployeeEntryPass(CreateAPIView):
         intent = data.get("intent")
         if not intent:
             return Response(data={"message": "intent missing"}, status=403)
-        
+
         employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
 
         if not employee:
-            return Response(data={"message": "Employee not found!"}, status=403) 
-
+            return Response(data={"message": "Employee not found!"}, status=403)
 
         employee_status = EmployeeOnline.objects.get(employee=employee)
-        status = True if intent=='1' else False
+        status = True if intent == "1" else False
 
         employee_status.active = status
         employee_status.save()
-        return Response(data={"message": "Success"}, status=201) 
+        return Response(data={"message": "Success"}, status=201)
+
 
 class TodoCreateAPI(CreateAPIView):
     serializer_class = TodoSerializer

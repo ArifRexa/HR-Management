@@ -83,7 +83,7 @@ def leave_mail(leave: Leave):
     if leave.status == "pending":
         email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
         email.to = ['"Mediusware-HR" <hr@mediusware.com>']
-        email.cc = set(manager_email)
+        email.cc = manager_email
     else:
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.to = [f"{leave.employee.full_name} <{leave.employee.email}>"]
@@ -502,7 +502,6 @@ def create_tds():
 def save_entry_pass_id():
     all_employees = Employee.objects.all()
     for employee in all_employees:
-        if employee.entry_pass_id is None:
-            employee.entry_pass_id = f"{employee.joining_date.strftime('%Y%d')}{employee.id}"
-            employee.save()
+        employee.entry_pass_id = f"{employee.joining_date.strftime('%Y%d')}{employee.id}"
+        employee.save()
     print('All Saved.')
