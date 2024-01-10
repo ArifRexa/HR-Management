@@ -5,7 +5,6 @@ from employee.admin.employee.extra_url.formal_view import FormalView
 from employee.admin.employee.extra_url.graph_view import GraphView
 from employee.admin.employee.extra_url.sms_view import SMSView
 
-
 class EmployeeExtraUrls(SMSView, GraphView, FormalView, admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
@@ -15,7 +14,6 @@ class EmployeeExtraUrls(SMSView, GraphView, FormalView, admin.ModelAdmin):
                  self.admin_site.admin_view(self.salary_receive_history_view),
                  name='employee.salary.receive.history'),
             path('notice-board/', self.admin_site.admin_view(self.notice_bord), name='employee.notice_board'),
-
             path('graph/', self.admin_site.admin_view(self.all_employee_graph_view), name='employee.hours.graph'),
             path('<int:employee_id__exact>/graph/', self.admin_site.admin_view(self.employee_graph_view),
                  name='hour_graph'),

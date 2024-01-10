@@ -15,6 +15,7 @@ from .config import Config
 from .favourite_menu import FavouriteMenu
 from .employee import EmployeeFAQView, EmployeeFaq
 from .home_office import HomeOffice, HomeOfficeAttachment
+from employee.models.employee_rating_models import EmployeeRating
 
 from .hr_policy import (
     HRPolicy,

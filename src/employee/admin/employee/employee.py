@@ -96,6 +96,7 @@ class EmployeeAdmin(
     def get_list_display(self, request):
         list_display = [
             "employee_info",
+            'employee_rating',
             "leave_info",
             "salary_history",
             "skill",
@@ -104,6 +105,8 @@ class EmployeeAdmin(
         ]
         if not request.user.is_superuser:
             list_display.remove("salary_history")
+        if not request.user.has_perm('can_access_average_rating') and not request.user.is_superuser:
+            list_display.remove('employee_rating')
         return list_display
 
     def get_queryset(self, request):
