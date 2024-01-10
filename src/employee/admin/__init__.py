@@ -12,7 +12,7 @@ from .config import ConfigAdmin
 from .favourite_menu import FavouriteMenuAdmin
 from .employee_bank import BankAccountAdmin
 from .home_office import HomeOfficeManagement
-from employee.admin.sqa_admin import SQARatingAdmin
+from employee.admin.employeee_rating_admin import EmployeeRatingAdmin
 
 from .hr_policy import (
     HRPolicySectionAdmin,

@@ -19,6 +19,13 @@ class EmployeeAdminListView:
         })
         return format_html(html_content)
     
+    def employee_rating(self, obj: Employee):
+        html_template = get_template('admin/employee/list/_rating.html')
+        html_content = html_template.render({
+            'employee': obj
+        })
+        return format_html(html_content)
+    
     def tour_allowance(self,obj):
         html_template = get_template('admin/employee/list/tour_allowance.html')
         today = datetime.date.today()
