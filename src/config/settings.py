@@ -98,7 +98,7 @@ TEMPLATES = [
                 "config.context_processors.employees.employee_project_form",
                 "config.context_processors.employees.employee_need_help_form",
                 "config.context_processors.employees.favourite_menu_list",
-                "config.context_processors.month_year.current_month_year"
+                "config.context_processors.month_year.current_month_year",
             ],
         },
     },
@@ -275,3 +275,5 @@ CLIENT_FEEDBACK_VIDEO_EMBED_URL = os.environ.get(
 
 COMPANY_ACCOUNT_NAME = os.environ.get("COMPANY_ACCOUNT_NAME", "Mediusware Ltd")
 COMPANY_ACCOUNT_NO = os.environ.get("COMPANY_ACCOUNT_NO", "-")
+
+MACHINE_SECRETS = os.environ.get("MACHINE_SECRETS")

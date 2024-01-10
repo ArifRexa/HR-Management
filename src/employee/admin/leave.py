@@ -88,19 +88,20 @@ class LeaveManagement(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
         employee = form.cleaned_data.get('employee') or request.user.employee
-        if not change and not employee.manager:
+        if not change:
             projects = EmployeeProject.objects.get(employee=employee)
             project_obj = EmployeeProject.objects.filter(
                 project__in=projects.project.all(),
                 employee__active=True
             )
             from django.db.models import Q
-            project_managers = project_obj.filter(
+            managers = project_obj.filter(
                 Q(employee__manager=True) | Q(employee__lead=True)
-            )
-            for project_manager in project_managers:
+            ).exclude(employee__id=employee.id).distinct()
+           
+            for manager in managers:
                 leave_manage = leave.LeaveManagement(
-                    manager=project_manager.employee,
+                    manager=manager.employee,
                     leave=obj
                 )
                 leave_manage.save()
@@ -138,7 +139,6 @@ class LeaveManagement(admin.ModelAdmin):
     @admin.display()
     def leave_info(self, leave: Leave):
         year_end_date = leave.end_date.replace(month=12, day=31)
-        print(leave.start_date.strftime("%A"))
         html_template = get_template('admin/leave/list/col_leave_info.html')
         html_content = html_template.render({
             'casual_passed': leave.employee.leave_passed('casual', year_end_date.year),
