@@ -105,7 +105,7 @@ class EmployeeAdmin(
         ]
         if not request.user.is_superuser:
             list_display.remove("salary_history")
-        if not request.user.has_perm('can_access_average_rating') and not request.user.is_superuser:
+        if not request.user.has_perm('employee.can_access_average_rating'):
             list_display.remove('employee_rating')
         return list_display
 
