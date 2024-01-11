@@ -3,8 +3,8 @@ import uuid
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Group, User
 from django.db import models
-from django.db.models import Sum
-from django.db.models.functions import Coalesce, TruncMonth
+from django.db.models import Sum, Count, Avg
+from django.db.models.functions import Coalesce, TruncMonth, ExtractMonth
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -83,6 +83,19 @@ class Employee(TimeStampMixin, AuthorMixin):
     def average_rating(self):
         four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120) 
         employee_ratings = self.employeerating_set.filter(created_at__gte=four_months_ago)
+        result = employee_ratings\
+                                .annotate(month=TruncMonth('created_at'))\
+                                .values('month')\
+                                .annotate(avg_score=Avg('score'))\
+                                .values('month', 'avg_score')
+        return result
+
+        print('****') 
+        avg_list = []
+        # for entry in result:
+        #     entry['month'] =  entry['month'].strftime('%B')
+        #     avg_list.append(entry)
+        return avg_list
         numbers_of_rating = employee_ratings.count()
         total_score = employee_ratings.aggregate(total=Sum('score')).get('total') or 0
         if numbers_of_rating != 0:

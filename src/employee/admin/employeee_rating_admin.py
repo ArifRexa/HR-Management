@@ -14,7 +14,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs;
-        return qs.filter(created_by_id=request.user.employee.id)
+        return qs.filter(created_by__id=request.user.id)
     
     @admin.display(description="Rating By")
     def rating_by(self, obj):
