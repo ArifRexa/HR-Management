@@ -152,6 +152,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
     actions = (
         "mark_active",
         "mark_inactive",
+        "send_mail",
     )
 
     @admin.display(description="Active Date")
@@ -169,13 +170,19 @@ class AnnouncementAdmin(admin.ModelAdmin):
         queryset.update(is_active=True)
         messages.success(request, "Announcements marked as active.")
 
-    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
-        super().save_model(request, obj, form, change)
-        self.__send_announcement_mail(request, obj, form, change)
-        return obj
+    # def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
+    #     super().save_model(request, obj, form, change)
+    #     self.__send_announcement_mail(request, obj, form, change)
+    #     return obj
 
-    def __send_announcement_mail(self, request, obj, form, change):
-        async_task("settings.tasks.announcement_mail", obj)
+    # def __send_announcement_mail(self, request, obj, form, change):
+    #     async_task("settings.tasks.announcement_mail", obj)
+
+    @admin.action(description="Send Mail")
+    def send_mail(modeladmin, request, queryset):
+        for announcement in queryset:
+            async_task("settings.tasks.announcement_mail", announcement)
+        messages.success(request, "Email sent successfully.")
 
 
 class FoodAllowanceForm(forms.Form):
