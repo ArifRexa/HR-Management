@@ -18,7 +18,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
     
     @admin.display(description="Rating By")
     def rating_by(self, obj):
-        return f'{obj.employee.full_name}'
+        return f'{obj.created_by.employee.full_name}'
     
     
     def get_form(self, request, obj, **kwargs):
