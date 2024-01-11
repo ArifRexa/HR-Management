@@ -38,13 +38,15 @@ class LeaveManagement(TimeStampMixin):
         ('pending', '⏳ Pending'),
         ('approved', '\u2705 Approved'),
         ('rejected', '⛔ Rejected'),
+        ('need_action', '◌ Need Further Discussion'),
     )
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     manager = models.ForeignKey(
         Employee,
         on_delete=models.SET_NULL,
         null=True,
-        limit_choices_to=(Q(active=True) & (Q(manager=True) | Q(lead=True)))
+        limit_choices_to=(Q(active=True) & (Q(manager=True) | Q(lead=True))),
+        related_name='leave_management_manager'
     )
     status = models.CharField(max_length=20, choices=LEAVE_STATUS, default='pending')
     approval_time = models.DateTimeField(blank=True, null=True)
