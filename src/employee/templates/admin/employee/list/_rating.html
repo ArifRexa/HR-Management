@@ -1,1 +1,5 @@
-{{ employee.average_rating }}
+<ul>
+    {% for rating in employee.average_rating %}
+    <li>{{ rating.month|date:'F Y' }}:  {{ rating.avg_score|floatformat:2 }}</li>
+    {% endfor %}
+</ul>
