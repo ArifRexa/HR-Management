@@ -20,7 +20,7 @@ class LeaveManagementInline(admin.TabularInline):
     model = leave.LeaveManagement
     extra = 0
     can_delete = False
-    readonly_fields = ('manager', 'status', 'approval_time')
+    readonly_fields = ("manager", "status", "approval_time")
 
 
 class LeaveForm(forms.ModelForm):
@@ -39,45 +39,61 @@ class LeaveForm(forms.ModelForm):
     Full name    
     """
     message = forms.CharField(
-        widget=forms.Textarea(attrs={'placeholder': placeholder, 'cols': 100, 'rows': 15})
+        widget=forms.Textarea(
+            attrs={"placeholder": placeholder, "cols": 100, "rows": 15}
+        )
     )
 
     class Meta:
         model = Leave
-        fields = '__all__'
+        fields = "__all__"
 
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
-        if self.fields.get('message'):
-            self.fields['message'].initial = self.placeholder
+        if self.fields.get("message"):
+            self.fields["message"].initial = self.placeholder
 
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = ('employee', 'leave_info', 'leave_type_', 'total_leave_', 'manager_approval',
-                    'status_', 'start_date_', 'end_date_')
-    actions = ('approve_selected',)
-    readonly_fields = ('note', 'total_leave')
-    exclude = ['status_changed_at', 'status_changed_by']
+    list_display = (
+        "employee",
+        "leave_info",
+        "leave_type_",
+        "total_leave_",
+        "manager_approval",
+        "status_",
+        "start_date_",
+        "end_date_",
+    )
+    actions = ("approve_selected",)
+    readonly_fields = ("note", "total_leave")
+    exclude = ["status_changed_at", "status_changed_by"]
     inlines = (LeaveAttachmentInline, LeaveManagementInline)
-    search_fields = ('employee__full_name', 'leave_type')
+    search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
-    date_hierarchy = 'start_date'
+    date_hierarchy = "start_date"
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
         if not request.user.has_perm("employee.can_approve_leave_applications"):
-            admin_only = ['status', 'employee']
+            admin_only = ["status", "employee"]
             for filed in admin_only:
                 fields.remove(filed)
         return fields
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
-            leave = Leave.objects.filter(id=request.resolver_match.kwargs['object_id']).first()
-            if not leave.status == 'pending' and not request.user.has_perm("employee.can_approve_leave_applications"):
-                return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
-        return ['total_leave', 'note']
+            leave = Leave.objects.filter(
+                id=request.resolver_match.kwargs["object_id"]
+            ).first()
+            if not leave.status == "pending" and not request.user.has_perm(
+                "employee.can_approve_leave_applications"
+            ):
+                return self.readonly_fields + tuple(
+                    [item.name for item in obj._meta.fields]
+                )
+        return ["total_leave", "note"]
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
@@ -87,22 +103,23 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_at = date.today()
         super().save_model(request, obj, form, change)
 
-        employee = form.cleaned_data.get('employee') or request.user.employee
+        employee = form.cleaned_data.get("employee") or request.user.employee
         if not change:
             projects = EmployeeProject.objects.get(employee=employee)
             project_obj = EmployeeProject.objects.filter(
-                project__in=projects.project.all(),
-                employee__active=True
+                project__in=projects.project.all(), employee__active=True
             )
             from django.db.models import Q
-            managers = project_obj.filter(
-                Q(employee__manager=True) | Q(employee__lead=True)
-            ).exclude(employee__id=employee.id).distinct()
-           
+
+            managers = (
+                project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
+                .exclude(employee__id=employee.id)
+                .distinct()
+            )
+
             for manager in managers:
                 leave_manage = leave.LeaveManagement(
-                    manager=manager.employee,
-                    leave=obj
+                    manager=manager.employee, leave=obj
                 )
                 leave_manage.save()
         self.__send_leave_mail(request, obj, form, change)
@@ -114,102 +131,128 @@ class LeaveManagement(admin.ModelAdmin):
         return qs.filter(employee_id=request.user.employee)
 
     def get_list_filter(self, request):
-        list_filter = ['status', 'leave_type', 'employee', 'start_date']
+        list_filter = ["status", "leave_type", "employee", "start_date"]
         if not request.user.has_perm("employee.can_approve_leave_applications"):
-            list_filter.remove('employee')
+            list_filter.remove("employee")
         return list_filter
 
     def __send_leave_mail(self, request, obj, form, change):
-        if len(form.changed_data) > 0 and 'status' in form.changed_data:
-            async_task('employee.tasks.leave_mail', obj)
+        if len(form.changed_data) > 0 and "status" in form.changed_data:
+            async_task("employee.tasks.leave_mail", obj)
         elif not change:
-            async_task('employee.tasks.leave_mail', obj)
+            async_task("employee.tasks.leave_mail", obj)
 
     @admin.action()
     def approve_selected(self, request, queryset):
-        if (
-                request.user.is_superuser
-                or request.user.has_perm("employee.can_approve_leave_applications")
+        if request.user.is_superuser or request.user.has_perm(
+            "employee.can_approve_leave_applications"
         ):
-            messages.success(request, 'Leaves approved.')
-            queryset.update(status='approved')
+            messages.success(request, "Leaves approved.")
+            queryset.update(status="approved")
         else:
-            messages.error(request, 'You don\'t have permission.')
+            messages.error(request, "You don't have permission.")
 
     @admin.display()
     def leave_info(self, leave: Leave):
         year_end_date = leave.end_date.replace(month=12, day=31)
-        html_template = get_template('admin/leave/list/col_leave_info.html')
-        html_content = html_template.render({
-            'casual_passed': leave.employee.leave_passed('casual', year_end_date.year),
-            'casual_remain': leave.employee.leave_available('casual_leave', year_end_date),
-            'medical_passed': leave.employee.leave_passed('medical', year_end_date.year),
-            'medical_remain': leave.employee.leave_available('medical_leave', year_end_date),
-
-            # 'leave_day':leave.start_date.strftime("%A")
-        })
+        html_template = get_template("admin/leave/list/col_leave_info.html")
+        html_content = html_template.render(
+            {
+                "casual_passed": leave.employee.leave_passed(
+                    "casual", year_end_date.year
+                ),
+                "casual_remain": leave.employee.leave_available(
+                    "casual_leave", year_end_date
+                ),
+                "medical_passed": leave.employee.leave_passed(
+                    "medical", year_end_date.year
+                ),
+                "medical_remain": leave.employee.leave_available(
+                    "medical_leave", year_end_date
+                ),
+                # 'leave_day':leave.start_date.strftime("%A")
+            }
+        )
         return format_html(html_content)
 
     @admin.display()
     def manager_approval(self, obj):
         leave_management = leave.LeaveManagement.objects.filter(leave=obj)
-        html_template = get_template('admin/leave/list/col_manager_approval.html')
-        html_content = html_template.render({
-            'leave_management': leave_management
-        })
+        html_template = get_template("admin/leave/list/col_manager_approval.html")
+        html_content = html_template.render({"leave_management": leave_management})
 
         return format_html(html_content)
 
     @admin.display()
     def leave_type_(self, leave: Leave):
-        html_template = get_template('admin/leave/list/col_leave_day.html')
-        html_content = html_template.render({
-            # 'use_get_display':True,
-            'data': leave.get_leave_type_display(),
-            'leave_day': leave.end_date.strftime("%A"),
-            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
-        })
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        html_content = html_template.render(
+            {
+                # 'use_get_display':True,
+                "data": leave.get_leave_type_display(),
+                "leave_day": leave.end_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
         return format_html(html_content)
 
     @admin.display()
     def total_leave_(self, leave: Leave):
-        html_template = get_template('admin/leave/list/col_leave_day.html')
-        html_content = html_template.render({
-            'data': leave.total_leave,
-            'leave_day': leave.end_date.strftime("%A"),
-            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
-        })
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        html_content = html_template.render(
+            {
+                "data": leave.total_leave,
+                "leave_day": leave.end_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
         return format_html(html_content)
 
     @admin.display()
     def status_(self, leave: Leave):
-        html_template = get_template('admin/leave/list/col_leave_day.html')
-        html_content = html_template.render({
-            # 'use_get_display':True,
-            'data': leave.get_status_display(),
-            'leave_day': leave.end_date.strftime("%A"),
-            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
-        })
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        html_content = html_template.render(
+            {
+                # 'use_get_display':True,
+                "data": leave.get_status_display(),
+                "leave_day": leave.end_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
         return format_html(html_content)
 
     @admin.display()
     def start_date_(self, leave: Leave):
-        html_template = get_template('admin/leave/list/col_leave_day.html')
-        html_content = html_template.render({
-            'data': leave.start_date,
-            'leave_day': leave.start_date.strftime("%A"),
-            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
-        })
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        html_content = html_template.render(
+            {
+                "data": leave.start_date,
+                "leave_day": leave.start_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
         return format_html(html_content)
 
     @admin.display()
     def end_date_(self, leave: Leave):
-        html_template = get_template('admin/leave/list/col_leave_day.html')
-        html_content = html_template.render({
-            'data': leave.end_date,
-            'leave_day': leave.end_date.strftime("%A"),
-            'has_friday': has_friday_between_dates(leave.start_date, leave.end_date)
-        })
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        html_content = html_template.render(
+            {
+                "data": leave.end_date,
+                "leave_day": leave.end_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
         return format_html(html_content)
 
 
@@ -231,14 +274,21 @@ def has_friday_between_dates(start_date, end_date):
 
 @admin.register(leave.LeaveManagement)
 class LeaveManagementAdmin(admin.ModelAdmin):
-    list_display = ['get_employee', 'get_apply_date', 'get_leave_type', 'manager', 'status', 'get_leave_date',
-                    'approval_time']
-    readonly_fields = ('manager', 'leave')
-    actions = ('approve_selected', 'pending_selected', 'rejected_selected')
-    fields = ('leave', 'manager', 'status')
-    list_filter = ('status', 'leave__leave_type', 'manager', 'leave__employee')
-    search_fields = ('manager__full_name', 'status')
-    date_hierarchy = 'created_at'
+    list_display = [
+        "get_employee",
+        "get_apply_date",
+        "get_leave_type",
+        "manager",
+        "status",
+        "get_leave_date",
+        "approval_time",
+    ]
+    readonly_fields = ("manager", "leave")
+    actions = ("approve_selected", "pending_selected", "rejected_selected")
+    fields = ("leave", "manager", "status")
+    list_filter = ("status", "leave__leave_type", "manager", "leave__employee")
+    search_fields = ("manager__full_name", "status")
+    date_hierarchy = "created_at"
 
     @admin.display(description="Employee")
     def get_employee(self, obj):
@@ -254,11 +304,10 @@ class LeaveManagementAdmin(admin.ModelAdmin):
 
     @admin.display(description="Leave On")
     def get_leave_date(self, obj):
-        html_template = get_template('admin/leave/list/col_leave_on.html')
-        html_content = html_template.render({
-            "start_date": obj.leave.start_date,
-            "end_date": obj.leave.end_date
-        })
+        html_template = get_template("admin/leave/list/col_leave_on.html")
+        html_content = html_template.render(
+            {"start_date": obj.leave.start_date, "end_date": obj.leave.end_date}
+        )
         return format_html(html_content)
 
     def save_model(self, request, obj, form, change):
@@ -275,33 +324,30 @@ class LeaveManagementAdmin(admin.ModelAdmin):
 
     @admin.action()
     def approve_selected(self, request, queryset):
-        if (
-                request.user.is_superuser
-                or request.user.has_perm("employee.change_leavemanagement")
+        if request.user.is_superuser or request.user.has_perm(
+            "employee.change_leavemanagement"
         ):
-            messages.success(request, 'Leaves approved.')
-            queryset.update(status='approved', approval_time=timezone.now())
+            messages.success(request, "Leaves approved.")
+            queryset.update(status="approved", approval_time=timezone.now())
         else:
-            messages.error(request, 'You don\'t have permission.')
+            messages.error(request, "You don't have permission.")
 
     @admin.action()
     def pending_selected(self, request, queryset):
-        if (
-                request.user.is_superuser
-                or request.user.has_perm("employee.change_leavemanagement")
+        if request.user.is_superuser or request.user.has_perm(
+            "employee.change_leavemanagement"
         ):
-            messages.success(request, 'Leaves pending.')
-            queryset.update(status='pending')
+            messages.success(request, "Leaves pending.")
+            queryset.update(status="pending")
         else:
-            messages.error(request, 'You don\'t have permission.')
+            messages.error(request, "You don't have permission.")
 
     @admin.action()
     def rejected_selected(self, request, queryset):
-        if (
-                request.user.is_superuser
-                or request.user.has_perm("employee.change_leavemanagement")
+        if request.user.is_superuser or request.user.has_perm(
+            "employee.change_leavemanagement"
         ):
-            messages.success(request, 'Leaves rejected.')
-            queryset.update(status='rejected')
+            messages.success(request, "Leaves rejected.")
+            queryset.update(status="rejected")
         else:
-            messages.error(request, 'You don\'t have permission.')
+            messages.error(request, "You don't have permission.")

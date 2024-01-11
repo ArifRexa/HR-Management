@@ -38,7 +38,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     blood_group = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True)
     address = models.TextField(verbose_name="Permanent Address", null=True)
-    present_address = models.TextField(verbose_name='Present Address', null=True)
+    present_address = models.TextField(verbose_name="Present Address", null=True)
     phone = models.CharField(
         max_length=60, help_text="Use (,) comma for separate phone numbers"
     )
@@ -214,7 +214,6 @@ class Employee(TimeStampMixin, AuthorMixin):
         )
         return format_html(format_str)
 
-
     @property
     def get_entry_pass_id(self):
         return f"{self.joining_date.strftime('%Y%d')}{self.id}"
@@ -359,7 +358,8 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_access_all_employee", "Can acccess all employee"),
             ('can_access_average_rating', 'Can access average rating of Employee.')
         )
-        ordering = ['full_name']
+        ordering = ["full_name"]
+
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
