@@ -674,7 +674,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         response['Content-Disposition'] = f'attachment; filename="{project_name}_{date}.txt"'
 
         return response
-    #
+
     @admin.action(description="Send Report to slack")
     def send_report_to_slack(self, modeladmin, request, queryset, **kwargs):
         date = queryset.first().created_at.strftime('%d-%m-%Y')
