@@ -40,7 +40,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     blood_group = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True)
     address = models.TextField(verbose_name="Permanent Address", null=True)
-    present_address = models.TextField(verbose_name='Present Address', null=True)
+    present_address = models.TextField(verbose_name="Present Address", null=True)
     phone = models.CharField(
         max_length=60, help_text="Use (,) comma for separate phone numbers"
     )
@@ -83,7 +83,6 @@ class Employee(TimeStampMixin, AuthorMixin):
     need_hr = models.BooleanField(verbose_name="I need help from HR", default=False)
     need_hr_at = models.DateTimeField(null=True, blank=True)
     entry_pass_id = models.CharField(null=True, blank=True, max_length=255)
-
 
     def __str__(self):
         bank = self.bankaccount_set.filter(default=True).first()
@@ -211,7 +210,6 @@ class Employee(TimeStampMixin, AuthorMixin):
             )
         )
         return format_html(format_str)
-
 
     @property
     def get_entry_pass_id(self):
@@ -356,7 +354,8 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
             ("can_access_all_employee", "Can acccess all employee"),
         )
-        ordering = ['full_name']
+        ordering = ["full_name"]
+
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
