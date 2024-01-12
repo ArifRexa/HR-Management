@@ -257,8 +257,8 @@ class LeaveManagement(admin.ModelAdmin):
         return format_html(html_content)
     
     @admin.display(description='Created By')
-    def creator(self, obj):
-        return f'{obj.created_by.first_name} {obj.created_by.last_name}'.title()
+    def creator(self, leave: Leave):
+        return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
 
 
 def has_friday_between_dates(start_date, end_date):
