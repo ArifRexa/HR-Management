@@ -340,10 +340,9 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
 
 
     def clean(self):
-        print(self.manager.leave_management_manager.first().status)
         # LeaveManagement = apps.get_model('employee', 'LeaveManagement')
         # if len(LeaveManagement.objects.filter(manager=self.manager, status='pending')) > 0:
-        if len(self.manager.leave_management_manager.filter(status='pending')) > 0:
+        if len(self.employee.leave_management_manager.filter(status='pending')) > 0:
             raise ValidationError('You have pending leave application(s). Please approve first.')
 
 
