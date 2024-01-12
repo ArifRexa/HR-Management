@@ -11,7 +11,7 @@ def announcement_mail(announcement: Announcement):
     email = EmailMessage()
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [employee_list[0]]
-    email.cc = employee_list[1:]
+    # email.cc = employee_list[1:]
     email.subject = "Announcement!!"
     email.body = announcement.description
     email.content_subtype = "html"
