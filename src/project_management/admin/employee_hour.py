@@ -787,6 +787,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 employee = form.cleaned_data.get('employee')
             else:
                 employee = request.user.employee
+
+            if len(employee.leave_management_manager.filter(status='pending')) > 0:
+                messages.error(
+                    request,
+                    "You have pending leave application(s). Please approve first."
+                )
+                return
             update_obj = DailyProjectUpdate.objects.filter(
                 employee=employee,
                 project=form.cleaned_data.get('project'),

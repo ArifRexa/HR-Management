@@ -339,11 +339,11 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
             return str(self.update)
 
 
-    def clean(self):
-        # LeaveManagement = apps.get_model('employee', 'LeaveManagement')
-        # if len(LeaveManagement.objects.filter(manager=self.manager, status='pending')) > 0:
-        if len(self.employee.leave_management_manager.filter(status='pending')) > 0:
-            raise ValidationError('You have pending leave application(s). Please approve first.')
+    # def clean(self):
+    #     # LeaveManagement = apps.get_model('employee', 'LeaveManagement')
+    #     # if len(LeaveManagement.objects.filter(manager=self.manager, status='pending')) > 0:
+    #     if len(self.employee.leave_management_manager.filter(status='pending')) > 0:
+    #         raise ValidationError('You have pending leave application(s). Please approve first.')
 
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):
