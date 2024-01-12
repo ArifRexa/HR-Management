@@ -83,26 +83,11 @@ class Employee(TimeStampMixin, AuthorMixin):
     def average_rating(self):
         four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120) 
         employee_ratings = self.employeerating_set.filter(created_at__gte=four_months_ago)
-        result = employee_ratings\
+        return employee_ratings\
                                 .annotate(month=TruncMonth('created_at'))\
                                 .values('month')\
                                 .annotate(avg_score=Avg('score'))\
                                 .values('month', 'avg_score')
-        return result
-
-        print('****') 
-        avg_list = []
-        # for entry in result:
-        #     entry['month'] =  entry['month'].strftime('%B')
-        #     avg_list.append(entry)
-        return avg_list
-        numbers_of_rating = employee_ratings.count()
-        total_score = employee_ratings.aggregate(total=Sum('score')).get('total') or 0
-        if numbers_of_rating != 0:
-            rating = (total_score / numbers_of_rating)
-        else:
-            rating = 0
-        return round(rating, 2)
 
     @property
     def top_skills(self):
