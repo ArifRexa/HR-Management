@@ -15,7 +15,7 @@ from project_management.models import (
     ProjectScreenshot,
     Tag,
 )
-from website.models import Service, Blog, Category, BlogTag, BlogCategory
+from website.models import Service, Blog, Category, BlogTag, BlogCategory, BlogContext
 
 
 class TechnologySerializer(serializers.ModelSerializer):
@@ -238,11 +238,18 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ("full_name", "image")
 
 
+class BlogContextSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogContext
+        fields = ["id", "title", "description"]
+
+
 class BlogListSerializer(serializers.ModelSerializer):
     # tags = BlogTagSerializer(many=True, source='blogtag_set')
     # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
     category = serializers.SerializerMethodField("get_category")
     author = AuthorSerializer(source="created_by.employee")
+    blog_contexts = BlogContextSerializer(many=True)
 
     class Meta:
         model = Blog
@@ -255,6 +262,7 @@ class BlogListSerializer(serializers.ModelSerializer):
             "read_time_minute",
             "created_at",
             "author",
+            "blog_contexts",
         )
 
     def get_category(self, instance):
