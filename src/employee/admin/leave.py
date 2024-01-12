@@ -65,6 +65,7 @@ class LeaveManagement(admin.ModelAdmin):
         "status_",
         "start_date_",
         "end_date_",
+        'creator'
     )
     actions = ("approve_selected",)
     readonly_fields = ("note", "total_leave")
@@ -254,6 +255,10 @@ class LeaveManagement(admin.ModelAdmin):
             }
         )
         return format_html(html_content)
+    
+    @admin.display(description='Created By')
+    def creator(self, obj):
+        return f'{obj.created_by.first_name} {obj.created_by.last_name}'.title()
 
 
 def has_friday_between_dates(start_date, end_date):
