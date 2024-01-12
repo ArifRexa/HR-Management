@@ -180,8 +180,14 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
     @admin.action(description="Send Email")
     def send_mail(modeladmin, request, queryset):
+        employee_email_list = list(
+            Employee.objects.filter(active=True).values_list("email", flat=True)
+        )
         for announcement in queryset:
-            async_task("settings.tasks.announcement_mail", announcement)
+            for employee_email in employee_email_list:
+                async_task(
+                    "settings.tasks.announcement_mail", employee_email, announcement
+                )
         if queryset:
             messages.success(request, "Email sent successfully.")
 
