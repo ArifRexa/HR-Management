@@ -35,7 +35,7 @@ from project_management.admin.project_hour.options import (
 from project_management.forms import AddDDailyProjectUpdateForm
 from icecream import ic
 from client_management.templatetags.replace_newline import check_valid_url
-
+from employee.models import LeaveManagement
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
@@ -393,6 +393,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
+
+            if len(LeaveManagement.objects.filter(manager=request.user.employee, status='pending')):
+                return messages.error(request, f"You have pending leave application(s). Please approve first.")
+
             qs_count = queryset.filter(manager_id=request.user.employee.id).update(
                 status="approved"
             )
@@ -783,6 +787,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 employee = form.cleaned_data.get('employee')
             else:
                 employee = request.user.employee
+
+            if len(employee.leave_management_manager.filter(status='pending')) > 0:
+                messages.error(
+                    request,
+                    "You have pending leave application(s). Please approve first."
+                )
+                return
             update_obj = DailyProjectUpdate.objects.filter(
                 employee=employee,
                 project=form.cleaned_data.get('project'),
