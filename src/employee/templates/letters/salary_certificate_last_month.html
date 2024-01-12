@@ -211,7 +211,7 @@
         <br>
         {% if employee.employeesalary_set.last.loan_emi %}
             <p>Deducted on salary :
-                {{ employee.employeesalary_set.last.net_salary |addition:employee.employeesalary_set.last.project_bonus }}
+                {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus }}
                 {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
                     Taka</b>
             </p>

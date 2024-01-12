@@ -1,6 +1,5 @@
 import datetime
 import uuid
-
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Group, User
 from django.db import models
@@ -13,7 +12,6 @@ from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timesince import timesince
 from tinymce.models import HTMLField
-
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
@@ -56,10 +54,8 @@ class Employee(TimeStampMixin, AuthorMixin):
         max_length=255,
         help_text="i.e: 59530389237, Circle–138, Zone-11, Dhaka",
     )
-
     manager = models.BooleanField(default=False)
     lead = models.BooleanField(default=False)
-
     active = models.BooleanField(default=True)
     show_in_web = models.BooleanField(default=True)
     lunch_allowance = models.BooleanField(default=True)
@@ -69,24 +65,31 @@ class Employee(TimeStampMixin, AuthorMixin):
     pf_eligibility = models.BooleanField(default=False)
     festival_bonus_eligibility = models.BooleanField(default=True)
     device_allowance = models.BooleanField(default=False)
-
     list_order = models.IntegerField(default=100)
-
     birthday_image = models.ImageField(null=True, blank=True)
     birthday_image_shown = models.BooleanField(default=False)
-
     need_cto = models.BooleanField(
         verbose_name="I need help from Tech Lead", default=False
     )
     need_cto_at = models.DateTimeField(null=True, blank=True)
-
     need_hr = models.BooleanField(verbose_name="I need help from HR", default=False)
     need_hr_at = models.DateTimeField(null=True, blank=True)
     entry_pass_id = models.CharField(null=True, blank=True, max_length=255)
 
     def __str__(self):
-        bank = self.bankaccount_set.filter(default=True).first()
         return self.full_name
+
+    @property
+    def average_rating(self):
+        four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120) 
+        employee_ratings = self.employeerating_set.filter(created_at__gte=four_months_ago)
+        numbers_of_rating = employee_ratings.count()
+        total_score = employee_ratings.aggregate(total=Sum('score')).get('total') or 0
+        if numbers_of_rating != 0:
+            rating = (total_score / numbers_of_rating)
+        else:
+            rating = 0
+        return round(rating, 2)
 
     @property
     def top_skills(self):
@@ -353,6 +356,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         permissions = (
             ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
             ("can_access_all_employee", "Can acccess all employee"),
+            ('can_access_average_rating', 'Can access average rating of Employee.')
         )
         ordering = ["full_name"]
 
