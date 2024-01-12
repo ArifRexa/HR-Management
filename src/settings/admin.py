@@ -178,11 +178,12 @@ class AnnouncementAdmin(admin.ModelAdmin):
     # def __send_announcement_mail(self, request, obj, form, change):
     #     async_task("settings.tasks.announcement_mail", obj)
 
-    @admin.action(description="Send Mail")
+    @admin.action(description="Send Email")
     def send_mail(modeladmin, request, queryset):
         for announcement in queryset:
             async_task("settings.tasks.announcement_mail", announcement)
-        messages.success(request, "Email sent successfully.")
+        if queryset:
+            messages.success(request, "Email sent successfully.")
 
 
 class FoodAllowanceForm(forms.Form):
