@@ -5,7 +5,7 @@
                    id="flexSwitchCheckChecked"  {% if user.employee.is_online %} checked {% endif %}>
             <label class="form-check-label d-sm-none" style="margin: 0.5rem 0.5rem"
                    for="flexSwitchCheckChecked">
-                {% if field.value %} Inside Office {% else %} OutSide Office {% endif %}
+                {% if user.employee.is_online %} Inside Office {% else %} OutSide Office {% endif %}
             </label>
         </div>
 </form>
