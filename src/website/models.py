@@ -54,10 +54,22 @@ class Blog(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return self.title
-    
+
     def save(self, *args, **kwargs) -> None:
-        self.read_time_minute = math.ceil(len(self.content.split(' ')) / 200)
+        self.read_time_minute = math.ceil(len(self.content.split(" ")) / 200)
         return super(Blog, self).save(*args, **kwargs)
+
+
+class BlogContextImage(AuthorMixin, TimeStampMixin):
+    image = models.ImageField(upload_to="blog_image")
+
+
+class BlogContext(AuthorMixin, TimeStampMixin):
+    blog = models.ForeignKey(
+        Blog, on_delete=models.CASCADE, related_name="blog_contexts"
+    )
+    title = models.CharField(null=True, blank=True, max_length=255)
+    description = HTMLField(null=True, blank=True)
 
 
 class BlogCategory(models.Model):
