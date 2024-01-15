@@ -47,6 +47,8 @@ class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to="blog_image")
+    video = models.FileField(upload_to="blog_video", blank=True, null=True)
+    category = models.ManyToManyField(Category, related_name="categories")
     short_description = models.TextField()
     content = HTMLField()
     active = models.BooleanField(default=False)
@@ -59,6 +61,11 @@ class Blog(AuthorMixin, TimeStampMixin):
         self.read_time_minute = math.ceil(len(self.content.split(" ")) / 200)
         return super(Blog, self).save(*args, **kwargs)
 
+    class Meta:
+        permissions = [
+            ("can_approve", "Can Approve"),
+        ]
+
 
 class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
@@ -67,6 +74,7 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     title = models.CharField(null=True, blank=True, max_length=255)
     description = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
+    video = models.FileField(upload_to="blog_context_videos", blank=True, null=True)
 
 
 class BlogCategory(models.Model):

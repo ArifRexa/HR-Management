@@ -1,4 +1,6 @@
+from typing import Any
 from django.contrib import admin
+from django.http.request import HttpRequest
 
 # Register your models here.
 from website.models import (
@@ -59,12 +61,14 @@ class BlogContextInline(admin.TabularInline):
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
+
     inlines = (
         BlogCategoryInline,
         BlogContextInline,
         # BlogTagInline,
     )
-    readonly_fields = ("read_time_minute",)
+
+    # readonly_fields = ("read_time_minute",)
     search_fields = ("title",)
     list_display = (
         "title",
@@ -72,5 +76,17 @@ class BlogAdmin(admin.ModelAdmin):
         "active",
     )
 
-    # def has_module_permission(self, request):
-    #     return False
+    def get_form(
+        self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any
+    ) -> Any:
+        form = super().get_form(request, obj, change, **kwargs)
+        form.base_fields["active"].disabled = not request.user.has_perm(
+            "website.can_approve"
+        )
+        return form
+
+    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
+        form.base_fields["active"].disabled = not request.user.has_perm(
+            "website.can_approve"
+        )
+        return super().save_model(request, obj, form, change)
