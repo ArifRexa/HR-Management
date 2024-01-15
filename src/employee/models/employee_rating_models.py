@@ -18,17 +18,3 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
 
     def __str__(self) -> str:
         return self.employee.full_name
-    
-    def clean(self):
-        is_provided = EmployeeRating.objects.filter(created_at__month=datetime.now().month, employee=self.employee).exists()
-        if is_provided and self.id == None:
-            raise ValidationError({'employee': 'You already given the rating'})
-    
-        delete_or_update_before = datetime.now() + timedelta(days=7)
-        if self.id != None and self.created_at > delete_or_update_before:
-            raise ValidationError({"comment": "You can\'t update your rating!"})
-
-        print('created at', self.created_at)
-
-        if datetime.now().weekday() != 4:
-            raise ValidationError({"comment": "You can\'t make rating today. You can try at friday."})
