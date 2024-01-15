@@ -178,7 +178,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = "__all__"
+        # fields = "__all__"
+        exclude = ["created_by"]
 
 
 class TagListSerializer(serializers.ModelSerializer):
@@ -248,7 +249,7 @@ class AuthorSerializer(serializers.ModelSerializer):
 class BlogContextSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogContext
-        fields = ["id", "title", "description"]
+        fields = ["id", "title", "description", "image", "video"]
 
 
 class BlogListSerializer(serializers.ModelSerializer):
@@ -256,6 +257,35 @@ class BlogListSerializer(serializers.ModelSerializer):
     # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
     category = serializers.SerializerMethodField("get_category")
     author = AuthorSerializer(source="created_by.employee")
+
+    class Meta:
+        model = Blog
+        fields = (
+            "slug",
+            "title",
+            "short_description",
+            "image",
+            "category",
+            "read_time_minute",
+            "created_at",
+            "author",
+        )
+
+    def get_category(self, instance):
+        blogcategory = instance.blogcategory_set.first()
+        if blogcategory:
+            return blogcategory.category.name
+        return "-"
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["categories"] = CategoryListSerializer(
+            instance=instance.category, many=True
+        ).data
+        return data
+
+
+class BlogDetailsSerializer(BlogListSerializer):
     blog_contexts = BlogContextSerializer(many=True)
 
     class Meta:
@@ -269,41 +299,9 @@ class BlogListSerializer(serializers.ModelSerializer):
             "read_time_minute",
             "created_at",
             "author",
+            "content",
             "blog_contexts",
         )
-
-    def get_category(self, instance):
-        blogcategory = instance.blogcategory_set.first()
-        if blogcategory:
-            return blogcategory.category.name
-        return "-"
-
-
-class BlogDetailsSerializer(serializers.ModelSerializer):
-    # tags = BlogTagSerializer(many=True, source='blogtag_set')
-    # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
-    category = serializers.SerializerMethodField("get_category")
-    author = AuthorSerializer(source="created_by.employee")
-
-    class Meta:
-        model = Blog
-        fields = (
-            "slug",
-            "title",
-            "short_description",
-            "image",
-            "category",
-            "read_time_minute",
-            "created_at",
-            "author",
-            "content",
-        )
-
-    def get_category(self, instance):
-        blogcategory = instance.blogcategory_set.first()
-        if blogcategory:
-            return blogcategory.category.name
-        return "-"
 
 
 class EmployeeDetailforNOCSerializer(serializers.ModelSerializer):

@@ -63,7 +63,6 @@ class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
 
     inlines = (
-        BlogCategoryInline,
         BlogContextInline,
         # BlogTagInline,
     )
