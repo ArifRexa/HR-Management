@@ -359,6 +359,12 @@ class Employee(TimeStampMixin, AuthorMixin):
         )
         ordering = ['full_name']
 
+class CEOAppointmentModel(Employee):
+    class Meta:
+        proxy = True
+        verbose_name = 'CEO Appointment'
+        verbose_name_plural = 'CEO Appointment List'
+
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
     if instance.pf_eligibility:

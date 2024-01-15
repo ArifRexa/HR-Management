@@ -27,8 +27,6 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
         delete_or_update_before = datetime.now() + timedelta(days=7)
         if self.id != None and self.created_at > delete_or_update_before:
             raise ValidationError({"comment": "You can\'t update your rating!"})
-
-        print('created at', self.created_at)
-
+        
         if datetime.now().weekday() != 4:
             raise ValidationError({"comment": "You can\'t make rating today. You can try at friday."})

@@ -13,6 +13,7 @@ from .favourite_menu import FavouriteMenuAdmin
 from .employee_bank import BankAccountAdmin
 from .home_office import HomeOfficeManagement
 from employee.admin.employeee_rating_admin import EmployeeRatingAdmin
+from employee.admin.ceo_appointments import CEOAppointmentAdmin
 
 from .hr_policy import (
     HRPolicySectionAdmin,
