@@ -65,6 +65,7 @@ class LeaveManagement(admin.ModelAdmin):
         "status_",
         "start_date_",
         "end_date_",
+        "created_by",
     )
     actions = ("approve_selected",)
     readonly_fields = ("note", "total_leave")
