@@ -11,19 +11,16 @@ class EmployeeRatingForm(forms.ModelForm):
 
     def clean(self):
         clean_data = super().clean()
+        request = self.request
 
-        if 'employee' in clean_data:
-            print(clean_data)
-            is_provided = EmployeeRating.objects.filter(created_at__month=datetime.now().month, employee=clean_data['employee']).exists()
-            if is_provided and 'id' in clean_data:
-                raise ValidationError({'employee': 'You already given the rating'})
-        
-            delete_or_update_before = datetime.now() + timedelta(days=7)
-            if 'id' in clean_data and clean_data['created_at'] > delete_or_update_before:
+        if clean_data.get('employee'):
+            before_week = datetime.now() - timedelta(days=7)
+            is_provided = EmployeeRating.objects.filter(created_at__gt = before_week, employee=clean_data.get('employee'), created_by=request.user).exists()
+            if is_provided and self.instance.id is None:
+                raise forms.ValidationError({'employee': 'You already given the rating. Plesae try again 7 days later.'})
+
+            if self.instance.id and self.instance.created_at <= before_week:
                 raise ValidationError({"comment": "You can\'t update your rating!"})
-
-            # if datetime.now().weekday() != 4:
-            #     raise ValidationError({"comment": "You can\'t make rating today. You can try at friday."})
         return clean_data
          
 @admin.register(EmployeeRating)
@@ -39,7 +36,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs;
         return qs.filter(created_by__id=request.user.id)
-    
+
     def has_delete_permission(self, request, obj=None):
         delete_or_update_before = datetime.now() + timedelta(days=7)
         if obj is None:
@@ -60,5 +57,6 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
             field = form.base_fields['employee']
             field.widget.can_add_related = False
             field.widget.can_change_related = False
+        form.request = request
         return form
     
