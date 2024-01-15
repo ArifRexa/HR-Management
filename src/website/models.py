@@ -60,16 +60,13 @@ class Blog(AuthorMixin, TimeStampMixin):
         return super(Blog, self).save(*args, **kwargs)
 
 
-class BlogContextImage(AuthorMixin, TimeStampMixin):
-    image = models.ImageField(upload_to="blog_image")
-
-
 class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name="blog_contexts"
     )
     title = models.CharField(null=True, blank=True, max_length=255)
     description = HTMLField(null=True, blank=True)
+    image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
 
 
 class BlogCategory(models.Model):

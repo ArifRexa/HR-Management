@@ -15,7 +15,14 @@ from project_management.models import (
     ProjectScreenshot,
     Tag,
 )
-from website.models import Service, Blog, Category, BlogTag, BlogCategory, BlogContext
+from website.models import (
+    Service,
+    Blog,
+    Category,
+    BlogTag,
+    BlogCategory,
+    BlogContext,
+)
 
 
 class TechnologySerializer(serializers.ModelSerializer):
