@@ -15,7 +15,11 @@ class EmployeeRatingForm(forms.ModelForm):
 
         if clean_data.get('employee'):
             before_week = datetime.now() - timedelta(days=7)
-            is_provided = EmployeeRating.objects.filter(created_at__gt = before_week, employee=clean_data.get('employee'), created_by=request.user).exists()
+            is_provided = EmployeeRating.objects.filter(
+                                                        created_at__gt = before_week, 
+                                                        employee = clean_data.get('employee'), 
+                                                        project = clean_data.get('project'),
+                                                        created_by = request.user).exists()
             if is_provided and self.instance.id is None:
                 raise forms.ValidationError({'employee': 'You already given the rating. Plesae try again 7 days later.'})
 
