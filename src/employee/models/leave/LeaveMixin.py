@@ -9,6 +9,10 @@ from settings.models import PublicHolidayDate
 
 
 class LeaveMixin(models.Model):
+    MEDICAL = 'medical'
+    HALF_DAY = 'half_day'
+    APPLIED_TIME_LIMIT = 18
+    APPLIED_ERROR_MSG = "You can not apply any leave application after 06:00 PM for tomorrow."
     LEAVE_CHOICE = (
         ("casual", "Casual Leave"),
         ("medical", "Medical Leave"),
@@ -20,6 +24,7 @@ class LeaveMixin(models.Model):
         ("approved", "\u2705 Approved"),
         ("rejected", "⛔ Rejected"),
     )
+
     start_date = models.DateField()
     end_date = models.DateField()
     total_leave = models.FloatField()
@@ -32,31 +37,26 @@ class LeaveMixin(models.Model):
 
     def clean_fields(self, exclude=None):
         user = get_current_user()
-        print(user.is_superuser)
-        super().clean_fields(exclude=exclude)
+        # super().clean_fields(exclude=exclude)
         # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
             from django.contrib.auth.models import Group
 
-            try:
-                group = Group.objects.get(name="HR-Operation")
-            except Group.DoesNotExist:
-                Group.objects.create(name="HR-Operation")
+            # try:
+            #     group = Group.objects.get(name="HR-Operation")
+            # except Group.DoesNotExist:
+            #     Group.objects.create(name="HR-Operation")
             if (
-                not user.is_superuser
-                and not user.groups.filter(name="HR-Operation").exists()
+                self.leave_type not in [self.MEDICAL, self.HALF_DAY]
+                and date.today() <= self.start_date
+                and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time()
+                and not user.has_perm('employee.can_add_leave_at_any_time')
             ):
-                if self.leave_type != "medical" and self.leave_type != "half_day":
-                    if (
-                        date.today() + timedelta(days=1) == self.start_date
-                        and time(18, 0) < datetime.now().time()
-                        or self.start_date == date.today()
-                    ):
-                        raise ValidationError(
-                            {
-                                "start_date": "You can not apply any leave application after 06:00 PM for tomorrow."
-                            }
-                        )
+                raise ValidationError(
+                    {
+                        "start_date": self.APPLIED_ERROR_MSG
+                    }
+                )
             if self.start_date > self.end_date:
                 raise ValidationError(
                     {
@@ -65,6 +65,7 @@ class LeaveMixin(models.Model):
                         )
                     }
                 )
+            return super().clean_fields(exclude=exclude)
 
     def save(self, *args, **kwargs):
         office_holidays = PublicHolidayDate.objects.filter(
