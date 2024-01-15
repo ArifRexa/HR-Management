@@ -33,24 +33,24 @@ class LeaveMixin(models.Model):
     def clean_fields(self, exclude=None):
         user = get_current_user()
         print(user.is_superuser)
-        super().clean_fields(exclude=exclude)
+        # super().clean_fields(exclude=exclude)
         # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
             from django.contrib.auth.models import Group
 
-            try:
-                group = Group.objects.get(name="HR-Operation")
-            except Group.DoesNotExist:
-                Group.objects.create(name="HR-Operation")
+            # try:
+            #     group = Group.objects.get(name="HR-Operation")
+            # except Group.DoesNotExist:
+            #     Group.objects.create(name="HR-Operation")
             if (
                 not user.is_superuser
                 and not user.groups.filter(name="HR-Operation").exists()
             ):
-                if self.leave_type != "medical" and self.leave_type != "half_day":
+                if self.leave_type != ['medical', 'half_day']:
                     if (
-                        date.today() + timedelta(days=1) == self.start_date
+                        date.today() <= self.start_date
                         and time(18, 0) < datetime.now().time()
-                        or self.start_date == date.today()
+                        and not user.has_perm('can_add_leave_at_any_time')
                     ):
                         raise ValidationError(
                             {
@@ -65,6 +65,7 @@ class LeaveMixin(models.Model):
                         )
                     }
                 )
+            return super().clean_fields(exclude=exclude)
 
     def save(self, *args, **kwargs):
         office_holidays = PublicHolidayDate.objects.filter(

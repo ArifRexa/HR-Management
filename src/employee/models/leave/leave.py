@@ -34,6 +34,10 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
                 "can_approve_leave_applications",
                 "Can able to approve leave applications",
             ),
+            (
+                "can_add_leave_at_any_time",
+                "Can able to add leave at any time",
+            ),
         )
 
 
