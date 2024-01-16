@@ -104,8 +104,26 @@ class BlogAdmin(admin.ModelAdmin):
             return not obj.active
         return False
 
+    def has_delete_permission(
+        self, request: HttpRequest, obj: Any | None = ...
+    ) -> bool:
+        # TODO: delete permission
+        permitted = super().has_delete_permission(request, obj)
+        if permitted and not request.user.is_superuser:
+            return False
+        return permitted
+
+    def delete_queryset(self, request: HttpRequest, queryset: QuerySet[Any]) -> None:
+        if not request.user.is_superuser:
+            queryset = queryset.filter(active=False)
+        super().delete_queryset(request, queryset)
+
+    # def delete_model(self, request: HttpRequest, obj: Any) -> None:
+    #     return super().delete_model(request, obj)
+
     def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
         form.base_fields["active"].disabled = not request.user.has_perm(
             "website.can_approve"
         )
+
         return super().save_model(request, obj, form, change)
