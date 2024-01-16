@@ -1,5 +1,6 @@
 from typing import Any
 from django.contrib import admin
+from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 
 # Register your models here.
@@ -67,13 +68,21 @@ class BlogAdmin(admin.ModelAdmin):
         # BlogTagInline,
     )
 
-    # readonly_fields = ("read_time_minute",)
     search_fields = ("title",)
+    autocomplete_fields = ["category"]
     list_display = (
         "title",
         "slug",
         "active",
     )
+
+    def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+        querySet = super().get_queryset(request)
+        user = request.user
+        if user.is_superuser:
+            return querySet
+        else:
+            return querySet.filter(created_by=user)
 
     def get_form(
         self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any

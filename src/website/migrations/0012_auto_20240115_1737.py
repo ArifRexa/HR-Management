@@ -4,24 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('website', '0011_auto_20240115_1601'),
+        ("website", "0011_auto_20240115_1601"),
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name='blog',
-            options={'permissions': [('can_approved', 'Can Approve')]},
+        migrations.AddField(
+            model_name="blog",
+            name="video",
+            field=models.FileField(blank=True, null=True, upload_to="blog_video"),
         ),
         migrations.AddField(
-            model_name='blog',
-            name='video',
-            field=models.FileField(blank=True, null=True, upload_to='blog_video'),
-        ),
-        migrations.AddField(
-            model_name='blogcontext',
-            name='video',
-            field=models.FileField(blank=True, null=True, upload_to='blog_context_videos'),
+            model_name="blogcontext",
+            name="video",
+            field=models.FileField(
+                blank=True, null=True, upload_to="blog_context_videos"
+            ),
         ),
     ]
