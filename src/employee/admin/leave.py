@@ -65,7 +65,7 @@ class LeaveManagement(admin.ModelAdmin):
         "status_",
         "start_date_",
         "end_date_",
-        "created_by_full_name",
+        'creator'
     )
     actions = ("approve_selected",)
     readonly_fields = ("note", "total_leave")
@@ -255,10 +255,11 @@ class LeaveManagement(admin.ModelAdmin):
             }
         )
         return format_html(html_content)
-
+    
     @admin.display(description='Created By')
-    def created_by_full_name(self, leave: Leave):
-        return f"{leave.created_by.first_name} {leave.created_by.last_name}"
+    def creator(self, leave: Leave):
+        return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
+
 
 def has_friday_between_dates(start_date, end_date):
     # Create a timedelta of one day

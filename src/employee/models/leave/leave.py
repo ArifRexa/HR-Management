@@ -51,7 +51,7 @@ class LeaveManagement(TimeStampMixin):
         ("pending", "⏳ Pending"),
         ("approved", "\u2705 Approved"),
         ("rejected", "⛔ Rejected"),
-        ("need_action", "◌ Need Further Discussion"),
+        ("need_action", "🤔 Need Further Discussion"),
     )
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     manager = models.ForeignKey(

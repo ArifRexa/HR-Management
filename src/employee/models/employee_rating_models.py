@@ -3,11 +3,13 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.employee import Employee
 from django.core.exceptions import ValidationError
-from datetime import datetime
+from datetime import datetime, timedelta
+from project_management.models import Project
 
 class EmployeeRating(TimeStampMixin, AuthorMixin):
     score = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.TextField()
 
     class Meta:
@@ -16,7 +18,3 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
 
     def __str__(self) -> str:
         return self.employee.full_name
-    
-    # def clean(self):
-    #     if datetime.now().weekday() != 4:
-    #         raise ValidationError({"comment": "You can\'t make rating today. You can try at friday."})
