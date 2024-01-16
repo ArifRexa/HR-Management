@@ -1,8 +1,11 @@
+from collections.abc import Sequence
 from django.core.exceptions import ValidationError
 from datetime import datetime, timedelta
 from django.contrib import admin
 from django import forms
 from datetime import datetime, timedelta
+from django.utils.html import format_html
+from django.http.request import HttpRequest
 from employee.models.employee_rating_models import EmployeeRating
 
 class EmployeeRatingForm(forms.ModelForm):
@@ -29,7 +32,7 @@ class EmployeeRatingForm(forms.ModelForm):
          
 @admin.register(EmployeeRating)
 class EmployeeRatingAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'rating_by', 'project', 'score', 'comment', 'created_at']
+    list_display = ['employee', 'rating_by', 'project', 'show_score', 'comment', 'created_at']
     date_hierarchy = 'created_at'
     list_filter = ['employee', 'project']
     autocomplete_fields = ['employee', 'project']
@@ -40,6 +43,12 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs;
         return qs.filter(created_by__id=request.user.id)
+
+    def show_score(self, obj):
+        string = f'<strong style="color:green">{obj.score}</strong>'
+        if obj.score <= 5:
+            string = f'<strong style="color:red">{obj.score}</strong>'
+        return format_html(string)
 
     def has_delete_permission(self, request, obj=None):
         delete_or_update_before = datetime.now() + timedelta(days=7)
