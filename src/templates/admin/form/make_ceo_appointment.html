@@ -1,0 +1,6 @@
+<form action="{% url 'make_ceo_appointment' %}" method="post">
+    {% csrf_token %}
+    <button type="submit" class="border-0 btn text-bg-success" {%  if user.employee.has_pending_appointment  %} disabled {% endif %}>
+        Booking CEO Appointment
+    </button>
+</form>

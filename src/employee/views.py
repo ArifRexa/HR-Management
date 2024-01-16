@@ -10,7 +10,7 @@ from employee.models import EmployeeActivity, EmployeeOnline, Employee, Employee
 from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids, MACHINE_SECRETS
-
+from employee.forms.appointment_form import AppointmentForm
 
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 import datetime
@@ -107,6 +107,20 @@ def change_project(request, *args, **kwargs):
     else:
         messages.error(request, "Something went wrong")
         return redirect("/admin/")
+
+@require_http_methods(["POST"])
+@login_required(login_url="/admin/login/")
+@not_for_management
+def make_ceo_appoinment(request, *args, **kwargs):
+
+    form = AppointmentForm(request.POST)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "CEO appointment has been booked.")
+        return redirect("/admin/")
+    else:
+        messages.error(request, "Something went wrong")
+    return redirect("/admin/")
 
 
 @require_http_methods(["POST"])

@@ -16,6 +16,12 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
 
+class Appointment(AuthorMixin, TimeStampMixin):
+    is_completed = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = 'Appointment'
+        verbose_name_plural = 'Appointments'
 
 class Employee(TimeStampMixin, AuthorMixin):
     GENDER_CHOICES = (
@@ -78,7 +84,10 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.full_name
-
+    @property
+    def has_pending_appointment(self):
+        return Appointment.objects.filter(created_by=self.user, is_completed=False).exists()
+    
     @property
     def average_rating(self):
         four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120) 
@@ -88,7 +97,6 @@ class Employee(TimeStampMixin, AuthorMixin):
                                 .values('month')\
                                 .annotate(avg_score=Avg('score'))\
                                 .values('month', 'avg_score')
-
     @property
     def top_skills(self):
         skills = self.employeeskill_set.order_by("-percentage").all()
@@ -358,12 +366,6 @@ class Employee(TimeStampMixin, AuthorMixin):
             ('can_access_average_rating', 'Can access average rating of Employee.')
         )
         ordering = ['full_name']
-
-class CEOAppointmentModel(Employee):
-    class Meta:
-        proxy = True
-        verbose_name = 'CEO Appointment'
-        verbose_name_plural = 'CEO Appointment List'
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):

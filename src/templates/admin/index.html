@@ -112,8 +112,6 @@
 {#</div>#}
 {#{% endif %}#}
 
-
-
 <div class="row mb-4">
     <div class="col-md-5 d-flex justify-content-center justify-content-md-start align-items-center">
         {% if title %}
@@ -123,8 +121,7 @@
     <div class="col-md-7">
         {% if not is_management %}
         <ul class="list-group list-group-horizontal-md float-end">
-            {% comment %} <li class="list-group-item"> {% include 'admin/form/employee_need_cto_help.html' %}</li>
-            <li class="list-group-item"> {% include 'admin/form/employee_need_hr_help.html' %}</li> {% endcomment %}
+            <li class="list-group-item"> {% include 'admin/form/make_ceo_appointment.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_need_help_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_project_form.html' %}</li>
             <li class="list-group-item"> {% include 'admin/form/employee_status_form.html' %}</li>
@@ -194,53 +191,6 @@
 
             {% endblock %}
             
-            <!-- Add Todo List -->
-            
-            <!-- <div class="row justify-content-center align-items-center main-row">
-                <div class="col shadow main-col bg-white">
-                    <div class="row bg-dj text-white">
-                        <div class="col p-1">
-                            <span style="font-size: 15px;padding-left: 5px;">My Important Tasks</span>
-                            <div class="float-end">
-                                <button type="button" class="btn btn-link text-decoration-none text-white">Add
-                                    task</button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row justify-content-between text-white p-2">
-
-                    </div>
-                    <div class="row" id="todo-container">
-                    </div>
-                </div>
-            </div> -->
-
-            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-                    <div class="modal-header">
-                      <h5 class="modal-title" id="exampleModalLabel">New message</h5>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                      <form>
-                        <div class="mb-3">
-                          <label for="recipient-name" class="col-form-label">Recipient:</label>
-                          <input type="text" class="form-control" id="recipient-name">
-                        </div>
-                        <div class="mb-3">
-                          <label for="message-text" class="col-form-label">Message:</label>
-                          <textarea class="form-control" id="message-text"></textarea>
-                        </div>
-                      </form>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                      <button type="button" class="btn btn-primary">Send message</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
 
         </div>
         <div class="col-md-8">
@@ -496,19 +446,12 @@
         </div>
     </div>
 
-
-
-
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
         crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.slim.min.js"></script>
-
-
-
-
     <script>
         /**
          * Need CTO Help form submit
