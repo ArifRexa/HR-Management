@@ -117,6 +117,11 @@ class BlogListView(ListAPIView):
     queryset = Blog.objects.filter(active=True).all()
     serializer_class = BlogListSerializer
 
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
+
 
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"

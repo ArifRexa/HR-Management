@@ -87,11 +87,22 @@ class BlogAdmin(admin.ModelAdmin):
     def get_form(
         self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any
     ) -> Any:
-        form = super().get_form(request, obj, change, **kwargs)
-        form.base_fields["active"].disabled = not request.user.has_perm(
-            "website.can_approve"
-        )
+        try:
+            form = super().get_form(request, obj, change, **kwargs)
+            form.base_fields["active"].disabled = not request.user.has_perm(
+                "website.can_approve"
+            )
+        except Exception:
+            form = super().get_form(request, obj, **kwargs)
         return form
+
+    def has_change_permission(self, request, obj=None):
+        permitted = super().has_change_permission(request, obj=obj)
+        if request.user.is_superuser:
+            return True
+        if permitted and obj:
+            return not obj.active
+        return False
 
     def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
         form.base_fields["active"].disabled = not request.user.has_perm(

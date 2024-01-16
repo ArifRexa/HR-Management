@@ -57,9 +57,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs) -> None:
-        self.read_time_minute = math.ceil(len(self.content.split(" ")) / 200)
-        return super(Blog, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs) -> None:
+    #     self.read_time_minute = math.ceil(len(self.content.split(" ")) / 200)
+    #     return super(Blog, self).save(*args, **kwargs)
 
     class Meta:
         permissions = [
