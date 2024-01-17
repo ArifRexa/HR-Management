@@ -63,18 +63,23 @@ class BlogContextInline(admin.TabularInline):
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (
-        BlogContextInline,
-        # BlogTagInline,
-    )
+    inlines = (BlogContextInline,)
 
     search_fields = ("title",)
-    autocomplete_fields = ["category"]
+    autocomplete_fields = ["category", "tag"]
     list_display = (
         "title",
+        "created_by",
         "slug",
         "active",
     )
+
+    # def get_fieldsets(
+    #     self, request: HttpRequest, obj: Any | None = ...
+    # ) -> list[tuple[str | None, dict[str, Any]]]:
+    #     fields = super().get_fieldsets(request, obj)
+    #     print(fields)
+    #     return fields
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         querySet = super().get_queryset(request)
@@ -98,32 +103,22 @@ class BlogAdmin(admin.ModelAdmin):
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
-        if request.user.is_superuser:
+        if permitted and request.user.has_perm("website.can_change_after_approve"):
             return True
         if permitted and obj:
-            return not obj.active
+            return not obj.active and obj.created_by == request.user
         return False
 
     def has_delete_permission(
         self, request: HttpRequest, obj: Any | None = ...
     ) -> bool:
         permitted = super().has_delete_permission(request, obj)
-        if (
-            permitted
-            and not request.user.is_superuser
-            and isinstance(obj, Blog)
-            and obj.active
-        ):
-            return False
+        user = request.user
+        if permitted and user.has_perm("website.can_delete_after_approve"):
+            return True
+        elif permitted and isinstance(obj, Blog):
+            return not obj.active and obj.created_by == user
         return permitted
-
-    def delete_queryset(self, request: HttpRequest, queryset: QuerySet[Any]) -> None:
-        if not request.user.is_superuser:
-            queryset = queryset.filter(active=False)
-        super().delete_queryset(request, queryset)
-
-    # def delete_model(self, request: HttpRequest, obj: Any) -> None:
-    #     return super().delete_model(request, obj)
 
     def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
         form.base_fields["active"].disabled = not request.user.has_perm(

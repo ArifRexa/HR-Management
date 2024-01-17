@@ -114,7 +114,7 @@ class TagListView(ListAPIView):
 
 
 class BlogListView(ListAPIView):
-    queryset = Blog.objects.filter(active=True).all()
+    queryset = Blog.objects.filter(active=True).all().order_by("-created_at")
     serializer_class = BlogListSerializer
 
     def list(self, request, *args, **kwargs):

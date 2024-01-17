@@ -253,7 +253,6 @@ class BlogContextSerializer(serializers.ModelSerializer):
 
 
 class BlogListSerializer(serializers.ModelSerializer):
-    # tags = BlogTagSerializer(many=True, source='blogtag_set')
     # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
     category = serializers.SerializerMethodField("get_category")
     author = AuthorSerializer(source="created_by.employee")
@@ -286,22 +285,30 @@ class BlogListSerializer(serializers.ModelSerializer):
 
 
 class BlogDetailsSerializer(BlogListSerializer):
+    tags = TagSerializer(many=True, source="tag")
     blog_contexts = BlogContextSerializer(many=True)
 
-    class Meta:
-        model = Blog
+    class Meta(BlogListSerializer.Meta):
         fields = (
             "slug",
             "title",
             "short_description",
             "image",
             "category",
+            "tags",
             "read_time_minute",
             "created_at",
             "author",
             "content",
             "blog_contexts",
         )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["total_blogs"] = instance.created_by.website_blog_related.filter(
+            active=True
+        ).count()
+        return data
 
 
 class EmployeeDetailforNOCSerializer(serializers.ModelSerializer):

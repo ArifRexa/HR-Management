@@ -49,6 +49,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     image = models.ImageField(upload_to="blog_image")
     video = models.FileField(upload_to="blog_video", blank=True, null=True)
     category = models.ManyToManyField(Category, related_name="categories")
+    tag = models.ManyToManyField(Tag, related_name="tags")
     short_description = models.TextField()
     content = HTMLField()
     active = models.BooleanField(default=False)
@@ -57,15 +58,12 @@ class Blog(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.title
 
-    # def save(self, *args, **kwargs) -> None:
-    #     self.read_time_minute = math.ceil(len(self.content.split(" ")) / 200)
-    #     return super(Blog, self).save(*args, **kwargs)
-
     class Meta:
         permissions = [
             ("can_approve", "Can Approve"),
             ("can_view_all", "Can View All Employees Blog"),
             ("can_change_after_approve", "Can Change After Approve"),
+            ("can_delete_after_approve", "Can Delete After Approve"),
         ]
 
 
