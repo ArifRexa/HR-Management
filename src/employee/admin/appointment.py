@@ -7,13 +7,15 @@ class AppointmentAdmin(admin.ModelAdmin):
     list_display = ['employee', 'is_completed', 'waiting', 'subject', 'project', 'created_at']
     actions = ('meeting_completed', )
     list_filter = ['is_completed']
-    ordering = ['is_completed', '-created_at']
+    ordering = ['is_completed', 'created_at']
     
     @admin.display(description="Employee")
     def employee(self, obj):
         return obj.created_by.employee.full_name
     
     def waiting(self, obj):
+        if obj.is_completed:
+            return '-'
         return timesince(obj.created_at)
     
     @admin.action(description='Meeting completed')
