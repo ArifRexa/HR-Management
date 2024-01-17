@@ -381,8 +381,10 @@ def create_employee_lunch(sender, instance, **kwargs):
     EmployeeOnline.objects.get_or_create(employee=instance)
     EmployeeProject.objects.update_or_create(employee=instance)
 
-    if not instance.entry_pass_id:
+    if kwargs.get('created'):
+    # if not instance.entry_pass_id:
         instance.entry_pass_id = f"{instance.joining_date.strftime('%Y%d')}{instance.id}"
+        instance.save()
 
 
 class EmployeeLunch(TimeStampMixin):
