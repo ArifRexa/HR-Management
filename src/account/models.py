@@ -116,6 +116,10 @@ class Expense(TimeStampMixin, AuthorMixin):
                 "can_approve_expense",
                 "Can Approve Expense",
             ),
+            (
+                "can_view_all_expenses",
+                "Can View All Expenses"
+            )
         )
 
 
