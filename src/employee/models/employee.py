@@ -15,9 +15,12 @@ from tinymce.models import HTMLField
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
+# from project_management.models import Project
 
 class Appointment(AuthorMixin, TimeStampMixin):
     is_completed = models.BooleanField(default=False)
+    subject = models.CharField(max_length=255, blank=True, null=True)
+    project = models.ForeignKey('project_management.Project', null=True, blank=True, on_delete=models.SET_NULL)
 
     class Meta:
         verbose_name = 'Appointment'

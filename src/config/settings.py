@@ -98,6 +98,7 @@ TEMPLATES = [
                 "config.context_processors.employees.employee_project_form",
                 "config.context_processors.employees.employee_need_help_form",
                 "config.context_processors.employees.favourite_menu_list",
+                "config.context_processors.employees.project_lists",
                 "config.context_processors.month_year.current_month_year",
             ],
         },
