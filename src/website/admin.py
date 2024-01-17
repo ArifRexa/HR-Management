@@ -79,7 +79,7 @@ class BlogAdmin(admin.ModelAdmin):
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         querySet = super().get_queryset(request)
         user = request.user
-        if user.is_superuser:
+        if user.has_perm("website.can_view_all"):
             return querySet
         else:
             return querySet.filter(created_by=user)
@@ -107,9 +107,13 @@ class BlogAdmin(admin.ModelAdmin):
     def has_delete_permission(
         self, request: HttpRequest, obj: Any | None = ...
     ) -> bool:
-        # TODO: delete permission
         permitted = super().has_delete_permission(request, obj)
-        if permitted and not request.user.is_superuser:
+        if (
+            permitted
+            and not request.user.is_superuser
+            and isinstance(obj, Blog)
+            and obj.active
+        ):
             return False
         return permitted
 
@@ -125,5 +129,4 @@ class BlogAdmin(admin.ModelAdmin):
         form.base_fields["active"].disabled = not request.user.has_perm(
             "website.can_approve"
         )
-
         return super().save_model(request, obj, form, change)
