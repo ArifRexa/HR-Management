@@ -64,8 +64,8 @@ class Blog(AuthorMixin, TimeStampMixin):
     class Meta:
         permissions = [
             ("can_approve", "Can Approve"),
-            ("can_view_all", "Can View All"),
-            # ("can_approve_blog_change", "Can Approve Blog Change"),
+            ("can_view_all", "Can View All Employees Blog"),
+            ("can_change_after_approve", "Can Change After Approve"),
         ]
 
 

@@ -129,6 +129,11 @@ class BlogDetailsView(RetrieveAPIView):
     serializer_class = BlogDetailsSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 
+    def retrieve(self, request, *args, **kwargs):
+        response = super().retrieve(request, *args, **kwargs)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
+
 
 class VerifyDocuments(APIView):
     def get_noc(self, uuid):
