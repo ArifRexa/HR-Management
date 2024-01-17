@@ -58,42 +58,6 @@ def change_status(request, *args, **kwargs):
         return redirect("/admin/")
 
 
-from django.http import JsonResponse
-
-
-@require_http_methods(["POST"])
-def employee_entry_pass_api(request, *args, **kwargs):
-    if request.method == "POST":
-        mechine_secrets = "SuperSecretMechineCode"
-        data = request.data
-
-        mechine_token = data.get("mechine_token")
-        if not mechine_token:
-            return JsonResponse(data={"message": "mechine_token missing"}, status=403)
-
-        if not mechine_token == mechine_secrets:
-            return JsonResponse(data={"message": "Wrong Machine"}, status=403)
-
-        entry_pass_id = data.get("entry_pass_id")
-        if not entry_pass_id:
-            return JsonResponse(data={"message": "entry_pass_id missing"}, status=403)
-
-        intent = data.get("intent")
-        if not intent:
-            return JsonResponse(data={"message": "intent missing"}, status=403)
-
-        employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
-
-        employee_status = EmployeeOnline.objects.get(employee=employee)
-        status = True if intent == 1 else False
-
-        employee_status.active = status
-        employee_status.save()
-        return JsonResponse(data={"message": "Success"}, status=201)
-    else:
-        return JsonResponse(data={"message": "Wrong Method"}, status=400)
-
-
 @require_http_methods(["POST"])
 @login_required(login_url="/admin/login/")
 @not_for_management
