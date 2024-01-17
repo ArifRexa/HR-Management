@@ -102,7 +102,7 @@ def change_project(request, *args, **kwargs):
     form = EmployeeProjectForm(request.POST, instance=employee_project)
     if form.is_valid():
         form.save()
-        messages.success(request, "Your project has been changes successfully")
+        messages.success(request, "Your project has been changed successfully")
         return redirect("/admin/")
     else:
         messages.error(request, "Something went wrong")
