@@ -84,6 +84,8 @@
                             <td align="right">
                                 {{ employee.employeesalary_set.last.net_salary | percentage:10 }}</td>
                         </tr>
+                        
+
                         {% if employee.employeesalary_set.last.project_bonus %}
                             <tr>
                                 <td>Project Bonus</td>
@@ -112,6 +114,21 @@
                                 <td>{{ employee.employeesalary_set.last.leave_bonus|floatformat:2|intcomma }}</td>
                             </tr>
                         {% endif %}
+
+                        {% if employee.employeesalary_set.last.food_allowance %}
+                            <tr>
+                                <td>Food Allowance</td>
+                                <td>{{ employee.employeesalary_set.last.food_allowance|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if employee.employeesalary_set.last.device_allowance %}
+                            <tr>
+                                <td>Device Allowance</td>
+                                <td>{{ employee.employeesalary_set.last.device_allowance|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
                         <tr>
                             <td>-</td>
                             <td>-</td>
@@ -211,7 +228,7 @@
         <br>
         {% if employee.employeesalary_set.last.loan_emi %}
             <p>Deducted on salary :
-                {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus }}
+                {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus | addition:employee.employeesalary_set.last.festival_bonus |addition:employee.employeesalary_set.last.overtime |addition:employee.employeesalary_set.last.leave_bonus |addition:employee.employeesalary_set.last.food_allowance |addition:employee.employeesalary_set.last.device_allowance }}
                 {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
                     Taka</b>
             </p>
