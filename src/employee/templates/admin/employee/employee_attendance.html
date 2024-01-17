@@ -164,8 +164,7 @@
                                     <span {% if data.entry_time.hour >= 13 %}class="text-danger fw-bold"{% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
-                                </p>
-                                <p class="text-center mb-1">
+                                    /
                                     {% comment %} <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i> {% endcomment %}
                                     <span {% if data.is_updated_by_bot %} style="color:#FF00FF;" class="p-1"{% endif %} >
                                         {% if data.exit_time != '-' %}
@@ -175,6 +174,7 @@
                                         {% endif %}
                                     </span>
                                 </p>
+                                
                                 <p class="text-center mb-2">
                                     <span 
                                         {% if data.break_time_minute <= 30 %}
@@ -183,8 +183,7 @@
                                     >
                                         {{ data.break_time }}
                                     </span>
-                                </p>
-                                <p class="text-center mb-1">
+                                    /
                                     <span
                                         {% if data.inside_time_hour >= 8 %}
                                             class="text-success fw-bold" 
@@ -196,6 +195,18 @@
                                         {{ data.inside_time }}
                                     </span>
                                 </p>
+                                <!-- <p class="text-center mb-1">
+                                    <span
+                                        {% if data.inside_time_hour >= 8 %}
+                                            class="text-success fw-bold" 
+                                        {% else %}
+                                            class="p-1 bg-warning fw-bold"
+                                            style="border-radius: 3px;"
+                                        {% endif %}
+                                    >
+                                        {{ data.inside_time }}
+                                    </span>
+                                </p> -->
                                 {% comment %} <p class="text-center mb-1">
                                     <span>
                                         {% if data.prayer_info %}
@@ -206,6 +217,18 @@
                                         {% endif %}
                                     </span>
                                 </p> {% endcomment %}
+                                <p class="text-center mb-2">
+                                    <span 
+                                        {% if data.inside_time_hour >= 8 and data.total_time_hour >= 9 %} 
+                                            class="text-success fw-bold";
+                                        {% else %}
+                                            class="text-danger fw-bold";
+                                        {% endif %}
+                                    >
+                                        {{ data.total_time }}
+                                        
+                                    </span>
+                                </p>
                             </td>
                         {% else %}
                             <td class="align-middle text-center color-muted"> - </td>

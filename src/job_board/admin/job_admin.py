@@ -29,36 +29,40 @@ class AdditionalFieldInline(admin.TabularInline):
 class JobForm(forms.ModelForm):
     assessments = forms.ModelMultipleChoiceField(
         queryset=Assessment.objects.all(),
-        widget=FilteredSelectMultiple(verbose_name='assessments', is_stacked=False)
+        widget=FilteredSelectMultiple(verbose_name="assessments", is_stacked=False),
     )
 
     class Meta:
         model = Job
-        fields = '__all__'
+        fields = "__all__"
 
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
     inlines = (JobSummeryInline, JobContextInline, AdditionalFieldInline)
-    list_display = ('title', 'job_summery', 'active')
+    list_display = ("title", "job_summery", "active")
     form = JobForm
-    actions = ('clone_job',)
-    search_fields = ['title' ]
+    actions = ("clone_job",)
+    search_fields = ["title"]
 
-    @admin.action(description='Clone Job')
+    @admin.action(description="Clone Job")
     def clone_job(self, request, queryset):
         job = queryset.first()
         if job:
             job_summery = job.job_summery
             job_contexts = job.job_contexts.all()
             job_additional_fields = job.additional_fields.all()
-            self.clone_job_object_with_related(job, job_summery, job_contexts, job_additional_fields)
+            self.clone_job_object_with_related(
+                job, job_summery, job_contexts, job_additional_fields
+            )
 
-    def clone_job_object_with_related(self, job, job_summery, job_contexts, job_additional_fields):
+    def clone_job_object_with_related(
+        self, job, job_summery, job_contexts, job_additional_fields
+    ):
         print(job_contexts)
         print(job_additional_fields)
         job.pk = None
-        job.title = f'{job.title} (copy)'
+        job.title = f"{job.title} (copy)"
         job.save()
         job_summery.pk = None
         job_summery.job_id = job.id

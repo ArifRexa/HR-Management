@@ -1,13 +1,21 @@
 from django.contrib import admin
 
 # Register your models here.
-from website.models import Service, Blog, Category, Tag, BlogCategory, BlogTag
+from website.models import (
+    Service,
+    Blog,
+    Category,
+    Tag,
+    BlogCategory,
+    BlogTag,
+    BlogContext,
+)
 
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'order', 'active')
-    search_fields = ('title',)
+    list_display = ("title", "slug", "order", "active")
+    search_fields = ("title",)
 
     def has_module_permission(self, request):
         return False
@@ -15,8 +23,8 @@ class ServiceAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class Category(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ('name',)
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = ("name",)
 
     def has_module_permission(self, request):
         return False
@@ -24,8 +32,8 @@ class Category(admin.ModelAdmin):
 
 @admin.register(Tag)
 class Tag(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('name',)}
-    search_fields = ('name',)
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = ("name",)
 
     def has_module_permission(self, request):
         return False
@@ -34,25 +42,35 @@ class Tag(admin.ModelAdmin):
 class BlogCategoryInline(admin.StackedInline):
     model = BlogCategory
     extra = 1
-    autocomplete_fields = ('category',)
+    autocomplete_fields = ("category",)
 
 
 class BlogTagInline(admin.StackedInline):
     model = BlogTag
     extra = 1
-    autocomplete_fields = ('tag',)
+    autocomplete_fields = ("tag",)
+
+
+class BlogContextInline(admin.TabularInline):
+    model = BlogContext
+    extra = 1
 
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    prepopulated_fields = {'slug': ('title',)}
+    prepopulated_fields = {"slug": ("title",)}
     inlines = (
-        BlogCategoryInline, 
+        BlogCategoryInline,
+        BlogContextInline,
         # BlogTagInline,
     )
-    readonly_fields = ('read_time_minute', )
-    search_fields = ('title', )
-    list_display = ('title', 'slug', 'active', )
+    readonly_fields = ("read_time_minute",)
+    search_fields = ("title",)
+    list_display = (
+        "title",
+        "slug",
+        "active",
+    )
 
     # def has_module_permission(self, request):
     #     return False

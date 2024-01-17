@@ -10,6 +10,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
+from django.db.models.signals import pre_save
+from django.dispatch import receiver
 from tinymce.models import HTMLField
 
 from config.model.TimeStampMixin import TimeStampMixin
@@ -17,7 +19,8 @@ from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
 from icecream import ic
-
+# from employee.models import LeaveManagement
+from django.apps import apps
 
 class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
@@ -334,6 +337,13 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         #      index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
+
+
+    # def clean(self):
+    #     # LeaveManagement = apps.get_model('employee', 'LeaveManagement')
+    #     # if len(LeaveManagement.objects.filter(manager=self.manager, status='pending')) > 0:
+    #     if len(self.employee.leave_management_manager.filter(status='pending')) > 0:
+    #         raise ValidationError('You have pending leave application(s). Please approve first.')
 
 
 class DailyProjectUpdateHistory(TimeStampMixin, AuthorMixin):

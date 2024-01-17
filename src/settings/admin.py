@@ -1,7 +1,9 @@
+from typing import Any
 from django import forms
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
+from django_q.tasks import async_task
 
 # Register your models here.
 from django.template.defaultfilters import (
@@ -28,16 +30,15 @@ from .models import (
 from django_q import models as q_models
 from django_q import admin as q_admin
 
+
 @admin.register(PayScale)
 class PayScaleAdmin(admin.ModelAdmin):
-
     def has_module_permission(self, request):
         return False
 
 
 @admin.register(LeaveManagement)
 class LeaveManagementAdmin(admin.ModelAdmin):
-
     def has_module_permission(self, request):
         return False
 
@@ -151,6 +152,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
     actions = (
         "mark_active",
         "mark_inactive",
+        "send_mail",
     )
 
     @admin.display(description="Active Date")
@@ -167,6 +169,27 @@ class AnnouncementAdmin(admin.ModelAdmin):
     def mark_active(modeladmin, request, queryset):
         queryset.update(is_active=True)
         messages.success(request, "Announcements marked as active.")
+
+    # def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
+    #     super().save_model(request, obj, form, change)
+    #     self.__send_announcement_mail(request, obj, form, change)
+    #     return obj
+
+    # def __send_announcement_mail(self, request, obj, form, change):
+    #     async_task("settings.tasks.announcement_mail", obj)
+
+    @admin.action(description="Send Email")
+    def send_mail(modeladmin, request, queryset):
+        employee_email_list = list(
+            Employee.objects.filter(active=True).values_list("email", flat=True)
+        )
+        for announcement in queryset:
+            for employee_email in employee_email_list:
+                async_task(
+                    "settings.tasks.announcement_mail", employee_email, announcement
+                )
+        if queryset:
+            messages.success(request, "Email sent successfully.")
 
 
 class FoodAllowanceForm(forms.Form):
@@ -193,12 +216,12 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         urls = [
-                   path(
-                       route="generate/",
-                       view=self.xxx_view,
-                       name="settings_employeefoodallowance_generate",
-                   )
-               ] + urls
+            path(
+                route="generate/",
+                view=self.xxx_view,
+                name="settings_employeefoodallowance_generate",
+            )
+        ] + urls
         return urls
 
     def xxx_view(self, request, **kwargs):
