@@ -221,7 +221,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
                             break_time_s = sToTime(break_time)
                             inside_time_s = sToTime(inside_time)
-
                             temp[date].update(
                                 {
                                     "entry_time": start_time.time()
@@ -239,6 +238,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                         (inside_time / (60 * 60)) % 24
                                     ),
                                     "inside_time_minute": math.floor(inside_time / 60),
+                                    "total_time": sToTime(inside_time + break_time),
+                                    "total_time_hour": math.floor(
+                                        (inside_time + break_time) / (60 * 60) % 24
+                                    ),
                                 }
                             )
                         break
@@ -270,7 +273,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 o = "entry"
 
             date_datas = dict(date_datas_sorted)
-
         context = dict(
             self.admin_site.each_context(request),
             dates=last_x_dates,
