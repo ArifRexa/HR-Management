@@ -95,6 +95,11 @@ urlpatterns = [
         name="change-employee-project",
     ),
     path(
+        "make-ceo-appointment/",
+        employee.views.make_ceo_appoinment,
+        name="make_ceo_appointment",
+    ),
+    path(
         "change-help-need/",
         employee.views.change_help_need,
         name="change_help_need",

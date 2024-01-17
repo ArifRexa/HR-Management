@@ -1,0 +1,48 @@
+<button type="button" class="border-0 btn text-bg-success" data-bs-toggle="modal" data-bs-target="#appointmentModal" 
+{% if user.employee.has_pending_appointment %} disabled {% endif %}>
+    {% if user.employee.has_pending_appointment %}  
+    Please wait 
+    {% else %}
+    Booking CEO Appointment
+    {% endif %}
+   
+</button>
+
+
+
+<!-- Modal -->
+<div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form action="{% url 'make_ceo_appointment' %}" method="post">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentModalLabel">
+                        Booking CEO Appointment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-4">
+                        <label for="subject" class="form-label">Subject</label>
+                        <input type="text" name="subject" class="form-control" placeholder="Write subject, Why you want to make?">
+                    </div>
+                    <div class="form-group mb-4">
+                       
+                        <label for="project" class="form-label">Project</label>
+                        <select name="project" class="form-select" style="height: 40px;">
+                            <option value="">Select Project (Optional)</option>
+                            {% for project in active_projects %}
+                            <option value="{{ project.id }}">{{ project.title }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary border-0">Booking</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
