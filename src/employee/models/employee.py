@@ -224,8 +224,8 @@ class Employee(TimeStampMixin, AuthorMixin):
         self.save_user()
         if not self.slug:
             self.slug = f"{slugify(self.full_name)}-{self.email}"[:180]
-        if not self.entry_pass_id:
-            self.entry_pass_id = f"{self.joining_date.strftime('%Y%d')}{self.id}"
+        # if not self.entry_pass_id:
+        #     self.entry_pass_id = f"{self.joining_date.strftime('%Y%d')}{self.id}"
         super().save(*args, **kwargs)
 
     def save_user(self):
@@ -380,6 +380,11 @@ def create_employee_lunch(sender, instance, **kwargs):
     EmployeeLunch.objects.update_or_create(employee=instance)
     EmployeeOnline.objects.get_or_create(employee=instance)
     EmployeeProject.objects.update_or_create(employee=instance)
+
+    if kwargs.get('created'):
+    # if not instance.entry_pass_id:
+        instance.entry_pass_id = f"{instance.joining_date.strftime('%Y%d')}{instance.id}"
+        instance.save()
 
 
 class EmployeeLunch(TimeStampMixin):
