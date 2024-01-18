@@ -177,10 +177,10 @@
                                 
                                 <p class="text-center mb-2">
                                     <span 
-                                        {% if data.break_time_minute <= 30 %}
+                                        {% if data.break_time_minute >= 75 %}
                                             style="background: #50e0ff;border-radius: 3px;padding: 1px 4px;"
-                                        {% elif data.break_time_minute >= 75 %}
-                                            style="background: #ff9966;border-radius: 3px;padding: 1px 4px;"
+{#                                        {% elif data.break_time_minute >= 75 %}#}
+{#                                            style="background: #ff9966;border-radius: 3px;padding: 1px 4px;"#}
                                         {% endif %}
                                     >
                                         {{ data.break_time }}
