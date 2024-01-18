@@ -6,6 +6,7 @@ from django.contrib import admin
 from django.contrib.admin import AdminSite, RelatedOnlyFieldListFilter
 from django.contrib.auth.models import User
 from django.db.models import Sum, Q, Value, QuerySet, Func, F, CharField
+from django.http.request import HttpRequest
 from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
@@ -20,12 +21,15 @@ from django.contrib import messages
 
 @admin.register(ExpenseGroup)
 class ExpenseGroupAdmin(admin.ModelAdmin):
-    list_display = ('title', 'note')
+    list_display = ('title', 'account_code', 'note')
     search_fields = ['title']
 
     def has_module_permission(self, request):
+        return True
+    def has_delete_permission(self, request, obj=None):
+        # if request.user.is_superuser:
+        #     return True
         return False
-
 
 @admin.register(ExpenseCategory)
 class ExpenseCategoryAdmin(admin.ModelAdmin):

@@ -86,6 +86,7 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
 class ExpenseGroup(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True, blank=True)
+    account_code = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.title
