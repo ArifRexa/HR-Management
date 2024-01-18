@@ -3,7 +3,7 @@
     Booking CEO Appointment
 </button>
 {% else %}
-    <a href="{% url 'cancel_ceo_appointment' user.employee.last_pending_appointment.id %}" class="btn btn-danger">Cancel Booking</a>
+    <a href="{% url 'cancel_ceo_appointment' user.employee.last_pending_appointment.id %}" class="btn btn-danger text-white">Cancel Booking</a>
 {% endif %}
 
 
