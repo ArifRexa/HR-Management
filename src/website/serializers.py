@@ -178,8 +178,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        # fields = "__all__"
-        exclude = ["created_by"]
+        exclude = [
+            "created_at",
+            "updated_at",
+            "created_by",
+        ]
 
 
 class TagListSerializer(serializers.ModelSerializer):

@@ -1,8 +1,8 @@
 import django_filters
 from django.http import Http404
 from django.shortcuts import render
+from django.db.models import Count, Q
 
-# Create your views here.
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -119,6 +119,10 @@ class BlogListView(ListAPIView):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
+        all_categories = Category.objects.annotate(
+            total_blog=Count("categories", filter=Q(categories__active=True))
+        ).values("id", "name", "slug", "total_blog")
+        response.data["all_categories"] = all_categories
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
 

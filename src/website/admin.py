@@ -30,7 +30,7 @@ class Category(admin.ModelAdmin):
     search_fields = ("name",)
 
     def has_module_permission(self, request):
-        return False
+        return True
 
 
 @admin.register(Tag)
@@ -69,17 +69,17 @@ class BlogAdmin(admin.ModelAdmin):
     autocomplete_fields = ["category", "tag"]
     list_display = (
         "title",
-        "created_by",
+        "author",
         "slug",
+        "created_at",
+        "updated_at",
         "active",
     )
 
-    # def get_fieldsets(
-    #     self, request: HttpRequest, obj: Any | None = ...
-    # ) -> list[tuple[str | None, dict[str, Any]]]:
-    #     fields = super().get_fieldsets(request, obj)
-    #     print(fields)
-    #     return fields
+    @admin.display(description="Created By")
+    def author(self, obj):
+        author = obj.created_by
+        return f"{author.first_name} {author.last_name}"
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         querySet = super().get_queryset(request)
