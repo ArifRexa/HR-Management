@@ -15,6 +15,7 @@ from website.views import (
     BlogListView,
     BlogDetailsView,
     VerifyDocuments,
+    BlogCommentAPIView,
 )
 
 api_urls = [
@@ -32,6 +33,7 @@ api_urls = [
     ),
     path("tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
+    path("blog/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
     path("blog/<str:slug>/", BlogDetailsView.as_view(), name="blog.details"),
     path(
         "verify/<str:document_type>/<uuid:uuid>/",

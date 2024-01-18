@@ -6,7 +6,7 @@ from django.db.models import Count, Q
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import filters
+from rest_framework import filters, status
 
 from employee.models import Employee, EmployeeNOC
 from project_management.models import Project
@@ -23,6 +23,7 @@ from website.serializers import (
     BlogListSerializer,
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
+    BlogCommentSerializer,
 )
 
 
@@ -169,3 +170,13 @@ class VerifyDocuments(APIView):
             return Response(serializer.data)
 
         raise Http404
+
+
+class BlogCommentAPIView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializers = BlogCommentSerializer(data=request.data)
+        if serializers.is_valid():
+            serializers.save()
+            return Response(data=serializers.data, status=status.HTTP_200_OK)
+
+        return Response(data=serializers.errors, status=status.HTTP_400_BAD_REQUEST)
