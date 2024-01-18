@@ -18,3 +18,4 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
 
     def __str__(self) -> str:
         return self.employee.full_name
+        return self.employee.full_name
