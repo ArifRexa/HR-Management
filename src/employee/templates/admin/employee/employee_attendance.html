@@ -86,11 +86,11 @@
                     {% include 'admin/form/employee_prayerinfo_form.html' %}
                 </div>
             {% endif %} {% endcomment %}
-            {% if user.groups.all.0.name != "Employee" %}
-            <div class="py-2">
-                <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>
-            </div>
-            {% endif %}
+{#            {% if user.groups.all.0.name != "Employee" %}#}
+{#            <div class="py-2">#}
+{#                <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>#}
+{#            </div>#}
+{#            {% endif %}#}
         </div>
 
 
