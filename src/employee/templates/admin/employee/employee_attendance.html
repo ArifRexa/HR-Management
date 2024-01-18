@@ -161,7 +161,7 @@
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
-                                    <span {% if data.entry_time.hour >= 13 %}class="text-danger fw-bold"{% endif %}>
+                                    <span {% if data.is_late %}class="text-danger fw-bold" {% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
                                     /
@@ -179,6 +179,8 @@
                                     <span 
                                         {% if data.break_time_minute <= 30 %}
                                             style="background: #50e0ff;border-radius: 3px;padding: 1px 4px;"
+                                        {% elif data.break_time_minute >= 75 %}
+                                            style="background: #ff9966;border-radius: 3px;padding: 1px 4px;"
                                         {% endif %}
                                     >
                                         {{ data.break_time }}
