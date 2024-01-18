@@ -82,7 +82,6 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     employee = models.ManyToManyField(Employee)
     disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
 
-
 class ExpenseGroup(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True, blank=True)
@@ -255,3 +254,15 @@ class ProjectCommission(TimeStampMixin, AuthorMixin):
         Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
     )
     payment = models.FloatField()
+
+class AccountJournal(AuthorMixin, TimeStampMixin):
+    journal_types = (
+        ('monthly', 'MONTHLY'),
+        ('daily', 'DAILY')
+    )
+    type = models.CharField(max_length=20, choices=journal_types)
+    expenses = models.ManyToManyField(Expense, related_name='expenses')
+    pv_no = models.IntegerField(null=True, blank=True)
+
+    def __str__(self) -> str:
+        return self.type
