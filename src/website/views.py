@@ -119,18 +119,23 @@ class CategoryListViewWithBlogCount(APIView):
         queryset = Category.objects.annotate(
             total_blog=Count("categories", filter=Q(categories__active=True))
         ).values("id", "name", "slug", "total_blog")
-        return Response(data=queryset)
+        return Response(
+            data=queryset,
+            headers={"Access-Control-Allow-Origin": "*"},
+        )
 
 
 class BlogListView(ListAPIView):
-    queryset = Blog.objects.filter(active=True).all().order_by("-created_at")
+    queryset = Blog.objects.filter(active=True).all()
     serializer_class = BlogListSerializer
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
         filters.SearchFilter,
+        filters.OrderingFilter,
     ]
     filterset_fields = ["category"]
     search_fields = ["title", "category__name", "tag__name"]
+    ordering_fields = ["created_at"]
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)

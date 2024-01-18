@@ -22,6 +22,7 @@ from website.models import (
     BlogTag,
     BlogCategory,
     BlogContext,
+    BlogComment,
 )
 
 
@@ -354,3 +355,9 @@ class EmployeeNOCSerializer(serializers.ModelSerializer):
 
     def get_document_type(self, *args, **kwargs):
         return "NOC"
+
+
+class BlogCommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogComment
+        fields = "__all__"

@@ -85,3 +85,16 @@ class BlogCategory(models.Model):
 class BlogTag(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+
+class BlogComment(TimeStampMixin):
+    name = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    content = models.TextField()
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, blank=False, null=False)
+    reply_to = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+    )
