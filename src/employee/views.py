@@ -86,6 +86,19 @@ def make_ceo_appoinment(request, *args, **kwargs):
         messages.error(request, "Something went wrong")
     return redirect("/admin/")
 
+@require_http_methods(["GET"])
+@login_required(login_url="/admin/login/")
+@not_for_management
+def cancel_ceo_appointment(request, id, *args, **kwargs):
+    from employee.models.employee import Appointment
+    if id != None:
+        Appointment.objects.get(id=id).delete()
+        messages.success(request, "CEO appointment has been cancelled.")
+        return redirect("/admin/")
+    else:
+        messages.error(request, "Something went wrong")
+    return redirect("/admin/")
+
 
 @require_http_methods(["POST"])
 @login_required(login_url="/admin/login/")

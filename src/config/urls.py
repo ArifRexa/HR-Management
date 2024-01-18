@@ -100,6 +100,11 @@ urlpatterns = [
         name="make_ceo_appointment",
     ),
     path(
+        "cancel-ceo-appointment/<int:id>/",
+        employee.views.cancel_ceo_appointment,
+        name="cancel_ceo_appointment",
+    ),
+    path(
         "change-help-need/",
         employee.views.change_help_need,
         name="change_help_need",
