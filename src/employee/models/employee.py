@@ -90,6 +90,9 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def has_pending_appointment(self):
         return Appointment.objects.filter(created_by=self.user, is_completed=False).exists()
+    @property
+    def last_pending_appointment(self):
+        return Appointment.objects.filter(created_by=self.user, is_completed=False).first()
     
     @property
     def average_rating(self):
