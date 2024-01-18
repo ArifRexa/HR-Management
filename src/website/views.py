@@ -6,6 +6,7 @@ from django.db.models import Count, Q
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import filters
 
 from employee.models import Employee, EmployeeNOC
 from project_management.models import Project
@@ -113,16 +114,26 @@ class TagListView(ListAPIView):
     serializer_class = TagListSerializer
 
 
+class CategoryListViewWithBlogCount(APIView):
+    def get(self, request, *args, **kwargs):
+        queryset = Category.objects.annotate(
+            total_blog=Count("categories", filter=Q(categories__active=True))
+        ).values("id", "name", "slug", "total_blog")
+        return Response(data=queryset)
+
+
 class BlogListView(ListAPIView):
     queryset = Blog.objects.filter(active=True).all().order_by("-created_at")
     serializer_class = BlogListSerializer
+    filter_backends = [
+        django_filters.rest_framework.DjangoFilterBackend,
+        filters.SearchFilter,
+    ]
+    filterset_fields = ["category"]
+    search_fields = ["title", "category__name", "tag__name"]
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        all_categories = Category.objects.annotate(
-            total_blog=Count("categories", filter=Q(categories__active=True))
-        ).values("id", "name", "slug", "total_blog")
-        response.data["all_categories"] = all_categories
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
 
