@@ -16,5 +16,5 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
         verbose_name = "Employee Rating"
         verbose_name_plural = "Employee Ratings"
 
-    # def __str__(self) -> str:
-    #     return self.employee.full_name
+    def __str__(self) -> str:
+        return self.employee.full_name
