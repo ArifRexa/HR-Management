@@ -255,6 +255,7 @@ class ProjectCommission(TimeStampMixin, AuthorMixin):
     )
     payment = models.FloatField()
 
+from django.urls import reverse
 class AccountJournal(AuthorMixin, TimeStampMixin):
     journal_types = (
         ('monthly', 'MONTHLY'),
@@ -266,3 +267,6 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
 
     def __str__(self) -> str:
         return self.type
+
+    def get_pdf_generate_url(self):
+        return reverse('account:payment_voucher',args=[str(self.id)])

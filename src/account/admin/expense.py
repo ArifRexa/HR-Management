@@ -23,6 +23,7 @@ from django.contrib import messages
 class ExpenseGroupAdmin(admin.ModelAdmin):
     list_display = ('title', 'account_code', 'note')
     search_fields = ['title']
+    ordering = ['account_code']
 
     def has_module_permission(self, request):
         return True
