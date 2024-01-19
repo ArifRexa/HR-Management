@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
+
 from website.views import (
     ServiceList,
     ServiceDetails,
@@ -16,7 +17,10 @@ from website.views import (
     BlogDetailsView,
     VerifyDocuments,
     BlogCommentAPIView,
+    BlogCommentDetailAPIView,
+    BlogNextCommentDetailAPIView,
 )
+
 
 api_urls = [
     path("services/", ServiceList.as_view(), name="service.list"),
@@ -34,6 +38,16 @@ api_urls = [
     path("tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
     path("blog/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
+    path(
+        "blog/comments/<int:pk>/",
+        BlogCommentDetailAPIView.as_view(),
+        name="blog-comment",
+    ),
+    path(
+        "blog/next-comments/<int:blog_id>/<int:comment_parent_id>/",
+        BlogNextCommentDetailAPIView.as_view(),
+        name="blog-next-comment",
+    ),
     path("blog/<str:slug>/", BlogDetailsView.as_view(), name="blog.details"),
     path(
         "verify/<str:document_type>/<uuid:uuid>/",

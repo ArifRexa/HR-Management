@@ -1,7 +1,8 @@
 import django_filters
 from django.http import Http404
 from django.shortcuts import render
-from django.db.models import Count, Q
+from django.db.models import Count, Q, F
+from icecream import ic
 
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
@@ -10,7 +11,7 @@ from rest_framework import filters, status
 
 from employee.models import Employee, EmployeeNOC
 from project_management.models import Project
-from website.models import Service, Category, Tag, Blog
+from website.models import Service, Category, Tag, Blog, BlogComment
 from website.serializers import (
     ServiceSerializer,
     ProjectSerializer,
@@ -180,3 +181,44 @@ class BlogCommentAPIView(APIView):
             return Response(data=serializers.data, status=status.HTTP_200_OK)
 
         return Response(data=serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class BlogCommentDetailAPIView(APIView):
+    def get(self, request, pk):
+        query = (
+            BlogComment.objects.filter(blog=pk, parent=None)
+            .annotate(
+                next_total_comment_reply=Count(
+                    "children", filter=Q(children__parent__isnull=False)
+                )
+            )
+            .values(
+                "id",
+                "name",
+                "email",
+                "content",
+                "blog",
+                "next_total_comment_reply",
+            )
+        )
+        return Response(data=query, status=status.HTTP_200_OK)
+
+
+class BlogNextCommentDetailAPIView(APIView):
+    def get(self, request, blog_id, comment_parent_id):
+        query = (
+            BlogComment.objects.filter(
+                blog=blog_id,
+                parent__id=comment_parent_id,
+            )
+            .annotate(next_total_comment_reply=Count("children"))
+            .values(
+                "id",
+                "name",
+                "email",
+                "content",
+                "blog",
+                "next_total_comment_reply",
+            )
+        )
+        return Response(data=query, status=status.HTTP_200_OK)

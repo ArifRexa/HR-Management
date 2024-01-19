@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     # Custom App
     # 'silk',
     "client_management",
+    "mptt",
 ]
 
 MIDDLEWARE = [

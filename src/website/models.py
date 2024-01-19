@@ -87,14 +87,18 @@ class BlogTag(models.Model):
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
 
-class BlogComment(TimeStampMixin):
+from mptt.models import MPTTModel, TreeForeignKey
+
+
+class BlogComment(MPTTModel, TimeStampMixin):
     name = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
     content = models.TextField()
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, blank=False, null=False)
-    reply_to = models.ForeignKey(
+    parent = TreeForeignKey(
         "self",
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+        related_name="children",
     )

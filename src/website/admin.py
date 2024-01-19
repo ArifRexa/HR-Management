@@ -2,6 +2,7 @@ from typing import Any
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
+from mptt.admin import MPTTModelAdmin
 
 # Register your models here.
 from website.models import (
@@ -12,6 +13,7 @@ from website.models import (
     BlogCategory,
     BlogTag,
     BlogContext,
+    BlogComment,
 )
 
 
@@ -125,3 +127,12 @@ class BlogAdmin(admin.ModelAdmin):
             "website.can_approve"
         )
         return super().save_model(request, obj, form, change)
+
+
+# admin.site.register(BlogComment)
+
+
+@admin.register(BlogComment)
+class BlogCommentModelAdmin(MPTTModelAdmin):
+    mptt_level_indent = 20
+    list_display = ["id", "name"]
