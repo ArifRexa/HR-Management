@@ -16,6 +16,9 @@ class EmployeeRatingForm(forms.ModelForm):
         clean_data = super().clean()
         request = self.request
 
+        if request.user.employee.id == self.cleaned_data.get('employee').id:
+            raise forms.ValidationError({'employee': 'You cannot rate yourself. Plesae rate someone other.'})
+
         if clean_data.get('employee'):
             before_week = datetime.now() - timedelta(days=7)
             is_provided = EmployeeRating.objects.filter(
