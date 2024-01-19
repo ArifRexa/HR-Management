@@ -314,6 +314,8 @@ class BlogDetailsSerializer(BlogListSerializer):
         data["total_blogs"] = instance.created_by.website_blog_related.filter(
             active=True
         ).count()
+        data["total_comments"] = instance.comments.count()
+        data["table_of_contents"] = instance.blog_contexts.all().values("id", "title")
         return data
 
 
