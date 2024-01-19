@@ -43,7 +43,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser:
+        if request.user.has_perm('employee.can_view_all_ratings'):
             return qs;
         return qs.filter(created_by__id=request.user.id)
 
