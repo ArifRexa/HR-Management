@@ -137,7 +137,7 @@ class BlogListView(ListAPIView):
     ]
     filterset_fields = ["category"]
     search_fields = ["title", "category__name", "tag__name"]
-    ordering_fields = ["created_at"]
+    ordering_fields = ["created_at", "total_view"]
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
@@ -152,6 +152,9 @@ class BlogDetailsView(RetrieveAPIView):
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 
     def retrieve(self, request, *args, **kwargs):
+        blog = self.get_object()
+        blog.total_view += 1
+        blog.save()
         response = super().retrieve(request, *args, **kwargs)
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response

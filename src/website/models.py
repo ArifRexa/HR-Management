@@ -4,6 +4,8 @@ from django.db import models
 
 # Create your models here
 from tinymce.models import HTMLField
+from mptt.models import MPTTModel, TreeForeignKey
+
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -54,6 +56,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     content = HTMLField()
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
+    total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         return self.title
@@ -85,9 +88,6 @@ class BlogCategory(models.Model):
 class BlogTag(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-
-
-from mptt.models import MPTTModel, TreeForeignKey
 
 
 class BlogComment(MPTTModel, TimeStampMixin):
