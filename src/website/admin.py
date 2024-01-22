@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
@@ -92,7 +92,7 @@ class BlogAdmin(admin.ModelAdmin):
             return querySet.filter(created_by=user)
 
     def get_form(
-        self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any
+        self, request: Any, obj: Union[Any, None] = ..., change: bool = ..., **kwargs: Any
     ) -> Any:
         try:
             form = super().get_form(request, obj, change, **kwargs)
