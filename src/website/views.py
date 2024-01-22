@@ -181,9 +181,17 @@ class BlogCommentAPIView(APIView):
         serializers = BlogCommentSerializer(data=request.data)
         if serializers.is_valid():
             serializers.save()
-            return Response(data=serializers.data, status=status.HTTP_200_OK)
+            return Response(
+                data=serializers.data,
+                headers={"Access-Control-Allow-Origin": "*"},
+                status=status.HTTP_200_OK,
+            )
 
-        return Response(data=serializers.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            data=serializers.errors,
+            headers={"Access-Control-Allow-Origin": "*"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
 
 class BlogCommentDetailAPIView(APIView):
@@ -206,7 +214,11 @@ class BlogCommentDetailAPIView(APIView):
                 "updated_at",
             )
         )
-        return Response(data=query, status=status.HTTP_200_OK)
+        return Response(
+            data=query,
+            headers={"Access-Control-Allow-Origin": "*"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class BlogNextCommentDetailAPIView(APIView):
@@ -228,4 +240,8 @@ class BlogNextCommentDetailAPIView(APIView):
                 "updated_at",
             )
         )
-        return Response(data=query, status=status.HTTP_200_OK)
+        return Response(
+            data=query,
+            headers={"Access-Control-Allow-Origin": "*"},
+            status=status.HTTP_200_OK,
+        )
