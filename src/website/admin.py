@@ -112,7 +112,7 @@ class BlogAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(
-        self, request: HttpRequest, obj: Any | None = ...
+        self, request: HttpRequest, obj: Union[Any, None] = ...
     ) -> bool:
         permitted = super().has_delete_permission(request, obj)
         user = request.user
