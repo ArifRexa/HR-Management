@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     # Custom App
     # 'silk',
     "client_management",
+    "mptt",
 ]
 
 MIDDLEWARE = [
@@ -278,3 +279,9 @@ COMPANY_ACCOUNT_NAME = os.environ.get("COMPANY_ACCOUNT_NAME", "Mediusware Ltd")
 COMPANY_ACCOUNT_NO = os.environ.get("COMPANY_ACCOUNT_NO", "-")
 
 MACHINE_SECRETS = os.environ.get("MACHINE_SECRETS")
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 10,
+}

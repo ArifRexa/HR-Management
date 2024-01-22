@@ -4,6 +4,8 @@ from django.db import models
 
 # Create your models here
 from tinymce.models import HTMLField
+from mptt.models import MPTTModel, TreeForeignKey
+
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -47,17 +49,25 @@ class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to="blog_image")
+    video = models.FileField(upload_to="blog_video", blank=True, null=True)
+    category = models.ManyToManyField(Category, related_name="categories")
+    tag = models.ManyToManyField(Tag, related_name="tags")
     short_description = models.TextField()
     content = HTMLField()
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
+    total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         return self.title
 
-    def save(self, *args, **kwargs) -> None:
-        self.read_time_minute = math.ceil(len(self.content.split(" ")) / 200)
-        return super(Blog, self).save(*args, **kwargs)
+    class Meta:
+        permissions = [
+            ("can_approve", "Can Approve"),
+            ("can_view_all", "Can View All Employees Blog"),
+            ("can_change_after_approve", "Can Change After Approve"),
+            ("can_delete_after_approve", "Can Delete After Approve"),
+        ]
 
 
 class BlogContext(AuthorMixin, TimeStampMixin):
@@ -67,6 +77,7 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     title = models.CharField(null=True, blank=True, max_length=255)
     description = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
+    video = models.FileField(upload_to="blog_context_videos", blank=True, null=True)
 
 
 class BlogCategory(models.Model):
@@ -77,3 +88,23 @@ class BlogCategory(models.Model):
 class BlogTag(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+
+class BlogComment(MPTTModel, TimeStampMixin):
+    name = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    content = models.TextField()
+    blog = models.ForeignKey(
+        Blog,
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False,
+        related_name="comments",
+    )
+    parent = TreeForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        related_name="children",
+    )
