@@ -78,6 +78,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "employee.middleware.CheckUserHasEmployee",
     # 'silk.middleware.SilkyMiddleware',
+    # 'weasyprint.middleware.WeasyPrintMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"

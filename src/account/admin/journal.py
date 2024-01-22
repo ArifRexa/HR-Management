@@ -4,7 +4,7 @@ from django.utils import timezone
 from account.models import Expense
 from django import forms
 from django.utils.html import format_html
-from django.urls import reverse
+from django.db.models import Sum
 
 class AccountJournalForm(forms.ModelForm):
 
@@ -35,8 +35,14 @@ class AccountJournalForm(forms.ModelForm):
         return clean_data
 @admin.register(AccountJournal)
 class JournalAdmin(admin.ModelAdmin):
-    list_display = ['type', 'pv_no', 'created_by', 'created_at', 'export_btn']
+    list_display = ['type', 'debit', 'credit', 'pv_no', 'created_by', 'created_at', 'export_btn']
     form = AccountJournalForm
+
+    def debit(self, obj=None):
+        return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
+    
+    def credit(self, obj=None):
+        return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
 
     def save_model(self, request, obj, form, change) -> None:
         super().save_model(request, obj, form, change)
@@ -58,8 +64,9 @@ class JournalAdmin(admin.ModelAdmin):
                 <a href="{url}" class="button">Payment Voucher</a>
                 """
         else:
-            btn = """
-                <a href="" class="button">Account Journal</a>
+            url = obj.get_monthly_journal()
+            btn = f"""
+                <a href="{url}" class="button">Account Journal</a>
                 """
     
         return format_html(btn)

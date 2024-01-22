@@ -269,4 +269,7 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
         return self.type
 
     def get_pdf_generate_url(self):
-        return reverse('account:payment_voucher',args=[str(self.id)])
+        return reverse('account:payment_voucher', args=[str(self.id)])
+    
+    def get_monthly_journal(self):
+        return reverse('account:account_journal', args=[str(self.id)])
