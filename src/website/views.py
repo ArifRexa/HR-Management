@@ -135,7 +135,7 @@ class BlogListView(ListAPIView):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["category"]
+    filterset_fields = ["category", "created_by"]
     search_fields = ["title", "category__name", "tag__name"]
     ordering_fields = ["created_at", "total_view"]
 
@@ -202,6 +202,8 @@ class BlogCommentDetailAPIView(APIView):
                 "content",
                 "blog",
                 "next_total_comment_reply",
+                "created_at",
+                "updated_at",
             )
         )
         return Response(data=query, status=status.HTTP_200_OK)
@@ -222,6 +224,8 @@ class BlogNextCommentDetailAPIView(APIView):
                 "content",
                 "blog",
                 "next_total_comment_reply",
+                "created_at",
+                "updated_at",
             )
         )
         return Response(data=query, status=status.HTTP_200_OK)

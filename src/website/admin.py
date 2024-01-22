@@ -32,7 +32,7 @@ class Category(admin.ModelAdmin):
     search_fields = ("name",)
 
     def has_module_permission(self, request):
-        return True
+        return False
 
 
 @admin.register(Tag)
@@ -127,9 +127,6 @@ class BlogAdmin(admin.ModelAdmin):
             "website.can_approve"
         )
         return super().save_model(request, obj, form, change)
-
-
-# admin.site.register(BlogComment)
 
 
 @admin.register(BlogComment)

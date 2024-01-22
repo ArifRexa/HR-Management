@@ -364,4 +364,13 @@ class EmployeeNOCSerializer(serializers.ModelSerializer):
 class BlogCommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogComment
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "email",
+            "content",
+            "blog",
+            "parent",
+            "created_at",
+            "updated_at",
+        ]
