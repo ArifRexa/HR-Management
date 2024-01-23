@@ -261,9 +261,11 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
         ('monthly', 'MONTHLY'),
         ('daily', 'DAILY')
     )
+    date = models.DateField(default=timezone.now)
     type = models.CharField(max_length=20, choices=journal_types)
     expenses = models.ManyToManyField(Expense, related_name='expenses')
     pv_no = models.IntegerField(null=True, blank=True)
+    note = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.type

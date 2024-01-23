@@ -1,0 +1,89 @@
+{% load daily_expense %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Journal</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <table >
+        <thead>
+            <tr>
+                <th rowspan="2" >Date</th>
+                <th rowspan="2" >Account code</th>
+                <th rowspan="2" >Head</th>
+                <th colspan="2" >BDT</th>
+                <th rowspan="2" >Detail</th>
+            </tr>
+            <tr>
+                <th>Debit</th>
+                <th>Credit</th>
+            </tr>
+        </thead>
+        {% for key, values in expense_data.items %}
+        {% for expense in values %}
+        <tr>
+            {% if forloop.counter == 1 %}
+            <th rowspan="{{ values|length|add:4 }}">{{ key }}</th>
+            {% endif %}
+            <td>{{ expense.expanse_group__account_code }}</td>
+            <td>{{ expense.expanse_group__title }}</td>
+            <td>{{ expense.expense_amount }}</td>
+            <td></td>
+            <td>Type here details</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>Cash in hand</td>
+            <td></td>
+            <td>{{ values|daily_sum }}</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td></td>
+            <th>Total</th>
+            <th>{{ values|daily_sum }}</th>
+            <th>{{ values|daily_sum }}</th>
+            <td></td>
+        </tr>
+        <tr>
+            <td colspan="8"></td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+
+</html>
