@@ -12,9 +12,11 @@ from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids, MACHINE_SECRETS
 from employee.forms.appointment_form import AppointmentForm
 
+
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 import datetime
 from employee.models import Config
+from employee.models.employee import Appointment
 from employee.mail import cto_help_mail, hr_help_mail, send_need_help_mails
 
 
@@ -76,6 +78,14 @@ def change_project(request, *args, **kwargs):
 @login_required(login_url="/admin/login/")
 @not_for_management
 def make_ceo_appoinment(request, *args, **kwargs):
+
+    user = request.user
+
+    user_appointment = Appointment.objects.filter(created_by_id=user.id).first()
+    if user_appointment:
+        messages.success(request, "You already have a booking")
+        return redirect("/admin/")
+    
 
     form = AppointmentForm(request.POST)
     if form.is_valid():
