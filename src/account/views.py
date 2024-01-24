@@ -13,13 +13,17 @@ from django.db.models import Sum, Count, Value, CharField
 @login_required(login_url="/admin/login/")
 def payment_voucher(request, id):
     voucher = get_object_or_404(AccountJournal, id=id)
+    expenses = voucher.expenses.values('expanse_group__account_code', 'expanse_group__title') \
+                                .annotate(expense_amount=Sum('amount')) \
+                                .order_by('expanse_group__account_code') \
+                                .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount')
     
     # get the template
     template = get_template('pdf/payment_voucher.html')
-    
-    # get the context data
-    context = {'voucher': voucher}
 
+    # get the context data
+    context = {'voucher': voucher, 'expenses': expenses}
+    
     # Render the html template with the context data.
     html_content = template.render(context)
 
@@ -71,8 +75,8 @@ def account_journal(request, id):
    
     # Create a response with the Excel file
     file_name = str(timezone.now())
-    response = HttpResponse(html_content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename=account-journal-{file_name}.xlsx'
+    response = HttpResponse(html_content, content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = f'attachment; filename=account-journal-{file_name}.xls'
     return response
     
     

@@ -1,3 +1,6 @@
+{% load daily_expense %}
+{% load humanize %}
+{% load humanize_extra %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -14,8 +17,70 @@
         }
 
         @page {
-            size: A4;  /* You can also use other predefined sizes like 'letter', 'legal', etc. */
-            margin: 10mm; /* Set your preferred margins */
+            size: A4;
+            /* You can also use other predefined sizes like 'letter', 'legal', etc. */
+            margin: 5mm;
+            /* Set your preferred margins */
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #fafafa;
+        }
+
+        .table-sm {
+            width: 40% !important;
+            margin-top: 25px !important;
+        }
+
+        .float-right {
+            float: right !important;
+        }
+
+        .head-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0px;
+        }
+
+        .my-30 {
+            margin: 25px 0px;
+        }
+
+        .my-25 {
+            margin: 25px 0px;
+        }
+
+        .my-20 {
+            margin: 20px 0px;
+        }
+
+        .my-50 {
+            margin: 50px 0px;
+        }
+
+        .report-by {
+            margin-top: 80px;
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
         }
     </style>
 </head>
@@ -26,7 +91,94 @@
         <p>Ring Road, House 18/5, Floor - 2nd Dhaka, 1207</p>
         <strong>Payment Voucher (PV)</strong>
     </header>
-    
+    <div class="head-container">
+        <div class="table-sm">
+            <table>
+                <tr>
+                    <td>Bank/Cash</td>
+                    <td>Cash</td>
+                </tr>
+                <tr>
+                    <td>Cheque No</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td>{{ voucher.date|date:'d/m/Y' }}</td>
+                </tr>
+            </table>
+        </div>
+        <div class="table-sm">
+            <table>
+                <tr>
+                    <td>Date</td>
+                    <td>{{ voucher.date|date:'d/m/Y' }}</td>
+                </tr>
+                <tr>
+                    <td>PV No</td>
+                    <td>{{ voucher.pv_no }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="main">
+        <table>
+            <thead>
+                <tr>
+                    <th rowspan="2" style="text-align: center;">Account Code</th>
+                    <th rowspan="2" style="text-align: center;">Head of accunts</th>
+                    <th colspan="2" style="text-align: center;">Amount in Tk</th>
+                </tr>
+                <tr>
+                    <th style="text-align: center;">Debit</th>
+                    <th style="text-align: center;">Credit</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.expanse_group__account_code }}</td>
+                    <td>{{ expense.expanse_group__title }}</td>
+                    <td>{{ expense.expense_amount|floatformat:2|intcomma }}</td>
+                    <td></td>
+                </tr>
+                {% endfor %}
+
+                <tr>
+                    <td></td>
+                    <td style="text-align: center;">Cash in hand</td>
+                    <td></td>
+                    <td style="text-align: right;">{{ expenses|daily_sum|floatformat:2|intcomma }}</td>
+                </tr>
+
+                <tr>
+                    <th colspan="2" style="text-align: center;">Total in Tk</th>
+                    <th style="text-align: right;">{{ expenses|daily_sum|floatformat:2|intcomma }}</th>
+                    <th style="text-align: right;">{{ expenses|daily_sum|floatformat:2|intcomma }}</th>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="summary my-30">
+        <div class="in-word my-30">
+            <strong>In Word- </strong>
+            <span>{{ expenses|daily_sum|num_to_word|capfirst }} taka only.</span>
+        </div>
+        <div class="narration my-30">
+            <strong>Narration- </strong>
+            <span>{{ voucher.note }}</span>
+        </div>
+    </div>
+    <div class="report-by">
+        <span>Prepared by</span>
+        <span>Checked by</span>
+        <span>Approved by</span>
+    </div>
+    <div class="footer my-30">
+        <p class="my-50">Received by………………………………………………………………………</p>
+        <p class="my-50">Signature with date/Money receipt………………………………………………</p>
+    </div>
 </body>
 
 </html>
