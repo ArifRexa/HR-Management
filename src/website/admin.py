@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Union
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
@@ -92,7 +92,7 @@ class BlogAdmin(admin.ModelAdmin):
             return querySet.filter(created_by=user)
 
     def get_form(
-        self, request: Any, obj: Any | None = ..., change: bool = ..., **kwargs: Any
+        self, request: Any, obj: Union[Any, None] = ..., change: bool = ..., **kwargs: Any
     ) -> Any:
         try:
             form = super().get_form(request, obj, change, **kwargs)
@@ -112,7 +112,7 @@ class BlogAdmin(admin.ModelAdmin):
         return False
 
     def has_delete_permission(
-        self, request: HttpRequest, obj: Any | None = ...
+        self, request: HttpRequest, obj: Union[Any, None] = ...
     ) -> bool:
         permitted = super().has_delete_permission(request, obj)
         user = request.user
