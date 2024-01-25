@@ -64,7 +64,7 @@ class BlogContextInline(admin.TabularInline):
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
-
+    
     inlines = (BlogContextInline,)
 
     search_fields = ("title",)
