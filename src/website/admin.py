@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 from mptt.admin import MPTTModelAdmin
+from django.utils.html import format_html
 
 # Register your models here.
 from website.models import (
@@ -63,9 +64,12 @@ class BlogContextInline(admin.TabularInline):
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
+
     prepopulated_fields = {"slug": ("title",)}
     
     inlines = (BlogContextInline,)
+
+    actions = ['clone_selected']
 
     search_fields = ("title",)
     autocomplete_fields = ["category", "tag"]
@@ -76,7 +80,35 @@ class BlogAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "active",
+        "approved",
     )
+
+
+    list_editable = ("active", "approved",)
+
+
+    @admin.action(description='Clone selected blogs')
+    def clone_selected(self, request, queryset):
+        for index, blog in enumerate(queryset, start=1):
+            # Create a copy of the blog with a new ID and reset some fields
+            cloned_blog = blog
+            cloned_blog.pk = None
+
+            # Process title
+            cloned_blog.title = f"Copy of {blog.title} ({index})"
+
+            # Process slug
+            original_slug = blog.slug
+            suffix = 1
+            while blog.__class__.objects.filter(slug=cloned_blog.slug).exists():
+                cloned_blog.slug = f"copy-of-{original_slug}-{suffix}"
+                suffix += 1
+
+            cloned_blog.active = blog.active  # You may want to set other fields as needed
+            cloned_blog.save()
+
+        self.message_user(request, f'Successfully cloned {queryset.count()} blogs.')
+
 
     @admin.display(description="Created By")
     def author(self, obj):
