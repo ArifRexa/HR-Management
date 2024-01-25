@@ -48,8 +48,10 @@ class LeaveMixin(models.Model):
             #     Group.objects.create(name="HR-Operation")
             if (
                 self.leave_type not in [self.MEDICAL, self.HALF_DAY]
-                and date.today() <= self.start_date
-                and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time()
+                and
+                    (date.today() - self.start_date).seconds > 2150  # 2150 is for 6 hours
+                # and
+                #     time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time()
                 and not user.has_perm('employee.can_add_leave_at_any_time')
             ):
                 raise ValidationError(
