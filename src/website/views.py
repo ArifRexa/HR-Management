@@ -135,7 +135,7 @@ class BlogListView(ListAPIView):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["category", "created_by"]
+    filterset_fields = ["category", "created_by__employee"]
     search_fields = ["title", "category__name", "tag__name"]
     ordering_fields = ["created_at", "total_view"]
 
