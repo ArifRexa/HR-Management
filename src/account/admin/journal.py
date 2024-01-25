@@ -31,7 +31,7 @@ class AccountJournalForm(forms.ModelForm):
             if AccountJournal.objects.filter(date=clean_data.get('date'), type='daily').exists():
                 raise forms.ValidationError({'type': 'You are restricted from generating more than one daily report.'})
         if clean_data.get('type') == 'monthly' and not self.instance.id:
-            if AccountJournal.objects.filter(date__month=clean_data.get('date'), type='monthly').exists():
+            if AccountJournal.objects.filter(date__month=clean_data.get('date').month, type='monthly').exists():
                 raise forms.ValidationError({'type': 'You are limited to generating only one monthly journal.'})
 
         if self.instance.id != None and self.instance.type != clean_data.get('type'):
