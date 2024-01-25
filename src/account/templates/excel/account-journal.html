@@ -48,7 +48,7 @@
             <td>{{ expense.expanse_group__title }}</td>
             <td>{{ expense.expense_amount }}</td>
             <td></td>
-            <td>Type here details</td>
+            <td>{{ expense|details_for_expense_group:key }}</td>
         </tr>
         {% endfor %}
         <tr>

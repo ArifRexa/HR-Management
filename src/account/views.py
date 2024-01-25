@@ -61,8 +61,7 @@ def account_journal(request, id):
                                         .order_by('expanse_group__account_code') \
                                         .annotate(expense_amount=Sum('amount')) \
                                         .values('expense_amount') \
-                                        .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount') 
-                                        
+                                        .values('expanse_group__id', 'expanse_group__account_code', 'expanse_group__title', 'expense_amount')              
         key = str(expense_date['day'])
         value = expenses
         expenses_data[key] = value
