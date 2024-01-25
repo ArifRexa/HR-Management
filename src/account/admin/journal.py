@@ -49,6 +49,16 @@ class JournalAdmin(admin.ModelAdmin):
     
     def credit(self, obj=None):
         return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
+    
+    def has_delete_permission(self, request, obj = None):
+        if obj != None and obj.type == 'daily':
+            if obj.date == timezone.now().date():
+                return True
+        else:
+            if obj != None and obj.date.month == timezone.now().month:
+                return True
+        return False
+        
 
     def save_model(self, request, obj, form, change) -> None:
         super().save_model(request, obj, form, change)
