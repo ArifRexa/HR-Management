@@ -1,13 +1,11 @@
-from typing import Any
 from django.contrib import admin
-from django.db.models.fields import Field
-from django.http.request import HttpRequest
 from account.models import AccountJournal
 from django.utils import timezone
 from account.models import Expense
 from django import forms
 from django.utils.html import format_html
 from django.db.models import Sum
+from datetime import datetime
 
 class AccountJournalForm(forms.ModelForm):
 
@@ -18,24 +16,24 @@ class AccountJournalForm(forms.ModelForm):
     def clean(self):
         clean_data = super().clean()
         # If update later
-        if self.instance and self.instance.id != None:
-            if clean_data.get('type') == 'daily':
-                if self.instance.date != clean_data.get('date'):
-                    raise forms.ValidationError({'type': 'Altering the daily journal is prohibited.'})
-            else:
-                if self.instance.date.month != clean_data.get('date').month:
-                    raise forms.ValidationError({'type': 'Modifying the monthly journal is not allowed.'})
+        # if self.instance and self.instance.id != None:
+        #     if clean_data.get('type') == 'daily':
+        #         if self.instance.date != clean_data.get('date'):
+        #             raise forms.ValidationError({'type': 'Altering the daily journal is prohibited.'})
+        #     else:
+        #         if self.instance.date.month != clean_data.get('date').month:
+        #             raise forms.ValidationError({'type': 'Modifying the monthly journal is not allowed.'})
                 
-        # prevent create duplicate daily or monthly journal
-        if clean_data.get('type') == 'daily' and not self.instance.id:
-            if AccountJournal.objects.filter(date=clean_data.get('date'), type='daily').exists():
-                raise forms.ValidationError({'type': 'You are restricted from generating more than one daily report.'})
-        if clean_data.get('type') == 'monthly' and not self.instance.id:
-            if AccountJournal.objects.filter(date__month=clean_data.get('date').month, type='monthly').exists():
-                raise forms.ValidationError({'type': 'You are limited to generating only one monthly journal.'})
+        # # prevent create duplicate daily or monthly journal
+        # if clean_data.get('type') == 'daily' and not self.instance.id:
+        #     if AccountJournal.objects.filter(date=clean_data.get('date'), type='daily').exists():
+        #         raise forms.ValidationError({'type': 'You are restricted from generating more than one daily report.'})
+        # if clean_data.get('type') == 'monthly' and not self.instance.id:
+        #     if AccountJournal.objects.filter(date__month=clean_data.get('date').month, type='monthly').exists():
+        #         raise forms.ValidationError({'type': 'You are limited to generating only one monthly journal.'})
 
-        if self.instance.id != None and self.instance.type != clean_data.get('type'):
-            raise forms.ValidationError({'type': 'The type of journal cannot be updated.'})
+        # if self.instance.id != None and self.instance.type != clean_data.get('type'):
+        #     raise forms.ValidationError({'type': 'The type of journal cannot be updated.'})
 
         return clean_data
 @admin.register(AccountJournal)
@@ -51,22 +49,13 @@ class JournalAdmin(admin.ModelAdmin):
     def credit(self, obj=None):
         return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
     
-    def has_delete_permission(self, request, obj = None):
-        if obj != None and obj.type == 'daily':
-            if obj.date == timezone.now().date():
-                return True
-        else:
-            if obj != None and obj.date.month == timezone.now().month:
-                return True
-        return False
-        
 
     def save_model(self, request, obj, form, change) -> None:
         super().save_model(request, obj, form, change)
     
         if obj.type == 'daily':
             expenses =  Expense.objects.filter(date=obj.date, is_approved=True)
-            vouchers = AccountJournal.objects.filter(type='daily').count()
+            vouchers = AccountJournal.objects.filter(type='daily', date__month=obj.date.month).count()
             if change:
                 obj.pv_no = vouchers + 1
             else:
