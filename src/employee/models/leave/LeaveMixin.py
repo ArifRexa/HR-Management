@@ -46,17 +46,25 @@ class LeaveMixin(models.Model):
             #     group = Group.objects.get(name="HR-Operation")
             # except Group.DoesNotExist:
             #     Group.objects.create(name="HR-Operation")
-            if (
-                self.leave_type not in [self.MEDICAL, self.HALF_DAY]
-                and date.today() <= self.start_date
-                and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time()
-                and not user.has_perm('employee.can_add_leave_at_any_time')
-            ):
-                raise ValidationError(
-                    {
-                        "start_date": self.APPLIED_ERROR_MSG
-                    }
-                )
+            print(self.start_date )
+            print( date.today())
+            print((self.start_date - date.today()).seconds)
+            print((self.start_date - date.today()).days)
+
+            if self.leave_type not in [self.MEDICAL, self.HALF_DAY]:
+                if (self.start_date - date.today()).days == 1 and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time() and not user.has_perm('employee.can_add_leave_at_any_time'):
+                    raise ValidationError(
+                        {
+                            "start_date": self.APPLIED_ERROR_MSG
+                        }
+                    )
+                elif (self.start_date - date.today()).days < 1 and not user.has_perm('employee.can_add_leave_at_any_time'):
+                    raise ValidationError(
+                        {
+                            "start_date": "You can not apply leave for past."
+                        }
+                    )
+
             if self.start_date > self.end_date:
                 raise ValidationError(
                     {
