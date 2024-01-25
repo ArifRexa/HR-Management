@@ -16,6 +16,6 @@ def details_for_expense_group(queryset, date=timezone.now().date):
     notes = ''
     for details in details_list:
         if details.note != '':
-            notes += details.note + ' | '
+            notes += details.note + ', '
     
     return notes
