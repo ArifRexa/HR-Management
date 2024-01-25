@@ -42,6 +42,7 @@ class AccountJournalForm(forms.ModelForm):
 class JournalAdmin(admin.ModelAdmin):
     list_display = ['date', 'type', 'debit', 'credit', 'pv_no', 'created_by', 'export_btn']
     ordering = ['-created_at']
+    list_filter = ['type', 'date']
     form = AccountJournalForm
 
     def debit(self, obj=None):
