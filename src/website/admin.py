@@ -4,6 +4,9 @@ from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
 from mptt.admin import MPTTModelAdmin
 from django.utils.html import format_html
+from django.db import transaction
+from django.forms.models import model_to_dict
+
 
 # Register your models here.
 from website.models import (
@@ -89,25 +92,45 @@ class BlogAdmin(admin.ModelAdmin):
 
     @admin.action(description='Clone selected blogs')
     def clone_selected(self, request, queryset):
-        for index, blog in enumerate(queryset, start=1):
-            # Create a copy of the blog with a new ID and reset some fields
-            cloned_blog = blog
-            cloned_blog.pk = None
+        cloned_blogs = []
 
-            # Process title
-            cloned_blog.title = f"Copy of {blog.title} ({index})"
+        size_of_blog_list = len(Blog.objects.all())
+        new_id_started = size_of_blog_list + 1
 
-            # Process slug
-            original_slug = blog.slug
-            suffix = 1
-            while blog.__class__.objects.filter(slug=cloned_blog.slug).exists():
-                cloned_blog.slug = f"copy-of-{original_slug}-{suffix}"
-                suffix += 1
+        with transaction.atomic():
+            for index, blog in enumerate(queryset, start=1):
+                # Create a copy of the blog with a new ID and reset some fields
+                cloned_blog_data = model_to_dict(blog, exclude=['id', 'pk', 'slug', 'category', 'tag'])
 
-            cloned_blog.active = blog.active  # You may want to set other fields as needed
-            cloned_blog.save()
+                cloned_blog = Blog(**cloned_blog_data)
 
-        self.message_user(request, f'Successfully cloned {queryset.count()} blogs.')
+
+                cloned_blog.id = new_id_started
+                new_id_started += 1
+
+                # Process title
+                cloned_blog.title = f"Copy of {blog.title}"
+
+                # Process slug
+                original_slug = blog.slug
+                suffix = 1
+                while Blog.objects.filter(slug=cloned_blog.slug).exists():
+                    cloned_blog.slug = f"copy-of-{original_slug}-{suffix}"
+                    suffix += 1
+
+                cloned_blog.created_by = request.user      
+                cloned_blog.save()  # Save the cloned blog first to get an ID
+
+                # Now, add the many-to-many relationships
+                for category in blog.category.all():
+                    cloned_blog.category.add(category)
+
+                for tag in blog.tag.all():
+                    cloned_blog.tag.add(tag)
+
+                cloned_blogs.append(cloned_blog)
+
+        self.message_user(request, f'Successfully cloned {len(cloned_blogs)} blogs.')
 
 
     @admin.display(description="Created By")
