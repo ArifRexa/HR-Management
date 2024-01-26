@@ -13,6 +13,7 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 from project_management.models import Project, Client
+from django.core.exceptions import ValidationError
 
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
@@ -263,7 +264,7 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
     )
     date = models.DateField(default=timezone.now)
     type = models.CharField(max_length=20, choices=journal_types)
-    expenses = models.ManyToManyField(Expense, related_name='expenses')
+    expenses = models.ManyToManyField(Expense, related_name='expenses',)
     pv_no = models.IntegerField(null=True, blank=True)
     note = models.TextField(blank=True, null=True)
 
@@ -278,3 +279,17 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
     
     def group_cost_url(self):
         return reverse('account:group_costs', args=[str(self.id)])
+    
+class DailyPaymentVoucher(AccountJournal):
+    
+    class Meta:
+        proxy = True
+        verbose_name = 'Payment Voucher (Daily)'
+        verbose_name_plural = 'Payment Vouchers (Daily)'
+
+class MonthlyJournal(AccountJournal):
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Account Journal (Monthly)'
+        verbose_name_plural = 'Accounts Journals (Monthly)'

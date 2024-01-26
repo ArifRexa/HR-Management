@@ -7,4 +7,4 @@ from .invoice import admin
 
 from .project_commission import ProjectCommissionAdmin
 
-from account.admin.journal import JournalAdmin
+from account.admin.journal import MonthlyJournalAdmin
