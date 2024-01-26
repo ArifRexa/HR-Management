@@ -126,7 +126,7 @@ class BlogAdmin(admin.ModelAdmin):
                
                 suffix = 1
                 while Blog.objects.filter(slug=cloned_blog.slug).exists():
-                    cloned_blog.slug = f"copy-of-{cloned_blog.slug}-{suffix}"
+                    cloned_blog.slug = f"{cloned_blog.slug}-{suffix}"
                     suffix += 1
 
                 cloned_blog.created_by = request.user      
