@@ -6,7 +6,7 @@ from mptt.admin import MPTTModelAdmin
 from django.utils.html import format_html
 from django.db import transaction
 from django.forms.models import model_to_dict
-
+import requests
 
 # Register your models here.
 from website.models import (
@@ -71,8 +71,7 @@ class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     
     inlines = (BlogContextInline,)
-
-    actions = ['clone_selected']
+    actions = ['clone_selected', 'approve_selected']
 
     search_fields = ("title",)
     autocomplete_fields = ["category", "tag"]
@@ -83,11 +82,22 @@ class BlogAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "active",
-        "approved",
+        # "approved",
     )
 
 
-    list_editable = ("active", "approved",)
+    # list_editable = ("active", "approved",)
+
+    @admin.action(description='Approve selected blogs')
+    def approve_selected(self, request, queryset):
+        with transaction.atomic():
+            for blog in queryset:
+                # Set the 'active' field to True
+                blog.active = True
+                blog.save()
+
+        self.message_user(request, f'Successfully approved {queryset.count()} blogs.')
+
 
 
     @admin.action(description='Clone selected blogs')
@@ -112,10 +122,11 @@ class BlogAdmin(admin.ModelAdmin):
                 cloned_blog.title = f"Copy of {blog.title}"
 
                 # Process slug
-                original_slug = blog.slug
+                cloned_blog.slug = blog.slug
+               
                 suffix = 1
                 while Blog.objects.filter(slug=cloned_blog.slug).exists():
-                    cloned_blog.slug = f"copy-of-{original_slug}-{suffix}"
+                    cloned_blog.slug = f"copy-of-{cloned_blog.slug}-{suffix}"
                     suffix += 1
 
                 cloned_blog.created_by = request.user      
@@ -137,6 +148,16 @@ class BlogAdmin(admin.ModelAdmin):
     def author(self, obj):
         author = obj.created_by
         return f"{author.first_name} {author.last_name}"
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        
+        # Check if the user has the 'can_approve' permission
+        if not request.user.has_perm('website.can_approve'):
+            # If the user doesn't have permission, remove the 'approve_selected' action
+            del actions['approve_selected']
+
+        return actions
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         querySet = super().get_queryset(request)
