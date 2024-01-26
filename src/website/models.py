@@ -57,7 +57,6 @@ class Blog(AuthorMixin, TimeStampMixin):
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
-    approved = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title

@@ -2,11 +2,12 @@ from typing import Any, Union
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
+from django.utils import timezone
 from mptt.admin import MPTTModelAdmin
 from django.utils.html import format_html
 from django.db import transaction
 from django.forms.models import model_to_dict
-
+import requests
 
 # Register your models here.
 from website.models import (
@@ -71,8 +72,7 @@ class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     
     inlines = (BlogContextInline,)
-
-    actions = ['clone_selected']
+    actions = ['clone_selected', 'approve_selected']
 
     search_fields = ("title",)
     autocomplete_fields = ["category", "tag"]
@@ -83,11 +83,22 @@ class BlogAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "active",
-        "approved",
+        # "approved",
     )
 
 
-    list_editable = ("active", "approved",)
+    # list_editable = ("active", "approved",)
+
+    @admin.action(description='Approve selected blogs')
+    def approve_selected(self, request, queryset):
+        with transaction.atomic():
+            for blog in queryset:
+                # Set the 'active' field to True
+                blog.active = True
+                blog.save()
+
+        self.message_user(request, f'Successfully approved {queryset.count()} blogs.')
+
 
 
     @admin.action(description='Clone selected blogs')
@@ -100,7 +111,7 @@ class BlogAdmin(admin.ModelAdmin):
         with transaction.atomic():
             for index, blog in enumerate(queryset, start=1):
                 # Create a copy of the blog with a new ID and reset some fields
-                cloned_blog_data = model_to_dict(blog, exclude=['id', 'pk', 'slug', 'category', 'tag'])
+                cloned_blog_data = model_to_dict(blog, exclude=['id', 'pk', 'slug', 'category', 'tag', 'created_at', 'updated_at'])
 
                 cloned_blog = Blog(**cloned_blog_data)
 
@@ -112,13 +123,16 @@ class BlogAdmin(admin.ModelAdmin):
                 cloned_blog.title = f"Copy of {blog.title}"
 
                 # Process slug
-                original_slug = blog.slug
+                cloned_blog.slug = blog.slug
+               
                 suffix = 1
                 while Blog.objects.filter(slug=cloned_blog.slug).exists():
-                    cloned_blog.slug = f"copy-of-{original_slug}-{suffix}"
+                    cloned_blog.slug = f"{cloned_blog.slug}-{suffix}"
                     suffix += 1
 
-                cloned_blog.created_by = request.user      
+                cloned_blog.created_by = request.user
+                cloned_blog.created_at = timezone.now()
+                cloned_blog.updated_at = timezone.now()
                 cloned_blog.save()  # Save the cloned blog first to get an ID
 
                 # Now, add the many-to-many relationships
@@ -137,6 +151,16 @@ class BlogAdmin(admin.ModelAdmin):
     def author(self, obj):
         author = obj.created_by
         return f"{author.first_name} {author.last_name}"
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        
+        # Check if the user has the 'can_approve' permission
+        if not request.user.has_perm('website.can_approve'):
+            # If the user doesn't have permission, remove the 'approve_selected' action
+            del actions['approve_selected']
+
+        return actions
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
         querySet = super().get_queryset(request)
