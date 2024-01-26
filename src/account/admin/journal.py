@@ -39,7 +39,7 @@ class AccountJournalForm(forms.ModelForm):
 @admin.register(AccountJournal)
 class JournalAdmin(admin.ModelAdmin):
     list_display = ['date', 'type', 'debit', 'credit', 'pv_no', 'created_by', 'export_btn']
-    ordering = ['-created_at']
+    ordering = ['-date']
     list_filter = ['type', 'date']
     form = AccountJournalForm
 
