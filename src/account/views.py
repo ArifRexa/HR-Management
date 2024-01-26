@@ -84,27 +84,14 @@ def costs_by_expense_group(request, id):
     monthly_journal = get_object_or_404(AccountJournal, id=id)
     
     # get the template
-    template = get_template('excel/account-journal.html')
+    template = get_template('excel/monthly-expense-group.html')
     
     # data calculation 
-    expense_dates = monthly_journal.expenses.annotate(day=TruncDate('date')) \
-                                .values('day') \
-                                .annotate(count=Count('id'), daily_expenses=Sum('amount')) \
-                                .order_by('day') \
-                                .values('day', 'daily_expenses')
+    expenses_data = monthly_journal.expenses.values('expanse_group__account_code') \
+                                .annotate(expense_amount=Sum('amount')) \
+                                .order_by('expanse_group__account_code') \
+                                .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount')
     
-    expenses_data = {}
-
-    for expense_date in expense_dates:
-        expenses = monthly_journal.expenses.filter(date=expense_date['day']) \
-                                        .values('expanse_group__account_code', 'expanse_group__title') \
-                                        .order_by('expanse_group__account_code') \
-                                        .annotate(expense_amount=Sum('amount')) \
-                                        .values('expense_amount') \
-                                        .values('expanse_group__id', 'expanse_group__account_code', 'expanse_group__title', 'expense_amount')              
-        key = str(expense_date['day'])
-        value = expenses
-        expenses_data[key] = value
 
     # get the context data
     context = {'expense_data': expenses_data}

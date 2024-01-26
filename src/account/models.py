@@ -275,3 +275,6 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
     
     def get_monthly_journal(self):
         return reverse('account:account_journal', args=[str(self.id)])
+    
+    def group_cost_url(self):
+        return reverse('account:group_costs', args=[str(self.id)])

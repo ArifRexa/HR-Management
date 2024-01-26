@@ -40,6 +40,7 @@ class AccountJournalForm(forms.ModelForm):
 class JournalAdmin(admin.ModelAdmin):
     list_display = ['date', 'type', 'debit', 'credit', 'pv_no', 'created_by', 'export_btn']
     ordering = ['-date']
+    date_hierarchy = 'date'
     list_filter = ['type', 'date']
     form = AccountJournalForm
 
@@ -75,8 +76,10 @@ class JournalAdmin(admin.ModelAdmin):
                 """
         else:
             url = obj.get_monthly_journal()
+            group_costs = obj.group_cost_url()
             btn = f"""
                 <a href="{url}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Account Journal</a>
+                <a href="{group_costs}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Group Costs</a>
                 """
     
         return format_html(btn)

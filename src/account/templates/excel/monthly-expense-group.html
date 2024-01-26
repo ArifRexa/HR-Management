@@ -27,60 +27,29 @@
     <table >
         <thead>
             <tr>
-                <th rowspan="2" >Account code</th>
-                <th rowspan="2" >Head</th>
-                <th colspan="2" >BDT</th>
-            </tr>
-            <tr>
+                <th>Head</th>
                 <th>Debit</th>
                 <th>Credit</th>
             </tr>
         </thead>
-        {% for key, values in expense_data.items %}
-        {% for expense in values %}
         <tr>
-            {% if forloop.counter == 1 %}
-            <th rowspan="{{ values|length|add:4 }}">{{ key }}</th>
-            {% endif %}
-            <td>{{ expense.expanse_group__account_code }}</td>
-            <td>{{ expense.expanse_group__title }}</td>
-            <td>{{ expense.expense_amount }}</td>
-            <td></td>
-            <td>{{ expense|details_for_expense_group:key }}</td>
+            <th>Cash in hand</th>
+            <th></th>
+            <th>{{ expense_data|daily_sum }}</th>
         </tr>
+        {% for expense in expense_data %}
+            <tr>
+                <td>{{ expense.expanse_group__title }}</td>
+                <td>{{ expense.expense_amount }}</td>
+                <td></td>
+            </tr>
         {% endfor %}
         <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td>Cash in hand</td>
-            <td></td>
-            <td>{{ values|daily_sum }}</td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
             <th>Total</th>
-            <th>{{ values|daily_sum }}</th>
-            <th>{{ values|daily_sum }}</th>
-            <td></td>
+            <th>{{ expense_data|daily_sum }}</th>
+            <th>{{ expense_data|daily_sum }}</th>
         </tr>
-        <tr>
-            <td colspan="6"></td>
-        </tr>
-        {% endfor %}
+       
     </table>
 </body>
 
