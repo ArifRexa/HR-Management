@@ -325,3 +325,10 @@ def favourite_menu_list(request):
         data["object_list"] = f_menu
         return data
     return []
+from project_management.models import Project
+def project_lists(request):
+    if request.user.is_authenticated:
+        data = {}
+        data['active_projects'] = Project.objects.filter(active=True)
+        return data
+    return []

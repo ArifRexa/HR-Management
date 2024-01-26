@@ -137,9 +137,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
 
-        last_x_dates = [(now - datetime.timedelta(i)).date() for i in range(10)]
+        last_x_dates = [
+            (now - datetime.timedelta(i)).date()
+            for i in range(10)
+            if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
+        ]
         last_x_date = (now - datetime.timedelta(10)).date()
-
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
         emps = (
@@ -221,6 +224,16 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
                             break_time_s = sToTime(break_time)
                             inside_time_s = sToTime(inside_time)
+                            employee_is_lead = emp.lead or emp.manager
+                            start_time_timeobj = start_time.time()
+                            if start_time:
+                                is_late = (
+                                    employee_is_lead and start_time_timeobj.hour >= 13
+                                ) or (
+                                    not employee_is_lead
+                                    and start_time_timeobj.hour >= 11
+                                    and start_time_timeobj.minute >= 30
+                                )
                             temp[date].update(
                                 {
                                     "entry_time": start_time.time()
@@ -242,6 +255,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     "total_time_hour": math.floor(
                                         (inside_time + break_time) / (60 * 60) % 24
                                     ),
+                                    "employee_is_lead": emp.lead or emp.manager,
+                                    "is_late": is_late,
                                 }
                             )
                         break

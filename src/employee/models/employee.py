@@ -15,7 +15,16 @@ from tinymce.models import HTMLField
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
+# from project_management.models import Project
 
+class Appointment(AuthorMixin, TimeStampMixin):
+    is_completed = models.BooleanField(default=False)
+    subject = models.CharField(max_length=255, blank=True, null=True)
+    project = models.ForeignKey('project_management.Project', null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        verbose_name = 'Appointment'
+        verbose_name_plural = 'Appointments'
 
 class Employee(TimeStampMixin, AuthorMixin):
     GENDER_CHOICES = (
@@ -78,7 +87,13 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.full_name
-
+    @property
+    def has_pending_appointment(self):
+        return Appointment.objects.filter(created_by=self.user, is_completed=False).exists()
+    @property
+    def last_pending_appointment(self):
+        return Appointment.objects.filter(created_by=self.user, is_completed=False).first()
+    
     @property
     def average_rating(self):
         four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120) 
@@ -88,7 +103,6 @@ class Employee(TimeStampMixin, AuthorMixin):
                                 .values('month')\
                                 .annotate(avg_score=Avg('score'))\
                                 .values('month', 'avg_score')
-
     @property
     def top_skills(self):
         skills = self.employeeskill_set.order_by("-percentage").all()

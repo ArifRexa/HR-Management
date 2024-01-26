@@ -15,6 +15,9 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
     class Meta:
         verbose_name = "Employee Rating"
         verbose_name_plural = "Employee Ratings"
+        permissions = [
+            ('can_view_all_ratings', 'Can View All Ratings Provided'),
+        ]
 
     def __str__(self) -> str:
         return self.employee.full_name
