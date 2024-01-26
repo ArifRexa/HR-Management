@@ -105,7 +105,7 @@ class BlogAdmin(admin.ModelAdmin):
     def clone_selected(self, request, queryset):
         cloned_blogs = []
 
-        size_of_blog_list = len(Blog.objects.all())
+        size_of_blog_list = Blog.objects.count()
         new_id_started = size_of_blog_list + 1
 
         with transaction.atomic():
