@@ -105,19 +105,12 @@ class BlogAdmin(admin.ModelAdmin):
     def clone_selected(self, request, queryset):
         cloned_blogs = []
 
-        size_of_blog_list = Blog.objects.count()
-        new_id_started = size_of_blog_list + 1
-
         with transaction.atomic():
             for index, blog in enumerate(queryset, start=1):
                 # Create a copy of the blog with a new ID and reset some fields
                 cloned_blog_data = model_to_dict(blog, exclude=['id', 'pk', 'slug', 'category', 'tag', 'created_at', 'updated_at'])
 
                 cloned_blog = Blog(**cloned_blog_data)
-
-
-                cloned_blog.id = new_id_started
-                new_id_started += 1
 
                 # Process title
                 cloned_blog.title = f"Copy of {blog.title}"
@@ -134,6 +127,17 @@ class BlogAdmin(admin.ModelAdmin):
                 cloned_blog.created_at = timezone.now()
                 cloned_blog.updated_at = timezone.now()
                 cloned_blog.save()  # Save the cloned blog first to get an ID
+                
+                for context in blog.blog_contexts.all():
+                    blogcontext = BlogContext()
+                    blogcontext.blog = cloned_blog
+                    blogcontext.title = context.title
+                    blogcontext.description = context.description
+                    blogcontext.image = context.image
+                    blogcontext.video = context.video
+                    blogcontext.save()
+
+
 
                 # Now, add the many-to-many relationships
                 for category in blog.category.all():
