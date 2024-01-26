@@ -105,7 +105,7 @@ class BlogAdmin(admin.ModelAdmin):
     def clone_selected(self, request, queryset):
         cloned_blogs = []
 
-        size_of_blog_list = Blog.objects.count()
+        size_of_blog_list = Blog.objects.last().id
         new_id_started = size_of_blog_list + 1
 
         with transaction.atomic():
@@ -134,6 +134,17 @@ class BlogAdmin(admin.ModelAdmin):
                 cloned_blog.created_at = timezone.now()
                 cloned_blog.updated_at = timezone.now()
                 cloned_blog.save()  # Save the cloned blog first to get an ID
+                
+                for context in blog.blog_contexts.all():
+                    blogcontext = BlogContext()
+                    blogcontext.blog = cloned_blog
+                    blogcontext.title = context.title
+                    blogcontext.description = context.description
+                    blogcontext.image = context.image
+                    blogcontext.video = context.video
+                    blogcontext.save()
+
+
 
                 # Now, add the many-to-many relationships
                 for category in blog.category.all():
