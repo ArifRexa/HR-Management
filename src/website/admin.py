@@ -2,6 +2,7 @@ from typing import Any, Union
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
+from django.utils import timezone
 from mptt.admin import MPTTModelAdmin
 from django.utils.html import format_html
 from django.db import transaction
@@ -110,7 +111,7 @@ class BlogAdmin(admin.ModelAdmin):
         with transaction.atomic():
             for index, blog in enumerate(queryset, start=1):
                 # Create a copy of the blog with a new ID and reset some fields
-                cloned_blog_data = model_to_dict(blog, exclude=['id', 'pk', 'slug', 'category', 'tag'])
+                cloned_blog_data = model_to_dict(blog, exclude=['id', 'pk', 'slug', 'category', 'tag', 'created_at', 'updated_at'])
 
                 cloned_blog = Blog(**cloned_blog_data)
 
@@ -129,7 +130,9 @@ class BlogAdmin(admin.ModelAdmin):
                     cloned_blog.slug = f"{cloned_blog.slug}-{suffix}"
                     suffix += 1
 
-                cloned_blog.created_by = request.user      
+                cloned_blog.created_by = request.user
+                cloned_blog.created_at = timezone.now()
+                cloned_blog.updated_at = timezone.now()
                 cloned_blog.save()  # Save the cloned blog first to get an ID
 
                 # Now, add the many-to-many relationships
