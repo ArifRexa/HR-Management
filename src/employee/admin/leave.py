@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+import datetime
 
 from django.contrib import admin, messages
 from django import forms
@@ -16,11 +17,15 @@ class LeaveAttachmentInline(admin.TabularInline):
     extra = 0
 
 
+
+
 class LeaveManagementInline(admin.TabularInline):
     model = leave.LeaveManagement
     extra = 0
     can_delete = False
     readonly_fields = ("manager", "status", "approval_time")
+
+
 
 
 class LeaveForm(forms.ModelForm):
@@ -44,6 +49,8 @@ class LeaveForm(forms.ModelForm):
         )
     )
 
+
+
     class Meta:
         model = Leave
         fields = "__all__"
@@ -52,6 +59,10 @@ class LeaveForm(forms.ModelForm):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
             self.fields["message"].initial = self.placeholder
+    
+    
+
+    
 
 
 @admin.register(Leave)
@@ -75,6 +86,7 @@ class LeaveManagement(admin.ModelAdmin):
     form = LeaveForm
     date_hierarchy = "start_date"
 
+
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
         if not request.user.has_perm("employee.can_approve_leave_applications"):
@@ -95,14 +107,49 @@ class LeaveManagement(admin.ModelAdmin):
                     [item.name for item in obj._meta.fields]
                 )
         return ["total_leave", "note"]
+    def get_leave_attachment_inline(self):
+        # Iterate through inlines to find LeaveAttachmentInline
+        for inline_class in self.inlines:
+            if inline_class == LeaveAttachmentInline:
+                return inline_class
+
+        # Return None if not found
+        return None
+
+    def get_form(self, request, obj, **kwargs):
+        form1 = super().get_form(request, obj, **kwargs)
+        # print(form1.__dict__)
+        
+
+        return super().get_form(request, **kwargs)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
+
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
+
+        # start_date = obj.start_date
+        # end_date = obj.end_date
+        # difference = end_date - start_date
+
+        # if difference > timedelta(days=3) and obj.leave_type == 'casual':
+        #     submission_time = date.today()
+        #     submition_difference = start_date - submission_time
+        #     if submition_difference < timedelta(days=7):
+        #         self.message_user(
+        #             request,
+        #             'For 3 or more days leave, you have to submit the leave at least 7 days before the start date.',
+        #             level=messages.WARNING
+        #         )
+        #         return   messages.error(request, "You Have to submit  it more than 7 days ago")
+
         super().save_model(request, obj, form, change)
+
+    
+
 
         employee = form.cleaned_data.get("employee") or request.user.employee
         if not change:
@@ -123,7 +170,7 @@ class LeaveManagement(admin.ModelAdmin):
                     manager=manager.employee, leave=obj
                 )
                 leave_manage.save()
-        self.__send_leave_mail(request, obj, form, change)
+        # self.__send_leave_mail(request, obj, form, change)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

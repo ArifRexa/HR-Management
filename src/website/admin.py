@@ -118,9 +118,13 @@ class BlogAdmin(admin.ModelAdmin):
 
                 cloned_blog.id = new_id_started
                 new_id_started += 1
+                new_title = blog.title
+                if len(new_title) > 247:
+                    new_title = new_title[0:245]
 
                 # Process title
-                cloned_blog.title = f"Copy of {blog.title}"
+                cloned_blog.title = f"Copy of {new_title}"
+                
 
                 # Process slug
                 cloned_blog.slug = blog.slug
