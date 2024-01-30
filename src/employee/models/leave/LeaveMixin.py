@@ -53,14 +53,15 @@ class LeaveMixin(models.Model):
             from django.contrib.auth.models import Group
 
             difference = self.end_date - self.start_date
-
-            if difference > timedelta(days=3) and self.leave_type == 'casual':
+            print(difference >= timedelta(days=3))
+            if difference >= timedelta(days=3) and self.leave_type == 'casual':
                 submission_time = date.today()
                 submission_difference = self.start_date - submission_time
+                print(submission_difference)
                 if submission_difference < timedelta(days=7):
                     raise ValidationError(
                     {
-                        "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days of the leave"
+                        "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days before the leave"
                     }
                     )
            
