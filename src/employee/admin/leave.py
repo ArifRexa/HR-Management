@@ -3,11 +3,14 @@ import datetime
 
 from django.contrib import admin, messages
 from django import forms
+from django.core.exceptions import ValidationError
 from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils import timezone
 from django_q.tasks import async_task
+from icecream import ic
+
 from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
@@ -60,7 +63,7 @@ class LeaveForm(forms.ModelForm):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
             self.fields["message"].initial = self.placeholder
-    
+
     
 
     
@@ -110,13 +113,17 @@ class LeaveManagement(admin.ModelAdmin):
         return ["total_leave", "note"]
   
 
-    def get_form(self, request, obj, **kwargs):
-        form1 = super().get_form(request, obj, **kwargs)
-        # print(form1.__dict__)
-        
+    def save_form(self, request, form, change):
+        print("save_form".center(50, '*'))
+        ic(request._post.get('leave_type'))
+        ic(type(request._post.get('leaveattachment_set-TOTAL_FORMS')))
+        if int(request._post.get('leaveattachment_set-TOTAL_FORMS')) <= 0 and request._post.get('leave_type') == 'medical':
+            print("save_form".center(50, '*'))
+            ic(request.META.get('leaveattachment_set-TOTAL_FORMS'))
+            # raise ValidationError({'leaveattachment_set-TOTAL_FORMS': "Attachment is mandatory."})
+            raise ValidationError({"start_date":"Attachment is mandatory."})
 
-        return super().get_form(request, **kwargs)
-    
+        return super().save_form(request, form, change)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
@@ -149,23 +156,7 @@ class LeaveManagement(admin.ModelAdmin):
                     manager=manager.employee, leave=obj
                 )
                 leave_manage.save()
-        # self.__send_leave_mail(request, obj, form, change)
-
-    def save_related(self, request, form, formsets, change):
-       obj = form.instance
-    # whatever your formset dependent logic is to change obj.filedata
-       obj.save()
-       super().save_related(request, form, formsets, change)
-       print('*****************************')
-       attatchments = obj.leaveattachment_set.all()
-       
-
-       if not attatchments and obj.leave_type == 'medical':
-            # Delete the Leave model and show a notification
-            obj.delete()
-            messages.error(request, 'But Medical Leave application was not successful. Medical Attachments are required.')
-            # Redirect to the previous page
-            return redirect(request.META.get('HTTP_REFERER'))
+        self.__send_leave_mail(request, obj, form, change)
         
 
     def get_queryset(self, request):
