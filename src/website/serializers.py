@@ -247,7 +247,7 @@ class BlogCategoriesSerializer(serializers.ModelSerializer):
 class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
-        fields = ("full_name", "image")
+        fields = ("id", "full_name", "image")
 
 
 class BlogContextSerializer(serializers.ModelSerializer):

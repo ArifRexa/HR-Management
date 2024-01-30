@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.forms import ValidationError
 from django.template.defaultfilters import truncatewords
 from django.db.models import Q
 from config.model.AuthorMixin import AuthorMixin
@@ -40,7 +41,6 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
             ),
         )
 
-
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     attachment = models.FileField(help_text="Image , PDF or Docx file ")
@@ -53,6 +53,8 @@ class LeaveManagement(TimeStampMixin):
         ("rejected", "⛔ Rejected"),
         ("need_action", "🤔 Need Further Discussion"),
     )
+
+
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
     manager = models.ForeignKey(
         Employee,

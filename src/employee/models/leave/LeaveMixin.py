@@ -35,28 +35,58 @@ class LeaveMixin(models.Model):
         Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE
     )
 
+
+
     def clean_fields(self, exclude=None):
+        
+    
+        leave_type = self.leave_type
+        # print(leave_type)
+        # print(self.leave_attachment.all())
+        # Now you can use 'leave_type_value' as needed
+        # ...
+
+
         user = get_current_user()
-        # super().clean_fields(exclude=exclude)
         # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
             from django.contrib.auth.models import Group
 
+            difference = self.end_date - self.start_date
+
+            if difference > timedelta(days=3) and self.leave_type == 'casual':
+                submission_time = date.today()
+                submission_difference = self.start_date - submission_time
+                if submission_difference < timedelta(days=7):
+                    raise ValidationError(
+                    {
+                        "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days of the leave"
+                    }
+                    )
+           
             # try:
             #     group = Group.objects.get(name="HR-Operation")
             # except Group.DoesNotExist:
             #     Group.objects.create(name="HR-Operation")
-            if (
-                self.leave_type not in [self.MEDICAL, self.HALF_DAY]
-                and date.today() <= self.start_date
-                and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time()
-                and not user.has_perm('employee.can_add_leave_at_any_time')
-            ):
-                raise ValidationError(
-                    {
-                        "start_date": self.APPLIED_ERROR_MSG
-                    }
-                )
+            print(self.start_date )
+            print( date.today())
+            print((self.start_date - date.today()).seconds)
+            print((self.start_date - date.today()).days)
+
+            if self.leave_type not in [self.MEDICAL, self.HALF_DAY]:
+                if (self.start_date - date.today()).days == 1 and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time() and not user.has_perm('employee.can_add_leave_at_any_time'):
+                    raise ValidationError(
+                        {
+                            "start_date": self.APPLIED_ERROR_MSG
+                        }
+                    )
+                elif (self.start_date - date.today()).days < 1 and not user.has_perm('employee.can_add_leave_at_any_time'):
+                    raise ValidationError(
+                        {
+                            "start_date": "You can not apply leave for past."
+                        }
+                    )
+
             if self.start_date > self.end_date:
                 raise ValidationError(
                     {
