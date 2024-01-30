@@ -35,9 +35,17 @@ class LeaveMixin(models.Model):
         Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE
     )
 
+
+
     def clean_fields(self, exclude=None):
         
     
+        leave_type = self.leave_type
+        # print(leave_type)
+        # print(self.leave_attachment.all())
+        # Now you can use 'leave_type_value' as needed
+        # ...
+
 
         user = get_current_user()
         # TODO : need to re-format

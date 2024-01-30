@@ -3,6 +3,7 @@ import datetime
 
 from django.contrib import admin, messages
 from django import forms
+from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils import timezone
@@ -107,14 +108,7 @@ class LeaveManagement(admin.ModelAdmin):
                     [item.name for item in obj._meta.fields]
                 )
         return ["total_leave", "note"]
-    def get_leave_attachment_inline(self):
-        # Iterate through inlines to find LeaveAttachmentInline
-        for inline_class in self.inlines:
-            if inline_class == LeaveAttachmentInline:
-                return inline_class
-
-        # Return None if not found
-        return None
+  
 
     def get_form(self, request, obj, **kwargs):
         form1 = super().get_form(request, obj, **kwargs)
@@ -122,6 +116,7 @@ class LeaveManagement(admin.ModelAdmin):
         
 
         return super().get_form(request, **kwargs)
+    
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
@@ -130,25 +125,9 @@ class LeaveManagement(admin.ModelAdmin):
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
-
-        # start_date = obj.start_date
-        # end_date = obj.end_date
-        # difference = end_date - start_date
-
-        # if difference > timedelta(days=3) and obj.leave_type == 'casual':
-        #     submission_time = date.today()
-        #     submition_difference = start_date - submission_time
-        #     if submition_difference < timedelta(days=7):
-        #         self.message_user(
-        #             request,
-        #             'For 3 or more days leave, you have to submit the leave at least 7 days before the start date.',
-        #             level=messages.WARNING
-        #         )
-        #         return   messages.error(request, "You Have to submit  it more than 7 days ago")
-
+        
         super().save_model(request, obj, form, change)
 
-    
 
 
         employee = form.cleaned_data.get("employee") or request.user.employee
@@ -171,6 +150,23 @@ class LeaveManagement(admin.ModelAdmin):
                 )
                 leave_manage.save()
         # self.__send_leave_mail(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+       obj = form.instance
+    # whatever your formset dependent logic is to change obj.filedata
+       obj.save()
+       super().save_related(request, form, formsets, change)
+       print('*****************************')
+       attatchments = obj.leaveattachment_set.all()
+       
+
+       if not attatchments and obj.leave_type == 'medical':
+            # Delete the Leave model and show a notification
+            obj.delete()
+            messages.error(request, 'But Medical Leave application was not successful. Medical Attachments are required.')
+            # Redirect to the previous page
+            return redirect(request.META.get('HTTP_REFERER'))
+        
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
