@@ -35,13 +35,35 @@ class LeaveMixin(models.Model):
         Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE
     )
 
+
+
     def clean_fields(self, exclude=None):
+        
+    
+        leave_type = self.leave_type
+        # print(leave_type)
+        # print(self.leave_attachment.all())
+        # Now you can use 'leave_type_value' as needed
+        # ...
+
+
         user = get_current_user()
-        # super().clean_fields(exclude=exclude)
         # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
             from django.contrib.auth.models import Group
 
+            difference = self.end_date - self.start_date
+
+            if difference > timedelta(days=3) and self.leave_type == 'casual':
+                submission_time = date.today()
+                submission_difference = self.start_date - submission_time
+                if submission_difference < timedelta(days=7):
+                    raise ValidationError(
+                    {
+                        "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days of the leave"
+                    }
+                    )
+           
             # try:
             #     group = Group.objects.get(name="HR-Operation")
             # except Group.DoesNotExist:

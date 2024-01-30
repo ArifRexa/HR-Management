@@ -1,11 +1,16 @@
 from datetime import date, timedelta
+import datetime
 
 from django.contrib import admin, messages
 from django import forms
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils import timezone
 from django_q.tasks import async_task
+from icecream import ic
+
 from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
@@ -16,11 +21,15 @@ class LeaveAttachmentInline(admin.TabularInline):
     extra = 0
 
 
+
+
 class LeaveManagementInline(admin.TabularInline):
     model = leave.LeaveManagement
     extra = 0
     can_delete = False
     readonly_fields = ("manager", "status", "approval_time")
+
+
 
 
 class LeaveForm(forms.ModelForm):
@@ -44,6 +53,8 @@ class LeaveForm(forms.ModelForm):
         )
     )
 
+
+
     class Meta:
         model = Leave
         fields = "__all__"
@@ -52,6 +63,10 @@ class LeaveForm(forms.ModelForm):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
             self.fields["message"].initial = self.placeholder
+
+    
+
+    
 
 
 @admin.register(Leave)
@@ -75,6 +90,7 @@ class LeaveManagement(admin.ModelAdmin):
     form = LeaveForm
     date_hierarchy = "start_date"
 
+
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
         if not request.user.has_perm("employee.can_approve_leave_applications"):
@@ -95,14 +111,31 @@ class LeaveManagement(admin.ModelAdmin):
                     [item.name for item in obj._meta.fields]
                 )
         return ["total_leave", "note"]
+  
+
+    def save_form(self, request, form, change):
+        print("save_form".center(50, '*'))
+        ic(request._post.get('leave_type'))
+        ic(type(request._post.get('leaveattachment_set-TOTAL_FORMS')))
+        if int(request._post.get('leaveattachment_set-TOTAL_FORMS')) <= 0 and request._post.get('leave_type') == 'medical':
+            print("save_form".center(50, '*'))
+            ic(request.META.get('leaveattachment_set-TOTAL_FORMS'))
+            # raise ValidationError({'leaveattachment_set-TOTAL_FORMS': "Attachment is mandatory."})
+            raise ValidationError({"start_date":"Attachment is mandatory."})
+
+        return super().save_form(request, form, change)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
+
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
+        
         super().save_model(request, obj, form, change)
+
+
 
         employee = form.cleaned_data.get("employee") or request.user.employee
         if not change:
@@ -124,6 +157,7 @@ class LeaveManagement(admin.ModelAdmin):
                 )
                 leave_manage.save()
         self.__send_leave_mail(request, obj, form, change)
+        
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

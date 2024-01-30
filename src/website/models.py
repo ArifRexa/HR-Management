@@ -46,6 +46,7 @@ class Tag(AuthorMixin, TimeStampMixin):
 
 
 class Blog(AuthorMixin, TimeStampMixin):
+
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to="blog_image")
