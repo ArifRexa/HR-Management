@@ -114,14 +114,8 @@ class LeaveManagement(admin.ModelAdmin):
   
 
     def save_form(self, request, form, change):
-        print("save_form".center(50, '*'))
-        ic(request._post.get('leave_type'))
-        ic(type(request._post.get('leaveattachment_set-TOTAL_FORMS')))
-        if int(request._post.get('leaveattachment_set-TOTAL_FORMS')) <= 0 and request._post.get('leave_type') == 'medical':
-            print("save_form".center(50, '*'))
-            ic(request.META.get('leaveattachment_set-TOTAL_FORMS'))
-            # raise ValidationError({'leaveattachment_set-TOTAL_FORMS': "Attachment is mandatory."})
-            raise ValidationError({"start_date":"Attachment is mandatory."})
+        if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
+            raise ValidationError({"leaveattachment_set-TOTAL_FORMS":"Attachment is mandatory."})
 
         return super().save_form(request, form, change)
 
