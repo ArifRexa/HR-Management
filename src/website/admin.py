@@ -87,7 +87,7 @@ class BlogAdmin(admin.ModelAdmin):
     )
 
 
-    @admin.action(description='Unapprove selected blogs')
+    @admin.action(description='Deactivate selected blogs')
     def unapprove_selected(self, request, queryset):
         with transaction.atomic():
             for blog in queryset:
@@ -99,7 +99,7 @@ class BlogAdmin(admin.ModelAdmin):
 
     # list_editable = ("active", "approved",)
 
-    @admin.action(description='Approve selected blogs')
+    @admin.action(description='Activate selected blogs')
     def approve_selected(self, request, queryset):
         with transaction.atomic():
             for blog in queryset:
