@@ -167,16 +167,27 @@ class EmployeeActions:
         if not hr_policy:
             hr_policies = []
         else:
-            hr_policies = hr_policy.hrpolicysection_set.all()
+            hr_policies = hr_policy.policy_file
+
+        # policy_file = 
 
         self.__send_mail(
             queryset,
             letter_type="EAL",
             subject="Appointment letter",
+            # mail_template=["mails/appointment.html", "mails/appointment.html"],
             mail_template="mails/appointment.html",
-            extra_context={"hr_policies": hr_policies},
+            # extra_context={"hr_policies": hr_policies},
             request=request,
         )
+        # for employee in queryset:
+        #     async_task(
+        #             "employee.tasks.send_mail_to_employee",
+        #             employee,
+        #             pdf = ["mails/appointment.html", "mails/appointment.html"],
+        #             html_body = 
+        #             subject,
+        #         )
 
     @admin.action()
     def mail_permanent_letter(self, request, queryset):
@@ -258,6 +269,9 @@ class EmployeeActions:
                 letter_type=letter_type,
                 extra_context=extra_context,
             ).create()
+            print(pdf)
+            print(type(pdf))
+            # pdf = [pdf, pdf]
             enoc = EmployeeNOC.objects.filter(employee_id=employee.id)
             if enoc.exists():
                 enoc = enoc.first()

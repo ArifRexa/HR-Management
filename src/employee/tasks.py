@@ -70,6 +70,7 @@ def send_mail_to_employee(employee, pdf, html_body, subject):
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
+    email.attach_file('/home/eaqub/mediusware_erp/src/media/MEDIUSWARE_HR_POLICY_FINAL.pdf')
     email.send()
 
 
