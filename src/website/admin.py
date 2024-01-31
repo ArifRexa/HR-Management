@@ -72,7 +72,7 @@ class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     
     inlines = (BlogContextInline,)
-    actions = ['clone_selected', 'approve_selected']
+    actions = ['clone_selected', 'approve_selected', 'unapprove_selected']
 
     search_fields = ("title",)
     autocomplete_fields = ["category", "tag"]
@@ -86,6 +86,16 @@ class BlogAdmin(admin.ModelAdmin):
         # "approved",
     )
 
+
+    @admin.action(description='Unapprove selected blogs')
+    def unapprove_selected(self, request, queryset):
+        with transaction.atomic():
+            for blog in queryset:
+                # Set the 'active' field to True
+                blog.active = False
+                blog.save()
+
+        self.message_user(request, f'Successfully unapproved {queryset.count()} blogs.')
 
     # list_editable = ("active", "approved",)
 
@@ -112,16 +122,11 @@ class BlogAdmin(admin.ModelAdmin):
 
                 cloned_blog = Blog(**cloned_blog_data)
 
-<<<<<<< HEAD
 
-                cloned_blog.id = new_id_started
-                new_id_started += 1
                 new_title = blog.title
                 if len(new_title) > 247:
                     new_title = new_title[0:245]
 
-=======
->>>>>>> e2bf60de2c8661747e3f8730c49d8672dc1b5d76
                 # Process title
                 cloned_blog.title = f"Copy of {new_title}"
                 
@@ -174,7 +179,9 @@ class BlogAdmin(admin.ModelAdmin):
         if not request.user.has_perm('website.can_approve'):
             # If the user doesn't have permission, remove the 'approve_selected' action
             del actions['approve_selected']
-
+            
+        print('*****************************')
+        print(actions)
         return actions
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
