@@ -105,9 +105,6 @@ class BlogAdmin(admin.ModelAdmin):
     def clone_selected(self, request, queryset):
         cloned_blogs = []
 
-        size_of_blog_list = Blog.objects.last().id
-        new_id_started = size_of_blog_list + 1
-
         with transaction.atomic():
             for index, blog in enumerate(queryset, start=1):
                 # Create a copy of the blog with a new ID and reset some fields
@@ -115,6 +112,7 @@ class BlogAdmin(admin.ModelAdmin):
 
                 cloned_blog = Blog(**cloned_blog_data)
 
+<<<<<<< HEAD
 
                 cloned_blog.id = new_id_started
                 new_id_started += 1
@@ -122,6 +120,8 @@ class BlogAdmin(admin.ModelAdmin):
                 if len(new_title) > 247:
                     new_title = new_title[0:245]
 
+=======
+>>>>>>> e2bf60de2c8661747e3f8730c49d8672dc1b5d76
                 # Process title
                 cloned_blog.title = f"Copy of {new_title}"
                 
