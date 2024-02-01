@@ -74,8 +74,8 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     if letter_type == "EAL":
         hr_policy = HRPolicy.objects.last()
         file_path = hr_policy.policy_file.path
-        print(file_path)
-        email.attach_file(file_path)
+        if file_path:
+            email.attach_file(file_path)
     email.send()
 
 
