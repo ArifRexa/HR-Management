@@ -89,24 +89,14 @@ class BlogAdmin(admin.ModelAdmin):
 
     @admin.action(description='Deactivate selected blogs')
     def unapprove_selected(self, request, queryset):
-        with transaction.atomic():
-            for blog in queryset:
-                # Set the 'active' field to True
-                blog.active = False
-                blog.save()
-
+        queryset.update(active=False)
         self.message_user(request, f'Successfully unapproved {queryset.count()} blogs.')
 
     # list_editable = ("active", "approved",)
 
     @admin.action(description='Activate selected blogs')
     def approve_selected(self, request, queryset):
-        with transaction.atomic():
-            for blog in queryset:
-                # Set the 'active' field to True
-                blog.active = True
-                blog.save()
-
+        queryset.update(active=True)
         self.message_user(request, f'Successfully approved {queryset.count()} blogs.')
 
 
