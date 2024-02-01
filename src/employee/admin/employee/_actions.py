@@ -294,12 +294,16 @@ class EmployeeActions:
             }
             context.update(extra_context)
             html_body = loader.render_to_string(mail_template, context=context)
+
             async_task(
                 "employee.tasks.send_mail_to_employee",
                 employee,
                 pdf,
                 html_body,
                 subject,
+                letter_type
+
+
             )
         self.message_user(request, "Mail sent successfully", messages.SUCCESS)
 

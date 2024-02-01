@@ -63,14 +63,15 @@ def set_default_exit_time():
                 activities[-1].save()
 
 
-def send_mail_to_employee(employee, pdf, html_body, subject):
+def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email = EmailMultiAlternatives()
     email.subject = f"{subject} of {employee.full_name}"
     email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
-    email.attach_file('/home/eaqub/mediusware_erp/src/media/MEDIUSWARE_HR_POLICY_FINAL.pdf')
+    if letter_type == "EAL":
+        email.attach_file('media/MEDIUSWARE_HR_POLICY_FINAL.pdf')
     email.send()
 
 
