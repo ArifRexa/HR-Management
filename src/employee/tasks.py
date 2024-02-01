@@ -29,6 +29,7 @@ from employee.models import (
     EmployeeFeedback,
     SalaryHistory,
     NeedHelpPosition,
+    HRPolicy
 )
 from project_management.models import (
     ProjectHour,
@@ -71,7 +72,10 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
     if letter_type == "EAL":
-        email.attach_file('media/MEDIUSWARE_HR_POLICY_FINAL.pdf')
+        hr_policy = HRPolicy.objects.last()
+        file_path = hr_policy.policy_file.path
+        print(file_path)
+        email.attach_file(file_path)
     email.send()
 
 

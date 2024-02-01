@@ -10,7 +10,7 @@ class HRPolicy(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     description = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=False)
-    policy_file = models.FileField(upload_to='', default='')
+    policy_file = models.FileField(upload_to='media/hrpolicy', default='')
 
     def __str__(self) -> str:
         return f"{self.title}"
