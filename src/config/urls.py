@@ -49,7 +49,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("settings/", include("settings.urls")),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="js-catalog"),
-    # path('admin/account/', include('account.urls')),
+    path('admin/account/', include('account.urls')),
     path("", include("employee.urls")),
     path("admin/", admin.site.urls),
     path(

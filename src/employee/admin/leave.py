@@ -3,10 +3,14 @@ import datetime
 
 from django.contrib import admin, messages
 from django import forms
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils import timezone
 from django_q.tasks import async_task
+from icecream import ic
+
 from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
@@ -59,7 +63,7 @@ class LeaveForm(forms.ModelForm):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
             self.fields["message"].initial = self.placeholder
-    
+
     
 
     
@@ -107,21 +111,13 @@ class LeaveManagement(admin.ModelAdmin):
                     [item.name for item in obj._meta.fields]
                 )
         return ["total_leave", "note"]
-    def get_leave_attachment_inline(self):
-        # Iterate through inlines to find LeaveAttachmentInline
-        for inline_class in self.inlines:
-            if inline_class == LeaveAttachmentInline:
-                return inline_class
+  
 
-        # Return None if not found
-        return None
+    def save_form(self, request, form, change):
+        if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
+            raise ValidationError({"leaveattachment_set-TOTAL_FORMS":"Attachment is mandatory."})
 
-    def get_form(self, request, obj, **kwargs):
-        form1 = super().get_form(request, obj, **kwargs)
-        # print(form1.__dict__)
-        
-
-        return super().get_form(request, **kwargs)
+        return super().save_form(request, form, change)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
@@ -130,25 +126,9 @@ class LeaveManagement(admin.ModelAdmin):
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
-
-        # start_date = obj.start_date
-        # end_date = obj.end_date
-        # difference = end_date - start_date
-
-        # if difference > timedelta(days=3) and obj.leave_type == 'casual':
-        #     submission_time = date.today()
-        #     submition_difference = start_date - submission_time
-        #     if submition_difference < timedelta(days=7):
-        #         self.message_user(
-        #             request,
-        #             'For 3 or more days leave, you have to submit the leave at least 7 days before the start date.',
-        #             level=messages.WARNING
-        #         )
-        #         return   messages.error(request, "You Have to submit  it more than 7 days ago")
-
+        
         super().save_model(request, obj, form, change)
 
-    
 
 
         employee = form.cleaned_data.get("employee") or request.user.employee
@@ -170,7 +150,8 @@ class LeaveManagement(admin.ModelAdmin):
                     manager=manager.employee, leave=obj
                 )
                 leave_manage.save()
-        # self.__send_leave_mail(request, obj, form, change)
+        self.__send_leave_mail(request, obj, form, change)
+        
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

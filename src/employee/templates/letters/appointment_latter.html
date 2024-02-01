@@ -17,7 +17,7 @@
     <p><b>Subject: Appointment Letter of {{ employee.full_name | title }}</b></p>
     <p>Dear {{ employee.full_name | title }},</p>
     <p>Upon reviewing your application and interviewing you in person we are very pleased to appoint you as the
-        <b>{{ employee.designation }}</b> for Mediusware Ltd. in <b>House- 18/5 (3rd Floor), Ring Road,
+        <b>{{ employee.designation }}</b> for Mediusware Ltd. in <b>24/1, Taj Mahal Road, Shiya Masjid mor, Floor- 7th & 8th, Ring Road,
             Mohammadpur,
             Dhaka.</b> You are
         expected to
@@ -36,12 +36,15 @@
         <li>
             {% include 'letters/extra/salary_table.html' with payable_salary=employee.joining_salary.payable_salary %}
         </li>
-        <li>If the organization thinks that you are not well-suited for the assigned tasks or you are not performing
+        <li>
+
+        </li>
+        <!-- <li>If the organization thinks that you are not well-suited for the assigned tasks or you are not performing
             well as
             per your job responsibilities, then the organization will reserve the right to take any decision of
             termination
             depending on the circumstances.
-        </li>
+        </li> -->
         <div class="page-break"></div>
     </ol>
     {% include 'letters/extra/hr_policy.html' %}

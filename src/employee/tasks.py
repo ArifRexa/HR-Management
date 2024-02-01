@@ -29,6 +29,7 @@ from employee.models import (
     EmployeeFeedback,
     SalaryHistory,
     NeedHelpPosition,
+    HRPolicy
 )
 from project_management.models import (
     ProjectHour,
@@ -63,13 +64,18 @@ def set_default_exit_time():
                 activities[-1].save()
 
 
-def send_mail_to_employee(employee, pdf, html_body, subject):
+def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email = EmailMultiAlternatives()
     email.subject = f"{subject} of {employee.full_name}"
     email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
+    if letter_type == "EAL":
+        hr_policy = HRPolicy.objects.last()
+        file_path = hr_policy.policy_file.path
+        if file_path:
+            email.attach_file(file_path)
     email.send()
 
 
