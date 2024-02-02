@@ -32,6 +32,7 @@ def get_project_updates(request, project_hash):
         )
 
     distinct_dates = daily_updates.values('created_at__date').distinct()[::-1]
+    print(distinct_dates)
 
     daily_update_list = []
     total_hour = 0
@@ -95,6 +96,7 @@ def get_project_updates(request, project_hash):
         }
         return render(request, 'client_management/project_details.html', out_dict)
     else:
+        deleted_date_list = []
         print('team not')
         for u_date in distinct_dates:
             obj = {'created_at': u_date.get('created_at__date').strftime("%d-%b-%Y")}
@@ -106,14 +108,15 @@ def get_project_updates(request, project_hash):
             for update in update_objects:
 
                 if update.updates_json is not None:
-                    updates.extend(update.updates_json)
                     time += update.hours
+                    if time > 0:
+                        updates.extend(update.updates_json)
                 else:
                     updates.extend([[update.update, update.hours]])
                     time += update.hours
+
             obj['update'] = updates
             obj['total_hour'] = time
-            total_hour += time
             daily_update_list.append(obj)
 
         # ic(daily_update_list)
@@ -126,5 +129,6 @@ def get_project_updates(request, project_hash):
             'project': project_obj,
             'daily_updates': page_obj,
         }
+        print(deleted_date_list)
 
         return render(request, 'client_management/project_details.html', out_dict)
