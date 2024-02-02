@@ -13,6 +13,7 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 from project_management.models import Project, Client
+from django.core.exceptions import ValidationError
 
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
@@ -82,10 +83,10 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     employee = models.ManyToManyField(Employee)
     disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
 
-
 class ExpenseGroup(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True, blank=True)
+    account_code = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -254,3 +255,41 @@ class ProjectCommission(TimeStampMixin, AuthorMixin):
         Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
     )
     payment = models.FloatField()
+
+from django.urls import reverse
+class AccountJournal(AuthorMixin, TimeStampMixin):
+    journal_types = (
+        ('monthly', 'MONTHLY'),
+        ('daily', 'DAILY')
+    )
+    date = models.DateField(default=timezone.now)
+    type = models.CharField(max_length=20, choices=journal_types)
+    expenses = models.ManyToManyField(Expense, related_name='expenses',)
+    pv_no = models.IntegerField(null=True, blank=True)
+    note = models.TextField(blank=True, null=True)
+
+    def __str__(self) -> str:
+        return self.type
+
+    def get_pdf_generate_url(self):
+        return reverse('account:payment_voucher', args=[str(self.id)])
+    
+    def get_monthly_journal(self):
+        return reverse('account:account_journal', args=[str(self.id)])
+    
+    def group_cost_url(self):
+        return reverse('account:group_costs', args=[str(self.id)])
+    
+class DailyPaymentVoucher(AccountJournal):
+    
+    class Meta:
+        proxy = True
+        verbose_name = 'Payment Voucher (Daily)'
+        verbose_name_plural = 'Payment Vouchers (Daily)'
+
+class MonthlyJournal(AccountJournal):
+
+    class Meta:
+        proxy = True
+        verbose_name = 'Account Journal (Monthly)'
+        verbose_name_plural = 'Accounts Journals (Monthly)'
