@@ -79,14 +79,6 @@ def change_project(request, *args, **kwargs):
 @not_for_management
 def make_ceo_appoinment(request, *args, **kwargs):
 
-    user = request.user
-
-    user_appointment = Appointment.objects.filter(created_by_id=user.id).first()
-    if user_appointment:
-        messages.success(request, "You already have a booking")
-        return redirect("/admin/")
-    
-
     form = AppointmentForm(request.POST)
     if form.is_valid():
         form.save()
