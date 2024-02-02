@@ -12,9 +12,5 @@ src/*/node_moduels
 src/*/package.lock
 Pipfile.lock
 .DS_Store
-<<<<<<< HEAD
-venv39
-=======
 venv39
 .vscode
->>>>>>> eff1dd1f596d4bdbdd8322e131b0c0b1f97aa7c0
