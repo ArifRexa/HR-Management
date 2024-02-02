@@ -278,14 +278,23 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             date_datas.update({emp: temp})
 
 
+        # for emp in emps:
+        #         if manager_date_and_hours.get(emp.id):
+        #                 print(date_datas[emp])
+        #                 for date in last_x_dates:
+        #                     if date_datas[emp][date].get('accepted_hour'):
+        #                         date_datas[emp][date]['accepted_hour'] +=  manager_date_and_hours.get(emp.id).get(0, date)
+        #                     else:
+        #                         date_datas[emp][date]['accepted_hour'] = manager_date_and_hours.get(emp.id).get(0, date)
         for emp in emps:
-                if manager_date_and_hours.get(emp.id):
-                        print(date_datas[emp])
-                        for date in last_x_dates:
-                            if date_datas[emp][date].get('accepted_hour'):
-                                date_datas[emp][date]['accepted_hour'] +=  manager_date_and_hours.get(emp.id).get(date)
-                            else:
-                                date_datas[emp][date]['accepted_hour'] = manager_date_and_hours.get(emp.id).get(date)
+            if manager_date_and_hours.get(emp.id):
+                # print(date_datas[emp])
+                for date in last_x_dates:
+                    accepted_hour = date_datas[emp][date].get('accepted_hour', 0)
+                
+                    manager_hour = manager_date_and_hours.get(emp.id, {}).get(date, 0)
+            
+                    date_datas[emp][date]['accepted_hour'] = accepted_hour + manager_hour
                     
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
