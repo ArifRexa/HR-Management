@@ -8,8 +8,8 @@ from project_management.models import Project
 
 class EmployeeRating(TimeStampMixin, AuthorMixin):
     score = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True)
+    employee = models.ForeignKey(Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, limit_choices_to={"active": True}, on_delete=models.SET_NULL, null=True, blank=True)
     comment = models.TextField()
 
     class Meta:

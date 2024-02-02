@@ -13,7 +13,8 @@ def get_project_updates(request, project_hash):
     project_obj = Project.objects.filter(identifier=project_hash).first()
     daily_updates = DailyProjectUpdate.objects.filter(
         project=project_obj,
-        status='approved'
+        status='approved',
+        hours__gt=0
     )
 
     if to_date and not from_date:
@@ -47,6 +48,16 @@ def get_project_updates(request, project_hash):
             row_span = 0
             employee_id = None
             for update in update_objects:
+
+                deleted_update_json = []
+                if update.updates_json:
+                    for json_1 in update.updates_json:
+                        json_hour = float(json_1[1])
+                        print(json_hour)
+                        if json_hour == 0.0: 
+                            deleted_update_json.append(json_1)
+                    for delt in deleted_update_json:
+                        update.updates_json.remove(delt)
 
                 if employee_id == update.employee.id:
                     if update.updates_json is not None:
@@ -95,7 +106,8 @@ def get_project_updates(request, project_hash):
         }
         return render(request, 'client_management/project_details.html', out_dict)
     else:
-        print('team not')
+        print('team not length of distinct dates', len(distinct_dates))
+
         for u_date in distinct_dates:
             obj = {'created_at': u_date.get('created_at__date').strftime("%d-%b-%Y")}
             updates = []
@@ -104,6 +116,15 @@ def get_project_updates(request, project_hash):
                 created_at__date=u_date.get('created_at__date')
             )
             for update in update_objects:
+                deleted_update_json = []
+                if update.updates_json:
+                    for json_1 in update.updates_json:
+                        json_hour = float(json_1[1])
+                        print(json_hour)
+                        if json_hour == 0.0: 
+                            deleted_update_json.append(json_1)
+                    for delt in deleted_update_json:
+                        update.updates_json.remove(delt)
 
                 if update.updates_json is not None:
                     updates.extend(update.updates_json)
