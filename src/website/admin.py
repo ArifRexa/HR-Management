@@ -72,7 +72,7 @@ class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     
     inlines = (BlogContextInline,)
-    actions = ['clone_selected', 'approve_selected']
+    actions = ['clone_selected', 'approve_selected', 'unapprove_selected']
 
     search_fields = ("title",)
     autocomplete_fields = ["category", "tag"]
@@ -87,16 +87,16 @@ class BlogAdmin(admin.ModelAdmin):
     )
 
 
+    @admin.action(description='Deactivate selected blogs')
+    def unapprove_selected(self, request, queryset):
+        queryset.update(active=False)
+        self.message_user(request, f'Successfully unapproved {queryset.count()} blogs.')
+
     # list_editable = ("active", "approved",)
 
-    @admin.action(description='Approve selected blogs')
+    @admin.action(description='Activate selected blogs')
     def approve_selected(self, request, queryset):
-        with transaction.atomic():
-            for blog in queryset:
-                # Set the 'active' field to True
-                blog.active = True
-                blog.save()
-
+        queryset.update(active=True)
         self.message_user(request, f'Successfully approved {queryset.count()} blogs.')
 
 
@@ -168,7 +168,9 @@ class BlogAdmin(admin.ModelAdmin):
         if not request.user.has_perm('website.can_approve'):
             # If the user doesn't have permission, remove the 'approve_selected' action
             del actions['approve_selected']
-
+            
+        print('*****************************')
+        print(actions)
         return actions
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:

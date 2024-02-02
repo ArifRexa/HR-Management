@@ -13,3 +13,4 @@ src/*/package.lock
 Pipfile.lock
 .DS_Store
 venv39
+.vscode
