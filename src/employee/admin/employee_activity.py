@@ -173,6 +173,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
         date_datas = {}
 
+        manager_date_and_hours = {}
+
         for emp in emps:
             temp = {}
             attendances = emp.employeeattendance_set.all()
@@ -182,14 +184,27 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 status="approved",
             )
 
+
             for date in last_x_dates:
                 temp[date] = dict()
 
                 for edh in reversed(empdailyhours):
-                    if edh.created_at.date() == date:
-                        temp[date]["accepted_hour"] = (
-                            temp[date].get("accepted_hour", 0) + edh.hours
-                        )
+                   if edh.created_at.date() == date:
+                    if edh.manager != edh.employee:
+                        manager_id = edh.manager.id
+                        
+                        if manager_id not in manager_date_and_hours:
+                            manager_date_and_hours[manager_id] = {}
+                            
+                        if date not in manager_date_and_hours[manager_id]:
+                            manager_date_and_hours[manager_id][date] = edh.hours
+                        else:
+                            manager_date_and_hours[manager_id][date] += edh.hours
+                        
+                    if date not in temp:
+                        temp[date] = {"accepted_hour": edh.hours}
+                    else:
+                        temp[date]["accepted_hour"] = temp[date].get("accepted_hour", 0) + edh.hours
 
                 for attendance in attendances:
                     if attendance.date == date:
@@ -262,6 +277,16 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         break
             date_datas.update({emp: temp})
 
+
+        for emp in emps:
+                if manager_date_and_hours.get(emp.id):
+                        print(date_datas[emp])
+                        for date in last_x_dates:
+                            if date_datas[emp][date].get('accepted_hour'):
+                                date_datas[emp][date]['accepted_hour'] +=  manager_date_and_hours.get(emp.id).get(date)
+                            else:
+                                date_datas[emp][date]['accepted_hour'] = manager_date_and_hours.get(emp.id).get(date)
+                    
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
