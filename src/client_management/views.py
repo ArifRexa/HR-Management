@@ -116,13 +116,14 @@ def get_project_updates(request, project_hash):
             )
             for update in update_objects:
                 deleted_update_json = []
-                for json_1 in update.updates_json:
-                    json_hour = float(json_1[1])
-                    print(json_hour)
-                    if json_hour == 0.0: 
-                        deleted_update_json.append(json_1)
-                for delt in deleted_update_json:
-                    update.updates_json.remove(delt)
+                if update.updates_json:
+                    for json_1 in update.updates_json:
+                        json_hour = float(json_1[1])
+                        print(json_hour)
+                        if json_hour == 0.0: 
+                            deleted_update_json.append(json_1)
+                    for delt in deleted_update_json:
+                        update.updates_json.remove(delt)
 
                 if update.updates_json is not None:
                     updates.extend(update.updates_json)
