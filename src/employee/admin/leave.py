@@ -240,6 +240,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
             }
         )
         return format_html(html_content)
@@ -253,6 +256,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "data": leave.get_status_display(),
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
                     leave.start_date, leave.end_date
                 ),
             }
@@ -269,6 +275,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
             }
         )
         return format_html(html_content)
@@ -281,6 +290,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "data": leave.end_date,
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
                     leave.start_date, leave.end_date
                 ),
             }
