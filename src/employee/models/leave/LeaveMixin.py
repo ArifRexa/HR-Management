@@ -23,7 +23,7 @@ class LeaveMixin(models.Model):
         ("pending", "⏳ Pending"),
         ("approved", "\u2705 Approved"),
         ("rejected", "⛔ Rejected"),
-        ("need_discussion", "🤔 Need Further Discussion"),
+        ("need_discussion", "🤔 Need Discussion"),
     )
 
     start_date = models.DateField()
