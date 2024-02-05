@@ -12,7 +12,7 @@ class LeaveMixin(models.Model):
     MEDICAL = 'medical'
     HALF_DAY = 'half_day'
     APPLIED_TIME_LIMIT = 15
-    APPLIED_ERROR_MSG = "You can not apply any leave application after 06:00 PM for tomorrow."
+    APPLIED_ERROR_MSG = "You can not apply any leave application after 03:00 PM for tomorrow."
     LEAVE_CHOICE = (
         ("casual", "Casual Leave"),
         ("medical", "Medical Leave"),
