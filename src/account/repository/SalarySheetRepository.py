@@ -6,7 +6,7 @@ from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from account.models import SalarySheet, EmployeeSalary, LoanPayment, Loan, SalarySheetTaxLoan
+from account.models import SalarySheet, EmployeeSalary, LoanPayment
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate, EmployeeFoodAllowance
@@ -46,16 +46,6 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             defaults={"date": salary_date},
         )
-
-        if not created:
-            
-            salary_sheet_id = self.__salary_sheet.id
-            tax_loan_list = SalarySheetTaxLoan.objects.filter(salarysheet=salary_sheet_id)
-            for tax_loan in tax_loan_list:
-                loan_id = tax_loan.loan_id
-                Loan.objects.filter(id=loan_id).delete()
-            
-
         self.__salary_sheet.festival_bonus = self.festival_bonus
         self.__salary_sheet.save()
         employees = Employee.objects.filter(
@@ -105,37 +95,12 @@ class SalarySheetRepository:
         employee_salary.device_allowance = self.__calculate_device_allowance(
             employee=employee, salary_date=salary_sheet.date
         )
-        # employee_salary.loan_emi = self.__calculate_loan_emi(
-        #     employee=employee, salary_date=salary_sheet.date
-        # )
-        employee_salary.provident_fund = self.__calculate_provident_fund(
-            employee=employee, salary_date=salary_sheet.date
-        )
-
-        if employee.pay_scale.basic >= 25000 or employee_salary.net_salary >= 43800:
-            loan_instance = Loan.objects.create(
-            employee=employee,
-            witness=Employee.objects.filter(id=33).first(),  # You might need to adjust this based on your requirements
-            loan_amount=417,  # Set the loan amount
-            emi=417,  # Set the EMI amount
-            effective_date=timezone.now(),
-            start_date=timezone.now()- timezone.timedelta(days=30),
-            end_date=timezone.now(),
-            tenor=1,  # Set the tenor/period in months
-            payment_method='salary',  # Set the payment method
-            loan_type='salary',  # Set the loan type
-            )
-            loan_instance.save()
-            salarysheettax = SalarySheetTaxLoan.objects.create(
-                salarysheet = salary_sheet,
-                loan =  loan_instance
-            )
-            salarysheettax.save()
-
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date
         )
-
+        employee_salary.provident_fund = self.__calculate_provident_fund(
+            employee=employee, salary_date=salary_sheet.date
+        )
         employee_salary.gross_salary = (
             employee_salary.net_salary
             + employee_salary.overtime

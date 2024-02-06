@@ -3,9 +3,7 @@ from math import floor
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models.signals import pre_delete
 
-from django.dispatch import receiver
 # Create your models here.
 from django.db.models import Sum
 from django.utils import timezone
@@ -33,6 +31,7 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
     class Meta:
         verbose_name = "Salary Sheet"
         verbose_name_plural = "Salary Sheets"
+
 
 class EmployeeSalary(TimeStampMixin):
     employee = models.ForeignKey(Employee, on_delete=models.RESTRICT)
@@ -294,22 +293,3 @@ class MonthlyJournal(AccountJournal):
         proxy = True
         verbose_name = 'Account Journal (Monthly)'
         verbose_name_plural = 'Accounts Journals (Monthly)'
-
-
-class SalarySheetTaxLoan(models.Model):
-    salarysheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
-    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
-
-    # Add any additional fields related to the relationship if needed
-
-    def __str__(self):
-        return f"{self.salarysheet} - {self.loan}"
-
-    class Meta:
-        verbose_name = "Salary Sheet Tax Loan"
-        verbose_name_plural = "Salary Sheet Tax Loans"
-
-@receiver(pre_delete, sender=SalarySheet)
-def delete_related_loans(sender, instance, **kwargs):
-    related_loans = Loan.objects.filter(salarysheettaxloan__salarysheet=instance)
-    related_loans.delete()
