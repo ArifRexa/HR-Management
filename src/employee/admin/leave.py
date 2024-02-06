@@ -15,12 +15,13 @@ from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
 
-
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
     extra = 0
 
-
+class FeedbackInline(admin.TabularInline):
+    model = leave.LeaveFeedback
+    extra = 0
 
 
 class LeaveManagementInline(admin.TabularInline):
@@ -71,7 +72,7 @@ class LeaveForm(forms.ModelForm):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = (
+    list_display = [
         "employee",
         "leave_info",
         "leave_type_",
@@ -80,15 +81,28 @@ class LeaveManagement(admin.ModelAdmin):
         "status_",
         "start_date_",
         "end_date_",
-        'creator'
-    )
+        'creator',
+        'management__feedback',
+        
+    ]
+    
+
+
     actions = ("approve_selected",)
     readonly_fields = ("note", "total_leave")
     exclude = ["status_changed_at", "status_changed_by"]
-    inlines = (LeaveAttachmentInline, LeaveManagementInline)
+    inlines = (LeaveAttachmentInline, LeaveManagementInline, FeedbackInline)
     search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
     date_hierarchy = "start_date"
+
+    def get_list_display(self, request):
+        existing_list = super(LeaveManagement, self).get_list_display(request)
+        # existing_list = self.list_display
+        print(existing_list)
+        if not request.user.has_perm("employee.can_view_display_feedback"):
+            if 'management__feedback' in existing_list: existing_list.remove('management__feedback')
+        return existing_list
 
 
     def get_fields(self, request, obj=None):
@@ -97,6 +111,9 @@ class LeaveManagement(admin.ModelAdmin):
             admin_only = ["status", "employee"]
             for filed in admin_only:
                 fields.remove(filed)
+        # if not request.user.has_perm("employee.can_view_feedback"):
+        #     fields.remove("display_feedback")
+        #     print(fields)
         return fields
 
     def get_readonly_fields(self, request, obj=None):
