@@ -125,12 +125,12 @@ class SalarySheetRepository:
             payment_method='salary',  # Set the payment method
             loan_type='salary',  # Set the loan type
             )
-            loan_instance.save()
+            # loan_instance.save()
             salarysheettax = SalarySheetTaxLoan.objects.create(
                 salarysheet = salary_sheet,
                 loan =  loan_instance
             )
-            salarysheettax.save()
+            # salarysheettax.save()
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date

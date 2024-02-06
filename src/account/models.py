@@ -1,5 +1,7 @@
 from math import floor
 
+from django.db import transaction
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
@@ -310,6 +312,7 @@ class SalarySheetTaxLoan(models.Model):
         verbose_name_plural = "Salary Sheet Tax Loans"
 
 @receiver(pre_delete, sender=SalarySheet)
+@transaction.atomic
 def delete_related_loans(sender, instance, **kwargs):
     related_loans = Loan.objects.filter(salarysheettaxloan__salarysheet=instance)
     related_loans.delete()
