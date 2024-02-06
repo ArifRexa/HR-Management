@@ -11,8 +11,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterUniqueTogether(
-            name='bankaccount',
-            unique_together={('employee', 'bank')},
-        ),
+        # migrations.AlterUniqueTogether(
+        #     name='bankaccount',
+        #     unique_together={('employee', 'bank')},
+        # ),
     ]
