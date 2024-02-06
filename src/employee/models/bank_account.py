@@ -22,7 +22,7 @@ class BankAccount(models.Model):
             ('can_edit_all_bank_account', 'Can edit all bank account', ),
             ('can_approve_bank_account_info', 'Can approve bank account info', ),
         )
-        unique_together = ('employee', 'bank')
+        # unique_together = ('employee', 'bank')
 
 
 # Set the latest one default and make everything default false
