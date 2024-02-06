@@ -46,6 +46,16 @@ class SalarySheetRepository:
             date__year=salary_date.year,
             defaults={"date": salary_date},
         )
+
+        if not created:
+            
+            salary_sheet_id = self.__salary_sheet.id
+            tax_loan_list = SalarySheetTaxLoan.objects.filter(salarysheet=salary_sheet_id)
+            for tax_loan in tax_loan_list:
+                loan_id = tax_loan.loan_id
+                Loan.objects.filter(id=loan_id).delete()
+            
+
         self.__salary_sheet.festival_bonus = self.festival_bonus
         self.__salary_sheet.save()
         employees = Employee.objects.filter(
