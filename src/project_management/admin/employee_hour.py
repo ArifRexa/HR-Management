@@ -288,6 +288,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_template = get_template(
             "admin/project_management/list/col_dailyupdate.html"
         )
+
         # is_github_link_show = True
         if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa',
                                                                                                          'ui/ux']:
@@ -369,18 +370,43 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return filters
 
     def has_change_permission(self, request, obj=None):
+        is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+        if is_have_panding:
+            return False
+        
         permitted = super().has_change_permission(request, obj=obj)
         if obj is not None and obj.pk:
+
             if (
                     not request.user.is_superuser
                     and obj
                     and obj.employee != request.user.employee
                     and obj.manager != request.user.employee
+                    
             ):
                 permitted = False
-
+        
         return permitted
+    
+        
+    def has_add_permission(self, request, obj=None):
+        
+        if request.user.is_superuser:
+            return True
+        
+        is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+        
+        permissons = super().has_add_permission(request)
+        print('add'.center(30,'*'),permissons)
 
+        if is_have_panding:
+            return False
+        return True
+        
+        # return permissons
+        
+
+    
     @admin.display(description="Status")
     def status_col(self, obj):
         color = "red"
