@@ -378,6 +378,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return filters
 
     def has_change_permission(self, request, obj=None):
+        
+        if request.user.is_superuser:
+            return True     
+        
         is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
         if is_have_panding:
             return False
@@ -405,7 +409,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
         
         permissons = super().has_add_permission(request)
-        print('add'.center(30,'*'),permissons)
+       
 
         if is_have_panding:
             return False
