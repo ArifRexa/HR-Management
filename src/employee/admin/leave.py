@@ -93,7 +93,7 @@ class LeaveManagement(admin.ModelAdmin):
         'management__feedback',
         
     ]
-        if not request.user.has_perm("employee.can_view_display_feedback"):
+        if not request.user.has_perm("employee.view_leavefeedback"):
             if 'management__feedback' in list_display: list_display.remove('management__feedback')
         return list_display
 
