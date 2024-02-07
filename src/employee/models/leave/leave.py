@@ -28,6 +28,17 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
 
     def __str__(self):
         return f"{self.employee.full_name} : {self.created_at.strftime('%Y-%m-%d %I:%M %P')}"
+    
+    # def get_leave_feedback(self):
+    #     print(self.leavefeedback_set.all())
+    
+    def management__feedback(self):
+        feedbacks = self.leavefeedback_set.all()
+        # feedback_list = [feedback.feedback for feedback in feedbacks]
+        total_feedback = ""
+        for feedback in feedbacks:
+            total_feedback += feedback.feedback
+        return total_feedback
 
     class Meta:
         permissions = (
@@ -39,7 +50,23 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
                 "can_add_leave_at_any_time",
                 "Can able to add leave at any time",
             ),
+            # (
+            #     "can_view_display_feedback",
+            #     "Can able to See Leave feedback",
+            # ),
         )
+
+
+class LeaveFeedback(TimeStampMixin, AuthorMixin):
+
+    feedback = models.TextField(null=True, blank=True)
+    leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Management Feedback'
+        verbose_name_plural = 'Management Feedbacks'
+
+
 
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)

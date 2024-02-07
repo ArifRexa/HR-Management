@@ -15,12 +15,13 @@ from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
 
-
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
     extra = 0
 
-
+class FeedbackInline(admin.TabularInline):
+    model = leave.LeaveFeedback
+    extra = 0
 
 
 class LeaveManagementInline(admin.TabularInline):
@@ -71,24 +72,30 @@ class LeaveForm(forms.ModelForm):
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = (
+    actions = ("approve_selected",)
+    readonly_fields = ("note", "total_leave")
+    exclude = ["status_changed_at", "status_changed_by"]
+    inlines = (LeaveAttachmentInline, LeaveManagementInline, FeedbackInline)
+    search_fields = ("employee__full_name", "leave_type")
+    form = LeaveForm
+    date_hierarchy = "start_date"
+
+    def get_list_display(self, request):
+        # existing_list = super(LeaveManagement, self).get_list_display(request)
+        list_display = [
         "employee",
         "leave_info",
         "leave_type_",
         "total_leave_",
         "manager_approval",
         "status_",
-        "start_date_",
-        "end_date_",
-        'creator'
-    )
-    actions = ("approve_selected",)
-    readonly_fields = ("note", "total_leave")
-    exclude = ["status_changed_at", "status_changed_by"]
-    inlines = (LeaveAttachmentInline, LeaveManagementInline)
-    search_fields = ("employee__full_name", "leave_type")
-    form = LeaveForm
-    date_hierarchy = "start_date"
+        "date_range",
+        'management__feedback',
+        
+    ]
+        if not request.user.has_perm("employee.view_leavefeedback"):
+            if 'management__feedback' in list_display: list_display.remove('management__feedback')
+        return list_display
 
 
     def get_fields(self, request, obj=None):
@@ -97,6 +104,9 @@ class LeaveManagement(admin.ModelAdmin):
             admin_only = ["status", "employee"]
             for filed in admin_only:
                 fields.remove(filed)
+        # if not request.user.has_perm("employee.can_view_feedback"):
+        #     fields.remove("display_feedback")
+        #     print(fields)
         return fields
 
     def get_readonly_fields(self, request, obj=None):
@@ -265,43 +275,47 @@ class LeaveManagement(admin.ModelAdmin):
         )
         return format_html(html_content)
 
-    @admin.display()
-    def start_date_(self, leave: Leave):
-        html_template = get_template("admin/leave/list/col_leave_day.html")
-        html_content = html_template.render(
-            {
-                "data": leave.start_date,
-                "leave_day": leave.start_date.strftime("%A"),
-                "has_friday": has_friday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-                "has_monday": has_monday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-            }
-        )
-        return format_html(html_content)
+    # @admin.display()
+    # def start_date_(self, leave: Leave):
+    #     html_template = get_template("admin/leave/list/col_leave_day.html")
+    #     html_content = html_template.render(
+    #         {
+    #             "data": leave.start_date,
+    #             "leave_day": leave.start_date.strftime("%A"),
+    #             "has_friday": has_friday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #             "has_monday": has_monday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #         }
+    #     )
+    #     return format_html(html_content)
 
-    @admin.display()
-    def end_date_(self, leave: Leave):
-        html_template = get_template("admin/leave/list/col_leave_day.html")
-        html_content = html_template.render(
-            {
-                "data": leave.end_date,
-                "leave_day": leave.end_date.strftime("%A"),
-                "has_friday": has_friday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-                "has_monday": has_monday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-            }
-        )
-        return format_html(html_content)
+    # @admin.display()
+    # def end_date_(self, leave: Leave):
+    #     html_template = get_template("admin/leave/list/col_leave_day.html")
+    #     html_content = html_template.render(
+    #         {
+    #             "data": leave.end_date,
+    #             "leave_day": leave.end_date.strftime("%A"),
+    #             "has_friday": has_friday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #             "has_monday": has_monday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #         }
+    #     )
+    #     return format_html(html_content)
     
-    @admin.display(description='Created By')
-    def creator(self, leave: Leave):
-        return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
+    # @admin.display(description='Created By')
+    # def creator(self, leave: Leave):
+    #     return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
+
+    @admin.display(description='Date (start date / end date)')
+    def date_range(self, leave: Leave):
+        return f"{leave.start_date.strftime('%Y-%m-%d')} / {leave.end_date.strftime('%Y-%m-%d')}"
 
 
 def has_friday_between_dates(start_date, end_date):
