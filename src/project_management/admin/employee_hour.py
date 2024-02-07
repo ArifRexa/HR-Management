@@ -288,6 +288,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_template = get_template(
             "admin/project_management/list/col_dailyupdate.html"
         )
+
         # is_github_link_show = True
         if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa',
                                                                                                          'ui/ux']:
@@ -331,11 +332,19 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 ),
             }
         )
+        is_have_pending = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+
         my_context = {
             "total": self.get_total_hour(request),
             "filter_form": filter_form,
+            "is_have_pending": is_have_pending,  # Pass the variable to the template context
         }
-        return super(DailyProjectUpdateAdmin, self).changelist_view(
+
+        # Add a message to display in the template if there are pending leave requests
+        # if is_have_pending:
+        #     messages.info(request, "You have pending leave request(s).")
+
+        return super().changelist_view(
             request, extra_context=my_context
         )
 
@@ -369,18 +378,47 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return filters
 
     def has_change_permission(self, request, obj=None):
+        
+        if request.user.is_superuser:
+            return True     
+        
+        is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+        if is_have_panding:
+            return False
+        
         permitted = super().has_change_permission(request, obj=obj)
         if obj is not None and obj.pk:
+
             if (
                     not request.user.is_superuser
                     and obj
                     and obj.employee != request.user.employee
                     and obj.manager != request.user.employee
+                    
             ):
                 permitted = False
-
+        
         return permitted
+    
+        
+    def has_add_permission(self, request, obj=None):
+        
+        if request.user.is_superuser:
+            return True
+        
+        is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+        
+        permissons = super().has_add_permission(request)
+       
 
+        if is_have_panding:
+            return False
+        return True
+        
+        # return permissons
+        
+
+    
     @admin.display(description="Status")
     def status_col(self, obj):
         color = "red"
@@ -388,8 +426,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             color = "green"
         return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
+    
     @admin.action(description="Approve selected status daily project updates")
     def update_status_approve(modeladmin, request, queryset):
+        
         if request.user.is_superuser:
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
@@ -839,6 +879,22 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 # hours=request.POST.get("hours"), daily_update=obj
                 hours=total_hour, daily_update=obj
             )
+    
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        is_have_pending = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+
+        if is_have_pending:
+            # Remove both "update_status_approve" and "update_status_pending" actions if there are pending leave approvals
+            actions.pop("update_status_approve", None)
+            actions.pop("update_status_pending", None)
+
+        return actions
+    
+
+
+
 
     # def get_actions(self, request):
     #     actions = super().get_actions(request)
@@ -871,3 +927,5 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             )
         else:
             return redirect('/admin/project_management/dailyprojectupdate/')
+    
+   
