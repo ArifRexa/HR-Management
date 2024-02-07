@@ -332,11 +332,19 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 ),
             }
         )
+        is_have_pending = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+
         my_context = {
             "total": self.get_total_hour(request),
             "filter_form": filter_form,
+            "is_have_pending": is_have_pending,  # Pass the variable to the template context
         }
-        return super(DailyProjectUpdateAdmin, self).changelist_view(
+
+        # Add a message to display in the template if there are pending leave requests
+        # if is_have_pending:
+        #     messages.info(request, "You have pending leave request(s).")
+
+        return super().changelist_view(
             request, extra_context=my_context
         )
 
@@ -414,8 +422,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             color = "green"
         return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
+    
     @admin.action(description="Approve selected status daily project updates")
     def update_status_approve(modeladmin, request, queryset):
+        
         if request.user.is_superuser:
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
@@ -865,6 +875,22 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 # hours=request.POST.get("hours"), daily_update=obj
                 hours=total_hour, daily_update=obj
             )
+    
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        is_have_pending = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+
+        if is_have_pending:
+            # Remove both "update_status_approve" and "update_status_pending" actions if there are pending leave approvals
+            actions.pop("update_status_approve", None)
+            actions.pop("update_status_pending", None)
+
+        return actions
+    
+
+
+
 
     # def get_actions(self, request):
     #     actions = super().get_actions(request)
@@ -897,3 +923,5 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             )
         else:
             return redirect('/admin/project_management/dailyprojectupdate/')
+    
+   
