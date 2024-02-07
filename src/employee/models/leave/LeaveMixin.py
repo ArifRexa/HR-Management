@@ -11,8 +11,8 @@ from settings.models import PublicHolidayDate
 class LeaveMixin(models.Model):
     MEDICAL = 'medical'
     HALF_DAY = 'half_day'
-    APPLIED_TIME_LIMIT = 18
-    APPLIED_ERROR_MSG = "You can not apply any leave application after 06:00 PM for tomorrow."
+    APPLIED_TIME_LIMIT = 15
+    APPLIED_ERROR_MSG = "You can not apply any leave application after 03:00 PM for tomorrow."
     LEAVE_CHOICE = (
         ("casual", "Casual Leave"),
         ("medical", "Medical Leave"),
@@ -23,6 +23,7 @@ class LeaveMixin(models.Model):
         ("pending", "⏳ Pending"),
         ("approved", "\u2705 Approved"),
         ("rejected", "⛔ Rejected"),
+        ("need_discussion", "🤔 Need Discussion"),
     )
 
     start_date = models.DateField()

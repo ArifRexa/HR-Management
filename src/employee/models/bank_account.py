@@ -8,7 +8,10 @@ from settings.models import Bank
 
 
 class BankAccount(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee,
+                                 limit_choices_to={'active': True},
+                                 on_delete=models.CASCADE
+                                 )
     bank = models.ForeignKey(Bank, on_delete=models.RESTRICT)
     account_number = models.CharField(max_length=100)
     default = models.BooleanField(default=True)
@@ -22,6 +25,7 @@ class BankAccount(models.Model):
             ('can_edit_all_bank_account', 'Can edit all bank account', ),
             ('can_approve_bank_account_info', 'Can approve bank account info', ),
         )
+        unique_together = ('employee', 'bank')
 
 
 # Set the latest one default and make everything default false

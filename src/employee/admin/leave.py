@@ -223,6 +223,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
             }
         )
         return format_html(html_content)
@@ -235,6 +238,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "data": leave.total_leave,
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
                     leave.start_date, leave.end_date
                 ),
             }
@@ -252,6 +258,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
             }
         )
         return format_html(html_content)
@@ -266,6 +275,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
             }
         )
         return format_html(html_content)
@@ -278,6 +290,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "data": leave.end_date,
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
                     leave.start_date, leave.end_date
                 ),
             }
@@ -299,6 +314,21 @@ def has_friday_between_dates(start_date, end_date):
     while current_date <= end_date:
         # Check if the current date is a Friday (day number 4, where Monday is 0 and Sunday is 6)
         if current_date.weekday() == 4:
+            return True
+        current_date += one_day  # Move to the next day
+
+    return False
+
+def has_monday_between_dates(start_date, end_date):
+    # Create a timedelta of one day
+    one_day = timedelta(days=1)
+
+    # Initialize the current date with the start date
+    current_date = start_date
+
+    while current_date <= end_date:
+        # Check if the current date is a Friday (day number 4, where Monday is 0 and Sunday is 6)
+        if current_date.weekday() == 0:
             return True
         current_date += one_day  # Move to the next day
 
