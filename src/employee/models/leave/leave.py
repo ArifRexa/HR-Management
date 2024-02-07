@@ -62,6 +62,10 @@ class LeaveFeedback(TimeStampMixin, AuthorMixin):
     feedback = models.TextField(null=True, blank=True)
     leave = models.ForeignKey(Leave, on_delete=models.CASCADE)
 
+    class Meta:
+        verbose_name = 'Management Feedback'
+        verbose_name_plural = 'Management Feedbacks'
+
 
 
 class LeaveAttachment(TimeStampMixin, AuthorMixin):
