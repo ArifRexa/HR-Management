@@ -5,6 +5,9 @@ from django.contrib import admin
 from django import forms
 from datetime import datetime, timedelta
 from django.utils.html import format_html
+from django.template.loader import get_template
+from django.template.loader import render_to_string
+
 from django.http.request import HttpRequest
 from employee.models.employee_rating_models import EmployeeRating
 
@@ -48,8 +51,8 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         "employee",
         "rating_by",
         "project",
+        "see_comment",
         "show_score",
-        "comment",
         "created_at",
     ]
     date_hierarchy = "created_at"
@@ -57,11 +60,30 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
     autocomplete_fields = ["employee", "project"]
     form = EmployeeRatingForm
 
+    class Media:
+        css = {"all": ("css/list.css",)}
+        js = ("js/list.js",)
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.has_perm("employee.can_view_all_ratings"):
             return qs
         return qs.filter(created_by__id=request.user.id)
+
+    @admin.display(description="comments")
+    def see_comment(self, obj):
+        print('is this function called ? ')
+
+        html_template = get_template("admin/employee/list/employe_rating_comments.html")
+        # print(html_template)
+        # context = {'obj': obj} 
+         # Pass the obj as a context variable
+        html_content = html_template.render(
+            {
+             "comment": obj.comment
+             }
+        )
+        return format_html(html_content)
 
     @admin.display(description="Show Score", ordering="score")
     def show_score(self, obj):
@@ -91,3 +113,9 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
             field.widget.can_change_related = False
         form.request = request
         return form
+    # @admin.display(description="comments")
+    # def comment(self, obj):
+    #     print('is it here ? ')
+    #     html_template = "src/employee/templates/admin/employee/list/employe_rating_comments.html"
+    #     context = {'obj': obj}  # Pass the obj as a context variable
+    #     return render_to_string(html_template, context)
