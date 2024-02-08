@@ -243,11 +243,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             start_time_timeobj = start_time.time()
                             if start_time:
                                 is_late = (
-                                    employee_is_lead and start_time_timeobj.hour >= 12 and start_time_timeobj.minute >= 30
+                                    employee_is_lead and ((start_time_timeobj.hour == 12 and start_time_timeobj.minute > 30) or start_time_timeobj.hour >= 13)
                                 ) or (
                                     not employee_is_lead
-                                    and start_time_timeobj.hour >= 11
-                                    and start_time_timeobj.minute >= 30
+                                    and ((start_time_timeobj.hour >= 11
+                                    and start_time_timeobj.minute >= 30)
+                                    or start_time_timeobj.hour >= 12 
+                                    )
                                 )
                             temp[date].update(
                                 {
