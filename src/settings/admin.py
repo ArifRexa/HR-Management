@@ -194,12 +194,8 @@ class AnnouncementAdmin(admin.ModelAdmin):
         )
         for announcement in queryset:
             for employee_email in employee_email_list:
-                context = {'announcement': announcement}
-                html_body = loader.render_to_string('email_template.html', context)
-                attachment_path = announcement.email_announcements.path if announcement.email_announcements else None
-
                 async_task(
-                    "settings.tasks.announcement_mail", employee_email, announcement, html_body
+                    "settings.tasks.announcement_mail", employee_email, announcement
                 )
         if queryset:
             messages.success(request, "Email sent successfully.")
