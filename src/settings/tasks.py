@@ -4,7 +4,6 @@ from settings.models import Announcement
 
 
 def announcement_all_employee_mail(employee_email: str, subject: str, html_body: str, attachment_path: str):
-    # print(announcement.email_announcement.all())
     email = EmailMessage()
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [employee_email]

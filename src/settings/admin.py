@@ -223,16 +223,11 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
                 employee_email_list = list(
                     Employee.objects.filter(active=True).values_list("email", flat=True)
                 )
-                print(employee_email_list)
                 for employee_email in employee_email_list:
-                    if not employee_email == 'mdeaqubmia@gmail.com' or not employee_email == 'sqa.mediusware@gmail.com':
-                        continue
-                    print(employee_email)
                     context = {'announcement': announcement.body}
                     subject = announcement.subject
                     attachmentfilepath = announcement.attachments.path
                     html_body = loader.render_to_string('email_temlate.html', context)
-                    # attachment_path = email_announcement.attachments.path if email_announcement.attachments else None
                     async_task(
                         "settings.tasks.announcement_all_employee_mail", employee_email, subject, html_body, attachmentfilepath
                     )
