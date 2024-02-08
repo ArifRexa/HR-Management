@@ -154,6 +154,8 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
+    LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS = datetime.time(19, 30)
+
     inlines = [
         DailyProjectUpdateDocumentAdmin,
     ]
@@ -397,6 +399,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     
             ):
                 permitted = False
+
+        if not (request.user.employee.lead or request.user.employee.manager) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
+            return False
         
         return permitted
     
@@ -413,9 +418,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         if is_have_panding:
             return False
-        return True
+
+
+        if not (request.user.employee.lead or request.user.employee.manager) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
+            return False
         
-        # return permissons
+        return permissons
         
 
     
