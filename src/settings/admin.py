@@ -4,6 +4,8 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
 from django_q.tasks import async_task
+from django.template import loader
+from django.core.mail import EmailMessage
 
 # Register your models here.
 from django.template.defaultfilters import (
@@ -26,10 +28,14 @@ from .models import (
     FinancialYear,
     Announcement,
     EmployeeFoodAllowance,
+    EmailAnnouncement
 )
 from django_q import models as q_models
 from django_q import admin as q_admin
 
+# class EmailAnnouncementInline(admin.TabularInline):  # or admin.StackedInline for a different layout
+#     model = EmailAnnouncement
+#     extra = 0  # Controls the number of extra EmailAnnouncement forms displayed
 
 @admin.register(PayScale)
 class PayScaleAdmin(admin.ModelAdmin):
@@ -149,6 +155,8 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
     list_filter = ("is_active",)
 
+    # inlines = [EmailAnnouncementInline]
+
     actions = (
         "mark_active",
         "mark_inactive",
@@ -178,16 +186,53 @@ class AnnouncementAdmin(admin.ModelAdmin):
     # def __send_announcement_mail(self, request, obj, form, change):
     #     async_task("settings.tasks.announcement_mail", obj)
 
+    # @admin.action(description="Send Email")
+    # def send_mail(modeladmin, request, queryset):
+    #     employee_email_list = list(
+    #         Employee.objects.filter(active=True).values_list("email", flat=True)
+    #     )
+    #     for announcement in queryset:
+    #         for employee_email in employee_email_list:
+    #             context = {'announcement': announcement}
+    #             html_body = loader.render_to_string('email_template.html', context)
+    #             attachment_path = announcement.email_announcements.path if announcement.email_announcements else None
+
+    #             async_task(
+    #                 "settings.tasks.announcement_mail", employee_email, announcement, html_body
+    #             )
+    #     if queryset:
+    #         messages.success(request, "Email sent successfully.")
+
+@admin.register(EmailAnnouncement)
+class EmailAnnouncementAdmin(admin.ModelAdmin):
+    list_display = (
+        'subject',
+        'announcement',
+        'attatchment'
+
+    )
+    
+    actions = (
+        'send_mail'
+    )
+
+
     @admin.action(description="Send Email")
     def send_mail(modeladmin, request, queryset):
-        employee_email_list = list(
-            Employee.objects.filter(active=True).values_list("email", flat=True)
-        )
         for announcement in queryset:
-            for employee_email in employee_email_list:
-                async_task(
-                    "settings.tasks.announcement_mail", employee_email, announcement
+            for email_announcement in announcement.email_announcements.all():
+                employee_email_list = list(
+                    Employee.objects.filter(active=True).values_list("email", flat=True)
                 )
+                for employee_email in employee_email_list:
+                    if employee_email is not 'mdeaqubmia@gmail.com':
+                        continue
+                    context = {'announcement': announcement}
+                    html_body = loader.render_to_string('email_temlate.html', context)
+                    attachment_path = email_announcement.attachments.path if email_announcement.attachments else None
+                    async_task(
+                        "settings.tasks.announcement_mail", employee_email, html_body, attachment_path
+                    )
         if queryset:
             messages.success(request, "Email sent successfully.")
 

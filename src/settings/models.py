@@ -142,3 +142,9 @@ class EmployeeFoodAllowance(TimeStampMixin, AuthorMixin):
 
     def __str__(self) -> str:
         return f"{self.employee.full_name} | {self.amount} | {self.date.strftime('%B %d, %Y')}"
+
+
+class EmailAnnouncement(TimeStampMixin, AuthorMixin):
+    subject = models.TextField()
+    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='email_announcements')
+    attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
