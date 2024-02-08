@@ -108,6 +108,9 @@ class Announcement(TimeStampMixin, AuthorMixin):
 
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.description
+
 
 # class FoodAllowanceExclusion(TimeStampMixin, AuthorMixin):
 #     date = models.DateField()
@@ -146,6 +149,15 @@ class EmployeeFoodAllowance(TimeStampMixin, AuthorMixin):
 
 class EmailAnnouncement(TimeStampMixin, AuthorMixin):
     subject = models.TextField()
+    
     # announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='email_announcements')
-    body = models.TextField(null=True, blank=True)
+    body = tinymce_models.HTMLField(null=True, blank=True)
+    # attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
+
+class EmailAnnouncementAttatchment(TimeStampMixin, AuthorMixin):
+    fileattatchment = models.ForeignKey(EmailAnnouncement, on_delete=models.CASCADE, null=True, blank=True)
     attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
+
+    # def fileattatchtment_path(self):
+    #     return self.fileattatchment.
+
