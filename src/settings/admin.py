@@ -207,31 +207,32 @@ class AnnouncementAdmin(admin.ModelAdmin):
 class EmailAnnouncementAdmin(admin.ModelAdmin):
     list_display = (
         'subject',
-        'announcement',
-        'attatchment'
+        
 
     )
     
     actions = (
-        'send_mail'
+        'send_mail',
     )
 
 
     @admin.action(description="Send Email")
     def send_mail(modeladmin, request, queryset):
         for announcement in queryset:
-            for email_announcement in announcement.email_announcements.all():
+           
                 employee_email_list = list(
                     Employee.objects.filter(active=True).values_list("email", flat=True)
                 )
+                print(employee_email_list)
                 for employee_email in employee_email_list:
-                    if employee_email is not 'mdeaqubmia@gmail.com':
+                    if not employee_email == 'mdeaqubmia@gmail.com':
                         continue
+                    print(employee_email)
                     context = {'announcement': announcement}
                     html_body = loader.render_to_string('email_temlate.html', context)
-                    attachment_path = email_announcement.attachments.path if email_announcement.attachments else None
+                    # attachment_path = email_announcement.attachments.path if email_announcement.attachments else None
                     async_task(
-                        "settings.tasks.announcement_mail", employee_email, html_body, attachment_path
+                        "settings.tasks.announcement_mail", employee_email, html_body
                     )
         if queryset:
             messages.success(request, "Email sent successfully.")
