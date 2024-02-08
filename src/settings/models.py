@@ -147,5 +147,5 @@ class EmployeeFoodAllowance(TimeStampMixin, AuthorMixin):
 class EmailAnnouncement(TimeStampMixin, AuthorMixin):
     subject = models.TextField()
     # announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='email_announcements')
-    body = models.TextField()
+    body = models.TextField(null=True, blank=True)
     attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
