@@ -18,7 +18,7 @@ from employee.models.leave import leave
 
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
-    extra = 0
+    extra = 1
 
 
 
@@ -59,6 +59,10 @@ class LeaveForm(forms.ModelForm):
         model = Leave
         fields = "__all__"
 
+    class Media:
+        js = ("js/list.js", "employee/js/leave.js")
+
+
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
@@ -90,6 +94,7 @@ class LeaveManagement(admin.ModelAdmin):
     form = LeaveForm
     date_hierarchy = "start_date"
 
+   
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
