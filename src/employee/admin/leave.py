@@ -60,8 +60,6 @@ class LeaveForm(forms.ModelForm):
         model = Leave
         fields = "__all__"
 
-    class Media:
-        js = ("js/list.js", "employee/js/leave.js")
 
 
     def __init__(self, *args, **kwargs):
@@ -83,6 +81,10 @@ class LeaveManagement(admin.ModelAdmin):
     search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
     date_hierarchy = "start_date"
+
+
+    class Media:
+        js = ("js/list.js", "employee/js/leave.js")
 
     def get_list_display(self, request):
         # existing_list = super(LeaveManagement, self).get_list_display(request)
@@ -128,11 +130,11 @@ class LeaveManagement(admin.ModelAdmin):
         return ["total_leave", "note"]
   
 
-    def save_form(self, request, form, change):
-        if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
-            raise ValidationError({"leaveattachment_set-TOTAL_FORMS":"Attachment is mandatory."})
-
-        return super().save_form(request, form, change)
+    # def save_form(self, request, form, change):
+    #     if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
+    #         raise ValidationError({"leaveattachment_set-TOTAL_FORMS":"Attachment is mandatory."})
+    #
+    #     return super().save_form(request, form, change)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
