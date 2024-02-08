@@ -400,8 +400,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             ):
                 permitted = False
 
-        if not (request.user.employee.lead or request.user.employee.manager) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
-            return False
+        # if not (request.user.employee.lead or request.user.employee.manager) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
+        #     return False
         
         return permitted
     
@@ -420,8 +420,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             return False
 
 
-        if not (request.user.employee.lead or request.user.employee.manager) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
-            return False
+        # if not (request.user.employee.lead or request.user.employee.manager) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
+        #     return False
         
         return permissons
         
