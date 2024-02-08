@@ -17,7 +17,7 @@ from employee.models.leave import leave
 
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
-    extra = 0
+    extra = 1
 
 class FeedbackInline(admin.TabularInline):
     model = leave.LeaveFeedback
@@ -60,6 +60,10 @@ class LeaveForm(forms.ModelForm):
         model = Leave
         fields = "__all__"
 
+    class Media:
+        js = ("js/list.js", "employee/js/leave.js")
+
+
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
@@ -97,6 +101,7 @@ class LeaveManagement(admin.ModelAdmin):
             if 'management__feedback' in list_display: list_display.remove('management__feedback')
         return list_display
 
+   
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
