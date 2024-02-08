@@ -18,3 +18,12 @@ def announcement_all_employee_mail(employee_email: str, subject: str, html_body:
             email.attach(attachment_filename, attachment.read())
 
     email.send()
+
+def announcement_mail(employee_email: str, announcement: Announcement):
+    email = EmailMessage()
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    email.to = [employee_email]
+    email.subject = "Announcement!!"
+    email.body = announcement.description
+    email.content_subtype = "html"
+    email.send()
