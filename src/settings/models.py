@@ -149,15 +149,10 @@ class EmployeeFoodAllowance(TimeStampMixin, AuthorMixin):
 
 class EmailAnnouncement(TimeStampMixin, AuthorMixin):
     subject = models.TextField()
-    
-    # announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name='email_announcements')
     body = tinymce_models.HTMLField(null=True, blank=True)
-    # attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
+
 
 class EmailAnnouncementAttatchment(TimeStampMixin, AuthorMixin):
-    fileattatchment = models.ForeignKey(EmailAnnouncement, on_delete=models.CASCADE, null=True, blank=True)
+    email_announcement = models.ForeignKey(EmailAnnouncement, on_delete=models.CASCADE, null=True, blank=True)
     attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
-
-    # def fileattatchtment_path(self):
-    #     return self.fileattatchment.
 

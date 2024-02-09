@@ -34,9 +34,6 @@ from .models import (
 from django_q import models as q_models
 from django_q import admin as q_admin
 
-# class EmailAnnouncementInline(admin.TabularInline):  # or admin.StackedInline for a different layout
-#     model = EmailAnnouncement
-#     extra = 0  # Controls the number of extra EmailAnnouncement forms displayed
 
 @admin.register(PayScale)
 class PayScaleAdmin(admin.ModelAdmin):
