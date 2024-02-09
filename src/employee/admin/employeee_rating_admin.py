@@ -14,7 +14,8 @@ from employee.models.employee_rating_models import EmployeeRating
 
 class EmployeeRatingForm(forms.ModelForm):
     model = EmployeeRating
-    fields = "__all__"
+    # fields = "__all__"
+    exclude = ('score',)
 
     def clean(self):
         clean_data = super().clean()
@@ -55,6 +56,28 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         "show_score",
         "created_at",
     ]
+    fieldsets = (
+    (
+        None,
+        {
+            "fields": (
+                'employee',
+                'project',
+                'performance_quality',
+                'efficiency',
+                'collaboration',
+                'communication_effectiveness',
+                'leadership_potential',
+                'problem_solving_ability',
+                'innovation_and_creativity',
+                'adaptability_and_flexibility',
+                'professional_growth_and_development',
+                'overall_contribution_to_team_success',
+                'comment',
+            )
+        },
+    ),
+)
     date_hierarchy = "created_at"
     list_filter = ["employee", "project"]
     autocomplete_fields = ["employee", "project"]
@@ -75,9 +98,6 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         print('is this function called ? ')
 
         html_template = get_template("admin/employee/list/employe_rating_comments.html")
-        # print(html_template)
-        # context = {'obj': obj} 
-         # Pass the obj as a context variable
         html_content = html_template.render(
             {
              "comment": obj.comment
