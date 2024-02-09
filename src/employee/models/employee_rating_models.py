@@ -48,7 +48,7 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
         self.score = total_score / num_fields
 
         # Call the save method of the parent class to save the object
-        super().save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.employee.full_name
