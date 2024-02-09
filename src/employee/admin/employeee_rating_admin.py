@@ -72,7 +72,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
 
     @admin.display(description="comments")
     def see_comment(self, obj):
-        print('is this function called ? ')
+        # print('is this function called ? ')
 
         html_template = get_template("admin/employee/list/employe_rating_comments.html")
         # print(html_template)
