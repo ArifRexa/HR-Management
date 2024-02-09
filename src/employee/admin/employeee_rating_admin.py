@@ -24,27 +24,38 @@ class EmployeeRatingForm(forms.ModelForm):
         clean_data = super().clean()
         request = self.request
 
+        assigned_projects_titles = list(request.user.employee.employee_project_list.values_list('title', flat=True))
+        rated_employee = clean_data.get('employee')
+        rated_employee_projects = list(rated_employee.employee_project_list.values_list('title', flat=True))
+        
+        common_projects = list(set(assigned_projects_titles).intersection(set(rated_employee_projects)))
+        print(common_projects)
+        if not common_projects:
+             raise forms.ValidationError(
+                {"employee": "You cannot rate a employee who is not assosiated with your projects"}
+            )
+
         if request.user.employee.id == self.cleaned_data.get("employee").id:
             raise forms.ValidationError(
                 {"employee": "You cannot rate yourself. Plesae rate someone other."}
             )
 
+
         if clean_data.get("employee"):
             current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             current_month_end = current_month_start.replace(month=current_month_start.month + 1)
-
             is_provided = EmployeeRating.objects.filter(
                 created_at__gte=current_month_start,
                 created_at__lt=current_month_end,
                 employee=clean_data.get("employee"),
-                project=clean_data.get("project"),
+                # project=clean_data.get("project"),
                 created_by=request.user,
             ).exists()
 
-        if is_provided:
-            raise forms.ValidationError(
-                {"employee": "You have already given the rating for this employee in the current month. Please try again next month."}
-            )
+            if is_provided:
+                raise forms.ValidationError(
+                    {"employee": "You have already given the rating for this employee in the current month. Please try again next month."}
+                )
 
         return clean_data
 
@@ -89,6 +100,9 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         css = {"all": ("css/list.css",)}
         js = ("js/list.js",)
 
+    def get_employee(self):
+        return 
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.has_perm("employee.can_view_all_ratings"):
@@ -116,7 +130,6 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
     #     return super().save_model(request, obj, form, change)
     @admin.display(description="comments")
     def see_comment(self, obj):
-        print('is this function called ? ')
 
         html_template = get_template("admin/employee/list/employe_rating_comments.html")
         html_content = html_template.render(

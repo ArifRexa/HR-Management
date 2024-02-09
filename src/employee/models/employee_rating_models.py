@@ -3,8 +3,11 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.employee import Employee
 from django.core.exceptions import ValidationError
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 from datetime import datetime, timedelta
-from project_management.models import Project
+from project_management.models import Project, DailyProjectUpdate, Employee, Project
 
 class EmployeeRating(TimeStampMixin, AuthorMixin):
 
@@ -52,3 +55,20 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
 
     def __str__(self) -> str:
         return self.employee.full_name
+
+@receiver(post_save, sender=EmployeeRating)
+def employee_rating_bonus(sender, instance, created, **kwargs):
+   
+    if created:
+        daily_project_update = DailyProjectUpdate()
+        daily_project_update.employee = Employee.objects.filter(id=instance.created_by_id).first()
+        daily_project_update.manager = Employee.objects.filter(id=30).first()
+        daily_project_update.hours = 1
+        daily_project_update.update = 'You get this bonus for employee ratings'
+        daily_project_update.status = 'approved'
+        daily_project_update.project = Project.objects.filter(id=20).first()
+        daily_project_update.save()
+    else:
+        print("An existing instance of MyModel was updated by user:")
+
+    # You can perform additional actions here based on the saved instance
