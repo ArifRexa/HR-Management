@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 from django.utils.html import format_html
 from django.template.loader import get_template
 from django.template.loader import render_to_string
+from django.utils import timezone
+from django.contrib import messages
+
 
 from django.http.request import HttpRequest
 from employee.models.employee_rating_models import EmployeeRating
@@ -27,24 +30,23 @@ class EmployeeRatingForm(forms.ModelForm):
             )
 
         if clean_data.get("employee"):
-            before_week = datetime.now() - timedelta(days=7)
+            current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            current_month_end = current_month_start.replace(month=current_month_start.month + 1)
+
             is_provided = EmployeeRating.objects.filter(
-                created_at__gt=before_week,
+                created_at__gte=current_month_start,
+                created_at__lt=current_month_end,
                 employee=clean_data.get("employee"),
                 project=clean_data.get("project"),
                 created_by=request.user,
             ).exists()
-            if is_provided and self.instance.id is None:
-                raise forms.ValidationError(
-                    {
-                        "employee": "You already given the rating. Plesae try again 7 days later."
-                    }
-                )
 
-            if self.instance.id and self.instance.created_at <= before_week:
-                raise ValidationError({"comment": "You can't update your rating!"})
+        if is_provided:
+            raise forms.ValidationError(
+                {"employee": "You have already given the rating for this employee in the current month. Please try again next month."}
+            )
+
         return clean_data
-
 
 @admin.register(EmployeeRating)
 class EmployeeRatingAdmin(admin.ModelAdmin):
@@ -93,6 +95,25 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(created_by__id=request.user.id)
 
+    # def save_model(self, request, obj, form, change):
+    #     # Check if there's already a rating submitted by the same user for the same employee in the current month
+    #     current_month = timezone.now().month
+    #     current_year = timezone.now().year
+    #     existing_ratings = EmployeeRating.objects.filter(
+    #         created_by=obj.created_by,
+    #         employee=obj.employee,
+    #         created_at__month=current_month,
+    #         created_at__year=current_year
+    #     )
+
+    #     if existing_ratings.exists():
+    #         # Show a message to the user instead of raising an error
+    #         message = ("You have already submitted a rating for this employee this month. The new rating was not saved.")
+    #         self.message_user(request, message, level=messages.WARNING)
+    #         return
+
+    #     # Call the save_model method of the parent class to save the object
+    #     return super().save_model(request, obj, form, change)
     @admin.display(description="comments")
     def see_comment(self, obj):
         print('is this function called ? ')
