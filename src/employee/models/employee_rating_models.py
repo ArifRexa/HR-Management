@@ -63,16 +63,10 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
 def employee_rating_bonus(sender, instance, created, **kwargs):
    
     if created:
-
-        employee_project_hour = EmployeeProjectHour()
-
-
         bonus_project_hour = ProjectHour()
-        # bonus_project_hour.employee = Employee.objects.filter(id=instance.created_by_id).first()
         bonus_project_hour.manager = Employee.objects.filter(id=30).first()
         bonus_project_hour.hours = 1
         bonus_project_hour.hour_type = 'bonus'
-        # bonus_project_hour.status = 'approved'
         bonus_project_hour.date = timezone.now()
         bonus_project_hour.project = Project.objects.filter(id=20).first()
         bonus_project_hour.save()
