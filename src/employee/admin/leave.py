@@ -320,7 +320,7 @@ class LeaveManagement(admin.ModelAdmin):
     # def creator(self, leave: Leave):
     #     return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
 
-    @admin.display(description='Date (start date / end date)')
+    @admin.display(description='Date (start/end)')
     def date_range(self, leave: Leave):
         return f"{leave.start_date.strftime('%Y-%m-%d')} / {leave.end_date.strftime('%Y-%m-%d')}"
 
