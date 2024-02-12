@@ -1,13 +1,16 @@
 from django.db import models
 from config.model.AuthorMixin import AuthorMixin
+from django.contrib.auth.models import User
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.employee import Employee
 from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils import timezone
+
 
 from datetime import datetime, timedelta
-from project_management.models import Project, DailyProjectUpdate, Employee, Project
+from project_management.models import Project, DailyProjectUpdate, Employee, Project, ProjectHour, EmployeeProjectHour
 
 class EmployeeRating(TimeStampMixin, AuthorMixin):
 
@@ -60,14 +63,30 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
 def employee_rating_bonus(sender, instance, created, **kwargs):
    
     if created:
-        daily_project_update = DailyProjectUpdate()
-        daily_project_update.employee = Employee.objects.filter(id=instance.created_by_id).first()
-        daily_project_update.manager = Employee.objects.filter(id=30).first()
-        daily_project_update.hours = 1
-        daily_project_update.update = 'You get this bonus for employee ratings'
-        daily_project_update.status = 'approved'
-        daily_project_update.project = Project.objects.filter(id=20).first()
-        daily_project_update.save()
+
+        employee_project_hour = EmployeeProjectHour()
+
+
+        bonus_project_hour = ProjectHour()
+        # bonus_project_hour.employee = Employee.objects.filter(id=instance.created_by_id).first()
+        bonus_project_hour.manager = Employee.objects.filter(id=30).first()
+        bonus_project_hour.hours = 1
+        bonus_project_hour.hour_type = 'bonus'
+        # bonus_project_hour.status = 'approved'
+        bonus_project_hour.date = timezone.now()
+        bonus_project_hour.project = Project.objects.filter(id=20).first()
+        bonus_project_hour.save()
+
+        employee_project_hour = EmployeeProjectHour()
+        employee_project_hour.project_hour = bonus_project_hour
+        employee_project_hour.hours = 1
+
+        user = User.objects.get(pk=instance.created_by_id)
+        employee = Employee.objects.get(user=user)
+
+        employee_project_hour.employee = employee
+        employee_project_hour.save()
+
     else:
         print("An existing instance of MyModel was updated by user:")
 
