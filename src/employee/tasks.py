@@ -29,7 +29,8 @@ from employee.models import (
     EmployeeFeedback,
     SalaryHistory,
     NeedHelpPosition,
-    HRPolicy
+    HRPolicy,
+    EmployeeRating,
 )
 from project_management.models import (
     ProjectHour,
