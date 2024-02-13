@@ -10,11 +10,22 @@ class MonthlyJournalForm(forms.ModelForm):
         model = MonthlyJournal
         fields = ['date']
 
+    # def clean(self):
+    #     clean_data = super().clean()
+    #     has_journal = AccountJournal.objects.filter(date__month=clean_data.get('date').month, type='monthly').exists()
+    #     if self.instance.id == None and has_journal:
+    #         raise forms.ValidationError({'date': 'You have created this month journal. Try to create another month!'})
+        
     def clean(self):
         clean_data = super().clean()
-        has_journal = AccountJournal.objects.filter(date__month=clean_data.get('date').month, type='monthly').exists()
-        if self.instance.id == None and has_journal:
-            raise forms.ValidationError({'date': 'You have created this month journal. Try to create another month!'})
+        date = clean_data.get('date')
+        if date:
+            month = date.month
+            year = date.year
+            has_journal = AccountJournal.objects.filter(date__month=month, date__year=year, type='monthly').exists()
+            if self.instance.id is None and has_journal:
+                raise forms.ValidationError({'date': 'You have already created a journal for this month. Try to create another month!'})
+        return clean_data    
         
 @admin.register(MonthlyJournal)
 class MonthlyJournalAdmin(admin.ModelAdmin):
