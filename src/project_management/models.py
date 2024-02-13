@@ -307,6 +307,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     class Meta:
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
+            ("can_approve_or_edit_daily_update_at_any_time", "Can approve or update daily project update at any time" ),
         ]
         verbose_name = "Daily Project Update"
         verbose_name_plural = "Daily Project Updates"
