@@ -236,7 +236,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         js = ("js/list.js", "js/add_daily_update.js")
 
     def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             return [
                 "created_at",
             ]
@@ -443,7 +443,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.action(description="Approve selected status daily project updates")
     def update_status_approve(modeladmin, request, queryset):
         
-        if request.user.is_superuser:
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
 
@@ -458,7 +458,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.action(description="Pending selected status daily project updates")
     def update_status_pending(modeladmin, request, queryset):
-        if request.user.is_superuser:
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             qs_count = queryset.update(status="pending")
         elif request.user.employee.manager or request.user.employee.lead:
             qs_count = queryset.filter(manager_id=request.user.employee.id).update(
