@@ -6,8 +6,10 @@ from django.template.loader import get_template
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from weasyprint import HTML
-from django.db.models.functions import TruncDate, Concat
+from django.db.models.functions import TruncDate, Concat, ExtractYear, ExtractMonth
 from django.db.models import Sum, Count, Value, CharField
+from django.db.models import DateField
+
 
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")
@@ -47,11 +49,13 @@ def account_journal(request, id):
     template = get_template('excel/account-journal.html')
     
     # data calculation 
-    expense_dates = monthly_journal.expenses.annotate(day=TruncDate('date')) \
-                                .values('day') \
+    expense_dates = monthly_journal.expenses.filter(date__year=monthly_journal.date.year, date__month=monthly_journal.date.month) \
+                                .annotate(day=TruncDate('date', output_field=DateField())) \
+                                .annotate(year=ExtractYear('date')) \
+                                .values('day', 'year') \
                                 .annotate(count=Count('id'), daily_expenses=Sum('amount')) \
                                 .order_by('day') \
-                                .values('day', 'daily_expenses')
+                                .values('day', 'year', 'daily_expenses')
     
     expenses_data = {}
 
@@ -77,6 +81,49 @@ def account_journal(request, id):
     response = HttpResponse(html_content, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = f'attachment; filename=account-journal-{file_name}.xls'
     return response 
+# def account_journal(request, id):
+#     monthly_journal = get_object_or_404(AccountJournal, id=id)
+    
+#     # get the template
+#     template = get_template('excel/account-journal.html')
+    
+#     # data calculation 
+#     # expense_dates = monthly_journal.expenses.annotate(day=TruncDate('date')) \
+#     #                             .values('day') \
+#     #                             .annotate(count=Count('id'), daily_expenses=Sum('amount')) \
+#     #                             .order_by('day') \
+#     #                             .values('day', 'daily_expenses')
+#     expense_dates = monthly_journal.expenses.annotate(day=TruncDate('date', output_field=DateField())) \
+#                                 .annotate(year=ExtractYear('date')) \
+#                                 .values('day', 'year') \
+#                                 .annotate(count=Count('id'), daily_expenses=Sum('amount')) \
+#                                 .order_by('day') \
+#                                 .values('day', 'year', 'daily_expenses')
+    
+#     expenses_data = {}
+
+#     for expense_date in expense_dates:
+#         expenses = monthly_journal.expenses.filter(date=expense_date['day']) \
+#                                         .values('expanse_group__account_code', 'expanse_group__title') \
+#                                         .order_by('expanse_group__account_code') \
+#                                         .annotate(expense_amount=Sum('amount')) \
+#                                         .values('expense_amount') \
+#                                         .values('expanse_group__id', 'expanse_group__account_code', 'expanse_group__title', 'expense_amount')              
+#         key = str(expense_date['day'])
+#         value = expenses
+#         expenses_data[key] = value
+
+#     # get the context data
+#     context = {'expense_data': expenses_data}
+
+#     # Render the html template with the context data.
+#     html_content = template.render(context)
+   
+#     # Create a response with the Excel file
+#     file_name = str(timezone.now())
+#     response = HttpResponse(html_content, content_type='application/vnd.ms-excel')
+#     response['Content-Disposition'] = f'attachment; filename=account-journal-{file_name}.xls'
+#     return response 
 
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")
