@@ -130,7 +130,6 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
     #     return super().save_model(request, obj, form, change)
     @admin.display(description="comments")
     def see_comment(self, obj):
-
         html_template = get_template("admin/employee/list/employe_rating_comments.html")
         html_content = html_template.render(
             {
