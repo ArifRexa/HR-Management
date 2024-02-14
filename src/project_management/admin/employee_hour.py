@@ -384,9 +384,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             return True 
 
-        if obj:
-            if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date():
-                return False
+        # if obj:
+        #     if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date():
+        #         return False
             
         is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
         if is_have_panding:
@@ -406,8 +406,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPPDATE_FOR_LEADS:
         #     return False
 
-        if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
-            return False
+        # if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
+        #     return False
         return permitted
     
         
@@ -425,8 +425,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             return False
 
 
-        if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
-            return False
+        # if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
+        #     return False
         
         return permissons
         
