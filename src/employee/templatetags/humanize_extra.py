@@ -18,7 +18,7 @@ def num_to_word(number):
 @register.filter
 def percentage(number, arg):
     try:
-        percentage_number = (number / 100) * arg
+        percentage_number = ((number - 2500) / 100) * arg
         return intcomma(floatformat(percentage_number, 2))
     except:
         return 0.00
