@@ -624,3 +624,18 @@ class ProjectReport(TimeStampMixin):
     class Meta:
         verbose_name = "Project Report"
         verbose_name_plural = "Project Reports"
+
+class EnableDailyUpdateNow(AuthorMixin):
+    enableproject = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Ensure only one object of this class exists
+        if not self.pk and EnableDailyUpdateNow.objects.exists():
+            # If trying to create a new object and one already exists, raise an exception
+            raise Exception("Only one instance of EnableDailyUpdateNow can be created.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # When deleting the object, allow creating another one
+        self.pk = None
+        return super().delete(*args, **kwargs)
