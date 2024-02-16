@@ -481,3 +481,10 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
     noc_body = HTMLField()
     noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
     noc_image = models.ImageField(upload_to="noc_images/", null=True, blank=True)
+
+class Observation(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='observations')
+    
+    class Meta:
+        verbose_name = 'Observe New Lead/Managers or New Dev'
+        # verbose_name_plural = 'Observations'
