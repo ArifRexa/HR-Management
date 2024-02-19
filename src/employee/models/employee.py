@@ -376,6 +376,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
+
     if instance.pf_eligibility:
         now = timezone.now().date().replace(day=1)
         maturity_date = now + relativedelta(years=2)
@@ -488,3 +489,7 @@ class Observation(TimeStampMixin, AuthorMixin):
     class Meta:
         verbose_name = 'Observe New Lead/Managers or New Dev'
         # verbose_name_plural = 'Observations'
+@receiver(post_save, sender=Employee)
+def create_observation(sender, instance, created, **kwargs):
+    if created:
+        Observation.objects.create(employee=instance)

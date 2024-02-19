@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from icecream import ic
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed, Tag, ProjectDocument, ProjectReport
+    ProjectNeed, Tag, ProjectDocument, ProjectReport, ObservationProject
 
 
 @admin.register(Technology)
@@ -100,3 +100,13 @@ class ProjectReportAdmin(admin.ModelAdmin):
     #     if db_field.name == 'project':
     #         kwargs['queryset'] = Project.objects.filter(active=True)
     #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+@admin.register(ObservationProject)
+class ObservationProjectAdmin(admin.ModelAdmin):
+    list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
+    # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
+    # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
+    date_hierarchy = 'created_at'  # Add date hierarchy navigation
+
+    class Meta:
+        verbose_name = 'Observe New Project'
