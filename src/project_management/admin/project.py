@@ -107,6 +107,3 @@ class ObservationProjectAdmin(admin.ModelAdmin):
     # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
     # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
     date_hierarchy = 'created_at'  # Add date hierarchy navigation
-
-    class Meta:
-        verbose_name = 'Observe New Project'
