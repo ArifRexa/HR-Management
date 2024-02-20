@@ -4,6 +4,8 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
 from django_q.tasks import async_task
+from django.template import loader
+from django.core.mail import EmailMessage
 
 # Register your models here.
 from django.template.defaultfilters import (
@@ -26,6 +28,8 @@ from .models import (
     FinancialYear,
     Announcement,
     EmployeeFoodAllowance,
+    EmailAnnouncement,
+    EmailAnnouncementAttatchment,
 )
 from django_q import models as q_models
 from django_q import admin as q_admin
@@ -149,6 +153,8 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
     list_filter = ("is_active",)
 
+    # inlines = [EmailAnnouncementInline]
+
     actions = (
         "mark_active",
         "mark_inactive",
@@ -188,6 +194,42 @@ class AnnouncementAdmin(admin.ModelAdmin):
                 async_task(
                     "settings.tasks.announcement_mail", employee_email, announcement
                 )
+        if queryset:
+            messages.success(request, "Email sent successfully.")
+
+
+class EmailAnnouncementAttatchmentInline(admin.TabularInline):  # or admin.StackedInline for a different layout
+    model = EmailAnnouncementAttatchment
+    extra = 0  
+
+
+@admin.register(EmailAnnouncement)
+class EmailAnnouncementAdmin(admin.ModelAdmin):
+    list_display = (
+        'subject',
+    )
+    
+    actions = (
+        'send_mail',
+    )
+
+    inlines = (EmailAnnouncementAttatchmentInline,)
+
+    @admin.action(description="Send Email")
+    def send_mail(modeladmin, request, queryset):
+        for announcement in queryset:
+           
+                employee_email_list = list(
+                    Employee.objects.filter(active=True).values_list("email", flat=True)
+                )
+                for employee_email in employee_email_list:
+                    subject = announcement.subject
+                    attachmentqueryset = EmailAnnouncementAttatchment.objects.filter(email_announcement=announcement)
+                    attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
+                    html_body = announcement.body
+                    async_task(
+                        "settings.tasks.announcement_all_employee_mail", employee_email, subject, html_body, attachment_paths
+                    )
         if queryset:
             messages.success(request, "Email sent successfully.")
 
