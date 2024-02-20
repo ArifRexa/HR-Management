@@ -8,7 +8,11 @@ document.addEventListener("DOMContentLoaded", function () {
     var saveAndAddAnotherButton = document.querySelector('input[name="_addanother"]');
     var saveAndContinueEditingButton = document.querySelector('input[name="_continue"]');
     
-  
+    var deleteButtons = document.querySelectorAll('.delete');
+    // console.log(deleteButtons)
+    if (deleteButtons){
+        deleteButtons[0].style.display = 'none'
+    }
         
     
     attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
@@ -63,10 +67,7 @@ document.addEventListener("DOMContentLoaded", function () {
     leaveTypeSelect.addEventListener('change', toggleButtons);
     attachmentInput.addEventListener('change', toggleButtons);
 
-    deleteButtons.forEach(function (button) {
-        button.addEventListener('click', handleDeleteButtonClick);
-    });
-
+   
     // Initial button state based on leave type
     toggleButtons(); 
 
