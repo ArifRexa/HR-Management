@@ -10,13 +10,14 @@ document.addEventListener("DOMContentLoaded", function () {
     
     var deleteButtons = document.querySelectorAll('.delete');
     // console.log(deleteButtons)
-    deleteButtons[0].style.display = 'none'
-    
-
-    // Function to enable/disable buttons based on conditions
-    function toggleButtons() {
+    if (deleteButtons){
+        deleteButtons[0].style.display = 'none'
+    }
         
-        attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
+    
+    attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
+    // Function to enable/disable buttons based on conditions
+    function toggleButtons() {      
         if (leaveTypeSelect.value === 'medical') {
             if (attachmentInput != null) {
                 if (attachmentInput.files.length > 0) {
@@ -35,6 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
             enableButtons();
         }
     }
+
+    attachmentInput.addEventListener("change", (event) => {
+        toggleButtons();
+      });
+       
 
     // Function to enable buttons
     function enableButtons() {
