@@ -8,11 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var saveAndAddAnotherButton = document.querySelector('input[name="_addanother"]');
     var saveAndContinueEditingButton = document.querySelector('input[name="_continue"]');
     
-    var deleteButtons = document.querySelectorAll('.delete');
-    // console.log(deleteButtons)
-    if (deleteButtons){
-        deleteButtons[0].style.display = 'none'
-    }
+  
         
     
     attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
