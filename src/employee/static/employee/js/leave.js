@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var saveAndContinueEditingButton = document.querySelector('input[name="_continue"]');
     
     var deleteButtons = document.querySelectorAll('.delete');
+    // console.log(deleteButtons)
     deleteButtons[0].style.display = 'none'
     
 
@@ -16,7 +17,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function toggleButtons() {
         
         attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
-        console.log('inside toggle', attachmentInput)
         if (leaveTypeSelect.value === 'medical') {
             if (attachmentInput != null) {
                 if (attachmentInput.files.length > 0) {
@@ -67,4 +67,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Initial button state based on leave type
     toggleButtons(); 
+
+    // document.querySelector('.inline-deletelink').addEventListener('load',doLoad)
+    document.getElementById('leaveattachment_set-group').addEventListener('load',(e)=>{
+        console.log('event loaded!!')
+    })
+    function doLoad(){
+        console.log("image loaded");
+    }
+    
 });
+
