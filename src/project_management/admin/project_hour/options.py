@@ -21,12 +21,17 @@ class ProjectFilter(admin.SimpleListFilter):
         return choices
 
     def choices(self, changelist):
+        yield {
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+            'display': ('All'),
+        }
+
         for lookup, title in self.lookup_choices:
             project = Project.objects.get(pk=lookup)
             yield {
                 'selected': self.value() == str(lookup),
                 'query_string': changelist.get_query_string({self.parameter_name: lookup}),
-                # 'display': format_html('<span style="color: {};">{}</span>', title_color, title),
                 'display' : format_html(f'<span style="color: red;">{title}</span>') if project.check_is_weekly_project_hour_generated == False else format_html(f'<span style="color: inherit;">{title}</span>')                                         
             }
 
@@ -113,7 +118,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'get_project', 'hours', 'manager', 'get_resources', 'payable', 'cto_feedback', 'approved_by_cto']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'payable', 'cto_feedback', 'approved_by_cto']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
@@ -136,9 +141,9 @@ class ProjectHourOptions(admin.ModelAdmin):
         return format_html(html)
     
 
-    @admin.display(description='Project')
-    def get_project(self, obj: ProjectHour):
-        return format_html(f'<div style="color: red;">{obj.project.title}</div>') if obj.project.check_is_weekly_project_hour_generated == False else format_html(f'<div style="color: inherit;">{obj.project.title}</div>')
+    # @admin.display(description='Project')
+    # def get_project(self, obj: ProjectHour):
+    #     return format_html(f'<div style="color: red;">{obj.project.title}</div>') if obj.project.check_is_weekly_project_hour_generated == False else format_html(f'<div style="color: inherit;">{obj.project.title}</div>')
 
 
 
