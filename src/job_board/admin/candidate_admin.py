@@ -23,7 +23,7 @@ from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
     CandidateAssessmentReview
 
-
+from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 from icecream import ic
 
 class CandidateForm(forms.ModelForm):
@@ -122,6 +122,7 @@ class CandidateAdmin(admin.ModelAdmin):
         for candidate in queryset:
             re_apply_alert_mail(candidate) 
 
+    
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['candidate_jobs'] = CandidateJob.objects.filter(candidate_id=object_id).all()
@@ -252,6 +253,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         'send_default_sms', 
         'mark_as_fail', 
         'send_ct_time_extend_email', 
+        'send_email'
     )
     list_per_page = 50
     inlines = (
@@ -289,6 +291,27 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 
         return ['step', 'candidate_feedback']
 
+    @admin.action(description="Send Email")
+    def send_email(self, request, queryset):
+        
+        candidate_email_list = []
+        for candidate_email in queryset:
+
+            candidate_email_list.append(candidate_email.candidate_job.candidate.email)
+        print(candidate_email_list)
+        
+        candidate_email_instance = CandidateEmail.objects.filter(by_default=True).first()
+        attachment = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
+        print("This is attachemnt")
+        print(attachment)
+
+        if candidate_email_instance:        
+            for email in candidate_email_list:
+                async_task(
+                            "job_board.tasks.send_candidate_email", email,candidate_email_instance,attachment
+                        )
+    
+    
     @admin.display()
     def candidate(self, obj):
         html_template = get_template('admin/candidate_assessment/list/col_candidate.html')

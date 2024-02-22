@@ -4,12 +4,14 @@ from django.db.models import Value, Count
 from django.template.loader import get_template
 from django.utils import timezone
 from django_q.tasks import async_task
+from django.core.mail import EmailMessage
 
 from job_board.admin.candidate_admin import CandidateAssessment
 from job_board.mobile_sms.candidate import CandidateSMS
 from job_board.mobile_sms.exam import ExamSMS
 from job_board.models.assessment import Assessment
 from job_board.models.candidate import Candidate
+from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 
 
 def send_otp(otp, email_address):
@@ -97,3 +99,20 @@ def sms_promotion(promotion_sms, candidate_assessment: CandidateAssessment):
 def employee_sms_promotion(promotion_sms, candidate: Candidate):
     candidate_sms = CandidateSMS(candidate=candidate)
     candidate_sms.promotional_sms(promotion_sms)
+
+def send_candidate_email(candidate_email:str,email_content,attachment):
+    
+    print("data in send_candidate_email method")
+    print(candidate_email,email_content.subject,email_content.body,attachment)
+    
+    email = EmailMessage()
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    email.to = [candidate_email]
+    email.subject = email_content.subject
+    email.body = email_content.body
+    email.attachments = attachment
+    
+    email.send()
+    
+    
+   
