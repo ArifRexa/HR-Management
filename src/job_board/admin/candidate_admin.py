@@ -301,14 +301,13 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         print(candidate_email_list)
         
         candidate_email_instance = CandidateEmail.objects.filter(by_default=True).first()
-        attachment = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
-        print("This is attachemnt")
-        print(attachment)
+        attachmentqueryset = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
+        attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
 
         if candidate_email_instance:        
             for email in candidate_email_list:
                 async_task(
-                            "job_board.tasks.send_candidate_email", email,candidate_email_instance,attachment
+                            "job_board.tasks.send_candidate_email", email,candidate_email_instance,attachment_paths
                         )
     
     
