@@ -3,6 +3,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 from datetime import datetime
+from django.utils import timezone
 
 from dateutil.utils import today
 from django.contrib.auth.models import User
@@ -121,7 +122,7 @@ class Project(TimeStampMixin, AuthorMixin):
         if latest_project_hour:
             latest_project_hour_date = latest_project_hour.created_at.date()
             # print(f"latest_project_hour_date: {latest_project_hour_date}")
-            today = datetime.utcnow().date()
+            today = timezone.now().date()
             # print(f"today: {today}")
             last_friday = today - timedelta(days=(today.weekday() + 3) % 7)
             # print(f"last_friday: {last_friday}")

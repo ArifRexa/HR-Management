@@ -19,19 +19,30 @@
     </div>
 
     <script type="text/javascript">
-        var secondUl = document.querySelector('#changelist-filter ul:nth-of-type(2)');
 
-        var listItems = secondUl.querySelectorAll('li');
+        var h3_filter_types = document.querySelectorAll('#changelist-filter h3');
+        var is_project_type = false;
 
-        listItems.forEach(function(li, index) {
-            if (index === 0){
-                return;
+        h3_filter_types.forEach(function(h3) {
+            if (h3.textContent.trim() === 'By Project Type') {
+               is_project_type = true;
             }
-            var anchor = li.querySelector('a');
-            title = li.textContent
-            var modifiedTitle = title.replace(/^[^>]+>/, '');
-            anchor.setAttribute('title', modifiedTitle);
-            anchor.innerHTML = anchor.querySelector('span').outerHTML;
         });
+
+        if (is_project_type) {
+            var secondUl = document.querySelector('#changelist-filter ul:nth-of-type(2)');
+            var listItems = secondUl.querySelectorAll('li');
+
+            listItems.forEach(function(li, index) {
+                if (index === 0){
+                    return;
+                }
+                var anchor = li.querySelector('a');
+                title = li.textContent
+                var modifiedTitle = title.replace(/^[^>]+>/, '');
+                anchor.setAttribute('title', modifiedTitle);
+                anchor.innerHTML = anchor.querySelector('span').outerHTML;
+            });
+        }
     </script>
 {% endblock %}
