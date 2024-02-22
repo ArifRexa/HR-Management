@@ -98,6 +98,10 @@ class ProjectHourOptions(admin.ModelAdmin):
         html = ""
         i = 1
         for elem in obj.employeeprojecthour_set.all():
+            if elem.employee.sqa and elem.hours > 10:
+                html += f"<p style='color:red;'>{i}.{elem.employee.full_name} ({elem.hours})</p>"
+                i+=1
+                continue
             html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
             i += 1
         return format_html(html)
