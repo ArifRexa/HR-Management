@@ -9,14 +9,15 @@ document.addEventListener("DOMContentLoaded", function () {
     var saveAndContinueEditingButton = document.querySelector('input[name="_continue"]');
     
     var deleteButtons = document.querySelectorAll('.delete');
-    deleteButtons[0].style.display = 'none'
-    
-
-    // Function to enable/disable buttons based on conditions
-    function toggleButtons() {
+    // console.log(deleteButtons)
+    if (deleteButtons){
+        deleteButtons[0].style.display = 'none'
+    }
         
-        attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
-        console.log('inside toggle', attachmentInput)
+    
+    attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
+    // Function to enable/disable buttons based on conditions
+    function toggleButtons() {      
         if (leaveTypeSelect.value === 'medical') {
             if (attachmentInput != null) {
                 if (attachmentInput.files.length > 0) {
@@ -35,6 +36,11 @@ document.addEventListener("DOMContentLoaded", function () {
             enableButtons();
         }
     }
+
+    attachmentInput.addEventListener("change", (event) => {
+        toggleButtons();
+      });
+       
 
     // Function to enable buttons
     function enableButtons() {
@@ -61,10 +67,17 @@ document.addEventListener("DOMContentLoaded", function () {
     leaveTypeSelect.addEventListener('change', toggleButtons);
     attachmentInput.addEventListener('change', toggleButtons);
 
-    deleteButtons.forEach(function (button) {
-        button.addEventListener('click', handleDeleteButtonClick);
-    });
-
+   
     // Initial button state based on leave type
     toggleButtons(); 
+
+    // document.querySelector('.inline-deletelink').addEventListener('load',doLoad)
+    document.getElementById('leaveattachment_set-group').addEventListener('load',(e)=>{
+        console.log('event loaded!!')
+    })
+    function doLoad(){
+        console.log("image loaded");
+    }
+    
 });
+
