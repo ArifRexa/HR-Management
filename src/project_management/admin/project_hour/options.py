@@ -3,9 +3,42 @@ import datetime
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from project_management.models import ProjectHour
 from employee.models import Employee
+from project_management.models import Project
+
+class ProjectFilter(admin.SimpleListFilter):
+    title = 'Project Type'
+    parameter_name = 'project__id__exact'
+
+    def lookups(self, request, model_admin):
+        project_types = Project.objects.values_list('id', 'title').distinct()
+        choices = []
+        for project_id, project_title in project_types:
+            choices.append((str(project_id), project_title))
+        return choices
+
+    def choices(self, changelist):
+        for lookup, title in self.lookup_choices:
+            project = Project.objects.get(pk=lookup)
+            yield {
+                'selected': self.value() == str(lookup),
+                'query_string': changelist.get_query_string({self.parameter_name: lookup}),
+                # 'display': format_html('<span style="color: {};">{}</span>', title_color, title),
+                'display' : format_html(f'<span style="color: red;">{title}</span>') if project.check_is_weekly_project_hour_generated == False else format_html(f'<span style="color: inherit;">{title}</span>')                                         
+            }
+
+    def queryset(self, request, queryset):
+        project_id = self.value()
+        if project_id:
+            return queryset.filter(
+                project__id=project_id,
+            )
+        else:
+            return queryset
+        
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -70,7 +103,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = [ProjectTypeFilter, 'project', ProjectManagerFilter, ProjectLeadFilter, 'date']
+        filters = [ProjectTypeFilter, ProjectFilter, ProjectManagerFilter, ProjectLeadFilter, 'date']
         # if not request.user.is_superuser:
         #     filters.remove('manager')
         return filters
@@ -80,7 +113,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'payable', 'cto_feedback', 'approved_by_cto']
+        list_display = ['date', 'get_project', 'hours', 'manager', 'get_resources', 'payable', 'cto_feedback', 'approved_by_cto']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
@@ -101,6 +134,16 @@ class ProjectHourOptions(admin.ModelAdmin):
             html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
             i += 1
         return format_html(html)
+    
+
+    @admin.display(description='Project')
+    def get_project(self, obj: ProjectHour):
+        return format_html(f'<div style="color: red;">{obj.project.title}</div>') if obj.project.check_is_weekly_project_hour_generated == False else format_html(f'<div style="color: inherit;">{obj.project.title}</div>')
+
+
+
+
+
 
     # def get_readonly_fields(self, request, obj=None):
     #     three_day_earlier = datetime.datetime.today() - datetime.timedelta(days=2)

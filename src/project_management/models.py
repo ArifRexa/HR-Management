@@ -114,6 +114,23 @@ class Project(TimeStampMixin, AuthorMixin):
             .order_by("-created_at")
             .exclude(project__active=False)
         )
+    
+    @property
+    def check_is_weekly_project_hour_generated(self):
+        latest_project_hour = ProjectHour.objects.filter(project=self).order_by("created_at").last()
+        if latest_project_hour:
+            latest_project_hour_date = latest_project_hour.created_at.date()
+            # print(f"latest_project_hour_date: {latest_project_hour_date}")
+            today = datetime.utcnow().date()
+            # print(f"today: {today}")
+            last_friday = today - timedelta(days=(today.weekday() + 3) % 7)
+            # print(f"last_friday: {last_friday}")
+            if latest_project_hour_date < last_friday and today.weekday() in [4,5,6,0]:
+                return False #RED
+            else:
+                return True #BLACK
+        else:
+            return True #BLACK
 
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
