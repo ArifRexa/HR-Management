@@ -2,8 +2,10 @@ from django.shortcuts import redirect
 from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from job_board.views.apis import job, authentication, assessment
+from job_board.views.apis import job, authentication, assessment, VivaConfigViewSet, JobVivaTimeSlotViewSet,VivaConfigWithBookedSlotsAPIView
 from job_board.views.webpages.views import WebsiteView, MailView
+
+
 
 webview_urls = [
     path('email-view/', MailView.as_view()),
@@ -30,6 +32,9 @@ api_urls = [
     # GET, POST
     path('assessment/<str:unique_id>/question/', assessment.CandidateAssessmentQuestion.as_view(),
          name='fetch_question'),  # GET
+    path('vivaconfig/', VivaConfigViewSet.as_view({'get': 'list'}), name='viva_config'),
+    path('booked-time-slots/', VivaConfigWithBookedSlotsAPIView.as_view(), name='booked_time_slots'),
+    path('viva/time_slot/', JobVivaTimeSlotViewSet.as_view({'get': 'list'}), name='viva_config')
 ]
 
 urlpatterns = [
