@@ -303,13 +303,18 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         candidate_email_instance = CandidateEmail.objects.filter(by_default=True).first()
         attachmentqueryset = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
         attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
-
-        if candidate_email_instance:        
+        
+        if candidate_email_instance:
             for email in candidate_email_list:
                 async_task(
-                            "job_board.tasks.send_candidate_email", email,candidate_email_instance,attachment_paths
-                        )
-    
+                    "job_board.tasks.send_candidate_email", email, candidate_email_instance, attachment_paths
+                )
+            
+            
+            messages.success(request, "Emails have been sent successfully to the selected candidates.")
+        else:
+            messages.error(request, "No default candidate email instance found. Cannot send emails.")
+        
     
     @admin.display()
     def candidate(self, obj):
