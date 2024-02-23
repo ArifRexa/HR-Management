@@ -214,7 +214,7 @@ function calculate_hours(){
     all_updates = document.getElementsByName('input_update')
     all_github_links = document.getElementsByName('input_github_link')
     all_times = document.getElementsByName('input_time')
-    disable_save_if_no_commit_link()
+    // disable_save_if_no_commit_link()
     // let json__ = {}
     let updates = []
     for (i=0; i<all_updates.length; i++){
