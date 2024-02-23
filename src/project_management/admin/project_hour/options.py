@@ -14,7 +14,7 @@ class ProjectFilter(admin.SimpleListFilter):
     parameter_name = 'project__id__exact'
 
     def lookups(self, request, model_admin):
-        project_types = Project.objects.values_list('id', 'title').distinct().exclude(active=False)
+        project_types = Project.objects.filter(active=True).values_list('id', 'title').distinct()
         choices = []
         for project_id, project_title in project_types:
             choices.append((str(project_id), project_title))
