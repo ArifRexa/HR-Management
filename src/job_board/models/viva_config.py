@@ -11,6 +11,9 @@ class VivaConfig(models.Model):
     start_time = models.TimeField()
     end_time = models.TimeField()
 
+    class Meta:
+        verbose_name = "Total Viva Slot"
+
     def __str__(self):
         return f"{self.job_post}"
         # return f"{self.job_post} - {self.start_date} {self.start_time} to {self.end_date} {self.end_time}"

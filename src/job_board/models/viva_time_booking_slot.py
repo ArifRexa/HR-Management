@@ -7,14 +7,14 @@ from django.contrib import admin, messages
 
 
 class JobVivaTimeSlot(models.Model):
-
     job_post = models.ForeignKey('VivaConfig', on_delete=models.CASCADE, default=None)
     candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, null=True, blank=True)
-    # duration = models.PositiveIntegerField(editable=False)  # Duration in minutes
     start_time = models.TimeField()
     end_time = models.TimeField(editable=False)
     date = models.DateField()
 
+    class Meta:
+        verbose_name = "Booked Viva Slot for Candidate"
     # def clean(self):
     #     if self.end_time is not None and self.start_time is not None:
     #         # Check for overlapping time slots
