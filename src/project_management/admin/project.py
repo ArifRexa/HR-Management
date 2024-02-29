@@ -3,8 +3,8 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject
+
 
 
 @admin.register(Technology)
@@ -112,3 +112,12 @@ class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
     #     if request.user.has_perm('project_management.can_change_daily_update_last_time'):
     #         return True
     #     return False
+
+
+@admin.register(ObservationProject)
+class ObservationProjectAdmin(admin.ModelAdmin):
+    list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
+    # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
+    # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
+    date_hierarchy = 'created_at'  # Add date hierarchy navigation
+

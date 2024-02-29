@@ -376,6 +376,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
+
     if instance.pf_eligibility:
         now = timezone.now().date().replace(day=1)
         maturity_date = now + relativedelta(years=2)
@@ -481,3 +482,14 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
     noc_body = HTMLField()
     noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
     noc_image = models.ImageField(upload_to="noc_images/", null=True, blank=True)
+
+class Observation(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='observations')
+    
+    class Meta:
+        verbose_name = 'Observe New Lead/Managers or New Dev'
+        # verbose_name_plural = 'Observations'
+@receiver(post_save, sender=Employee)
+def create_observation(sender, instance, created, **kwargs):
+    if created:
+        Observation.objects.create(employee=instance)

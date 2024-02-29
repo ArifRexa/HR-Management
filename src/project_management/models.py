@@ -3,6 +3,7 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 from datetime import datetime
+from django.utils import timezone
 
 from dateutil.utils import today
 from django.contrib.auth.models import User
@@ -11,6 +12,8 @@ from django.db import models
 from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
+
 from django.dispatch import receiver
 from tinymce.models import HTMLField
 
@@ -114,6 +117,23 @@ class Project(TimeStampMixin, AuthorMixin):
             .order_by("-created_at")
             .exclude(project__active=False)
         )
+    
+    @property
+    def check_is_weekly_project_hour_generated(self):
+        latest_project_hour = ProjectHour.objects.filter(project=self).order_by("created_at").last()
+        if latest_project_hour:
+            latest_project_hour_date = latest_project_hour.created_at.date()
+            # print(f"latest_project_hour_date: {latest_project_hour_date}")
+            today = timezone.now().date()
+            # print(f"today: {today}")
+            last_friday = today - timedelta(days=(today.weekday() + 3) % 7)
+            # print(f"last_friday: {last_friday}")
+            if latest_project_hour_date < last_friday and today.weekday() in [4,5,6,0]:
+                return False #RED
+            else:
+                return True #BLACK
+        else:
+            return True #BLACK
 
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
@@ -647,3 +667,15 @@ class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
         verbose_name = "Project Update Enable"
         verbose_name_plural = "Project Update Enable by me"
         # permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)
+
+
+class ObservationProject(TimeStampMixin, AuthorMixin):
+    project_name = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name='observation_projects')
+    class Meta:
+        verbose_name = 'Observe New Project'
+        # verbose_name_plural = 'Observations'
+@receiver(post_save, sender=Project)
+def create_observation(sender, instance, created, **kwargs):
+    if created:
+        ObservationProject.objects.create(project_name=instance)
+

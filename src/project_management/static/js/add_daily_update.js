@@ -214,11 +214,13 @@ function calculate_hours(){
     all_updates = document.getElementsByName('input_update')
     all_github_links = document.getElementsByName('input_github_link')
     all_times = document.getElementsByName('input_time')
+    disable_save_if_no_commit_link()
     // let json__ = {}
     let updates = []
     for (i=0; i<all_updates.length; i++){
         // console.log(all_updates[i].value.toString())
         // console.log(all_times[i].value.toString())
+
         let individual_update = [all_updates[i].value, all_times[i].value, all_github_links[i].value]
         updates.push(individual_update)
     }
@@ -242,4 +244,33 @@ function calculate_hours(){
     total_hour = total_hour.toFixed(2)
     document.getElementById('id_hours').value = total_hour
     document.getElementById('show-hour').textContent = total_hour.toString()
+}
+
+function disable_save_if_no_commit_link(){
+    let all_github_links = document.getElementsByName('input_github_link')
+    let submit_block = document.getElementsByClassName('submit-row')[0]
+    // let update_block = document.getElementsByClassName('form-row field-updates_json')[0]
+    // let para=document.createElement('div');
+    //
+    // let node=document.createTextNode('Commit link is mandatory!!');
+    // para.appendChild(node);
+    // console.log(submit_block.children)
+    for (i=0; i<all_github_links.length; i++){
+        console.log(all_github_links[i].value == '')
+            if(all_github_links[i].value == ''){
+                // submit_block.children
+                submit_block.childNodes.forEach((buttons) => {
+                    buttons.disabled = true
+                })
+                // update_block.insertBefore(para, update_block.firstChild);
+                // submit_block.style.display = 'none';
+                break;
+            }
+            else{
+                submit_block.childNodes.forEach((buttons) => {
+                    buttons.disabled = false
+                })
+                // submit_block.style.display = 'block';
+            }
+    }
 }

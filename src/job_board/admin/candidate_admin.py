@@ -229,8 +229,8 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         
         'candidate_job__candidate__full_name', 
         'candidate_job__candidate__email',
-        'candidate_job__candidate__phone', 
-        
+        'candidate_job__candidate__phone',
+        'candidate_job__additional_message',
         'candidateassessmentreview__note',
     )
     list_filter = (
