@@ -646,6 +646,29 @@ class ProjectReport(TimeStampMixin):
         verbose_name_plural = "Project Reports"
 
 
+class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=24)
+    enableproject = models.BooleanField(default=False)
+    last_time = models.TimeField(null=True, blank=True)
+
+
+    def save(self, *args, **kwargs):
+        # Ensure only one object of this class exists
+        if not self.pk and EnableDailyUpdateNow.objects.exists():
+            # If trying to create a new object and one already exists, raise an exception
+            raise Exception("Only one instance of EnableDailyUpdateNow can be created.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # When deleting the object, allow creating another one
+        self.pk = None
+        return super().delete(*args, **kwargs)
+    class Meta:
+        verbose_name = "Project Update Enable"
+        verbose_name_plural = "Project Update Enable by me"
+        # permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)
+
+
 class ObservationProject(TimeStampMixin, AuthorMixin):
     project_name = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name='observation_projects')
     class Meta:
@@ -655,3 +678,4 @@ class ObservationProject(TimeStampMixin, AuthorMixin):
 def create_observation(sender, instance, created, **kwargs):
     if created:
         ObservationProject.objects.create(project_name=instance)
+
