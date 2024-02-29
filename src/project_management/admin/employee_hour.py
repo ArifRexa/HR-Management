@@ -389,6 +389,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 if special_permission.enableproject == True:
                     return True
                 return False
+            else:
+                return True
 
         is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
         if is_have_panding:
