@@ -625,8 +625,11 @@ class ProjectReport(TimeStampMixin):
         verbose_name = "Project Report"
         verbose_name_plural = "Project Reports"
 
-class EnableDailyUpdateNow(AuthorMixin):
+
+class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
     enableproject = models.BooleanField(default=False)
+    # last_time = models.TimeField(default=19:30)
+
 
     def save(self, *args, **kwargs):
         # Ensure only one object of this class exists
@@ -639,3 +642,7 @@ class EnableDailyUpdateNow(AuthorMixin):
         # When deleting the object, allow creating another one
         self.pk = None
         return super().delete(*args, **kwargs)
+    class Meta:
+        verbose_name = "Project Update Enable"
+        verbose_name_plural = "Project Update Enable by me"
+        permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)

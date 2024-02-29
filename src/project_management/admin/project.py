@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from icecream import ic
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed, Tag, ProjectDocument, ProjectReport
+    ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow
 
 
 @admin.register(Technology)
@@ -100,3 +100,14 @@ class ProjectReportAdmin(admin.ModelAdmin):
     #     if db_field.name == 'project':
     #         kwargs['queryset'] = Project.objects.filter(active=True)
     #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(EnableDailyUpdateNow)
+class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
+    list_display = ['enableproject']
+
+    def has_view_permission(self, request, obj=None):
+        # Check if the user has the required permission
+        if request.user.has_perm('your_app.can_change_daily_update_last_time'):
+            return True
+        return False
