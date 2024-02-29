@@ -387,7 +387,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         special_permission = EnableDailyUpdateNow.objects.first()
         if obj:
             if ((request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date()):
-                if special_permission.enableproject == True:
+                if special_permission is not None and special_permission.enableproject == True:
                     return True
                 return False
             else:
@@ -419,10 +419,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         #     return False
         # special_permission = EnableDailyUpdateNow.objects.first()
         if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
-            if special_permission.enableproject == True:
-                return True
-            if timezone.now().time() > special_permission.last_time:
-                return False
+            if special_permission is not None:
+                if special_permission.enableproject == True:
+                    return True
+                if timezone.now().time() > special_permission.last_time:
+                    return False
         return permitted
     
         
@@ -441,10 +442,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
 
         if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
-            if special_permission.enableproject == True:
-                return True
-            if special_permission.last_time > timezone.now().time():
-                return True
+            if special_permission is not None:
+                if special_permission.enableproject == True:
+                    return True
+                if special_permission.last_time > timezone.now().time():
+                    return True
             return False
         return permissons
         
