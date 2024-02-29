@@ -627,8 +627,9 @@ class ProjectReport(TimeStampMixin):
 
 
 class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=24)
     enableproject = models.BooleanField(default=False)
-    # last_time = models.TimeField(default=19:30)
+    last_time = models.TimeField(null=True, blank=True)
 
 
     def save(self, *args, **kwargs):
@@ -645,4 +646,4 @@ class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
     class Meta:
         verbose_name = "Project Update Enable"
         verbose_name_plural = "Project Update Enable by me"
-        permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)
+        # permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)

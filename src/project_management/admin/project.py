@@ -104,10 +104,11 @@ class ProjectReportAdmin(admin.ModelAdmin):
 
 @admin.register(EnableDailyUpdateNow)
 class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
-    list_display = ['enableproject']
+    list_display = ['name','enableproject', 'last_time']
+    list_editable = ('enableproject',)
 
-    def has_view_permission(self, request, obj=None):
-        # Check if the user has the required permission
-        if request.user.has_perm('your_app.can_change_daily_update_last_time'):
-            return True
-        return False
+    # def has_view_permission(self, request, obj=None):
+    #     # Check if the user has the required permission
+    #     if request.user.has_perm('project_management.can_change_daily_update_last_time'):
+    #         return True
+    #     return False
