@@ -631,7 +631,7 @@ class ProjectReport(TimeStampMixin):
 class ObservationProject(TimeStampMixin, AuthorMixin):
     project_name = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name='observation_projects')
     class Meta:
-        verbose_name = 'Observe New Projects'
+        verbose_name = 'Observe New Project'
         # verbose_name_plural = 'Observations'
 @receiver(post_save, sender=Project)
 def create_observation(sender, instance, created, **kwargs):
