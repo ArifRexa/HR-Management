@@ -12,6 +12,8 @@ from django.db import models
 from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
+
 from django.dispatch import receiver
 from tinymce.models import HTMLField
 
@@ -642,3 +644,14 @@ class ProjectReport(TimeStampMixin):
     class Meta:
         verbose_name = "Project Report"
         verbose_name_plural = "Project Reports"
+
+
+class ObservationProject(TimeStampMixin, AuthorMixin):
+    project_name = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name='observation_projects')
+    class Meta:
+        verbose_name = 'Observe New Project'
+        # verbose_name_plural = 'Observations'
+@receiver(post_save, sender=Project)
+def create_observation(sender, instance, created, **kwargs):
+    if created:
+        ObservationProject.objects.create(project_name=instance)
