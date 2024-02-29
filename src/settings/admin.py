@@ -224,7 +224,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
                 )
                 for employee_email in employee_email_list:
                     subject = announcement.subject
-                    attachmentqueryset = EmailAnnouncementAttatchment.objects.filter(fileattatchment=announcement)
+                    attachmentqueryset = EmailAnnouncementAttatchment.objects.filter(email_announcement=announcement)
                     attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
                     html_body = announcement.body
                     async_task(

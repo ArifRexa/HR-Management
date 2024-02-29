@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 import datetime
-
+from django.utils.html import format_html
 from django.contrib import admin, messages
 from django import forms
 from django.core.exceptions import ValidationError
@@ -319,11 +319,13 @@ class LeaveManagement(admin.ModelAdmin):
     # @admin.display(description='Created By')
     # def creator(self, leave: Leave):
     #     return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
-
-    @admin.display(description='Date (start/end)')
+# 'Date (start/end)'
+    
+    @admin.display(description=format_html('<div style="display: block;">Date</div> <div style="display: block;"><small><u>start</u></small></div> <div style="display: block;"><small>end</small></div> '))
     def date_range(self, leave: Leave):
-        return f"{leave.start_date.strftime('%Y-%m-%d')} / {leave.end_date.strftime('%Y-%m-%d')}"
-
+        start_date = leave.start_date.strftime('%Y-%m-%d')
+        end_date = leave.end_date.strftime('%Y-%m-%d')
+        return format_html('<div style="display: block;">{}</div><div style="display: block;">{}</div>', start_date, end_date)
 
 def has_friday_between_dates(start_date, end_date):
     # Create a timedelta of one day
