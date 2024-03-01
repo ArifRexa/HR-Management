@@ -301,12 +301,12 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         candidate_email_instance = CandidateEmail.objects.filter(by_default=True).first()
         attachmentqueryset = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
         attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
-
         if candidate_email_instance:
             chunks = [candidate_email_list[i:i + chunk_size] for i in range(0, len(candidate_email_list), chunk_size)]
 
             # Schedule tasks for sending emails in chunks with a delay of one hour between each chunk
             for i, chunk in enumerate(chunks):
+                print(chunk)
                 schedule(
                     "job_board.tasks.send_chunked_emails",
                     chunk,

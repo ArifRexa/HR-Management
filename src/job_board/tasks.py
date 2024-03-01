@@ -117,7 +117,9 @@ def send_candidate_email(candidate_email:str,email_content,attachment_paths: str
     
 def send_chunked_emails(chunk, candidate_email_instance_id, attachment_paths):
     candidate_email_instance = CandidateEmail.objects.get(id=candidate_email_instance_id)
+    print(chunk, end = "                  ")
     for email in chunk:
+        print(email)
         async_task(
             "job_board.tasks.send_candidate_email", email, candidate_email_instance, attachment_paths
         )
