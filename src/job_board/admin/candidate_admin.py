@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.core import management
 from distutils.util import strtobool
 
@@ -11,7 +13,7 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks
-from django_q.tasks import async_task
+from django_q.tasks import async_task, schedule
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -293,25 +295,28 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 
     @admin.action(description="Send Email")
     def send_email(self, request, queryset):
-        
-        candidate_email_list = []
-        for candidate_email in queryset:
-
-            candidate_email_list.append(candidate_email.candidate_job.candidate.email)
-        print(candidate_email_list)
-        
+        candidate_email_list = [candidate_email.candidate_job.candidate.email for candidate_email in queryset]
+        hour = 0
+        chunk_size = 50
         candidate_email_instance = CandidateEmail.objects.filter(by_default=True).first()
         attachmentqueryset = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
         attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
-        
+
         if candidate_email_instance:
-            for email in candidate_email_list:
-                async_task(
-                    "job_board.tasks.send_candidate_email", email, candidate_email_instance, attachment_paths
+            chunks = [candidate_email_list[i:i + chunk_size] for i in range(0, len(candidate_email_list), chunk_size)]
+
+            # Schedule tasks for sending emails in chunks with a delay of one hour between each chunk
+            for i, chunk in enumerate(chunks):
+                schedule(
+                    "job_board.tasks.send_chunked_emails",
+                    chunk,
+                    candidate_email_instance.id,
+                    attachment_paths,
+                    next_run=timezone.now() + timedelta(hours=hour)
                 )
-            
-            
-            messages.success(request, "Emails have been sent successfully to the selected candidates.")
+                hour += 1
+
+            messages.success(request, "Email has sent in chunks.")
         else:
             messages.error(request, "No default candidate email instance found. Cannot send emails.")
         
