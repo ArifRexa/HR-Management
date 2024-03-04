@@ -7,12 +7,19 @@ from django.core.exceptions import ValidationError
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+import calendar
 
 
 from datetime import datetime, timedelta
 from project_management.models import Project, DailyProjectUpdate, Employee, Project, ProjectHour, EmployeeProjectHour
 
 class EmployeeRating(TimeStampMixin, AuthorMixin):
+
+    if timezone.now().month == 1:  
+        YEAR_CHOICES = [(timezone.now().year-1, timezone.now().year-1), (timezone.now().year, timezone.now().year)]  
+    else:
+        YEAR_CHOICES = [(timezone.now().year, timezone.now().year)] 
+    MONTH_CHOICE = [(m,calendar.month_name[m]) for m in range(1,timezone.now().month + 1)]
 
     score = models.FloatField()
     employee = models.ForeignKey(Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE)
@@ -28,6 +35,8 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
     professional_growth_and_development = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
     overall_contribution_to_team_success = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
     comment = models.TextField()
+    month = models.IntegerField(choices=MONTH_CHOICE, default=timezone.now().month)
+    year = models.IntegerField(choices=YEAR_CHOICES, default=timezone.now().year)
     class Meta:
         verbose_name = "Employee Rating"
         verbose_name_plural = "Employee Ratings"
