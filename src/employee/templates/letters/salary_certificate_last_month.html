@@ -13,10 +13,7 @@
             <b>{{ employee.full_name | title }}</b> <br>
             Email: {{ employee.email }}<br>
         </p>
-        <br>
-
         <center><h2>To Whom It May Concern</h2></center>
-
         <p>
             This is to certify that <b>{{ employee.full_name | title }}</b> has been working as a regular employee in
             our organization. His/Her employment details are as follows:
@@ -206,7 +203,6 @@
                 </th>
             </tr>
             </tfoot>
-
         </table>
         <br>
         {% if employee.employeesalary_set.last.loan_emi %}
@@ -248,6 +244,6 @@
                 <td></td>
             </tr>
         </table>
-        <div class="page-break"></div>
+<!--        <div class="page-break"></div>-->
     {% endfor %}
 {% endblock %}
