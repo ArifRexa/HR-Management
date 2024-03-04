@@ -218,6 +218,14 @@ Q_CLUSTER = {
         "port": 6379,
         "db": 0,
     },
+    "tasks": {
+        "candidates-have-to-reapply": {
+            "task": "job_board.tasks.candidates_have_to_reapply",
+            "schedule": {
+                "seconds": 30  # Run every 30 seconds for local testing
+            },
+        },
+    },
 }
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
@@ -289,3 +297,4 @@ REST_FRAMEWORK = {
 # CRON_CLASSES = [
 #     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
 # ]
+
