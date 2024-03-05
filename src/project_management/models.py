@@ -134,6 +134,13 @@ class Project(TimeStampMixin, AuthorMixin):
                 return True #BLACK
         else:
             return True #BLACK
+    
+    @property
+    def associated_employees(self):
+        return Employee.objects.filter(
+            employeeproject__project=self,
+            employeeproject__project__active=True
+        )
 
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
@@ -358,7 +365,6 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         #      index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
-
 
     # def clean(self):
     #     # LeaveManagement = apps.get_model('employee', 'LeaveManagement')

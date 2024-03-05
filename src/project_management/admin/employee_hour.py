@@ -1,6 +1,7 @@
 import datetime
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
+from datetime import timedelta
 
 from django.db.models import Count
 from django.db.models.functions import TruncDate
@@ -27,7 +28,8 @@ from project_management.models import (
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     ProjectReport,
-    EnableDailyUpdateNow
+    EnableDailyUpdateNow,
+    Project
 )
 from project_management.admin.project_hour.options import (
     ProjectManagerFilter,
@@ -36,7 +38,9 @@ from project_management.admin.project_hour.options import (
 from project_management.forms import AddDDailyProjectUpdateForm
 from icecream import ic
 from client_management.templatetags.replace_newline import check_valid_url
-from employee.models import LeaveManagement
+from employee.models import LeaveManagement, Employee
+from employee.models.employee_rating_models import EmployeeRating
+from django.db.models import Q
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
@@ -157,6 +161,10 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS = datetime.time(19, 30)
     LAST_TIME_OF_GIVING_UPPDATE_FOR_LEADS = datetime.time(23, 59)
+
+    today = timezone.now()
+    start_of_month = today.replace(day=1,hour=0, minute=0, second=0, microsecond=0)
+    deadline = start_of_month + timedelta(days=26)
 
     inlines = [
         DailyProjectUpdateDocumentAdmin,
@@ -347,6 +355,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # if is_have_pending:
         #     messages.info(request, "You have pending leave request(s).")
 
+
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                messages.error(
+                    request,
+                    "You have to complete your 'Employee Rating' first to add daily project update",
+                )
+
         return super().changelist_view(
             request, extra_context=my_context
         )
@@ -396,6 +412,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if is_have_panding:
             return False
 
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                return False
+
         # if request.user.has_perm("project_management.")
 
 
@@ -438,6 +458,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         if is_have_panding:
             return False
+    
+
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                return False
 
 
         if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
@@ -461,7 +486,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     
     @admin.action(description="Approve selected status daily project updates")
     def update_status_approve(modeladmin, request, queryset):
-        
         if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
@@ -851,14 +875,61 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         ):
             permitted = False
         return permitted
+    
+
+    def is_rating_completed(self, request):
+        today = timezone.now()
+        user_id = request.user.id
+        ratings = EmployeeRating.objects.filter(created_by_id=user_id)
+        projects = Project.objects.filter(
+            employeeproject__employee__user__id = user_id,
+        )
+
+        # print("*"*50)
+        associated_employees_qs = Employee.objects.none()
+
+        for project in projects:
+            associated_employees_qs = associated_employees_qs | project.associated_employees.exclude(user__id=user_id)
+
+        unique_associated_employees = associated_employees_qs.distinct()
+
+        # print(unique_associated_employees)
+
+        is_completed = True
+        for employee in unique_associated_employees:
+            has_rating = ratings.filter(
+                Q(created_by_id=user_id) & Q(employee_id=employee.id) & Q(month=today.month) & Q(year=today.year)
+            ).exists()
+
+            # print(f"{employee}--------------------{has_rating}-----------{is_completed}")
+            if not has_rating:
+                is_completed = False
+                # print(is_completed)
+                break
+        # print("*"*50)
+
+        return is_completed
+    
 
     def save_model(self, request, obj, form, change) -> None:
+
+        print(f"{self.start_of_month}-----------------{self.deadline}")
+
         if not change:
-            from django.utils import timezone
+
             if form.cleaned_data.get('employee'):
                 employee = form.cleaned_data.get('employee')
             else:
                 employee = request.user.employee
+
+            if self.today > self.deadline:
+                if self.is_rating_completed(request) == False:
+                    messages.error(
+                        request,
+                        "You have to complete your employee rating first to add daily update",
+                    )
+                    return
+
 
             if len(employee.leave_management_manager.filter(status='pending')) > 0:
                 messages.error(

@@ -4,6 +4,7 @@ from django import template
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.template.defaultfilters import floatformat
 from num2words import num2words
+import calendar
 
 from employee.models import Employee
 
@@ -27,3 +28,10 @@ def percentage(number, arg):
 @register.filter
 def addition(number, addition_number):
     return number + addition_number
+
+
+@register.filter
+def int_to_month(value):
+    if not isinstance(value, int) or value < 1 or value > 12:
+        return "Invalid Month"
+    return calendar.month_name[value]
