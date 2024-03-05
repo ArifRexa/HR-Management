@@ -9,15 +9,62 @@
         }
 
         .d-flex div {
-            width: 100%;
-        }
-        .d-flex div table{
-            width: 100%;
+            width: 50%; /* Adjust width as needed */
         }
 
+        .table td {
+            min-height: 40px; /* Set your desired height */
+        }
+
+        /* Additional CSS for styling tables */
+        .card {
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            font-weight: bold;
+        }
+
+        .list-group-item {
+            border: none;
+        }
     </style>
 {% endblock %}
 
 {% block content %}
+    <div class="d-flex">
+        {% if new_employees.exists %}
+            <div class="col-md-6 mb-4">
+                <div class="card rounded-0">
+                    <div class="card-header text-uppercase">New Joinee Employee</div>
+                    <div class="card-body rounded-0 p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for new_employee in new_employees %}
+                                <li class="list-group-item">
+                                    {{ new_employee.full_name }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
 
+        {% if new_lead_or_managers.exists %}
+            <div class="col-md-6 mb-4">
+                <div class="card rounded-0">
+                    <div class="card-header text-uppercase">New Lead or Managers</div>
+                    <div class="card-body rounded-0 p-0">
+                        <ul class="list-group list-group-flush">
+                            {% for new_lead_or_manager in new_lead_or_managers %}
+                                <li class="list-group-item">
+                                    {{ new_lead_or_manager.employee.full_name }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
 {% endblock %}
