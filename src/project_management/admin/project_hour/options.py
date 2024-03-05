@@ -122,8 +122,8 @@ class ProjectHourOptions(admin.ModelAdmin):
         @type request: object
         """
         list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'cto_feedback_popover']
-        if not request.user.is_superuser:
-            list_display.remove('payable')
+        # if not request.user.is_superuser:
+        #     list_display.remove('payable')
         return list_display
 
     # @admin.display(description='Forcast', ordering='forcast')
