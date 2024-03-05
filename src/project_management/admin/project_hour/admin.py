@@ -10,7 +10,8 @@ from django import forms
 from django.db.models import Sum, Q, F
 from django.template.context_processors import request
 from django.utils import timezone
-
+from django.template.loader import get_template
+from django.utils.html import format_html
 from config.admin import ExportCsvMixin, RecentEdit
 from config.admin.utils import simple_request_filter
 from project_management.admin.project_hour.actions import ProjectHourAction
@@ -62,7 +63,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     inlines = (EmployeeHourAdmin,)
     change_list_template = 'admin/total.html'
     autocomplete_fields = ['project']
-    list_per_page = 20
+    list_per_page = 50
     ordering = ('-pk',)
     add_form_template = 'admin/project_hour/project_hour.html'
     fieldsets = (
