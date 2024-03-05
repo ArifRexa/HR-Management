@@ -289,3 +289,4 @@ REST_FRAMEWORK = {
 # CRON_CLASSES = [
 #     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
 # ]
+
