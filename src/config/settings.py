@@ -218,12 +218,6 @@ Q_CLUSTER = {
         "port": 6379,
         "db": 0,
     },
-    "tasks": {
-        "candidates-have-to-reapply": {
-            "task": "job_board.tasks.candidates_have_to_reapply",
-            
-        },
-    },
 }
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB

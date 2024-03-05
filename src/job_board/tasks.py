@@ -21,32 +21,30 @@ def candidates_have_to_reapply():
     candidates_without_jobs = Candidate.objects.filter(candidatejob__isnull=True)
     
     if candidates_without_jobs.exists():  # Check if there are candidates without jobs
-        candidate_emails = [candidate.email for candidate in candidates_without_jobs]
-        print("This is candidate from email method", candidate_emails)
         
+        candidate_emails = [candidate.email for candidate in candidates_without_jobs]    
         subject = f"Request to apply again through the job portal"
-        print("This is subject", subject)
-
-        html_content = "Your application was not successful. Please consider applying again."
-        print("This is html content", html_content)
-
         for email in candidate_emails: 
             async_task(
                 "job_board.tasks.candidate_email_to_reapply",
                 email,
-                subject,
-                html_content
+                subject
+               
             )
             candidate = Candidate.objects.get(email=email)
             candidate.delete()
 
 
-def candidate_email_to_reapply(to_email, subject, html_content):
-    email = EmailMessage()
+def candidate_email_to_reapply(to_email:str, subject):
+    
+    email = EmailMultiAlternatives()
+
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [to_email]
     email.subject = subject
-    email.body = html_content
+    html_template = get_template('mail/re_apply_alert.html')
+    html_content = html_template.render({'candidate':"Applicant"})
+    email.attach_alternative(html_content,'text/html')
 
     email.send()
 
@@ -160,8 +158,3 @@ def send_chunked_emails(chunk, candidate_email_instance_id, attachment_paths):
         async_task(
             "job_board.tasks.send_candidate_email", email, candidate_email_instance, attachment_paths
         )
-
-
-def my_task():
-    # Your task logic here
-    print("My task is being executed!")
