@@ -5,6 +5,8 @@ from django_q.tasks import async_task
 from project_management.models import ObservationProject
 from employee.models.employee import Observation
 from project_management.models import DailyProjectUpdate
+from dateutil.relativedelta import relativedelta
+
 def mark_employee_free():
     management.call_command('mark_employee_free')
 
@@ -14,7 +16,13 @@ def delete_new_proj():
         deleted_employee = Observation.objects.filter(created_at__lt=two_weeks_ago).delete()
 
 
-def delete_old_data():
-    six_months_ago = datetime.now() - timedelta(days=6*30)  
-    old_data = DailyProjectUpdate.objects.filter(created_at__lt=six_months_ago)
+
+def delete_old_data(months):
+    
+    current_date = datetime.now()
+    months_ago = relativedelta(months=months)
+
+    target_date = current_date - months_ago
+
+    old_data = DailyProjectUpdate.objects.filter(created_at__lt=target_date)
     old_data.delete()
