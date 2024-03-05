@@ -121,7 +121,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'something']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'cto_feedback_popover']
         if not request.user.is_superuser:
             list_display.remove('payable')
         return list_display
@@ -148,7 +148,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return format_html(html)
 
     @admin.display(description="feedback")
-    def something(self, obj):
+    def cto_feedback_popover(self, obj):
         html_template = get_template(
             "admin/project_management/list/col_ctefeedback.html"
         )
