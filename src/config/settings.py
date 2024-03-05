@@ -221,9 +221,7 @@ Q_CLUSTER = {
     "tasks": {
         "candidates-have-to-reapply": {
             "task": "job_board.tasks.candidates_have_to_reapply",
-            "schedule": {
-                "seconds": 30  # Run every 30 seconds for local testing
-            },
+            
         },
     },
 }
