@@ -27,7 +27,7 @@ def candidates_have_to_reapply():
         subject = f"Request to apply again through the job portal"
         print("This is subject", subject)
 
-        html_content = loader.render_to_string('mail/re_apply_alert.html', {'candidate': 'Applicant'})
+        html_content = "Your application was not successful. Please consider applying again."
         print("This is html content", html_content)
 
         for email in candidate_emails: 
