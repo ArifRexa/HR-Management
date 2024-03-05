@@ -48,10 +48,14 @@ class EmployeeRatingForm(forms.ModelForm):
 
         assigned_projects_titles = list(request.user.employee.employee_project_list.values_list('title', flat=True))
         rated_employee = clean_data.get('employee')
+        if rated_employee is None:
+            raise forms.ValidationError(
+                {"employee": "Please Select an Employee"}
+            )
         rated_employee_projects = list(rated_employee.employee_project_list.values_list('title', flat=True))
-        
         common_projects = list(set(assigned_projects_titles).intersection(set(rated_employee_projects)))
         print(common_projects)
+
         if not common_projects:
              raise forms.ValidationError(
                 {"employee": "You cannot rate a employee who is not assosiated with your projects"}
