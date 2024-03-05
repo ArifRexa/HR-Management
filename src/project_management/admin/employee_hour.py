@@ -164,7 +164,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     today = timezone.now()
     start_of_month = today.replace(day=1,hour=0, minute=0, second=0, microsecond=0)
-    deadline = start_of_month + timedelta(days=3)
+    deadline = start_of_month + timedelta(days=26)
 
     inlines = [
         DailyProjectUpdateDocumentAdmin,

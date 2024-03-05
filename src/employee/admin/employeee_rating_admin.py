@@ -137,8 +137,8 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
                 'year',
                 'employee',
                 'project',
-                'performance_quality',
-                'efficiency',
+                'feedback_responsiveness',
+                'continuous_learning',
                 'collaboration',
                 'communication_effectiveness',
                 'leadership_potential',
@@ -159,7 +159,8 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css",)}
-        js = ("js/list.js",)
+        js = ("js/list.js",
+              "js/employee_rating.js")
 
     def get_employee(self):
         return 

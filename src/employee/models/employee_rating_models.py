@@ -24,16 +24,16 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
     score = models.FloatField()
     employee = models.ForeignKey(Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, limit_choices_to={"active": True}, on_delete=models.SET_NULL, null=True, blank=True)
-    performance_quality = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    efficiency = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    collaboration = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    communication_effectiveness = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    leadership_potential = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    problem_solving_ability = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    innovation_and_creativity = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    adaptability_and_flexibility = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    professional_growth_and_development = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
-    overall_contribution_to_team_success = models.IntegerField(choices=list(zip(range(1, 11), range(1, 11))), default=1)
+    feedback_responsiveness = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    continuous_learning = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    collaboration = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    communication_effectiveness = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    leadership_potential = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    problem_solving_ability = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    innovation_and_creativity = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    adaptability_and_flexibility = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    professional_growth_and_development = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
+    overall_contribution_to_team_success = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
     comment = models.TextField()
     month = models.IntegerField(choices=MONTH_CHOICE, default=timezone.now().month)
     year = models.IntegerField(choices=YEAR_CHOICES, default=timezone.now().year)
@@ -48,8 +48,8 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
     def save(self, *args, **kwargs):
         # Calculate the average score
         total_score = (
-            self.performance_quality +
-            self.efficiency +
+            self.feedback_responsiveness +
+            self.continuous_learning +
             self.collaboration +
             self.communication_effectiveness +
             self.leadership_potential +
