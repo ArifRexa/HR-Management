@@ -17,10 +17,9 @@ from django.template import loader
 
 
 
-def candidates_have_to_reapply():
-    candidates_without_jobs = Candidate.objects.filter(candidatejob__isnull=True)
-    
-    if candidates_without_jobs.exists():  # Check if there are candidates without jobs
+def candidates_have_to_reapply(): 
+    candidates_without_jobs = Candidate.objects.filter(candidatejob__isnull=True)[:30]  
+    if candidates_without_jobs.exists():  
         
         candidate_emails = [candidate.email for candidate in candidates_without_jobs]    
         subject = f"Request to apply again through the job portal"
