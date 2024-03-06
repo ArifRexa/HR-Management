@@ -169,7 +169,16 @@ class LeaveManagement(admin.ModelAdmin):
                 leave_manage.save()
         self.__send_leave_mail(request, obj, form, change)
         
-
+    def has_add_permission(self, request):    
+        current_datetime = datetime.datetime.now()
+        current_day = current_datetime.weekday()
+        
+        if not request.user.has_perm('employee.can_add_leave_at_any_time'):
+            if current_day in [5,6]:           
+                return False
+            else:
+                return True
+            
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.has_perm("employee.can_approve_leave_applications"):
@@ -375,7 +384,9 @@ class LeaveManagementAdmin(admin.ModelAdmin):
     list_filter = ("status", "leave__leave_type", "manager", "leave__employee")
     search_fields = ("manager__full_name", "status")
     date_hierarchy = "created_at"
-
+    
+    
+            
     @admin.display(description="Employee")
     def get_employee(self, obj):
         return obj.leave.employee.full_name
