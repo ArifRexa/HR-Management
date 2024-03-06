@@ -756,12 +756,16 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             if obj.updates_json is None:
                 continue
             updates = ''
+            commit_links = ''
             for index, update in enumerate(obj.updates_json):
                 total_hour += float(update[1])
                 updates += f'{update[0]} - {update[1]}H.\n'
+                commit_links += f'{index+1}. {update[2]}\n'
 
             tmp_add = (f"{obj.employee.full_name}\n\n" +
-                       f"{updates}\n" +
+                       f"{updates}\n\n" +
+                       f"Associated Links: \n"+
+                       f"{commit_links}\n" +
                        "-------------------------------------------------------------\n\n")
 
             update_list_str += tmp_add
