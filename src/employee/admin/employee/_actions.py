@@ -62,6 +62,7 @@ class EmployeeActions:
         "print_salary_certificate",
         "print_bank_forwarding_letter",
         "print_promotion_letter",
+        "print_experience_letter",
         "mail_appointment_letter",
         "mail_permanent_letter",
         "mail_increment_letter",
@@ -154,6 +155,15 @@ class EmployeeActions:
     def print_bank_forwarding_letter(self, request, queryset):
         return self.generate_pdf(
             request, queryset=queryset, letter_type="AFL"
+        ).render_to_pdf()
+    
+    @admin.action(description="Print Experience Letter")
+    def print_experience_letter(self,request, queryset):
+        print("-"*50)
+        print(queryset)
+        print("-"*50)
+        return self.generate_pdf(
+            request, queryset=queryset, letter_type="EXPL"
         ).render_to_pdf()
 
     @admin.action(description="Mail Appointment Letter")
@@ -354,5 +364,6 @@ class EmployeeActions:
             "ELMSC": "letters/salary_certificate_last_month.html",
             "AFL": "letters/salary_account_forwarding_letter.html",
             "EPRL": "letters/promotion_letter.html",
+            "EXPL": "letters/experience_letter.html",
         }
         return switcher.get(letter_type, "")

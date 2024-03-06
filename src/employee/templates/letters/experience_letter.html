@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include 'letters/extra/header.html' with title='Permanent Latter' %}
+</head>
+
+{% load humanize %}
+{% load humanize_extra %}
+
+<body>
+{% for employee in employees %}
+    <p>
+        Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.id }} <br>
+        Date: {% now "jS F Y" %} <br>
+        <b>{{ employee.full_name | title }}</b> <br>
+        Email: {{ employee.email }}<br>
+    </p>
+
+    <p><b>Subject: Experience Letter of {{ employee.full_name | title }}</b></p>
+    <p>Dear {{ employee.full_name | title }},</p>
+
+
+    <p>This letter confirms that <b>{{ employee.full_name | title }}</b>  has been employed with <b>Mediusware Ltd , 24/1, Taj Mahal Road, Shiya Masjid mor, Floor- 7th & 8th, Ring Road,
+        Mohammadpur,
+        Dhaka</b> as a <b>{{ employee.designation }}</b> from <b>{{ employee.joining_date}}</b> to <b>{{ employee.approved_resignation.date}}</b>.
+        During this time, he/she have demonstrated exceptional skills and dedication in his/her work. 
+        Their contributions have been invaluable to the success of our projects.
+        {{ employee.full_name | title }} has consistently exhibited professionalism, adaptability, and a strong work ethic. 
+        They have shown excellent teamwork and commitment to meeting deadlines.
+        <br>
+        <br>
+        We recommend <b> {{ employee.full_name | title }} </b> without reservation and are confident they will excel in any future endeavors.
+    </p>
+
+    {% include 'letters/extra/experience_footer.html' %}
+{% endfor %}
+</body>
+
+</html>
