@@ -159,9 +159,6 @@ class EmployeeActions:
     
     @admin.action(description="Print Experience Letter")
     def print_experience_letter(self,request, queryset):
-        print("-"*50)
-        print(queryset)
-        print("-"*50)
         return self.generate_pdf(
             request, queryset=queryset, letter_type="EXPL"
         ).render_to_pdf()
