@@ -173,12 +173,10 @@ class LeaveManagement(admin.ModelAdmin):
         current_datetime = datetime.datetime.now()
         current_day = current_datetime.weekday()
         
-        if not request.user.is_superuser and not request.user.has_perm('employee.can_add_leave_at_any_time'):
-            print("Faisal has no permission")
-            if current_day in [5,6,2]:           
+        if not request.user.has_perm('employee.can_add_leave_at_any_time'):
+            if current_day in [5,6]:           
                 return False
         else:
-            print("Faisal has permission")
             return True
             
     def get_queryset(self, request):
