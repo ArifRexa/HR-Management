@@ -435,16 +435,21 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
         special_permission = EnableDailyUpdateNow.objects.first()
         if obj:
-            # is lead/ manager/ sqa
-            if ((request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date()):
-                if special_permission is not None and special_permission.enableproject == True:
+            # is lead / manager / sqa
+            if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
+                # previous date
+                if obj.created_at.date() < timezone.now().date():
+                    if special_permission is not None and special_permission.enableproject == False:
+                        permitted = False
+                # today
+                else:
                     permitted = True
+            # not lead / manager / sqa
             else:
                 if special_permission is not None:
-                    if special_permission.enableproject == True:
-                        permitted = True
-                    if timezone.now().time() > special_permission.last_time:
-                        permitted = False
+                    if special_permission.enableproject == False:
+                        if timezone.now().time() > special_permission.last_time:
+                            permitted = False
 
 
         is_have_panding = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
