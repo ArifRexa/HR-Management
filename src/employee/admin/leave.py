@@ -170,15 +170,19 @@ class LeaveManagement(admin.ModelAdmin):
         self.__send_leave_mail(request, obj, form, change)
         
     def has_add_permission(self, request):    
+        
         current_datetime = datetime.datetime.now()
         current_day = current_datetime.weekday()
-        
+            
         if not request.user.has_perm('employee.can_add_leave_at_any_time'):
             if current_day in [5,6]:           
                 return False
+            else:
+                return True
         else:
             return True
-            
+
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.has_perm("employee.can_approve_leave_applications"):
