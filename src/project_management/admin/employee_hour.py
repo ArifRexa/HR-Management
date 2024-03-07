@@ -399,22 +399,22 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             return True
-        special_permission = EnableDailyUpdateNow.objects.first()
-        if obj:
-            if ((request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date()):
-                if special_permission is not None and special_permission.enableproject == True:
-                    return True
-                return False
-            else:
-                return True
-
-        is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
-        if is_have_panding:
-            return False
-
-        if self.today > self.deadline:
-            if self.is_rating_completed(request) == False:
-                return False
+        # special_permission = EnableDailyUpdateNow.objects.first()
+        # if obj:
+        #     if ((request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date()):
+        #         if special_permission is not None and special_permission.enableproject == True:
+        #             return True
+        #         return False
+        #     else:
+        #         return True
+        #
+        # is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+        # if is_have_panding:
+        #     return False
+        #
+        # if self.today > self.deadline:
+        #     if self.is_rating_completed(request) == False:
+        #         return False
 
         # if request.user.has_perm("project_management.")
 
@@ -430,19 +430,37 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     and obj.manager != request.user.employee
                     
             ):
-                permitted = False
-        # if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPPDATE_FOR_LEADS:
-        #     return False
-        #
-        # if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and timezone.now().time() > self.LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS:
-        #     return False
-        # special_permission = EnableDailyUpdateNow.objects.first()
-        if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
-            if special_permission is not None:
-                if special_permission.enableproject == True:
-                    return True
-                if timezone.now().time() > special_permission.last_time:
-                    return False
+                # permitted = False
+                return False
+
+        special_permission = EnableDailyUpdateNow.objects.first()
+        if obj:
+            # is lead/ manager/ sqa
+            if ((request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date()):
+                if special_permission is not None and special_permission.enableproject == True:
+                    permitted = True
+            else:
+                if special_permission is not None:
+                    if special_permission.enableproject == True:
+                        permitted = True
+                    if timezone.now().time() > special_permission.last_time:
+                        permitted = False
+
+
+        is_have_panding = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+        if is_have_panding:
+            return False
+
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                return False
+
+        # if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
+        #     if special_permission is not None:
+        #         if special_permission.enableproject == True:
+        #             return True
+        #         if timezone.now().time() > special_permission.last_time:
+        #             return False
         return permitted
     
         
