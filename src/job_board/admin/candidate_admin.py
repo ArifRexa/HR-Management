@@ -316,7 +316,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
                 )
                 hour += 1
 
-            messages.success(request, "Email has sent in chunks.")
+            messages.success(request, "Email has sent successfully.")
         else:
             messages.error(request, "No default candidate email instance found. Cannot send emails.")
         
