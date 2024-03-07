@@ -427,8 +427,9 @@ class SalarySheetRepository:
                     # Calculate festival bonus based on months since joining
                     basic_salary = (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
                    
-
-                    if months_since_joining >= 3 and months_since_joining < 5:
+                    if months_since_joining < 3:
+                        return 0
+                    elif months_since_joining >= 3 and months_since_joining < 5:
                         return round((basic_salary * 20) / 100, 2)
                     elif months_since_joining >= 5 and months_since_joining < 7:
                         return round((basic_salary * 40) / 100, 2)
