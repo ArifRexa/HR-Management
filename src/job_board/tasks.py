@@ -136,7 +136,7 @@ def employee_sms_promotion(promotion_sms, candidate: Candidate):
     candidate_sms.promotional_sms(promotion_sms)
 
 def send_candidate_email(candidate_email:str,email_content,attachment_paths: str):
-    email = EmailMessage()
+    email = EmailMultiAlternatives()
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [candidate_email]
     email.subject = email_content.subject
