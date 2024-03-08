@@ -110,7 +110,7 @@ class VivaConfigViewSet(generics.ListAPIView):
         print('******************************')
         # print(request.user)
         # print(type(request.user))
-        existing_slot = JobVivaTimeSlot.objects.filter(candidate=request.user, job_post_id=kwargs.get('job_id')).first()
+        existing_slot = JobVivaTimeSlot.objects.filter(candidate=request.user, job_post__job_post_id=kwargs.get('job_id')).first()
         # print(existing_slot)
         # if existing_slot is not None:
         #     print('return data with booked slot ')
