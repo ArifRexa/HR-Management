@@ -9,10 +9,13 @@ from django.template.loader import get_template
 from django.template.loader import render_to_string
 from django.utils import timezone
 from django.contrib import messages
+from django.db.models import Q
 
 
 from django.http.request import HttpRequest
 from employee.models.employee_rating_models import EmployeeRating
+from project_management.models import Project
+from employee.models import Employee
 
 
 class EmployeeRatingForm(forms.ModelForm):
@@ -20,16 +23,39 @@ class EmployeeRatingForm(forms.ModelForm):
     # fields = "__all__"
     exclude = ('score',)
 
+    # project = forms.ModelChoiceField(
+    #     queryset=Project.objects.none(), 
+    # )
+    # employee = forms.ModelChoiceField(
+    #     queryset=Employee.objects.none(),
+    # )
+
+    # def __init__(self, *args, **kwargs):
+    #     super(EmployeeRatingForm, self).__init__(*args, **kwargs)
+    #     projects = Project.objects.filter(
+    #         employeeproject__employee__user=self.request.user
+    #     )
+    #     self.fields['project'].queryset = projects
+
+    #     associated_employees = Employee.objects.filter(
+    #         employeeproject__project__in=projects
+    #     )
+    #     self.fields['employee'].queryset = associated_employees
+
     def clean(self):
         clean_data = super().clean()
         request = self.request
 
         assigned_projects_titles = list(request.user.employee.employee_project_list.values_list('title', flat=True))
         rated_employee = clean_data.get('employee')
+        if rated_employee is None:
+            raise forms.ValidationError(
+                {"employee": "Please Select an Employee"}
+            )
         rated_employee_projects = list(rated_employee.employee_project_list.values_list('title', flat=True))
-        
         common_projects = list(set(assigned_projects_titles).intersection(set(rated_employee_projects)))
         print(common_projects)
+
         if not common_projects:
              raise forms.ValidationError(
                 {"employee": "You cannot rate a employee who is not assosiated with your projects"}
@@ -44,11 +70,46 @@ class EmployeeRatingForm(forms.ModelForm):
         if clean_data.get("employee"):
             current_month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
             current_month_end = current_month_start.replace(month=current_month_start.month + 1)
+            # is_provided = EmployeeRating.objects.filter(
+            #     created_at__gte=current_month_start,
+            #     created_at__lt=current_month_end,
+            #     employee=clean_data.get("employee"),
+            #     created_by=request.user,
+            # ).exists()
+
+            today = datetime.now()
+
+            employee = Employee.objects.get(user__id=request.user.id)
+            joining_datetime = datetime.combine(employee.joining_date, datetime.min.time())
+            days_since_joining = (timezone.now() - joining_datetime).days
+
+            
+            if days_since_joining > 30 :
+                #Worst Case
+                if today.month == 1:
+                    previous_month_rating_complete = EmployeeRating.objects.filter(
+                        Q(created_by_id=request.user.id) &
+                        Q(month=12) &
+                        Q(year=today.year - 1)
+                    ).exists()
+                else:
+                    previous_month_rating_complete = EmployeeRating.objects.filter(
+                        Q(created_by_id=request.user.id) &
+                        Q(month=today.month - 1) &
+                        Q(year=today.year)
+                    ).exists()
+
+                if not previous_month_rating_complete:
+                    if clean_data.get("month") == today.month and clean_data.get("year") == today.year:
+                        raise forms.ValidationError(
+                            {"month": "You have to provide rating for the previous month."}
+                        )
+
+
             is_provided = EmployeeRating.objects.filter(
-                created_at__gte=current_month_start,
-                created_at__lt=current_month_end,
+                month=clean_data.get("month"),
+                year=clean_data.get("year"),
                 employee=clean_data.get("employee"),
-                # project=clean_data.get("project"),
                 created_by=request.user,
             ).exists()
 
@@ -67,6 +128,8 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         "project",
         "see_comment",
         "show_score",
+        "month",
+        "year",
         "created_at",
     ]
     fieldsets = (
@@ -74,10 +137,12 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         None,
         {
             "fields": (
+                'month',
+                'year',
                 'employee',
                 'project',
-                'performance_quality',
-                'efficiency',
+                'feedback_responsiveness',
+                'continuous_learning',
                 'collaboration',
                 'communication_effectiveness',
                 'leadership_potential',
@@ -98,7 +163,8 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css",)}
-        js = ("js/list.js",)
+        js = ("js/list.js",
+              "js/employee_rating.js")
 
     def get_employee(self):
         return 

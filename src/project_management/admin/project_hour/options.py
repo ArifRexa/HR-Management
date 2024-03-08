@@ -14,7 +14,7 @@ class ProjectFilter(admin.SimpleListFilter):
     parameter_name = 'project__id__exact'
 
     def lookups(self, request, model_admin):
-        project_types = Project.objects.values_list('id', 'title').distinct()
+        project_types = Project.objects.filter(active=True).values_list('id', 'title').distinct()
         choices = []
         for project_id, project_title in project_types:
             choices.append((str(project_id), project_title))
@@ -96,6 +96,9 @@ class ProjectLeadFilter(admin.SimpleListFilter):
 
 
 class ProjectHourOptions(admin.ModelAdmin):
+    class Media:
+        css = {"all": ("css/list.css",)}
+        js = ("js/list.js",)
     # override create / edit fields
     # manager filed will not appear if the authenticate user is not super user
     def get_fields(self, request, obj=None):
@@ -118,9 +121,9 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'payable', 'cto_feedback', 'approved_by_cto']
-        if not request.user.is_superuser:
-            list_display.remove('payable')
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'cto_feedback_popover']
+        # if not request.user.is_superuser:
+        #     list_display.remove('payable')
         return list_display
 
     # @admin.display(description='Forcast', ordering='forcast')
@@ -143,7 +146,14 @@ class ProjectHourOptions(admin.ModelAdmin):
             html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
             i += 1
         return format_html(html)
-    
+
+    @admin.display(description="feedback")
+    def cto_feedback_popover(self, obj):
+        html_template = get_template(
+            "admin/project_management/list/col_ctefeedback.html"
+        )
+        rendered_html = html_template.render({"obj": obj})
+        return rendered_html
 
     # @admin.display(description='Project')
     # def get_project(self, obj: ProjectHour):
@@ -165,3 +175,4 @@ class ProjectHourOptions(admin.ModelAdmin):
     #         if project_hour is None and not request.user.is_superuser:
     #             return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
     #     return ()
+

@@ -56,6 +56,12 @@ class Candidate(TimeStampMixin):
 
     def get_last_job(self):
         self.candidatejob_set.last()
+    
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs) 
+        
+        
 
 
 class CandidateJob(TimeStampMixin):
