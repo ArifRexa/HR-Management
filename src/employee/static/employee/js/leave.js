@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log('JavaScript loaded');
+console.log('JavaScript loaded');
 
     var leaveTypeSelect = document.getElementById('id_leave_type');
     let attachmentInput = document.getElementById('id_leaveattachment_set-0-attachment');
@@ -43,18 +43,18 @@ document.addEventListener("DOMContentLoaded", function () {
        
 
     // Function to enable buttons
-    function enableButtons() {
-        saveButton.disabled = false;
-        saveAndAddAnotherButton.disabled = false;
-        saveAndContinueEditingButton.disabled = false;
-    }
+    // function enableButtons() {
+    //     saveButton.disabled = false;
+    //     saveAndAddAnotherButton.disabled = false;
+    //     saveAndContinueEditingButton.disabled = false;
+    // }
 
     // Function to disable buttons
-    function disableButtons() {
-        saveButton.disabled = true;
-        saveAndAddAnotherButton.disabled = true;
-        saveAndContinueEditingButton.disabled = true;
-    }
+    // function disableButtons() {
+    //     saveButton.disabled = true;
+    //     saveAndAddAnotherButton.disabled = true;
+    //     saveAndContinueEditingButton.disabled = true;
+    // }
 
     // Function to disable all buttons when delete button is clicked
     function handleDeleteButtonClick() {

@@ -13,14 +13,10 @@
             <b>{{ employee.full_name | title }}</b> <br>
             Email: {{ employee.email }}<br>
         </p>
-        <br>
-
         <center><h2>To Whom It May Concern</h2></center>
-
         <p>
             This is to certify that <b>{{ employee.full_name | title }}</b> has been working as a regular employee in
             our organization. His/Her employment details are as follows:
-
         </p>
 
         <table width="60%" cellpadding="2">
@@ -206,7 +202,6 @@
                 </th>
             </tr>
             </tfoot>
-
         </table>
         <br>
         {% if employee.employeesalary_set.last.loan_emi %}
@@ -218,24 +213,16 @@
 
             <p><b>In Word : </b>{{ employee.employeesalary_set.last.gross_salary | num_to_word }} Taka only</p>
         {% endif %}
-        <br>
-        <br>
-        <br>
         <table width="100%">
-
             <tr>
                 <td width="70%">For Mediusware Ltd</td>
-                <td></td>
             </tr>
             <tr>
                 <td rowspan="1">
-                    <br>
-                    <br>
                                         <img src="{{ seal }}" height="80px" alt="">
                 </td>
                 <td></td>
             </tr>
-
             <tr>
                 <td>
                     <br>
@@ -243,6 +230,7 @@
                 <td></td>
             </tr>
             <tr>
+                <br>
                 <td>Md. Shahinur Rahman</td>
                 <td></td>
             </tr>
@@ -255,6 +243,6 @@
                 <td></td>
             </tr>
         </table>
-        <div class="page-break"></div>
+<!--        <div class="page-break"></div>-->
     {% endfor %}
 {% endblock %}

@@ -13,6 +13,41 @@ from job_board.models.assessment import Assessment
 from job_board.models.candidate import Candidate
 from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 from django.utils.html import strip_tags
+from job_board.models.candidate import Candidate
+from django.template import loader
+
+
+
+def candidates_have_to_reapply(): 
+    candidates_without_jobs = Candidate.objects.filter(candidatejob__isnull=True)[:30]  
+    if candidates_without_jobs.exists():  
+        
+        candidate_emails = [candidate.email for candidate in candidates_without_jobs]    
+        subject = f"Request to apply again through the job portal"
+        for email in candidate_emails: 
+            async_task(
+                "job_board.tasks.candidate_email_to_reapply",
+                email,
+                subject
+               
+            )
+            candidate = Candidate.objects.get(email=email)
+            candidate.delete()
+
+
+def candidate_email_to_reapply(to_email:str, subject):
+    
+    email = EmailMultiAlternatives()
+
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    email.to = [to_email]
+    email.subject = subject
+    html_template = get_template('mail/re_apply_alert.html')
+    html_content = html_template.render({'candidate':"Applicant"})
+    email.attach_alternative(html_content,'text/html')
+
+    email.send()
+>>>>>>> fc14a4c5a05267be9d8d536e819a3f47de74cc6d
 
 
 def send_otp(otp, email_address):
