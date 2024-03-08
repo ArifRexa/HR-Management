@@ -136,11 +136,11 @@ def employee_sms_promotion(promotion_sms, candidate: Candidate):
     candidate_sms.promotional_sms(promotion_sms)
 
 def send_candidate_email(candidate_email:str,email_content,attachment_paths: str):
-    email = EmailMessage()
+    email = EmailMultiAlternatives()
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [candidate_email]
     email.subject = email_content.subject
-    email.attach_alternative(email_content.body)
+    email.attach_alternative(email_content.body, 'text/html')
     for attachment_path in attachment_paths:
         if attachment_path:
             attachment_filename = os.path.basename(attachment_path)
