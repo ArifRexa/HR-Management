@@ -18,6 +18,6 @@ class VivaConfig(models.Model):
         return f"{self.job_post}"
         # return f"{self.job_post} - {self.start_date} {self.start_time} to {self.end_date} {self.end_time}"
 
-# class ExcludedDates(models.Model):
-#     # viva_config = models.ForeignKey()
-#     date = models.DateField()
+class ExcludedDates(models.Model):
+    viva_config = models.ForeignKey(VivaConfig, on_delete=models.CASCADE)
+    date = models.DateField()

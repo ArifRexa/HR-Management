@@ -87,6 +87,11 @@ class JobVivaTimeSlotSerializer(serializers.ModelSerializer):
         fields = ['job_post', 'candidate', 'start_time', 'end_time', 'date']
 
 
+class JobPostByStartTimeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobVivaTimeSlot
+        fields = ['start_time']
+
 class VivaConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = VivaConfig
