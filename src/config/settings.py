@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "project_management",
     "account",
     "asset_management",
+    "inventory_management",
     "website",
     "provident_fund",
     # Custom App
