@@ -47,7 +47,6 @@ def candidate_email_to_reapply(to_email:str, subject):
     email.attach_alternative(html_content,'text/html')
 
     email.send()
->>>>>>> fc14a4c5a05267be9d8d536e819a3f47de74cc6d
 
 
 def send_otp(otp, email_address):
