@@ -1,9 +1,26 @@
 from django.shortcuts import redirect
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from rest_framework.urlpatterns import format_suffix_patterns
 
-from job_board.views.apis import job, authentication, assessment
+from job_board.views.apis import (job, authentication, assessment, VivaConfigViewSet,
+                                  JobVivaTimeSlotCreateAPIView, VivaConfigPerDayViewSet)
 from job_board.views.webpages.views import WebsiteView, MailView
+from datetime import datetime
+
+
+class DateConverter:
+    regex = '\d{4}-\d{1,2}-\d{1,2}'
+    format = '%Y-%m-%d'
+
+    def to_python(self, value):
+        return datetime.strptime(value, self.format).date()
+
+    def to_url(self, value):
+        return value.strftime(self.format)
+
+
+register_converter(DateConverter, 'date')
+
 
 webview_urls = [
     path('email-view/', MailView.as_view()),
@@ -30,6 +47,10 @@ api_urls = [
     # GET, POST
     path('assessment/<str:unique_id>/question/', assessment.CandidateAssessmentQuestion.as_view(),
          name='fetch_question'),  # GET
+    path('total-viva-slot-via-job-id/<int:job_id>/', VivaConfigViewSet.as_view(), name='total_viva_slot_by_job_id'),
+    path('booked-time-slots-via-job-id/<int:job_id>/<date:my_date>/', VivaConfigPerDayViewSet.as_view(),
+         name='booked_time_slots_by_date'),
+    path('create-job-viva-time-slot/', JobVivaTimeSlotCreateAPIView.as_view(), name='create_job_viva_time_slot'),
 ]
 
 urlpatterns = [
