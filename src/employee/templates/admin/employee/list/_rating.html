@@ -1,5 +1,7 @@
+{% load humanize_extra %}
+
 <ul>
-    {% for rating in employee.average_rating %}
-    <li>{{ rating.month|date:'F Y' }}:  {{ rating.avg_score|floatformat:2 }}</li>
+    {% for month, average_rating in ratings %}
+    <li><b>Average Rating : {{average_rating}}</b>  [{{month|int_to_month}}] </li>
     {% endfor %}
 </ul>

@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "project_management",
     "account",
     "asset_management",
+    "inventory_management",
     "website",
     "provident_fund",
     # Custom App
@@ -287,3 +288,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
 }
+# CRON_CLASSES = [
+#     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
+# ]
+

@@ -37,7 +37,7 @@
     const announcement__inner = document.getElementById("_announcement__inner");
 
     function animate(element) {
-        let elementWidth = element.offsetWidth;
+        let elementWidth = element.scrollWidth;
         let parentWidth = element.parentElement.offsetWidth;
         let flag = parentWidth;
 
@@ -47,7 +47,7 @@
             if (elementWidth == -flag) {
                 flag = parentWidth;
             }
-        }, 10);
+        }, 15);
     }
     animate(announcement__inner);
 

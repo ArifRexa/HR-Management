@@ -12,6 +12,8 @@ from django.db import models
 from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
+
 from django.dispatch import receiver
 from tinymce.models import HTMLField
 
@@ -132,6 +134,13 @@ class Project(TimeStampMixin, AuthorMixin):
                 return True #BLACK
         else:
             return True #BLACK
+    
+    @property
+    def associated_employees(self):
+        return Employee.objects.filter(
+            employeeproject__project=self,
+            employeeproject__project__active=True
+        )
 
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
@@ -356,7 +365,6 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         #      index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
-
 
     # def clean(self):
     #     # LeaveManagement = apps.get_model('employee', 'LeaveManagement')
@@ -642,3 +650,38 @@ class ProjectReport(TimeStampMixin):
     class Meta:
         verbose_name = "Project Report"
         verbose_name_plural = "Project Reports"
+
+
+class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=24)
+    enableproject = models.BooleanField(default=False)
+    last_time = models.TimeField(null=True, blank=True)
+
+
+    def save(self, *args, **kwargs):
+        # Ensure only one object of this class exists
+        if not self.pk and EnableDailyUpdateNow.objects.exists():
+            # If trying to create a new object and one already exists, raise an exception
+            raise Exception("Only one instance of EnableDailyUpdateNow can be created.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        # When deleting the object, allow creating another one
+        self.pk = None
+        return super().delete(*args, **kwargs)
+    class Meta:
+        verbose_name = "Project Update Enable"
+        verbose_name_plural = "Project Update Enable by me"
+        # permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)
+
+
+class ObservationProject(TimeStampMixin, AuthorMixin):
+    project_name = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name='observation_projects')
+    class Meta:
+        verbose_name = 'Observe New Project'
+        # verbose_name_plural = 'Observations'
+@receiver(post_save, sender=Project)
+def create_observation(sender, instance, created, **kwargs):
+    if created:
+        ObservationProject.objects.create(project_name=instance)
+
