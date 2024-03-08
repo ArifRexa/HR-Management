@@ -84,7 +84,7 @@ from job_board.models import VivaConfig, JobVivaTimeSlot
 class JobVivaTimeSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobVivaTimeSlot
-        fields = ['job_post', 'candidate', 'start_time', 'end_time', 'date']
+        fields = ['id', 'job_post', 'candidate', 'start_time', 'end_time', 'date']
 
 
 class JobPostByStartTimeSerializer(serializers.ModelSerializer):
@@ -95,7 +95,7 @@ class JobPostByStartTimeSerializer(serializers.ModelSerializer):
 class VivaConfigSerializer(serializers.ModelSerializer):
     class Meta:
         model = VivaConfig
-        fields = ['job_post', 'duration', 'start_date', 'end_date', 'start_time', 'end_time']
+        fields = ['id', 'job_post', 'duration', 'start_date', 'end_date', 'start_time', 'end_time']
 
 
 class VivaConfigWithBookedSlotsSerializer(serializers.ModelSerializer):
