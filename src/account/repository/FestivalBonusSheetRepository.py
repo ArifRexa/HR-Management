@@ -112,7 +112,7 @@ class FestivalBonusSheetRepository:
             new_policy_cutoff = self.__festival_bonus_sheet.date
             
             if employee.joining_date < previous_policy_cutoff:
-                                
+                
                 # Apply previous policy
                 dtdelta = employee.joining_date + timedelta(days=180)
                 seventyFivePercent = employee.joining_date + timedelta(days=150)
@@ -142,14 +142,13 @@ class FestivalBonusSheetRepository:
                     return round((basic_salary * 5) / 100, 2)
                 
             else:
-                
+               
                 if employee.permanent_date:
                     # Apply new policy
                     # Calculate the number of months since joining
                     months_since_joining = relativedelta(self.__festival_bonus_sheet.date, employee.joining_date).months
                     # Calculate festival bonus based on months since joining
-                    basic_salary = (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
-                    
+                    basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
                     if months_since_joining < 3:
                         return 0
                     elif months_since_joining >= 3 and months_since_joining < 5:
