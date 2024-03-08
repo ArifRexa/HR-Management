@@ -47,7 +47,6 @@ def candidate_email_to_reapply(to_email:str, subject):
     email.attach_alternative(html_content,'text/html')
 
     email.send()
->>>>>>> fc14a4c5a05267be9d8d536e819a3f47de74cc6d
 
 
 def send_otp(otp, email_address):
@@ -140,8 +139,8 @@ def send_candidate_email(candidate_email:str,email_content,attachment_paths: str
     email = EmailMessage()
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [candidate_email]
-    email.subject = strip_tags(email_content.subject)
-    email.body = strip_tags(email_content.body)
+    email.subject = email_content.subject
+    email.attach_alternative(email_content.body)
     for attachment_path in attachment_paths:
         if attachment_path:
             attachment_filename = os.path.basename(attachment_path)
