@@ -11,6 +11,14 @@ def daily_sum(queryset):
     return sum(item.get('expense_amount') for item in queryset)
 
 @register.filter
+def vds_sum(queryset):
+    return sum(item.get('vds_amount') for item in queryset)
+
+@register.filter
+def tds_sum(queryset):
+    return sum(item.get('tds_amount') for item in queryset)
+
+@register.filter
 def details_for_expense_group(queryset, date=timezone.now().date):
     details_list = Expense.objects.filter(expanse_group__id=queryset.get('expanse_group__id'), date=date)
     notes = ''

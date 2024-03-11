@@ -9,6 +9,7 @@ from weasyprint import HTML
 from django.db.models.functions import TruncDate, Concat, ExtractYear, ExtractMonth
 from django.db.models import Sum, Count, Value, CharField
 from django.db.models import DateField
+from django.db.models import F, ExpressionWrapper, DecimalField
 
 
 @require_http_methods(["POST", "GET"])
@@ -135,11 +136,15 @@ def costs_by_expense_group(request, id):
     
     # data calculation 
     expenses_data = monthly_journal.expenses.values('expanse_group__account_code') \
-                                .annotate(expense_amount=Sum('amount')) \
+                                .annotate(expense_amount=Sum('amount'),
+                                        vds_rate=F('expanse_group__vds_rate'),
+                                        tds_rate=F('expanse_group__tds_rate'),
+                                        vds_amount=ExpressionWrapper(F('expense_amount') - (F('vds_rate') * F('expense_amount') / 100),
+                                                output_field=DecimalField()),
+                                        tds_amount=ExpressionWrapper(F('expense_amount') - (F('tds_rate') * F('expense_amount') / 100),
+                                                output_field=DecimalField())) \
                                 .order_by('expanse_group__account_code') \
-                                .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount')
-    
-
+                                .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount','vds_rate', 'vds_amount', 'tds_rate', 'tds_amount')
     # get the context data
     context = {'expense_data': expenses_data}
 
