@@ -51,9 +51,11 @@ class MonthlyJournalAdmin(admin.ModelAdmin):
     def export_btn(self, obj=None):
         url = obj.get_monthly_journal()
         group_costs = obj.group_cost_url()
+        balance_sheet = obj.balance_sheet_url()
         btn = f"""
             <a href="{url}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Account Journal</a>
             <a href="{group_costs}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Group Costs</a>
+            <a href="{balance_sheet}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Balance Sheet</a>
             """
     
         return format_html(btn)

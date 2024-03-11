@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse
-from account.models import AccountJournal
+from account.models import AccountJournal, Income, Expense
 from django.utils import timezone
 from django.template.loader import get_template
 from django.views.decorators.http import require_http_methods
@@ -9,7 +9,9 @@ from weasyprint import HTML
 from django.db.models.functions import TruncDate, Concat, ExtractYear, ExtractMonth
 from django.db.models import Sum, Count, Value, CharField
 from django.db.models import DateField
-from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models import F, ExpressionWrapper, DecimalField, Q
+from datetime import timedelta
+from itertools import zip_longest
 
 
 @require_http_methods(["POST", "GET"])
@@ -155,4 +157,51 @@ def costs_by_expense_group(request, id):
     file_name = str(timezone.now())
     response = HttpResponse(html_content, content_type='application/vnd.ms-excel')
     response['Content-Disposition'] = f'attachment; filename=account-journal-{file_name}.xls'
+    return response 
+
+
+@require_http_methods(["POST", "GET"])
+@login_required(login_url="/admin/login/")
+def balance_sheet(request, id):
+    monthly_journal = get_object_or_404(AccountJournal, id=id)
+    template = get_template('excel/balance-sheet.html')
+
+
+    expenses_data = Expense.objects.filter(
+        Q(add_to_balance_sheet = True) & 
+        Q(is_approved = True) &
+        Q(date__gte = monthly_journal.date - timedelta(days=30)) & 
+        Q(date__lte = monthly_journal.date)
+    ).values('date','expanse_group__title', 'amount')\
+    .order_by('date')
+
+    total_expense_amount = expenses_data.aggregate(total_amount=Sum('amount'))['total_amount']
+
+        
+    incomes_data = Income.objects.filter(
+        Q(add_to_balance_sheet = True) & 
+        Q(status = "approved") &
+        Q(date__gte = monthly_journal.date - timedelta(days=30)) & 
+        Q(date__lte = monthly_journal.date)
+    ).values('date','project__title', 'payment').order_by('date')
+
+    total_income_amount = incomes_data.aggregate(total_amount=Sum('payment'))['total_amount']
+
+    zipped_data = list(zip_longest(incomes_data, expenses_data, fillvalue={}))
+
+    context = {
+        'month' : monthly_journal.date.strftime("%B"),
+        'year' : monthly_journal.date.strftime("%Y"),
+        'total_expense_amount': total_expense_amount,
+        'total_income_amount': total_income_amount,
+        'zipped_data': zipped_data
+        }
+
+    # Render the html template with the context data.
+    html_content = template.render(context)
+   
+    # Create a response with the Excel file
+    file_name = str(timezone.now())
+    response = HttpResponse(html_content, content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = f'attachment; filename=balance-sheet-{file_name}.xls'
     return response 

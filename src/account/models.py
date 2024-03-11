@@ -113,6 +113,7 @@ class Expense(TimeStampMixin, AuthorMixin):
     approved_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="approve_by", null=True, blank=True
     )
+    add_to_balance_sheet = models.BooleanField(default=False)
 
     class Meta:
         permissions = (
@@ -145,6 +146,7 @@ class Income(TimeStampMixin, AuthorMixin):
     date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
+    add_to_balance_sheet = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.payment = self.hours * (self.hour_rate * self.convert_rate)
@@ -282,6 +284,9 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
     
     def group_cost_url(self):
         return reverse('account:group_costs', args=[str(self.id)])
+    
+    def balance_sheet_url(self):
+        return reverse('account:balance_sheet', args=[str(self.id)])
     
 class DailyPaymentVoucher(AccountJournal):
     
