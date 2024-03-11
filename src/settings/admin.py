@@ -3,9 +3,12 @@ from django import forms
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
-from django_q.tasks import async_task
 from django.template import loader
 from django.core.mail import EmailMessage
+from datetime import timedelta
+from django.utils import timezone
+from django_q.tasks import async_task, schedule
+from django_q.models import Schedule
 
 # Register your models here.
 from django.template.defaultfilters import (
@@ -217,19 +220,25 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
 
     @admin.action(description="Send Email")
     def send_mail(modeladmin, request, queryset):
+        chunk_size = 50
+        hour = 0
+
         for announcement in queryset:
            
                 employee_email_list = list(
                     Employee.objects.filter(active=True).values_list("email", flat=True)
                 )
-                for employee_email in employee_email_list:
-                    subject = announcement.subject
-                    attachmentqueryset = EmailAnnouncementAttatchment.objects.filter(email_announcement=announcement)
-                    attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
-                    html_body = announcement.body
-                    async_task(
-                        "settings.tasks.announcement_all_employee_mail", employee_email, subject, html_body, attachment_paths
-                    )
+                for i in range(0, len(employee_email_list), chunk_size):
+                    chunk_emails = employee_email_list[i:i+chunk_size]
+
+                    schedule('settings.tasks.send_chunk_email',
+                            chunk_emails,
+                            announcement.id,
+                            name=f"Email announcement schedule - {timezone.now().microsecond}",
+                            schedule_type=Schedule.ONCE,
+                            next_run=timezone.now() + timedelta(hours=hour))
+                    
+                    hour += 1
         if queryset:
             messages.success(request, "Email sent successfully.")
 

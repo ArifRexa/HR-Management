@@ -22,5 +22,13 @@ class Resignation(TimeStampMixin, AuthorMixin):
                                     editable=False)
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'user__is_superuser': False, 'active':True})
 
+    class Meta:
+        permissions = (
+            (
+                "can_view_all_resignations",
+                "Can View All Resignations",
+            ),
+        )
+
     def short_message(self):
         return truncatewords(self.message, 20)

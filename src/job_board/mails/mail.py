@@ -3,6 +3,7 @@ from threading import Thread
 from django.template import loader
 
 
+
 class EmailTread(Thread):
     def __init__(self, subject, html_content, recipient_list):
         self.subject = subject
