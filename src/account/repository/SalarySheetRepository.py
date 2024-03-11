@@ -400,7 +400,7 @@ class SalarySheetRepository:
                 tenPercent = employee.joining_date + timedelta(days=60)
                 fivePercet = employee.joining_date + timedelta(days=30)
                 
-                basic_salary = (self.__employee_current_salary.payable_salary / 100) * employee.pay_scale.basic
+                basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
                 
                 if dtdelta < new_policy_cutoff:                
                     return basic_salary
