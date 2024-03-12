@@ -171,4 +171,5 @@ class EmployeeNearbySummery:
         new_lead_or_managers = Observation.objects.all()
         print('******************')
         print(len(new_lead_or_managers))
+        print(new_lead_or_managers[0].employee)
         return new_lead_or_managers
