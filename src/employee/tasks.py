@@ -3,6 +3,8 @@ import datetime
 import math
 from dateutil.relativedelta import relativedelta, FR
 
+from . models import EmployeeAttendance,EmployeeActivity
+from datetime import datetime
 from django.core import management
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template import Context, loader
@@ -514,3 +516,15 @@ def save_entry_pass_id():
         )
         employee.save()
     print("All Saved.")
+
+
+
+def employee_attendance_old_data_delete(months):
+    current_date = datetime.now()
+    months_ago = relativedelta(months=months)
+
+    target_date = current_date - months_ago
+    old_data_attendence = EmployeeAttendance.objects.filter(created_at__lt=target_date)
+    old_data_attendence.delete()
+    old_data_activity = EmployeeActivity.objects.filter(created_at__lt=target_date)
+    old_data_activity.delete()
