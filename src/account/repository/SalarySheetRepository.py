@@ -423,11 +423,18 @@ class SalarySheetRepository:
             else:
                    
                 if employee.permanent_date:
-                    # Apply new policy
-                    # Calculate the number of months since joining
-                    months_since_joining = relativedelta(self.__salary_sheet.date, employee.joining_date).months
-                    # Calculate festival bonus based on months since joining
-                    
+                   
+                    joining_date = employee.joining_date
+                    festival_bonus_date = self.__salary_sheet.date
+
+                    # Calculate the difference in years using relativedelta
+                    delta = relativedelta(festival_bonus_date, joining_date)
+
+                    # Calculate the total months since joining
+                    months_since_joining = delta.years * 12 + delta.months
+                    print(employee,months_since_joining)
+
+
                     basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
                     
                    
