@@ -45,7 +45,7 @@ class AddDDailyProjectUpdateForm(forms.ModelForm):
     def is_valid_url(self,url):
         validator = URLValidator()
         try:
-            validator(url)
+            validator(url.strip())
             return True
         except ValidationError:
             return False
