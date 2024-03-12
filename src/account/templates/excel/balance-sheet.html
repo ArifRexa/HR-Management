@@ -1,0 +1,96 @@
+{% load daily_expense %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Journal</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <table >
+        <thead>
+            <tr>
+                <th colspan="12">
+                    <h2>MEDIUSWARE LTD.</h2>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="12">
+                    <h2>MOHAMMADPUR,RING ROAD,HOUSE 18/5, DHAKA -1207</h2>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="12">
+                    <h2>INCOME AND EXPENDITURE SUMMARY OF {{month}} {{year}} </h2>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="12">
+                </th>
+            </tr>
+            
+            <tr>
+                <th colspan="4">INCOME</th>
+                <th colspan="4"></th>
+                <th colspan="4">EXPENDITURE</th>
+            </tr>
+            <tr>
+                <th>SL NO</th>
+                <th>DATE</th>
+                <th>INCOME TYPE (Services)</th>
+                <th>AMOUNT (BDT)</th>
+                <th colspan="4"></th>
+                <th>SL NO</th>
+                <th>EXPENDITURE TYPE</th>
+                <th>AMOUNT (BDT)</th>
+            </tr>
+        </thead>
+        
+        {% for income, expense in zipped_data %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ income.date|date:"j/n/Y" }}</td>
+            <td>{{ income.project__title }}</td>
+            <td>{{ income.payment }}</td>
+            <td colspan="4"></td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ expense.expanse_group__title }}</td>
+            <td>{{ expense.total_amount }}</td>
+        </tr>
+        {% endfor %}
+
+        <tr>
+            <td colspan="3">TOTAL INCOME</td>
+            <td>{{ total_income_amount }}</td>
+            <td colspan="4"></td>
+            <td colspan="2">TOTAL EXPENDITURE</td>
+            <td>{{ total_expense_amount }}</td>
+        </tr>
+        <tr>
+            <td colspan="9"></td>
+            <td>{{ total_income_amount|plb:total_expense_amount}}</td>
+            <td>{{total_income_amount|plb_amount:total_expense_amount}}</td>
+        </tr>
+
+
+    </table>
+</body>
+
+</html>

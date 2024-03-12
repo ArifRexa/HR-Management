@@ -11,6 +11,31 @@ def daily_sum(queryset):
     return sum(item.get('expense_amount') for item in queryset)
 
 @register.filter
+def vds_sum(queryset):
+    return sum(item.get('vds_amount') for item in queryset)
+
+@register.filter
+def tds_sum(queryset):
+    return sum(item.get('tds_amount') for item in queryset)
+
+@register.filter
+def plb(total_income, total_expense):
+    if total_income > total_expense:
+        return "Profit"
+    elif total_income < total_expense:
+        return "Loss"
+    else:
+        return "Balance Equal"
+    
+@register.filter
+def plb_amount(total_income, total_expense):
+    return total_income - total_expense
+
+@register.filter
+def tds_sum(queryset):
+    return sum(item.get('tds_amount') for item in queryset)
+
+@register.filter
 def details_for_expense_group(queryset, date=timezone.now().date):
     details_list = Expense.objects.filter(expanse_group__id=queryset.get('expanse_group__id'), date=date)
     notes = ''
