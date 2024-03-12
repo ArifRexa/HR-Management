@@ -7,7 +7,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from weasyprint import HTML
 from django.db.models.functions import TruncDate, Concat, ExtractYear, ExtractMonth
-from django.db.models import Sum, Count, Value, CharField
+from django.db.models import Sum, Count, Value, CharField, Min
 from django.db.models import DateField
 from django.db.models import F, ExpressionWrapper, DecimalField, Q
 from datetime import timedelta
@@ -63,7 +63,7 @@ def account_journal(request, id):
     expenses_data = {}
 
     for expense_date in expense_dates:
-        expenses = monthly_journal.expenses.filter(date=expense_date['day']) \
+        expenses = monthly_journal.expenses.filter(Q(date=expense_date['day']) & Q(add_to_balance_sheet=True) & Q(is_approved=True)) \
                                         .values('expanse_group__account_code', 'expanse_group__title') \
                                         .order_by('expanse_group__account_code') \
                                         .annotate(expense_amount=Sum('amount')) \
@@ -137,13 +137,14 @@ def costs_by_expense_group(request, id):
     template = get_template('excel/monthly-expense-group.html')
     
     # data calculation 
-    expenses_data = monthly_journal.expenses.values('expanse_group__account_code') \
+    expenses_data = monthly_journal.expenses.filter(Q(add_to_balance_sheet=True) & Q(is_approved=True) & Q(date__year=monthly_journal.date.year) & Q(date__month=monthly_journal.date.month))\
+                                .values('expanse_group__account_code') \
                                 .annotate(expense_amount=Sum('amount'),
                                         vds_rate=F('expanse_group__vds_rate'),
                                         tds_rate=F('expanse_group__tds_rate'),
-                                        vds_amount=ExpressionWrapper(F('expense_amount') - (F('vds_rate') * F('expense_amount') / 100),
+                                        vds_amount=ExpressionWrapper((F('vds_rate') * F('expense_amount') / 100),
                                                 output_field=DecimalField()),
-                                        tds_amount=ExpressionWrapper(F('expense_amount') - (F('tds_rate') * F('expense_amount') / 100),
+                                        tds_amount=ExpressionWrapper((F('tds_rate') * F('expense_amount') / 100),
                                                 output_field=DecimalField())) \
                                 .order_by('expanse_group__account_code') \
                                 .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount','vds_rate', 'vds_amount', 'tds_rate', 'tds_amount')
@@ -166,14 +167,22 @@ def balance_sheet(request, id):
     monthly_journal = get_object_or_404(AccountJournal, id=id)
     template = get_template('excel/balance-sheet.html')
 
+    # expenses_data = Expense.objects.filter(
+    #     Q(add_to_balance_sheet = True) & 
+    #     Q(is_approved = True) &
+    #     Q(date__gte = monthly_journal.date - timedelta(days=30)) & 
+    #     Q(date__lte = monthly_journal.date)
+    # ).values('date','expanse_group__title', 'amount')\
+    # .order_by('date')
 
     expenses_data = Expense.objects.filter(
-        Q(add_to_balance_sheet = True) & 
-        Q(is_approved = True) &
-        Q(date__gte = monthly_journal.date - timedelta(days=30)) & 
-        Q(date__lte = monthly_journal.date)
-    ).values('date','expanse_group__title', 'amount')\
-    .order_by('date')
+        Q(add_to_balance_sheet=True) &
+        Q(is_approved=True) &
+        Q(date__year=monthly_journal.date.year) &
+        Q(date__month=monthly_journal.date.month)
+    ).values('expanse_group__title').annotate(
+        total_amount=Sum('amount'),
+    ).order_by('expanse_group__title')\
 
     total_expense_amount = expenses_data.aggregate(total_amount=Sum('amount'))['total_amount']
 
@@ -181,8 +190,8 @@ def balance_sheet(request, id):
     incomes_data = Income.objects.filter(
         Q(add_to_balance_sheet = True) & 
         Q(status = "approved") &
-        Q(date__gte = monthly_journal.date - timedelta(days=30)) & 
-        Q(date__lte = monthly_journal.date)
+        Q(date__year=monthly_journal.date.year) & 
+        Q(date__month=monthly_journal.date.month)
     ).values('date','project__title', 'payment').order_by('date')
 
     total_income_amount = incomes_data.aggregate(total_amount=Sum('payment'))['total_amount']

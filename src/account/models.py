@@ -113,7 +113,7 @@ class Expense(TimeStampMixin, AuthorMixin):
     approved_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="approve_by", null=True, blank=True
     )
-    add_to_balance_sheet = models.BooleanField(default=False)
+    add_to_balance_sheet = models.BooleanField(default=True)
 
     class Meta:
         permissions = (
