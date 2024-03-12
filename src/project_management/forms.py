@@ -1,5 +1,7 @@
 from django import forms
 from django.forms import BaseInlineFormSet
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 
 from project_management.models import ClientFeedback, DailyProjectUpdate
 
@@ -38,4 +40,31 @@ class AddDDailyProjectUpdateForm(forms.ModelForm):
         super(AddDDailyProjectUpdateForm, self).__init__(*args, **kwargs)
         # there's a `fields` property now
         # self.fields['hours'].required = False
+
+    
+    def is_valid_url(self,url):
+        validator = URLValidator()
+        try:
+            validator(url.strip())
+            return True
+        except ValidationError:
+            return False
+
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        update_json = cleaned_data.get("updates_json")
+
+        for item in update_json:
+            link = item[2]
+            if link == "":
+                raise forms.ValidationError(
+                    {"updates_json":"Please enter a commit link"},
+                )
+            if not self.is_valid_url(link):
+                raise forms.ValidationError(
+                    {"updates_json":"Please enter a valid URL"},
+                )
+        return cleaned_data
 

@@ -504,4 +504,4 @@ class SalarySheetRepository:
     def __calculate_device_allowance(
         self, employee: Employee, salary_date: datetime.date
     ):
-        return 3000.0 if employee.device_allowance else 0.0
+        return 2500.0 if employee.device_allowance else 0.0

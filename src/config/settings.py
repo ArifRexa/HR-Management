@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "project_management",
     "account",
     "asset_management",
+    "inventory_management",
     "website",
     "provident_fund",
     # Custom App
@@ -198,6 +199,7 @@ SMS_API_KEY = os.environ.get("SMS_API_KEY")
 SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID")
 
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
+# CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
@@ -289,3 +291,4 @@ REST_FRAMEWORK = {
 # CRON_CLASSES = [
 #     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
 # ]
+
