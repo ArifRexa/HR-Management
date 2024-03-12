@@ -25,7 +25,7 @@ def plb(total_income, total_expense):
     elif total_income < total_expense:
         return "Loss"
     else:
-        return "Break Even"
+        return "Balance Equal"
     
 @register.filter
 def plb_amount(total_income, total_expense):

@@ -55,7 +55,7 @@ class MonthlyJournalAdmin(admin.ModelAdmin):
         btn = f"""
             <a href="{url}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Account Journal</a>
             <a href="{group_costs}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Group Costs</a>
-            <a href="{balance_sheet}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Balance Sheet</a>
+            <a href="{balance_sheet}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Income Statement </a>
             """
     
         return format_html(btn)

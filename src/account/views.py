@@ -212,5 +212,5 @@ def balance_sheet(request, id):
     # Create a response with the Excel file
     file_name = str(timezone.now())
     response = HttpResponse(html_content, content_type='application/vnd.ms-excel')
-    response['Content-Disposition'] = f'attachment; filename=balance-sheet-{file_name}.xls'
+    response['Content-Disposition'] = f'attachment; filename=income-statement -{file_name}.xls'
     return response 
