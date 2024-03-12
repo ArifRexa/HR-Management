@@ -405,9 +405,11 @@
                         <div class="card-body rounded-0 p-0">
                             <ul class="list-group list-group-flush">
                                 {% for new_lead_or_manager in new_lead_or_managers %}
-                                     <li class="list-group-item">
-                                            {{ new_lead_or_manager.employee }}
-                                     </li>
+                                     {% if not new_employee.lead and not new_employee.manager %}
+                                         <li class="list-group-item">
+                                                {{ new_lead_or_manager.employee }}
+                                         </li>
+                                     {% endif %}
                                 {% endfor %}
                             </ul>
                         </div>
