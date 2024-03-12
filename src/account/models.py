@@ -14,6 +14,7 @@ from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 from project_management.models import Project, Client
 from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
@@ -87,6 +88,8 @@ class ExpenseGroup(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True, blank=True)
     account_code = models.IntegerField(null=True, blank=True)
+    vds_rate = models.DecimalField(max_digits=4, decimal_places=2,validators=[MinValueValidator(0)], default=0.00)
+    tds_rate = models.DecimalField(max_digits=4, decimal_places=2,validators=[MinValueValidator(0)], default=0.00)
 
     def __str__(self):
         return self.title
@@ -110,6 +113,7 @@ class Expense(TimeStampMixin, AuthorMixin):
     approved_by = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="approve_by", null=True, blank=True
     )
+    add_to_balance_sheet = models.BooleanField(default=True)
 
     class Meta:
         permissions = (
@@ -142,6 +146,7 @@ class Income(TimeStampMixin, AuthorMixin):
     date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
+    add_to_balance_sheet = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.payment = self.hours * (self.hour_rate * self.convert_rate)
@@ -279,6 +284,9 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
     
     def group_cost_url(self):
         return reverse('account:group_costs', args=[str(self.id)])
+    
+    def balance_sheet_url(self):
+        return reverse('account:balance_sheet', args=[str(self.id)])
     
 class DailyPaymentVoucher(AccountJournal):
     

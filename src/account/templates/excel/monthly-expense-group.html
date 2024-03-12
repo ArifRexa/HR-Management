@@ -30,6 +30,10 @@
                 <th>Head</th>
                 <th>Debit</th>
                 <th>Credit</th>
+                <th>VDS Rate</th>
+                <th>VDS Amount</th>
+                <th>TDS Rate</th>
+                <th>TDS Amount</th>
             </tr>
         </thead>
         <tr>
@@ -42,12 +46,20 @@
                 <td>{{ expense.expanse_group__title }}</td>
                 <td>{{ expense.expense_amount }}</td>
                 <td></td>
+                <td>{{ expense.vds_rate }}%</td>
+                <td>{{ expense.vds_amount }}</td>
+                <td>{{ expense.tds_rate }}%</td>
+                <td>{{ expense.tds_amount }}</td>
             </tr>
         {% endfor %}
         <tr>
             <th>Total</th>
             <th>{{ expense_data|daily_sum }}</th>
             <th>{{ expense_data|daily_sum }}</th>
+            <th></th>
+            <th>{{ expense_data|vds_sum }}</th>
+            <th></th>
+            <th>{{ expense_data|tds_sum }}</th>
         </tr>
        
     </table>
