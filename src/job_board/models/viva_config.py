@@ -21,3 +21,4 @@ class VivaConfig(models.Model):
 class ExcludedDates(models.Model):
     viva_config = models.ForeignKey(VivaConfig, on_delete=models.CASCADE)
     date = models.DateField()
+

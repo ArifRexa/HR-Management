@@ -103,7 +103,7 @@ class VivaConfigViewSet(generics.ListAPIView):
     def get_queryset(self):
         job_id = self.kwargs.get('job_id')
         config_queryset = VivaConfig.objects.filter(job_post_id=job_id)
-        timeslot_queryset = JobVivaTimeSlot.objects.filter(job_post_id=job_id)
+        timeslot_queryset = JobVivaTimeSlot.objects.filter(job_post__job_post_id=job_id)
         return config_queryset, timeslot_queryset
 
     def list(self, request, *args, **kwargs):
@@ -158,14 +158,14 @@ class VivaConfigPerDayViewSet(generics.ListAPIView):
         job_id = self.kwargs.get('job_id')
         given_date = self.kwargs.get('my_date')
         config_queryset = VivaConfig.objects.filter(job_post_id=job_id)
-        timeslot_queryset = JobVivaTimeSlot.objects.filter(job_post_id=job_id, date=given_date)
+        timeslot_queryset = JobVivaTimeSlot.objects.filter(job_post__job_post_id=job_id, date=given_date)
         return config_queryset, timeslot_queryset
 
     def list(self, request, *args, **kwargs):
         print('******************************')
         # print(request.user)
         # print(type(request.user))
-        existing_slot = JobVivaTimeSlot.objects.filter(candidate=request.user).first()
+        existing_slot = JobVivaTimeSlot.objects.filter(candidate=request.user, job_post__job_post_id=kwargs.get('job_id')).first()
         # print(existing_slot)
         # if existing_slot is not None:
         #     print('return data with booked slot ')
