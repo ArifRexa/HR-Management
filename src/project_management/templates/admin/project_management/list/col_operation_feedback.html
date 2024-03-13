@@ -2,11 +2,13 @@
 
 <div class="popover-wrapper">
         <div class="popover-title">
-                {{ obj.cto_feedback }}
+                {% if obj.operation_feedback %}
+                <a href="{{obj.operation_feedback}}">{{ obj.operation_feedback }}</a>
+                {% endif %}
         </div>
 
     <div class="popover-message">
-                {{ obj.cto_feedback }}
+                {{ obj.operation_feedback }}
     </div>
 </div>
 <!--<script>-->

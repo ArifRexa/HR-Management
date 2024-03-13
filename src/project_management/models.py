@@ -228,7 +228,8 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     )
     payable = models.BooleanField(default=True)
     approved_by_cto = models.BooleanField(default=False)
-    cto_feedback = models.TextField(blank=True, null=True, verbose_name="Feedback")
+    operation_feedback = models.URLField(blank=True, null=True, verbose_name="Operation Feedback")
+    client_exp_feedback = models.URLField(blank=True, null=True, verbose_name="Client Experience Feedback")
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
