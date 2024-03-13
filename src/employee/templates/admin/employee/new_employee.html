@@ -381,36 +381,41 @@
 <!--                {% endif %}-->
 
                 {% if new_employees.exists %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header text-uppercase">New Joinee Employee</div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for new_employee in new_employees %}
-                                <li class="list-group-item">
-                                    {{ new_employee.full_name }}
-                                </li>
-                                {% endfor %}
-                            </ul>
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header text-uppercase">New Joinee Employee</div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for new_employee in new_employees %}
+                                        {% if not new_employee.lead and not new_employee.manager %}
+                                            <li class="list-group-item">
+                                                {{ new_employee.full_name }}
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
                 {% endif %}
+
                 {% if new_lead_or_managers.exists %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header text-uppercase">New Lead or Managers</div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for new_lead_or_manager in new_lead_or_managers %}
-                                <li class="list-group-item">
-                                    {{ new_lead_or_manager.employee.full_name }}
-                                </li>
-                                {% endfor %}
-                            </ul>
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header text-uppercase">New Lead or Managers </div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for new_lead_or_manager in new_lead_or_managers %}
+                                        {% if new_lead_or_manager.employee.lead or new_lead_or_manager.employee.manager %}
+                                             <li class="list-group-item">
+                                                    {{ new_lead_or_manager.employee }}
+                                             </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
                 {% endif %}
 
 <!--                {% if permanents_count > 0 %}-->
