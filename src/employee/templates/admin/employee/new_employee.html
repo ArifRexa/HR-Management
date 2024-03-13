@@ -461,25 +461,6 @@
                     </div>
                 </div>
                 {% endif %}
-
-                {% if anniversaries_count > 0 %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header">Anniversaries Nearby
-                            <span class="float-end badge bg-secondary">{{ anniversaries_count }}</span>
-                        </div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for employee_anniversary in anniversaries %}
-                                <li class="list-group-item">
-                                    {{ employee_anniversary.full_name }}
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
