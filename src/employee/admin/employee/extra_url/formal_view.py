@@ -175,7 +175,6 @@ class EmployeeNearbySummery:
         return self.projects.filter(created_at__gte=timezone.now() - datetime.timedelta(weeks=2))
         # return self.employees.filter(id==1)
     def new_lead_or_manager(self):
-        new_lead_or_managers = Observation.objects.all()
-        print(new_lead_or_managers)
+        new_lead_or_managers = Observation.objects.filter(created_at__gte=timezone.now() - datetime.timedelta(weeks=2))
         return new_lead_or_managers
 
