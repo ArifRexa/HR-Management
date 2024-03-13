@@ -121,7 +121,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'operation_feedback', 'client_exp_feedback']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'operation_feedback_link', 'client_exp_feedback_link']
         # if not request.user.is_superuser:
         #     list_display.remove('payable')
         return list_display
@@ -148,7 +148,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return format_html(html)
 
     @admin.display(description="Operation Feedback")
-    def operation_feedback(self, obj):
+    def operation_feedback_link(self, obj):
         html_template = get_template(
             "admin/project_management/list/col_operation_feedback.html"
         )
@@ -157,7 +157,7 @@ class ProjectHourOptions(admin.ModelAdmin):
     
 
     @admin.display(description="Client Experience Feedback")
-    def client_exp_feedback(self, obj):
+    def client_exp_feedback_link(self, obj):
         html_template = get_template(
             "admin/project_management/list/col_client_exp_feedback.html"
         )
