@@ -116,12 +116,12 @@ class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
     #     return False
 
 
-@admin.register(ObservationProject)
-class ObservationProjectAdmin(admin.ModelAdmin):
-    list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
-    # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
-    # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
-    date_hierarchy = 'created_at'  # Add date hierarchy navigation
+# @admin.register(ObservationProject)
+# class ObservationProjectAdmin(admin.ModelAdmin):
+#     list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
+#     # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
+#     # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
+#     date_hierarchy = 'created_at'  # Add date hierarchy navigation
 
     def get_queryset(self, request):
         # Calculate the date two weeks ago

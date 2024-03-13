@@ -12,6 +12,7 @@ from django.utils import timezone
 from employee.models import Employee, Leave
 from employee.models.employee import Observation
 
+from project_management.models import Project
 
 class FormalView(admin.ModelAdmin):
 
@@ -55,6 +56,8 @@ class FormalView(admin.ModelAdmin):
             # salary_change=nearby_summery.last_salary_change(),
             anniversaries=nearby_summery.anniversaries(),
             new_employees=nearby_summery.new_employee(),
+            new_proejcts=nearby_summery.new_projects(),
+
         )
         return TemplateResponse(request, "admin/employee/new_employee.html", context=context)
 
@@ -87,6 +90,7 @@ class EmployeeNearbySummery:
     def __init__(self):
         self.today = datetime.datetime.today()
         self.employees = Employee.objects.filter(active=True)
+        self.projects = Project.objects.filter(active=True)
 
 
     def birthdays(self):
@@ -166,8 +170,12 @@ class EmployeeNearbySummery:
 
     def new_employee(self):
         return self.employees.filter(joining_date__gte=timezone.now() - datetime.timedelta(weeks=2))
+
+    def new_projects(self):
+        return self.projects.filter(created_at__gte=timezone.now() - datetime.timedelta(weeks=2))
         # return self.employees.filter(id==1)
     def new_lead_or_manager(self):
         new_lead_or_managers = Observation.objects.all()
         print(new_lead_or_managers)
         return new_lead_or_managers
+

@@ -417,6 +417,22 @@
                         </div>
                     </div>
                 {% endif %}
+                {% if new_proejcts.exists %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header text-uppercase">New Proejcts </div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for new_proejct in new_proejcts %}
+                                             <li class="list-group-item">
+                                                   {{ new_proejct.title }}
+                                             </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
 
 <!--                {% if permanents_count > 0 %}-->
 <!--                <div class="col-md-6 mb-4">-->
