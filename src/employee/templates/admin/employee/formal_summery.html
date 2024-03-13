@@ -49,6 +49,7 @@
                   </tr>
                 </thead>
                 <tbody>
+                {% if salary_change %}
                   {% for changes in salary_change %}
                   <tr>
                     <td>{{changes.full_name}}</td>
@@ -56,6 +57,7 @@
                     <td>{{ changes.current_salary.active_from }}</td>
                   </tr>
                   {% endfor %}
+                {% endif %}
                 </tbody>
               </table>
         </div>

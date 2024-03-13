@@ -20,7 +20,7 @@
     }
 
     ul.messagelist li.alert-danger {
-        background: var(--message-error-bg) url({% static 'admin/img/icon-no.svg' %}) 40px 12px no-repeat;
+        background: var(--message-success-bg) url({% static 'admin/img/icon-no.svg' %}) 40px 12px no-repeat;
         color: #842029;
         background-color: #f8d7da;
         border-color: #f5c2c7;
@@ -185,221 +185,276 @@
     <div class="row">
         <div class="col-md-4">
             {% include 'admin/form/employee_favourite_menu.html' %}
-            {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+
 
             {% block extra_menu %}
 
             {% endblock %}
-            
+
 
         </div>
         <div class="col-md-8">
             <div class="row">
-                <div class="col-md-6 mb-4">
-                    <ul class="list-group rounded-0">
-                        <li class="list-group-item list-group-item-action active">
-                            <span class=" text-uppercase">Employee Status</span>
-                        </li>
-                        {% for online in employee_online %}
-                        <li class="list-group-item list-group-item-action">
-                            {% if online.active %}
-                            <span style="color: green">🟢</span>
-                            {% else %}
-                            <span>🔴</span>
-                            {% endif %}
-                            <span class="{% if online.employee.one_month_less %} text-primary fs-6 {% endif %}">
-                                {{ online.employee.full_name }}
-                            </span>
-                            
-                            {% with needhelptime=online.employee.employeeneedhelp.updated_at|timesince %}
-                            {% for need_help in online.employee.employeeneedhelp.need_help_position.all %}
-                                <span class="badge float-end rounded" style="background:#0d6efd;">
-                                    Need {{ need_help.title }}
-                                    <br>
-                                    {{ needhelptime }} ago
-                                </span>
-                            {% endfor %}
-                            {% endwith %}
+<!--                <div class="col-md-6 mb-4">-->
+<!--                    <ul class="list-group rounded-0">-->
+<!--                        <li class="list-group-item list-group-item-action active">-->
+<!--                            <span class=" text-uppercase">Employee Status</span>-->
+<!--                        </li>-->
+<!--                        {% for online in employee_online %}-->
+<!--                        <li class="list-group-item list-group-item-action">-->
+<!--                            {% if online.active %}-->
+<!--                            <span style="color: green">🟢</span>-->
+<!--                            {% else %}-->
+<!--                            <span>🔴</span>-->
+<!--                            {% endif %}-->
+<!--                            <span class="{% if online.employee.one_month_less %} text-primary fs-6 {% endif %}">-->
+<!--                                {{ online.employee.full_name }}-->
+<!--                            </span>-->
 
-                            {% comment %} {% if online.employee.need_hr %}
-                            <span class="badge float-end rounded" style="background:#0d6efd;">
-                                Need HR
-                                <br>
-                                 {{ online.employee.need_hr_at | timesince}} ago
-                            </span>
-                            {% endif %}
-                            {% if online.employee.need_cto %}
-                            <span class="badge bg-success float-end rounded">
-                                Need Tech Lead
-                                <br>
-                                 {{ online.employee.need_cto_at | timesince}} ago
-                            </span>
-                            {% endif %} {% endcomment %}
-                        </li>
-                        {% endfor %}
-                    </ul>
+<!--                            {% with needhelptime=online.employee.employeeneedhelp.updated_at|timesince %}-->
+<!--                            {% for need_help in online.employee.employeeneedhelp.need_help_position.all %}-->
+<!--                                <span class="badge float-end rounded" style="background:#0d6efd;">-->
+<!--                                    Need {{ need_help.title }}-->
+<!--                                    <br>-->
+<!--                                    {{ needhelptime }} ago-->
+<!--                                </span>-->
+<!--                            {% endfor %}-->
+<!--                            {% endwith %}-->
 
-                </div>
-
-                <div class="col-md-6 mb-4">
-                    <ul class="list-group rounded-0">
-                        <li class="list-group-item active">
-                            <span class="text-uppercase">Employee's Projects</span>
-                        </li>
-                        <li class="list-group-item">
-                            <span class="float-start w-60 fs-6 fw-semibold">
-                                {% if ord == '1' %}
-                                <a class="text-decoration-none text-dark" href="?ord=-1">Employee Name</a>
-                                {% else %}
-                                <a class="text-decoration-none text-dark text-wrap" href="?ord=1">Employee Name</a>
-                                {% endif %}
-                            </span>
-
-                            <span class="float-end  fs-6 fw-bold">
-                                {% if ord == '2' %}
-                                <a class="text-decoration-none text-dark" href="?ord=-2">Projects</a>
-                                {% else %}
-                                <a class="text-decoration-none text-dark" href="?ord=2">Projects</a>
-                                {% endif %}
-                            </span>
-                        </li>
-
-                        {% for employee_project in employee_projects %}
-                        <li class="list-group-item">
-                            <span class="float-start w-50">
-                                {% if employee_project.project_exists %}
-                                <span style="color: green">🟢</span>
-                                {% else %}
-                                <span>🔴</span>
-                                {% endif %}
-<!--                                {{ employee_project.employee.full_name }}-->
+<!--                            {% comment %} {% if online.employee.need_hr %}-->
+<!--                            <span class="badge float-end rounded" style="background:#0d6efd;">-->
+<!--                                Need HR-->
 <!--                                <br>-->
-<!--                                ( {{ employee_project.employee.employeeskill_set.first.skill.title }} )-->
-                                {{ employee_project.employee.full_name }}
+<!--                                 {{ online.employee.need_hr_at | timesince}} ago-->
+<!--                            </span>-->
+<!--                            {% endif %}-->
+<!--                            {% if online.employee.need_cto %}-->
+<!--                            <span class="badge bg-success float-end rounded">-->
+<!--                                Need Tech Lead-->
+<!--                                <br>-->
+<!--                                 {{ online.employee.need_cto_at | timesince}} ago-->
+<!--                            </span>-->
+<!--                            {% endif %} {% endcomment %}-->
+<!--                        </li>-->
+<!--                        {% endfor %}-->
+<!--                    </ul>-->
 
-                                {% if employee_project.employee.employeeskill_set.first.skill.title %}
+<!--                </div>-->
 
-                                <!-- Visible on small screens -->
-                                <small class="d-block d-lg-none">
-                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})
-                                </small>
+<!--                <div class="col-md-6 mb-4">-->
+<!--                    <ul class="list-group rounded-0">-->
+<!--                        <li class="list-group-item active">-->
+<!--                            <span class="text-uppercase">Employee's Projects</span>-->
+<!--                        </li>-->
+<!--                        <li class="list-group-item">-->
+<!--                            <span class="float-start w-60 fs-6 fw-semibold">-->
+<!--                                {% if ord == '1' %}-->
+<!--                                <a class="text-decoration-none text-dark" href="?ord=-1">Employee Name</a>-->
+<!--                                {% else %}-->
+<!--                                <a class="text-decoration-none text-dark text-wrap" href="?ord=1">Employee Name</a>-->
+<!--                                {% endif %}-->
+<!--                            </span>-->
 
-                                <!-- Visible on large screens -->
-                                <span class="d-none d-lg-inline">
-                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})
-                                </span>
-                                {% endif %}
-                            </span>
+<!--                            <span class="float-end  fs-6 fw-bold">-->
+<!--                                {% if ord == '2' %}-->
+<!--                                <a class="text-decoration-none text-dark" href="?ord=-2">Projects</a>-->
+<!--                                {% else %}-->
+<!--                                <a class="text-decoration-none text-dark" href="?ord=2">Projects</a>-->
+<!--                                {% endif %}-->
+<!--                            </span>-->
+<!--                        </li>-->
+
+<!--                        {% for employee_project in employee_projects %}-->
+<!--                        <li class="list-group-item">-->
+<!--                            <span class="float-start w-50">-->
+<!--                                {% if employee_project.project_exists %}-->
+<!--                                <span style="color: green">🟢</span>-->
+<!--                                {% else %}-->
+<!--                                <span>🔴</span>-->
+<!--                                {% endif %}-->
+<!--&lt;!&ndash;                                {{ employee_project.employee.full_name }}&ndash;&gt;-->
+<!--&lt;!&ndash;                                <br>&ndash;&gt;-->
+<!--&lt;!&ndash;                                ( {{ employee_project.employee.employeeskill_set.first.skill.title }} )&ndash;&gt;-->
+<!--                                {{ employee_project.employee.full_name }}-->
+
+<!--                                {% if employee_project.employee.employeeskill_set.first.skill.title %}-->
+
+<!--                                &lt;!&ndash; Visible on small screens &ndash;&gt;-->
+<!--                                <small class="d-block d-lg-none">-->
+<!--                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})-->
+<!--                                </small>-->
+
+<!--                                &lt;!&ndash; Visible on large screens &ndash;&gt;-->
+<!--                                <span class="d-none d-lg-inline">-->
+<!--                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})-->
+<!--                                </span>-->
+<!--                                {% endif %}-->
+<!--                            </span>-->
 
 
-                            <span class="float-end">
-                                {% for project in employee_project.project.all %}
-<!--                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}-->
-                                <div class="d-none d-lg-inline">
-                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }} ">
-                                        {{ project.title }}
-                                    </span>
-                                    {% if not forloop.last %}
-                                            |
-                                        {% endif %}
-                                </div>
-                                <ul class="list-group d-lg-none text-end">
-                                    <li class="list-group-item border-0 p-0 ">{{ project.title }}</li>
-                                </ul>
-                                {% endfor %}
+<!--                            <span class="float-end">-->
+<!--                                {% for project in employee_project.project.all %}-->
+<!--&lt;!&ndash;                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}&ndash;&gt;-->
+<!--                                <div class="d-none d-lg-inline">-->
+<!--                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }} ">-->
+<!--                                        {{ project.title }}-->
+<!--                                    </span>-->
+<!--                                    {% if not forloop.last %}-->
+<!--                                            |-->
+<!--                                        {% endif %}-->
+<!--                                </div>-->
+<!--                                <ul class="list-group d-lg-none text-end">-->
+<!--                                    <li class="list-group-item border-0 p-0 ">{{ project.title }}</li>-->
+<!--                                </ul>-->
+<!--                                {% endfor %}-->
 
-                                {% if not employee_project.project_exists %}
-                                    <span class="badge bg-danger rounded-pill">None</span>
-                                {% endif %}
-                            </span>
-
-
-                        </li>
-                        {% endfor %}
+<!--                                {% if not employee_project.project_exists %}-->
+<!--                                    <span class="badge bg-danger rounded-pill">None</span>-->
+<!--                                {% endif %}-->
+<!--                            </span>-->
 
 
-                    </ul>
+<!--                        </li>-->
+<!--                        {% endfor %}-->
 
-                </div>
 
-                {% if leaves_count > 0 %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header">Leave Nearby <span class="float-end badge bg-secondary">{{ leaves_count }}</span>
-                        </div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for employee_leave in leaves %}
-                                <li class="list-group-item">
-                                    {{ employee_leave.employee.full_name }}
-                                    <b>{{ employee_leave.start_date|date:'j M' }} to
-                                        {{ employee_leave.end_date|date:'j M' }}</b>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+<!--                    </ul>-->
 
-                {% if birthdays.count > 0 %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
-                        </div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for employee_birthday in birthdays %}
-                                <li class="list-group-item">
-                                    {{ employee_birthday }} -
-                                    <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
+<!--                </div>-->
+
+<!--                {% if leaves_count > 0 %}-->
+<!--                <div class="col-md-6 mb-4">-->
+<!--                    <div class="card rounded-0">-->
+<!--                        <div class="card-header">Leave Nearby <span class="float-end badge bg-secondary">{{ leaves_count }}</span>-->
+<!--                        </div>-->
+<!--                        <div class="card-body rounded-0 p-0">-->
+<!--                            <ul class="list-group list-group-flush">-->
+<!--                                {% for employee_leave in leaves %}-->
+<!--                                <li class="list-group-item">-->
+<!--                                    {{ employee_leave.employee.full_name }}-->
+<!--                                    <b>{{ employee_leave.start_date|date:'j M' }} to-->
+<!--                                        {{ employee_leave.end_date|date:'j M' }}</b>-->
+<!--                                </li>-->
+<!--                                {% endfor %}-->
+<!--                            </ul>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                {% endif %}-->
+
+<!--                {% if birthdays.count > 0 %}-->
+<!--                <div class="col-md-6 mb-4">-->
+<!--                    <div class="card rounded-0">-->
+<!--                        <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>-->
+<!--                        </div>-->
+<!--                        <div class="card-body rounded-0 p-0">-->
+<!--                            <ul class="list-group list-group-flush">-->
+<!--                                {% for employee_birthday in birthdays %}-->
+<!--                                <li class="list-group-item">-->
+<!--                                    {{ employee_birthday }} - -->
+<!--                                    <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>-->
+<!--                                </li>-->
+<!--                                {% endfor %}-->
+<!--                            </ul>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                {% endif %}-->
 
                 {% if request.user.is_superuser %}
 
-                {% if increments.exists %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header text-uppercase">Increment Nearby</div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for employee_increment in increments %}
-                                <li class="list-group-item">
-                                    {{ employee_increment.full_name }}
-                                </li>
-                                {% endfor %}
-                            </ul>
+<!--                {% if increments.exists %}-->
+<!--                <div class="col-md-6 mb-4">-->
+<!--                    <div class="card rounded-0">-->
+<!--                        <div class="card-header text-uppercase">Increment Nearby</div>-->
+<!--                        <div class="card-body rounded-0 p-0">-->
+<!--                            <ul class="list-group list-group-flush">-->
+<!--                                {% for employee_increment in increments %}-->
+<!--                                <li class="list-group-item">-->
+<!--                                    {{ employee_increment.full_name }}-->
+<!--                                </li>-->
+<!--                                {% endfor %}-->
+<!--                            </ul>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                {% endif %}-->
+
+                {% if new_employees.exists %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header text-uppercase">New Joinee Employee</div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for new_employee in new_employees %}
+                                        {% if not new_employee.lead and not new_employee.manager %}
+                                            <li class="list-group-item">
+                                                {{ new_employee.full_name }}
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
                 {% endif %}
-                {% if permanents_count > 0 %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header text-uppercase bg-primary">
-                            Permanent Nearby 
-                            <span class="float-end badge bg-secondary">
-                                {{ permanents_count }}
-                            </span>
-                        </div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for employee_permanent in permanents %}
-                                <li class="list-group-item">
-                                    {{ employee_permanent.full_name }}
-                                </li>
-                                {% endfor %}
-                            </ul>
+
+                {% if new_lead_or_managers.exists %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header text-uppercase">New Lead or Managers </div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for new_lead_or_manager in new_lead_or_managers %}
+                                        {% if new_lead_or_manager.employee.lead or new_lead_or_manager.employee.manager %}
+                                             <li class="list-group-item">
+                                                    {{ new_lead_or_manager.employee }}
+                                             </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
                 {% endif %}
+                {% if new_proejcts.exists %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card rounded-0">
+                            <div class="card-header text-uppercase">New Proejcts </div>
+                            <div class="card-body rounded-0 p-0">
+                                <ul class="list-group list-group-flush">
+                                    {% for new_proejct in new_proejcts %}
+                                             <li class="list-group-item">
+                                                   {{ new_proejct.title }}
+                                             </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+<!--                {% if permanents_count > 0 %}-->
+<!--                <div class="col-md-6 mb-4">-->
+<!--                    <div class="card rounded-0">-->
+<!--                        <div class="card-header text-uppercase bg-primary">-->
+<!--                            Permanent Nearby-->
+<!--                            <span class="float-end badge bg-secondary">-->
+<!--                                {{ permanents_count }}-->
+<!--                            </span>-->
+<!--                        </div>-->
+<!--                        <div class="card-body rounded-0 p-0">-->
+<!--                            <ul class="list-group list-group-flush">-->
+<!--                                {% for employee_permanent in permanents %}-->
+<!--                                <li class="list-group-item">-->
+<!--                                    {{ employee_permanent.full_name }}-->
+<!--                                </li>-->
+<!--                                {% endfor %}-->
+<!--                            </ul>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                {% endif %}-->
 
 
                 {% endif %}
@@ -418,25 +473,6 @@
                             <div class="modal-body p-0 birthdayGift relative">
                                 <img class="w-100 h-100" src="{{ birthday_today }}">
                             </div>
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-
-                {% if anniversaries_count > 0 %}
-                <div class="col-md-6 mb-4">
-                    <div class="card rounded-0">
-                        <div class="card-header">Anniversaries Nearby
-                            <span class="float-end badge bg-secondary">{{ anniversaries_count }}</span>
-                        </div>
-                        <div class="card-body rounded-0 p-0">
-                            <ul class="list-group list-group-flush">
-                                {% for employee_anniversary in anniversaries %}
-                                <li class="list-group-item">
-                                    {{ employee_anniversary.full_name }}
-                                </li>
-                                {% endfor %}
-                            </ul>
                         </div>
                     </div>
                 </div>

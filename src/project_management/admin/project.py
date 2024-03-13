@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -114,10 +116,16 @@ class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
     #     return False
 
 
-@admin.register(ObservationProject)
-class ObservationProjectAdmin(admin.ModelAdmin):
-    list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
-    # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
-    # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
-    date_hierarchy = 'created_at'  # Add date hierarchy navigation
+# @admin.register(ObservationProject)
+# class ObservationProjectAdmin(admin.ModelAdmin):
+#     list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
+#     # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
+#     # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
+#     date_hierarchy = 'created_at'  # Add date hierarchy navigation
 
+    def get_queryset(self, request):
+        # Calculate the date two weeks ago
+        two_weeks_ago = datetime.datetime.now() - datetime.timedelta(weeks=2)
+        # Filter objects that were created within the last two weeks
+        queryset = super().get_queryset(request).filter(created_at__gte=two_weeks_ago)
+        return queryset

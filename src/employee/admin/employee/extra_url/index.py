@@ -10,6 +10,7 @@ class EmployeeExtraUrls(SMSView, GraphView, FormalView, admin.ModelAdmin):
         urls = super().get_urls()
         employee_urls = [
             path('formal-summery/', self.admin_site.admin_view(self.formal_summery_view), name='employee.summery'),
+            path('observe-new-employee/', self.admin_site.admin_view(self.observe_new_employee), name='employee.observenewemployee'),
             path('<int:employee_id__exact>/salary/received-history/',
                  self.admin_site.admin_view(self.salary_receive_history_view),
                  name='employee.salary.receive.history'),

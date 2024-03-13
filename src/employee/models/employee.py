@@ -488,8 +488,5 @@ class Observation(TimeStampMixin, AuthorMixin):
     
     class Meta:
         verbose_name = 'Observe New Lead/Managers or New Dev'
+        unique_together = ('employee',)
         # verbose_name_plural = 'Observations'
-@receiver(post_save, sender=Employee)
-def create_observation(sender, instance, created, **kwargs):
-    if created:
-        Observation.objects.create(employee=instance)

@@ -36,16 +36,13 @@ class EmployeeAdmin(
     def save_model(self, request, obj, form, change):
         print(obj.__dict__)
         if change:
-            print('changed')
-            # Check if lead or manager status has changed
-            # Observation.objects.create(
-            #         employee=obj,
-            #     )
             if obj.lead != form.initial['lead'] or obj.manager != form.initial['manager']:
                 # Create an observation record
-                Observation.objects.create(
-                    employee=obj,
-                )
+                already_exist = Observation.objects.filter(employee__id=obj.id).first()
+                if not already_exist:
+                    Observation.objects.create(
+                        employee=obj,
+                    )
         super().save_model(request, obj, form, change)
         # Observation.objects.create(
         #             employee_id=obj.id,
@@ -256,8 +253,8 @@ class EmployeeNOCAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
-@admin.register(Observation)
-class ObservationAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'created_at']  # Add other fields as needed
-    search_fields = ['employee__full_name', 'created_at']  # Add other fields as needed
-    # list_filter = ['created_at']  # Add other fields as needed
+# @admin.register(Observation)
+# class ObservationAdmin(admin.ModelAdmin):
+#     list_display = ['employee', 'created_at']  # Add other fields as needed
+#     search_fields = ['employee__full_name', 'created_at']  # Add other fields as needed
+#     list_filter = ['created_at']  # Add other fields as needed
