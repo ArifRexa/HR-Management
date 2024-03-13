@@ -148,11 +148,9 @@
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
                                 <p class="text-center mb-1">
                                     {% if data.accepted_hour %}
-                                        <span 
-                                            class="{% if data.accepted_hour <= 5 %}text-danger{% else %}text-primary{% endif %}"
-                                        >
-                                            {{ data.accepted_hour | floatformat:2 }} H
-                                        </span>
+                                    <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 2em; font-weight: bold;">
+                                        {{ data.accepted_hour | floatformat:2 }} HOURS
+                                    </span>
                                     {% else %}
                                         <span>
                                             -
