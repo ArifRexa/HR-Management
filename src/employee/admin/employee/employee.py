@@ -253,8 +253,8 @@ class EmployeeNOCAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
-@admin.register(Observation)
-class ObservationAdmin(admin.ModelAdmin):
-    list_display = ['employee', 'created_at']  # Add other fields as needed
-    search_fields = ['employee__full_name', 'created_at']  # Add other fields as needed
-    list_filter = ['created_at']  # Add other fields as needed
+# @admin.register(Observation)
+# class ObservationAdmin(admin.ModelAdmin):
+#     list_display = ['employee', 'created_at']  # Add other fields as needed
+#     search_fields = ['employee__full_name', 'created_at']  # Add other fields as needed
+#     list_filter = ['created_at']  # Add other fields as needed
