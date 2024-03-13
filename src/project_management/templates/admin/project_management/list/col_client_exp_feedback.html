@@ -1,0 +1,13 @@
+{% load replace_newline %}
+
+<div class="popover-wrapper">
+        <div class="popover-title">
+            {% if obj.client_exp_feedback %}
+                <a href="{{obj.client_exp_feedback}}">{{ obj.client_exp_feedback }}</a>
+            {% endif %}
+        </div>
+
+    <div class="popover-message">
+                {{ obj.client_exp_feedback }}
+    </div>
+</div>
