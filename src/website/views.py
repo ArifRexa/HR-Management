@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, status
 
-from employee.models import Employee, EmployeeNOC, Skill
+from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from project_management.models import Project
 from website.models import Service, Category, Tag, Blog, BlogComment
 from website.serializers import (
@@ -24,7 +24,7 @@ from website.serializers import (
     BlogListSerializer,
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
-    BlogCommentSerializer, SkillSetSerializer,
+    BlogCommentSerializer, SkillSetSerializer, EmployeeSkillSerializer,
 )
 
 
@@ -109,6 +109,15 @@ class EmployeeDetails(APIView):
 class SkillListView(ListAPIView):
     queryset = Skill.objects.all()
     serializer_class = SkillSetSerializer
+
+
+class EmployeeSkillListView(APIView):
+    def get(self, request, *args, **kwargs):
+        skill_title = self.kwargs.get('skill')  # Fetch the skill title from the URL kwargs
+        employeeskills = EmployeeSkill.objects.filter(skill__title=skill_title)
+        serializer = EmployeeSkillSerializer(employeeskills, many=True)
+        return Response(serializer.data)
+
 
 class CategoryListView(ListAPIView):
     queryset = Category.objects.all()

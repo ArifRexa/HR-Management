@@ -4,7 +4,7 @@ from employee.models import (
     Employee,
     EmployeeSocial,
     EmployeeContent,
-    EmployeeNOC, Skill,
+    EmployeeNOC, Skill, EmployeeSkill,
 )
 from project_management.models import (
     Project,
@@ -180,6 +180,12 @@ class SkillSetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = ['title']
+
+
+class EmployeeSkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmployeeSkill
+        fields = ['employee']
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
