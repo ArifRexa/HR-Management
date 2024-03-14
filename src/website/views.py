@@ -8,9 +8,9 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, status
-
+from rest_framework.pagination import PageNumberPagination
 from employee.models import Employee, EmployeeNOC
-from project_management.models import Project
+from project_management.models import Project,ProjectTechnology
 from website.models import Service, Category, Tag, Blog, BlogComment
 from website.serializers import (
     ServiceSerializer,
@@ -52,27 +52,49 @@ class ServiceDetails(APIView):
         service = self.get_object(slug)
         serializer = ServiceDetailsSerializer(service, context={"request": request})
         return Response(serializer.data)
-
+class CustomPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ProjectList(APIView):
-    def get(self, request, format=None):
-        projects = Project.objects.filter(show_in_website=True).all()
-        serializer = ProjectSerializer(
-            projects, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
+    pagination_class = CustomPagination
+    def get(self, request, tag_name=None, format=None):
+        # If tag_id is provided, filter projects based on the selected tag
+        if tag_name:
+            projects = Project.objects.filter(show_in_website=True, tags__name=tag_name).all()
+            if not projects:
+                return Response({"message": "No projects found for the given tag ID"}, status=404)
+        else:
+            projects = Project.objects.filter(show_in_website=True).all()
 
+        # Paginate the projects
+        paginator = self.pagination_class()
+        paginated_projects = paginator.paginate_queryset(projects, request)
+        
+        serializer = ProjectSerializer(paginated_projects, many=True, context={"request": request})
+
+        # You may include additional logic to fetch available tags if needed
+        available_tags = Project.objects.values_list('tags__name', flat=True).distinct()
+
+        response_data = {
+            'available_tags': list(available_tags),  # Optionally include available tags
+            'projects': serializer.data
+        }
+        return paginator.get_paginated_response(response_data)
 
 class ProjectDetails(APIView):
     def get_object(self, slug):
         try:
             return Project.objects.filter(show_in_website=True).get(slug__exact=slug)
-        except Service.DoesNotExist:
+        except Project.DoesNotExist:
             raise Http404
 
     def get(self, request, slug, format=None):
-        projects = self.get_object(slug)
-        serializer = ProjectDetailsSerializer(projects, context={"request": request})
+        project = self.get_object(slug)
+        project_technologies = ProjectTechnology.objects.filter(project=project)
+        serializer_context = {"request": request, "project_technologies": project_technologies}
+        serializer = ProjectDetailsSerializer(project, context=serializer_context)
         return Response(serializer.data)
 
 
