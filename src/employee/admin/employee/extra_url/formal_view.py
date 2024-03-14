@@ -44,12 +44,12 @@ class FormalView(admin.ModelAdmin):
         )
         return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
     def observe_new_employee(self, request, *args, **kwargs):
-        # if not request.user.is_superuser and not request.user.has_perm("employee.can_see_formal_summery_view"):
-        #     raise PermissionDenied
+        if not request.user.is_superuser and not request.user.has_perm("employee.can_see_formal_summery_view"):
+            raise PermissionDenied
         nearby_summery = EmployeeNearbySummery()
         context = dict(
             self.admin_site.each_context(request),
-            title='New Employee',
+            title='Observations',
             birthday=nearby_summery.birthdays(),
             permanent=nearby_summery.permanents,
             increment=nearby_summery.increments(),
