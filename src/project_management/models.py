@@ -52,6 +52,48 @@ class Client(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.name
 
+class ProjectOverview(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectStatement(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectChallenges(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectSolution(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+
+
 
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
@@ -80,7 +122,13 @@ class Project(TimeStampMixin, AuthorMixin):
         limit_choices_to={"active": True},
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
-
+    project_overview = models.OneToOneField(ProjectOverview, on_delete=models.CASCADE, null=True, default=None)
+    project_statement = models.OneToOneField(ProjectStatement, on_delete=models.CASCADE, null=True, default=None)
+    project_challenges = models.OneToOneField(ProjectChallenges, on_delete=models.CASCADE, null=True, default=None)
+    project_solution = models.OneToOneField(ProjectSolution, on_delete=models.CASCADE, null=True, default=None)
+    project_key_feature = models.OneToOneField(ProjectKeyFeature, on_delete=models.CASCADE, null=True, default=None)
+    
+    
     class Meta:
         ordering = ['title']
 
@@ -141,6 +189,7 @@ class Project(TimeStampMixin, AuthorMixin):
             employeeproject__project=self,
             employeeproject__project__active=True
         )
+
 
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
