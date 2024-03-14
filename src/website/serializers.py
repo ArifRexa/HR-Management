@@ -14,6 +14,13 @@ from project_management.models import (
     ProjectContent,
     ProjectScreenshot,
     Tag,
+    ProjectOverview,
+    ProjectStatement,
+    ProjectChallenges,
+    ProjectSolution,
+    ProjectKeyFeature,
+    ClientFeedback
+
 )
 from website.models import (
     Service,
@@ -66,30 +73,42 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ("name",)
 
-
-class ProjectSerializer(serializers.ModelSerializer):
-    technologies = ProjectTechnologySerializer(
-        many=True, source="projecttechnology_set"
-    )
-    available_tags = TagSerializer(read_only=True, many=True, source="tags")
-
+class ProjectOverviewSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Project
-        fields = (
-            "title",
-            "slug",
-            "description",
-            "thumbnail",
-            "video_url",
-            "technologies",
-            "available_tags",
-        )
+        model = ProjectOverview
+        fields = '__all__'
 
 
-class ProjectContentSerializer(serializers.ModelSerializer):
+class ProjectStatementSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProjectContent
-        fields = ("title", "content")
+        model = ProjectStatement
+        fields = '__all__'
+
+
+class ProjectChallengesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectChallenges
+        fields = '__all__'
+
+
+class ProjectSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectSolution
+        fields = '__all__'
+
+
+class ProjectKeyFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectKeyFeature
+        fields = '__all__'
+
+
+
+
+class ClientFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientFeedback
+        fields = '__all__'
 
 
 class ProjectScreenshotSerializer(serializers.ModelSerializer):
@@ -97,15 +116,57 @@ class ProjectScreenshotSerializer(serializers.ModelSerializer):
         model = ProjectScreenshot
         fields = ("image",)
 
+class ClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ("name","email","address","country","logo")
+
+class ClientFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientFeedback
+        fields = (
+            "feedback_week",
+            "feedback",
+            "avg_rating",
+            "rating_communication",
+            "rating_output",
+            "rating_time_management",
+            "rating_billing",
+            "rating_long_term_interest",
+        )
+class ProjectSerializer(serializers.ModelSerializer):
+    technologies = ProjectTechnologySerializer(
+        many=True, source="projecttechnology_set"
+    )
+
+    class Meta:
+        model = Project
+        fields = (
+            "title",
+            "slug",
+            "thumbnail",
+            "technologies",
+           
+        )
+class ProjectContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectContent
+        fields = ("title", "content")
+
+
+
 
 class ProjectDetailsSerializer(serializers.ModelSerializer):
-    technologies = ProjectTechnologySerializer(
-        source="projecttechnology_set", many=True, read_only=True
-    )
-    contents = ProjectContentSerializer(
-        source="projectcontent_set", many=True, read_only=True
-    )
-    screenshots = ProjectScreenshotSerializer(
+    technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
+    available_tags = TagSerializer(read_only=True, many=True, source="tags")
+    project_overview = ProjectOverviewSerializer()
+    project_statement = ProjectStatementSerializer()
+    project_challenges = ProjectChallengesSerializer()
+    project_solution = ProjectSolutionSerializer()
+    project_key_feature = ProjectKeyFeatureSerializer()
+    client = ClientSerializer()
+    client_feedback = ClientFeedbackSerializer(many=True, source="clientfeedback_set") 
+    project_design = ProjectScreenshotSerializer(
         source="projectscreenshot_set", many=True, read_only=True
     )
 
@@ -117,11 +178,19 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "description",
             "thumbnail",
             "video_url",
-            "tags",
             "technologies",
-            "contents",
-            "screenshots",
+            "available_tags",
+            "project_overview",
+            "project_statement",
+            "project_challenges",
+            "project_solution",
+            "project_key_feature",
+            "client",
+            "client_feedback",
+            "project_design",
+            
         )
+        
 
 
 class EmployeeSocialSerializer(serializers.ModelSerializer):
