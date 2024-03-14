@@ -4,7 +4,7 @@ from employee.models import (
     Employee,
     EmployeeSocial,
     EmployeeContent,
-    EmployeeNOC,
+    EmployeeNOC, Skill,
 )
 from project_management.models import (
     Project,
@@ -174,6 +174,12 @@ class EmployeeSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         image_url = employee.image.url
         return request.build_absolute_uri(image_url)
+
+
+class SkillSetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ['title']
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
