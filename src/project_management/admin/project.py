@@ -5,7 +5,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges, ProjectSolution, ProjectKeyFeature
 
 
 
@@ -129,3 +129,33 @@ class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
         # Filter objects that were created within the last two weeks
         queryset = super().get_queryset(request).filter(created_at__gte=two_weeks_ago)
         return queryset
+
+
+
+@admin.register(ProjectOverview)
+class ProjectOverviewAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ['title']
+
+@admin.register(ProjectStatement)
+class ProjectStatementAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ['title']
+
+@admin.register(ProjectChallenges)
+class ProjectChallengesAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ['title']
+
+@admin.register(ProjectSolution)
+class ProjectSolutionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ['title']
+
+@admin.register(ProjectKeyFeature)
+class ProjectKeyFeatureAdmin(admin.ModelAdmin):
+    list_display = ('title', 'created_at')
+    search_fields = ['title']
+
+
+    
