@@ -293,11 +293,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 # print(date_datas[emp])
                 for date in last_x_dates:
                     accepted_hour = date_datas[emp][date].get('accepted_hour', 0)
-                
+
                     manager_hour = manager_date_and_hours.get(emp.id, {}).get(date, 0)
             
-                    date_datas[emp][date]['accepted_hour'] = accepted_hour + manager_hour
-                    
+                    date_datas[emp][date]['accepted_hour'] = accepted_hour
+                    date_datas[emp][date]['manager_hour'] = manager_hour
+
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True

@@ -150,6 +150,9 @@
                                     {% if data.accepted_hour %}
                                     <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
                                         {{ data.accepted_hour | floatformat:2 }} H
+                                        {% if data.manager_hour %}
+                                            {{ data.manager_hour | floatformat:2 }} H
+                                        {% endif %}
                                     </span>
                                     {% else %}
                                         <span>
