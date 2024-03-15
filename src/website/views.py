@@ -26,8 +26,8 @@ from website.serializers import (
     EmployeeNOCSerializer,
     BlogCommentSerializer,
 )
-
-
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from django_filters.rest_framework import DjangoFilterBackend
 def index(request):
     return render(request, "webdoc/index.html")
 
@@ -57,12 +57,13 @@ class CustomPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+
+
+
 class ProjectList(APIView):
 
     pagination_class = CustomPagination
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['title']  
-
+        
     def get(self, request, tag_name=None, format=None):
         
         if tag_name:
@@ -88,6 +89,7 @@ class ProjectList(APIView):
             'projects': serializer.data
         }
         return paginator.get_paginated_response(response_data)
+    
 
 class ProjectDetails(APIView):
     def get_object(self, slug):
