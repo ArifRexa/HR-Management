@@ -58,23 +58,29 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
 
 class ProjectList(APIView):
+
     pagination_class = CustomPagination
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['title']  
+
     def get(self, request, tag_name=None, format=None):
-        # If tag_id is provided, filter projects based on the selected tag
+        
         if tag_name:
             projects = Project.objects.filter(show_in_website=True, tags__name=tag_name).all()
             if not projects:
-                return Response({"message": "No projects found for the given tag ID"}, status=404)
+                return Response({"message": "No projects found for the given name"}, status=404)
         else:
             projects = Project.objects.filter(show_in_website=True).all()
 
-        # Paginate the projects
+        search_query = request.query_params.get('search', None)
+        if search_query:
+            projects = projects.filter(title__icontains=search_query)
+
         paginator = self.pagination_class()
         paginated_projects = paginator.paginate_queryset(projects, request)
         
         serializer = ProjectSerializer(paginated_projects, many=True, context={"request": request})
-
-        # You may include additional logic to fetch available tags if needed
+  
         available_tags = Project.objects.values_list('tags__name', flat=True).distinct()
 
         response_data = {
