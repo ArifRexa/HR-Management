@@ -658,6 +658,11 @@ class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
     enableproject = models.BooleanField(default=False)
     last_time = models.TimeField(null=True, blank=True)
 
+    def clean(self):
+        # Ensure only one object of this class exists
+        if not self.pk and EnableDailyUpdateNow.objects.exists():
+            raise ValidationError("Only one instance of EnableDailyUpdateNow can be created. And One instance is already exist.")
+
 
     def save(self, *args, **kwargs):
         # Ensure only one object of this class exists
