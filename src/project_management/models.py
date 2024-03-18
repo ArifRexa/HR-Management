@@ -707,17 +707,24 @@ class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
     enableproject = models.BooleanField(default=False)
     last_time = models.TimeField(null=True, blank=True)
 
+    def clean(self):
+        if self.last_time is None:
+            raise ValidationError("Please Enter Last Time")
+        # Ensure only one object of this class exists
+        # if not self.pk and EnableDailyUpdateNow.objects.exists():
+        #     raise ValidationError("Only one instance of EnableDailyUpdateNow can be created. And One instance is already exist.")
+
 
     def save(self, *args, **kwargs):
         # Ensure only one object of this class exists
-        if not self.pk and EnableDailyUpdateNow.objects.exists():
-            # If trying to create a new object and one already exists, raise an exception
-            raise Exception("Only one instance of EnableDailyUpdateNow can be created.")
+        # if not self.pk and EnableDailyUpdateNow.objects.exists():
+        #     # If trying to create a new object and one already exists, raise an exception
+        #     raise Exception("Only one instance of EnableDailyUpdateNow can be created.")
         return super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        # When deleting the object, allow creating another one
-        self.pk = None
+        if EnableDailyUpdateNow.objects.count() <= 1:
+            raise ValidationError("At least one instance of EnableDailyUpdateNow must remain in the database.")
         return super().delete(*args, **kwargs)
     class Meta:
         verbose_name = "Project Update Enable"

@@ -433,7 +433,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 # permitted = False
                 return False
 
-        special_permission = EnableDailyUpdateNow.objects.first()
+        special_permission = EnableDailyUpdateNow.objects.filter(enableproject=True).first()
+
         if obj:
             # is lead / manager / sqa
             if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):

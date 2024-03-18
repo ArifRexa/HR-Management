@@ -123,39 +123,9 @@ class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
 #     # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
 #     date_hierarchy = 'created_at'  # Add date hierarchy navigation
 
-    def get_queryset(self, request):
-        # Calculate the date two weeks ago
-        two_weeks_ago = datetime.datetime.now() - datetime.timedelta(weeks=2)
-        # Filter objects that were created within the last two weeks
-        queryset = super().get_queryset(request).filter(created_at__gte=two_weeks_ago)
-        return queryset
-
-
-
-@admin.register(ProjectOverview)
-class ProjectOverviewAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ['title']
-
-@admin.register(ProjectStatement)
-class ProjectStatementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ['title']
-
-@admin.register(ProjectChallenges)
-class ProjectChallengesAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ['title']
-
-@admin.register(ProjectSolution)
-class ProjectSolutionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ['title']
-
-@admin.register(ProjectKeyFeature)
-class ProjectKeyFeatureAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
-    search_fields = ['title']
-
-
-    
+    # def get_queryset(self, request):
+    #     # Calculate the date two weeks ago
+    #     two_weeks_ago = datetime.datetime.now() - datetime.timedelta(weeks=2)
+    #     # Filter objects that were created within the last two weeks
+    #     queryset = super().get_queryset(request).filter(created_at__gte=two_weeks_ago)
+    #     return queryset
