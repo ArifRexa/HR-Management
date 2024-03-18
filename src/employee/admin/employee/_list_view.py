@@ -121,10 +121,11 @@ class EmployeeAdminListView:
         })
         return format_html(html_content)
 
+    @admin.display(description="total compensation")
     def salary_history(self, obj):
         history = ''
         for salary in obj.salaryhistory_set.order_by('-active_from').all():
-            history += f'<b>{intcomma(salary.payable_salary)}</b> ({naturalday(salary.active_from)}) <br>'
+            history += f'<b>{intcomma(salary.payable_salary + 3000)}</b> ({naturalday(salary.active_from)}) <br>'
         return format_html(history)
 
     @admin.display(ordering='active', description='Status')
