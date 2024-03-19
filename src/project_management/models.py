@@ -122,12 +122,7 @@ class Project(TimeStampMixin, AuthorMixin):
         limit_choices_to={"active": True},
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
-    project_overview = models.OneToOneField(ProjectOverview, on_delete=models.CASCADE, null=True,blank=True, default=None)
-    project_statement = models.OneToOneField(ProjectStatement, on_delete=models.CASCADE, null=True,blank=True, default=None)
-    project_challenges = models.OneToOneField(ProjectChallenges, on_delete=models.CASCADE, null=True,blank=True, default=None)
-    project_solution = models.OneToOneField(ProjectSolution, on_delete=models.CASCADE, null=True,blank=True, default=None)
-    project_key_feature = models.ForeignKey(ProjectKeyFeature, on_delete=models.CASCADE, null=True,blank=True, default=None)
-    
+  
     
     class Meta:
         ordering = ['title']
@@ -229,6 +224,7 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = HTMLField()
+    image = models.ImageField(upload_to='project_images/', null=True, blank=True)
 
     def __str__(self):
         return self.title

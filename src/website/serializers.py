@@ -73,36 +73,6 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ("name",)
 
-class ProjectOverviewSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectOverview
-        fields = '__all__'
-
-
-class ProjectStatementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectStatement
-        fields = '__all__'
-
-
-class ProjectChallengesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectChallenges
-        fields = '__all__'
-
-
-class ProjectSolutionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectSolution
-        fields = '__all__'
-
-
-class ProjectKeyFeatureSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectKeyFeature
-        fields = '__all__'
-
-
 
 
 class ClientFeedbackSerializer(serializers.ModelSerializer):
@@ -151,7 +121,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectContent
-        fields = ("title", "content")
+        fields = ("title", "content","image")
 
 
 
@@ -159,16 +129,12 @@ class ProjectContentSerializer(serializers.ModelSerializer):
 class ProjectDetailsSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
     available_tags = TagSerializer(read_only=True, many=True, source="tags")
-    project_overview = ProjectOverviewSerializer()
-    project_statement = ProjectStatementSerializer()
-    project_challenges = ProjectChallengesSerializer()
-    project_solution = ProjectSolutionSerializer()
-    project_key_feature = ProjectKeyFeatureSerializer()
     client = ClientSerializer()
     client_feedback = ClientFeedbackSerializer(many=True, source="clientfeedback_set") 
     project_design = ProjectScreenshotSerializer(
         source="projectscreenshot_set", many=True, read_only=True
     )
+    project_contents = ProjectContentSerializer(many=True, source="projectcontent_set")
 
     class Meta:
         model = Project
@@ -180,11 +146,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "video_url",
             "technologies",
             "available_tags",
-            "project_overview",
-            "project_statement",
-            "project_challenges",
-            "project_solution",
-            "project_key_feature",
+            "project_contents",
             "client",
             "client_feedback",
             "project_design",

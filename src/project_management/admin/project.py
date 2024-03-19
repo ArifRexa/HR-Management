@@ -36,12 +36,16 @@ class ProjectDocumentAdmin(admin.StackedInline):
     model = ProjectDocument
     extra = 0
 
+class ProjectContentAdmin(admin.StackedInline):
+    model = ProjectContent
+    extra = 1
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'client', 'active', 'show_in_website', 'get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
-    inlines = (ProjectTechnologyInline, ProjectScreenshotInline,ProjectDocumentAdmin)
+    inlines = (ProjectTechnologyInline,ProjectContentAdmin, ProjectScreenshotInline,ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
