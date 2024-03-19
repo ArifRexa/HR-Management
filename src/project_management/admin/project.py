@@ -31,9 +31,6 @@ class ProjectScreenshotInline(admin.StackedInline):
     extra = 1
 
 
-class ProjectContentInline(admin.StackedInline):
-    model = ProjectContent
-    extra = 1
 
 class ProjectDocumentAdmin(admin.StackedInline):
     model = ProjectDocument
@@ -44,7 +41,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'client', 'active', 'show_in_website', 'get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
-    inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
+    inlines = (ProjectTechnologyInline, ProjectScreenshotInline,ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
