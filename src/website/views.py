@@ -10,6 +10,7 @@ from rest_framework.views import APIView
 from rest_framework import filters, status
 
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
+from settings.models import Designation
 from project_management.models import Project
 from website.models import Service, Category, Tag, Blog, BlogComment
 from website.serializers import (
@@ -24,7 +25,7 @@ from website.serializers import (
     BlogListSerializer,
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
-    BlogCommentSerializer, SkillSetSerializer, EmployeeSkillSerializer,
+    BlogCommentSerializer, DesignationSetSerializer,
 )
 
 
@@ -106,17 +107,20 @@ class EmployeeDetails(APIView):
         return Response(serializer.data)
 
 
-class SkillListView(ListAPIView):
-    queryset = Skill.objects.all()
-    serializer_class = SkillSetSerializer
+class DesignationListView(ListAPIView):
+    queryset = Designation.objects.annotate(employee_count=Count('employee'))
+    serializer_class = DesignationSetSerializer
 
 
-class EmployeeSkillListView(APIView):
+class EmployeeWithDesignationView(APIView):
     def get(self, request, *args, **kwargs):
-        skill_title = self.kwargs.get('skill')  # Fetch the skill title from the URL kwargs
-        employeeskills = EmployeeSkill.objects.filter(skill__title=skill_title)
-        serializer = EmployeeSkillSerializer(employeeskills, many=True)
-        return Response(serializer.data)
+        designation = self.kwargs.get('designation')  # Fetch the skill title from the URL kwargs
+        employee_with_designation = Employee.objects.filter(designation__title__icontains=designation)
+        print(len(employee_with_designation))
+
+        serializer = EmployeeSerializer(employee_with_designation, many=True)
+        total_count = len(employee_with_designation)
+        return Response({'toal_count': total_count, 'employee_list': serializer.data})
 
 
 class CategoryListView(ListAPIView):

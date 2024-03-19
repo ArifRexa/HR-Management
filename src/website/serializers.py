@@ -15,6 +15,7 @@ from project_management.models import (
     ProjectScreenshot,
     Tag,
 )
+from settings.models import Designation
 from website.models import (
     Service,
     Blog,
@@ -176,16 +177,25 @@ class EmployeeSerializer(serializers.ModelSerializer):
         return request.build_absolute_uri(image_url)
 
 
-class SkillSetSerializer(serializers.ModelSerializer):
+class DesignationSetSerializer(serializers.ModelSerializer):
+    employee_count = serializers.IntegerField()
+
     class Meta:
-        model = Skill
-        fields = ['title']
+        model = Designation
+        fields = ['title', 'employee_count']
+
+# class EmployeeSkillSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = EmployeeSkill
+#         fields = ['employee']
 
 
-class EmployeeSkillSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
+
     class Meta:
-        model = EmployeeSkill
-        fields = ['employee']
+        model = Employee
+        fields = ['id']  # You may customize this to include specific fields if needed
+
 
 
 class CategoryListSerializer(serializers.ModelSerializer):
