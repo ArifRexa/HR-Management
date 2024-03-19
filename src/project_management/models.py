@@ -235,8 +235,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         return f"{self.project} | {self.manager}"
 
     def clean(self):
-        if self.hours is None:
-            raise ValidationError({"hours": f"Hours filed is required"})
+        
         if (
                 self.date is not None
                 and self.date.weekday() != 4
@@ -270,7 +269,6 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         on_delete=models.RESTRICT,
         limit_choices_to={"active": True},
     )
-
     class Meta:
         permissions = [
             ("change_recent_activity", "Can change if inserted recently (3days)"),
