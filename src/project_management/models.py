@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 from datetime import datetime
 from django.utils import timezone
-
+from datetime import date
 from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -235,15 +235,16 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         return f"{self.project} | {self.manager}"
 
     def clean(self):
-        if self.hours is None:
-            raise ValidationError({"hours": f"Hours filed is required"})
+        
         if (
                 self.date is not None
                 and self.date.weekday() != 4
                 and self.hour_type != "bonus"
         ):
             raise ValidationError({"date": "Today is not Friday"})
-
+        if not self.project:
+            raise ValidationError({"project":"You have to must assign any project"})
+        
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
         #     self.payable = False
@@ -270,7 +271,6 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         on_delete=models.RESTRICT,
         limit_choices_to={"active": True},
     )
-
     class Meta:
         permissions = [
             ("change_recent_activity", "Can change if inserted recently (3days)"),
