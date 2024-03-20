@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 from datetime import datetime
 from django.utils import timezone
-
+from datetime import date
 from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -242,6 +242,10 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
                 and self.hour_type != "bonus"
         ):
             raise ValidationError({"date": "Today is not Friday"})
+        
+        today = date.today()
+        if self.date < today:
+            raise ValidationError({"date": "Cannot enter hours for the previous Friday"})
 
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
