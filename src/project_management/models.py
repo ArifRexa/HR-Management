@@ -243,10 +243,6 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         ):
             raise ValidationError({"date": "Today is not Friday"})
         
-        today = date.today()
-        if self.date < today:
-            raise ValidationError({"date": "Cannot enter hours for the previous Friday"})
-
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
         #     self.payable = False
