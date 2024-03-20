@@ -242,6 +242,8 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
                 and self.hour_type != "bonus"
         ):
             raise ValidationError({"date": "Today is not Friday"})
+        if not self.project:
+            raise ValidationError({"project":"You have to must assign any project"})
         
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
