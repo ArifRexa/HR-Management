@@ -10,7 +10,9 @@ from django.template.response import TemplateResponse
 from django.utils import timezone
 
 from employee.models import Employee, Leave
+from employee.models.employee import Observation
 
+from project_management.models import Project
 
 class FormalView(admin.ModelAdmin):
 
@@ -37,10 +39,27 @@ class FormalView(admin.ModelAdmin):
             birthday=nearby_summery.birthdays(),
             permanent=nearby_summery.permanents,
             increment=nearby_summery.increments(),
-            salary_change=nearby_summery.last_salary_change(),
+            # salary_change=nearby_summery.last_salary_change(),
             anniversaries=nearby_summery.anniversaries()
         )
         return TemplateResponse(request, "admin/employee/formal_summery.html", context=context)
+    def observe_new_employee(self, request, *args, **kwargs):
+        if not request.user.is_superuser and not request.user.has_perm("employee.can_see_formal_summery_view"):
+            raise PermissionDenied
+        nearby_summery = EmployeeNearbySummery()
+        context = dict(
+            self.admin_site.each_context(request),
+            title='Observations',
+            birthday=nearby_summery.birthdays(),
+            permanent=nearby_summery.permanents,
+            increment=nearby_summery.increments(),
+            # salary_change=nearby_summery.last_salary_change(),
+            anniversaries=nearby_summery.anniversaries(),
+            new_employees=nearby_summery.new_employee(),
+            new_proejcts=nearby_summery.new_projects(),
+
+        )
+        return TemplateResponse(request, "admin/employee/new_employee.html", context=context)
 
     def salary_receive_history_view(self, request, *args, **kwargs):
         employee_id = kwargs.get('employee_id__exact')
@@ -71,6 +90,7 @@ class EmployeeNearbySummery:
     def __init__(self):
         self.today = datetime.datetime.today()
         self.employees = Employee.objects.filter(active=True)
+        self.projects = Project.objects.filter(active=True)
 
 
     def birthdays(self):
@@ -147,3 +167,13 @@ class EmployeeNearbySummery:
 
     def employees_birthday_today(self):
         return self.employees.filter(date_of_birth=timezone.now().date())
+
+    def new_employee(self):
+        return self.employees.filter(joining_date__gte=timezone.now() - datetime.timedelta(weeks=2))
+
+    def new_projects(self):
+        return self.projects.filter(created_at__gte=timezone.now() - datetime.timedelta(weeks=2))
+        # return self.employees.filter(id==1)
+    def new_lead_or_manager(self):
+        new_lead_or_managers = Observation.objects.filter(created_at__gte=timezone.now() - datetime.timedelta(weeks=2))
+        return new_lead_or_managers
