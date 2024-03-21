@@ -11,6 +11,10 @@ from rest_framework import filters, status
 from rest_framework.pagination import PageNumberPagination
 from employee.models import Employee, EmployeeNOC
 from project_management.models import Project,ProjectTechnology
+
+from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
+from settings.models import Designation
+from project_management.models import Project
 from website.models import Service, Category, Tag, Blog, BlogComment
 from website.serializers import (
     ServiceSerializer,
@@ -24,7 +28,7 @@ from website.serializers import (
     BlogListSerializer,
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
-    BlogCommentSerializer,
+    BlogCommentSerializer, DesignationSetSerializer,
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -129,6 +133,22 @@ class EmployeeDetails(APIView):
         employee = self.get_object(slug)
         serializer = EmployeeDetailsSerializer(employee, context={"request": request})
         return Response(serializer.data)
+
+
+class DesignationListView(ListAPIView):
+    queryset = Designation.objects.annotate(employee_count=Count('employee'))
+    serializer_class = DesignationSetSerializer
+
+
+class EmployeeWithDesignationView(APIView):
+    def get(self, request, *args, **kwargs):
+        designation = self.kwargs.get('designation')  # Fetch the skill title from the URL kwargs
+        employee_with_designation = Employee.objects.filter(designation__title__icontains=designation)
+        print(len(employee_with_designation))
+
+        serializer = EmployeeSerializer(employee_with_designation, many=True)
+        total_count = len(employee_with_designation)
+        return Response({'toal_count': total_count, 'employee_list': serializer.data})
 
 
 class CategoryListView(ListAPIView):
