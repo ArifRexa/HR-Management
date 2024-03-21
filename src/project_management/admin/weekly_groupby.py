@@ -106,7 +106,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         return query_set.filter(employee__active=True).exclude(employee_id__in=[30])
 
     def has_module_permission(self, request):
-        return False
+        return True
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.is_superuser:
