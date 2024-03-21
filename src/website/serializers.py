@@ -222,12 +222,17 @@ class DesignationSetSerializer(serializers.ModelSerializer):
 
 
 class EmployeeSerializer(serializers.ModelSerializer):
-
+    designation = serializers.SerializerMethodField()
     class Meta:
         model = Employee
-        fields = ['id']  # You may customize this to include specific fields if needed
+        fields = ['id','full_name','designation','image']  # You may customize this to include specific fields if needed
 
-
+    
+    def get_designation(self, obj):
+        if obj.designation:
+            return obj.designation.title
+        else:
+            return None
 
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:

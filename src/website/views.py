@@ -116,9 +116,21 @@ class EmployeeList(APIView):
             )
             .all()
         )
+
         serializer = EmployeeSerializer(
             employees, many=True, context={"request": request}
         )
+        
+        search_query = request.query_params.get('search', None)
+        if search_query:    
+            employees = Employee.objects.filter(active=True, show_in_web=True,designation__title__icontains=search_query).order_by(
+                "joining_date",
+                "-manager",
+                "list_order",
+            ).all()
+            
+            serializer = EmployeeSerializer(employees, many=True, context={"request": request})
+
         return Response(serializer.data)
 
 
@@ -139,13 +151,14 @@ class DesignationListView(ListAPIView):
     queryset = Designation.objects.annotate(employee_count=Count('employee'))
     serializer_class = DesignationSetSerializer
 
+    # def get(self,request,*args,**kwargs):
+
 
 class EmployeeWithDesignationView(APIView):
     def get(self, request, *args, **kwargs):
         designation = self.kwargs.get('designation')  # Fetch the skill title from the URL kwargs
-        employee_with_designation = Employee.objects.filter(designation__title__icontains=designation)
-        print(len(employee_with_designation))
-
+        employee_with_designation = Employee.objects.filter(designation__title=designation)
+        
         serializer = EmployeeSerializer(employee_with_designation, many=True)
         total_count = len(employee_with_designation)
         return Response({'toal_count': total_count, 'employee_list': serializer.data})
