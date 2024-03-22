@@ -14,8 +14,8 @@ from project_management.models import Project,ProjectTechnology
 
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
-from project_management.models import Project
-from website.models import Service, Category, Tag, Blog, BlogComment
+from project_management.models import Project,Tag
+from website.models import Service, Category, Blog, BlogComment
 from website.serializers import (
     ServiceSerializer,
     ProjectSerializer,
@@ -29,6 +29,7 @@ from website.serializers import (
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
     BlogCommentSerializer, DesignationSetSerializer,
+    AvailableTagSerializer
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -83,13 +84,21 @@ class ProjectList(APIView):
         
         serializer = ProjectSerializer(paginated_projects, many=True, context={"request": request})
   
-        available_tags = Project.objects.values_list('tags__name', flat=True).distinct()
+       
 
         response_data = {
-            'available_tags': list(available_tags), 
+            
             'projects': serializer.data
         }
         return paginator.get_paginated_response(response_data)
+
+
+class AvailableTagsListView(ListAPIView):
+    queryset = Tag.objects.annotate(tags_count=Count('projects'))
+    serializer_class = AvailableTagSerializer
+  
+      
+
 class ProjectDetails(APIView):
     def get_object(self, slug):
         try:

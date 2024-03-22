@@ -109,10 +109,10 @@ class Project(TimeStampMixin, AuthorMixin):
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag,related_name='projects')
     identifier = models.CharField(
         max_length=50,
-        default=uuid4
+        default=uuid4,  
     )
     on_boarded_by = models.ForeignKey(
         Employee,
