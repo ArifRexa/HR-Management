@@ -147,7 +147,7 @@
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
                                 <p class="text-center mb-1">
-                                    {% if data.accepted_hour %}
+                                   
                                     <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
                                         {{ data.accepted_hour | floatformat:2 }} H
                                         {% if data.manager_hour %}
@@ -155,11 +155,7 @@
                                         {% endif %}
 
                                     </span>
-                                    {% else %}
-                                        <span>
-                                            -
-                                        </span>
-                                    {% endif %}
+                                    
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
