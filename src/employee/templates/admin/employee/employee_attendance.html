@@ -153,11 +153,18 @@
                                         {% if data.accepted_hour %}
                                             {{ data.accepted_hour | floatformat:2 }} H
                                         {% else %}
-                                            <span style="color: red;">0.00 H</span>
+                                            {% if data.manager_hour %}
+                                                <span style="color: red;">0.00 H</span>
+                                            {%else%}
+                                                -
+                                            {% endif %}
                                         {% endif %}
 
                                         {% if data.manager_hour %}
                                            - {{ data.manager_hour | floatformat:2 }} H
+                                       
+                                        {%else%}
+                                        
                                         {% endif %}
 
                                     </span>
