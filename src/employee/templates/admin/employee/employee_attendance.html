@@ -149,7 +149,13 @@
                                 <p class="text-center mb-1">
                                    
                                     <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
-                                        {{ data.accepted_hour | floatformat:2 }} H
+                                        
+                                        {% if data.accepted_hour %}
+                                            {{ data.accepted_hour | floatformat:2 }} H
+                                        {% else %}
+                                            <span style="color: red;">0.00 H</span>
+                                        {% endif %}
+
                                         {% if data.manager_hour %}
                                            - {{ data.manager_hour | floatformat:2 }} H
                                         {% endif %}
