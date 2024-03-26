@@ -1,10 +1,12 @@
+import datetime
+
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, \
-    ProjectNeed, Tag, ProjectDocument, ProjectReport
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject
+
 
 
 @admin.register(Technology)
@@ -100,3 +102,30 @@ class ProjectReportAdmin(admin.ModelAdmin):
     #     if db_field.name == 'project':
     #         kwargs['queryset'] = Project.objects.filter(active=True)
     #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(EnableDailyUpdateNow)
+class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
+    list_display = ['name','enableproject', 'last_time']
+    list_editable = ('enableproject',)
+
+    # def has_view_permission(self, request, obj=None):
+    #     # Check if the user has the required permission
+    #     if request.user.has_perm('project_management.can_change_daily_update_last_time'):
+    #         return True
+    #     return False
+
+
+# @admin.register(ObservationProject)
+# class ObservationProjectAdmin(admin.ModelAdmin):
+#     list_display = ['project_name', 'created_at']  # Customize the display as per your requirements
+#     # list_filter = ['project', 'created_at', 'updated_at']  # Add filters if needed
+#     # search_fields = ['project__name', 'author__username']  # Add search fields for easier lookup
+#     date_hierarchy = 'created_at'  # Add date hierarchy navigation
+
+    # def get_queryset(self, request):
+    #     # Calculate the date two weeks ago
+    #     two_weeks_ago = datetime.datetime.now() - datetime.timedelta(weeks=2)
+    #     # Filter objects that were created within the last two weeks
+    #     queryset = super().get_queryset(request).filter(created_at__gte=two_weeks_ago)
+    #     return queryset

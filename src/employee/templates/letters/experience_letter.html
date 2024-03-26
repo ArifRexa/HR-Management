@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    {% include 'letters/extra/header.html' with title='Permanent Latter' %}
+    <style>
+        *{
+            font-family: 'Times New Roman', Times, serif;
+        }
+        p{
+            font-size: 16px;
+        }
+        b{
+            font-size: 16px;
+        }
+        .experience_header h1{
+            font-size: 28px;
+            text-align: center;
+            margin-bottom: 0;
+        }
+
+        .experience_header hr{
+            margin-top: 0;
+        }
+        .experience_header p{
+            font-size: 18px;
+            text-align: center;
+            margin-top: 0;
+            
+        }
+    </style>
+</head>
+
+{% load humanize %}
+{% load humanize_extra %}
+
+<body>
+{% for employee in employees %}
+    <p>
+        Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.id }} <br>
+        Date: {% now "jS F Y" %} <br>
+        {{ employee.full_name | title }}<br>
+        Email: {{ employee.email }}<br>
+    </p>
+
+    <div class="experience_header">
+        <h1>Experience Certificate</h1>
+        <p>To Whom It May Concern</p>
+    </div>
+
+
+    <p>This is to certify that <b>{{ employee.full_name | title }}</b>  has worked as a <b>{{ employee.designation }}</b> at <b>Mediusware</b> Software
+        Company from <b>{{ employee.joining_date}}</b> to <b>{{ employee.approved_resignation.date}}</b>.
+        During this period, {{ employee.full_name | title }} has demonstrated
+        exceptional skills and dedication in fulfilling responsibilities. 
+        <br>
+        <br>
+        <b>{{ employee.full_name | title }}</b> has been an integral part of our team, contributing significantly to various projects and
+        initiatives.
+        {% if employee.gender == 'male' %}
+        He
+        {% else %}
+        She
+        {% endif %} has effectively collaborated with cross-functional teams, including developers, product
+        managers, and stakeholders, to translate requirements into innovative solutions.
+        <br>
+        <br>
+        Furthermore, <b> {{ employee.full_name | title }}</b> has exhibited excellent communication and interpersonal skills,
+        fostering a positive and collaborative work environment. {% if employee.gender == 'male' %}
+        He
+        {% else %}
+        She
+        {% endif %} has been receptive to feedback, proactive
+        in seeking opportunities for improvement, and consistently demonstrated a strong commitment to
+        delivering high-quality work. {% if employee.gender == 'male' %}
+        He
+        {% else %}
+        She
+        {% endif %} performed 
+        {% if employee.gender == 'male' %}
+        his
+        {% else %}
+        her
+        {% endif %}
+         duties and responsibilities cheerfully. I am certain
+        that {% if employee.gender == 'male' %}
+        He
+        {% else %}
+        She
+        {% endif %} would make a great employee for any enterprise.
+        <br>
+        <br>
+        This certificate is issued based on information available up to <b>{{ employee.approved_resignation.date}}</b>,
+        and we extend our best
+        wishes to <b> {{ employee.full_name | title }}</b> in {% if employee.gender == 'male' %}
+        his
+        {% else %}
+        her
+        {% endif %} future endeavors.
+        <br>
+        <br>
+    </p>
+
+    {% include 'letters/extra/experience_footer.html' %}
+{% endfor %}
+</body>
+
+</html>

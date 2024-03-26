@@ -1,14 +1,18 @@
 {% extends "admin/change_list.html" %}
-
 {% load i18n %}
 
 {% load tz %}
-
 {% load humanize %}
-
 {% load admin_urls static admin_list %}
 
 {% block content_title %}
+    <style>
+        /* Style for the pending message */
+        .pending-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
     <div style="width: 80%">
         <h1> Project Hours 
             <span style="float: right">
@@ -22,6 +26,11 @@
                 </p>
             </span>
         </h1>
+        {% if is_have_pending %}
+            <div class="pending-message">
+                You have pending leave request(s).Please approve frist.
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -29,8 +38,8 @@
     <hr>
     <div style="padding-top: 5px;">
         <form action="" method="get" style="padding: 2px 7px 0px;">
-            <p style="padding-left: 0; color: #666666;  border: 1px splid #ccc;">From &nbsp
-                <span style="border-radius: 4px; border: 1px splid #ccc;">
+            <p style="padding-left: 0; color: #666666;">From &nbsp
+                <span style="border-radius: 4px;">
                     {{ filter_form.created_at__date__gte }}
                 </span>&nbsp&nbsp&nbsp&nbsp To &nbsp
                 <span>

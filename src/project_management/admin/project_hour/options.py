@@ -3,9 +3,47 @@ import datetime
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from project_management.models import ProjectHour
 from employee.models import Employee
+from project_management.models import Project
+
+class ProjectFilter(admin.SimpleListFilter):
+    title = 'Project Type'
+    parameter_name = 'project__id__exact'
+
+    def lookups(self, request, model_admin):
+        project_types = Project.objects.filter(active=True).values_list('id', 'title').distinct()
+        choices = []
+        for project_id, project_title in project_types:
+            choices.append((str(project_id), project_title))
+        return choices
+
+    def choices(self, changelist):
+        yield {
+            'selected': self.value() is None,
+            'query_string': changelist.get_query_string(remove=[self.parameter_name]),
+            'display': ('All'),
+        }
+
+        for lookup, title in self.lookup_choices:
+            project = Project.objects.get(pk=lookup)
+            yield {
+                'selected': self.value() == str(lookup),
+                'query_string': changelist.get_query_string({self.parameter_name: lookup}),
+                'display' : format_html(f'<span style="color: red;">{title}</span>') if project.check_is_weekly_project_hour_generated == False else format_html(f'<span style="color: inherit;">{title}</span>')                                         
+            }
+
+    def queryset(self, request, queryset):
+        project_id = self.value()
+        if project_id:
+            return queryset.filter(
+                project__id=project_id,
+            )
+        else:
+            return queryset
+        
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -58,6 +96,9 @@ class ProjectLeadFilter(admin.SimpleListFilter):
 
 
 class ProjectHourOptions(admin.ModelAdmin):
+    class Media:
+        css = {"all": ("css/list.css",)}
+        js = ("js/list.js",)
     # override create / edit fields
     # manager filed will not appear if the authenticate user is not super user
     def get_fields(self, request, obj=None):
@@ -70,7 +111,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = [ProjectTypeFilter, 'project', ProjectManagerFilter, ProjectLeadFilter, 'date']
+        filters = [ProjectTypeFilter, ProjectFilter, ProjectManagerFilter, ProjectLeadFilter, 'date']
         # if not request.user.is_superuser:
         #     filters.remove('manager')
         return filters
@@ -80,9 +121,9 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'payable', 'cto_feedback', 'approved_by_cto']
-        if not request.user.is_superuser:
-            list_display.remove('payable')
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'operation_feedback_link', 'client_exp_feedback_link']
+        # if not request.user.is_superuser:
+        #     list_display.remove('payable')
         return list_display
 
     # @admin.display(description='Forcast', ordering='forcast')
@@ -98,9 +139,39 @@ class ProjectHourOptions(admin.ModelAdmin):
         html = ""
         i = 1
         for elem in obj.employeeprojecthour_set.all():
+            if elem.employee.sqa and elem.hours > 10:
+                html += f"<p style='color:red;'>{i}.{elem.employee.full_name} ({elem.hours})</p>"
+                i+=1
+                continue
             html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
             i += 1
         return format_html(html)
+
+    @admin.display(description="Operation Feedback")
+    def operation_feedback_link(self, obj):
+        html_template = get_template(
+            "admin/project_management/list/col_operation_feedback.html"
+        )
+        rendered_html = html_template.render({"obj": obj})
+        return rendered_html
+    
+
+    @admin.display(description="Client Experience Feedback")
+    def client_exp_feedback_link(self, obj):
+        html_template = get_template(
+            "admin/project_management/list/col_client_exp_feedback.html"
+        )
+        rendered_html = html_template.render({"obj": obj})
+        return rendered_html
+
+    # @admin.display(description='Project')
+    # def get_project(self, obj: ProjectHour):
+    #     return format_html(f'<div style="color: red;">{obj.project.title}</div>') if obj.project.check_is_weekly_project_hour_generated == False else format_html(f'<div style="color: inherit;">{obj.project.title}</div>')
+
+
+
+
+
 
     # def get_readonly_fields(self, request, obj=None):
     #     three_day_earlier = datetime.datetime.today() - datetime.timedelta(days=2)
@@ -113,3 +184,4 @@ class ProjectHourOptions(admin.ModelAdmin):
     #         if project_hour is None and not request.user.is_superuser:
     #             return self.readonly_fields + tuple([item.name for item in obj._meta.fields])
     #     return ()
+

@@ -10,7 +10,8 @@ from django import forms
 from django.db.models import Sum, Q, F
 from django.template.context_processors import request
 from django.utils import timezone
-
+from django.template.loader import get_template
+from django.utils.html import format_html
 from config.admin import ExportCsvMixin, RecentEdit
 from config.admin.utils import simple_request_filter
 from project_management.admin.project_hour.actions import ProjectHourAction
@@ -33,27 +34,21 @@ class EmployeeHourAdmin(admin.TabularInline):
 
 class ProjectHourAdminForm(forms.ModelForm):
 
-    def clean(self):
+     def clean(self):
         data = super(ProjectHourAdminForm, self).clean()
         if data.get('hour_type') != "bonus":
-
-            if self.request.path_info[-5:-1] == "/add":
-                if ProjectHour.objects.filter(
-                    manager_id=self.request.user.employee.id, 
-                    project_id=data.get('project').id, 
-                    date=data.get('date')
-                ).exists():
-                    raise ValidationError({
-                        'date': f"Project Hour for this date with this project and manager already exists",
-                    })
-
-            # if self.request.path_info[-8:-1] == "/change":
-            #     if not ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')):
-            #         raise ValidationError({
-            #             'date': f"Don't override on date and project.",
-            #         })
+            if self.request:
+                if self.request.path_info[-5:-1] == "/add":
+                    project = data.get('project')
+                    if project and ProjectHour.objects.filter(
+                        manager_id=self.request.user.employee.id, 
+                        project_id=project.id, 
+                        date=data.get('date')
+                    ).exists():
+                        raise ValidationError({
+                            'date': "Project Hour for this date with this project and manager already exists",
+                        })
             return data
-
 
 @admin.register(ProjectHour)
 class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin):
@@ -62,7 +57,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     inlines = (EmployeeHourAdmin,)
     change_list_template = 'admin/total.html'
     autocomplete_fields = ['project']
-    list_per_page = 20
+    list_per_page = 50
     ordering = ('-pk',)
     add_form_template = 'admin/project_hour/project_hour.html'
     fieldsets = (
@@ -71,7 +66,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         }),
         (
             'Administration Process', {
-                'fields': ('cto_feedback', 'approved_by_cto')
+                'fields': ('operation_feedback','client_exp_feedback', 'approved_by_cto')
             }
         )
     )

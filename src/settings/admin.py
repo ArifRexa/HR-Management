@@ -3,7 +3,12 @@ from django import forms
 from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
-from django_q.tasks import async_task
+from django.template import loader
+from django.core.mail import EmailMessage
+from datetime import timedelta
+from django.utils import timezone
+from django_q.tasks import async_task, schedule
+from django_q.models import Schedule
 
 # Register your models here.
 from django.template.defaultfilters import (
@@ -26,6 +31,8 @@ from .models import (
     FinancialYear,
     Announcement,
     EmployeeFoodAllowance,
+    EmailAnnouncement,
+    EmailAnnouncementAttatchment,
 )
 from django_q import models as q_models
 from django_q import admin as q_admin
@@ -149,6 +156,8 @@ class AnnouncementAdmin(admin.ModelAdmin):
 
     list_filter = ("is_active",)
 
+    # inlines = [EmailAnnouncementInline]
+
     actions = (
         "mark_active",
         "mark_inactive",
@@ -188,6 +197,48 @@ class AnnouncementAdmin(admin.ModelAdmin):
                 async_task(
                     "settings.tasks.announcement_mail", employee_email, announcement
                 )
+        if queryset:
+            messages.success(request, "Email sent successfully.")
+
+
+class EmailAnnouncementAttatchmentInline(admin.TabularInline):  # or admin.StackedInline for a different layout
+    model = EmailAnnouncementAttatchment
+    extra = 0  
+
+
+@admin.register(EmailAnnouncement)
+class EmailAnnouncementAdmin(admin.ModelAdmin):
+    list_display = (
+        'subject',
+    )
+    
+    actions = (
+        'send_mail',
+    )
+
+    inlines = (EmailAnnouncementAttatchmentInline,)
+
+    @admin.action(description="Send Email")
+    def send_mail(modeladmin, request, queryset):
+        chunk_size = 50
+        hour = 0
+
+        for announcement in queryset:
+           
+                employee_email_list = list(
+                    Employee.objects.filter(active=True).values_list("email", flat=True)
+                )
+                for i in range(0, len(employee_email_list), chunk_size):
+                    chunk_emails = employee_email_list[i:i+chunk_size]
+
+                    schedule('settings.tasks.send_chunk_email',
+                            chunk_emails,
+                            announcement.id,
+                            name=f"Email announcement schedule - {timezone.now().microsecond}",
+                            schedule_type=Schedule.ONCE,
+                            next_run=timezone.now() + timedelta(hours=hour))
+                    
+                    hour += 1
         if queryset:
             messages.success(request, "Email sent successfully.")
 

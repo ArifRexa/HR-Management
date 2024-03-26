@@ -6,9 +6,13 @@ from django.utils import timezone
 from django.utils.html import format_html
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
+from django.db.models import Avg
+from django.db.models import Q
+import calendar
 
 from employee.models import Employee
 from employee.models import TourAllowance
+from employee.models.employee_rating_models import EmployeeRating
 
 import datetime
 class EmployeeAdminListView:
@@ -20,9 +24,21 @@ class EmployeeAdminListView:
         return format_html(html_content)
     
     def employee_rating(self, obj: Employee):
+        current_date = timezone.now()
+
+        # Calculate the starting month for the last four months
+        starting_month = (current_date.month - 3) % 12 or 12
+
+        # Calculate the starting year for the last four months
+        starting_year = current_date.year - 1 if starting_month > current_date.month else current_date.year
+
+        rating = EmployeeRating.objects.filter(Q(year=starting_year, month__gte=starting_month) |
+        Q(year=current_date.year, month__lte=current_date.month), employee_id=obj.id).values_list('month').annotate(average_rating=Avg('score')).order_by('-month')
+
         html_template = get_template('admin/employee/list/_rating.html')
         html_content = html_template.render({
-            'employee': obj
+            'employee': obj,
+            'ratings' : rating
         })
         return format_html(html_content)
     
@@ -105,10 +121,11 @@ class EmployeeAdminListView:
         })
         return format_html(html_content)
 
+    @admin.display(description="total compensation")
     def salary_history(self, obj):
         history = ''
         for salary in obj.salaryhistory_set.order_by('-active_from').all():
-            history += f'<b>{intcomma(salary.payable_salary)}</b> ({naturalday(salary.active_from)}) <br>'
+            history += f'<b>{intcomma(salary.payable_salary + 3000)}</b> ({naturalday(salary.active_from)}) <br>'
         return format_html(history)
 
     @admin.display(ordering='active', description='Status')

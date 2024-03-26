@@ -147,17 +147,28 @@
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
                                 <p class="text-center mb-1">
-                                    {% if data.accepted_hour %}
-                                        <span 
-                                            class="{% if data.accepted_hour <= 5 %}text-danger{% else %}text-primary{% endif %}"
-                                        >
+                                   
+                                    <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
+                                        
+                                        {% if data.accepted_hour %}
                                             {{ data.accepted_hour | floatformat:2 }} H
-                                        </span>
-                                    {% else %}
-                                        <span>
-                                            -
-                                        </span>
-                                    {% endif %}
+                                        {% else %}
+                                            {% if data.manager_hour %}
+                                                <span style="color: red;">0.00 H</span>
+                                            {%else%}
+                                                -
+                                            {% endif %}
+                                        {% endif %}
+
+                                        {% if data.manager_hour %}
+                                           - {{ data.manager_hour | floatformat:2 }} H
+                                       
+                                        {%else%}
+                                        
+                                        {% endif %}
+
+                                    </span>
+                                    
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
@@ -178,7 +189,7 @@
                                 <p class="text-center mb-2">
                                     <span 
                                         {% if data.break_time_minute >= 75 %}
-                                            style="background: #50e0ff;border-radius: 3px;padding: 1px 4px;"
+                                            style="background: #ff9966;border-radius: 3px;padding: 1px 4px;"
 {#                                        {% elif data.break_time_minute >= 75 %}#}
 {#                                            style="background: #ff9966;border-radius: 3px;padding: 1px 4px;"#}
                                         {% endif %}
@@ -187,7 +198,7 @@
                                     </span>
                                     /
                                     <span
-                                        {% if data.inside_time_hour >= 8 %}
+                                        {% if data.inside_time_hour >= 7 %}
                                             class="text-success fw-bold" 
                                         {% else %}
                                             class="p-1 bg-warning fw-bold"
@@ -199,7 +210,7 @@
                                 </p>
                                 <!-- <p class="text-center mb-1">
                                     <span
-                                        {% if data.inside_time_hour >= 8 %}
+                                        {% if data.inside_time_hour >= 7 %}
                                             class="text-success fw-bold" 
                                         {% else %}
                                             class="p-1 bg-warning fw-bold"

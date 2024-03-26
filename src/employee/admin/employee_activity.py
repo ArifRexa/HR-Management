@@ -243,11 +243,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             start_time_timeobj = start_time.time()
                             if start_time:
                                 is_late = (
-                                    employee_is_lead and start_time_timeobj.hour >= 13
+                                    employee_is_lead and ((start_time_timeobj.hour == 12 and start_time_timeobj.minute > 30) or start_time_timeobj.hour >= 13)
                                 ) or (
                                     not employee_is_lead
-                                    and start_time_timeobj.hour >= 11
-                                    and start_time_timeobj.minute >= 30
+                                    and ((start_time_timeobj.hour >= 11
+                                    and start_time_timeobj.minute >= 30)
+                                    or start_time_timeobj.hour >= 12 
+                                    )
                                 )
                             temp[date].update(
                                 {
@@ -291,11 +293,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 # print(date_datas[emp])
                 for date in last_x_dates:
                     accepted_hour = date_datas[emp][date].get('accepted_hour', 0)
-                
+
                     manager_hour = manager_date_and_hours.get(emp.id, {}).get(date, 0)
             
-                    date_datas[emp][date]['accepted_hour'] = accepted_hour + manager_hour
-                    
+                    date_datas[emp][date]['accepted_hour'] = accepted_hour
+                    date_datas[emp][date]['manager_hour'] = manager_hour
+
         online_status_form = False
         if not str(request.user.employee.id) in management_ids:
             online_status_form = True
