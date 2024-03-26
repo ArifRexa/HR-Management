@@ -106,7 +106,9 @@ class SalarySheetRepository:
             employee=employee, salary_date=salary_sheet.date
         )
 
-        if employee.pay_scale.basic >= 25000 or employee_salary.net_salary >= 43800:
+        payable_salary = employee.current_salary.payable_salary
+        basic_salary = 0.55 * payable_salary
+        if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
             
             loan_instance = Loan.objects.create(
             employee=employee,
@@ -120,7 +122,7 @@ class SalarySheetRepository:
             payment_method='salary',  # Set the payment method
             loan_type='salary',  # Set the loan type
             )
-            print("Loan created ",loan_instance,employee)
+           
             # loan_instance.save()
             salarysheettax = SalarySheetTaxLoan.objects.create(
                 salarysheet = salary_sheet,
@@ -132,7 +134,7 @@ class SalarySheetRepository:
             employee_salary.loan_emi = self.__calculate_loan_emi(
                 employee=employee, salary_date=salary_sheet.date
             )
-        print(employee, employee_salary.loan_emi)
+        
 
         employee_salary.provident_fund = self.__calculate_provident_fund(
             employee=employee, salary_date=salary_sheet.date
