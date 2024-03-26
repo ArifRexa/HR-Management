@@ -6,7 +6,7 @@ from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from account.models import SalarySheet, EmployeeSalary, LoanPayment, Loan
+from account.models import SalarySheet, EmployeeSalary, LoanPayment, Loan, SalarySheetTaxLoan
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate, EmployeeFoodAllowance
