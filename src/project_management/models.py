@@ -103,6 +103,7 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
+    is_highlight = models.BooleanField(default=False, null=True, blank=True)
     active = models.BooleanField(default=True)
     in_active_at = models.DateField(null=True, blank=True)
     emergency_operation = models.BooleanField(default=False)
