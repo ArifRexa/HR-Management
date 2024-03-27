@@ -5,7 +5,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges, ProjectSolution, ProjectKeyFeature
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges,ProjectMetaInfo ,ProjectSolution, ProjectKeyFeature,ProjectResults
 
 
 
@@ -40,6 +40,28 @@ class ProjectContentAdmin(admin.StackedInline):
     model = ProjectContent
     extra = 1
 
+@admin.register(ProjectMetaInfo)
+class ProjectMetaInfoAdmin(admin.ModelAdmin):
+    list_display = ('platform', 'industry', 'location', 'live_view','services')
+    search_fields = ('platform', 'industry', 'location')
+    list_filter = ('industry', 'location')
+    fieldsets = (
+        (None, {
+            'fields': ('platform', 'industry', 'location', 'live_view','services')
+        }),
+    )
+    def has_module_permission(self, request):
+        return False
+    
+    
+@admin.register(ProjectResults)
+class ProjectResultsAdmin(admin.ModelAdmin):
+    list_display = ('title', 'increased_sales', 'return_on_investment', 'increased_order_rate')
+    search_fields = ('title',)
+
+    def has_module_permission(self, request):
+        return False
+    
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'client', 'active', 'show_in_website', 'get_report_url')
