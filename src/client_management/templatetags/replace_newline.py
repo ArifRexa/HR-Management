@@ -11,7 +11,7 @@ register = template.Library()
 @register.filter(name='replace_newline_wth_br')
 def replace_text(value):
     try:
-        return format_html(value.replace('\n', r'<br />'))
+        return format_html(value.replace('\n', r'<br />').replace("{", "[").replace("}", "]"))
     except:
         return format_html(value)
 
