@@ -19,7 +19,9 @@ from project_management.models import (
     ProjectChallenges,
     ProjectSolution,
     ProjectKeyFeature,
-    ClientFeedback
+    ClientFeedback,
+    ProjectMetaInfo,
+    ProjectResults
 
 )
 from settings.models import Designation
@@ -129,8 +131,25 @@ class ProjectContentSerializer(serializers.ModelSerializer):
         fields = ("title", "content","image")
 
 
-
-
+class ProjectMetaInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectMetaInfo
+        fields = (
+            "platform",
+            "industry",
+            "live_view",
+            "location",
+            "services",
+        )
+class ProjectResultsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectResults
+        fields = (
+            "title",
+            "increased_sales",
+            "return_on_investment",
+            "increased_order_rate",
+        )
 class ProjectDetailsSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
     available_tags = TagSerializer(read_only=True, many=True, source="tags")
@@ -140,12 +159,15 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
         source="projectscreenshot_set", many=True, read_only=True
     )
     project_contents = ProjectContentSerializer(many=True, source="projectcontent_set")
-
+    project_meta_info = ProjectMetaInfoSerializer() 
+    project_results = ProjectResultsSerializer() 
     class Meta:
         model = Project
         fields = (
             "title",
             "slug",
+            "project_meta_info", 
+            "project_results",
             "description",
             "thumbnail",
             "video_url",
@@ -155,6 +177,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "client",
             "client_feedback",
             "project_design",
+
             
         )
         
