@@ -21,7 +21,8 @@ from project_management.models import (
     ProjectKeyFeature,
     ClientFeedback,
     ProjectMetaInfo,
-    ProjectResults
+    ProjectResults,
+    OurTechnology
 
 )
 from settings.models import Designation
@@ -125,6 +126,10 @@ class ProjectSerializer(serializers.ModelSerializer):
             "technologies",
            
         )
+
+
+
+
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectContent
@@ -182,6 +187,19 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
         )
         
 
+
+class ProjectHighlightedSerializer(serializers.ModelSerializer):
+    industry = serializers.SerializerMethodField()
+    project_results = ProjectResultsSerializer() 
+    technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
+
+    def get_industry(self, obj):
+        if obj.project_meta_info:
+            return obj.project_meta_info.industry
+    
+    class Meta:
+        model = Project
+        fields = ("slug","industry","title","description","project_results","thumbnail","technologies")
 
 class EmployeeSocialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -459,3 +477,11 @@ class BlogCommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class OurTechnologySerializer(serializers.ModelSerializer):
+    technologies = TechnologySerializer(many=True)
+
+    class Meta:
+        model = OurTechnology
+        fields = ('title', 'technologies') 
