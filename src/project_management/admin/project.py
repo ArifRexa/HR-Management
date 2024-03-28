@@ -5,8 +5,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges,ProjectMetaInfo ,ProjectSolution, ProjectKeyFeature,ProjectResults
-
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges,ProjectMetaInfo ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology
 
 
 @admin.register(Technology)
@@ -14,6 +13,17 @@ class TechnologyAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
+@admin.register(OurTechnology)
+class OurTechnologyAdmin(admin.ModelAdmin):
+    list_display = ('title', 'display_technologies')
+
+    def display_technologies(self, obj):
+        return ", ".join([tech.name for tech in obj.technologies.all()])
+
+    display_technologies.short_description = 'Technologies'
+    
+    def has_module_permission(self, request):
+        return False
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
