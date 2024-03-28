@@ -19,7 +19,9 @@ from website.views import (
     BlogCommentAPIView,
     BlogCommentDetailAPIView,
     BlogNextCommentDetailAPIView, DesignationListView, EmployeeWithDesignationView,
-    AvailableTagsListView
+    AvailableTagsListView,
+    ProjectHighlightedList,
+    OurTechnologyListView
     
 )
 
@@ -30,6 +32,7 @@ api_urls = [
     path("projects/", ProjectList.as_view(), name="project.list"),
     path("projects/available_tags/", AvailableTagsListView.as_view(), name="available.tags"),
     path("projects/available_tags/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
+    path("projects/highlighted_projects/",ProjectHighlightedList.as_view(),name='projects.highlighted'),
     path("project/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
     path("employees/", EmployeeList.as_view(), name="employee.list"),
     path("employee/<str:slug>/", EmployeeDetails.as_view(), name="employee.details"),
@@ -60,6 +63,7 @@ api_urls = [
         VerifyDocuments.as_view(),
         name="verifydocuments",
     ),
+    path("our_technology/",OurTechnologyListView.as_view(),name="our.technology")
 ]
 
 web_url = [path("", index)]
