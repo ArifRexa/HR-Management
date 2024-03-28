@@ -124,8 +124,9 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
-    is_highlight = models.BooleanField(default=False, null=True, blank=True)
+    
     active = models.BooleanField(default=True)
+    is_highlight = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
     emergency_operation = models.BooleanField(default=False)
     thumbnail = models.ImageField(null=True, blank=True)
@@ -249,6 +250,10 @@ class ProjectTechnology(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
+    
+class OurTechnology(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=200)
+    technologies = models.ManyToManyField(Technology)
 
 
 class ProjectScreenshot(TimeStampMixin, AuthorMixin):
