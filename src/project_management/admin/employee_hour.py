@@ -906,6 +906,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     
 
     def is_rating_completed(self, request):
+        # today = timezone.now()
+        # user_id = request.user.id
+        # ratings = EmployeeRating.objects.filter(created_by_id=user_id)
+
+
+        return True
+
+    def _is_rating_completed(self, request):
         today = timezone.now()
         user_id = request.user.id
         ratings = EmployeeRating.objects.filter(created_by_id=user_id)
@@ -937,7 +945,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # print("*"*50)
 
         return is_completed
-    
+
 
     def save_model(self, request, obj, form, change) -> None:
 

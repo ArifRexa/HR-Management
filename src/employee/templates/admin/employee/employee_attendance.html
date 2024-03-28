@@ -147,19 +147,34 @@
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
                                 <p class="text-center mb-1">
-                                    {% if data.accepted_hour %}
-                                    <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
-                                        {{ data.accepted_hour | floatformat:2 }} H
+                                   
+                                    <span>
+                                        
+                                        {% if data.accepted_hour %}
+                                            <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
+                                                {{ data.accepted_hour | floatformat:2 }} H
+                                            </span>
+                                            
+                                        {% else %}
+                                            {% if data.manager_hour %}
+                                                <span style="color: red; font-size: 1.2em;">0.00 H</span>
+                                            {%else%}
+                                                -
+                                            {% endif %}
+                                        {% endif %}
+
                                         {% if data.manager_hour %}
-                                           - {{ data.manager_hour | floatformat:2 }} H
+                                        <span class="{% if data.manager_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em;">
+                                            - {{ data.manager_hour | floatformat:2 }} H
+                                        </span>
+                                           
+                                       
+                                        {%else%}
+                                        
                                         {% endif %}
 
                                     </span>
-                                    {% else %}
-                                        <span>
-                                            -
-                                        </span>
-                                    {% endif %}
+                                    
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
