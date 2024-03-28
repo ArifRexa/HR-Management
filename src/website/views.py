@@ -14,7 +14,7 @@ from project_management.models import Project,ProjectTechnology
 
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
-from project_management.models import Project,Tag
+from project_management.models import Project,Tag,OurTechnology
 from website.models import Service, Category, Blog, BlogComment
 from website.serializers import (
     ServiceSerializer,
@@ -29,7 +29,9 @@ from website.serializers import (
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
     BlogCommentSerializer, DesignationSetSerializer,
-    AvailableTagSerializer
+    AvailableTagSerializer,
+    ProjectHighlightedSerializer,
+    OurTechnologySerializer
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -91,6 +93,11 @@ class ProjectList(APIView):
             'projects': serializer.data
         }
         return paginator.get_paginated_response(response_data)
+
+
+class ProjectHighlightedList(ListAPIView):
+    queryset = Project.objects.filter(is_highlight=True)
+    serializer_class = ProjectHighlightedSerializer
 
 
 class AvailableTagsListView(ListAPIView):
@@ -312,3 +319,8 @@ class BlogNextCommentDetailAPIView(APIView):
             headers={"Access-Control-Allow-Origin": "*"},
             status=status.HTTP_200_OK,
         )
+
+
+class OurTechnologyListView(ListAPIView):
+    queryset = OurTechnology.objects.all()
+    serializer_class = OurTechnologySerializer
