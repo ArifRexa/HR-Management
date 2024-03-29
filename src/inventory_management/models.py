@@ -4,7 +4,7 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-
+from django.core.exceptions import ValidationError
 
 TRANSACTION_CHOICES = [
      ('i', 'IN'),
@@ -47,6 +47,10 @@ class InventoryTransaction(TimeStampMixin, AuthorMixin):
    class Meta:
         verbose_name = "Inventory Transaction"
         verbose_name_plural = "Inventory Transactions"
-   
+     
    def __str__(self):
         return f"{self.inventory_item.name} | {self.quantity} | {self.transaction_date}"
+   
+   def clean(self):
+        if self.transaction_date < timezone.now().date():
+            raise ValidationError({'transaction_date': 'Transaction date cannot be in the past.'})
