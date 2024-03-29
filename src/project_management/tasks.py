@@ -42,8 +42,11 @@ def send_email_for_empty_weekly_project_hour():
    
 
     today = date.today()
-    
-    projects_with_no_hours = Project.objects.exclude(projecthour__date=today)
+    days_to_subtract = (today.weekday() - 4) % 7 
+
+    previous_friday = today - timedelta(days=days_to_subtract)
+
+    projects_with_no_hours = Project.objects.exclude(projecthour__date=previous_friday)
    
     for project in projects_with_no_hours:
        lead_or_manager_filter = Q(lead=True) | Q(manager=True)
@@ -64,5 +67,5 @@ def send_email_lead_for_weekly_project_hour(email_address, employee):
     html_content = loader.render_to_string('mails/weekly_project_hour_reminder.html', context)
 
     email.attach_alternative(html_content, "text/html")
-    email.send()
+    # email.send()
     
