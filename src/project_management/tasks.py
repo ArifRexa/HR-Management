@@ -13,7 +13,7 @@ from django.utils.html import strip_tags
 from django_q.tasks import async_task, schedule
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, loader
-
+from django.db.models import Q
 
 
 def mark_employee_free():
@@ -46,7 +46,8 @@ def send_email_for_empty_weekly_project_hour():
     projects_with_no_hours = Project.objects.exclude(projecthour__date=today)
    
     for project in projects_with_no_hours:
-       lead_or_managers = project.associated_employees.filter(lead=True) | project.associated_employees.filter(manager=True)
+       lead_or_manager_filter = Q(lead=True) | Q(manager=True)
+       lead_or_managers = project.associated_employees.filter(lead_or_manager_filter)
        for lead_or_manager in lead_or_managers:
             email_address = lead_or_manager.email
             async_task('project_management.tasks.send_email_lead_for_weekly_project_hour',email_address,lead_or_manager)
