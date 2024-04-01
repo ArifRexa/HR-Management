@@ -112,6 +112,13 @@ class ClientFeedbackSerializer(serializers.ModelSerializer):
             "rating_billing",
             "rating_long_term_interest",
         )
+
+
+class ProjectKeyFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectKeyFeature
+        fields = ("title","description","img")
+
 class ProjectSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(
         many=True, source="projecttechnology_set"
@@ -164,6 +171,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
         source="projectscreenshot_set", many=True, read_only=True
     )
     project_contents = ProjectContentSerializer(many=True, source="projectcontent_set")
+    project_key_feature = ProjectKeyFeatureSerializer(many=True,source="projectkeyfeature_set")
     project_meta_info = ProjectMetaInfoSerializer() 
     project_results = ProjectResultsSerializer() 
     class Meta:
@@ -179,11 +187,10 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "technologies",
             "available_tags",
             "project_contents",
+            "project_key_feature",
             "client",
             "client_feedback",
             "project_design",
-
-            
         )
         
 
