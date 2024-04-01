@@ -109,3 +109,12 @@ class BlogComment(MPTTModel, TimeStampMixin):
         null=True,
         related_name="children",
     )
+
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255, verbose_name="Question")
+    answer = models.TextField(verbose_name="Answer")
+
+    class Meta:
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"

@@ -21,7 +21,8 @@ from website.views import (
     BlogNextCommentDetailAPIView, DesignationListView, EmployeeWithDesignationView,
     AvailableTagsListView,
     ProjectHighlightedList,
-    OurTechnologyListView
+    OurTechnologyListView,
+    FAQListView
     
 )
 
@@ -63,7 +64,8 @@ api_urls = [
         VerifyDocuments.as_view(),
         name="verifydocuments",
     ),
-    path("our_technology/",OurTechnologyListView.as_view(),name="our.technology")
+    path("our_technology/",OurTechnologyListView.as_view(),name="our.technology"),
+    path("faq/",FAQListView.as_view(),name="faq")
 ]
 
 web_url = [path("", index)]

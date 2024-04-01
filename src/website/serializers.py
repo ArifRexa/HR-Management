@@ -22,7 +22,8 @@ from project_management.models import (
     ClientFeedback,
     ProjectMetaInfo,
     ProjectResults,
-    OurTechnology
+    OurTechnology,
+    
 
 )
 from settings.models import Designation
@@ -34,6 +35,7 @@ from website.models import (
     BlogCategory,
     BlogContext,
     BlogComment,
+    FAQ
 )
 
 
@@ -492,3 +494,10 @@ class OurTechnologySerializer(serializers.ModelSerializer):
     class Meta:
         model = OurTechnology
         fields = ('title', 'technologies') 
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ("question","answer")
+   

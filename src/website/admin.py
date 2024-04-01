@@ -19,6 +19,7 @@ from website.models import (
     BlogTag,
     BlogContext,
     BlogComment,
+    FAQ
 )
 
 
@@ -222,3 +223,9 @@ class BlogAdmin(admin.ModelAdmin):
 class BlogCommentModelAdmin(MPTTModelAdmin):
     mptt_level_indent = 20
     list_display = ["id", "name"]
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    model = FAQ
+    list_display = ["question","answer"]
