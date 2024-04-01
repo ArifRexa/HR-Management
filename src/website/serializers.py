@@ -52,9 +52,10 @@ class ClientSerializer(serializers.ModelSerializer):
 
 
 class ServiceSerializer(serializers.ModelSerializer):
+    technologies = TechnologySerializer(many=True)
     class Meta:
         model = Service
-        fields = ("title", "slug", "icon", "short_description")
+        fields = ("title", "slug","short_description","feature","technologies")
 
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
