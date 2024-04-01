@@ -50,6 +50,17 @@ class ProjectContentAdmin(admin.StackedInline):
     model = ProjectContent
     extra = 1
 
+class ProjectKeyFeatureInline(admin.StackedInline):
+    model = ProjectKeyFeature
+    extra = 1
+
+@admin.register(ProjectKeyFeature)
+class ProjectKeyFeatureAdmin(admin.ModelAdmin):
+    list_display = ('title', 'description', 'img')
+    
+    def has_module_permission(self, request):
+        return False
+
 @admin.register(ProjectMetaInfo)
 class ProjectMetaInfoAdmin(admin.ModelAdmin):
     list_display = ('platform', 'industry', 'location', 'live_view','services')
@@ -71,13 +82,15 @@ class ProjectResultsAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
-    
+
+
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('title', 'client', 'active', 'show_in_website', 'get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
-    inlines = (ProjectTechnologyInline,ProjectContentAdmin, ProjectScreenshotInline,ProjectDocumentAdmin)
+    inlines = (ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
@@ -134,12 +147,6 @@ class ProjectChallengesAdmin(admin.ModelAdmin):
 @admin.register(ProjectSolution)
 class ProjectSolutionAdmin(admin.ModelAdmin):
     list_display = ('title', 'description', 'img')
-    def has_module_permission(self, request):
-        return False
-@admin.register(ProjectKeyFeature)
-class ProjectKeyFeatureAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'img')
-    
     def has_module_permission(self, request):
         return False
 

@@ -84,15 +84,6 @@ class ProjectSolution(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.title
 
-class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
-    title = models.CharField(max_length=100)
-    description = HTMLField()
-    img = models.ImageField()
-
-    def __str__(self):
-        return self.title
-
-
 from django.db import models
 
 class ProjectMetaInfo(models.Model):
@@ -114,7 +105,6 @@ class ProjectResults(models.Model):
 
     def __str__(self):
         return self.title
-
 
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
@@ -266,6 +256,15 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     content = HTMLField()
     image = models.ImageField(upload_to='project_images/', null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project,on_delete=models.CASCADE)
+    title = models.CharField(max_length=300)
+    description = HTMLField()
+    img = models.ImageField()
 
     def __str__(self):
         return self.title
