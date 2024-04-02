@@ -270,6 +270,7 @@ class BlogCommentAPIView(APIView):
 
 
 class BlogCommentDetailAPIView(APIView):
+    pagination_class = CustomPagination
     def get(self, request, pk):
         query = (
             BlogComment.objects.filter(blog=pk, parent=None)
@@ -289,12 +290,11 @@ class BlogCommentDetailAPIView(APIView):
                 "updated_at",
             )
         )
-        return Response(
-            data=query,
-            headers={"Access-Control-Allow-Origin": "*"},
-            status=status.HTTP_200_OK,
-        )
 
+        paginator = self.pagination_class()
+        paginated_comments = paginator.paginate_queryset(query, request)
+
+        return paginator.get_paginated_response(paginated_comments)
 
 class BlogNextCommentDetailAPIView(APIView):
     def get(self, request, blog_id, comment_parent_id):
