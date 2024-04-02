@@ -1,8 +1,9 @@
+from datetime import datetime
 import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
-from datetime import datetime
+
 from django.utils import timezone
 from datetime import date
 from dateutil.utils import today
@@ -43,6 +44,7 @@ class Tag(TimeStampMixin, AuthorMixin):
 
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
+    designation = models.CharField(max_length=200,null=True,blank=True)
     email = models.EmailField(max_length=80)
     address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
@@ -158,7 +160,7 @@ class Project(TimeStampMixin, AuthorMixin):
         return self.title
 
     def durations(self):
-        duration = datetime.now() - self.created_at
+        duration = datetime.datetime.now() - self.created_at
         return duration.days
 
     def colorize(self):
