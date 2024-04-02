@@ -50,7 +50,3 @@ class InventoryTransaction(TimeStampMixin, AuthorMixin):
      
    def __str__(self):
         return f"{self.inventory_item.name} | {self.quantity} | {self.transaction_date}"
-   
-   def clean(self):
-        if self.transaction_date < timezone.now().date():
-            raise ValidationError({'transaction_date': 'Transaction date cannot be in the past.'})
