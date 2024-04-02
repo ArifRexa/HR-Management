@@ -50,6 +50,14 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = ("name", "email", "address", "country", "logo")
 
+class OurClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ("name", "designation", "logo")
+
+
+
+
 
 class ServiceSerializer(serializers.ModelSerializer):
     technologies = TechnologySerializer(many=True)
@@ -89,7 +97,7 @@ class AvailableTagSerializer(serializers.ModelSerializer):
 class ClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientFeedback
-        fields = '__all__'
+        fields = ("feedback",)
 
 
 class ProjectScreenshotSerializer(serializers.ModelSerializer):
@@ -102,7 +110,7 @@ class ClientSerializer(serializers.ModelSerializer):
         model = Client
         fields = ("name","email","address","country","logo")
 
-class ClientFeedbackSerializer(serializers.ModelSerializer):
+class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientFeedback
         fields = (
@@ -169,7 +177,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
     available_tags = TagSerializer(read_only=True, many=True, source="tags")
     client = ClientSerializer()
-    client_feedback = ClientFeedbackSerializer(many=True, source="clientfeedback_set") 
+    client_feedback = ProjectClientFeedbackSerializer(many=True, source="clientfeedback_set") 
     project_design = ProjectScreenshotSerializer(
         source="projectscreenshot_set", many=True, read_only=True
     )
@@ -502,3 +510,27 @@ class FAQSerializer(serializers.ModelSerializer):
         model = FAQ
         fields = ("question","answer")
    
+class OurClientsFeedbackSerializer(serializers.ModelSerializer):
+    
+   
+    client_name = serializers.SerializerMethodField()
+    client_designation = serializers.SerializerMethodField()
+    client_logo = serializers.SerializerMethodField()
+    feedback = serializers.SerializerMethodField()
+    class Meta:
+        model = Project
+        fields = ('client_name', 'client_designation', 'client_logo','feedback')
+
+    def get_client_name(self, obj):
+        return obj.client.name if obj.client else None
+
+    def get_client_designation(self, obj):
+        return obj.client.designation if obj.client else None
+
+    def get_client_logo(self, obj):
+        return obj.client.logo.url if obj.client and obj.client.logo else None  
+
+    def get_feedback(self,obj):
+        clientfeedback = ClientFeedback.objects.filter(project=obj)
+        serializers = ClientFeedbackSerializer(instance=clientfeedback,many=True)
+        return serializers.data

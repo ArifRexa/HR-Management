@@ -14,7 +14,7 @@ from project_management.models import Project,ProjectTechnology
 
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
-from project_management.models import Project,Tag,OurTechnology
+from project_management.models import Project,Tag,OurTechnology,Client
 from website.models import Service, Category, Blog, BlogComment,FAQ
 from website.serializers import (
     ServiceSerializer,
@@ -32,7 +32,8 @@ from website.serializers import (
     AvailableTagSerializer,
     ProjectHighlightedSerializer,
     OurTechnologySerializer,
-    FAQSerializer
+    FAQSerializer,
+    OurClientsFeedbackSerializer
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -330,3 +331,8 @@ class OurTechnologyListView(ListAPIView):
 class FAQListView(ListAPIView):
     queryset = FAQ.objects.all()
     serializer_class = FAQSerializer
+
+
+class OurClientsFeedbackList(ListAPIView):
+    queryset = Project.objects.filter(client__isnull=False)
+    serializer_class = OurClientsFeedbackSerializer
