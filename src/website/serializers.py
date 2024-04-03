@@ -35,7 +35,11 @@ from website.models import (
     BlogCategory,
     BlogContext,
     BlogComment,
-    FAQ
+    FAQ,
+    ServiceProcess,
+    OurAchievement,
+    OurJourney,
+    OurGrowth
 )
 
 
@@ -48,7 +52,7 @@ class TechnologySerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ("name", "email", "address", "country", "logo")
+        fields = ("name", "email","designation", "address", "country", "logo")
 
 class OurClientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -58,21 +62,36 @@ class OurClientSerializer(serializers.ModelSerializer):
 
 
 
+class ServiceTechnologySerializer(serializers.ModelSerializer):
+    technologies = TechnologySerializer(many=True)
+
+    class Meta:
+        model = ProjectTechnology
+        fields = ("title", "technologies")
+
+
+class ServiceProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceProcess
+        fields = "__all__"
+        
 
 class ServiceSerializer(serializers.ModelSerializer):
-    technologies = TechnologySerializer(many=True)
+    technologies = ServiceTechnologySerializer(many=True, source="servicetechnology_set")
     class Meta:
         model = Service
         fields = ("title", "slug","short_description","feature","technologies")
 
 
+
+
 class ServiceDetailsSerializer(serializers.ModelSerializer):
     clients = ClientSerializer(many=True)
-    technologies = TechnologySerializer(many=True)
-
+    technologies = ServiceTechnologySerializer(many=True, source="servicetechnology_set")
+    service_process = ServiceProcessSerializer(many=True)
     class Meta:
         model = Service
-        fields = "__all__"
+        fields = ("slug","title","short_description","banner_image","feature_image","feature","service_process","technologies","clients")
 
 
 class ProjectTechnologySerializer(serializers.ModelSerializer):
@@ -105,10 +124,6 @@ class ProjectScreenshotSerializer(serializers.ModelSerializer):
         model = ProjectScreenshot
         fields = ("image",)
 
-class ClientSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Client
-        fields = ("name","email","address","country","logo")
 
 class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
@@ -534,3 +549,22 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
         clientfeedback = ClientFeedback.objects.filter(project=obj)
         serializers = ClientFeedbackSerializer(instance=clientfeedback,many=True)
         return serializers.data
+    
+
+class OurAchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurAchievement
+        fields = ("title","number")
+
+
+class OurGrowthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurGrowth
+        fields = ("title","number")
+
+    
+
+class OurJourneySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurJourney
+        fields = ("year","title","description","img")
