@@ -428,29 +428,39 @@ class SalarySheetRepository:
                     festival_bonus_date = self.__salary_sheet.date
 
                     # Calculate the difference in years using relativedelta
+                    full = employee.joining_date + timedelta(days=360)
+                    ninety_percent = employee.joining_date + timedelta(days=330)
+                    eighty_percent = employee.joining_date + timedelta(days=270)
+                    sixty_percent = employee.joining_date + timedelta(days=210)
+                    fourty_percent = employee.joining_date + timedelta(days=150)
+                    twintee_percent = employee.joining_date + timedelta(days=90)
+                    
                     delta = relativedelta(festival_bonus_date, joining_date)
+
+
 
                     # Calculate the total months since joining
                     months_since_joining = delta.years * 12 + delta.months
+                    days_since_joining = ((delta.years * 12 + delta.months) * 30 ) + delta.days
                     print(employee,months_since_joining)
 
 
                     basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
                     
                    
-                    if months_since_joining < 3:
+                    if days_since_joining < twintee_percent:
                         return 0
-                    elif months_since_joining >= 3 and months_since_joining < 5:
+                    elif days_since_joining >= twintee_percent and days_since_joining < fourty_percent:
                         return round((basic_salary * 20) / 100, 2)
-                    elif months_since_joining >= 5 and months_since_joining < 7:
+                    elif days_since_joining >= fourty_percent and days_since_joining < sixty_percent:
                         return round((basic_salary * 40) / 100, 2)
-                    elif months_since_joining >= 7 and months_since_joining < 9:
+                    elif days_since_joining >= sixty_percent and days_since_joining < eighty_percent:
                         return round((basic_salary * 60) / 100, 2)
-                    elif months_since_joining >= 9 and months_since_joining < 11:
+                    elif days_since_joining >= eighty_percent and days_since_joining < ninety_percent:
                         return round((basic_salary * 80) / 100, 2)
-                    elif months_since_joining == 11:
+                    elif days_since_joining >= ninety_percent:
                         return round((basic_salary * 90) / 100, 2)
-                    elif months_since_joining >= 12:
+                    elif days_since_joining >= full:
                         return round((basic_salary * 100) / 100, 2)
                 else:
                    
