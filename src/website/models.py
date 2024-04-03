@@ -12,6 +12,15 @@ from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Technology
 
 
+
+class ServiceProcess(models.Model):
+    img  = models.ImageField()
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title
+
 class Service(models.Model):
     icon = models.ImageField()
     title = models.CharField(max_length=200)
@@ -20,7 +29,7 @@ class Service(models.Model):
     banner_image = models.ImageField()
     feature_image = models.ImageField()
     feature = HTMLField()
-    technologies = models.ManyToManyField(Technology)
+    service_process = models.ManyToManyField(ServiceProcess)
     clients = models.ManyToManyField(Client)
     order = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
@@ -28,6 +37,15 @@ class Service(models.Model):
     def __str__(self):
         return self.title
 
+
+class ServiceTechnology(TimeStampMixin, AuthorMixin):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    technologies = models.ManyToManyField(Technology)
+
+    def __str__(self):
+        return self.title
+    
 
 class Category(AuthorMixin, TimeStampMixin):
     name = models.CharField(max_length=255)
@@ -118,3 +136,22 @@ class FAQ(models.Model):
     class Meta:
         verbose_name = "FAQ"
         verbose_name_plural = "FAQs"
+
+
+class OurAchievement(models.Model):
+    title = models.CharField(max_length=200)
+    number = models.CharField(max_length=100)
+
+
+class OurGrowth(models.Model):
+    title = models.CharField(max_length=200)
+    number = models.CharField(max_length=100)
+    
+
+
+class OurJourney(models.Model):
+    year = models.CharField(max_length =10)
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    img = models.ImageField()
+
