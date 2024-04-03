@@ -391,34 +391,36 @@ class SalarySheetRepository:
             
             if employee.joining_date < previous_policy_cutoff:
                               
+                if employee.permanent_date:
+                    # Apply previous policy
+                    dtdelta = employee.joining_date + timedelta(days=180)
+                    seventyFivePercent = employee.joining_date + timedelta(days=150)
+                    fiftyPercent = employee.joining_date + timedelta(days=120)
+                    twinteeFivePercent = employee.joining_date + timedelta(days=90)
+                    tenPercent = employee.joining_date + timedelta(days=60)
+                    fivePercet = employee.joining_date + timedelta(days=30)
 
-                # Apply previous policy
-                dtdelta = employee.joining_date + timedelta(days=180)
-                seventyFivePercent = employee.joining_date + timedelta(days=150)
-                fiftyPercent = employee.joining_date + timedelta(days=120)
-                twinteeFivePercent = employee.joining_date + timedelta(days=90)
-                tenPercent = employee.joining_date + timedelta(days=60)
-                fivePercet = employee.joining_date + timedelta(days=30)
-                
-                basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
-                
-                if dtdelta < new_policy_cutoff:                
-                    return basic_salary
-                
-                elif seventyFivePercent <= new_policy_cutoff: 
-                    return round((basic_salary * 75) / 100, 2)
-                
-                elif fiftyPercent <= new_policy_cutoff:
-                    return round((basic_salary * 50) / 100, 2)
-                
-                elif twinteeFivePercent <= new_policy_cutoff:
-                    return round((basic_salary * 25) / 100, 2)
-                
-                elif tenPercent <= new_policy_cutoff:
-                    return round((basic_salary * 10) / 100, 2)
-                
-                elif fivePercet <= new_policy_cutoff:
-                    return round((basic_salary * 5) / 100, 2)
+                    basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
+
+                    if dtdelta < new_policy_cutoff:
+                        return basic_salary
+
+                    elif seventyFivePercent <= new_policy_cutoff:
+                        return round((basic_salary * 75) / 100, 2)
+
+                    elif fiftyPercent <= new_policy_cutoff:
+                        return round((basic_salary * 50) / 100, 2)
+
+                    elif twinteeFivePercent <= new_policy_cutoff:
+                        return round((basic_salary * 25) / 100, 2)
+
+                    elif tenPercent <= new_policy_cutoff:
+                        return round((basic_salary * 10) / 100, 2)
+
+                    elif fivePercet <= new_policy_cutoff:
+                        return round((basic_salary * 5) / 100, 2)
+                else:
+                    return 0
                 
             else:
                    
