@@ -23,7 +23,10 @@ from website.views import (
     ProjectHighlightedList,
     OurTechnologyListView,
     FAQListView,
-    OurClientsFeedbackList
+    OurClientsFeedbackList,
+    OurAchievementListView,
+    OurGrowthListView,
+    OurJourneyListView
     
 )
 
@@ -67,7 +70,10 @@ api_urls = [
     ),
     path("our_technology/",OurTechnologyListView.as_view(),name="our.technology"),
     path("faq/",FAQListView.as_view(),name="faq"),
-    path("our_clients/",OurClientsFeedbackList.as_view(),name="our.clients")
+    path("our_clients/",OurClientsFeedbackList.as_view(),name="our.clients"),
+    path("our_achievement/",OurAchievementListView.as_view(),name=("our.achievement")),
+    path("our_growth/",OurGrowthListView.as_view(),name=("our.growth")),
+    path("our_journey/",OurJourneyListView.as_view(),name=("our.journey"))
 ]
 
 web_url = [path("", index)]
