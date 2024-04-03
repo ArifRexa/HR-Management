@@ -184,7 +184,9 @@ def balance_sheet(request, id):
         total_amount=Sum('amount'),
     ).order_by('expanse_group__title')\
 
-    total_expense_amount = expenses_data.aggregate(total_amount=Sum('amount'))['total_amount']
+   
+
+    total_expense_amount = expenses_data.aggregate(total_amount=Sum('amount'))['total_amount'] or 0
 
         
     incomes_data = Income.objects.filter(
@@ -194,7 +196,7 @@ def balance_sheet(request, id):
         Q(date__month=monthly_journal.date.month)
     ).values('date','project__title', 'payment').order_by('date')
 
-    total_income_amount = incomes_data.aggregate(total_amount=Sum('payment'))['total_amount']
+    total_income_amount = incomes_data.aggregate(total_amount=Sum('payment'))['total_amount'] or 0
 
     zipped_data = list(zip_longest(incomes_data, expenses_data, fillvalue={}))
 

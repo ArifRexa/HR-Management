@@ -430,30 +430,54 @@ class SalarySheetRepository:
                     festival_bonus_date = self.__salary_sheet.date
 
                     # Calculate the difference in years using relativedelta
+                    # full = employee.joining_date + timedelta(days=360)
+                    # ninety_percent = employee.joining_date + timedelta(days=330)
+                    # eighty_percent = employee.joining_date + timedelta(days=270)
+                    # sixty_percent = employee.joining_date + timedelta(days=210)
+                    # fourty_percent = employee.joining_date + timedelta(days=150)
+                    # twintee_percent = employee.joining_date + timedelta(days=90)
+                    
                     delta = relativedelta(festival_bonus_date, joining_date)
+
+
 
                     # Calculate the total months since joining
                     months_since_joining = delta.years * 12 + delta.months
+                    days_since_joining = ((delta.years * 12 + delta.months) * 30 ) + delta.days
                     print(employee,months_since_joining)
 
 
                     basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
                     
-                   
-                    if months_since_joining < 3:
+                    if days_since_joining < 90:
                         return 0
-                    elif months_since_joining >= 3 and months_since_joining < 5:
+                    elif days_since_joining >=90 and days_since_joining < 150:
                         return round((basic_salary * 20) / 100, 2)
-                    elif months_since_joining >= 5 and months_since_joining < 7:
+                    elif days_since_joining >= 150 and days_since_joining < 210:
                         return round((basic_salary * 40) / 100, 2)
-                    elif months_since_joining >= 7 and months_since_joining < 9:
+                    elif days_since_joining >=210 and days_since_joining < 270:
                         return round((basic_salary * 60) / 100, 2)
-                    elif months_since_joining >= 9 and months_since_joining < 11:
+                    elif days_since_joining >= 270 and days_since_joining < 330:
                         return round((basic_salary * 80) / 100, 2)
-                    elif months_since_joining == 11:
+                    elif days_since_joining >= 330 and days_since_joining < 360:
                         return round((basic_salary * 90) / 100, 2)
-                    elif months_since_joining >= 12:
-                        return round((basic_salary * 100) / 100, 2)
+                    else:
+                        return basic_salary
+                   
+                    # if festival_bonus_date < twintee_percent:
+                    #     return 0
+                    # elif twintee_percent >= festival_bonus_date  and fourty_percent < festival_bonus_date:
+                    #     return round((basic_salary * 20) / 100, 2)
+                    # elif fourty_percent >= festival_bonus_date  and sixty_percent < festival_bonus_date:
+                    #     return round((basic_salary * 40) / 100, 2)
+                    # elif sixty_percent >= festival_bonus_date  and eighty_percent < festival_bonus_date:
+                    #     return round((basic_salary * 60) / 100, 2)
+                    # elif eighty_percent >= new_policy_cutoff  and ninety_percent < festival_bonus_date:
+                    #     return round((basic_salary * 80) / 100, 2)
+                    # elif ninety_percent >= festival_bonus_date:
+                    #     return round((basic_salary * 90) / 100, 2)
+                    # elif full >= festival_bonus_date:
+                    #     return round((basic_salary * 100) / 100, 2)
                 else:
                    
                     return 0
