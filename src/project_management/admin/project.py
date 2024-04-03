@@ -128,27 +128,27 @@ class ProjectAdmin(admin.ModelAdmin):
             list_display[idx] = lambda obj: self.get_report_url(obj, request)
         return list_display
 
-@admin.register(ProjectOverview)
-class ProjectOverviewAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'img')
-    def has_module_permission(self, request):
-        return False
+# @admin.register(ProjectOverview)
+# class ProjectOverviewAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'description', 'img')
+#     def has_module_permission(self, request):
+#         return False
     
-@admin.register(ProjectStatement)
-class ProjectStatementAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'img')
-    def has_module_permission(self, request):
-        return False
-@admin.register(ProjectChallenges)
-class ProjectChallengesAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'img')
-    def has_module_permission(self, request):
-        return False
-@admin.register(ProjectSolution)
-class ProjectSolutionAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'img')
-    def has_module_permission(self, request):
-        return False
+# @admin.register(ProjectStatement)
+# class ProjectStatementAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'description', 'img')
+#     def has_module_permission(self, request):
+#         return False
+# @admin.register(ProjectChallenges)
+# class ProjectChallengesAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'description', 'img')
+#     def has_module_permission(self, request):
+#         return False
+# @admin.register(ProjectSolution)
+# class ProjectSolutionAdmin(admin.ModelAdmin):
+#     list_display = ('title', 'description', 'img')
+#     def has_module_permission(self, request):
+#         return False
 
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
