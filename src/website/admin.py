@@ -19,15 +19,35 @@ from website.models import (
     BlogTag,
     BlogContext,
     BlogComment,
-    FAQ
+    FAQ,
+    ServiceTechnology,
+    ServiceProcess,
+    OurAchievement,
+    OurGrowth,
+    OurJourney
 )
 
+
+class ServiceTechnologyInline(admin.TabularInline):
+    model =  ServiceTechnology
+    extra = 1
+
+@admin.register(ServiceProcess)
+class ServiceProcessAdmin(admin.ModelAdmin):
+    list_display = ("title","description","img")
+
+
+
+    def has_module_permission(self, request):
+        return False
+
+    
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-
+    inlines = (ServiceTechnologyInline,)
     def has_module_permission(self, request):
         return False
 
@@ -229,3 +249,28 @@ class BlogCommentModelAdmin(MPTTModelAdmin):
 class FAQAdmin(admin.ModelAdmin):
     model = FAQ
     list_display = ["question","answer"]
+
+@admin.register(OurAchievement)
+class OurAchievementAdmin(admin.ModelAdmin):
+    list_display = ("title","number")
+    
+    def has_module_permission(self, request):
+        return False
+    
+
+@admin.register(OurGrowth)
+class OurGrowthAdmin(admin.ModelAdmin):
+    list_display = ("title","number")
+    
+    def has_module_permission(self, request):
+        return False
+
+
+@admin.register(OurJourney)
+class OurJourneyAdmin(admin.ModelAdmin):
+    list_display = ("year","title","description","img")
+
+    def has_module_permission(self,request):
+        return False
+
+
