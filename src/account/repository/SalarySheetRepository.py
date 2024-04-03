@@ -448,19 +448,19 @@ class SalarySheetRepository:
                     basic_salary = (self.__employee_current_salary.payable_salary * 55) / 100
                     
                    
-                    if days_since_joining < twintee_percent:
+                    if new_policy_cutoff < twintee_percent:
                         return 0
-                    elif days_since_joining >= twintee_percent and days_since_joining < fourty_percent:
+                    elif twintee_percent >= new_policy_cutoff  and fourty_percent < new_policy_cutoff:
                         return round((basic_salary * 20) / 100, 2)
-                    elif days_since_joining >= fourty_percent and days_since_joining < sixty_percent:
+                    elif fourty_percent >= new_policy_cutoff  and sixty_percent < new_policy_cutoff:
                         return round((basic_salary * 40) / 100, 2)
-                    elif days_since_joining >= sixty_percent and days_since_joining < eighty_percent:
+                    elif sixty_percent >= new_policy_cutoff  and eighty_percent < new_policy_cutoff:
                         return round((basic_salary * 60) / 100, 2)
-                    elif days_since_joining >= eighty_percent and days_since_joining < ninety_percent:
+                    elif eighty_percent >= new_policy_cutoff  and ninety_percent < new_policy_cutoff:
                         return round((basic_salary * 80) / 100, 2)
-                    elif days_since_joining >= ninety_percent:
+                    elif ninety_percent >= new_policy_cutoff:
                         return round((basic_salary * 90) / 100, 2)
-                    elif days_since_joining >= full:
+                    elif full >= new_policy_cutoff:
                         return round((basic_salary * 100) / 100, 2)
                 else:
                    
