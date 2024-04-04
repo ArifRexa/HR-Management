@@ -24,6 +24,7 @@ from project_management.models import (
     ProjectResults,
     OurTechnology,
     
+    
 
 )
 from settings.models import Designation
@@ -39,7 +40,8 @@ from website.models import (
     ServiceProcess,
     OurAchievement,
     OurJourney,
-    OurGrowth
+    OurGrowth,
+    EmployeePerspective
 )
 
 
@@ -245,6 +247,21 @@ class EmployeeContentSerializer(serializers.ModelSerializer):
         model = EmployeeContent
         fields = ("title", "content")
 
+class EmployeeSerializer(serializers.ModelSerializer):
+    designation = serializers.StringRelatedField(many=False)
+    socials = EmployeeSocialSerializer(
+        many=True, read_only=True, source="employeesocial_set"
+    )
+
+    class Meta:
+        model = Employee
+        fields = ("slug", "full_name", "designation", "manager", "image", "socials")
+
+    def get_image_url(self, employee):
+        request = self.context.get("request")
+        image_url = employee.image.url
+        return request.build_absolute_uri(image_url)
+
 
 class EmployeeDetailsSerializer(serializers.ModelSerializer):
     designation = serializers.StringRelatedField(many=False)
@@ -270,20 +287,7 @@ class EmployeeDetailsSerializer(serializers.ModelSerializer):
         )
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
-    designation = serializers.StringRelatedField(many=False)
-    socials = EmployeeSocialSerializer(
-        many=True, read_only=True, source="employeesocial_set"
-    )
 
-    class Meta:
-        model = Employee
-        fields = ("slug", "full_name", "designation", "manager", "image", "socials")
-
-    def get_image_url(self, employee):
-        request = self.context.get("request")
-        image_url = employee.image.url
-        return request.build_absolute_uri(image_url)
 
 
 class DesignationSetSerializer(serializers.ModelSerializer):
@@ -568,3 +572,12 @@ class OurJourneySerializer(serializers.ModelSerializer):
     class Meta:
         model = OurJourney
         fields = ("year","title","description","img")
+
+
+class EmployeePerspectiveSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source='employee.full_name',read_only =True)
+    employee_designation = serializers.CharField(source='employee.designation',read_only=True)
+    employee_image= serializers.ImageField(source='employee.image',read_only=True)
+    class Meta:
+        model = EmployeePerspective
+        fields = ("title","description","employee_name","employee_designation","employee_image",)

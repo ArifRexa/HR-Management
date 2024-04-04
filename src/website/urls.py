@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
-
+from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIView 
 
 from website.views import (
     ServiceList,
@@ -26,7 +26,8 @@ from website.views import (
     OurClientsFeedbackList,
     OurAchievementListView,
     OurGrowthListView,
-    OurJourneyListView
+    OurJourneyListView,
+    EmployeePerspectiveListView,
     
 )
 
@@ -34,16 +35,19 @@ from website.views import (
 api_urls = [
     path("services/", ServiceList.as_view(), name="service.list"),
     path("service/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
+   
     path("projects/", ProjectList.as_view(), name="project.list"),
     path("projects/available_tags/", AvailableTagsListView.as_view(), name="available.tags"),
     path("projects/available_tags/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
     path("projects/highlighted_projects/",ProjectHighlightedList.as_view(),name='projects.highlighted'),
     path("project/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
+   
     path("employees/", EmployeeList.as_view(), name="employee.list"),
     path("employee/<str:slug>/", EmployeeDetails.as_view(), name="employee.details"),
     path("employees/designations/", DesignationListView.as_view(), name="all-skills"),
     path('employees/designations/<str:designation>/', EmployeeWithDesignationView.as_view(), name='employee-skill-list'),
     # path("categories/", CategoryListView.as_view(), name="blog.category.list"),
+   
     path(
         "categories/",
         CategoryListViewWithBlogCount.as_view(),
@@ -73,7 +77,9 @@ api_urls = [
     path("our_clients/",OurClientsFeedbackList.as_view(),name="our.clients"),
     path("our_achievement/",OurAchievementListView.as_view(),name=("our.achievement")),
     path("our_growth/",OurGrowthListView.as_view(),name=("our.growth")),
-    path("our_journey/",OurJourneyListView.as_view(),name=("our.journey"))
+    path("our_journey/",OurJourneyListView.as_view(),name=("our.journey")),
+    path("employee_perspective/",EmployeePerspectiveListView.as_view(),name=("employee.perspective")),
+    path('job_preference_request/', JobPreferenceRequestAPIView.as_view(), name='job_preference_request'),
 ]
 
 web_url = [path("", index)]

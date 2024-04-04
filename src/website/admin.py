@@ -24,7 +24,9 @@ from website.models import (
     ServiceProcess,
     OurAchievement,
     OurGrowth,
-    OurJourney
+    OurJourney,
+    EmployeePerspective
+
 )
 
 
@@ -274,3 +276,6 @@ class OurJourneyAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(EmployeePerspective)
+class EmployeePerspectiveAdmin(admin.ModelAdmin):
+    list_display = ("employee","title","description",)

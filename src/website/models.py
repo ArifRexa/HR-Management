@@ -10,7 +10,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Technology
-
+from employee.models import Employee
 
 
 class ServiceProcess(models.Model):
@@ -155,3 +155,7 @@ class OurJourney(models.Model):
     description = models.TextField()
     img = models.ImageField()
 
+class EmployeePerspective(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    employee = models.ForeignKey(Employee,on_delete=models.CASCADE)
