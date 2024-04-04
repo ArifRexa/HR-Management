@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
 from config import settings
-from job_board.models.candidate import Candidate, CandidateJob
+from job_board.models.candidate import Candidate, CandidateJob,JobPreferenceRequest
 from job_board.models.job import Job
 from job_board.serializers.job_serializer import JobSerializerSimple
 
@@ -122,3 +122,10 @@ class CandidateJobSerializer(serializers.ModelSerializer):
         fields = ('unique_id', 'job', 'expected_salary', 'additional_message',
                   'created_at', 'merit', 'candidate_assessment')
         depth = 2
+
+
+
+class JobPreferenceRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JobPreferenceRequest
+        fields = '__all__'
