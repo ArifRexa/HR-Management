@@ -22,8 +22,7 @@ class EmployeeSalaryInline(admin.TabularInline):
     exclude = [
         'provident_fund',
         'code_quality_bonus',
-        'festival_bonus',
-        'device_allowance'
+        'festival_bonus'
     ]
     readonly_fields = (
         'employee', 'net_salary', 'overtime',

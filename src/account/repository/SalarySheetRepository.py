@@ -95,9 +95,9 @@ class SalarySheetRepository:
         employee_salary.food_allowance = self.__calculate_food_allowance(
             employee=employee, salary_date=salary_sheet.date
         )
-        # employee_salary.device_allowance = self.__calculate_device_allowance(
-        #     employee=employee, salary_date=salary_sheet.date
-        # )
+        employee_salary.device_allowance = self.__calculate_device_allowance(
+            employee=employee, salary_date=salary_sheet.date
+        )
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date
         )
@@ -114,7 +114,7 @@ class SalarySheetRepository:
             + employee_salary.code_quality_bonus
             + employee_salary.loan_emi
             + employee_salary.provident_fund
-            # + employee_salary.device_allowance
+            + employee_salary.device_allowance
         )
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
@@ -596,7 +596,7 @@ class SalarySheetRepository:
 
         return 0.0
 
-    # def __calculate_device_allowance(
-    #     self, employee: Employee, salary_date: datetime.date
-    # ):
-    #     return 2500.0 if employee.device_allowance else 0.0
+    def __calculate_device_allowance(
+        self, employee: Employee, salary_date: datetime.date
+    ):
+        return 2500.0 if employee.device_allowance else 0.0
