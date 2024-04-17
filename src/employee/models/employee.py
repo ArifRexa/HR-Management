@@ -367,7 +367,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         
         decimal_number = available_leave - int(available_leave)
         if decimal_number < 0.50:
-            return (float('{:.2f}'.format(available_leave)))
+            return (float('{:.2f}'.format(round(available_leave))))
         else:
             integer_part = math.floor(available_leave)
             available_leave = integer_part + 0.50
