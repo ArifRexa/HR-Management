@@ -299,20 +299,8 @@ class SalarySheetRepository:
         ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
 
         # Hour Bonus Amount Calculation
-        project_hours_amount = 0
-        if employee.manager or employee.lead:
-            project_hours_amount = project_hours * 13
-        else:
-            MAXIMUM_AMOUNT = 16
-            bonus_per_hour = defaultdict(
-                lambda: MAXIMUM_AMOUNT,
-                {
-                    **dict.fromkeys(range(0, 100), 10),
-                    **dict.fromkeys(range(100, 120), 13),
-                },
-            )
-            project_hours_amount = project_hours * bonus_per_hour[round(project_hours)]
-
+        project_hours_amount = project_hours * 10
+        
         return project_hours_amount
 
     def __calculate_code_quality_bonus(
