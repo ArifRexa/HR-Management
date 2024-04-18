@@ -369,9 +369,9 @@ class Employee(TimeStampMixin, AuthorMixin):
                     total_days_of_permanent = 365
                 else:
                     total_days_of_permanent = (year_end - self.joining_date).days
+                    
 
-            month_of_permanent = round(total_days_of_permanent / 30)
-           
+            month_of_permanent = math.floor(total_days_of_permanent / 30)
             available_leave = (month_of_permanent * get_leave_by_type) / 12
            
         decimal_number = available_leave - int(available_leave)
