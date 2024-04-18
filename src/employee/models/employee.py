@@ -1,5 +1,5 @@
 import datetime
-from datetime import datetime,date
+from datetime import  date as dt_date
 import uuid
 import math
 from dateutil.relativedelta import relativedelta
@@ -353,7 +353,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         # TODO: Need to upgrade calculation style without temporary fix
         permanent_date = self.joining_date
         current_year = timezone.now().year
-        first_day_of_current_year = date(2024, 1, 1)
+        first_day_of_current_year = dt_date(current_year, 1, 1)
 
 
         if self.leave_in_cash_eligibility:
