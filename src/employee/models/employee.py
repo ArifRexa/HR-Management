@@ -1,4 +1,5 @@
 import datetime
+from datetime import  date as dt_date
 import uuid
 import math
 from dateutil.relativedelta import relativedelta
@@ -351,20 +352,28 @@ class Employee(TimeStampMixin, AuthorMixin):
         # Renamed for leave calculation
         # TODO: Need to upgrade calculation style without temporary fix
         permanent_date = self.joining_date
+        current_year = timezone.now().year
+        first_day_of_current_year = dt_date(current_year, 1, 1)
+
 
         if self.leave_in_cash_eligibility:
-            if self.resignation_date:
-                total_days_of_permanent = (self.resignation_date - permanent_date).days
-            else:
-                total_days_of_permanent = (year_end - permanent_date).days
-
-            month_of_permanent = round(total_days_of_permanent / 30)
-            if month_of_permanent < 12:
-                available_leave = (month_of_permanent * get_leave_by_type) / 12
-            else:
-                available_leave = get_leave_by_type
             
-        
+            if self.resignation_date:
+                if self.joining_date < first_day_of_current_year:
+                    total_days_of_permanent = (self.resignation_date - first_day_of_current_year).days
+                else:
+                    total_days_of_permanent = (self.resignation_date - self.joining_date).days
+
+            else:
+                if self.joining_date < first_day_of_current_year:
+                    total_days_of_permanent = 365
+                else:
+                    total_days_of_permanent = (year_end - self.joining_date).days
+                    
+
+            month_of_permanent = math.floor(total_days_of_permanent / 30)
+            available_leave = (month_of_permanent * get_leave_by_type) / 12
+           
         decimal_number = available_leave - int(available_leave)
         if decimal_number < 0.50:
             return (float('{:.2f}'.format(round(available_leave))))
