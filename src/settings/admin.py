@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django_q.tasks import async_task, schedule
 from django_q.models import Schedule
-
+from datetime import datetime
 # Register your models here.
 from django.template.defaultfilters import (
     truncatechars_html,
@@ -22,7 +22,6 @@ from employee.models import Employee
 from .models import (
     Designation,
     PayScale,
-    LeaveManagement,
     PublicHoliday,
     PublicHolidayDate,
     Bank,
@@ -36,7 +35,9 @@ from .models import (
 )
 from django_q import models as q_models
 from django_q import admin as q_admin
-
+from datetime import timedelta
+from django.db.models import Q
+from employee.models import EmployeeAttendance,LeaveManagement
 
 @admin.register(PayScale)
 class PayScaleAdmin(admin.ModelAdmin):
@@ -44,10 +45,10 @@ class PayScaleAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(LeaveManagement)
-class LeaveManagementAdmin(admin.ModelAdmin):
-    def has_module_permission(self, request):
-        return False
+# @admin.register(LeaveManagement)
+# class LeaveManagementAdmin(admin.ModelAdmin):
+#     def has_module_permission(self, request):
+#         return False
 
 
 @admin.register(Designation)
@@ -249,14 +250,14 @@ class FoodAllowanceForm(forms.Form):
             attrs={
                 "type": "date",
             },
-        ),
+        ),  
     )
-    amount = forms.IntegerField()
+   
 
 
 @admin.register(EmployeeFoodAllowance)
 class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
-    list_display = ("employee", "amount", "date")
+    list_display = ("employee","amount","date")
     date_hierarchy = "date"
     change_list_template = "settings/employee_lunch.html"
 
@@ -279,16 +280,58 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
         if request.method == "POST":
             form = FoodAllowanceForm(data=request.POST)
             if form.is_valid():
-                employees = Employee.objects.filter(
-                    active=True,
-                    lunch_allowance=True,
-                ).values_list("id", flat=True)
+                date = form.cleaned_data.get("date")
+                # amount = form.cleaned_data.get("amount")
+
+                # Get all active employees eligible for lunch allowance
+                employees = Employee.objects.filter(active=True, lunch_allowance=True)
+
+
+                year = date.year
+                month = date.month
+
+                # Calculate the first and last date of the month
+                first_day_of_month = datetime(year, month, 1).date()
+                last_day_of_month = datetime(year, month+1, 1).date() - timedelta(days=1)
+                
+                
+                print(first_day_of_month)
+                print(last_day_of_month)
+
                 for employee in employees:
+                    # Calculate the number of attendance records for the employee on the given date
+                    attendance_count = EmployeeAttendance.objects.filter(
+                        employee=employee,
+                        date__range=[first_day_of_month, last_day_of_month],
+                    ).count()               
+
+                    # Calculate the number of leave days for the employee on the given date
+                    # leave_count = LeaveManagement.objects.filter(
+                    #     Q(leave__employee=employee),
+                    #     Q(leave__start_date__lte=date),
+                    #     Q(leave__end_date__gte=date) | Q(leave__end_date=None),
+                    #     status="approved"
+                    # ).count()
+
+                   
+
+                    # Calculate the actual days attended (considering leave)
+                    # print(employee,attendance_count,leave_count)
+                    # actual_days_attended = attendance_count - leave_count
+                    
+                    # Calculate the adjusted allowance for the employee
+                    # if actual_days_attended < amount:
+                    #     adjusted_amount = actual_days_attended
+                    # else:
+                    #     adjusted_amount = amount
+ 
+                    # Update or create Food Allowance entry
                     EmployeeFoodAllowance.objects.update_or_create(
-                        employee_id=employee,
-                        date=form.cleaned_data.get("date"),
+                        employee=employee,
+                        date=date,
                         defaults={
-                            "amount": form.cleaned_data.get("amount"),
+                            "amount": attendance_count,
                         },
                     )
+
         return redirect("admin:settings_employeefoodallowance_changelist")
