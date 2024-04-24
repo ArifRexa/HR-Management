@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        # ('employee', '0236_alter_resignation_options'),
+        ('employee', '0236_alter_resignation_options'),
     ]
 
     operations = [
