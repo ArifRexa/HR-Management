@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.AlterUniqueTogether(
-        #     name='observation',
-        #     unique_together={('employee',)},
-        # ),
+        migrations.AlterUniqueTogether(
+            name='observation',
+            unique_together={('employee',)},
+        ),
     ]
