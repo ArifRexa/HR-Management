@@ -326,3 +326,8 @@ def delete_related_loans(sender, instance, **kwargs):
     related_loans = Loan.objects.filter(salarysheettaxloan__salarysheet=instance)
     related_loans.delete()
 
+@receiver(pre_delete, sender=SalarySheet)
+@transaction.atomic
+def delete_related_salary_sheet_tax_loans(sender, instance, **kwargs):
+    related_salary_sheet_tax_loans = SalarySheetTaxLoan.objects.filter(salarysheet=instance)
+    related_salary_sheet_tax_loans.delete()
