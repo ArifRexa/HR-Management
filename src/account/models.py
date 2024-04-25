@@ -1,11 +1,15 @@
 from math import floor
 
+from django.db import transaction
+
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
 from django.db.models import Sum
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils import timezone
 from django_userforeignkey.models.fields import UserForeignKey
 
@@ -301,3 +305,29 @@ class MonthlyJournal(AccountJournal):
         proxy = True
         verbose_name = 'Account Journal (Monthly)'
         verbose_name_plural = 'Accounts Journals (Monthly)'
+
+
+class SalarySheetTaxLoan(models.Model):
+    salarysheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
+    loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
+
+    # Add any additional fields related to the relationship if needed
+
+    def __str__(self):
+        return f"{self.salarysheet} - {self.loan}"
+
+    class Meta:
+        verbose_name = "Salary Sheet Tax Loan"
+        verbose_name_plural = "Salary Sheet Tax Loans"
+
+
+@receiver(pre_delete, sender=SalarySheet)
+@transaction.atomic
+def delete_related_loans(sender, instance, **kwargs):
+    related_loans = Loan.objects.filter(salarysheettaxloan__salarysheet=instance)
+    related_loans.delete()
+    related_salary_sheet_tax_loans = SalarySheetTaxLoan.objects.filter(salarysheet=instance)
+    related_salary_sheet_tax_loans.delete()
+
+
+
