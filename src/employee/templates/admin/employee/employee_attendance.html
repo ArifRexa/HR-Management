@@ -178,7 +178,7 @@
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
-                                    <span {% if data.is_late %}class="text-danger fw-bold" {% endif %}>
+                                    <span {% if data.is_late %}class="text-danger fw-bold" style="color: white !important;background: red;padding: 2px;border-radius: 5px;" {% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
                                     /
