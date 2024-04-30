@@ -88,16 +88,9 @@ class ProjectSolution(TimeStampMixin, AuthorMixin):
 
 from django.db import models
 
-class ProjectMetaInfo(models.Model):
-    platform = models.CharField(max_length=100)
-    industry = models.CharField(max_length=100)
-    live_view = models.URLField()
-    location = models.CharField(max_length=100)
-    services =  models.CharField(max_length=100)
 
-    def __str__(self):
-        return f"Platform: {self.platform}, Industry: {self.industry}, Location: {self.location}"
-    
+
+
 
 class ProjectResults(models.Model):
     title = models.CharField(max_length=200)
@@ -138,13 +131,6 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
   
-    project_meta_info = models.OneToOneField(
-        ProjectMetaInfo,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='project',
-    )
     project_results = models.OneToOneField(
         ProjectResults,
         on_delete=models.CASCADE,

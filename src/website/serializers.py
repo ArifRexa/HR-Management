@@ -20,7 +20,6 @@ from project_management.models import (
     ProjectSolution,
     ProjectKeyFeature,
     ClientFeedback,
-    ProjectMetaInfo,
     ProjectResults,
     OurTechnology,
     
@@ -171,16 +170,7 @@ class ProjectContentSerializer(serializers.ModelSerializer):
         fields = ("title", "content","image")
 
 
-class ProjectMetaInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectMetaInfo
-        fields = (
-            "platform",
-            "industry",
-            "live_view",
-            "location",
-            "services",
-        )
+
 class ProjectResultsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectResults
@@ -200,7 +190,6 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     )
     project_contents = ProjectContentSerializer(many=True, source="projectcontent_set")
     project_key_feature = ProjectKeyFeatureSerializer(many=True,source="projectkeyfeature_set")
-    project_meta_info = ProjectMetaInfoSerializer() 
     project_results = ProjectResultsSerializer() 
     class Meta:
         model = Project

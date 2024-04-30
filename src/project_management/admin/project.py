@@ -5,7 +5,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges,ProjectMetaInfo ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology
 
 
 @admin.register(Technology)
@@ -61,19 +61,7 @@ class ProjectKeyFeatureAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
-@admin.register(ProjectMetaInfo)
-class ProjectMetaInfoAdmin(admin.ModelAdmin):
-    list_display = ('platform', 'industry', 'location', 'live_view','services')
-    search_fields = ('platform', 'industry', 'location')
-    list_filter = ('industry', 'location')
-    fieldsets = (
-        (None, {
-            'fields': ('platform', 'industry', 'location', 'live_view','services')
-        }),
-    )
-    def has_module_permission(self, request):
-        return False
-    
+
     
 @admin.register(ProjectResults)
 class ProjectResultsAdmin(admin.ModelAdmin):
