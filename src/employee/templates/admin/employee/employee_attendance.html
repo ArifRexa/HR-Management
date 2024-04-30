@@ -178,10 +178,10 @@
                                 </p>
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
-                                    <span {% if data.is_late %}class="text-danger fw-bold" {% endif %}>
+                                    <span {% if data.is_late %}class="text-danger fw-bold" style="color: white !important;background: red;padding: 2px;border-radius: 5px;" {% endif %}>
                                         {{ data.entry_time|time:"h:i A" }}
                                     </span>
-                                    /
+                                    &nbsp;/
                                     {% comment %} <i class="fa-solid fa-right-from-bracket icon-flipped" style="color: #c61a09;"></i> {% endcomment %}
                                     <span {% if data.is_updated_by_bot %} style="color:#FF00FF;" class="p-1"{% endif %} >
                                         {% if data.exit_time != '-' %}
