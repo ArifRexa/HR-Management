@@ -108,21 +108,22 @@ class SalarySheetRepository:
 
         payable_salary = employee.current_salary.payable_salary
         basic_salary = 0.55 * payable_salary
-        if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-            
+
+        # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
+        if employee_salary.net_salary >= 43800:
             loan_instance = Loan.objects.create(
-            employee=employee,
-            witness=Employee.objects.filter(id=30).first(),  # You might need to adjust this based on your requirements
-            loan_amount=417,  # Set the loan amount
-            emi=417,  # Set the EMI amount
-            effective_date=timezone.now(),
-            start_date=salary_sheet.date,
-            end_date=salary_sheet.date,
-            tenor=1,  # Set the tenor/period in months
-            payment_method='salary',  # Set the payment method
-            loan_type='salary',  # Set the loan type
+                employee=employee,
+                witness=Employee.objects.filter(id=30).first(),  # You might need to adjust this based on your requirements
+                loan_amount=417,  # Set the loan amount
+                emi=417,  # Set the EMI amount
+                effective_date=timezone.now(),
+                start_date=salary_sheet.date,
+                end_date=salary_sheet.date,
+                tenor=1,  # Set the tenor/period in months
+                payment_method='salary',  # Set the payment method
+                loan_type='salary',  # Set the loan type
             )
-           
+
             # loan_instance.save()
             salarysheettax = SalarySheetTaxLoan.objects.create(
                 salarysheet = salary_sheet,
@@ -131,14 +132,15 @@ class SalarySheetRepository:
             salarysheettax.save()
 
 
-            employee_salary.loan_emi = self.__calculate_loan_emi(
-                employee=employee, salary_date=salary_sheet.date
-            )
+        employee_salary.loan_emi = self.__calculate_loan_emi(
+            employee=employee, salary_date=salary_sheet.date
+        )
         
 
         employee_salary.provident_fund = self.__calculate_provident_fund(
             employee=employee, salary_date=salary_sheet.date
         )
+
         employee_salary.gross_salary = (
             employee_salary.net_salary
             + employee_salary.overtime
