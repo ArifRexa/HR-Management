@@ -100,7 +100,24 @@ class ProjectResults(models.Model):
 
     def __str__(self):
         return self.title
+    
 
+class ProjectPlatform(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
+
+class ProjectIndustry(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
+class ProjectService(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
@@ -109,6 +126,9 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
+    platforms = models.ManyToManyField(ProjectPlatform, related_name='projects',blank=True)
+    industries = models.ManyToManyField(ProjectIndustry, related_name='projects',blank=True)
+    services = models.ManyToManyField(ProjectService, related_name='projects',blank=True)
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     active = models.BooleanField(default=True)
