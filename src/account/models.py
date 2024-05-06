@@ -328,6 +328,3 @@ def delete_related_loans(sender, instance, **kwargs):
     related_loans.delete()
     related_salary_sheet_tax_loans = SalarySheetTaxLoan.objects.filter(salarysheet=instance)
     related_salary_sheet_tax_loans.delete()
-
-
-
