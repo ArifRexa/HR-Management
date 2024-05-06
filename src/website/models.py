@@ -11,7 +11,7 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Technology
 from employee.models import Employee
-
+from django.core.exceptions import ValidationError
 
 class ServiceProcess(models.Model):
     img  = models.ImageField()
@@ -72,6 +72,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
     short_description = models.TextField()
+    is_featured = models.BooleanField(default=False)
     content = HTMLField()
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
@@ -80,6 +81,12 @@ class Blog(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.title
 
+
+    def clean(self):
+            if self.is_featured:
+                featured_blogs_count = Blog.objects.filter(is_featured=True).count()
+                if featured_blogs_count >= 3:
+                    raise ValidationError("Only up to 3 blogs can be featured.You have already added more than 3")
     class Meta:
         permissions = [
             ("can_approve", "Can Approve"),
