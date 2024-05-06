@@ -22,6 +22,9 @@ from project_management.models import (
     ClientFeedback,
     ProjectResults,
     OurTechnology,
+    ProjectPlatform,
+    ProjectIndustry, 
+    ProjectService
     
     
 
@@ -44,11 +47,26 @@ from website.models import (
 )
 
 
+class ProjectPlatformSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectPlatform
+        fields = ('title',)
+
+class ProjectIndustrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectIndustry
+        fields = ('title',)
+
+class ProjectServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectService
+        fields = ('title',)
+
+
 class TechnologySerializer(serializers.ModelSerializer):
     class Meta:
         model = Technology
         fields = ("icon", "name")
-
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -191,12 +209,20 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     project_contents = ProjectContentSerializer(many=True, source="projectcontent_set")
     project_key_feature = ProjectKeyFeatureSerializer(many=True,source="projectkeyfeature_set")
     project_results = ProjectResultsSerializer() 
+    platforms = ProjectPlatformSerializer(many=True)
+    industries = ProjectIndustrySerializer(many=True)
+    services = ProjectServiceSerializer(many=True)
+    
     class Meta:
         model = Project
         fields = (
             "title",
             "slug",
-            "project_meta_info", 
+            "platforms",
+            "industries",
+            "live_link",
+            "location",
+            "services",
             "project_results",
             "description",
             "thumbnail",

@@ -5,8 +5,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
 
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology
-
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
@@ -184,3 +183,25 @@ class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
     #     # Filter objects that were created within the last two weeks
     #     queryset = super().get_queryset(request).filter(created_at__gte=two_weeks_ago)
     #     return queryset
+
+
+@admin.register(ProjectPlatform)
+class ProjectPlatformAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+
+    def has_module_permission(self, request):
+        return False
+
+@admin.register(ProjectIndustry)
+class ProjectIndustryAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+
+    def has_module_permission(self, request):
+        return False
+
+@admin.register(ProjectService)
+class ProjectServiceAdmin(admin.ModelAdmin):
+    list_display = ('title',)
+
+    def has_module_permission(self, request):
+        return False
