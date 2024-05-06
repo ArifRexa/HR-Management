@@ -57,12 +57,12 @@ api_urls = [
     path("blogs/", BlogListView.as_view(), name="blog.list"),
     path("blog/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
     path(
-        "blog/comments/<int:pk>/",
+        "blog/<int:pk>/comments/",
         BlogCommentDetailAPIView.as_view(),
         name="blog-comment",
     ),
     path(
-        "blog/next-comments/<int:blog_id>/<int:comment_parent_id>/",
+        "blog/<int:blog_id>/next-comments/<int:comment_parent_id>/",
         BlogNextCommentDetailAPIView.as_view(),
         name="blog-next-comment",
     ),
