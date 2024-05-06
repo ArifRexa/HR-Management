@@ -4,6 +4,8 @@ from django.shortcuts import render
 from django.db.models import Count, Q, F
 from icecream import ic
 
+
+from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -300,6 +302,16 @@ class BlogCommentDetailAPIView(APIView):
         paginated_comments = paginator.paginate_queryset(query, request)
 
         return paginator.get_paginated_response(paginated_comments)
+    
+
+class BlogCommentDeleteAPIView(APIView):
+   def get(self, request, blog_id, comment_id):
+            try:
+                comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
+                comment.delete()
+                return Response({"message": "Comment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except BlogComment.DoesNotExist:
+                return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
 class BlogNextCommentDetailAPIView(APIView):
     def get(self, request, blog_id, comment_parent_id):

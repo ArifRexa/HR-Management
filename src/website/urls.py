@@ -28,6 +28,7 @@ from website.views import (
     OurGrowthListView,
     OurJourneyListView,
     EmployeePerspectiveListView,
+    BlogCommentDeleteAPIView,
     
 )
 
@@ -55,11 +56,16 @@ api_urls = [
     ),
     path("tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
-    path("blog/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
+    path("blogs/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
     path(
-        "blog/<int:pk>/comments/",
+        "blogs/<int:pk>/comments/",
         BlogCommentDetailAPIView.as_view(),
         name="blog-comment",
+    ),
+    path(
+        "blogs/<int:blog_id>/comments/<int:comment_id>/delete",
+        BlogCommentDeleteAPIView.as_view(),
+        name="blog-comment-delete",
     ),
     path(
         "blog/<int:blog_id>/next-comments/<int:comment_parent_id>/",
