@@ -126,8 +126,8 @@ class SalarySheetRepository:
 
             # loan_instance.save()
             salarysheettax = SalarySheetTaxLoan.objects.create(
-                salarysheet = salary_sheet,
-                loan =  loan_instance
+                salarysheet=salary_sheet,
+                loan=loan_instance
             )
             salarysheettax.save()
 
@@ -151,7 +151,7 @@ class SalarySheetRepository:
             + employee_salary.code_quality_bonus
             + employee_salary.loan_emi
             + employee_salary.provident_fund
-            + employee_salary.device_allowance
+            # + employee_salary.device_allowance
         )
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
@@ -389,8 +389,9 @@ class SalarySheetRepository:
         # second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
 
         # if first_quarter and second_quarter:
-
-        qc_ratio = Config.objects.first().qc_bonus_amount
+        qc_ratio = None
+        if Config.objects.first():
+            qc_ratio = Config.objects.first().qc_bonus_amount
         ratio = qc_ratio if qc_ratio else 0
 
         return round(qc_total_point * ratio, 2)
