@@ -51,11 +51,11 @@ api_urls = [
     # path("categories/", CategoryListView.as_view(), name="blog.category.list"),
    
     path(
-        "categories/",
+        "blogs/categories/",
         CategoryListViewWithBlogCount.as_view(),
         name="blog.category.list",
     ),
-    path("tags/", TagListView.as_view(), name="blog.tag.list"),
+    path("blogs/tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
      path("blogs/most_popular", MostPopularBlogListView.as_view(), name="blog.list.most.popular"),
     path("blogs/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
