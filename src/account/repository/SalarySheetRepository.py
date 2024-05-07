@@ -137,12 +137,7 @@ class SalarySheetRepository:
                     loan =  loan_instance
                 )
                 salarysheettax.save()
-            # loan_instance.save()
-            salarysheettax = SalarySheetTaxLoan.objects.create(
-                salarysheet=salary_sheet,
-                loan=loan_instance
-            )
-            salarysheettax.save()
+
 
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
