@@ -68,7 +68,7 @@ api_urls = [
         name="blog-comment-delete",
     ),
     path(
-        "blog/<int:blog_id>/next-comments/<int:comment_parent_id>/",
+        "blogs/<int:blog_id>/comments/<int:comment_parent_id>/reply",
         BlogNextCommentDetailAPIView.as_view(),
         name="blog-next-comment",
     ),
