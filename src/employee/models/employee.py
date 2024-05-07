@@ -388,7 +388,8 @@ class Employee(TimeStampMixin, AuthorMixin):
         permissions = (
             ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
             ("can_access_all_employee", "Can acccess all employee"),
-            ('can_access_average_rating', 'Can access average rating of Employee.')
+            ('can_access_average_rating', 'Can access average rating of Employee.'),
+            ('can_see_salary_history', "Can able to see salary history.")
         )
         ordering = ["full_name"]
 
