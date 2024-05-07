@@ -29,6 +29,7 @@ from website.views import (
     OurJourneyListView,
     EmployeePerspectiveListView,
     BlogCommentDeleteAPIView,
+    MostPopularBlogListView,
     
 )
 
@@ -56,6 +57,7 @@ api_urls = [
     ),
     path("tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
+     path("blogs/most_popular", MostPopularBlogListView.as_view(), name="blog.list.most.popular"),
     path("blogs/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
     path(
         "blogs/<int:pk>/comments/",

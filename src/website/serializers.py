@@ -426,6 +426,7 @@ class BlogListSerializer(serializers.ModelSerializer):
             "image",
             "category",
             "read_time_minute",
+            "total_view",
             "created_at",
             "author",
         )

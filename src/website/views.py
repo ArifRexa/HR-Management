@@ -73,6 +73,12 @@ class CustomPagination(PageNumberPagination):
     max_page_size = 100
 
 
+class MostPopularBlogPagination(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
 class ProjectList(APIView):
     pagination_class = CustomPagination
         
@@ -226,6 +232,17 @@ class BlogListView(ListAPIView):
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
 
+class MostPopularBlogListView(APIView):
+    pagination_class = MostPopularBlogPagination
+    
+    def get(self, request):
+        blogs = Blog.objects.filter(active=True).order_by('-total_view')
+        
+        paginator = self.pagination_class()
+        paginated_blogs = paginator.paginate_queryset(blogs, request)
+        
+        serializer = BlogListSerializer(paginated_blogs, many=True)
+        return paginator.get_paginated_response(serializer.data)
 
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
