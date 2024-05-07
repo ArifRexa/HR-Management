@@ -278,30 +278,36 @@ class BlogCommentAPIView(APIView):
 
 class BlogCommentDetailAPIView(APIView):
     pagination_class = CustomPagination
+
     def get(self, request, pk):
-        query = (
-            BlogComment.objects.filter(blog=pk, parent=None)
-            .annotate(
-                next_total_comment_reply=Count(
-                    "children", filter=Q(children__parent__isnull=False)
-                )
-            )
-            .values(
-                "id",
-                "name",
-                "email",
-                "content",
-                "blog",
-                "next_total_comment_reply",
-                "created_at",
-                "updated_at",
-            )
-        )
-
+        parent_comments = BlogComment.objects.filter(blog=pk, parent=None)
         paginator = self.pagination_class()
-        paginated_comments = paginator.paginate_queryset(query, request)
+        paginated_parent_comments = paginator.paginate_queryset(parent_comments, request)
+        results = []
 
-        return paginator.get_paginated_response(paginated_comments)
+        for parent_comment in paginated_parent_comments:
+            first_reply = parent_comment.children.first()
+            data = {
+                "id": parent_comment.id,
+                "name": parent_comment.name,
+                "email": parent_comment.email,
+                "content": parent_comment.content,
+                "blog": parent_comment.blog.id,
+                "created_at": parent_comment.created_at,
+                "updated_at": parent_comment.updated_at,
+                "total_comment_reply": parent_comment.children.count(),
+                "first_reply": {
+                    "id": first_reply.id if first_reply else None,
+                    "name": first_reply.name if first_reply else None,
+                    "email": first_reply.email if first_reply else None,
+                    "content": first_reply.content if first_reply else None,
+                    "created_at": first_reply.created_at if first_reply else None,
+                    "updated_at": first_reply.updated_at if first_reply else None,
+                } if first_reply else None
+            }
+            results.append(data)
+
+        return paginator.get_paginated_response({"results": results})
     
 
 class BlogCommentDeleteAPIView(APIView):
@@ -314,30 +320,32 @@ class BlogCommentDeleteAPIView(APIView):
                 return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
 class BlogNextCommentDetailAPIView(APIView):
+    pagination_class = CustomPagination
+
     def get(self, request, blog_id, comment_parent_id):
+        comments = BlogComment.objects.filter(blog=blog_id, parent__id=comment_parent_id)
+        comments_annotated = comments.annotate(next_total_comment_reply=Count("children"))
+        
+        paginator = self.pagination_class()
+        paginated_comments = paginator.paginate_queryset(comments_annotated.values_list('id', flat=True), request)
+        
+        comment_ids = [comment_id for comment_id in paginated_comments]
+        
         query = (
-            BlogComment.objects.filter(
-                blog=blog_id,
-                parent__id=comment_parent_id,
-            )
-            .annotate(next_total_comment_reply=Count("children"))
+            comments_annotated
+            .filter(id__in=comment_ids)
             .values(
                 "id",
                 "name",
                 "email",
                 "content",
                 "blog",
-                "next_total_comment_reply",
                 "created_at",
                 "updated_at",
             )
         )
-        return Response(
-            data=query,
-            headers={"Access-Control-Allow-Origin": "*"},
-            status=status.HTTP_200_OK,
-        )
-
+        
+        return paginator.get_paginated_response(query)
 
 class OurTechnologyListView(ListAPIView):
     queryset = OurTechnology.objects.all()
