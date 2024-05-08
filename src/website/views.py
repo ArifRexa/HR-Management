@@ -244,7 +244,7 @@ class MostPopularBlogListView(APIView):
         serializer = BlogListSerializer(paginated_blogs, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-class MostPopularBlogListView(APIView):
+class FeaturedBlogListView(APIView):
     pagination_class = CustomPagination
     
     def get(self, request):
