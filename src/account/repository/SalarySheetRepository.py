@@ -6,7 +6,7 @@ from django.db.models import Sum, Count
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 
-from account.models import SalarySheet, EmployeeSalary, LoanPayment
+from account.models import SalarySheet, EmployeeSalary, LoanPayment, Loan, SalarySheetTaxLoan
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate, EmployeeFoodAllowance
@@ -98,12 +98,57 @@ class SalarySheetRepository:
         employee_salary.device_allowance = self.__calculate_device_allowance(
             employee=employee, salary_date=salary_sheet.date
         )
-        employee_salary.loan_emi = self.__calculate_loan_emi(
-            employee=employee, salary_date=salary_sheet.date
-        )
+
+        # employee_salary.loan_emi = self.__calculate_loan_emi(
+        #     employee=employee, salary_date=salary_sheet.date
+        # )
         employee_salary.provident_fund = self.__calculate_provident_fund(
             employee=employee, salary_date=salary_sheet.date
         )
+
+        payable_salary = employee.current_salary.payable_salary
+        basic_salary = 0.55 * payable_salary
+
+
+        # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
+        if employee.tax_eligible and employee_salary.net_salary >= 43800:
+            
+            if not SalarySheetTaxLoan.objects.filter(
+                salarysheet=salary_sheet,
+                loan__employee=employee
+                ):
+
+                loan_instance = Loan.objects.create(
+                    employee=employee,
+                    witness=Employee.objects.filter(id=30).first(),  # You might need to adjust this based on your requirements
+                    loan_amount=417,  # Set the loan amount
+                    emi=417,  # Set the EMI amount
+                    effective_date=timezone.now(),
+                    start_date=salary_sheet.date,
+                    end_date=salary_sheet.date,
+                    tenor=1,  # Set the tenor/period in months
+                    payment_method='salary',  # Set the payment method
+                    loan_type='salary',  # Set the loan type
+                )
+
+                # loan_instance.save()
+                salarysheettax = SalarySheetTaxLoan.objects.create(
+                    salarysheet = salary_sheet,
+                    loan =  loan_instance
+                )
+                salarysheettax.save()
+
+
+
+        employee_salary.loan_emi = self.__calculate_loan_emi(
+            employee=employee, salary_date=salary_sheet.date
+        )
+        
+
+        employee_salary.provident_fund = self.__calculate_provident_fund(
+            employee=employee, salary_date=salary_sheet.date
+        )
+
         employee_salary.gross_salary = (
             employee_salary.net_salary
             + employee_salary.overtime
@@ -114,7 +159,7 @@ class SalarySheetRepository:
             + employee_salary.code_quality_bonus
             + employee_salary.loan_emi
             + employee_salary.provident_fund
-            + employee_salary.device_allowance
+            # + employee_salary.device_allowance
         )
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
@@ -146,7 +191,7 @@ class SalarySheetRepository:
             working_days_after_join = (working_days + 1) - joining_date
         # if employee resigned at salary sheet making month
         if resigned:
-            working_days_after_resign = working_days - (resigned.date.day - 1)
+            working_days_after_resign = working_days - (resigned.date.day)
         # if employee join before salary month but resigned at the salarysheet making month
         if (
             employee.joining_date.strftime("%Y-%m")
@@ -155,7 +200,6 @@ class SalarySheetRepository:
         ):
             working_days_after_join = working_days
         payable_days = working_days_after_join - working_days_after_resign
-
         # if employee join or leave or join and leave at salary sheet making month
         # print(f'Employee {employee.full_name} payable days : {payable_days}')
         latest_salary = self.__employee_current_salary
@@ -353,8 +397,9 @@ class SalarySheetRepository:
         # second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
 
         # if first_quarter and second_quarter:
-
-        qc_ratio = Config.objects.first().qc_bonus_amount
+        qc_ratio = None
+        if Config.objects.first():
+            qc_ratio = Config.objects.first().qc_bonus_amount
         ratio = qc_ratio if qc_ratio else 0
 
         return round(qc_total_point * ratio, 2)
@@ -485,16 +530,20 @@ class SalarySheetRepository:
         return 0
 
     def __calculate_loan_emi(self, employee: Employee, salary_date: datetime.date):
+        
         """Calculate loan EMI if have any
 
         if the employee have loan and the loan does not finish it will sum all the loan emi amount
         """
+
         employee_loans = employee.loan_set.filter(
             start_date__lte=salary_date,
             end_date__gte=salary_date,
         )
+        
         # insert into loan payment table if the sum amount is not zero
         for employee_loan in employee_loans:
+           
             note = f"This payment has been made automated when salary sheet generated at {salary_date}"
             employee_loan.loanpayment_set.get_or_create(
                 loan=employee_loan,
@@ -504,6 +553,7 @@ class SalarySheetRepository:
                 defaults={"payment_date": salary_date, "loan": employee_loan},
             )
         emi_amount = employee_loans.aggregate(Sum("emi"))
+       
         return -emi_amount["emi__sum"] if emi_amount["emi__sum"] else 0.0
 
     def __calculate_provident_fund(

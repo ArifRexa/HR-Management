@@ -25,7 +25,7 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
         return qs.filter(employee_id=request.user.employee)
 
     def save_model(self, request, obj, form, change):
-        if request.user.is_superuser and request.POST.get('status') != 'pending':
+        if request.user.is_superuser:
             obj.approved_at = date.today()
             obj.approved_by = request.user
         else:
