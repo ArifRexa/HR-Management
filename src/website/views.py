@@ -244,6 +244,18 @@ class MostPopularBlogListView(APIView):
         serializer = BlogListSerializer(paginated_blogs, many=True)
         return paginator.get_paginated_response(serializer.data)
 
+class MostPopularBlogListView(APIView):
+    pagination_class = CustomPagination
+    
+    def get(self, request):
+        blogs = Blog.objects.filter(active=True,is_featured=True)
+        
+        paginator = self.pagination_class()
+        paginated_blogs = paginator.paginate_queryset(blogs, request)
+        
+        serializer = BlogListSerializer(paginated_blogs, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
     queryset = Blog.objects.filter(active=True).all()
