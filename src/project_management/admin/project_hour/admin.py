@@ -149,10 +149,14 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
                 'name': project.title,
                 'data': list(array_date)
             })
-
-        sum_hours = ProjectHour.objects.filter(date__gte=date_to_check).extra(
-            select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
-        ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+        if selected_projects:
+            sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
+                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+        else:
+            sum_hours = ProjectHour.objects.filter(date__gte=date_to_check).extra(
+                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
         sum_array = []
         for sum_hour in sum_hours:
             sum_array.append(list(sum_hour))
