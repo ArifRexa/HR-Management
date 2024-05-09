@@ -88,11 +88,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
-        my_context = {
-            'total': self.get_total_hour(request),
-            'series': self.get_data(request)
-
-        }
+        my_context = dict(
+            self.admin_site.each_context(request),
+            total=self.get_total_hour(request),
+            series=self.get_data(request)
+        )
         return super(ProjectHourAdmin, self).changelist_view(request, extra_context=my_context)
 
     def get_queryset(self, request):
@@ -128,7 +128,6 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     def get_data(self, request):
         series = list()
         selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
-        print(selected_projects, type(selected_projects))
         if selected_projects:
             projects = Project.objects.filter(id__in=selected_projects, active=True).all()
         else:
@@ -158,8 +157,8 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
                 select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
             ).order_by('date').values_list('date_str').annotate(Sum('hours'))
         sum_array = []
-        for sum_hour in sum_hours:
-            sum_array.append(list(sum_hour))
+        # for sum_hour in sum_hours:
+        #     sum_array.append(list(sum_hour)) #  it will return the total hours of projects.
         series.append({
             'type': 'spline',
             'name': 'Total Project Hours',
