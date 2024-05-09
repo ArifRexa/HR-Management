@@ -75,7 +75,7 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
     
     def get_list_display(self, request):
         list_display = list(super().get_list_display(request))
-        if not request.user.is_superuser and 'total' in list_display:
+        if not request.user.is_superuser and not request.user.has_perm('can_see_salary_history') and 'total' in list_display:
             list_display.remove('total')
         return tuple(list_display)
     
