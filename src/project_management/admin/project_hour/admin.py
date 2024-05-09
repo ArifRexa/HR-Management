@@ -88,11 +88,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
-        my_context = {
-            'total': self.get_total_hour(request),
-            'series': self.get_data(request)
-
-        }
+        my_context = dict(
+            self.admin_site.each_context(request),
+            total=self.get_total_hour(request),
+            series=self.get_data(request)
+        )
         return super(ProjectHourAdmin, self).changelist_view(request, extra_context=my_context)
 
     def get_queryset(self, request):
