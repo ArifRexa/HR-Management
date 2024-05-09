@@ -67,7 +67,7 @@ class Blog(AuthorMixin, TimeStampMixin):
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    image = models.ImageField(upload_to="blog_image")
+    image = models.ImageField(upload_to="blog_images/")
     video = models.FileField(upload_to="blog_video", blank=True, null=True)
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
