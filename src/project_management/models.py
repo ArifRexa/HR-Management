@@ -63,6 +63,9 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     active = models.BooleanField(default=True)
     in_active_at = models.DateField(null=True, blank=True)
+    hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    activate_from = models.DateField(null=True,blank=True)
+    short_note = models.CharField(max_length=200,null=True,blank=True)
     emergency_operation = models.BooleanField(default=False)
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
@@ -80,6 +83,21 @@ class Project(TimeStampMixin, AuthorMixin):
         limit_choices_to={"active": True},
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
+
+
+
+    def save(self,*args,**kwargs):
+        if self.pk is not None:
+           get_obj = Project.objects.get(pk=self.pk)
+           print(get_obj.hourly_rate)
+           print(self.hourly_rate)
+
+           if get_obj.hourly_rate != self.hourly_rate:
+               self.activate_from = date.today()
+
+        super().save(*args,**kwargs)
+
+        
 
     class Meta:
         ordering = ['title']
