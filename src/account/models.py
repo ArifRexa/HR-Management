@@ -36,6 +36,9 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
     class Meta:
         verbose_name = "Salary Sheet"
         verbose_name_plural = "Salary Sheets"
+        permissions = (
+            ("can_see_salary_on_salary_sheet", "Can able to see Salary on Salary Sheet"),
+        )
 
 
 class EmployeeSalary(TimeStampMixin):
