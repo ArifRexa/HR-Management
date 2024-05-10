@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Project Hourly Rate Increase Notification</title>
+</head>
+<body>
+    <h3>Dear Mediusware HR Team,</h3>
+    <p>
+        This is to inform you about the hourly rate increase for certain projects. Below are the details:
+    </p>
+
+    <h4>Projects Have To Increase Hourly Rate:</h4>
+    <ul>
+        {% if project_to_increase_list %}
+            {% for project in project_to_increase_list %}
+                <li>{{ project }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No projects require an increase in hourly rate at the moment.</li>
+        {% endif %}
+    </ul>
+
+    <h4>Projects Have To Increase Hourly Rate Nearby:</h4>
+    <ul>
+        {% if project_to_increase_nearby_list %}
+            {% for project in project_to_increase_nearby_list %}
+                <li>{{ project }}</li>
+            {% endfor %}
+        {% else %}
+            <li>No projects nearby an increase in hourly rate at the moment.</li>
+        {% endif %}
+    </ul>
+    <p>
+        Please take necessary actions to update the project records accordingly.
+    </p>
+
+    <p>
+        Thank you for your attention to this matter.
+    </p>
+
+    <p>
+        Best regards,<br>
+        Mediusware HR Team
+    </p>
+</body>
+</html>
