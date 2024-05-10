@@ -86,10 +86,20 @@ class Project(TimeStampMixin, AuthorMixin):
 
 
         
-
     class Meta:
         ordering = ['title']
+        permissions = [
+             (
+                "can see all project field",
+                "Can See All Project Field",
+            ),
+    
+        ]
+           
+        
 
+
+        
     def __str__(self):
         return self.title
 
