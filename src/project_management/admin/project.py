@@ -1,5 +1,5 @@
-import datetime
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -41,7 +41,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client', 'active', 'show_in_website','get_report_url')
+    list_display = ('title', 'client','hourly_rate','increase_rate', 'active','get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
@@ -63,13 +63,17 @@ class ProjectAdmin(admin.ModelAdmin):
         return format_html(html_content)
     get_report_url.short_description = 'hours_breakdown'
 
-    def get_list_display(self, request):
-        list_display = super().get_list_display(request)
-        if 'get_report_url' in list_display:
-            list_display = list(list_display)
-            idx = list_display.index('get_report_url')
-            
-        return list_display
+    def increase_rate(self,obj):
+        six_month_ago = datetime.now().date() - relativedelta(months=6)
+        if obj.activate_from and obj.activate_from < six_month_ago:
+                return False
+        return True 
+    
+    increase_rate.boolean = True
+    
+    
+    
+
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
     list_display = ('technology', 'quantity', 'note')
