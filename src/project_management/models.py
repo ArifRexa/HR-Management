@@ -85,18 +85,6 @@ class Project(TimeStampMixin, AuthorMixin):
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
 
 
-
-    def save(self,*args,**kwargs):
-        if self.pk is not None:
-           get_obj = Project.objects.get(pk=self.pk)
-           print(get_obj.hourly_rate)
-           print(self.hourly_rate)
-
-           if get_obj.hourly_rate != self.hourly_rate:
-               self.activate_from = date.today()
-
-        super().save(*args,**kwargs)
-
         
 
     class Meta:
