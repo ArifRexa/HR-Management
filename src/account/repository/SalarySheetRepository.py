@@ -109,27 +109,35 @@ class SalarySheetRepository:
         payable_salary = employee.current_salary.payable_salary
         basic_salary = 0.55 * payable_salary
 
-        # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        if employee_salary.net_salary >= 43800:
-            loan_instance = Loan.objects.create(
-                employee=employee,
-                witness=Employee.objects.filter(id=30).first(),  # You might need to adjust this based on your requirements
-                loan_amount=417,  # Set the loan amount
-                emi=417,  # Set the EMI amount
-                effective_date=timezone.now(),
-                start_date=salary_sheet.date,
-                end_date=salary_sheet.date,
-                tenor=1,  # Set the tenor/period in months
-                payment_method='salary',  # Set the payment method
-                loan_type='salary',  # Set the loan type
-            )
 
-            # loan_instance.save()
-            salarysheettax = SalarySheetTaxLoan.objects.create(
-                salarysheet = salary_sheet,
-                loan =  loan_instance
-            )
-            salarysheettax.save()
+        # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
+        if employee.tax_eligible and employee_salary.net_salary >= 43800:
+            
+            if not SalarySheetTaxLoan.objects.filter(
+                salarysheet=salary_sheet,
+                loan__employee=employee
+                ):
+
+                loan_instance = Loan.objects.create(
+                    employee=employee,
+                    witness=Employee.objects.filter(id=30).first(),  # You might need to adjust this based on your requirements
+                    loan_amount=417,  # Set the loan amount
+                    emi=417,  # Set the EMI amount
+                    effective_date=timezone.now(),
+                    start_date=salary_sheet.date,
+                    end_date=salary_sheet.date,
+                    tenor=1,  # Set the tenor/period in months
+                    payment_method='salary',  # Set the payment method
+                    loan_type='salary',  # Set the loan type
+                )
+
+                # loan_instance.save()
+                salarysheettax = SalarySheetTaxLoan.objects.create(
+                    salarysheet = salary_sheet,
+                    loan =  loan_instance
+                )
+                salarysheettax.save()
+
 
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
@@ -151,7 +159,7 @@ class SalarySheetRepository:
             + employee_salary.code_quality_bonus
             + employee_salary.loan_emi
             + employee_salary.provident_fund
-            + employee_salary.device_allowance
+            # + employee_salary.device_allowance
         )
         employee_salary.save()
         self.__total_payable += employee_salary.gross_salary
@@ -389,8 +397,9 @@ class SalarySheetRepository:
         # second_quarter = code_review_set.filter(created_at__day__gte=16).exists()
 
         # if first_quarter and second_quarter:
-
-        qc_ratio = Config.objects.first().qc_bonus_amount
+        qc_ratio = None
+        if Config.objects.first():
+            qc_ratio = Config.objects.first().qc_bonus_amount
         ratio = qc_ratio if qc_ratio else 0
 
         return round(qc_total_point * ratio, 2)

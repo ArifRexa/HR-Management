@@ -9,16 +9,71 @@
 {% block content_title %}
     <div style="width: 80%">
         <h1> Project Hours <span style="float: right">Total Hour {{ total | floatformat:2| intcomma }}</span></h1>
+         <h1>Project Summery</h1>
+    <div id="graph" style="height: 80vh; min-width: 310px"></div>
+    <div style="padding: 20px 40px">
+<!--        <button onclick="toggleSelect(false)">Deselect All</button>-->
+<!--    <button onclick="toggleSelect(true)">Select All</button>-->
+
+    <button id="button" class="autocompare">Toggle series</button>
     </div>
 {% endblock %}
 
 {% block footer %}
-    <div style="padding: 20px 40px">
-        <h1>Project Summery</h1>
 
-    </div>
+<!--        <h1>Project Summery</h1>-->
+
+
+
+<!--     <div id="graph" style="height: 80vh; min-width: 310px"></div>-->
+
+    <!-- <button onclick="toggleSelect(false)">Deselect All</button>
+    <button onclick="toggleSelect(true)">Select All</button> -->
+
+<!--    <button id="button" class="autocompare">Toggle series</button>-->
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/highcharts-more.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
 
     <script type="text/javascript">
+        let series =
+        {{ series | safe }}
+
+        const highCharts = Highcharts.stockChart('graph', {
+            chart: {
+                type: 'spline',
+
+            },
+            legend: {
+                enabled: true,
+                navigation: {
+                    enabled: false
+                }
+            },
+            series: series
+        });
+
+        function toggleSelect(){
+            // highCharts.update()
+        }
+        document.getElementById('button').addEventListener('click', e => {
+            // console.log(highCharts.series.length);
+            // console.log(highCharts);
+            for(i = 0; i < highCharts.series.length; i++){
+                var series = highCharts.series[i];
+                if (series.visible) {
+                    series.hide();
+                    // e.target.innerHTML = 'Show series';
+                } else {
+                    series.show();
+                    // e.target.innerHTML = 'Hide series';
+                }
+            }
+
+        });
+
 
         var h3_filter_types = document.querySelectorAll('#changelist-filter h3');
         var is_project_type = false;
@@ -45,4 +100,5 @@
             });
         }
     </script>
+    </div>
 {% endblock %}

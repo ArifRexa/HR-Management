@@ -22,7 +22,8 @@ class EmployeeSalaryInline(admin.TabularInline):
     exclude = [
         'provident_fund',
         'code_quality_bonus',
-        'festival_bonus'
+        'festival_bonus',
+        'device_allowance'
     ]
     readonly_fields = (
         'employee', 'net_salary', 'overtime',
@@ -41,13 +42,13 @@ class EmployeeSalaryInline(admin.TabularInline):
 
     def get_exclude(self, request, obj=None):
         exclude = list(super().get_exclude(request, obj))
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet'):
             exclude.extend(self.superadminonly_fields)
         return exclude
     
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet'):
             readonly_fields = [field for field in readonly_fields if field not in self.superadminonly_fields]
         return readonly_fields
 
@@ -75,7 +76,8 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
     
     def get_list_display(self, request):
         list_display = list(super().get_list_display(request))
-        if not request.user.is_superuser and 'total' in list_display:
+        if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet') and 'total' in list_display:
+            print(request.user, request.user.has_perm('account.can_see_salary_on_salary_sheet'))
             list_display.remove('total')
         return tuple(list_display)
     
