@@ -375,6 +375,13 @@ class BlogNextCommentDetailAPIView(APIView):
         )
         
         return paginator.get_paginated_response(query)
+    
+class BlogListByAuthorAPIView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        author_id = self.kwargs.get('author_id')
+        return Blog.objects.filter(created_by__employee__id=author_id)
 
 class OurTechnologyListView(ListAPIView):
     queryset = OurTechnology.objects.all()
