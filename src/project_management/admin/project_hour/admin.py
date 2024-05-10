@@ -126,8 +126,12 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         return fieldsets
 
     def get_data(self, request):
+        print('*******************')
+        print('get_data has called')
         series = list()
         selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
+        print('************** project id is *************', selected_projects)
+        print('*** selected projects are ', selected_projects)
         if selected_projects:
             projects = Project.objects.filter(id__in=selected_projects, active=True).all()
         else:
