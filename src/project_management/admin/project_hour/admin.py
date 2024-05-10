@@ -133,7 +133,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         print('************** project id is *************', selected_projects)
         print('*** selected projects are ', selected_projects)
         if selected_projects:
-            projects = Project.objects.filter(id__in=selected_projects, active=True).all()
+            projects = Project.objects.filter(id__in=[selected_projects], active=True).all()
         else:
             projects = Project.objects.filter(active=True).all()
         date_to_check = datetime.date.today() - datetime.timedelta(days=60)
