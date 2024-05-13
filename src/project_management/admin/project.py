@@ -41,7 +41,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client','hourly_rate','increase_rate', 'active','get_report_url')
+    list_display = ('title', 'client','hourly_rate','last_increased', 'active','get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
@@ -63,15 +63,15 @@ class ProjectAdmin(admin.ModelAdmin):
         return format_html(html_content)
     get_report_url.short_description = 'hours_breakdown'
 
-    def increase_rate(self,obj):
+    def last_increased(self,obj):
         six_month_ago = datetime.now().date() - relativedelta(months=6)
-        if obj.activate_from and obj.activate_from < six_month_ago:
-                return False
-        if obj.hourly_rate is None:
-            return False
-        return True 
+        if obj.activate_from and obj.activate_from > six_month_ago:
+            return obj.activate_from
+        return format_html('<span style="color:red;">{}</span>', obj.activate_from)
+
+               
     
-    increase_rate.boolean = True
+    
 
     def get_list_display(self, request):
         
