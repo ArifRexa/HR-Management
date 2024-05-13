@@ -232,29 +232,15 @@ class BlogListView(ListAPIView):
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
 
-class MostPopularBlogListView(APIView):
+class MostPopularBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True).order_by('-total_view')
+    serializer_class = BlogListSerializer
     pagination_class = MostPopularBlogPagination
-    
-    def get(self, request):
-        blogs = Blog.objects.filter(active=True).order_by('-total_view')
-        
-        paginator = self.pagination_class()
-        paginated_blogs = paginator.paginate_queryset(blogs, request)
-        
-        serializer = BlogListSerializer(paginated_blogs, many=True)
-        return paginator.get_paginated_response(serializer.data)
 
-class FeaturedBlogListView(APIView):
+class FeaturedBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True, is_featured=True)
+    serializer_class = BlogListSerializer
     pagination_class = CustomPagination
-    
-    def get(self, request):
-        blogs = Blog.objects.filter(active=True,is_featured=True)
-        
-        paginator = self.pagination_class()
-        paginated_blogs = paginator.paginate_queryset(blogs, request)
-        
-        serializer = BlogListSerializer(paginated_blogs, many=True)
-        return paginator.get_paginated_response(serializer.data)
 
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
