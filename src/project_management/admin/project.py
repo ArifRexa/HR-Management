@@ -67,6 +67,8 @@ class ProjectAdmin(admin.ModelAdmin):
         six_month_ago = datetime.now().date() - relativedelta(months=6)
         if obj.activate_from and obj.activate_from < six_month_ago:
                 return False
+        if obj.hourly_rate is None:
+            return False
         return True 
     
     increase_rate.boolean = True
