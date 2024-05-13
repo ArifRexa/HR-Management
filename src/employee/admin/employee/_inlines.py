@@ -72,7 +72,8 @@ class EmployeeNOCInlineAdmin(admin.StackedInline):
             and obj.employeenoc.noc_pdf
             and "noc_body" in fields
         ):
-            fields.remove("noc_body")
+            pass
+            # fields.remove("noc_body")
         return fields
 
 
