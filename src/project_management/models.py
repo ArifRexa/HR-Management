@@ -90,7 +90,7 @@ class Project(TimeStampMixin, AuthorMixin):
         ordering = ['title']
         permissions = [
              (
-                "can see all project field",
+                "can_see_all_project_field",
                 "Can See All Project Field",
             ),
     
