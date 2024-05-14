@@ -1,5 +1,5 @@
-import datetime
-
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -41,7 +41,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client', 'active', 'show_in_website', 'get_report_url')
+    list_display = ('title', 'client','hourly_rate','last_increased', 'active','get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline, ProjectScreenshotInline, ProjectContentInline, ProjectDocumentAdmin)
@@ -53,35 +53,35 @@ class ProjectAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             return ['on_boarded_by']
         return []
-    
 
     def get_ordering(self, request):
         return ['title']
 
-    def get_report_url(self, obj, request):
-        html_template = get_template(
-            "admin/project_management/list/col_reporturl.html"
-        )
-        html_content = html_template.render(
-            {
-                'identifier': obj.identifier,
-                'request': request,  # Pass the request to the template context
-            }
-        )
-
+    def get_report_url(self, obj):
+        html_template = get_template("admin/project_management/list/col_reporturl.html")
+        html_content = html_template.render({'identifier': obj.identifier})
         return format_html(html_content)
+    get_report_url.short_description = 'hours_breakdown'
 
-    get_report_url.short_description = 'Report URL'
+    def last_increased(self,obj):
+        six_month_ago = datetime.now().date() - relativedelta(months=6)
+        if obj.activate_from and obj.activate_from > six_month_ago:
+            return obj.activate_from
+        return format_html('<span style="color:red;">{}</span>', obj.activate_from)
+
+               
+    
+    
 
     def get_list_display(self, request):
-        # Override get_list_display to pass the request to the method
+        
         list_display = super().get_list_display(request)
-        if 'get_report_url' in list_display:
-            list_display = list(list_display)  # Convert to a list if it's a tuple
-            idx = list_display.index('get_report_url')
-            list_display[idx] = lambda obj: self.get_report_url(obj, request)
+        if not request.user.has_perm('can see all project field'): 
+            list_display = [field for field in list_display if field not in ('hourly_rate', 'increase_rate')]
         return list_display
-
+    
+    
+    
 
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
