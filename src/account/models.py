@@ -311,7 +311,7 @@ class MonthlyJournal(AccountJournal):
 
 
 class SalarySheetTaxLoan(models.Model):
-    salarysheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
+    salarysheet = models.ForeignKey(SalarySheet, null=True, blank=True, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
 
     # Add any additional fields related to the relationship if needed
