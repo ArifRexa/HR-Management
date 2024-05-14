@@ -24,24 +24,28 @@ class SalaryHistory(TimeStampMixin, AuthorMixin):
         return timesince(self.active_from)
 
 
-@receiver(post_save, sender=SalaryHistory)
-def save_employee_attendance(sender, instance, created, **kwargs):
-    if created:
-
-        LOAN_AMOUNT = 500
-        LOAN_DATE = instance.active_from + relativedelta(day=31) # Gets the maximum month of that  day
-        
-        # TODO: Try Catch for first employee or local
-        Loan.objects.create(
-            employee=instance.employee,
-            witness_id=30, # Must change  to 30
-            loan_amount=LOAN_AMOUNT,
-            emi=LOAN_AMOUNT,
-            effective_date=LOAN_DATE,
-            start_date=LOAN_DATE,
-            end_date=LOAN_DATE,
-            tenor=1,
-            payment_method='salary',
-            loan_type='salary',
-        )
-
+# @receiver(post_save, sender=SalaryHistory)
+# def save_employee_attendance(sender, instance, created, **kwargs):
+#     print('************* post signal of salary history has called ********************', instance)
+#     if created:
+#
+#         LOAN_AMOUNT = 500
+#         LOAN_DATE = instance.active_from + relativedelta(day=31) # Gets the maximum month of that  day
+#
+#
+#         # TODO: Try Catch for first employee or local
+#         try:
+#             Loan.objects.create(
+#                 employee=instance.employee,
+#                 witness_id=30, # Must change  to 30
+#                 loan_amount=LOAN_AMOUNT,
+#                 emi=LOAN_AMOUNT,
+#                 effective_date=LOAN_DATE,
+#                 start_date=LOAN_DATE,
+#                 end_date=LOAN_DATE,
+#                 tenor=1,
+#                 payment_method='salary',
+#                 loan_type='salary',
+#             )
+#         except:
+#             print('Can\'t create loan')
