@@ -11,16 +11,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name='SalarySheetTaxLoan',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('loan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='account.loan')),
-                ('salarysheet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='account.salarysheet')),
-            ],
-            options={
-                'verbose_name': 'Salary Sheet Tax Loan',
-                'verbose_name_plural': 'Salary Sheet Tax Loans',
-            },
-        ),
+        # migrations.CreateModel(
+        #     name='SalarySheetTaxLoan',
+        #     fields=[
+        #         ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+        #         ('loan', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='account.loan')),
+        #         ('salarysheet', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='account.salarysheet')),
+        #     ],
+        #     options={
+        #         'verbose_name': 'Salary Sheet Tax Loan',
+        #         'verbose_name_plural': 'Salary Sheet Tax Loans',
+        #     },
+        # ),
     ]
