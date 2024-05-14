@@ -138,9 +138,21 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
             projects = Project.objects.filter(active=True).all()
         date_to_check = datetime.date.today() - datetime.timedelta(days=60)
         for project in projects:
-            data = project.projecthour_set.filter(date__gte=date_to_check).extra(
+            data = project.projecthour_set.filter(date__gte=date_to_check).annotate(
+                date_str=F('date')
+            ).extra(
                 select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
-            ).order_by('date').values_list('date_str', 'hours')
+            ).values(
+                'date_str'
+            ).annotate(
+                total_hours=Sum('hours')
+            ).values_list(
+                'date_str', 'total_hours'
+            ).order_by(
+                'date_str'
+            )
+
+            print(data)
             # TODO : must be optimize otherwise it will effect the load time
             print('***************** data **************', data)
             array_date = []
@@ -154,6 +166,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
                 'data': list(array_date)
             })
         if selected_projects:
+
             sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
                 select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
             ).order_by('date').values_list('date_str').annotate(Sum('hours'))
@@ -170,7 +183,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
             'name': 'Total Project Hours',
             'data': sum_array
         })
-        print('************** series ***********', series)
+        # print('************** series ***********', series)
         return series
 
     # def get_data(self, request):
