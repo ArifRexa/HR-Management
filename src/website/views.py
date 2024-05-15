@@ -107,23 +107,21 @@ class MostPopularBlogPagination(PageNumberPagination):
 
 
 class ProjectList(ListAPIView):
-    queryset = Project.objects.filter(show_in_website=True)
+    queryset = Project.objects.filter(show_in_website=True).all()
     serializer_class = ProjectSerializer
-    pagination_class = LimitOffsetPagination
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["tags"]
+    search_fields = ["title"]
+    ordering_fields = ["created_at", "modified_at"]
 
-    def get_queryset(self):
-        tag_name = self.kwargs.get('tag_name')
-        search_query = self.request.query_params.get('search')
-
-        if tag_name:
-            queryset = self.queryset.filter(tags__name=tag_name)
-        else:
-            queryset = self.queryset.all()
-
-        if search_query:
-            queryset = queryset.filter(title__icontains=search_query)
-
-        return queryset
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
 
 
 class ProjectHighlightedList(ListAPIView):
