@@ -20,6 +20,7 @@ class ServiceProcess(models.Model):
 
     def __str__(self):
         return self.title
+from django.core.exceptions import ValidationError
 
 class Service(models.Model):
     icon = models.ImageField()
@@ -95,7 +96,11 @@ class Blog(AuthorMixin, TimeStampMixin):
             ("can_delete_after_approve", "Can Delete After Approve"),
         ]
 
-
+    def clean(self):
+            if self.is_featured:
+                featured_blogs_count = Blog.objects.filter(is_featured=True).count()
+                if featured_blogs_count >= 3:
+                    raise ValidationError("Only up to 3 blogs can be featured.You have already added more than 3")
 class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name="blog_contexts"

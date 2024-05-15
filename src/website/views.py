@@ -6,10 +6,13 @@ from icecream import ic
 
 
 from django.shortcuts import get_object_or_404
+
+from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import PageNumberPagination
 from employee.models import Employee, EmployeeNOC
 from project_management.models import Project,ProjectTechnology
@@ -46,6 +49,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 def index(request):
     return render(request, "webdoc/index.html")
 
+
+class CustomPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class MostPopularBlogPagination(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class ServiceList(APIView):
     def get(self, request, format=None):
@@ -242,6 +256,17 @@ class FeaturedBlogListView(ListAPIView):
     serializer_class = BlogListSerializer
     pagination_class = CustomPagination
 
+class MostPopularBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True).order_by('-total_view')
+    serializer_class = BlogListSerializer
+    pagination_class = MostPopularBlogPagination
+
+
+class FeaturedBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True, is_featured=True)
+    serializer_class = BlogListSerializer
+    pagination_class = CustomPagination    
+
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
     queryset = Blog.objects.filter(active=True).all()
@@ -255,6 +280,23 @@ class BlogDetailsView(RetrieveAPIView):
         response = super().retrieve(request, *args, **kwargs)
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
+
+class BlogCommentDeleteAPIView(APIView):
+   def get(self, request, blog_id, comment_id):
+            try:
+                comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
+                comment.delete()
+                return Response({"message": "Comment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except BlogComment.DoesNotExist:
+                return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+class BlogListByAuthorAPIView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        author_id = self.kwargs.get('author_id')
+        return Blog.objects.filter(created_by__employee__id=author_id)
+
 
 
 class VerifyDocuments(APIView):
@@ -292,6 +334,8 @@ class BlogCommentAPIView(APIView):
 
 
 class BlogCommentDetailAPIView(APIView):
+    pagination_class = CustomPagination
+
     pagination_class = CustomPagination
 
     def get(self, request, pk):

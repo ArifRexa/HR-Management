@@ -60,7 +60,7 @@ api_urls = [
     path("blogs/tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
     path("blogs/most_popular", MostPopularBlogListView.as_view(), name="blog.list.most.popular"),
-     path("blogs/featured_blogs", FeaturedBlogListView.as_view(), name="blog.list.featured"),
+    path("blogs/featured_blogs", FeaturedBlogListView.as_view(), name="blog.list.featured"),
     path("blogs/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
     path(
         "blogs/<int:pk>/comments/",
