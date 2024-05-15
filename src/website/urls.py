@@ -78,7 +78,7 @@ api_urls = [
         name="blog-next-comment",
     ),
     path('blogs/author/<int:author_id>/', BlogListByAuthorAPIView.as_view(), name='blog-list-by-author'),
-    path("blog/<str:slug>/", BlogDetailsView.as_view(), name="blog.details"),
+    path("blogs/<str:slug>/", BlogDetailsView.as_view(), name="blog.details"),
     path(
         "verify/<str:document_type>/<uuid:uuid>/",
         VerifyDocuments.as_view(),
