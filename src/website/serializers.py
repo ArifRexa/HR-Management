@@ -239,17 +239,13 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
 
 
 class ProjectHighlightedSerializer(serializers.ModelSerializer):
-    industry = serializers.SerializerMethodField()
+    
     project_results = ProjectResultsSerializer() 
     technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
-
-    def get_industry(self, obj):
-        if obj.project_meta_info:
-            return obj.project_meta_info.industry
     
     class Meta:
         model = Project
-        fields = ("slug","industry","title","description","project_results","thumbnail","technologies")
+        fields = ("slug","title","description","project_results","thumbnail","technologies")
 
 class EmployeeSocialSerializer(serializers.ModelSerializer):
     class Meta:
