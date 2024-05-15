@@ -164,29 +164,6 @@ class ProjectKeyFeatureSerializer(serializers.ModelSerializer):
         model = ProjectKeyFeature
         fields = ("title","description","img")
 
-class ProjectSerializer(serializers.ModelSerializer):
-    technologies = ProjectTechnologySerializer(
-        many=True, source="projecttechnology_set"
-    )
-
-    class Meta:
-        model = Project
-        fields = (
-            "title",
-            "slug",
-            "thumbnail",
-            "technologies",
-           
-        )
-
-
-
-
-class ProjectContentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectContent
-        fields = ("title", "content","image")
-
 
 
 class ProjectResultsSerializer(serializers.ModelSerializer):
@@ -198,6 +175,32 @@ class ProjectResultsSerializer(serializers.ModelSerializer):
             "return_on_investment",
             "increased_order_rate",
         )
+
+class ProjectSerializer(serializers.ModelSerializer):
+    technologies = ProjectTechnologySerializer(
+        many=True, source="projecttechnology_set"
+    )
+    project_results = ProjectResultsSerializer() 
+    class Meta:
+        model = Project
+        fields = (
+            "title",
+            "slug",
+            "description",
+            "industries",
+            "thumbnail",
+            "project_results",
+            "technologies",
+
+        )
+
+class ProjectContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectContent
+        fields = ("title", "content","image")
+
+
+
 class ProjectDetailsSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
     available_tags = TagSerializer(read_only=True, many=True, source="tags")
