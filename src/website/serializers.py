@@ -177,10 +177,10 @@ class ProjectResultsSerializer(serializers.ModelSerializer):
         )
 
 class ProjectSerializer(serializers.ModelSerializer):
-    technologies = ProjectTechnologySerializer(
-        many=True, source="projecttechnology_set"
-    )
+    technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
     project_results = ProjectResultsSerializer() 
+    industries = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
         fields = (
@@ -191,8 +191,11 @@ class ProjectSerializer(serializers.ModelSerializer):
             "thumbnail",
             "project_results",
             "technologies",
-
         )
+
+    def get_industries(self, obj):
+
+        return [industry.title for industry in obj.industries.all()]
 
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
