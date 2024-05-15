@@ -130,7 +130,7 @@ class AvailableTagSerializer(serializers.ModelSerializer):
     tags_count = serializers.IntegerField()
     class Meta:
         model = Tag
-        fields = ("name","tags_count")
+        fields = ("id","name","tags_count")
 
 class ClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
