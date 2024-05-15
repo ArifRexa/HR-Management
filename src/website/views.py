@@ -7,6 +7,8 @@ from icecream import ic
 
 from django.shortcuts import get_object_or_404
 
+
+from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
@@ -104,34 +106,24 @@ class MostPopularBlogPagination(PageNumberPagination):
     max_page_size = 100
 
 
-class ProjectList(APIView):
-    pagination_class = CustomPagination
-        
-    def get(self, request, tag_name=None, format=None):
-        
+class ProjectList(ListAPIView):
+    queryset = Project.objects.filter(show_in_website=True)
+    serializer_class = ProjectSerializer
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        tag_name = self.kwargs.get('tag_name')
+        search_query = self.request.query_params.get('search')
+
         if tag_name:
-            projects = Project.objects.filter(show_in_website=True, tags__name=tag_name).all()
-            if not projects:
-                return Response({"message": "No projects found for the given name"}, status=404)
+            queryset = self.queryset.filter(tags__name=tag_name)
         else:
-            projects = Project.objects.filter(show_in_website=True).all()
+            queryset = self.queryset.all()
 
-        search_query = request.query_params.get('search', None)
         if search_query:
-            projects = projects.filter(title__icontains=search_query)
+            queryset = queryset.filter(title__icontains=search_query)
 
-        paginator = self.pagination_class()
-        paginated_projects = paginator.paginate_queryset(projects, request)
-        
-        serializer = ProjectSerializer(paginated_projects, many=True, context={"request": request})
-  
-       
-
-        response_data = {
-            
-            'projects': serializer.data
-        }
-        return paginator.get_paginated_response(response_data)
+        return queryset
 
 
 class ProjectHighlightedList(ListAPIView):
