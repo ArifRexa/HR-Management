@@ -6,14 +6,23 @@ from icecream import ic
 
 
 from django.shortcuts import get_object_or_404
+
+
+from rest_framework.pagination import LimitOffsetPagination
+from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import filters, status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination
 from employee.models import Employee, EmployeeNOC
-from project_management.models import Project
-from website.models import Service, Category, Tag, Blog, BlogComment
+from project_management.models import Project,ProjectTechnology
+
+from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
+from settings.models import Designation
+from project_management.models import Project,Tag,OurTechnology,Client
+from website.models import Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective
 from website.serializers import (
     ServiceSerializer,
     ProjectSerializer,
@@ -26,13 +35,33 @@ from website.serializers import (
     BlogListSerializer,
     BlogDetailsSerializer,
     EmployeeNOCSerializer,
-    BlogCommentSerializer,
+    BlogCommentSerializer, DesignationSetSerializer,
+    AvailableTagSerializer,
+    ProjectHighlightedSerializer,
+    OurTechnologySerializer,
+    FAQSerializer,
+    OurClientsFeedbackSerializer,
+    OurAchievementSerializer,
+    OurJourneySerializer,
+    OurGrowthSerializer,
+    EmployeePerspectiveSerializer
 )
-
-
+from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
+from django_filters.rest_framework import DjangoFilterBackend
 def index(request):
     return render(request, "webdoc/index.html")
 
+
+class CustomPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class MostPopularBlogPagination(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 class CustomPagination(PageNumberPagination):
     page_size = 4
@@ -65,27 +94,59 @@ class ServiceDetails(APIView):
         service = self.get_object(slug)
         serializer = ServiceDetailsSerializer(service, context={"request": request})
         return Response(serializer.data)
+class CustomPagination(PageNumberPagination):
+    page_size = 4
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
 
-class ProjectList(APIView):
-    def get(self, request, format=None):
-        projects = Project.objects.filter(show_in_website=True).all()
-        serializer = ProjectSerializer(
-            projects, many=True, context={"request": request}
-        )
-        return Response(serializer.data)
+class MostPopularBlogPagination(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
+
+class ProjectList(ListAPIView):
+    queryset = Project.objects.filter(show_in_website=True).all()
+    serializer_class = ProjectSerializer
+    filter_backends = [
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    filterset_fields = ["tags"]
+    search_fields = ["title"]
+    ordering_fields = ["created_at", "modified_at"]
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
+
+
+class ProjectHighlightedList(ListAPIView):
+    queryset = Project.objects.filter(is_highlight=True)
+    serializer_class = ProjectHighlightedSerializer
+
+
+class AvailableTagsListView(ListAPIView):
+    queryset = Tag.objects.annotate(tags_count=Count('projects'))
+    serializer_class = AvailableTagSerializer
+  
+      
 
 class ProjectDetails(APIView):
     def get_object(self, slug):
         try:
             return Project.objects.filter(show_in_website=True).get(slug__exact=slug)
-        except Service.DoesNotExist:
+        except Project.DoesNotExist:
             raise Http404
 
     def get(self, request, slug, format=None):
-        projects = self.get_object(slug)
-        serializer = ProjectDetailsSerializer(projects, context={"request": request})
+        project = self.get_object(slug)
+        project_technologies = ProjectTechnology.objects.filter(project=project)
+        serializer_context = {"request": request, "project_technologies": project_technologies}
+        serializer = ProjectDetailsSerializer(project, context=serializer_context)
         return Response(serializer.data)
 
 
@@ -100,9 +161,21 @@ class EmployeeList(APIView):
             )
             .all()
         )
+
         serializer = EmployeeSerializer(
             employees, many=True, context={"request": request}
         )
+        
+        search_query = request.query_params.get('search', None)
+        if search_query:    
+            employees = Employee.objects.filter(active=True, show_in_web=True,designation__title__icontains=search_query).order_by(
+                "joining_date",
+                "-manager",
+                "list_order",
+            ).all()
+            
+            serializer = EmployeeSerializer(employees, many=True, context={"request": request})
+
         return Response(serializer.data)
 
 
@@ -117,6 +190,23 @@ class EmployeeDetails(APIView):
         employee = self.get_object(slug)
         serializer = EmployeeDetailsSerializer(employee, context={"request": request})
         return Response(serializer.data)
+
+
+class DesignationListView(ListAPIView):
+    queryset = Designation.objects.annotate(employee_count=Count('employee'))
+    serializer_class = DesignationSetSerializer
+
+    # def get(self,request,*args,**kwargs):
+
+
+class EmployeeWithDesignationView(APIView):
+    def get(self, request, *args, **kwargs):
+        designation = self.kwargs.get('designation')  # Fetch the skill title from the URL kwargs
+        employee_with_designation = Employee.objects.filter(designation__title=designation)
+        
+        serializer = EmployeeSerializer(employee_with_designation, many=True)
+        total_count = len(employee_with_designation)
+        return Response({'toal_count': total_count, 'employee_list': serializer.data})
 
 
 class CategoryListView(ListAPIView):
@@ -157,6 +247,26 @@ class BlogListView(ListAPIView):
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
 
+class MostPopularBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True).order_by('-total_view')
+    serializer_class = BlogListSerializer
+    pagination_class = MostPopularBlogPagination
+
+class FeaturedBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True, is_featured=True)
+    serializer_class = BlogListSerializer
+    pagination_class = CustomPagination
+
+class MostPopularBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True).order_by('-total_view')
+    serializer_class = BlogListSerializer
+    pagination_class = MostPopularBlogPagination
+
+
+class FeaturedBlogListView(ListAPIView):
+    queryset = Blog.objects.filter(active=True, is_featured=True)
+    serializer_class = BlogListSerializer
+    pagination_class = CustomPagination    
 
 class MostPopularBlogListView(ListAPIView):
     queryset = Blog.objects.filter(active=True).order_by('-total_view')
@@ -182,6 +292,23 @@ class BlogDetailsView(RetrieveAPIView):
         response = super().retrieve(request, *args, **kwargs)
         response.headers["Access-Control-Allow-Origin"] = "*"
         return response
+
+class BlogCommentDeleteAPIView(APIView):
+   def get(self, request, blog_id, comment_id):
+            try:
+                comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
+                comment.delete()
+                return Response({"message": "Comment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except BlogComment.DoesNotExist:
+                return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+class BlogListByAuthorAPIView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        author_id = self.kwargs.get('author_id')
+        return Blog.objects.filter(created_by__employee__id=author_id)
+
 
 class BlogCommentDeleteAPIView(APIView):
    def get(self, request, blog_id, comment_id):
@@ -238,6 +365,7 @@ class BlogCommentAPIView(APIView):
 class BlogCommentDetailAPIView(APIView):
     pagination_class = CustomPagination
 
+
     def get(self, request, pk):
         parent_comments = BlogComment.objects.filter(blog=pk, parent=None)
         paginator = self.pagination_class()
@@ -267,29 +395,80 @@ class BlogCommentDetailAPIView(APIView):
             results.append(data)
 
         return paginator.get_paginated_response({"results": results})
+    
 
+class BlogCommentDeleteAPIView(APIView):
+   def get(self, request, blog_id, comment_id):
+            try:
+                comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
+                comment.delete()
+                return Response({"message": "Comment deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
+            except BlogComment.DoesNotExist:
+                return Response({"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
 class BlogNextCommentDetailAPIView(APIView):
+    pagination_class = CustomPagination
+
     def get(self, request, blog_id, comment_parent_id):
+        comments = BlogComment.objects.filter(blog=blog_id, parent__id=comment_parent_id)
+        comments_annotated = comments.annotate(next_total_comment_reply=Count("children"))
+        
+        paginator = self.pagination_class()
+        paginated_comments = paginator.paginate_queryset(comments_annotated.values_list('id', flat=True), request)
+        
+        comment_ids = [comment_id for comment_id in paginated_comments]
+        
         query = (
-            BlogComment.objects.filter(
-                blog=blog_id,
-                parent__id=comment_parent_id,
-            )
-            .annotate(next_total_comment_reply=Count("children"))
+            comments_annotated
+            .filter(id__in=comment_ids)
             .values(
                 "id",
                 "name",
                 "email",
                 "content",
                 "blog",
-                "next_total_comment_reply",
                 "created_at",
                 "updated_at",
             )
         )
-        return Response(
-            data=query,
-            headers={"Access-Control-Allow-Origin": "*"},
-            status=status.HTTP_200_OK,
-        )
+        
+        return paginator.get_paginated_response(query)
+    
+class BlogListByAuthorAPIView(ListAPIView):
+    serializer_class = BlogListSerializer
+
+    def get_queryset(self):
+        author_id = self.kwargs.get('author_id')
+        return Blog.objects.filter(created_by__employee__id=author_id)
+
+class OurTechnologyListView(ListAPIView):
+    queryset = OurTechnology.objects.all()
+    serializer_class = OurTechnologySerializer
+
+
+class FAQListView(ListAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+
+
+class OurClientsFeedbackList(ListAPIView):
+    queryset = Project.objects.filter(client__isnull=False)
+    serializer_class = OurClientsFeedbackSerializer
+
+
+class OurAchievementListView(ListAPIView):
+    queryset = OurAchievement.objects.all()
+    serializer_class = OurAchievementSerializer
+
+class OurGrowthListView(ListAPIView):
+    queryset = OurGrowth.objects.all()
+    serializer_class = OurGrowthSerializer
+
+class OurJourneyListView(ListAPIView):
+    queryset = OurJourney.objects.all()
+    serializer_class = OurJourneySerializer
+
+
+class EmployeePerspectiveListView(ListAPIView):
+    queryset = EmployeePerspective.objects.all()
+    serializer_class = EmployeePerspectiveSerializer

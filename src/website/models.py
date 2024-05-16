@@ -10,6 +10,16 @@ from mptt.models import MPTTModel, TreeForeignKey
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Technology
+from employee.models import Employee
+from django.core.exceptions import ValidationError
+
+class ServiceProcess(models.Model):
+    img  = models.ImageField()
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title
 from django.core.exceptions import ValidationError
 
 class Service(models.Model):
@@ -20,7 +30,7 @@ class Service(models.Model):
     banner_image = models.ImageField()
     feature_image = models.ImageField()
     feature = HTMLField()
-    technologies = models.ManyToManyField(Technology)
+    service_process = models.ManyToManyField(ServiceProcess)
     clients = models.ManyToManyField(Client)
     order = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
@@ -28,6 +38,15 @@ class Service(models.Model):
     def __str__(self):
         return self.title
 
+
+class ServiceTechnology(TimeStampMixin, AuthorMixin):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    technologies = models.ManyToManyField(Technology)
+
+    def __str__(self):
+        return self.title
+    
 
 class Category(AuthorMixin, TimeStampMixin):
     name = models.CharField(max_length=255)
@@ -49,7 +68,7 @@ class Blog(AuthorMixin, TimeStampMixin):
 
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    image = models.ImageField(upload_to="blog_image")
+    image = models.ImageField(upload_to="blog_images/")
     video = models.FileField(upload_to="blog_video", blank=True, null=True)
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
@@ -63,6 +82,12 @@ class Blog(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.title
 
+
+    def clean(self):
+            if self.is_featured:
+                featured_blogs_count = Blog.objects.filter(is_featured=True).count()
+                if featured_blogs_count >= 3:
+                    raise ValidationError("Only up to 3 blogs can be featured.You have already added more than 3")
     class Meta:
         permissions = [
             ("can_approve", "Can Approve"),
@@ -114,3 +139,35 @@ class BlogComment(MPTTModel, TimeStampMixin):
         null=True,
         related_name="children",
     )
+
+
+class FAQ(models.Model):
+    question = models.CharField(max_length=255, verbose_name="Question")
+    answer = models.TextField(verbose_name="Answer")
+
+    class Meta:
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"
+
+
+class OurAchievement(models.Model):
+    title = models.CharField(max_length=200)
+    number = models.CharField(max_length=100)
+
+
+class OurGrowth(models.Model):
+    title = models.CharField(max_length=200)
+    number = models.CharField(max_length=100)
+    
+
+
+class OurJourney(models.Model):
+    year = models.CharField(max_length =10)
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    img = models.ImageField()
+
+class EmployeePerspective(models.Model):
+    title = models.CharField(max_length=100)
+    description = models.TextField()
+    employee = models.ForeignKey(Employee,on_delete=models.CASCADE)

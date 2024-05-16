@@ -4,7 +4,7 @@ from employee.models import (
     Employee,
     EmployeeSocial,
     EmployeeContent,
-    EmployeeNOC,
+    EmployeeNOC, Skill, EmployeeSkill,
 )
 from project_management.models import (
     Project,
@@ -14,7 +14,22 @@ from project_management.models import (
     ProjectContent,
     ProjectScreenshot,
     Tag,
+    ProjectOverview,
+    ProjectStatement,
+    ProjectChallenges,
+    ProjectSolution,
+    ProjectKeyFeature,
+    ClientFeedback,
+    ProjectResults,
+    OurTechnology,
+    ProjectPlatform,
+    ProjectIndustry, 
+    ProjectService
+    
+    
+
 )
+from settings.models import Designation
 from website.models import (
     Service,
     Blog,
@@ -23,7 +38,29 @@ from website.models import (
     BlogCategory,
     BlogContext,
     BlogComment,
+    FAQ,
+    ServiceProcess,
+    OurAchievement,
+    OurJourney,
+    OurGrowth,
+    EmployeePerspective
 )
+
+
+class ProjectPlatformSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectPlatform
+        fields = ('title',)
+
+class ProjectIndustrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectIndustry
+        fields = ('title',)
+
+class ProjectServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectService
+        fields = ('title',)
 
 
 class TechnologySerializer(serializers.ModelSerializer):
@@ -31,26 +68,49 @@ class TechnologySerializer(serializers.ModelSerializer):
         model = Technology
         fields = ("icon", "name")
 
-
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ("name", "email", "address", "country", "logo")
+        fields = ("name", "email","designation", "address", "country", "logo")
 
+class OurClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ("name", "designation", "logo")
+
+
+
+
+class ServiceTechnologySerializer(serializers.ModelSerializer):
+    technologies = TechnologySerializer(many=True)
+
+    class Meta:
+        model = ProjectTechnology
+        fields = ("title", "technologies")
+
+
+class ServiceProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceProcess
+        fields = "__all__"
+        
 
 class ServiceSerializer(serializers.ModelSerializer):
+    technologies = ServiceTechnologySerializer(many=True, source="servicetechnology_set")
     class Meta:
         model = Service
-        fields = ("title", "slug", "icon", "short_description")
+        fields = ("title", "slug","short_description","feature","technologies")
+
+
 
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
     clients = ClientSerializer(many=True)
-    technologies = TechnologySerializer(many=True)
-
+    technologies = ServiceTechnologySerializer(many=True, source="servicetechnology_set")
+    service_process = ServiceProcessSerializer(many=True)
     class Meta:
         model = Service
-        fields = "__all__"
+        fields = ("slug","title","short_description","banner_image","feature_image","feature","service_process","technologies","clients")
 
 
 class ProjectTechnologySerializer(serializers.ModelSerializer):
@@ -66,30 +126,16 @@ class TagSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ("name",)
 
-
-class ProjectSerializer(serializers.ModelSerializer):
-    technologies = ProjectTechnologySerializer(
-        many=True, source="projecttechnology_set"
-    )
-    available_tags = TagSerializer(read_only=True, many=True, source="tags")
-
+class AvailableTagSerializer(serializers.ModelSerializer):
+    tags_count = serializers.IntegerField()
     class Meta:
-        model = Project
-        fields = (
-            "title",
-            "slug",
-            "description",
-            "thumbnail",
-            "video_url",
-            "technologies",
-            "available_tags",
-        )
+        model = Tag
+        fields = ("id","name","tags_count")
 
-
-class ProjectContentSerializer(serializers.ModelSerializer):
+class ClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProjectContent
-        fields = ("title", "content")
+        model = ClientFeedback
+        fields = ("feedback",)
 
 
 class ProjectScreenshotSerializer(serializers.ModelSerializer):
@@ -98,16 +144,42 @@ class ProjectScreenshotSerializer(serializers.ModelSerializer):
         fields = ("image",)
 
 
-class ProjectDetailsSerializer(serializers.ModelSerializer):
-    technologies = ProjectTechnologySerializer(
-        source="projecttechnology_set", many=True, read_only=True
-    )
-    contents = ProjectContentSerializer(
-        source="projectcontent_set", many=True, read_only=True
-    )
-    screenshots = ProjectScreenshotSerializer(
-        source="projectscreenshot_set", many=True, read_only=True
-    )
+class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClientFeedback
+        fields = (
+            "feedback_week",
+            "feedback",
+            "avg_rating",
+            "rating_communication",
+            "rating_output",
+            "rating_time_management",
+            "rating_billing",
+            "rating_long_term_interest",
+        )
+
+
+class ProjectKeyFeatureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectKeyFeature
+        fields = ("title","description","img")
+
+
+
+class ProjectResultsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectResults
+        fields = (
+            "title",
+            "increased_sales",
+            "return_on_investment",
+            "increased_order_rate",
+        )
+
+class ProjectSerializer(serializers.ModelSerializer):
+    technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
+    project_results = ProjectResultsSerializer() 
+    industries = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -115,14 +187,71 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "title",
             "slug",
             "description",
+            "industries",
             "thumbnail",
-            "video_url",
-            "tags",
+            "project_results",
             "technologies",
-            "contents",
-            "screenshots",
         )
 
+    def get_industries(self, obj):
+
+        return [industry.title for industry in obj.industries.all()]
+
+class ProjectContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectContent
+        fields = ("title", "content","image")
+
+
+
+class ProjectDetailsSerializer(serializers.ModelSerializer):
+    technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
+    available_tags = TagSerializer(read_only=True, many=True, source="tags")
+    client = ClientSerializer()
+    client_feedback = ProjectClientFeedbackSerializer(many=True, source="clientfeedback_set") 
+    project_design = ProjectScreenshotSerializer(
+        source="projectscreenshot_set", many=True, read_only=True
+    )
+    project_contents = ProjectContentSerializer(many=True, source="projectcontent_set")
+    project_key_feature = ProjectKeyFeatureSerializer(many=True,source="projectkeyfeature_set")
+    project_results = ProjectResultsSerializer() 
+    platforms = ProjectPlatformSerializer(many=True)
+    industries = ProjectIndustrySerializer(many=True)
+    services = ProjectServiceSerializer(many=True)
+    
+    class Meta:
+        model = Project
+        fields = (
+            "title",
+            "slug",
+            "platforms",
+            "industries",
+            "live_link",
+            "location",
+            "services",
+            "project_results",
+            "description",
+            "thumbnail",
+            "video_url",
+            "technologies",
+            "available_tags",
+            "project_contents",
+            "project_key_feature",
+            "client",
+            "client_feedback",
+            "project_design",
+        )
+        
+
+
+class ProjectHighlightedSerializer(serializers.ModelSerializer):
+    
+    project_results = ProjectResultsSerializer() 
+    technologies = ProjectTechnologySerializer(many=True, source="projecttechnology_set")
+    
+    class Meta:
+        model = Project
+        fields = ("slug","title","description","project_results","thumbnail","technologies")
 
 class EmployeeSocialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -134,6 +263,21 @@ class EmployeeContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeContent
         fields = ("title", "content")
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    designation = serializers.StringRelatedField(many=False)
+    socials = EmployeeSocialSerializer(
+        many=True, read_only=True, source="employeesocial_set"
+    )
+
+    class Meta:
+        model = Employee
+        fields = ("slug", "full_name", "designation", "manager", "image", "socials")
+
+    def get_image_url(self, employee):
+        request = self.context.get("request")
+        image_url = employee.image.url
+        return request.build_absolute_uri(image_url)
 
 
 class EmployeeDetailsSerializer(serializers.ModelSerializer):
@@ -160,21 +304,34 @@ class EmployeeDetailsSerializer(serializers.ModelSerializer):
         )
 
 
-class EmployeeSerializer(serializers.ModelSerializer):
-    designation = serializers.StringRelatedField(many=False)
-    socials = EmployeeSocialSerializer(
-        many=True, read_only=True, source="employeesocial_set"
-    )
+
+
+
+class DesignationSetSerializer(serializers.ModelSerializer):
+    employee_count = serializers.IntegerField()
 
     class Meta:
+        model = Designation
+        fields = ['title', 'employee_count']
+
+# class EmployeeSkillSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = EmployeeSkill
+#         fields = ['employee']
+
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    designation = serializers.SerializerMethodField()
+    class Meta:
         model = Employee
-        fields = ("slug", "full_name", "designation", "manager", "image", "socials")
+        fields = ['id','full_name','designation','image']  # You may customize this to include specific fields if needed
 
-    def get_image_url(self, employee):
-        request = self.context.get("request")
-        image_url = employee.image.url
-        return request.build_absolute_uri(image_url)
-
+    
+    def get_designation(self, obj):
+        if obj.designation:
+            return obj.designation.title
+        else:
+            return None
 
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -271,6 +428,7 @@ class BlogListSerializer(serializers.ModelSerializer):
             "image",
             "category",
             "read_time_minute",
+            "total_view",
             "created_at",
             "author",
         )
@@ -374,3 +532,70 @@ class BlogCommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+
+class OurTechnologySerializer(serializers.ModelSerializer):
+    technologies = TechnologySerializer(many=True)
+
+    class Meta:
+        model = OurTechnology
+        fields = ('title', 'technologies') 
+
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ("question","answer")
+   
+class OurClientsFeedbackSerializer(serializers.ModelSerializer):
+    
+   
+    client_name = serializers.SerializerMethodField()
+    client_designation = serializers.SerializerMethodField()
+    client_logo = serializers.SerializerMethodField()
+    feedback = serializers.SerializerMethodField()
+    class Meta:
+        model = Project
+        fields = ('client_name', 'client_designation', 'client_logo','feedback')
+
+    def get_client_name(self, obj):
+        return obj.client.name if obj.client else None
+
+    def get_client_designation(self, obj):
+        return obj.client.designation if obj.client else None
+
+    def get_client_logo(self, obj):
+        return obj.client.logo.url if obj.client and obj.client.logo else None  
+
+    def get_feedback(self,obj):
+        clientfeedback = ClientFeedback.objects.filter(project=obj)
+        serializers = ClientFeedbackSerializer(instance=clientfeedback,many=True)
+        return serializers.data
+    
+
+class OurAchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurAchievement
+        fields = ("title","number")
+
+
+class OurGrowthSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurGrowth
+        fields = ("title","number")
+
+    
+
+class OurJourneySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurJourney
+        fields = ("year","title","description","img")
+
+
+class EmployeePerspectiveSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source='employee.full_name',read_only =True)
+    employee_designation = serializers.CharField(source='employee.designation',read_only=True)
+    employee_image= serializers.ImageField(source='employee.image',read_only=True)
+    class Meta:
+        model = EmployeePerspective
+        fields = ("title","description","employee_name","employee_designation","employee_image",)
