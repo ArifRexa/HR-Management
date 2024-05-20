@@ -342,14 +342,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_content = f"<span{custom_style}>{round(obj.hours, 2)}</span>"
         return format_html(html_content)
 
-    @method_decorator(cache_page(cache_timeout))
+    # @method_decorator(cache_page(cache_timeout))
     def changelist_view(self, request, extra_context=None):
 
         cache_key = 'dailyprojectupdate_changelist'
         cached_response = cache.get(cache_key)
 
-        if cached_response:
-            return cached_response
+        # if cached_response:
+        #     return cached_response
 
         filter_form = DailyUpdateFilterForm(
             initial={
@@ -385,10 +385,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         response = super().changelist_view(
             request, extra_context=my_context
         )
-        if isinstance(response, TemplateResponse):
-            response.render()
-
-        cache.set(cache_key, response, self.cache_timeout)
+        # if isinstance(response, TemplateResponse):
+        #     response.render()
+        #
+        # cache.set(cache_key, response, self.cache_timeout)
 
         return response
 
