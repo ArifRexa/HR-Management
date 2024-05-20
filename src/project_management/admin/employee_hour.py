@@ -345,8 +345,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     # @method_decorator(cache_page(cache_timeout))
     def changelist_view(self, request, extra_context=None):
 
-        cache_key = 'dailyprojectupdate_changelist'
-        cached_response = cache.get(cache_key)
+        # cache_key = 'dailyprojectupdate_changelist'
+        # cached_response = cache.get(cache_key)
 
         # if cached_response:
         #     return cached_response
@@ -975,7 +975,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change) -> None:
 
         print(f"{self.start_of_month}-----------------{self.deadline}")
-        cache.delete('dailyprojectupdate_changelist')
+        # cache.delete('dailyprojectupdate_changelist')
 
         if not change:
 
@@ -1095,4 +1095,4 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def delete_model(self, request, obj):
         super().delete_model(request, obj)
-        cache.delete('dailyprojectupdate_changelist')
+        # cache.delete('dailyprojectupdate_changelist')
