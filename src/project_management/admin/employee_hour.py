@@ -46,6 +46,7 @@ from django.db.models import Q
 from django.core.cache import cache
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
+from django.template.response import TemplateResponse
 
 
 
@@ -170,7 +171,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     LAST_TIME_OF_GIVING_UPPDATE_FOR_LEADS = datetime.time(23, 59)
 
     # Duration for cache in seconds
-    cache_timeout = 60 * 15  # 15 minutes
+    cache_timeout = 60 * 3  # 15 minutes
 
     today = timezone.now()
     start_of_month = today.replace(day=1,hour=0, minute=0, second=0, microsecond=0)
@@ -341,14 +342,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_content = f"<span{custom_style}>{round(obj.hours, 2)}</span>"
         return format_html(html_content)
 
-    @method_decorator(cache_page(60 * 15))
+    @method_decorator(cache_page(cache_timeout))
     def changelist_view(self, request, extra_context=None):
 
-        # cache_key = 'dailyprojectupdate_changelist'
-        # cached_response = cache.get(cache_key)
-        #
-        # if cached_response:
-        #     return cached_response
+        cache_key = 'dailyprojectupdate_changelist'
+        cached_response = cache.get(cache_key)
+
+        if cached_response:
+            return cached_response
 
         filter_form = DailyUpdateFilterForm(
             initial={
@@ -384,8 +385,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         response = super().changelist_view(
             request, extra_context=my_context
         )
+        if isinstance(response, TemplateResponse):
+            response.render()
 
-        # cache.set(cache_key, response, self.cache_timeout)
+        cache.set(cache_key, response, self.cache_timeout)
 
         return response
 
