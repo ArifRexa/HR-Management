@@ -42,6 +42,14 @@ from employee.models import LeaveManagement, Employee
 from employee.models.employee_rating_models import EmployeeRating
 from django.db.models import Q
 
+
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.template.response import TemplateResponse
+
+
+
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
     parameter_name = "project_hour__hour_type"
@@ -161,6 +169,9 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
     LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS = datetime.time(19, 30)
     LAST_TIME_OF_GIVING_UPPDATE_FOR_LEADS = datetime.time(23, 59)
+
+    # Duration for cache in seconds
+    cache_timeout = 60 * 3  # 15 minutes
 
     today = timezone.now()
     start_of_month = today.replace(day=1,hour=0, minute=0, second=0, microsecond=0)
@@ -331,7 +342,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_content = f"<span{custom_style}>{round(obj.hours, 2)}</span>"
         return format_html(html_content)
 
+    # @method_decorator(cache_page(cache_timeout))
     def changelist_view(self, request, extra_context=None):
+
+        # cache_key = 'dailyprojectupdate_changelist'
+        # cached_response = cache.get(cache_key)
+
+        # if cached_response:
+        #     return cached_response
+
         filter_form = DailyUpdateFilterForm(
             initial={
                 "created_at__date__gte": request.GET.get(
@@ -363,9 +382,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                     "You have to complete your 'Employee Rating' first to add daily project update",
                 )
 
-        return super().changelist_view(
+        response = super().changelist_view(
             request, extra_context=my_context
         )
+        # if isinstance(response, TemplateResponse):
+        #     response.render()
+        #
+        # cache.set(cache_key, response, self.cache_timeout)
+
+        return response
 
     def get_total_hour(self, request):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
@@ -950,6 +975,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change) -> None:
 
         print(f"{self.start_of_month}-----------------{self.deadline}")
+        # cache.delete('dailyprojectupdate_changelist')
 
         if not change:
 
@@ -1066,5 +1092,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             )
         else:
             return redirect('/admin/project_management/dailyprojectupdate/')
-    
-   
+
+    def delete_model(self, request, obj):
+        super().delete_model(request, obj)
+        # cache.delete('dailyprojectupdate_changelist')
