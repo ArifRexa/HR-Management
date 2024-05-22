@@ -22,7 +22,7 @@ from project_management.models import Project,ProjectTechnology
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
 from project_management.models import Project,Tag,OurTechnology,Client
-from website.models import Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective
+from website.models import Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry
 from website.serializers import (
     ServiceSerializer,
     ProjectSerializer,
@@ -44,7 +44,8 @@ from website.serializers import (
     OurAchievementSerializer,
     OurJourneySerializer,
     OurGrowthSerializer,
-    EmployeePerspectiveSerializer
+    EmployeePerspectiveSerializer,
+    IndustrySerializer
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -472,3 +473,7 @@ class OurJourneyListView(ListAPIView):
 class EmployeePerspectiveListView(ListAPIView):
     queryset = EmployeePerspective.objects.all()
     serializer_class = EmployeePerspectiveSerializer
+
+class IndustryListView(ListAPIView):
+    queryset = Industry.objects.all()
+    serializer_class = IndustrySerializer

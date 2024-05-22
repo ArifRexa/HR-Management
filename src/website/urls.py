@@ -31,7 +31,9 @@ from website.views import (
     BlogCommentDeleteAPIView,
     MostPopularBlogListView,
     FeaturedBlogListView,
-    BlogListByAuthorAPIView
+    BlogListByAuthorAPIView,
+    IndustryListView
+    
     
 )
 
@@ -39,7 +41,8 @@ from website.views import (
 api_urls = [
     path("services/", ServiceList.as_view(), name="service.list"),
     path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
-   
+     path('industries/', IndustryListView.as_view(), name='industry-list'),
+
     path("projects/", ProjectList.as_view(), name="project.list"),
     path("projects/available_tags/", AvailableTagsListView.as_view(), name="available.tags"),
     # path("projects/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
