@@ -25,7 +25,8 @@ from website.models import (
     OurAchievement,
     OurGrowth,
     OurJourney,
-    EmployeePerspective
+    EmployeePerspective,
+    Industry
 
 )
 
@@ -279,3 +280,14 @@ class OurJourneyAdmin(admin.ModelAdmin):
 @admin.register(EmployeePerspective)
 class EmployeePerspectiveAdmin(admin.ModelAdmin):
     list_display = ("employee","title","description",)
+
+
+@admin.register(Industry)
+class IndustryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'short_description')
+    search_fields = ('title', 'short_description')
+    filter_horizontal = ('technology',)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.prefetch_related('technology')

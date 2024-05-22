@@ -22,6 +22,16 @@ class ServiceProcess(models.Model):
         return self.title
 from django.core.exceptions import ValidationError
 
+
+class Industry(models.Model):
+    icon = models.ImageField()
+    title = models.CharField(max_length=100)
+    short_description = models.TextField()
+    technology = models.ManyToManyField(Technology)
+
+    def __str__(self):
+        return self.title
+
 class Service(models.Model):
     icon = models.ImageField()
     title = models.CharField(max_length=200)
@@ -31,12 +41,15 @@ class Service(models.Model):
     feature_image = models.ImageField()
     feature = HTMLField()
     service_process = models.ManyToManyField(ServiceProcess)
+    industry = models.ManyToManyField(Industry)
     clients = models.ManyToManyField(Client)
     order = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
 
     def __str__(self):
         return self.title
+
+
 
 
 class ServiceTechnology(TimeStampMixin, AuthorMixin):
