@@ -24,7 +24,8 @@ from project_management.models import (
     OurTechnology,
     ProjectPlatform,
     ProjectIndustry, 
-    ProjectService
+    ProjectService,
+    
     
     
 
@@ -43,7 +44,8 @@ from website.models import (
     OurAchievement,
     OurJourney,
     OurGrowth,
-    EmployeePerspective
+    EmployeePerspective,
+    Industry
 )
 
 
@@ -95,11 +97,20 @@ class ServiceProcessSerializer(serializers.ModelSerializer):
         fields = "__all__"
         
 
+class IndustrySerializer(serializers.ModelSerializer):
+    technology = TechnologySerializer(many=True)
+    class Meta:
+        model = Industry
+        fields = "__all__"
+        
+
+
 class ServiceSerializer(serializers.ModelSerializer):
     technologies = ServiceTechnologySerializer(many=True, source="servicetechnology_set")
+    industry = IndustrySerializer(many=True) 
     class Meta:
         model = Service
-        fields = ("title", "slug","short_description","feature","technologies")
+        fields = ("title", "slug","short_description","feature","technologies","industry")
 
 
 
