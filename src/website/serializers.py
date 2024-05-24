@@ -558,16 +558,17 @@ class FAQSerializer(serializers.ModelSerializer):
         model = FAQ
         fields = ("question","answer")
    
+
+
 class OurClientsFeedbackSerializer(serializers.ModelSerializer):
-    
-   
     client_name = serializers.SerializerMethodField()
     client_designation = serializers.SerializerMethodField()
     client_logo = serializers.SerializerMethodField()
     feedback = serializers.SerializerMethodField()
+
     class Meta:
         model = Project
-        fields = ('client_name', 'client_designation', 'client_logo','feedback')
+        fields = ('client_name', 'client_designation', 'client_logo', 'feedback')
 
     def get_client_name(self, obj):
         return obj.client.name if obj.client else None
@@ -576,11 +577,13 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
         return obj.client.designation if obj.client else None
 
     def get_client_logo(self, obj):
-        return obj.client.logo.url if obj.client and obj.client.logo else None  
+        if obj.client and obj.client.logo:
+            return self.context['request'].build_absolute_uri(obj.client.logo.url)
+        return None
 
-    def get_feedback(self,obj):
+    def get_feedback(self, obj):
         clientfeedback = ClientFeedback.objects.filter(project=obj)
-        serializers = ClientFeedbackSerializer(instance=clientfeedback,many=True)
+        serializers = ClientFeedbackSerializer(instance=clientfeedback, many=True)
         return serializers.data
     
 
