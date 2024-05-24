@@ -10,14 +10,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: executing remote ssh commands using password
-      uses: appleboy/ssh-action@v0.1.6
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.STAGING_HOST }}
         username: ${{ secrets.STAGING_USERNAME }}
         password: ${{ secrets.STAGING_PASSWORD }}
         script: |
           cd /var/www/staging_hr
-          git pull origin staging:staging
+          git pull origin staging
           venv/bin/python -m pip install -r requirements.txt
           venv/bin/python /var/www/staging_hr/src/manage.py migrate
           venv/bin/python /var/www/staging_hr/src/manage.py collectstatic --noinput
