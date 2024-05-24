@@ -3,6 +3,8 @@ import datetime
 import math
 from dateutil.relativedelta import relativedelta, FR
 
+from . models import EmployeeAttendance
+from datetime import datetime
 from django.core import management
 from django.core.mail import EmailMultiAlternatives, EmailMessage
 from django.template import Context, loader
@@ -29,6 +31,8 @@ from employee.models import (
     EmployeeFeedback,
     SalaryHistory,
     NeedHelpPosition,
+    HRPolicy,
+    EmployeeRating,
 )
 from project_management.models import (
     ProjectHour,
@@ -63,13 +67,18 @@ def set_default_exit_time():
                 activities[-1].save()
 
 
-def send_mail_to_employee(employee, pdf, html_body, subject):
+def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email = EmailMultiAlternatives()
     email.subject = f"{subject} of {employee.full_name}"
     email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
     email.attach_file(pdf)
+    if letter_type == "EAL":
+        hr_policy = HRPolicy.objects.last()
+        file_path = hr_policy.policy_file.path
+        if file_path:
+            email.attach_file(file_path)
     email.send()
 
 
@@ -82,7 +91,7 @@ def leave_mail(leave: Leave):
     message_body = f"{leave.message} \n {leave.note} \n Status : {leave.status}"
     if leave.status == "pending":
         email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
-        email.to = ['"Mediusware-HR" <hr@mediusware.com>']
+        email.to = ['"Mediusware-HR" <hr@mediusware.com>', 'shuyaib@mediusware.com']
         email.cc = manager_email
     else:
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
@@ -507,3 +516,14 @@ def save_entry_pass_id():
         )
         employee.save()
     print("All Saved.")
+
+
+
+def employee_attendance_old_data_delete(months):
+    current_date = datetime.now()
+    months_ago = relativedelta(months=months)
+
+    target_date = current_date - months_ago
+    old_data = EmployeeAttendance.objects.filter(created_at__lt=target_date)
+    
+    old_data.delete()

@@ -1,18 +1,26 @@
 from datetime import date, timedelta
-
+import datetime
+from django.utils.html import format_html
 from django.contrib import admin, messages
 from django import forms
+from django.core.exceptions import ValidationError
+from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils import timezone
 from django_q.tasks import async_task
+from icecream import ic
+
 from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
 
-
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
+    extra = 1
+
+class FeedbackInline(admin.TabularInline):
+    model = leave.LeaveFeedback
     extra = 0
 
 
@@ -21,6 +29,8 @@ class LeaveManagementInline(admin.TabularInline):
     extra = 0
     can_delete = False
     readonly_fields = ("manager", "status", "approval_time")
+
+
 
 
 class LeaveForm(forms.ModelForm):
@@ -44,36 +54,56 @@ class LeaveForm(forms.ModelForm):
         )
     )
 
+
+
     class Meta:
         model = Leave
         fields = "__all__"
+
+
 
     def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if self.fields.get("message"):
             self.fields["message"].initial = self.placeholder
 
+    
+
+    
+
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
-    list_display = (
+    actions = ("approve_selected",)
+    readonly_fields = ("note", "total_leave")
+    exclude = ["status_changed_at", "status_changed_by"]
+    inlines = (LeaveAttachmentInline, LeaveManagementInline, FeedbackInline)
+    search_fields = ("employee__full_name", "leave_type")
+    form = LeaveForm
+    date_hierarchy = "start_date"
+
+
+    class Media:
+        js = ("js/list.js", "employee/js/leave.js")
+
+    def get_list_display(self, request):
+        # existing_list = super(LeaveManagement, self).get_list_display(request)
+        list_display = [
         "employee",
         "leave_info",
         "leave_type_",
         "total_leave_",
         "manager_approval",
         "status_",
-        "start_date_",
-        "end_date_",
-        'creator'
-    )
-    actions = ("approve_selected",)
-    readonly_fields = ("note", "total_leave")
-    exclude = ["status_changed_at", "status_changed_by"]
-    inlines = (LeaveAttachmentInline, LeaveManagementInline)
-    search_fields = ("employee__full_name", "leave_type")
-    form = LeaveForm
-    date_hierarchy = "start_date"
+        "date_range",
+        'management__feedback',
+        
+    ]
+        if not request.user.has_perm("employee.view_leavefeedback"):
+            if 'management__feedback' in list_display: list_display.remove('management__feedback')
+        return list_display
+
+   
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
@@ -81,6 +111,9 @@ class LeaveManagement(admin.ModelAdmin):
             admin_only = ["status", "employee"]
             for filed in admin_only:
                 fields.remove(filed)
+        # if not request.user.has_perm("employee.can_view_feedback"):
+        #     fields.remove("display_feedback")
+        #     print(fields)
         return fields
 
     def get_readonly_fields(self, request, obj=None):
@@ -95,14 +128,25 @@ class LeaveManagement(admin.ModelAdmin):
                     [item.name for item in obj._meta.fields]
                 )
         return ["total_leave", "note"]
+  
+
+    # def save_form(self, request, form, change):
+    #     if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
+    #         raise ValidationError({"leaveattachment_set-TOTAL_FORMS":"Attachment is mandatory."})
+    #
+    #     return super().save_form(request, form, change)
 
     def save_model(self, request, obj, form, change):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
+
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
+        
         super().save_model(request, obj, form, change)
+
+
 
         employee = form.cleaned_data.get("employee") or request.user.employee
         if not change:
@@ -124,6 +168,20 @@ class LeaveManagement(admin.ModelAdmin):
                 )
                 leave_manage.save()
         self.__send_leave_mail(request, obj, form, change)
+        
+    def has_add_permission(self, request):    
+        
+        current_datetime = datetime.datetime.now()
+        current_day = current_datetime.weekday()
+            
+        if not request.user.has_perm('employee.can_add_leave_at_any_time'):
+            if current_day in [5,6]:           
+                return False
+            else:
+                return True
+        else:
+            return True
+
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -195,6 +253,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
             }
         )
         return format_html(html_content)
@@ -207,6 +268,9 @@ class LeaveManagement(admin.ModelAdmin):
                 "data": leave.total_leave,
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
                     leave.start_date, leave.end_date
                 ),
             }
@@ -224,42 +288,57 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
-            }
-        )
-        return format_html(html_content)
-
-    @admin.display()
-    def start_date_(self, leave: Leave):
-        html_template = get_template("admin/leave/list/col_leave_day.html")
-        html_content = html_template.render(
-            {
-                "data": leave.start_date,
-                "leave_day": leave.start_date.strftime("%A"),
-                "has_friday": has_friday_between_dates(
+                "has_monday": has_monday_between_dates(
                     leave.start_date, leave.end_date
                 ),
             }
         )
         return format_html(html_content)
 
-    @admin.display()
-    def end_date_(self, leave: Leave):
-        html_template = get_template("admin/leave/list/col_leave_day.html")
-        html_content = html_template.render(
-            {
-                "data": leave.end_date,
-                "leave_day": leave.end_date.strftime("%A"),
-                "has_friday": has_friday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-            }
-        )
-        return format_html(html_content)
+    # @admin.display()
+    # def start_date_(self, leave: Leave):
+    #     html_template = get_template("admin/leave/list/col_leave_day.html")
+    #     html_content = html_template.render(
+    #         {
+    #             "data": leave.start_date,
+    #             "leave_day": leave.start_date.strftime("%A"),
+    #             "has_friday": has_friday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #             "has_monday": has_monday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #         }
+    #     )
+    #     return format_html(html_content)
+
+    # @admin.display()
+    # def end_date_(self, leave: Leave):
+    #     html_template = get_template("admin/leave/list/col_leave_day.html")
+    #     html_content = html_template.render(
+    #         {
+    #             "data": leave.end_date,
+    #             "leave_day": leave.end_date.strftime("%A"),
+    #             "has_friday": has_friday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #             "has_monday": has_monday_between_dates(
+    #                 leave.start_date, leave.end_date
+    #             ),
+    #         }
+    #     )
+    #     return format_html(html_content)
     
-    @admin.display(description='Created By')
-    def creator(self, leave: Leave):
-        return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
-
+    # @admin.display(description='Created By')
+    # def creator(self, leave: Leave):
+    #     return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
+# 'Date (start/end)'
+    
+    @admin.display(description=format_html('<div style="display: block;">Date</div> <div style="display: block;"><small><u>start</u></small></div> <div style="display: block;"><small>end</small></div> '))
+    def date_range(self, leave: Leave):
+        start_date = leave.start_date.strftime('%Y-%m-%d')
+        end_date = leave.end_date.strftime('%Y-%m-%d')
+        return format_html('<div style="display: block;">{}</div><div style="display: block;">{}</div>', start_date, end_date)
 
 def has_friday_between_dates(start_date, end_date):
     # Create a timedelta of one day
@@ -271,6 +350,21 @@ def has_friday_between_dates(start_date, end_date):
     while current_date <= end_date:
         # Check if the current date is a Friday (day number 4, where Monday is 0 and Sunday is 6)
         if current_date.weekday() == 4:
+            return True
+        current_date += one_day  # Move to the next day
+
+    return False
+
+def has_monday_between_dates(start_date, end_date):
+    # Create a timedelta of one day
+    one_day = timedelta(days=1)
+
+    # Initialize the current date with the start date
+    current_date = start_date
+
+    while current_date <= end_date:
+        # Check if the current date is a Friday (day number 4, where Monday is 0 and Sunday is 6)
+        if current_date.weekday() == 0:
             return True
         current_date += one_day  # Move to the next day
 
@@ -294,7 +388,9 @@ class LeaveManagementAdmin(admin.ModelAdmin):
     list_filter = ("status", "leave__leave_type", "manager", "leave__employee")
     search_fields = ("manager__full_name", "status")
     date_hierarchy = "created_at"
-
+    
+    
+            
     @admin.display(description="Employee")
     def get_employee(self, obj):
         return obj.leave.employee.full_name

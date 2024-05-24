@@ -10,7 +10,10 @@ register = template.Library()
 
 @register.filter(name='replace_newline_wth_br')
 def replace_text(value):
-    return format_html(value.replace('\n', r'<br />'))
+    try:
+        return format_html(value.replace('\n', r'<br />').replace("{", "[").replace("}", "]"))
+    except:
+        return format_html(value)
 
 
 @register.filter(name="check_valid_url")

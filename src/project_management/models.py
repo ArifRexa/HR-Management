@@ -1,9 +1,11 @@
+from datetime import datetime
 import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
-from datetime import datetime
 
+from django.utils import timezone
+from datetime import date
 from dateutil.utils import today
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -11,6 +13,8 @@ from django.db import models
 from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
 from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
 from django.db.models.signals import pre_save
+from django.db.models.signals import post_save
+
 from django.dispatch import receiver
 from tinymce.models import HTMLField
 
@@ -40,6 +44,7 @@ class Tag(TimeStampMixin, AuthorMixin):
 
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
+    designation = models.CharField(max_length=200,null=True,blank=True)
     email = models.EmailField(max_length=80)
     address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
@@ -49,7 +54,70 @@ class Client(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.name
 
+class ProjectOverview(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
 
+    def __str__(self):
+        return self.title
+
+class ProjectStatement(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectChallenges(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectSolution(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+from django.db import models
+
+
+
+
+
+class ProjectResults(models.Model):
+    title = models.CharField(max_length=200)
+    increased_sales = models.CharField(max_length=20) 
+    return_on_investment = models.CharField(max_length=10)  
+    increased_order_rate = models.CharField(max_length=20) 
+
+    def __str__(self):
+        return self.title
+    
+
+class ProjectPlatform(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
+
+class ProjectIndustry(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
+class ProjectService(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
@@ -58,16 +126,25 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
+    platforms = models.ManyToManyField(ProjectPlatform, related_name='projects',blank=True)
+    industries = models.ManyToManyField(ProjectIndustry, related_name='projects',blank=True)
+    services = models.ManyToManyField(ProjectService, related_name='projects',blank=True)
+    live_link = models.URLField(max_length=200, null=True, blank=True)
+    location = models.CharField(max_length=100, null=True, blank=True)
     active = models.BooleanField(default=True)
+    is_highlight = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
+    hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    activate_from = models.DateField(null=True,blank=True)
+    short_note = models.CharField(max_length=200,null=True,blank=True)
     emergency_operation = models.BooleanField(default=False)
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag,related_name='projects')
     identifier = models.CharField(
         max_length=50,
-        default=uuid4
+        default=uuid4,  
     )
     on_boarded_by = models.ForeignKey(
         Employee,
@@ -77,15 +154,41 @@ class Project(TimeStampMixin, AuthorMixin):
         limit_choices_to={"active": True},
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
+  
+    project_results = models.OneToOneField(
+        ProjectResults,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='project',
+    )
 
+
+        
     class Meta:
         ordering = ['title']
+        permissions = [
+             (
+                "can_see_all_project_field",
+                "Can See All Project Field",
+            ),
+    
+        ]
+           
+        
 
+    def clean(self):
+        super().clean()
+
+        if self.hourly_rate is not None and self.activate_from is None:
+            raise ValidationError("If hourly rate is provided, activate from is mandatory.")
+        if self.activate_from is not None and self.hourly_rate is None:
+            raise ValidationError("If activate from is provided, hourly rate is mandatory.")
     def __str__(self):
         return self.title
 
     def durations(self):
-        duration = datetime.now() - self.created_at
+        duration = datetime.datetime.now() - self.created_at
         return duration.days
 
     def colorize(self):
@@ -114,6 +217,31 @@ class Project(TimeStampMixin, AuthorMixin):
             .order_by("-created_at")
             .exclude(project__active=False)
         )
+    
+    @property
+    def check_is_weekly_project_hour_generated(self):
+        latest_project_hour = ProjectHour.objects.filter(project=self).order_by("created_at").last()
+        if latest_project_hour:
+            latest_project_hour_date = latest_project_hour.created_at.date()
+            # print(f"latest_project_hour_date: {latest_project_hour_date}")
+            today = timezone.now().date()
+            # print(f"today: {today}")
+            last_friday = today - timedelta(days=(today.weekday() + 3) % 7)
+            # print(f"last_friday: {last_friday}")
+            if latest_project_hour_date < last_friday and today.weekday() in [4,5,6,0]:
+                return False #RED
+            else:
+                return True #BLACK
+        else:
+            return True #BLACK
+    
+    @property
+    def associated_employees(self):
+        return Employee.objects.filter(
+            employeeproject__project=self,
+            employeeproject__project__active=True
+        )
+
 
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
@@ -142,6 +270,10 @@ class ProjectTechnology(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
+    
+class OurTechnology(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=200)
+    technologies = models.ManyToManyField(Technology)
 
 
 class ProjectScreenshot(TimeStampMixin, AuthorMixin):
@@ -153,6 +285,16 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = HTMLField()
+    image = models.ImageField(upload_to='project_images/', null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+
+class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project,on_delete=models.CASCADE)
+    title = models.CharField(max_length=300)
+    description = HTMLField()
+    img = models.ImageField()
 
     def __str__(self):
         return self.title
@@ -201,21 +343,23 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     )
     payable = models.BooleanField(default=True)
     approved_by_cto = models.BooleanField(default=False)
-    cto_feedback = models.TextField(blank=True, null=True, verbose_name="Feedback")
+    operation_feedback = models.URLField(blank=True, null=True, verbose_name="Operation Feedback")
+    client_exp_feedback = models.URLField(blank=True, null=True, verbose_name="Client Experience Feedback")
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
 
     def clean(self):
-        if self.hours is None:
-            raise ValidationError({"hours": f"Hours filed is required"})
+        
         if (
                 self.date is not None
                 and self.date.weekday() != 4
                 and self.hour_type != "bonus"
         ):
             raise ValidationError({"date": "Today is not Friday"})
-
+        if not self.project:
+            raise ValidationError({"project":"You have to must assign any project"})
+        
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
         #     self.payable = False
@@ -242,7 +386,6 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         on_delete=models.RESTRICT,
         limit_choices_to={"active": True},
     )
-
     class Meta:
         permissions = [
             ("change_recent_activity", "Can change if inserted recently (3days)"),
@@ -307,6 +450,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     class Meta:
         permissions = [
             ("see_all_employee_update", "Can see all daily update"),
+            ("can_approve_or_edit_daily_update_at_any_time", "Can approve or update daily project update at any time" ),
         ]
         verbose_name = "Daily Project Update"
         verbose_name_plural = "Daily Project Updates"
@@ -337,7 +481,6 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         #      index, i in enumerate(self.updates_json)])
         else:
             return str(self.update)
-
 
     # def clean(self):
     #     # LeaveManagement = apps.get_model('employee', 'LeaveManagement')
@@ -623,3 +766,45 @@ class ProjectReport(TimeStampMixin):
     class Meta:
         verbose_name = "Project Report"
         verbose_name_plural = "Project Reports"
+
+
+class EnableDailyUpdateNow(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=24)
+    enableproject = models.BooleanField(default=False)
+    last_time = models.TimeField(null=True, blank=True)
+
+    def clean(self):
+        if self.last_time is None:
+            raise ValidationError("Please Enter Last Time")
+        # Ensure only one object of this class exists
+        # if not self.pk and EnableDailyUpdateNow.objects.exists():
+        #     raise ValidationError("Only one instance of EnableDailyUpdateNow can be created. And One instance is already exist.")
+
+
+    def save(self, *args, **kwargs):
+        # Ensure only one object of this class exists
+        # if not self.pk and EnableDailyUpdateNow.objects.exists():
+        #     # If trying to create a new object and one already exists, raise an exception
+        #     raise Exception("Only one instance of EnableDailyUpdateNow can be created.")
+        return super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if EnableDailyUpdateNow.objects.count() <= 1:
+            raise ValidationError("At least one instance of EnableDailyUpdateNow must remain in the database.")
+        return super().delete(*args, **kwargs)
+    class Meta:
+        verbose_name = "Project Update Enable"
+        verbose_name_plural = "Project Update Enable by me"
+        # permissions = (("can_change_daily_update_any_time", "Can change daily Update any Time"),)
+
+
+class ObservationProject(TimeStampMixin, AuthorMixin):
+    project_name = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, related_name='observation_projects')
+    class Meta:
+        verbose_name = 'Observe New Project'
+        # verbose_name_plural = 'Observations'
+@receiver(post_save, sender=Project)
+def create_observation(sender, instance, created, **kwargs):
+    if created:
+        ObservationProject.objects.create(project_name=instance)
+

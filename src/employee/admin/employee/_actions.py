@@ -62,6 +62,7 @@ class EmployeeActions:
         "print_salary_certificate",
         "print_bank_forwarding_letter",
         "print_promotion_letter",
+        "print_experience_letter",
         "mail_appointment_letter",
         "mail_permanent_letter",
         "mail_increment_letter",
@@ -155,6 +156,12 @@ class EmployeeActions:
         return self.generate_pdf(
             request, queryset=queryset, letter_type="AFL"
         ).render_to_pdf()
+    
+    @admin.action(description="Print Experience Letter")
+    def print_experience_letter(self,request, queryset):
+        return self.generate_pdf(
+            request, queryset=queryset, letter_type="EXPL"
+        ).render_to_pdf()
 
     @admin.action(description="Mail Appointment Letter")
     def mail_appointment_letter(self, request, queryset):
@@ -167,16 +174,27 @@ class EmployeeActions:
         if not hr_policy:
             hr_policies = []
         else:
-            hr_policies = hr_policy.hrpolicysection_set.all()
+            hr_policies = hr_policy.policy_file
+
+        # policy_file = 
 
         self.__send_mail(
             queryset,
             letter_type="EAL",
             subject="Appointment letter",
+            # mail_template=["mails/appointment.html", "mails/appointment.html"],
             mail_template="mails/appointment.html",
-            extra_context={"hr_policies": hr_policies},
+            # extra_context={"hr_policies": hr_policies},
             request=request,
         )
+        # for employee in queryset:
+        #     async_task(
+        #             "employee.tasks.send_mail_to_employee",
+        #             employee,
+        #             pdf = ["mails/appointment.html", "mails/appointment.html"],
+        #             html_body = 
+        #             subject,
+        #         )
 
     @admin.action()
     def mail_permanent_letter(self, request, queryset):
@@ -258,6 +276,9 @@ class EmployeeActions:
                 letter_type=letter_type,
                 extra_context=extra_context,
             ).create()
+            print(pdf)
+            print(type(pdf))
+            # pdf = [pdf, pdf]
             enoc = EmployeeNOC.objects.filter(employee_id=employee.id)
             if enoc.exists():
                 enoc = enoc.first()
@@ -280,12 +301,16 @@ class EmployeeActions:
             }
             context.update(extra_context)
             html_body = loader.render_to_string(mail_template, context=context)
+
             async_task(
                 "employee.tasks.send_mail_to_employee",
                 employee,
                 pdf,
                 html_body,
                 subject,
+                letter_type
+
+
             )
         self.message_user(request, "Mail sent successfully", messages.SUCCESS)
 
@@ -336,5 +361,6 @@ class EmployeeActions:
             "ELMSC": "letters/salary_certificate_last_month.html",
             "AFL": "letters/salary_account_forwarding_letter.html",
             "EPRL": "letters/promotion_letter.html",
+            "EXPL": "letters/experience_letter.html",
         }
         return switcher.get(letter_type, "")

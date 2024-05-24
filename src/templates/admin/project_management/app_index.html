@@ -29,9 +29,7 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:project_management.project.graph' %}">Project Graph</a></th>
             </tr>
-            <tr>
-                <th scope="row"><a href="{% url 'admin:project_management_employeeprojecthourgroupbyemployee_changelist' %}?project_hour__date__month={{month}}&project_hour__date__year={{year}}">Weekly Employee Hours</a></th>
-            </tr>
+           
             <tr>
                 <th scope="row"><a href="{% url 'admin:activity' %}">Activity</a></th>
             </tr>
@@ -57,6 +55,18 @@
             </tr>
             <tr>
                 <th scope="row"><a href="{% url 'admin:project_management_technology_changelist' %}">Technologies</a></th>
+            </tr>
+           
+                <th scope="row"><a href="{% url 'admin:project_management_projectkeyfeature_changelist' %}">Project Key Feature</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_projectresults_changelist' %}">Project Result</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_ourtechnology_changelist' %}">Our Technology</a></th>
+            </tr>
+            <tr>
+                <th scope="row"><a href="{% url 'admin:project_management_projectindustry_changelist' %}">Industries</a></th>
             </tr>
             <!-- Hidden from Main Index -->
 

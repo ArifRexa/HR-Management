@@ -1,6 +1,7 @@
 import datetime
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
+from datetime import timedelta
 
 from django.db.models import Count
 from django.db.models.functions import TruncDate
@@ -27,6 +28,8 @@ from project_management.models import (
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     ProjectReport,
+    EnableDailyUpdateNow,
+    Project
 )
 from project_management.admin.project_hour.options import (
     ProjectManagerFilter,
@@ -35,7 +38,17 @@ from project_management.admin.project_hour.options import (
 from project_management.forms import AddDDailyProjectUpdateForm
 from icecream import ic
 from client_management.templatetags.replace_newline import check_valid_url
-from employee.models import LeaveManagement
+from employee.models import LeaveManagement, Employee
+from employee.models.employee_rating_models import EmployeeRating
+from django.db.models import Q
+
+
+from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from django.template.response import TemplateResponse
+
+
 
 class ProjectTypeFilter(admin.SimpleListFilter):
     title = "hour type"
@@ -154,6 +167,16 @@ class DailyProjectUpdateDocumentAdmin(admin.TabularInline):
 
 @admin.register(DailyProjectUpdate)
 class DailyProjectUpdateAdmin(admin.ModelAdmin):
+    LAST_TIME_OF_GIVING_UPDATE_FOR_DEVS = datetime.time(19, 30)
+    LAST_TIME_OF_GIVING_UPPDATE_FOR_LEADS = datetime.time(23, 59)
+
+    # Duration for cache in seconds
+    cache_timeout = 60 * 3  # 15 minutes
+
+    today = timezone.now()
+    start_of_month = today.replace(day=1,hour=0, minute=0, second=0, microsecond=0)
+    deadline = start_of_month + timedelta(days=26)
+
     inlines = [
         DailyProjectUpdateDocumentAdmin,
     ]
@@ -233,7 +256,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         js = ("js/list.js", "js/add_daily_update.js")
 
     def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             return [
                 "created_at",
             ]
@@ -288,12 +311,12 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         html_template = get_template(
             "admin/project_management/list/col_dailyupdate.html"
         )
-        # is_github_link_show = True
-        if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa',
-                                                                                                         'ui/ux']:
-            is_github_link_show = False
-        else:
-            is_github_link_show = True
+
+        is_github_link_show = True
+        # if obj.employee.top_one_skill is not None and obj.employee.top_one_skill.skill.title.lower() in ['sqa', 'ui/ux']:
+        #     is_github_link_show = False
+        # else:
+        #     is_github_link_show = True
         html_content = html_template.render(
             {
                 "update": obj.update.replace("{", "_").replace("}",
@@ -314,12 +337,20 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.display(description="Hours", ordering="hours")
     def get_hours(self, obj):
         custom_style = ""
-        if obj.hours <= 5:
+        if obj.hours < 6:
             custom_style = ' style="color:red; font-weight: bold;"'
         html_content = f"<span{custom_style}>{round(obj.hours, 2)}</span>"
         return format_html(html_content)
 
+    # @method_decorator(cache_page(cache_timeout))
     def changelist_view(self, request, extra_context=None):
+
+        # cache_key = 'dailyprojectupdate_changelist'
+        # cached_response = cache.get(cache_key)
+
+        # if cached_response:
+        #     return cached_response
+
         filter_form = DailyUpdateFilterForm(
             initial={
                 "created_at__date__gte": request.GET.get(
@@ -331,13 +362,35 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 ),
             }
         )
+        is_have_pending = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+
         my_context = {
             "total": self.get_total_hour(request),
             "filter_form": filter_form,
+            "is_have_pending": is_have_pending,  # Pass the variable to the template context
         }
-        return super(DailyProjectUpdateAdmin, self).changelist_view(
+
+        # Add a message to display in the template if there are pending leave requests
+        # if is_have_pending:
+        #     messages.info(request, "You have pending leave request(s).")
+
+
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                messages.error(
+                    request,
+                    "You have to complete your 'Employee Rating' first to add daily project update",
+                )
+
+        response = super().changelist_view(
             request, extra_context=my_context
         )
+        # if isinstance(response, TemplateResponse):
+        #     response.render()
+        #
+        # cache.set(cache_key, response, self.cache_timeout)
+
+        return response
 
     def get_total_hour(self, request):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
@@ -369,18 +422,109 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return filters
 
     def has_change_permission(self, request, obj=None):
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
+            return True
+        # special_permission = EnableDailyUpdateNow.objects.first()
+        # if obj:
+        #     if ((request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa) and obj.created_at.date() < timezone.now().date()):
+        #         if special_permission is not None and special_permission.enableproject == True:
+        #             return True
+        #         return False
+        #     else:
+        #         return True
+        #
+        # is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+        # if is_have_panding:
+        #     return False
+        #
+        # if self.today > self.deadline:
+        #     if self.is_rating_completed(request) == False:
+        #         return False
+
+        # if request.user.has_perm("project_management.")
+
+
+
         permitted = super().has_change_permission(request, obj=obj)
         if obj is not None and obj.pk:
+
             if (
                     not request.user.is_superuser
                     and obj
                     and obj.employee != request.user.employee
                     and obj.manager != request.user.employee
+                    
             ):
-                permitted = False
+                # permitted = False
+                return False
 
+        special_permission = EnableDailyUpdateNow.objects.filter(enableproject=True).first()
+
+        if obj:
+            # is lead / manager / sqa
+            if (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
+                # previous date
+                if obj.created_at.date() < timezone.now().date():
+                    if special_permission is not None and special_permission.enableproject == False:
+                        permitted = False
+                # today
+                else:
+                    permitted = True
+            # not lead / manager / sqa
+            else:
+                if special_permission is not None:
+                    if special_permission.enableproject == False:
+                        if timezone.now().time() > special_permission.last_time:
+                            permitted = False
+
+
+        is_have_panding = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+        if is_have_panding:
+            return False
+
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                return False
+
+        # if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
+        #     if special_permission is not None:
+        #         if special_permission.enableproject == True:
+        #             return True
+        #         if timezone.now().time() > special_permission.last_time:
+        #             return False
         return permitted
+    
+        
+    def has_add_permission(self, request, obj=None):
 
+        if request.user.is_superuser:
+            return True
+
+        is_have_panding =  LeaveManagement.objects.filter(manager=request.user.employee,status='pending').exists()
+
+        permissons = super().has_add_permission(request)
+        special_permission = EnableDailyUpdateNow.objects.first()
+
+        if is_have_panding:
+            return False
+    
+
+        if self.today > self.deadline:
+            if self.is_rating_completed(request) == False:
+                return False
+
+
+        if not (request.user.employee.lead or request.user.employee.manager or request.user.employee.sqa):
+            if special_permission is not None:
+                if special_permission.enableproject == True:
+                    return True
+                if special_permission.last_time > timezone.now().time():
+                    return True
+            return False
+        return permissons
+        
+
+    
     @admin.display(description="Status")
     def status_col(self, obj):
         color = "red"
@@ -388,9 +532,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             color = "green"
         return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
+    
     @admin.action(description="Approve selected status daily project updates")
     def update_status_approve(modeladmin, request, queryset):
-        if request.user.is_superuser:
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
 
@@ -405,7 +550,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.action(description="Pending selected status daily project updates")
     def update_status_pending(modeladmin, request, queryset):
-        if request.user.is_superuser:
+        if request.user.has_perm("project_management.can_approve_or_edit_daily_update_at_any_time"):
             qs_count = queryset.update(status="pending")
         elif request.user.employee.manager or request.user.employee.lead:
             qs_count = queryset.filter(manager_id=request.user.employee.id).update(
@@ -660,12 +805,16 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             if obj.updates_json is None:
                 continue
             updates = ''
+            commit_links = ''
             for index, update in enumerate(obj.updates_json):
                 total_hour += float(update[1])
                 updates += f'{update[0]} - {update[1]}H.\n'
+                commit_links += f'{index+1}. {update[2]}\n'
 
             tmp_add = (f"{obj.employee.full_name}\n\n" +
-                       f"{updates}\n" +
+                       f"{updates}\n\n" +
+                       f"Associated Links: \n"+
+                       f"{commit_links}\n" +
                        "-------------------------------------------------------------\n\n")
 
             update_list_str += tmp_add
@@ -779,14 +928,70 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         ):
             permitted = False
         return permitted
+    
+
+    def is_rating_completed(self, request):
+        # today = timezone.now()
+        # user_id = request.user.id
+        # ratings = EmployeeRating.objects.filter(created_by_id=user_id)
+
+
+        return True
+
+    def _is_rating_completed(self, request):
+        today = timezone.now()
+        user_id = request.user.id
+        ratings = EmployeeRating.objects.filter(created_by_id=user_id)
+        projects = Project.objects.filter(
+            employeeproject__employee__user__id = user_id,
+        )
+
+        # print("*"*50)
+        associated_employees_qs = Employee.objects.none()
+
+        for project in projects:
+            associated_employees_qs = associated_employees_qs | project.associated_employees.exclude(user__id=user_id)
+
+        unique_associated_employees = associated_employees_qs.distinct()
+
+        # print(unique_associated_employees)
+
+        is_completed = True
+        for employee in unique_associated_employees:
+            has_rating = ratings.filter(
+                Q(created_by_id=user_id) & Q(employee_id=employee.id) & Q(month=today.month) & Q(year=today.year)
+            ).exists()
+
+            # print(f"{employee}--------------------{has_rating}-----------{is_completed}")
+            if not has_rating:
+                is_completed = False
+                # print(is_completed)
+                break
+        # print("*"*50)
+
+        return is_completed
+
 
     def save_model(self, request, obj, form, change) -> None:
+
+        print(f"{self.start_of_month}-----------------{self.deadline}")
+        # cache.delete('dailyprojectupdate_changelist')
+
         if not change:
-            from django.utils import timezone
+
             if form.cleaned_data.get('employee'):
                 employee = form.cleaned_data.get('employee')
             else:
                 employee = request.user.employee
+
+            if self.today > self.deadline:
+                if self.is_rating_completed(request) == False:
+                    messages.error(
+                        request,
+                        "You have to complete your employee rating first to add daily update",
+                    )
+                    return
+
 
             if len(employee.leave_management_manager.filter(status='pending')) > 0:
                 messages.error(
@@ -839,6 +1044,22 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 # hours=request.POST.get("hours"), daily_update=obj
                 hours=total_hour, daily_update=obj
             )
+    
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        is_have_pending = LeaveManagement.objects.filter(manager=request.user.employee, status='pending').exists()
+
+        if is_have_pending:
+            # Remove both "update_status_approve" and "update_status_pending" actions if there are pending leave approvals
+            actions.pop("update_status_approve", None)
+            actions.pop("update_status_pending", None)
+
+        return actions
+    
+
+
+
 
     # def get_actions(self, request):
     #     actions = super().get_actions(request)
@@ -871,3 +1092,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             )
         else:
             return redirect('/admin/project_management/dailyprojectupdate/')
+
+    def delete_model(self, request, obj):
+        super().delete_model(request, obj)
+        # cache.delete('dailyprojectupdate_changelist')

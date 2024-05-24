@@ -20,7 +20,15 @@ class Resignation(TimeStampMixin, AuthorMixin):
     approved_at = models.DateField(null=True, editable=False)
     approved_by = models.ForeignKey(User, limit_choices_to={'is_superuser': True}, null=True, on_delete=models.RESTRICT,
                                     editable=False)
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'user__is_superuser': False})
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'user__is_superuser': False, 'active':True})
+
+    class Meta:
+        permissions = (
+            (
+                "can_view_all_resignations",
+                "Can View All Resignations",
+            ),
+        )
 
     def short_message(self):
         return truncatewords(self.message, 20)

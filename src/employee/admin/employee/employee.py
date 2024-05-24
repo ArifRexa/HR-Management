@@ -9,7 +9,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
 from employee.models.attachment import Attachment
-from employee.models.employee import EmployeeLunch, Task, EmployeeNOC
+from employee.models.employee import EmployeeLunch, Task, EmployeeNOC, Observation
 
 
 @admin.register(Employee)
@@ -33,6 +33,21 @@ class EmployeeAdmin(
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
 
+    def save_model(self, request, obj, form, change):
+        print(obj.__dict__)
+        if change:
+            if obj.lead != form.initial['lead'] or obj.manager != form.initial['manager']:
+                # Create an observation record
+                already_exist = Observation.objects.filter(employee__id=obj.id).first()
+                if not already_exist:
+                    Observation.objects.create(
+                        employee=obj,
+                    )
+        super().save_model(request, obj, form, change)
+        # Observation.objects.create(
+        #             employee_id=obj.id,
+        #         )
+    
     def get_readonly_fields(self, request, obj):
         if request.user.is_superuser or request.user.has_perm(
             "employee.can_access_all_employee"
@@ -103,7 +118,7 @@ class EmployeeAdmin(
             "tour_allowance",
             "permanent_status",
         ]
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm('employee.can_see_salary_history'):
             list_display.remove("salary_history")
         if not request.user.has_perm('employee.can_access_average_rating'):
             list_display.remove('employee_rating')
@@ -237,3 +252,9 @@ class EmployeeNOCAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+# @admin.register(Observation)
+# class ObservationAdmin(admin.ModelAdmin):
+#     list_display = ['employee', 'created_at']  # Add other fields as needed
+#     search_fields = ['employee__full_name', 'created_at']  # Add other fields as needed
+#     list_filter = ['created_at']  # Add other fields as needed

@@ -56,6 +56,12 @@ class Candidate(TimeStampMixin):
 
     def get_last_job(self):
         self.candidatejob_set.last()
+    
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs) 
+        
+        
 
 
 class CandidateJob(TimeStampMixin):
@@ -175,3 +181,12 @@ class CandidateAssessmentAnswer(TimeStampMixin):
 class CandidateAssessmentReview(TimeStampMixin, AuthorMixin):
     candidate_assessment = models.ForeignKey(CandidateAssessment, on_delete=models.CASCADE)
     note = models.TextField()
+
+
+class JobPreferenceRequest(TimeStampMixin):
+    email = models.EmailField()
+    preferred_designation = models.CharField(max_length=100)
+    cv = models.FileField(upload_to=candidate_email_path, validators=[validate_file_extension])
+
+    def __str__(self):
+        return self.email

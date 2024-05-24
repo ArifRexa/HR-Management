@@ -1,5 +1,7 @@
 import datetime
+from datetime import  date as dt_date
 import uuid
+import math
 from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Group, User
 from django.db import models
@@ -63,8 +65,10 @@ class Employee(TimeStampMixin, AuthorMixin):
         max_length=255,
         help_text="i.e: 59530389237, Circle–138, Zone-11, Dhaka",
     )
+    tax_eligible = models.BooleanField(default=True)
     manager = models.BooleanField(default=False)
     lead = models.BooleanField(default=False)
+    sqa = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     show_in_web = models.BooleanField(default=True)
     lunch_allowance = models.BooleanField(default=True)
@@ -337,6 +341,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             else:
                 available_leave = get_leave_by_type
 
+           
         return round(available_leave)
 
     def leave_available(
@@ -348,33 +353,50 @@ class Employee(TimeStampMixin, AuthorMixin):
         # Renamed for leave calculation
         # TODO: Need to upgrade calculation style without temporary fix
         permanent_date = self.joining_date
+        current_year = timezone.now().year
+        first_day_of_current_year = dt_date(current_year, 1, 1)
+
 
         if self.leave_in_cash_eligibility:
+            
             if self.resignation_date:
-                total_days_of_permanent = (self.resignation_date - permanent_date).days
-            else:
-                total_days_of_permanent = (year_end - permanent_date).days
+                if self.joining_date < first_day_of_current_year:
+                    total_days_of_permanent = (self.resignation_date - first_day_of_current_year).days
+                else:
+                    total_days_of_permanent = (self.resignation_date - self.joining_date).days
 
-            month_of_permanent = round(total_days_of_permanent / 30)
-            if month_of_permanent < 12:
-                available_leave = (month_of_permanent * get_leave_by_type) / 12
             else:
-                available_leave = get_leave_by_type
+                if self.joining_date < first_day_of_current_year:
+                    total_days_of_permanent = 365
+                else:
+                    total_days_of_permanent = (year_end - self.joining_date).days
+                    
 
-        return round(available_leave)
+            month_of_permanent = math.floor(total_days_of_permanent / 30)
+            available_leave = (month_of_permanent * get_leave_by_type) / 12
+           
+        decimal_number = available_leave - int(available_leave)
+        if decimal_number < 0.50:
+            return (float('{:.2f}'.format(round(available_leave))))
+        else:
+            integer_part = math.floor(available_leave)
+            available_leave = integer_part + 0.50
+            return available_leave
 
     class Meta:
         db_table = "employees"
         permissions = (
             ("can_see_formal_summery_view", "Can able to see emloyee summary view"),
             ("can_access_all_employee", "Can acccess all employee"),
-            ('can_access_average_rating', 'Can access average rating of Employee.')
+            ('can_access_average_rating', 'Can access average rating of Employee.'),
+            ('can_see_salary_history', "Can able to see salary history.")
         )
         ordering = ["full_name"]
 
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
+
     if instance.pf_eligibility:
         now = timezone.now().date().replace(day=1)
         maturity_date = now + relativedelta(years=2)
@@ -480,3 +502,11 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
     noc_body = HTMLField()
     noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
     noc_image = models.ImageField(upload_to="noc_images/", null=True, blank=True)
+
+class Observation(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='observations')
+    
+    class Meta:
+        verbose_name = 'Observe New Lead/Managers or New Dev'
+        unique_together = ('employee',)
+        # verbose_name_plural = 'Observations'

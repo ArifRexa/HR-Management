@@ -20,7 +20,7 @@
     }
 
     ul.messagelist li.alert-danger {
-        background: var(--message-success-bg) url({% static 'admin/img/icon-no.svg' %}) 40px 12px no-repeat;
+        background: var(--message-error-bg) url({% static 'admin/img/icon-no.svg' %}) 40px 12px no-repeat;
         color: #842029;
         background-color: #f8d7da;
         border-color: #f5c2c7;
@@ -379,7 +379,6 @@
                     </div>
                 </div>
                 {% endif %}
-
                 {% if permanents_count > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">

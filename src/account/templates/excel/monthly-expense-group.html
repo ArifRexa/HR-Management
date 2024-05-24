@@ -1,0 +1,68 @@
+{% load daily_expense %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Journal</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td,
+        th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <table >
+        <thead>
+            <tr>
+                <th>Head</th>
+                <th>Debit</th>
+                <th>Credit</th>
+                <th>VDS Rate</th>
+                <th>VDS Amount</th>
+                <th>TDS Rate</th>
+                <th>TDS Amount</th>
+            </tr>
+        </thead>
+        <tr>
+            <th>Cash in hand</th>
+            <th></th>
+            <th>{{ expense_data|daily_sum }}</th>
+        </tr>
+        {% for expense in expense_data %}
+            <tr>
+                <td>{{ expense.expanse_group__title }}</td>
+                <td>{{ expense.expense_amount }}</td>
+                <td></td>
+                <td>{{ expense.vds_rate }}%</td>
+                <td>{{ expense.vds_amount }}</td>
+                <td>{{ expense.tds_rate }}%</td>
+                <td>{{ expense.tds_amount }}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <th>Total</th>
+            <th>{{ expense_data|daily_sum }}</th>
+            <th>{{ expense_data|daily_sum }}</th>
+            <th></th>
+            <th>{{ expense_data|vds_sum }}</th>
+            <th></th>
+            <th>{{ expense_data|tds_sum }}</th>
+        </tr>
+       
+    </table>
+</body>
+
+</html>

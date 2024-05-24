@@ -10,7 +10,8 @@ from django import forms
 from django.db.models import Sum, Q, F
 from django.template.context_processors import request
 from django.utils import timezone
-
+from django.template.loader import get_template
+from django.utils.html import format_html
 from config.admin import ExportCsvMixin, RecentEdit
 from config.admin.utils import simple_request_filter
 from project_management.admin.project_hour.actions import ProjectHourAction
@@ -33,27 +34,21 @@ class EmployeeHourAdmin(admin.TabularInline):
 
 class ProjectHourAdminForm(forms.ModelForm):
 
-    def clean(self):
+     def clean(self):
         data = super(ProjectHourAdminForm, self).clean()
         if data.get('hour_type') != "bonus":
-
-            if self.request.path_info[-5:-1] == "/add":
-                if ProjectHour.objects.filter(
-                    manager_id=self.request.user.employee.id, 
-                    project_id=data.get('project').id, 
-                    date=data.get('date')
-                ).exists():
-                    raise ValidationError({
-                        'date': f"Project Hour for this date with this project and manager already exists",
-                    })
-
-            # if self.request.path_info[-8:-1] == "/change":
-            #     if not ProjectHour.objects.filter(manager_id=self.request.user.employee.id, project_id=data.get('project').id, date=data.get('date')):
-            #         raise ValidationError({
-            #             'date': f"Don't override on date and project.",
-            #         })
+            if self.request:
+                if self.request.path_info[-5:-1] == "/add":
+                    project = data.get('project')
+                    if project and ProjectHour.objects.filter(
+                        manager_id=self.request.user.employee.id, 
+                        project_id=project.id, 
+                        date=data.get('date')
+                    ).exists():
+                        raise ValidationError({
+                            'date': "Project Hour for this date with this project and manager already exists",
+                        })
             return data
-
 
 @admin.register(ProjectHour)
 class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin):
@@ -62,7 +57,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     inlines = (EmployeeHourAdmin,)
     change_list_template = 'admin/total.html'
     autocomplete_fields = ['project']
-    list_per_page = 20
+    list_per_page = 50
     ordering = ('-pk',)
     add_form_template = 'admin/project_hour/project_hour.html'
     fieldsets = (
@@ -71,7 +66,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         }),
         (
             'Administration Process', {
-                'fields': ('cto_feedback', 'approved_by_cto')
+                'fields': ('operation_feedback','client_exp_feedback', 'approved_by_cto')
             }
         )
     )
@@ -93,9 +88,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
-        my_context = {
-            'total': self.get_total_hour(request),
-        }
+        my_context = dict(
+            self.admin_site.each_context(request),
+            total=self.get_total_hour(request),
+            series=self.get_data(request)
+        )
         return super(ProjectHourAdmin, self).changelist_view(request, extra_context=my_context)
 
     def get_queryset(self, request):
@@ -127,3 +124,109 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
             return (fieldsets[0], )
 
         return fieldsets
+
+    def get_data(self, request):
+        print('*******************')
+        print('get_data has called')
+        series = list()
+        selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
+        print('************** project id is *************', selected_projects)
+        print('*** selected projects are ', selected_projects)
+        if selected_projects:
+            projects = Project.objects.filter(id__in=[selected_projects], active=True).all()
+        else:
+            projects = Project.objects.filter(active=True).all()
+        date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+        for project in projects:
+            data = project.projecthour_set.filter(date__gte=date_to_check).annotate(
+                date_str=F('date')
+            ).extra(
+                select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
+            ).values(
+                'date_str'
+            ).annotate(
+                total_hours=Sum('hours')
+            ).values_list(
+                'date_str', 'total_hours'
+            ).order_by(
+                'date_str'
+            )
+
+            print(data)
+            # TODO : must be optimize otherwise it will effect the load time
+            print('***************** data **************', data)
+            array_date = []
+            for value in data:
+                array_date.append(list(value))
+
+            series.append({
+                'type': 'spline',
+                # 'visible': 'false',
+                'name': project.title,
+                'data': list(array_date)
+            })
+        if selected_projects:
+
+            sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
+                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+
+        else:
+            sum_hours = ProjectHour.objects.filter(date__gte=date_to_check).extra(
+                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+        sum_array = []
+        # for sum_hour in sum_hours:
+        #     sum_array.append(list(sum_hour)) #  it will return the total hours of projects.
+        series.append({
+            'type': 'spline',
+            'name': 'Total Project Hours',
+            'data': sum_array
+        })
+        # print('************** series ***********', series)
+        return series
+
+    # def get_data(self, request):
+    #     series = []
+    #     selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
+    #
+    #     if selected_projects:
+    #         projects = Project.objects.filter(id__in=selected_projects, active=True).all()
+    #     else:
+    #         projects = Project.objects.filter(active=True).all()
+    #
+    #     date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+    #
+    #     for project in projects:
+    #         data = project.projecthour_set.filter(date__gte=date_to_check).extra(
+    #             select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
+    #         ).order_by('date').values_list('date_str', 'hours')
+    #
+    #         array_date = []
+    #         for value in data:
+    #             array_date.append(list(value))
+    #
+    #         series.append({
+    #             'type': 'spline',
+    #             'name': project.title,
+    #             'data': list(array_date)
+    #         })
+    #
+    #     # Calculate total project hours for filtered projects only
+    #     if selected_projects:
+    #         sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
+    #             select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+    #         ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+    #
+    #         sum_array = []
+    #         for sum_hour in sum_hours:
+    #             sum_array.append(list(sum_hour))
+    #
+    #         series.append({
+    #             'type': 'spline',
+    #             'name': 'Total Project Hours',
+    #             'data': sum_array
+    #         })
+    #
+    #     return series
+

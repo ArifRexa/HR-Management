@@ -134,6 +134,8 @@ def formal_summery(request):
         "is_management": str(employee_id) in management_ids,
         # TODO: Need Optimization
         "birthdays": employee_formal_summery.birthdays,
+        "new_employees": employee_formal_summery.new_employee,
+        "new_lead_or_managers": employee_formal_summery.new_lead_or_manager,
     }
 
 

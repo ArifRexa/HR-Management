@@ -13,19 +13,19 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(ResignationAdmin, self).get_fields(request)
-        if not request.user.is_superuser:
+        if not request.user.has_perm('employee.can_view_all_resignations'):
             fields.remove('employee')
             fields.remove('status')
         return fields
 
     def get_queryset(self, request):
         qs = super(ResignationAdmin, self).get_queryset(request)
-        if request.user.is_superuser:
+        if request.user.has_perm('employee.can_view_all_resignations'):
             return qs
         return qs.filter(employee_id=request.user.employee)
 
     def save_model(self, request, obj, form, change):
-        if request.user.is_superuser and request.POST.get('status') != 'pending':
+        if request.user.is_superuser:
             obj.approved_at = date.today()
             obj.approved_by = request.user
         else:

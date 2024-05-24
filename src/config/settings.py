@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "project_management",
     "account",
     "asset_management",
+    "inventory_management",
     "website",
     "provident_fund",
     # Custom App
@@ -70,7 +71,9 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # "django.middleware.cache.UpdateCacheMiddleware",
     "django.middleware.common.CommonMiddleware",
+    # "django.middleware.cache.FetchFromCacheMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -79,6 +82,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "employee.middleware.CheckUserHasEmployee",
     # 'silk.middleware.SilkyMiddleware',
+    # 'weasyprint.middleware.WeasyPrintMiddleware',
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -197,6 +201,7 @@ SMS_API_KEY = os.environ.get("SMS_API_KEY")
 SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID")
 
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
+# CORS_ALLOW_ALL_ORIGINS = True
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
@@ -285,3 +290,25 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
 }
+# CRON_CLASSES = [
+#     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
+# ]
+
+
+# settings.py
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/2',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'IGNORE_EXCEPTIONS': True,
+        }
+    }
+}
+
+# CACHE_MIDDLEWARE_ALIAS = 'default'
+# CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 minutes
+# CACHE_MIDDLEWARE_KEY_PREFIX = ''
+

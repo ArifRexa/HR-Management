@@ -28,6 +28,11 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee.summery' %}">Summary</a></th>
             </tr>
+            {% if request.user.is_superuser %}
+            <tr>
+                <th scope="row"><a href="{% url 'admin:employee.observenewemployee' %}">Observations </a></th>
+            </tr>
+            {% endif %}
             <tr>
                 <th scope="row"><a href="{% url 'admin:employee.hours.graph' %}">Graph</a></th>
             </tr>

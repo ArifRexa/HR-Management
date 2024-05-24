@@ -17,7 +17,7 @@
     <p><b>Subject: Appointment Letter of {{ employee.full_name | title }}</b></p>
     <p>Dear {{ employee.full_name | title }},</p>
     <p>Upon reviewing your application and interviewing you in person we are very pleased to appoint you as the
-        <b>{{ employee.designation }}</b> for Mediusware Ltd. in <b>House- 18/5 (3rd Floor), Ring Road,
+        <b>{{ employee.designation }}</b> for Mediusware Ltd. in <b>24/1, Taj Mahal Road, Shiya Masjid mor, Floor- 7th & 8th, Ring Road,
             Mohammadpur,
             Dhaka.</b> You are
         expected to
@@ -36,13 +36,22 @@
         <li>
             {% include 'letters/extra/salary_table.html' with payable_salary=employee.joining_salary.payable_salary %}
         </li>
-        <li>If the organization thinks that you are not well-suited for the assigned tasks or you are not performing
+        <li>
+
+        </li>
+        <!-- <li>
+            <b> You will receive an additional Tk 3000 as Food Allowance (depending on the number of working days), in
+            addition to your gross salary. Therefore, your Total Remuneration will be approximately Tk 39,000, which
+            includes both your Gross Salary and Food Allowance.
+            </b>
+
+        </li> -->
+        <!-- <li>If the organization thinks that you are not well-suited for the assigned tasks or you are not performing
             well as
             per your job responsibilities, then the organization will reserve the right to take any decision of
             termination
             depending on the circumstances.
-        </li>
-        <div class="page-break"></div>
+        </li> -->
     </ol>
     {% include 'letters/extra/hr_policy.html' %}
     <p>I hope that this will be the beginning of a long and successful career with us</p>

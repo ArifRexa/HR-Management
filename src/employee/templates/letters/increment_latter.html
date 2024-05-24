@@ -17,18 +17,19 @@
     <p><b>Subject: Increment Letter of {{ employee.full_name | title }}</b></p>
     <p>Dear {{ employee.full_name | title }},</p>
     <p><b>Congratulations!</b></p>
-    <p>Based on your performance in <b>Mediusware Ltd, House- 18/5 (3rd Floor), Ring Road, Mohammadpur,
-        Dhaka,</b> we are pleased to inform you that we have decided to increase your salary & it will be effective
+    <p>Based on your performance in <b>Mediusware Ltd, 24/1, Taj Mahal Road, Shiya Masjid mor, Floor- 7th & 8th, Ring Road,
+        Mohammadpur,
+        Dhaka.</b> we are pleased to inform you that we have decided to increase your salary & it will be effective
         from <b>{{ employee.current_salary.active_from }}</b> on the position <b>"{{ employee.designation }}"</b>.</p>
 
     {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary %}
 
-    {% if employee.manager %}
-        <ul>
-            <li>You cannot resign within next six months from the signing date</li>
-            <li>You must notice two month before your resignation (after six months of the signing date)</li>
-        </ul>
-    {% endif %}
+<!--    {% if employee.manager %}-->
+<!--        <ul>-->
+<!--            <li>You cannot resign within next six months from the signing date</li>-->
+<!--            <li>You must notice two month before your resignation (after six months of the signing date)</li>-->
+<!--        </ul>-->
+<!--    {% endif %}-->
     <p><b>All other terms and conditions stated in the appointment letter will remain unchanged.</b></p>
     {% include 'letters/extra/footer.html' %}
 {% endfor %}

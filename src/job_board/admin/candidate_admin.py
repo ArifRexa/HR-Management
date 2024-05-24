@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from django.core import management
 from distutils.util import strtobool
 
@@ -11,7 +13,7 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
 from django.utils.html import format_html, linebreaks
-from django_q.tasks import async_task
+from django_q.tasks import async_task, schedule
 from django.core.mail import send_mail
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -21,9 +23,9 @@ from config.utils.pdf import PDF
 from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
-    CandidateAssessmentReview
+    CandidateAssessmentReview,JobPreferenceRequest
 
-
+from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 from icecream import ic
 
 class CandidateForm(forms.ModelForm):
@@ -122,6 +124,7 @@ class CandidateAdmin(admin.ModelAdmin):
         for candidate in queryset:
             re_apply_alert_mail(candidate) 
 
+    
     def change_view(self, request, object_id, form_url='', extra_context=None):
         extra_context = extra_context or {}
         extra_context['candidate_jobs'] = CandidateJob.objects.filter(candidate_id=object_id).all()
@@ -229,8 +232,8 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         
         'candidate_job__candidate__full_name', 
         'candidate_job__candidate__email',
-        'candidate_job__candidate__phone', 
-        
+        'candidate_job__candidate__phone',
+        'candidate_job__additional_message',
         'candidateassessmentreview__note',
     )
     list_filter = (
@@ -252,6 +255,7 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
         'send_default_sms', 
         'mark_as_fail', 
         'send_ct_time_extend_email', 
+        'send_email'
     )
     list_per_page = 50
     inlines = (
@@ -289,6 +293,34 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 
         return ['step', 'candidate_feedback']
 
+    @admin.action(description="Send Email")
+    def send_email(self, request, queryset):
+        candidate_email_list = [candidate_email.candidate_job.candidate.email for candidate_email in queryset]
+        hour = 0
+        chunk_size = 50
+        candidate_email_instance = CandidateEmail.objects.filter(by_default=True).first()
+        attachmentqueryset = CandidateEmailAttatchment.objects.filter(candidate_email=candidate_email_instance)
+        attachment_paths = [attachment.attachments.path for attachment in attachmentqueryset]
+        if candidate_email_instance:
+            chunks = [candidate_email_list[i:i + chunk_size] for i in range(0, len(candidate_email_list), chunk_size)]
+
+            # Schedule tasks for sending emails in chunks with a delay of one hour between each chunk
+            for i, chunk in enumerate(chunks):
+                print(chunk)
+                schedule(
+                    "job_board.tasks.send_chunked_emails",
+                    chunk,
+                    candidate_email_instance.id,
+                    attachment_paths,
+                    next_run=timezone.now() + timedelta(hours=hour)
+                )
+                hour += 1
+
+            messages.success(request, "Email has sent successfully.")
+        else:
+            messages.error(request, "No default candidate email instance found. Cannot send emails.")
+        
+    
     @admin.display()
     def candidate(self, obj):
         html_template = get_template('admin/candidate_assessment/list/col_candidate.html')
@@ -419,6 +451,14 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 class CandidateResetPasswordAdmin(admin.ModelAdmin):
     list_display = ('email', 'otp', 'otp_expire_at', 'otp_used_at')
     readonly_fields = ('otp', 'otp_expire_at', 'otp_used_at')
+
+    def has_module_permission(self, request):
+        return False
+
+@admin.register(JobPreferenceRequest)
+class JobPreferenceRequestAdmin(admin.ModelAdmin):
+    list_display = ('email', 'preferred_designation', 'cv', 'created_at')  # Display these fields in the admin list
+    search_fields = ['email', 'preferred_designation']  # Enable searching by these fields
 
     def has_module_permission(self, request):
         return False
