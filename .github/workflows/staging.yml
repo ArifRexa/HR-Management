@@ -12,15 +12,13 @@ jobs:
     - name: executing remote ssh commands using password
       uses: appleboy/ssh-action@v0.1.6
       with:
-        host: ${{ secrets.HOST }}
+        host: ${{ secrets.STAGING_HOST }}
         username: ${{ secrets.STAGING_USERNAME }}
         password: ${{ secrets.STAGING_PASSWORD }}
-        port: ${{ secrets.PORT }}
         script: |
-          cd /var/www/staging.mediusware.xyz
+          cd /var/www/staging_hr
           git pull origin staging:staging
           venv/bin/python -m pip install -r requirements.txt
-          venv/bin/python /var/www/staging.mediusware.xyz/src/manage.py migrate
-          venv/bin/python /var/www/staging.mediusware.xyz/src/manage.py collectstatic --noinput
-          sudo service apache2 reload
-          sudo service supervisor reload
+          venv/bin/python /var/www/staging_hr/src/manage.py migrate
+          venv/bin/python /var/www/staging_hr/src/manage.py collectstatic --noinput
+          systemctl reload nginx
