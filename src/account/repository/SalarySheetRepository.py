@@ -14,6 +14,7 @@ from django.db.models import Count, Sum, Avg
 from employee.models.config import Config
 from project_management.models import CodeReview
 from dateutil.relativedelta import relativedelta
+from django.db.models.functions import ExtractMonth, ExtractYear
 
 class SalarySheetRepository:
     __total_payable = 0
@@ -570,10 +571,26 @@ class SalarySheetRepository:
         return -monthly_amount if monthly_amount else 0.0
 
     def __calculate_food_allowance(
-        self, employee: Employee, salary_date: datetime.date
+        self, employee: Employee, salary_date
     ):
         if not employee.lunch_allowance:
             return 0.0
+        
+        if employee.joining_date.year == salary_date.year and employee.joining_date.month == salary_date.month:
+                # Filter EmployeeAttendance objects for the specific employee and the same year and month as salary_date
+                attendance_count = EmployeeAttendance.objects.annotate(
+                    month=ExtractMonth('date'),
+                    year=ExtractYear('date')
+                ).filter(
+                    employee=employee,
+                    month=salary_date.month,
+                    year=salary_date.year
+                ).count()
+                
+                return attendance_count * 140
+        else:
+            return 3000
+        
 
         # date_range = calendar.monthrange(salary_date.year, salary_date.month)
         # import datetime
