@@ -1018,9 +1018,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if json_updates:
             total_hour = 0
             for index, item in enumerate(json_updates):
-                if float(item[1]) > 2:
-                    json_updates[index][1] = 2
-                    total_hour += 2
+               
+                if float(item[1]) > 4:
+                    json_updates[index][1] = 4
+                    total_hour += 4
                 else:
                     total_hour += float(item[1])
 
