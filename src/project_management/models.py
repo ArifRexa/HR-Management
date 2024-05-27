@@ -63,6 +63,9 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     active = models.BooleanField(default=True)
     in_active_at = models.DateField(null=True, blank=True)
+    hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    activate_from = models.DateField(null=True,blank=True)
+    short_note = models.CharField(max_length=200,null=True,blank=True)
     emergency_operation = models.BooleanField(default=False)
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
@@ -81,9 +84,27 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
 
+
+        
     class Meta:
         ordering = ['title']
+        permissions = [
+             (
+                "can_see_all_project_field",
+                "Can See All Project Field",
+            ),
+    
+        ]
+           
+        
 
+    def clean(self):
+        super().clean()
+
+        if self.hourly_rate is not None and self.activate_from is None:
+            raise ValidationError("If hourly rate is provided, activate from is mandatory.")
+        if self.activate_from is not None and self.hourly_rate is None:
+            raise ValidationError("If activate from is provided, hourly rate is mandatory.")
     def __str__(self):
         return self.title
 

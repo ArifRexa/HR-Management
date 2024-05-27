@@ -36,6 +36,9 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
     class Meta:
         verbose_name = "Salary Sheet"
         verbose_name_plural = "Salary Sheets"
+        permissions = (
+            ("can_see_salary_on_salary_sheet", "Can able to see Salary on Salary Sheet"),
+        )
 
 
 class EmployeeSalary(TimeStampMixin):
@@ -308,7 +311,7 @@ class MonthlyJournal(AccountJournal):
 
 
 class SalarySheetTaxLoan(models.Model):
-    salarysheet = models.ForeignKey(SalarySheet, on_delete=models.CASCADE)
+    salarysheet = models.ForeignKey(SalarySheet, null=True, blank=True, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
 
     # Add any additional fields related to the relationship if needed

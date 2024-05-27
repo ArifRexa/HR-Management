@@ -88,9 +88,11 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
-        my_context = {
-            'total': self.get_total_hour(request),
-        }
+        my_context = dict(
+            self.admin_site.each_context(request),
+            total=self.get_total_hour(request),
+            series=self.get_data(request)
+        )
         return super(ProjectHourAdmin, self).changelist_view(request, extra_context=my_context)
 
     def get_queryset(self, request):
@@ -122,3 +124,109 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
             return (fieldsets[0], )
 
         return fieldsets
+
+    def get_data(self, request):
+        print('*******************')
+        print('get_data has called')
+        series = list()
+        selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
+        print('************** project id is *************', selected_projects)
+        print('*** selected projects are ', selected_projects)
+        if selected_projects:
+            projects = Project.objects.filter(id__in=[selected_projects], active=True).all()
+        else:
+            projects = Project.objects.filter(active=True).all()
+        date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+        for project in projects:
+            data = project.projecthour_set.filter(date__gte=date_to_check).annotate(
+                date_str=F('date')
+            ).extra(
+                select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
+            ).values(
+                'date_str'
+            ).annotate(
+                total_hours=Sum('hours')
+            ).values_list(
+                'date_str', 'total_hours'
+            ).order_by(
+                'date_str'
+            )
+
+            print(data)
+            # TODO : must be optimize otherwise it will effect the load time
+            print('***************** data **************', data)
+            array_date = []
+            for value in data:
+                array_date.append(list(value))
+
+            series.append({
+                'type': 'spline',
+                # 'visible': 'false',
+                'name': project.title,
+                'data': list(array_date)
+            })
+        if selected_projects:
+
+            sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
+                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+
+        else:
+            sum_hours = ProjectHour.objects.filter(date__gte=date_to_check).extra(
+                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+        sum_array = []
+        # for sum_hour in sum_hours:
+        #     sum_array.append(list(sum_hour)) #  it will return the total hours of projects.
+        series.append({
+            'type': 'spline',
+            'name': 'Total Project Hours',
+            'data': sum_array
+        })
+        # print('************** series ***********', series)
+        return series
+
+    # def get_data(self, request):
+    #     series = []
+    #     selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
+    #
+    #     if selected_projects:
+    #         projects = Project.objects.filter(id__in=selected_projects, active=True).all()
+    #     else:
+    #         projects = Project.objects.filter(active=True).all()
+    #
+    #     date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+    #
+    #     for project in projects:
+    #         data = project.projecthour_set.filter(date__gte=date_to_check).extra(
+    #             select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
+    #         ).order_by('date').values_list('date_str', 'hours')
+    #
+    #         array_date = []
+    #         for value in data:
+    #             array_date.append(list(value))
+    #
+    #         series.append({
+    #             'type': 'spline',
+    #             'name': project.title,
+    #             'data': list(array_date)
+    #         })
+    #
+    #     # Calculate total project hours for filtered projects only
+    #     if selected_projects:
+    #         sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
+    #             select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
+    #         ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+    #
+    #         sum_array = []
+    #         for sum_hour in sum_hours:
+    #             sum_array.append(list(sum_hour))
+    #
+    #         series.append({
+    #             'type': 'spline',
+    #             'name': 'Total Project Hours',
+    #             'data': sum_array
+    #         })
+    #
+    #     return series
+

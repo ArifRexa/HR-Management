@@ -260,7 +260,7 @@ class BlogListSerializer(serializers.ModelSerializer):
     # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
     category = serializers.SerializerMethodField("get_category")
     author = AuthorSerializer(source="created_by.employee")
-
+    blog_contexts = BlogContextSerializer(many=True)
     class Meta:
         model = Blog
         fields = (
@@ -273,6 +273,7 @@ class BlogListSerializer(serializers.ModelSerializer):
             "read_time_minute",
             "created_at",
             "author",
+            'blog_contexts'
         )
 
     def get_category(self, instance):
@@ -286,6 +287,7 @@ class BlogListSerializer(serializers.ModelSerializer):
         data["categories"] = CategoryListSerializer(
             instance=instance.category, many=True
         ).data
+        data["table_of_contents"] = instance.blog_contexts.all().values("id", "title")
         return data
 
 

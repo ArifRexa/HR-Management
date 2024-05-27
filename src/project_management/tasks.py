@@ -65,3 +65,32 @@ def send_email_lead_for_weekly_project_hour(email_address, employee):
     email.attach_alternative(html_content, "text/html")
     email.send()
     
+def send_email_project_hourly_rate():
+    
+    today = datetime.now().date()
+    project_to_increase_list = []
+    project_to_increase_nearby_list = []
+
+    six_months_ago = today - relativedelta(months=6)
+    five_months_20d_ago = today - relativedelta(months=5, days=20)
+    
+    project_to_increase = Project.objects.filter(activate_from__lte = six_months_ago)
+    for project in project_to_increase:
+         project_to_increase_list.append(project.title)
+
+    project_to_increase_nearby = Project.objects.filter(
+        Q(activate_from__gte=six_months_ago) &
+        Q(activate_from__lte=five_months_20d_ago)
+    )
+    for project in project_to_increase_nearby:
+         project_to_increase_nearby_list.append(project.title)
+    
+    email = EmailMultiAlternatives()
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    email.to = ['shuyaib@mediusware.com']
+    email.subject = "Project Hourly Rate Increase Notification"
+    context = {'project_to_increase_list':project_to_increase_list,'project_to_increase_nearby_list':project_to_increase_nearby_list}
+    
+    html_content = loader.render_to_string('mails/project_hourly_rate_increase.html',context)
+    email.attach_alternative(html_content, "text/html")
+    email.send()

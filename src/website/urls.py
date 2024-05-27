@@ -19,6 +19,10 @@ from website.views import (
     BlogCommentAPIView,
     BlogCommentDetailAPIView,
     BlogNextCommentDetailAPIView,
+    MostPopularBlogListView,
+    FeaturedBlogListView,
+    BlogCommentDeleteAPIView,
+    BlogListByAuthorAPIView
 )
 
 
@@ -31,24 +35,32 @@ api_urls = [
     path("employee/<str:slug>/", EmployeeDetails.as_view(), name="employee.details"),
     # path("categories/", CategoryListView.as_view(), name="blog.category.list"),
     path(
-        "categories/",
+        "blogs/categories/",
         CategoryListViewWithBlogCount.as_view(),
         name="blog.category.list",
     ),
-    path("tags/", TagListView.as_view(), name="blog.tag.list"),
+    path("blogs/tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
-    path("blog/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
+    path("blogs/most_popular", MostPopularBlogListView.as_view(), name="blog.list.most.popular"),
+    path("blogs/featured_blogs", FeaturedBlogListView.as_view(), name="blog.list.featured"),
+    path("blogs/comments/", BlogCommentAPIView.as_view(), name="blog-comments"),
     path(
-        "blog/comments/<int:pk>/",
+        "blogs/<int:pk>/comments/",
         BlogCommentDetailAPIView.as_view(),
         name="blog-comment",
     ),
     path(
-        "blog/next-comments/<int:blog_id>/<int:comment_parent_id>/",
+        "blogs/<int:blog_id>/comments/<int:comment_id>/delete",
+        BlogCommentDeleteAPIView.as_view(),
+        name="blog-comment-delete",
+    ),
+    path(
+        "blogs/<int:blog_id>/comments/<int:comment_parent_id>/replies/",
         BlogNextCommentDetailAPIView.as_view(),
         name="blog-next-comment",
     ),
-    path("blog/<str:slug>/", BlogDetailsView.as_view(), name="blog.details"),
+    path('blogs/author/<int:author_id>/', BlogListByAuthorAPIView.as_view(), name='blog-list-by-author'),
+    path("blogs/<str:slug>/", BlogDetailsView.as_view(), name="blog.details"),
     path(
         "verify/<str:document_type>/<uuid:uuid>/",
         VerifyDocuments.as_view(),
