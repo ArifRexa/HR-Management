@@ -7,12 +7,12 @@
 {% block content %}
     {% for employee in employees %}
         {% for employeesalary in employee.employeesalary_set.all %}
-        <div style="page-break-after: always;">
+        <div class="employee-details" style="page-break-after: always;">
             <p>Ref: Mediusware
                 Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}
                 <br>
                 Date: {% now "jS F Y" %} <br>
-                <b>{{ employee.full_name | title }}</b> <br>
+                <b>{{ employee.full_name | title }}</b>
                 Email: {{ employee.email }}<br>
             </p>
             <center><h2>To Whom It May Concern</h2></center>
@@ -249,8 +249,8 @@
                     <td></td>
                 </tr>
             </table>
-    <!--        <div class="page-break"></div>-->
+  
         </div>
-        {% endfor %}
+    {% endfor %}
     {% endfor %}
 {% endblock %}
