@@ -59,7 +59,7 @@ class EmployeeSalary(TimeStampMixin):
     @property
     def gross_amount(self):
         return self.gross_salary - self.festival_bonus
-    
+
 
 class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
     date = models.DateField(blank=False)
