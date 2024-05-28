@@ -1,6 +1,6 @@
 import os
 from io import BytesIO
-
+from datetime import date as dt_datetime,timedelta
 import qrcode
 import pdf2image
 
@@ -18,7 +18,7 @@ import config.settings
 from config.utils.pdf import PDF
 from employee.models import Employee, HRPolicy, EmployeeNOC
 from settings.models import FinancialYear
-
+from account.models import EmployeeSalary
 
 NOC_MAIL_DATA = """
 <h3>Dear {{ employee.full_name | title }},</h3>
@@ -60,6 +60,7 @@ class EmployeeActions:
         "print_resignation_letter",
         "print_tax_salary_certificate",
         "print_salary_certificate",
+        "print_salary_certificate_all_months",
         "print_bank_forwarding_letter",
         "print_promotion_letter",
         "print_experience_letter",
@@ -68,6 +69,7 @@ class EmployeeActions:
         "mail_increment_letter",
         "mail_noc_letter",
         "download_employee_info",
+        
     ]
 
     @admin.action(description="Generate NOC Letter")
@@ -150,6 +152,19 @@ class EmployeeActions:
         return self.generate_pdf(
             request, queryset=queryset, letter_type="ELMSC"
         ).render_to_pdf()
+        
+   
+    @admin.action(description="Print Salary Certificate (All months)")
+    def print_salary_certificate_all_months(self, request, queryset):
+        # employee_ids = queryset.values_list('id', flat=True)
+        # employee_salarys = EmployeeSalary.objects.filter(employee__id__in=employee_ids)
+        
+        # for salary in employee_salarys:
+            
+
+            return self.generate_pdf(
+                request, queryset=queryset, letter_type="EAMSC"
+            ).render_to_pdf()
 
     @admin.action(description="Print Salary Account Forwarding Letter")
     def print_bank_forwarding_letter(self, request, queryset):
@@ -159,6 +174,7 @@ class EmployeeActions:
     
     @admin.action(description="Print Experience Letter")
     def print_experience_letter(self,request, queryset):
+        
         return self.generate_pdf(
             request, queryset=queryset, letter_type="EXPL"
         ).render_to_pdf()
@@ -359,6 +375,7 @@ class EmployeeActions:
             "ERL": "letters/resignation_letter.html",
             "ESC": "letters/salary_certificate.html",
             "ELMSC": "letters/salary_certificate_last_month.html",
+            "EAMSC": "letters/salary_certificate_all_months.html",
             "AFL": "letters/salary_account_forwarding_letter.html",
             "EPRL": "letters/promotion_letter.html",
             "EXPL": "letters/experience_letter.html",
