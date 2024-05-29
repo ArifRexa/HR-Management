@@ -231,8 +231,8 @@ function calculate_hours(){
     // console.log('updates: ', JSON.stringify(updates))
     let total_hour = 0.0
     all_times.forEach((time_of_one)=>{
-        if (time_of_one.value && time_of_one.value > 2.0){
-            time_of_one.value = 2.0
+        if (time_of_one.value && time_of_one.value > 4.0){
+            time_of_one.value = 4.0
         }
         else if (time_of_one.value && time_of_one.value < 0){
             time_of_one.value = 0.0
