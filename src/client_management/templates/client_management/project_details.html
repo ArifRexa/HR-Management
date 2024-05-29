@@ -1,3 +1,5 @@
+{% load replace_newline %}
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -28,7 +30,7 @@
         box-shadow: none;
     }
 
-    .source-img{
+    .source-img {
         width: 24px;
         height: 24px;
         border-radius: 50%;
@@ -114,7 +116,6 @@
                     {% if project.is_team %}
                         {% for update in daily_updates %}
                             {% for line_update in update.update %}
-
                                 {% for update_data in line_update.update %}
                                     <tr>
                                         {% if forloop.parentloop.counter0 == 0 and forloop.counter0 == 0 %}
@@ -145,9 +146,7 @@
                                         <td>{{ update_data.1 | floatformat:2 }}</td>
                                     </tr>
                                 {% endfor %}
-
                             {% endfor %}
-
                         {% endfor %}
                     {% else %}
                         {% for update in daily_updates %}
