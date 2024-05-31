@@ -149,7 +149,7 @@ class BlogListView(ListAPIView):
         filters.OrderingFilter,
     ]
     filterset_fields = ["category", "created_by__employee"]
-    search_fields = ["title", "category__name", "tag__name"]
+    search_fields = ["title"]
     ordering_fields = ["created_at", "total_view"]
 
     def list(self, request, *args, **kwargs):
