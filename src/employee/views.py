@@ -1,12 +1,12 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 from employee.forms.employee_online import EmployeeStatusForm
-from employee.forms.employee_project import EmployeeProjectForm
+from employee.forms.employee_project import EmployeeProjectForm, BookConferenceRoomForm
 from employee.forms.employee_need_help import EmployeeNeedHelpForm
-from employee.models import EmployeeActivity, EmployeeOnline, Employee, EmployeeNeedHelp
+from employee.models import EmployeeActivity, EmployeeOnline, Employee, EmployeeNeedHelp, BookConferenceRoom
 from employee.models.employee_activity import EmployeeProject
 from config.admin.utils import white_listed_ip_check, not_for_management
 from config.settings import employee_ids as management_ids, MACHINE_SECRETS
@@ -19,6 +19,8 @@ from employee.models import Config
 from employee.models.employee import Appointment
 from employee.mail import cto_help_mail, hr_help_mail, send_need_help_mails
 
+# from employee.forms.employee_project import BookConferenceRoomForm
+# from employee.models import BookConferenceRoom
 
 @white_listed_ip_check
 @require_http_methods(["POST", "GET"])
@@ -200,6 +202,56 @@ def need_hr_help(request, *args, **kwargs):
         )
         return redirect("/admin/")
 
+
+@require_http_methods(["POST", "GET"])
+@login_required(login_url="/admin/login/")
+def booking_conference_room(request):
+    employee = request.user.employee
+    print(employee)
+
+    if request.method == "POST":
+        form = BookConferenceRoomForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Conference room booked successfully.')
+            return redirect('booking_conference_room')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = BookConferenceRoomForm()
+
+    bookings = BookConferenceRoom.objects.all()
+    return redirect("/admin/")
+
+@login_required(login_url="/admin/login/")
+def delete_booking(request, booking_id):
+    try:
+        booking = get_object_or_404(BookConferenceRoom, id=booking_id)
+        booking.delete()
+        messages.success(request, 'Booking deleted successfully.')
+    except BookConferenceRoom.DoesNotExist:
+        messages.error(request, 'Booking does not exist.')
+    return redirect('/admin/')
+
+
+@login_required(login_url="/admin/login/")
+def update_booking(request, booking_id):
+    try:
+        booking = BookConferenceRoom.objects.get(id=booking_id)
+        if request.method == "POST":
+            form = BookConferenceRoomForm(request.POST, instance=booking)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Booking updated successfully.')
+                return redirect('/admin/')
+            else:
+                messages.error(request, 'Please correct the errors below.')
+        else:
+            form = BookConferenceRoomForm(instance=booking)
+        return render(request, 'admin/employee/update_conference_booking.html', {'form': form})
+    except BookConferenceRoom.DoesNotExist:
+        messages.error(request, 'Booking does not exist.')
+        return redirect('/admin/')
 
 from rest_framework import serializers
 from rest_framework.generics import (
