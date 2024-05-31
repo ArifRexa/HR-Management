@@ -4,6 +4,8 @@ from django.contrib.admin.apps import AdminConfig
 
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 
+from employee.models import BookConferenceRoom
+
 
 class CustomAdminSite(admin.AdminSite):
     def each_context(self, request):
@@ -15,7 +17,8 @@ class CustomAdminSite(admin.AdminSite):
             increments=employee_formal_summery.increments,
             increments=employee_formal_summery.last_salary_change,
             permanents=employee_formal_summery.permanents,
-            anniversaries=employee_formal_summery.anniversaries
+            anniversaries=employee_formal_summery.anniversaries,
+            conference_room_bookings=BookConferenceRoom.objects.all()
         )
         return context
 

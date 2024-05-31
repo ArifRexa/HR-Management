@@ -190,13 +190,55 @@
             {% block extra_menu %}
 
             {% endblock %}
-            
+
 
         </div>
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <ul class="list-group rounded-0">
+                    
+                    <h4 class="text-dark fw-bold d-lg-inline me-3 mb-4 ">Book Conference Room</h1>
+                        
+                    {% if is_manager or is_lead %}
+                    <!-- Button trigger modal -->
+                    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                        +
+                    </button>
+                    {% endif %}
+                    <!-- {{employee_project_list}} -->
+                    
+                    <!-- Modal -->
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h1 class="modal-title fs-5 text-dark" id="exampleModalLabel">Book Conference Room</h1>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body w-60 h-100">
+                                    <form method="post" action="{% url 'booking_conference_room' %}">
+                                        {% csrf_token %}
+                                        <!-- Render other form fields using my_form.as_p -->
+                                        {{ my_form.as_p }}
+                                        
+                                        
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary">Book</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% include "admin/form/book_conference_room.html" %}
+                  
+                    
+
+
+
+                       
+                    <!-- <ul class="list-group rounded-0">
                         <li class="list-group-item list-group-item-action active">
                             <span class=" text-uppercase">Employee Status</span>
                         </li>
@@ -210,7 +252,7 @@
                             <span class="{% if online.employee.one_month_less %} text-primary fs-6 {% endif %}">
                                 {{ online.employee.full_name }}
                             </span>
-                            
+
                             {% with needhelptime=online.employee.employeeneedhelp.updated_at|timesince %}
                             {% for need_help in online.employee.employeeneedhelp.need_help_position.all %}
                                 <span class="badge float-end rounded" style="background:#0d6efd;">
@@ -233,11 +275,11 @@
                                 Need Tech Lead
                                 <br>
                                  {{ online.employee.need_cto_at | timesince}} ago
-                            </span>
-                            {% endif %} {% endcomment %}
-                        </li>
-                        {% endfor %}
-                    </ul>
+                           </span>
+                           {% endif %} {% endcomment %}
+                       </li>
+                       {% endfor %}
+                   </ul> -->
 
                 </div>
 
@@ -296,7 +338,7 @@
                                 {% for project in employee_project.project.all %}
 <!--                                    {% if forloop.counter0 != 0 %} <div class="vr"></div> {% endif %}-->
                                 <div class="d-none d-lg-inline">
-                                    <span class="bg-light fw-blod px-2 rounded-pill fw-blod {{ project.colorize }} ">
+                                    <span class="bg-light fw-bold px-2 rounded-pill fw-bold {{ project.colorize }} ">
                                         {{ project.title }}
                                     </span>
                                     {% if not forloop.last %}
@@ -383,7 +425,7 @@
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
                         <div class="card-header text-uppercase bg-primary">
-                            Permanent Nearby 
+                            Permanent Nearby
                             <span class="float-end badge bg-secondary">
                                 {{ permanents_count }}
                             </span>

@@ -1,5 +1,5 @@
 import datetime
-from datetime import  date as dt_date
+from datetime import date as dt_date, time, datetime, timedelta
 import uuid
 import math
 from dateutil.relativedelta import relativedelta
@@ -17,6 +17,9 @@ from tinymce.models import HTMLField
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
+from django.core.exceptions import ValidationError
+
+
 # from project_management.models import Project
 
 class Appointment(AuthorMixin, TimeStampMixin):
@@ -91,22 +94,25 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.full_name
+
     @property
     def has_pending_appointment(self):
         return Appointment.objects.filter(created_by=self.user, is_completed=False).exists()
+
     @property
     def last_pending_appointment(self):
         return Appointment.objects.filter(created_by=self.user, is_completed=False).first()
-    
+
     @property
     def average_rating(self):
-        four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120) 
+        four_months_ago = datetime.datetime.now() - datetime.timedelta(days=4 * 120)
         employee_ratings = self.employeerating_set.filter(created_at__gte=four_months_ago)
-        return employee_ratings\
-                                .annotate(month=TruncMonth('created_at'))\
-                                .values('month')\
-                                .annotate(avg_score=Avg('score'))\
-                                .values('month', 'avg_score')
+        return employee_ratings \
+            .annotate(month=TruncMonth('created_at')) \
+            .values('month') \
+            .annotate(avg_score=Avg('score')) \
+            .values('month', 'avg_score')
+
     @property
     def top_skills(self):
         skills = self.employeeskill_set.order_by("-percentage").all()
@@ -146,7 +152,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     @property
     def one_month_less(self):
-        current_month = datetime.datetime.today()
+        current_month = datetime.today()
         emp_month = self.created_at - relativedelta(months=-1)
         if current_month < emp_month:
             return True
@@ -154,7 +160,7 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     @property
     def last_x_months_feedback(self):
-        current_month = datetime.datetime.today()
+        current_month = datetime.today()
         last_x_months = current_month + relativedelta(months=-6)
         return (
             self.employeefeedback_set.filter(
@@ -235,9 +241,9 @@ class Employee(TimeStampMixin, AuthorMixin):
         return f"{self.joining_date.strftime('%Y%d')}{self.id}"
 
     def save(
-        self,
-        *args,
-        **kwargs,
+            self,
+            *args,
+            **kwargs,
     ):
         self.save_user()
         if not self.slug:
@@ -305,12 +311,12 @@ class Employee(TimeStampMixin, AuthorMixin):
         if leave_type == "casual":
             # Half day will be counted as half casual
             half_day_leaves = (
-                self.leave_set.filter(
-                    end_date__year=year,
-                    leave_type="half_day",
-                    status="approved",
-                ).aggregate(total=Coalesce(Sum("total_leave"), 0.0))["total"]
-                * 0.5
+                    self.leave_set.filter(
+                        end_date__year=year,
+                        leave_type="half_day",
+                        status="approved",
+                    ).aggregate(total=Coalesce(Sum("total_leave"), 0.0))["total"]
+                    * 0.5
             )
 
         leaves_taken = self.leave_set.filter(
@@ -322,7 +328,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         return half_day_leaves + leaves_taken
 
     def leave_available_leaveincash(
-        self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()
+            self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()
     ):
         available_leave = 0
         get_leave_by_type = getattr(self.leave_management, leave_type)
@@ -330,7 +336,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         if self.leave_in_cash_eligibility and self.permanent_date:
             if self.resignation_date:
                 total_days_of_permanent = (
-                    self.resignation_date - self.joining_date
+                        self.resignation_date - self.joining_date
                 ).days
             else:
                 total_days_of_permanent = (year_end - self.joining_date).days
@@ -341,11 +347,10 @@ class Employee(TimeStampMixin, AuthorMixin):
             else:
                 available_leave = get_leave_by_type
 
-           
         return round(available_leave)
 
     def leave_available(
-        self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()
+            self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()
     ):
         available_leave = 0
         get_leave_by_type = getattr(self.leave_management, leave_type)
@@ -356,9 +361,8 @@ class Employee(TimeStampMixin, AuthorMixin):
         current_year = timezone.now().year
         first_day_of_current_year = dt_date(current_year, 1, 1)
 
-
         if self.leave_in_cash_eligibility:
-            
+
             if self.resignation_date:
                 if self.joining_date < first_day_of_current_year:
                     total_days_of_permanent = (self.resignation_date - first_day_of_current_year).days
@@ -370,11 +374,10 @@ class Employee(TimeStampMixin, AuthorMixin):
                     total_days_of_permanent = 365
                 else:
                     total_days_of_permanent = (year_end - self.joining_date).days
-                    
 
             month_of_permanent = math.floor(total_days_of_permanent / 30)
             available_leave = (month_of_permanent * get_leave_by_type) / 12
-           
+
         decimal_number = available_leave - int(available_leave)
         if decimal_number < 0.50:
             return (float('{:.2f}'.format(round(available_leave))))
@@ -394,9 +397,52 @@ class Employee(TimeStampMixin, AuthorMixin):
         ordering = ["full_name"]
 
 
+
+class BookConferenceRoom(models.Model):
+    TIME_CHOICES = [
+        (time(hour, minute), f"{hour:02}:{minute:02}")
+        for hour in range(11, 21)
+        for minute in (0, 30)
+    ]
+
+    manager_or_lead = models.ForeignKey("employee.Employee", on_delete=models.CASCADE)
+    project_name = models.ForeignKey("project_management.Project", on_delete=models.CASCADE)
+    start_time = models.TimeField(choices=TIME_CHOICES)
+    end_time = models.TimeField(choices=TIME_CHOICES)
+    created_at = models.DateTimeField(default=timezone.now)  # Add created_at field
+
+    def __str__(self):
+        return f"Booking for {self.project_name} by {self.manager_or_lead.full_name} from {self.start_time}"
+
+    def clean(self):
+        super().clean()  # Call the parent's clean method
+    #
+        # Ensure end_time is 30 minutes after start_time
+        expected_end_time = (datetime.combine(datetime.today(), self.start_time) + timedelta(minutes=30)).time()
+        if self.end_time != expected_end_time:
+            raise ValidationError('End time must be 30 minutes after start time.')
+
+        # Check if the time slot is within allowed hours (11:00 AM to 8:00 PM)
+        if not (time(11, 0) <= self.start_time <= time(19, 30)):
+            raise ValidationError(
+                'Booking must be between 11:00 AM and 8:00 PM, with the last slot starting at 7:30 PM.')
+
+        # Check for overlapping bookings
+        overlapping_bookings = BookConferenceRoom.objects.filter(
+            start_time__lt=self.end_time,
+            start_time__gte=self.start_time
+        ).exists()
+
+        if overlapping_bookings:
+            raise ValidationError('This time slot is already booked.')
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Call the clean method to enforce constraints
+        super().save(*args, **kwargs)
+
+
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
-
     if instance.pf_eligibility:
         now = timezone.now().date().replace(day=1)
         maturity_date = now + relativedelta(years=2)
@@ -418,7 +464,7 @@ def create_employee_lunch(sender, instance, **kwargs):
     EmployeeProject.objects.update_or_create(employee=instance)
 
     if kwargs.get('created'):
-    # if not instance.entry_pass_id:
+        # if not instance.entry_pass_id:
         instance.entry_pass_id = f"{instance.joining_date.strftime('%Y%d')}{instance.id}"
         instance.save()
 
@@ -445,11 +491,11 @@ class PrayerInfo(AuthorMixin, TimeStampMixin):
 
     def save(self, *args, **kwargs):
         self.num_of_waqt_done = (
-            self.waqt_fajr
-            + self.waqt_zuhr
-            + self.waqt_asr
-            + self.waqt_maghrib
-            + self.waqt_isha
+                self.waqt_fajr
+                + self.waqt_zuhr
+                + self.waqt_asr
+                + self.waqt_maghrib
+                + self.waqt_isha
         )
 
         return super(PrayerInfo, self).save(*args, **kwargs)
@@ -503,9 +549,10 @@ class EmployeeNOC(TimeStampMixin, AuthorMixin):
     noc_pdf = models.FileField(upload_to="noc/", null=True, blank=True)
     noc_image = models.ImageField(upload_to="noc_images/", null=True, blank=True)
 
+
 class Observation(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.SET_NULL, null=True, related_name='observations')
-    
+
     class Meta:
         verbose_name = 'Observe New Lead/Managers or New Dev'
         unique_together = ('employee',)
