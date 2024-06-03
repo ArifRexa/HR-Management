@@ -1,6 +1,8 @@
 from django import forms
 
 from employee.models.employee_activity import EmployeeProject
+from datetime import datetime, timedelta, time
+from django.core.exceptions import ValidationError
 
 
 class EmployeeProjectForm(forms.ModelForm):
@@ -17,15 +19,15 @@ from employee.models import BookConferenceRoom, Employee
 class BookConferenceRoomForm(forms.ModelForm):
     class Meta:
         model = BookConferenceRoom
-        fields = ['manager_or_lead', 'project_name', 'start_time', 'end_time']
+        fields = ['project_name', 'start_time']
         widgets = {
-            'manager_or_lead': forms.Select(attrs={'class': 'form-select', 'style': 'height: 40px;'}),
+            # 'manager_or_lead': forms.Select(attrs={'class': 'form-select', 'style': 'height: 40px;'}),
             'project_name': forms.Select(attrs={'class': 'form-select', 'style': 'height: 40px;'}),
             'start_time': forms.Select(attrs={'class': 'form-select', 'style': 'height: 40px;'}),
-            'end_time': forms.Select(attrs={'class': 'form-select', 'style': 'height: 40px;'}),
+            # 'end_time': forms.Select(attrs={'class': 'form-select', 'style': 'height: 40px;'}),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['manager_or_lead'].queryset = Employee.objects.filter(manager=True) | Employee.objects.filter(lead=True)
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.fields['manager_or_lead'].queryset = Employee.objects.filter(manager=True) | Employee.objects.filter(lead=True)
     

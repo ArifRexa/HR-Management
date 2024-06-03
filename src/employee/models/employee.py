@@ -2,7 +2,6 @@ import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 import uuid
 import math
-from dateutil.relativedelta import relativedelta
 from django.contrib.auth.models import Group, User
 from django.db import models
 from django.db.models import Sum, Count, Avg
@@ -18,7 +17,7 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from settings.models import Designation, LeaveManagement, PayScale
 from django.core.exceptions import ValidationError
-
+from dateutil.relativedelta import  relativedelta
 
 # from project_management.models import Project
 
@@ -408,37 +407,31 @@ class BookConferenceRoom(models.Model):
     manager_or_lead = models.ForeignKey("employee.Employee", on_delete=models.CASCADE)
     project_name = models.ForeignKey("project_management.Project", on_delete=models.CASCADE)
     start_time = models.TimeField(choices=TIME_CHOICES)
-    end_time = models.TimeField(choices=TIME_CHOICES)
+    # end_time = models.TimeField(editable=False,)
     created_at = models.DateTimeField(default=timezone.now)  # Add created_at field
+    
+    
+    def clean(self):
+        # Check if there is any booking with overlapping time
+        if self.pk:
+            existing_bookings = BookConferenceRoom.objects.exclude(pk=self.pk).filter(
+                start_time=self.start_time
+            )
+        else:
+            existing_bookings = BookConferenceRoom.objects.filter(start_time=self.start_time)
+        
+        if existing_bookings.exists():
+            raise ValidationError("Another conference room is already booked at this time.")
+    
+    @property
+    def end_time(self):
+        start_time = self.start_time
+        end_time = datetime.combine(timezone.now().date(),start_time) + timezone.timedelta(minutes=30)
+        return end_time.time()
 
     def __str__(self):
         return f"Booking for {self.project_name} by {self.manager_or_lead.full_name} from {self.start_time}"
 
-    def clean(self):
-        super().clean()  # Call the parent's clean method
-    #
-        # Ensure end_time is 30 minutes after start_time
-        expected_end_time = (datetime.combine(datetime.today(), self.start_time) + timedelta(minutes=30)).time()
-        if self.end_time != expected_end_time:
-            raise ValidationError('End time must be 30 minutes after start time.')
-
-        # Check if the time slot is within allowed hours (11:00 AM to 8:00 PM)
-        if not (time(11, 0) <= self.start_time <= time(19, 30)):
-            raise ValidationError(
-                'Booking must be between 11:00 AM and 8:00 PM, with the last slot starting at 7:30 PM.')
-
-        # Check for overlapping bookings
-        overlapping_bookings = BookConferenceRoom.objects.filter(
-            start_time__lt=self.end_time,
-            start_time__gte=self.start_time
-        ).exists()
-
-        if overlapping_bookings:
-            raise ValidationError('This time slot is already booked.')
-
-    def save(self, *args, **kwargs):
-        self.full_clean()  # Call the clean method to enforce constraints
-        super().save(*args, **kwargs)
 
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")

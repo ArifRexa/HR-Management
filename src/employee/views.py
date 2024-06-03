@@ -206,17 +206,20 @@ def need_hr_help(request, *args, **kwargs):
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")
 def booking_conference_room(request):
+    from datetime import timedelta
     employee = request.user.employee
     print(employee)
 
     if request.method == "POST":
         form = BookConferenceRoomForm(request.POST)
         if form.is_valid():
-            form.save()
+            booking = form.save(commit=False)
+            booking.manager_or_lead = employee
+            booking.save()
             messages.success(request, 'Conference room booked successfully.')
             return redirect('booking_conference_room')
         else:
-            messages.error(request, 'Please correct the errors below.')
+            messages.error(request, f'Please schedule a free time between 11:00 AM to 8:00 PM.')
     else:
         form = BookConferenceRoomForm()
 

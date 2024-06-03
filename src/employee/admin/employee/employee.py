@@ -204,7 +204,7 @@ class EmployeeDetails(admin.ModelAdmin):
 # from employee.models import BookConferenceRoom
 
 class BookConferenceRoomAdmin(admin.ModelAdmin):
-    list_display = ('manager_or_lead', 'project_name', 'start_time', 'end_time', 'created_at')
+    list_display = ('manager_or_lead', 'project_name', 'start_time', 'created_at')
     list_filter = ('manager_or_lead', 'project_name', 'start_time')
     search_fields = ('manager_or_lead__full_name', 'project_name__name')
     ordering = ('start_time',)

@@ -219,7 +219,30 @@
                                     <form method="post" action="{% url 'booking_conference_room' %}">
                                         {% csrf_token %}
                                         <!-- Render other form fields using my_form.as_p -->
-                                        {{ my_form.as_p }}
+                                        {% comment %} {{ my_form.as_p }} {% endcomment %}
+                                        {{ my_form.project_name.label_tag }}
+                                        {{ my_form.project_name }}
+                                        {% for error in my_form.project_name.errors %}
+
+                                           {{error}}
+
+                                        {% endfor %}
+                                        
+                                        {{ my_form.start_time.label_tag }}
+                                        {{ my_form.start_time }}
+                                        {% for error in my_form.start_time.errors %}
+
+                                           {{error}}
+
+                                        {% endfor %}
+                                        
+                                        {{ my_form.end_time.label_tag }}
+                                        {{ my_form.end_time }}
+                                        {% for error in my_form.end_time.errors %}
+
+                                           {{error}}
+
+                                        {% endfor %}
                                         
                                         
                                         <div class="modal-footer">
@@ -233,7 +256,14 @@
                     </div>
                     {% include "admin/form/book_conference_room.html" %}
                   
-                    
+                    <!-- Display success and error messages -->
+{% if form.non_field_errors %}
+<ul>
+    {% for error in form.non_field_errors %}
+        <li class="error">{{ error }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
 
 
 

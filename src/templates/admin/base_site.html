@@ -35,6 +35,14 @@
             color: white !important; /* Important rule */
             background: red !important; /* Important rule */
         }
+        .blinking-text {
+            animation: blink 1.2s infinite alternate;
+        }
+
+        @keyframes blink {
+            from { color: red; }
+            to { color: white; }
+        }
     </style>
 {% endblock %}
 
