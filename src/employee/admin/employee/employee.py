@@ -28,7 +28,7 @@ class EmployeeAdmin(
     ]
     list_per_page = 20
     ordering = ["-active"]
-    list_filter = ["active", "gender", "permanent_date"]
+    list_filter = ["active", "gender", "permanent_date","project_eligibility"]
     autocomplete_fields = ["user", "designation"]
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
