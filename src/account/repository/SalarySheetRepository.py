@@ -112,7 +112,7 @@ class SalarySheetRepository:
 
 
         # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        if employee.tax_eligible and employee_salary.net_salary >= 43800:
+        if employee.tax_eligible and self.__employee_current_salary.payable_salary >= 43800:
             
             if not SalarySheetTaxLoan.objects.filter(
                 salarysheet=salary_sheet,
