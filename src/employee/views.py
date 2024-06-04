@@ -219,14 +219,13 @@ def booking_conference_room(request):
             return redirect('booking_conference_room')
         else:
             start_time = form.cleaned_data.get('start_time', 'an invalid time')
-            start_time_formatted = start_time.strftime("%I:%M %p")
-            messages.error(request, f'The time slot {start_time_formatted} is already booked. Please schedule a free time between 11:00 AM to 8:00 PM.')
+            
+            messages.error(request, f'The time slot {start_time} is already booked. Please schedule a free time between 11:00 AM to 8:00 PM.')
             
             
     else:
         form = BookConferenceRoomForm()
 
-    bookings = BookConferenceRoom.objects.all().order_by('start_time')
     return redirect("/admin/")
 
 @login_required(login_url="/admin/login/")

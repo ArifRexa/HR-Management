@@ -339,7 +339,7 @@ def project_lists(request):
 
 def conference_room_bookings(request):
     today = datetime.today().date()
-    return {'conference_room_bookings': BookConferenceRoom.objects.filter(created_at__date=today)}
+    return {'conference_room_bookings': BookConferenceRoom.objects.filter(created_at__date=today).order_by('start_time')}
     # return {'conference_room_bookings': BookConferenceRoom.objects.all()}
 
 def conference_room_bookings_form(request):
