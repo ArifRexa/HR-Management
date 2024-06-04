@@ -27,7 +27,7 @@ from employee import views as emp_views
 import employee.views
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from settings.views import upload_image
-
+from employee.models.employee import BookConferenceRoom
 admin.site.site_header = settings.APP_SITE_HEADER
 admin.site.site_title = settings.APP_SITE_TITLE
 admin.site.index_title = settings.APP_INDEX_TITLE
@@ -40,6 +40,7 @@ extra_context = dict(
     increments=employee_formal_summery.increments,
     permanents=employee_formal_summery.permanents,
     anniversaries=employee_formal_summery.anniversaries,
+    conference_room_bookings=BookConferenceRoom.objects.all()
 )
 
 urlpatterns = [

@@ -18,11 +18,13 @@ from employee.models import (
     HomeOffice,
     EmployeeNeedHelp,
     NeedHelpPosition,
+    Employee
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
-from employee.models.employee import Employee
+from employee.models.employee import Employee, BookConferenceRoom
 from employee.models import FavouriteMenu
+from employee.forms.employee_project import BookConferenceRoomForm
 from project_management.models import Project
 
 from settings.models import Announcement
@@ -334,3 +336,51 @@ def project_lists(request):
         data['active_projects'] = Project.objects.filter(active=True)
         return data
     return []
+
+def conference_room_bookings(request):
+    today = datetime.today().date()
+    return {'conference_room_bookings': BookConferenceRoom.objects.filter(created_at__date=today)}
+    # return {'conference_room_bookings': BookConferenceRoom.objects.all()}
+
+def conference_room_bookings_form(request):
+    form = BookConferenceRoomForm
+    
+    # Return the form in a dictionary
+    return {'my_form': form}
+
+def employee_context_processor(request):
+    if request.user.is_authenticated:
+        try:
+            employee = Employee.objects.get(user=request.user)
+        except Employee.DoesNotExist:
+            employee = None
+        
+        if employee:
+            is_manager = employee.manager
+            is_lead = employee.lead
+        else:
+            is_manager = False
+            is_lead = False
+    else:
+        employee = None
+        is_manager = False
+        is_lead = False
+    
+    return {
+        'employee': employee,
+        'is_manager': is_manager,
+        'is_lead': is_lead,
+    }
+
+def employee_project_list(request):
+    if request.user.is_authenticated:
+        try:
+            employee = Employee.objects.get(user=request.user)
+            project_queryset = employee.employee_project_list.values_list('title', flat=True)
+            project_list = list(project_queryset)
+        except Employee.DoesNotExist:
+            project_list = None
+    else:
+        project_list = None
+    
+    return {'employee_project_list': project_list}

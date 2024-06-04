@@ -7,7 +7,7 @@ from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
-from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill
+from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill, BookConferenceRoom
 from employee.models.attachment import Attachment
 from employee.models.employee import EmployeeLunch, Task, EmployeeNOC, Observation
 
@@ -201,6 +201,27 @@ class EmployeeDetails(admin.ModelAdmin):
         return ["employee", "active"]
 
 
+# from employee.models import BookConferenceRoom
+
+class BookConferenceRoomAdmin(admin.ModelAdmin):
+    list_display = ('manager_or_lead', 'project_name', 'start_time', 'created_at')
+    list_filter = ('manager_or_lead', 'project_name', 'start_time')
+    search_fields = ('manager_or_lead__full_name', 'project_name__name')
+    ordering = ('start_time',)
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "manager_or_lead":
+            kwargs["queryset"] = Employee.objects.filter(Q(manager=True) | Q(lead=True))
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+    # def has_module_permission(self, request):
+    #     if request.user.employee.designation == "lead" or "manage or request.ueer.supersuer":
+    #         return True
+    #     else:
+    #         return False
+
+
+admin.site.register(BookConferenceRoom, BookConferenceRoomAdmin)
 # @admin.register(Task)
 # class TaskAdmin(admin.ModelAdmin):
 #     list_display = ['title', 'is_complete', 'note']
