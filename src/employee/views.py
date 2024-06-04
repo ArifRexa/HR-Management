@@ -208,7 +208,6 @@ def need_hr_help(request, *args, **kwargs):
 def booking_conference_room(request):
     from datetime import timedelta
     employee = request.user.employee
-    print(employee)
 
     if request.method == "POST":
         form = BookConferenceRoomForm(request.POST)
@@ -219,8 +218,6 @@ def booking_conference_room(request):
             messages.success(request, 'Conference room booked successfully.')
             return redirect('booking_conference_room')
         else:
-            # start_time = form.cleaned_data.get('start_time', 'an invalid time')
-            # messages.error(request, f'The time slot {start_time} is already booked or invalid. Please schedule a free time between 11:00 AM to 8:00 PM.')
             start_time = form.cleaned_data.get('start_time', 'an invalid time')
             start_time_formatted = start_time.strftime("%I:%M %p")
             messages.error(request, f'The time slot {start_time_formatted} is already booked. Please schedule a free time between 11:00 AM to 8:00 PM.')

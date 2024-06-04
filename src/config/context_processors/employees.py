@@ -378,7 +378,6 @@ def employee_project_list(request):
             employee = Employee.objects.get(user=request.user)
             project_queryset = employee.employee_project_list.values_list('title', flat=True)
             project_list = list(project_queryset)
-            print(project_list)
         except Employee.DoesNotExist:
             project_list = None
     else:
