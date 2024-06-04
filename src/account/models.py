@@ -1,3 +1,4 @@
+from decimal import Decimal
 from math import floor
 
 from django.db import transaction
@@ -156,7 +157,10 @@ class Income(TimeStampMixin, AuthorMixin):
     add_to_balance_sheet = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
-        self.payment = self.hours * (self.hour_rate * self.convert_rate)
+        hour_rate_decimal = Decimal(self.hour_rate)
+        convert_rate_decimal = Decimal(self.convert_rate)
+        hours = Decimal(self.hours)
+        self.payment = hours * hour_rate_decimal * convert_rate_decimal
         super(Income, self).save(*args, **kwargs)
 
 
