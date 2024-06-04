@@ -286,6 +286,7 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
     content = HTMLField()
     image = models.ImageField(upload_to='project_images/', null=True, blank=True)
+    image2 = models.ImageField(upload_to='project_images/', null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -295,7 +296,7 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=300)
     description = HTMLField()
     img = models.ImageField()
-
+    img2 = models.ImageField(upload_to='project_images/', null=True, blank=True)
     def __str__(self):
         return self.title
 

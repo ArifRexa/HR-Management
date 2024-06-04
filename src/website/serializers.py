@@ -173,7 +173,7 @@ class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
 class ProjectKeyFeatureSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectKeyFeature
-        fields = ("title","description","img")
+        fields = ("title","description","img","img2")
 
 
 
@@ -211,7 +211,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectContent
-        fields = ("title", "content","image")
+        fields = ("title", "content","image","image2")
 
 
 
