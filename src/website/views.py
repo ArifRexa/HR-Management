@@ -153,6 +153,10 @@ class ProjectDetails(APIView):
 
 class EmployeeList(APIView):
     def get(self, request, format=None):
+        # Pagination setup
+        paginator = PageNumberPagination()
+        paginator.page_size = 6  # Set the desired page size
+        
         employees = (
             Employee.objects.filter(active=True, show_in_web=True)
             .order_by(
@@ -160,24 +164,20 @@ class EmployeeList(APIView):
                 "-manager",
                 "list_order",
             )
-            .all()
-        )
-
-        serializer = EmployeeSerializer(
-            employees, many=True, context={"request": request}
         )
         
         search_query = request.query_params.get('search', None)
-        if search_query:    
-            employees = Employee.objects.filter(active=True, show_in_web=True,designation__title__icontains=search_query).order_by(
-                "joining_date",
-                "-manager",
-                "list_order",
-            ).all()
-            
-            serializer = EmployeeSerializer(employees, many=True, context={"request": request})
-
-        return Response(serializer.data)
+        if search_query:
+            employees = employees.filter(designation__title__icontains=search_query)
+        
+        # Paginate the queryset
+        result_page = paginator.paginate_queryset(employees, request)
+        
+        serializer = EmployeeSerializer(
+            result_page, many=True, context={"request": request}
+        )
+        
+        return paginator.get_paginated_response(serializer.data)
 
 
 class EmployeeDetails(APIView):
