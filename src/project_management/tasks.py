@@ -89,9 +89,9 @@ def send_email_project_hourly_rate():
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = ['shuyaib@mediusware.com']
     email.subject = "Project Hourly Rate Increase Notification"
-    context = {'project_to_increase_list':project_to_increase_list,'project_to_increase_nearby_list':project_to_increase_nearby_list}
+    context = {'project_to_increase_list':project_to_increase_list,'project_to_increase_nearby_list': project_to_increase_nearby_list}
     
-    html_content = loader.render_to_string('mails/project_hourly_rate_increase.html',context)
+    html_content = loader.render_to_string('mails/project_hourly_rate_increase.html', context)
     email.attach_alternative(html_content, "text/html")
     email.send()
 
@@ -105,7 +105,7 @@ def create_income_from_last_week_projects( **kwargs):
 
 
         # Fetch the latest date from ProjectHour entries
-    latest_date = ProjectHour.objects.aggregate(Max('date'))['date__min']
+    latest_date = ProjectHour.objects.aggregate(Max('date'))['date__max']
 
     if latest_date:
         # Get all ProjectHour entries for the latest date
