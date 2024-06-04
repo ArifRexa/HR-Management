@@ -204,7 +204,7 @@ class EmployeeDetails(admin.ModelAdmin):
 # from employee.models import BookConferenceRoom
 
 class BookConferenceRoomAdmin(admin.ModelAdmin):
-    list_display = ('manager_or_lead', 'project_name', 'start_time', 'created_at')
+    list_display = ('manager_or_lead', 'project_name', 'start_time', 'end_time', 'created_at')
     list_filter = ('manager_or_lead', 'project_name', 'start_time')
     search_fields = ('manager_or_lead__full_name', 'project_name__name')
     ordering = ('start_time',)
@@ -214,11 +214,6 @@ class BookConferenceRoomAdmin(admin.ModelAdmin):
             kwargs["queryset"] = Employee.objects.filter(Q(manager=True) | Q(lead=True))
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
     
-    # def has_module_permission(self, request):
-    #     if request.user.employee.designation == "lead" or "manage or request.ueer.supersuer":
-    #         return True
-    #     else:
-    #         return False
 
 
 admin.site.register(BookConferenceRoom, BookConferenceRoomAdmin)
