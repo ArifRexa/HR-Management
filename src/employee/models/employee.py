@@ -399,9 +399,11 @@ class Employee(TimeStampMixin, AuthorMixin):
 
 class BookConferenceRoom(models.Model):
     TIME_CHOICES = [
-        (time(hour, minute), f"{hour:02}:{minute:02}")
+        # (time(hour, minute), f"{hour:02}:{minute:02}")
+        (time(hour, minute), f"{(hour + 11) % 12 + 1}:{minute:02} {'AM' if hour < 12 else 'PM'}")
         for hour in range(11, 21)
         for minute in (0, 30)
+        if not (hour == 20 and minute == 30)
     ]
 
     manager_or_lead = models.ForeignKey("employee.Employee", on_delete=models.CASCADE)
@@ -421,7 +423,7 @@ class BookConferenceRoom(models.Model):
             existing_bookings = BookConferenceRoom.objects.filter(start_time=self.start_time)
         
         if existing_bookings.exists():
-            raise ValidationError("Another conference room is already booked at this time.")
+            raise ValidationError(f"Another conference room is already booked at this time.{self.start_time}")
     
     @property
     def end_time(self):
