@@ -184,6 +184,13 @@ class EmployeeDetails(APIView):
         return Response(serializer.data)
 
 
+class MainEmployeeListView(ListAPIView):
+    serializer_class = EmployeeSerializer
+
+    def get_queryset(self):
+        desired_designations = ['Managing Director', 'CTO', 'Co-Founder']
+        return Employee.objects.filter(designation__title__in=desired_designations)
+
 class DesignationListView(ListAPIView):
     queryset = Designation.objects.annotate(employee_count=Count('employee'))
     serializer_class = DesignationSetSerializer
