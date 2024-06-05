@@ -151,33 +151,24 @@ class ProjectDetails(APIView):
         return Response(serializer.data)
 
 
-class EmployeeList(APIView):
-    def get(self, request, format=None):
-        # Pagination setup
-        paginator = PageNumberPagination()
-        paginator.page_size = 6  # Set the desired page size
-        
-        employees = (
-            Employee.objects.filter(active=True, show_in_web=True)
-            .order_by(
+class EmployeeList(ListAPIView):
+    queryset = Employee.objects.filter(active=True, show_in_web=True).order_by(
                 "joining_date",
                 "-manager",
                 "list_order",
             )
-        )
-        
-        search_query = request.query_params.get('search', None)
+    serializer_class = EmployeeSerializer
+    pagination_class = PageNumberPagination
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['designation']
+    pagination_class.page_size = 6
+
+    def get_queryset(self):
+        search_query = self.request.query_params.get('search', None)
+        queryset = super().get_queryset()
         if search_query:
-            employees = employees.filter(designation__title__icontains=search_query)
-        
-        # Paginate the queryset
-        result_page = paginator.paginate_queryset(employees, request)
-        
-        serializer = EmployeeSerializer(
-            result_page, many=True, context={"request": request}
-        )
-        
-        return paginator.get_paginated_response(serializer.data)
+            queryset = queryset.filter(designation__title__icontains=search_query)
+        return queryset
 
 
 class EmployeeDetails(APIView):
