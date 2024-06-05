@@ -323,7 +323,7 @@ class DesignationSetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Designation
-        fields = ['title', 'employee_count']
+        fields = ['id','title', 'employee_count']
 
 # class EmployeeSkillSerializer(serializers.ModelSerializer):
 #     class Meta:
