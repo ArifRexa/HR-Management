@@ -85,3 +85,7 @@ class EmployeeProject(TimeStampMixin, AuthorMixin):
     @property
     def active_projects(self):
         return self.project.filter(active=True)
+    # def __str__(self):
+    #     return ', '.join([project.title for project in self.project.all()])
+    def __str__(self):
+        return '\n'.join(project.title for project in self.project.all())

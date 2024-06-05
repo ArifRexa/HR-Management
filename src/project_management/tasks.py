@@ -94,3 +94,31 @@ def send_email_project_hourly_rate():
     html_content = loader.render_to_string('mails/project_hourly_rate_increase.html',context)
     email.attach_alternative(html_content, "text/html")
     email.send()
+
+
+def create_income_from_last_week_projects( **kwargs):
+    print('sssssssssssssssssssssss create income has called ssssssssssssssssssss')
+    from account.models import Income
+    from datetime import date
+    from django.db.models import Max
+    from .models import ProjectHour
+
+
+        # Fetch the latest date from ProjectHour entries
+    latest_date = ProjectHour.objects.aggregate(Max('date'))['date__min']
+
+    if latest_date:
+        # Get all ProjectHour entries for the latest date
+        project_hours = ProjectHour.objects.filter(date=latest_date)
+
+        for instance in project_hours:
+            project = instance.project
+            if project:
+                Income.objects.create(
+                    project=project,
+                    hours=instance.hours,
+                    hour_rate=project.hourly_rate if project.hourly_rate is not None else 0.00,
+                    convert_rate=90.0,  # Default convert rate
+                    date=instance.date,
+                    status="pending"
+                )
