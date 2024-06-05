@@ -49,7 +49,8 @@ class BookConferenceRoomForm(forms.ModelForm):
         )
         # Filter out booked times from TIME_CHOICES
         available_choices = [
-            choice for choice in BookConferenceRoom.TIME_CHOICES
+            choice
+            for choice in BookConferenceRoom.TIME_CHOICES
             if choice[0] > current_time and choice[0] not in booked_times
         ]
         self.fields["start_time"].choices = available_choices

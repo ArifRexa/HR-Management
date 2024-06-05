@@ -267,7 +267,7 @@
                             {% endfor %}
                             {% endwith %}
 
-                            {% comment %} {% if online.employee.need_hr %}
+                            {% if online.employee.need_hr %}
                             <span class="badge float-end rounded" style="background:#0d6efd;">
                                 Need HR
                                 <br>
@@ -283,8 +283,8 @@
                            {% endif %} 
                        </li>
                        {% endfor %}
-                   </ul> {% endcomment %}
-
+                   </ul>  {% endcomment %}
+                   
                 </div>
 
                 <div class="col-md-6 mb-4">
