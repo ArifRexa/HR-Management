@@ -219,7 +219,15 @@
                                     <form method="post" action="{% url 'booking_conference_room' %}">
                                         {% csrf_token %}
                                         <!-- Render other form fields using my_form.as_p -->
-                                        {{ my_form.as_p }}
+                                        {% comment %} {{ my_form.as_p }} {% endcomment %}
+                                        {{ my_form.project_name.label_tag }}
+                                        {{ my_form.project_name }}
+                                        
+                                        {{ my_form.start_time.label_tag }}
+                                        {{ my_form.start_time }}
+                                        
+                                        {{ my_form.end_time.label_tag }}
+                                        {{ my_form.end_time }}
                                         
                                         
                                         <div class="modal-footer">
@@ -233,12 +241,8 @@
                     </div>
                     {% include "admin/form/book_conference_room.html" %}
                   
-                    
-
-
-
                        
-                    <!-- <ul class="list-group rounded-0">
+                    {% comment %} <ul class="list-group rounded-0">
                         <li class="list-group-item list-group-item-action active">
                             <span class=" text-uppercase">Employee Status</span>
                         </li>
@@ -276,10 +280,10 @@
                                 <br>
                                  {{ online.employee.need_cto_at | timesince}} ago
                            </span>
-                           {% endif %} {% endcomment %}
+                           {% endif %} 
                        </li>
                        {% endfor %}
-                   </ul> -->
+                   </ul> {% endcomment %}
 
                 </div>
 

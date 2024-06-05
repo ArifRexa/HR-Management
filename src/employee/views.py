@@ -206,21 +206,26 @@ def need_hr_help(request, *args, **kwargs):
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")
 def booking_conference_room(request):
+    from datetime import timedelta
     employee = request.user.employee
-    print(employee)
 
     if request.method == "POST":
         form = BookConferenceRoomForm(request.POST)
         if form.is_valid():
-            form.save()
+            booking = form.save(commit=False)
+            booking.manager_or_lead = employee
+            booking.save()
             messages.success(request, 'Conference room booked successfully.')
             return redirect('booking_conference_room')
         else:
-            messages.error(request, 'Please correct the errors below.')
+            start_time = form.cleaned_data.get('start_time', 'an invalid time')
+            
+            messages.error(request, f'The time slot {start_time} is already booked. Please schedule a free time between 11:00 AM to 8:00 PM.')
+            
+            
     else:
         form = BookConferenceRoomForm()
 
-    bookings = BookConferenceRoom.objects.all()
     return redirect("/admin/")
 
 @login_required(login_url="/admin/login/")
@@ -245,7 +250,10 @@ def update_booking(request, booking_id):
                 messages.success(request, 'Booking updated successfully.')
                 return redirect('/admin/')
             else:
-                messages.error(request, 'Please correct the errors below.')
+                start_time = form.cleaned_data.get('start_time', 'an invalid time')
+                start_time_formatted = start_time.strftime("%I:%M %p")
+                messages.error(request, f'The time slot {start_time_formatted} is already booked. Please schedule a free time between 11:00 AM to 8:00 PM.')
+            
         else:
             form = BookConferenceRoomForm(instance=booking)
         return render(request, 'admin/employee/update_conference_booking.html', {'form': form})

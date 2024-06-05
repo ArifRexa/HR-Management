@@ -339,7 +339,8 @@ def project_lists(request):
 
 def conference_room_bookings(request):
     today = datetime.today().date()
-    return {'conference_room_bookings': BookConferenceRoom.objects.filter(created_at__date=today)}
+    return {'conference_room_bookings': BookConferenceRoom.objects.filter(created_at__date=today).order_by('start_time')}
+    # return {'conference_room_bookings': BookConferenceRoom.objects.all()}
 
 def conference_room_bookings_form(request):
     form = BookConferenceRoomForm
@@ -375,7 +376,8 @@ def employee_project_list(request):
     if request.user.is_authenticated:
         try:
             employee = Employee.objects.get(user=request.user)
-            project_list = employee.employee_project_list
+            project_queryset = employee.employee_project_list.values_list('title', flat=True)
+            project_list = list(project_queryset)
         except Employee.DoesNotExist:
             project_list = None
     else:

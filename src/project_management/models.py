@@ -17,14 +17,16 @@ from django.db.models.signals import post_save
 
 from django.dispatch import receiver
 from tinymce.models import HTMLField
-
 from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
+
 from icecream import ic
 # from employee.models import LeaveManagement
 from django.apps import apps
+
+
 
 class Technology(TimeStampMixin, AuthorMixin):
     icon = models.ImageField()
@@ -809,3 +811,19 @@ def create_observation(sender, instance, created, **kwargs):
     if created:
         ObservationProject.objects.create(project_name=instance)
 
+@receiver(post_save, sender=ProjectHour)
+def create_income(sender, instance, created, **kwargs):
+    print('sssssssssssssssssssssss create income has called ssssssssssssssssssss')
+    from account.models import Income
+
+    if created:
+        project = instance.project
+        if project:
+            Income.objects.create(
+                project=project,
+                hours=instance.hours,
+                hour_rate=project.hourly_rate if project.hourly_rate is not None else 0.00,
+                convert_rate=90.0,  # Default convert rate
+                date=instance.date,
+                status="pending"
+            )

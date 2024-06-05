@@ -112,7 +112,7 @@ class SalarySheetRepository:
 
 
         # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        if employee.tax_eligible and employee_salary.net_salary >= 43800:
+        if employee.tax_eligible and self.__employee_current_salary.payable_salary >= 43800:
             
             if not SalarySheetTaxLoan.objects.filter(
                 salarysheet=salary_sheet,
@@ -570,6 +570,8 @@ class SalarySheetRepository:
 
         return -monthly_amount if monthly_amount else 0.0
 
+   
+
     def __calculate_food_allowance(
         self, employee: Employee, salary_date
     ):
@@ -577,19 +579,26 @@ class SalarySheetRepository:
             return 0.0
         
         if employee.joining_date.year == salary_date.year and employee.joining_date.month == salary_date.month:
-                # Filter EmployeeAttendance objects for the specific employee and the same year and month as salary_date
-                attendance_count = EmployeeAttendance.objects.annotate(
-                    month=ExtractMonth('date'),
-                    year=ExtractYear('date')
-                ).filter(
-                    employee=employee,
-                    month=salary_date.month,
-                    year=salary_date.year
-                ).count()
-                
-                return attendance_count * 140
+            # Calculate the last day of the month
+            last_day_of_month = timezone.datetime(salary_date.year, salary_date.month, 1) + timedelta(days=32)
+            last_day_of_month = last_day_of_month.replace(day=1) - timedelta(days=1)
+
+            # Convert employee joining_date to datetime for compatibility
+            joining_datetime = timezone.datetime(
+                employee.joining_date.year,
+                employee.joining_date.month,
+                employee.joining_date.day
+            )
+
+            # Calculate the number of days from the joining date to the last day of the month
+            days_count = (last_day_of_month - joining_datetime).days + 1
+
+            total_pay = days_count * 100
+            return min(total_pay, 3000)
+            
         else:
             return 3000
+
         
 
         # date_range = calendar.monthrange(salary_date.year, salary_date.month)
