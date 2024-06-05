@@ -4,7 +4,7 @@ from employee.models import (
     Employee,
     EmployeeSocial,
     EmployeeContent,
-    EmployeeNOC, Skill, EmployeeSkill,
+    EmployeeNOC, Skill, EmployeeSkill,EmployeeExpertTech
 )
 from project_management.models import (
     Project,
@@ -333,16 +333,26 @@ class DesignationSetSerializer(serializers.ModelSerializer):
 
 class EmployeeSerializer(serializers.ModelSerializer):
     designation = serializers.SerializerMethodField()
+    employee_technology = serializers.SerializerMethodField()
+
     class Meta:
         model = Employee
-        fields = ['id','full_name','designation','image']  # You may customize this to include specific fields if needed
+        fields = ['id', 'full_name', 'designation', 'image', 'employee_technology']
 
-    
     def get_designation(self, obj):
         if obj.designation:
             return obj.designation.title
         else:
             return None
+
+    def get_employee_technology(self, obj):
+        expert_techs = EmployeeExpertTech.objects.filter(employee_expertise__employee=obj)
+        technologies = []
+        for expert_tech in expert_techs:
+            technologies.append({
+                'technology': expert_tech.technology.name,
+            })
+        return technologies
 
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
