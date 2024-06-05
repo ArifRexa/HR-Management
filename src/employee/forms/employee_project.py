@@ -40,6 +40,7 @@ class BookConferenceRoomForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        current_time = timezone.now().time()
         booked_times = BookConferenceRoom.objects.filter(
             created_at__date=timezone.now().date()
         ).values_list(
@@ -50,6 +51,6 @@ class BookConferenceRoomForm(forms.ModelForm):
         available_choices = [
             choice
             for choice in BookConferenceRoom.TIME_CHOICES
-            if choice[0] not in booked_times
+            if choice[0] > current_time and choice[0] not in booked_times
         ]
         self.fields["start_time"].choices = available_choices
