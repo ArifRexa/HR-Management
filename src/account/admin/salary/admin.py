@@ -19,6 +19,7 @@ from account.repository.SalarySheetRepository import SalarySheetRepository
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
     extra = 0
+    template= "admin/employee_salary.html"
     exclude = [
         'provident_fund',
         'code_quality_bonus',
