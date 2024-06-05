@@ -1,0 +1,103 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% load salary_sheet_util %}
+
+{% block content %}
+    <style>
+                .list-table {
+            font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+
+        {#text-align: justify;#}
+        }
+
+        .list-table td {
+           border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+        }
+
+         .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Align the items at the top of the container */
+        }
+        .company-info {
+            display:flex;
+            align-items: center;
+
+
+        }
+
+    </style>
+
+    {% for invoice in invoices %}
+        <table>
+            <thead>
+            <tr>
+                <td><br></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><b>Mediusware Ltd.</b></td>
+                <td></td>
+                <td><b>Invoice</b></td>
+            </tr>
+            <tr>
+                <td>Company ID : No. C-165786/2020</td>
+                <td></td>
+                <td><b>#Invoice No 420</b></td>
+            </tr>
+            <tr>
+                <td>Ring Road<br>
+                    House: 18/5, Floor 3rd<br>
+                    Adabor, Dhaka 1207<br>
+                    Bangladesh<br>
+                </td>
+                <td></td>
+                <td>Balance Due : 430$ </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <br>
+                    Bill to<br>
+                    Mofiz.com<br>
+                    Uganda<br>
+                </td>
+                <td></td>
+                <br>
+                <br>
+                <td>Invoice Date: 28 May 2024<br>
+                    Terms: Due on Receipt<br>
+                    Due Date: 28 May 2024<br>
+                </td>
+            </tr>
+            <tr>
+                <td></td>
+                <td></td>
+            </tr>
+            </thead>
+        </table>
+      <table class="list-table">
+            <tr>
+                <th>SL.</th>
+                <th>Project Name</th>
+                <th>Total Hours</th>
+                <th>Rate</th>
+                <th>Total Amount</th>
+            </tr>
+            <tr>
+                <td>1</td>
+                <td>{{ invoice.project }}</td>
+                <td>{{ invoice.hour }}</td>
+                <td>{{ invoice.project.hourly_rate }}</td>
+                <td>{{ income.payment }}</td>
+            </tr>
+        </table>
+
+
+    {% endfor %}
+{% endblock %}

@@ -11,6 +11,9 @@ from django.utils.html import format_html
 from account.models import Income
 from account.services.balance import BalanceSummery
 
+from config.settings import STATIC_ROOT
+from config.utils.pdf import PDF
+
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
@@ -19,7 +22,7 @@ class IncomeAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'project__on_boarded_by', 'hour_rate', 'date')
-    actions = ['approve_selected', 'pending_selected']
+    actions = ['approve_selected', 'pending_selected', 'print_income_invoices']
     # list_editable = ('status',)
     formfield_overrides = {
         models.TextField: {'widget': Textarea(attrs={'rows': 2})}
@@ -96,3 +99,14 @@ class IncomeAdmin(admin.ModelAdmin):
             )
             return TemplateResponse(request, "admin/balance/balance.html", context)
         raise PermissionDenied
+
+    @admin.action()
+    def print_income_invoices(self, request, queryset):
+        pdf = PDF()
+        pdf.file_name = f'Income Invoice'
+        pdf.template_path = "compliance/income_invoice.html"
+        pdf.context = {
+            'invoices': queryset,
+            'seal': f"{STATIC_ROOT}/stationary/sign_md.png"
+        }
+        return pdf.render_to_pdf(download=True)
