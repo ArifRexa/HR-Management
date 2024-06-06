@@ -43,9 +43,12 @@ class Tag(TimeStampMixin, AuthorMixin):
         return self.name
 
 
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     email = models.EmailField(max_length=80)
+    cc_email = models.TextField(null=True, blank=True, help_text="Comma-separated email addresses for CC")
     address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
     logo = models.ImageField(null=True, blank=True)
