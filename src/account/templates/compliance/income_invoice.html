@@ -1,0 +1,111 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% load salary_sheet_util %}
+
+{% block content %}
+    <style>
+        .list-table {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .list-table th {
+            background-color: #333;
+            color: white;
+            border: 1px solid #dddddd;
+            padding: 8px;
+        }
+
+        .list-table td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .invoice-container {
+            page-break-after: always;
+        }
+    </style>
+
+    {% for invoice in invoices %}
+        <div class="invoice-container">
+            <table>
+                <thead>
+                <tr>
+                    <td colspan="3"><br></td>
+                </tr>
+                <tr>
+                    <td><b>Mediusware Ltd.</b></td>
+                    <td></td>
+                    <td><h1>Invoice</h1></td>
+                </tr>
+                <tr>
+                    <td>Company ID: No. C-165786/2020</td>
+                    <td></td>
+                    <td><b>#Invoice No {{ invoice.id }}</b></td>
+                </tr>
+                <tr>
+                    <td>
+                        Ring Road<br>
+                        House: 18/5, Floor 3rd<br>
+                        Adabor, Dhaka 1207<br>
+                        Bangladesh<br>
+                    </td>
+                    <td></td>
+                    <td><h2>Balance Due: ${{ invoice.payment }}</h2></td>
+                </tr>
+                <tr>
+                    <td>
+                        <br>
+                        Bill to<br>
+                        <b>{{invoice.project.client.name}}</b><br>
+                        {{invoice.project.client.address}},{{invoice.project.client.country}}
+                    </td>
+                    <td></td>
+                    <td>
+                        <br><br>
+                        Invoice Date: {{ invoice.date }}<br>
+                        Terms: Due on Receipt<br>
+                        Due Date: {{ invoice.date }}<br>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                </tr>
+                </thead>
+            </table>
+            <table class="list-table">
+                <thead>
+                <tr>
+                    <th>SL.</th>
+                    <th>Project Name</th>
+                    <th>Total Hours</th>
+                    <th>Rate</th>
+                    <th>Total Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>{{ invoice.project }}</td>
+                    <td>{{ invoice.hours }}</td>
+                    <td>{{ invoice.hour_rate }}</td>
+                    <td>{{ invoice.payment }}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+{% endblock %}
