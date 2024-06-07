@@ -187,3 +187,14 @@ class ProjectServiceAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+    
+
+
+@admin.register(ProjectTechnology)
+class ProjectTechnologyAdmin(admin.ModelAdmin):
+    list_display = ('title', 'project',)
+    search_fields = ('title',)
+    filter_horizontal = ('technologies',)
+
+    def has_module_permission(self, request):
+        return False
