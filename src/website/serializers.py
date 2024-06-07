@@ -73,12 +73,12 @@ class TechnologySerializer(serializers.ModelSerializer):
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ("name", "email","designation", "address", "country", "logo")
+        fields = ("name", "email","designation", "address", "country", "logo","client_feedback")
 
 class OurClientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Client
-        fields = ("name", "designation", "logo")
+        fields = ("name", "designation", "logo","client_feedback")
 
 
 
