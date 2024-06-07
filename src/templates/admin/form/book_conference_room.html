@@ -6,7 +6,7 @@
         <th class="" style=" color: white; padding-top: 12px;">Project Name</th>
         <th class="" style=" color: white; padding-top: 12px;">Start Time</th>
         <th class="" style=" color: white; padding-top: 12px;">End Time</th>
-        {% if is_manager or is_lead %}
+        {% if is_manager or is_lead or is_sqa %}
           <th class="" style=" color: white; padding-top: 12px;">Actions</th>
         {% endif %}
       </tr>
@@ -21,7 +21,7 @@
           <td class="">{{ conference_room_booking.project_name }}</td>
           <td class="">{{ conference_room_booking.start_time|time:'h:i A' }}</td>
           <td class="">{{ conference_room_booking.end_time|time:'h:i A' }}</td>
-          {% if is_manager or is_lead %}
+          {% if is_manager or is_lead or is_sqa %}
           {% if  conference_room_booking.manager_or_lead == request.user.employee %}
             <td class="d-flex justify-content-around">
               <a href="{% url 'update_booking' conference_room_booking.id %}" type="button" class="text-danger">
