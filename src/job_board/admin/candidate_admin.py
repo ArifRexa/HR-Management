@@ -23,7 +23,7 @@ from config.utils.pdf import PDF
 from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
-    CandidateAssessmentReview
+    CandidateAssessmentReview,JobPreferenceRequest
 
 from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 from icecream import ic
@@ -451,6 +451,14 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 class CandidateResetPasswordAdmin(admin.ModelAdmin):
     list_display = ('email', 'otp', 'otp_expire_at', 'otp_used_at')
     readonly_fields = ('otp', 'otp_expire_at', 'otp_used_at')
+
+    def has_module_permission(self, request):
+        return False
+
+@admin.register(JobPreferenceRequest)
+class JobPreferenceRequestAdmin(admin.ModelAdmin):
+    list_display = ('email', 'preferred_designation', 'cv', 'created_at')  # Display these fields in the admin list
+    search_fields = ['email', 'preferred_designation']  # Enable searching by these fields
 
     def has_module_permission(self, request):
         return False

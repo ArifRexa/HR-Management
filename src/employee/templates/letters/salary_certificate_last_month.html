@@ -80,6 +80,8 @@
                             <td align="right">
                                 {{ employee.employeesalary_set.last.net_salary | percentage:10 }}</td>
                         </tr>
+                        
+
                         {% if employee.employeesalary_set.last.project_bonus %}
                             <tr>
                                 <td>Project Bonus</td>
@@ -102,12 +104,27 @@
                             </tr>
                         {% endif %}
 
-                        {% if employee.employeesalary_set.last.leave_bonus %}
+                        {% if employee.employeesalary_set.last.leave_bonus > 0 %}
                             <tr>
                                 <td>Leave Bonus</td>
                                 <td>{{ employee.employeesalary_set.last.leave_bonus|floatformat:2|intcomma }}</td>
                             </tr>
                         {% endif %}
+
+                        {% if employee.employeesalary_set.last.food_allowance %}
+                            <tr>
+                                <td>Food Allowance</td>
+                                <td>{{ employee.employeesalary_set.last.food_allowance|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if employee.employeesalary_set.last.device_allowance %}
+                            <tr>
+                                <td>Device Allowance</td>
+                                <td>{{ employee.employeesalary_set.last.device_allowance|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
                         <tr>
                             <td>-</td>
                             <td>-</td>
@@ -173,12 +190,22 @@
                             <td>Salary Advance Loan (I)</td>
                             <td align="right">0.00</td>
                         </tr>
+                        {% if employee.employeesalary_set.last.leave_bonus < 0 %}
+                            <tr>
+                                <td>Non-paid Leave</td>
+                                <td align="right">{{ employee.employeesalary_set.last.leave_bonus|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
                         </tbody>
 
                         <tfoot>
                         <tr>
                             <th align="left">Total Deduction</th>
-                            <th align="right">{{ employee.employeesalary_set.last.loan_emi|floatformat:2  }}</th>
+                            {% if employee.employeesalary_set.last.leave_bonus < 0  %}
+                                <th align="right">{{ employee.employeesalary_set.last.loan_emi | addition:employee.employeesalary_set.last.leave_bonus |floatformat:2  }}</th>
+                            {% else %}
+                                <th align="right">{{ employee.employeesalary_set.last.loan_emic  }}</th>
+                            {% endif %}
                         </tr>
                         </tfoot>
 
@@ -204,11 +231,17 @@
             </tfoot>
         </table>
         <br>
-        {% if employee.employeesalary_set.last.loan_emi %}
+        {% if employee.employeesalary_set.last.loan_emi or employee.employeesalary_set.last.leave_bonus%}
             <p>Deducted on salary :
-                {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus }}
-                {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
-                    Taka</b>
+                {% if employee.employeesalary_set.last.leave_bonus > 0  %}
+                    {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus | addition:employee.employeesalary_set.last.festival_bonus |addition:employee.employeesalary_set.last.overtime |addition:employee.employeesalary_set.last.leave_bonus |addition:employee.employeesalary_set.last.food_allowance |addition:employee.employeesalary_set.last.device_allowance }}
+                    {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
+                        Taka</b>
+                {% else %}
+                    {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus | addition:employee.employeesalary_set.last.festival_bonus |addition:employee.employeesalary_set.last.overtime |addition:employee.employeesalary_set.last.food_allowance |addition:employee.employeesalary_set.last.device_allowance }}
+                    {{ employee.employeesalary_set.last.loan_emi | addition:employee.employeesalary_set.last.leave_bonus |floatformat:2 }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
+                        Taka</b>
+                {% endif %}
             </p>
 
             <p><b>In Word : </b>{{ employee.employeesalary_set.last.gross_salary | num_to_word }} Taka only </p>

@@ -19,14 +19,38 @@ from website.models import (
     BlogTag,
     BlogContext,
     BlogComment,
+    FAQ,
+    ServiceTechnology,
+    ServiceProcess,
+    OurAchievement,
+    OurGrowth,
+    OurJourney,
+    EmployeePerspective,
+    Industry
+
 )
 
+
+class ServiceTechnologyInline(admin.TabularInline):
+    model =  ServiceTechnology
+    extra = 1
+
+@admin.register(ServiceProcess)
+class ServiceProcessAdmin(admin.ModelAdmin):
+    list_display = ("title","description","img")
+
+
+
+    def has_module_permission(self, request):
+        return False
+
+    
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-
+    inlines = (ServiceTechnologyInline,)
     def has_module_permission(self, request):
         return False
 
@@ -222,3 +246,52 @@ class BlogAdmin(admin.ModelAdmin):
 class BlogCommentModelAdmin(MPTTModelAdmin):
     mptt_level_indent = 20
     list_display = ["id", "name"]
+
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    model = FAQ
+    list_display = ["question","answer"]
+
+@admin.register(OurAchievement)
+class OurAchievementAdmin(admin.ModelAdmin):
+    list_display = ("title","number")
+    
+    def has_module_permission(self, request):
+        return False
+    
+
+@admin.register(OurGrowth)
+class OurGrowthAdmin(admin.ModelAdmin):
+    list_display = ("title","number")
+    
+    def has_module_permission(self, request):
+        return False
+
+
+@admin.register(OurJourney)
+class OurJourneyAdmin(admin.ModelAdmin):
+    list_display = ("year","title","description","img")
+
+    def has_module_permission(self,request):
+        return False
+
+
+@admin.register(EmployeePerspective)
+class EmployeePerspectiveAdmin(admin.ModelAdmin):
+    list_display = ("employee","title","description",)
+
+
+@admin.register(Industry)
+class IndustryAdmin(admin.ModelAdmin):
+    list_display = ('title', 'short_description')
+    search_fields = ('title', 'short_description')
+    filter_horizontal = ('technology',)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.prefetch_related('technology')
+    
+
+    def has_module_permission(self,request):
+        return False

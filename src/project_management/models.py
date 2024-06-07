@@ -1,8 +1,9 @@
+from datetime import datetime
 import datetime
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
-from datetime import datetime
+
 from django.utils import timezone
 from datetime import date
 from dateutil.utils import today
@@ -45,6 +46,7 @@ class Tag(TimeStampMixin, AuthorMixin):
 
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
+    designation = models.CharField(max_length=200,null=True,blank=True)
     email = models.EmailField(max_length=80)
     address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
@@ -54,7 +56,70 @@ class Client(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.name
 
+class ProjectOverview(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
 
+    def __str__(self):
+        return self.title
+
+class ProjectStatement(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectChallenges(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+class ProjectSolution(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=100)
+    description = HTMLField()
+    img = models.ImageField()
+
+    def __str__(self):
+        return self.title
+
+from django.db import models
+
+
+
+
+
+class ProjectResults(models.Model):
+    title = models.CharField(max_length=200)
+    increased_sales = models.CharField(max_length=20) 
+    return_on_investment = models.CharField(max_length=10)  
+    increased_order_rate = models.CharField(max_length=20) 
+
+    def __str__(self):
+        return self.title
+    
+
+class ProjectPlatform(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
+
+class ProjectIndustry(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
+class ProjectService(models.Model):
+    title = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.title
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
@@ -63,7 +128,13 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
+    platforms = models.ManyToManyField(ProjectPlatform, related_name='projects',blank=True)
+    industries = models.ManyToManyField(ProjectIndustry, related_name='projects',blank=True)
+    services = models.ManyToManyField(ProjectService, related_name='projects',blank=True)
+    live_link = models.URLField(max_length=200, null=True, blank=True)
+    location = models.CharField(max_length=100, null=True, blank=True)
     active = models.BooleanField(default=True)
+    is_highlight = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
     hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     activate_from = models.DateField(null=True,blank=True)
@@ -72,10 +143,10 @@ class Project(TimeStampMixin, AuthorMixin):
     thumbnail = models.ImageField(null=True, blank=True)
     video_url = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag,related_name='projects')
     identifier = models.CharField(
         max_length=50,
-        default=uuid4
+        default=uuid4,  
     )
     on_boarded_by = models.ForeignKey(
         Employee,
@@ -85,6 +156,14 @@ class Project(TimeStampMixin, AuthorMixin):
         limit_choices_to={"active": True},
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
+  
+    project_results = models.OneToOneField(
+        ProjectResults,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='project',
+    )
 
 
         
@@ -111,7 +190,7 @@ class Project(TimeStampMixin, AuthorMixin):
         return self.title
 
     def durations(self):
-        duration = datetime.now() - self.created_at
+        duration = datetime.datetime.now() - self.created_at
         return duration.days
 
     def colorize(self):
@@ -166,6 +245,7 @@ class Project(TimeStampMixin, AuthorMixin):
         )
 
 
+
 class ProjectDocument(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     title = models.CharField(max_length=220)
@@ -192,6 +272,10 @@ class ProjectTechnology(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
+    
+class OurTechnology(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=200)
+    technologies = models.ManyToManyField(Technology)
 
 
 class ProjectScreenshot(TimeStampMixin, AuthorMixin):
@@ -203,7 +287,18 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     content = HTMLField()
+    image = models.ImageField(upload_to='project_images/', null=True, blank=True)
+    image2 = models.ImageField(upload_to='project_images/', null=True, blank=True)
 
+    def __str__(self):
+        return self.title
+
+class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project,on_delete=models.CASCADE)
+    title = models.CharField(max_length=300)
+    description = HTMLField()
+    img = models.ImageField()
+    img2 = models.ImageField(upload_to='project_images/', null=True, blank=True)
     def __str__(self):
         return self.title
 

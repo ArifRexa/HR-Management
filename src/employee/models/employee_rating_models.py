@@ -13,6 +13,7 @@ import calendar
 from datetime import datetime, timedelta
 from project_management.models import Project, DailyProjectUpdate, Employee, Project, ProjectHour, EmployeeProjectHour
 
+
 class EmployeeRating(TimeStampMixin, AuthorMixin):
 
     if timezone.now().month == 1:  
@@ -41,7 +42,7 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
         verbose_name = "Employee Rating"
         verbose_name_plural = "Employee Ratings"
         permissions = [
-            ('can_view_all_ratings', 'Can View All Ratings Provided'),
+            ("can_view_all_ratings", "Can View All Ratings Provided"),
         ]
     
 
