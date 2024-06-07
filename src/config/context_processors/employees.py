@@ -358,19 +358,28 @@ def employee_context_processor(request):
         if employee:
             is_manager = employee.manager
             is_lead = employee.lead
+            is_sqa = employee.sqa
+            
         else:
             is_manager = False
             is_lead = False
+            is_sqa = False
+            
     else:
         employee = None
         is_manager = False
         is_lead = False
+        is_sqa = False
+        
     
     return {
         'employee': employee,
         'is_manager': is_manager,
         'is_lead': is_lead,
+        'is_sqa': is_sqa,
+        
     }
+
 
 def employee_project_list(request):
     if request.user.is_authenticated:
