@@ -77,6 +77,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     sqa = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     show_in_web = models.BooleanField(default=True)
+    operation = models.BooleanField(default=False)
     lunch_allowance = models.BooleanField(default=True)
     project_eligibility = models.BooleanField(default=True)
     leave_in_cash_eligibility = models.BooleanField(default=True)

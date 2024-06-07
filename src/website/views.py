@@ -188,9 +188,9 @@ class MainEmployeeListView(ListAPIView):
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
-        desired_designations = ['Managing Director', 'CTO', 'Co-Founder']
-        return Employee.objects.filter(designation__title__in=desired_designations)
-
+        return Employee.objects.filter(active=True, show_in_web=True,operation=True)
+    
+    
 class DesignationListView(ListAPIView):
     queryset = Designation.objects.all()
     serializer_class = DesignationSetSerializer
@@ -475,3 +475,4 @@ class EmployeePerspectiveListView(ListAPIView):
 class IndustryListView(ListAPIView):
     queryset = Industry.objects.all()
     serializer_class = IndustrySerializer
+
