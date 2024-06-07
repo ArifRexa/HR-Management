@@ -51,7 +51,7 @@ api_urls = [
     path("projects/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
     
     path("employees/", EmployeeList.as_view(), name="employee.list"),
-    path("employees/highlight", MainEmployeeListView.as_view(), name="employee.highlight.list"),
+    path("employees/operation", MainEmployeeListView.as_view(), name="employee.operation.list"),
     path("employee/<str:slug>/", EmployeeDetails.as_view(), name="employee.details"),
     path("employees/designations/", DesignationListView.as_view(), name="all-skills"),
     path('employees/designations/<str:designation>/', EmployeeWithDesignationView.as_view(), name='employee-skill-list'),
