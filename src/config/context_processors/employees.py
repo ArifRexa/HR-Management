@@ -358,19 +358,28 @@ def employee_context_processor(request):
         if employee:
             is_manager = employee.manager
             is_lead = employee.lead
+            is_sqa = employee.sqa
+            is_ba = employee.designation.title == "Business Analyst" if employee.designation else False
         else:
             is_manager = False
             is_lead = False
+            is_sqa = False
+            is_ba = False
     else:
         employee = None
         is_manager = False
         is_lead = False
+        is_sqa = False
+        is_ba = False
     
     return {
         'employee': employee,
         'is_manager': is_manager,
         'is_lead': is_lead,
+        'is_sqa': is_sqa,
+        'is_ba': is_ba,
     }
+
 
 def employee_project_list(request):
     if request.user.is_authenticated:
