@@ -85,7 +85,7 @@ class BlogTagInline(admin.StackedInline):
     autocomplete_fields = ("tag",)
 
 
-class BlogContextInline(admin.TabularInline):
+class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
 
