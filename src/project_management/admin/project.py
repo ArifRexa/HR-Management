@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
+from .forms import ProjectTechnologyInlineForm
 
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService
 
@@ -32,7 +33,9 @@ class TagAdmin(admin.ModelAdmin):
 
 class ProjectTechnologyInline(admin.StackedInline):
     model = ProjectTechnology
+    form = ProjectTechnologyInlineForm
     extra = 1
+    
 
 
 class ProjectScreenshotInline(admin.StackedInline):
