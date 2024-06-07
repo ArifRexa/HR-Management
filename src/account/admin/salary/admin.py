@@ -19,6 +19,7 @@ from account.repository.SalarySheetRepository import SalarySheetRepository
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
     extra = 0
+    template= "admin/employee_salary.html"
     exclude = [
         'provident_fund',
         'code_quality_bonus',
@@ -30,9 +31,10 @@ class EmployeeSalaryInline(admin.TabularInline):
         'project_bonus', 'leave_bonus', #'festival_bonus', 
         'food_allowance', 'loan_emi',
 
-        # 'provident_fund', 'code_quality_bonus', 
+        # 'provident_fund', 'code_quality_bonus',
+        'festival_bonus',
         'gross_salary', #'get_details',
-        'festival_bonus'
+
     )
     superadminonly_fields = (
         'net_salary',

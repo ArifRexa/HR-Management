@@ -32,6 +32,7 @@ def announcement_mail(employee_email: str, announcement: Announcement):
 
 
 def send_chunk_email(chunk_emails, announcement_id):
+    print('chanked email has called')
     for employee_email in chunk_emails:
         email_announcement = EmailAnnouncement.objects.get(id=announcement_id)
         subject = email_announcement.subject
