@@ -131,7 +131,7 @@ class ProjectHighlightedList(ListAPIView):
 
 
 class AvailableTagsListView(ListAPIView):
-    queryset = Tag.objects.annotate(tags_count=Count('projects'))
+    queryset = Tag.objects.all()
     serializer_class = AvailableTagSerializer
   
       
@@ -192,7 +192,7 @@ class MainEmployeeListView(ListAPIView):
         return Employee.objects.filter(designation__title__in=desired_designations)
 
 class DesignationListView(ListAPIView):
-    queryset = Designation.objects.annotate(employee_count=Count('employee'))
+    queryset = Designation.objects.all()
     serializer_class = DesignationSetSerializer
 
     # def get(self,request,*args,**kwargs):

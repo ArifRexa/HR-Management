@@ -138,10 +138,14 @@ class TagSerializer(serializers.ModelSerializer):
         fields = ("name",)
 
 class AvailableTagSerializer(serializers.ModelSerializer):
-    tags_count = serializers.IntegerField()
+    tags_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Tag
-        fields = ("id","name","tags_count")
+        fields = ("id", "name", "tags_count")
+
+    def get_tags_count(self, obj):
+        return Project.objects.filter(tags=obj,show_in_website=True).count()
 
 class ClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
@@ -319,11 +323,13 @@ class EmployeeDetailsSerializer(serializers.ModelSerializer):
 
 
 class DesignationSetSerializer(serializers.ModelSerializer):
-    employee_count = serializers.IntegerField()
-
+    employee_count = serializers.SerializerMethodField()
     class Meta:
         model = Designation
         fields = ['id','title', 'employee_count']
+
+    def get_employee_count(self, obj):
+        return Employee.objects.filter(designation=obj,active=True, show_in_web=True).count()
 
 # class EmployeeSkillSerializer(serializers.ModelSerializer):
 #     class Meta:
