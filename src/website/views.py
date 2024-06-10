@@ -155,7 +155,7 @@ class ProjectDetails(APIView):
 
 
 class EmployeeSkillFilter(FilterSet):
-    skill = django_filters.CharFilter(field_name='employeeskill__skill__title', lookup_expr='icontains')
+    skill = django_filters.CharFilter(field_name='employeeskill__skill__title', lookup_expr='exact')
 
     class Meta:
         model = Employee
