@@ -110,7 +110,7 @@ class ServiceSerializer(serializers.ModelSerializer):
     industry = IndustrySerializer(many=True) 
     class Meta:
         model = Service
-        fields = ("title", "slug","short_description","feature","technologies","industry")
+        fields = ("title", "slug","short_description","feature","technologies","industry","feature_image")
 
 
 
