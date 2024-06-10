@@ -454,7 +454,7 @@ class BlogListByAuthorAPIView(ListAPIView):
 
     def get_queryset(self):
         author_id = self.kwargs.get('author_id')
-        return Blog.objects.filter(created_by__employee__id=author_id)
+        return Blog.objects.filter(created_by__employee__id=author_id).order_by('-total_view')
 
 class OurTechnologyListView(ListAPIView):
     queryset = OurTechnology.objects.all()
