@@ -174,10 +174,13 @@ class EmployeeList(ListAPIView):
     pagination_class.page_size = 6
 
     def get_queryset(self):
-        search_query = self.request.query_params.get('search', None)
         queryset = super().get_queryset()
+        search_query = self.request.query_params.get('search')
         if search_query:
-            queryset = queryset.filter(employeeskill__skill__title__icontains=search_query)
+            queryset = queryset.filter(
+                Q(full_name__icontains=search_query) |
+                Q(designation__title__icontains=search_query)
+            )
         return queryset
 
 class EmployeeDetails(APIView):
