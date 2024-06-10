@@ -22,6 +22,7 @@ from employee.models import (
     EmployeeActivity,
     Employee,
     PrayerInfo,
+    EmployeeSkill
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.forms.prayer_info import EmployeePrayerInfoForm
@@ -479,3 +480,26 @@ class EmployeePrayerInfoAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+
+@admin.register(EmployeeSkill)
+class EmployeeSkillAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'skill', 'percentage')
+    search_fields = ('employee__name', 'skill__title')
+    list_filter = ('skill',)
+    ordering = ('employee', 'skill') 
+    
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.select_related('employee', 'skill')
+        return queryset
+
+    def skill_title(self, obj):
+        return obj.skill.title
+    skill_title.admin_order_field = 'skill__title'
+    skill_title.short_description = 'Skill Title'
+
+    def employee_name(self, obj):
+        return obj.employee.name
+    employee_name.admin_order_field = 'employee__name'
+    employee_name.short_description = 'Employee Name'

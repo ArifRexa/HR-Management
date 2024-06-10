@@ -337,13 +337,24 @@ class DesignationSetSerializer(serializers.ModelSerializer):
 #         fields = ['employee']
 
 
+class SkillSerializer(serializers.ModelSerializer):
+    total_employees = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Skill
+        fields = ['id', 'title', 'total_employees']
+
+    def get_total_employees(self, obj):
+        return Employee.objects.filter(employeeskill__skill=obj,active=True, show_in_web=True).count()
+
+
 class EmployeeSerializer(serializers.ModelSerializer):
     designation = serializers.SerializerMethodField()
-    employee_technology = serializers.SerializerMethodField()
+    employeeskill = serializers.SerializerMethodField()
 
     class Meta:
         model = Employee
-        fields = ['id', 'full_name', 'designation', 'image', 'employee_technology']
+        fields = ['id', 'full_name', 'designation', 'image', 'employeeskill']
 
     def get_designation(self, obj):
         if obj.designation:
@@ -351,14 +362,9 @@ class EmployeeSerializer(serializers.ModelSerializer):
         else:
             return None
 
-    def get_employee_technology(self, obj):
-        expert_techs = EmployeeExpertTech.objects.filter(employee_expertise__employee=obj)
-        technologies = []
-        for expert_tech in expert_techs:
-            technologies.append({
-                'technology': expert_tech.technology.name,
-            })
-        return technologies
+    def get_employeeskill(self, obj):
+        skills = EmployeeSkill.objects.filter(employee=obj)
+        return [{'skill': skill.skill.title, 'percentage': skill.percentage} for skill in skills]
 
 class CategoryListSerializer(serializers.ModelSerializer):
     class Meta:
