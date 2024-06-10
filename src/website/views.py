@@ -8,6 +8,7 @@ from icecream import ic
 from django.shortcuts import get_object_or_404
 
 
+from django_filters import FilterSet 
 from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -45,7 +46,8 @@ from website.serializers import (
     OurJourneySerializer,
     OurGrowthSerializer,
     EmployeePerspectiveSerializer,
-    IndustrySerializer
+    IndustrySerializer,
+    SkillSerializer
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -151,6 +153,14 @@ class ProjectDetails(APIView):
         return Response(serializer.data)
 
 
+
+class EmployeeSkillFilter(FilterSet):
+    skill = django_filters.CharFilter(field_name='employeeskill__skill__title', lookup_expr='icontains')
+
+    class Meta:
+        model = Employee
+        fields = ['skill']
+
 class EmployeeList(ListAPIView):
     queryset = Employee.objects.filter(active=True, show_in_web=True).order_by(
                 "joining_date",
@@ -159,17 +169,16 @@ class EmployeeList(ListAPIView):
             )
     serializer_class = EmployeeSerializer
     pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['designation']
+    filter_backends = [DjangoFilterBackend]  # Should be a list
+    filterset_class = EmployeeSkillFilter  # Use the filter class
     pagination_class.page_size = 6
 
     def get_queryset(self):
         search_query = self.request.query_params.get('search', None)
         queryset = super().get_queryset()
         if search_query:
-            queryset = queryset.filter(designation__title__icontains=search_query)
+            queryset = queryset.filter(employeeskill__skill__title__icontains=search_query)
         return queryset
-
 
 class EmployeeDetails(APIView):
     def get_object(self, slug):
@@ -196,6 +205,10 @@ class DesignationListView(ListAPIView):
     serializer_class = DesignationSetSerializer
 
     # def get(self,request,*args,**kwargs):
+
+class SkillListView(ListAPIView):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
 
 
 class EmployeeWithDesignationView(APIView):
