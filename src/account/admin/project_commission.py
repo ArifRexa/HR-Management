@@ -21,7 +21,7 @@ class ProjectCommissionAdmin(admin.ModelAdmin):
         return my_urls + urls
 
     def commission(self, request, *args, **kwargs):
-        employee_ids = Project.objects.values_list('on_boarded_by')
+        employee_ids = None
         context = dict(
             self.admin_site.each_context(request),
             employees=Employee.objects.filter(active=True, pk__in=employee_ids).all()

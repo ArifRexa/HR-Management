@@ -247,7 +247,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "project_results",
             "description",
             "featured_image",
-            "video_url",
+            "featured_video",
             "technologies",
             "available_tags",
             "project_contents",

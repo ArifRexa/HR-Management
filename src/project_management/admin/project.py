@@ -85,10 +85,10 @@ class ProjectAdmin(admin.ModelAdmin):
     list_per_page = 20
     ordering = ('pk',)
 
-    def get_readonly_fields(self, request, obj=None):
-        if not request.user.is_superuser:
-            return ['on_boarded_by']
-        return []
+    # def get_readonly_fields(self, request, obj=None):
+    #     if not request.user.is_superuser:
+    #         return ['on_boarded_by']
+    #     return []
 
     def get_ordering(self, request):
         return ['title']
