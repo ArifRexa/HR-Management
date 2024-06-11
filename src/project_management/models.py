@@ -190,8 +190,10 @@ class Project(TimeStampMixin, AuthorMixin):
             raise ValidationError("If hourly rate is provided, activate from is mandatory.")
         if self.activate_from is not None and self.hourly_rate is None:
             raise ValidationError("If activate from is provided, hourly rate is mandatory.")
+    
     def __str__(self):
-        return self.title
+            client_name = self.client.name if self.client else "No Client"
+            return f"{self.title} ({client_name})"
 
     def durations(self):
         duration = datetime.datetime.now() - self.created_at

@@ -77,7 +77,7 @@ class ProjectResultsAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client','hourly_rate','last_increased', 'active','get_report_url')
+    list_display = ('project_title_with_client','hourly_rate','last_increased', 'active','get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
@@ -105,7 +105,10 @@ class ProjectAdmin(admin.ModelAdmin):
             return obj.activate_from
         return format_html('<span style="color:red;">{}</span>', obj.activate_from)
 
-               
+    def project_title_with_client(self, obj):
+        client_name = obj.client.name if obj.client else "No Client"
+        return f"{obj.title} ({client_name})"
+    project_title_with_client.short_description = 'Title'
     
     
 
