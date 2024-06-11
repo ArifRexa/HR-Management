@@ -20,7 +20,6 @@ from website.views import (
     BlogCommentDetailAPIView,
     BlogNextCommentDetailAPIView, DesignationListView, EmployeeWithDesignationView,
     AvailableTagsListView,
-    ProjectHighlightedList,
     OurTechnologyListView,
     FAQListView,
     OurClientsFeedbackList,
@@ -48,7 +47,6 @@ api_urls = [
     path("projects/", ProjectList.as_view(), name="project.list"),
     path("projects/available_tags/", AvailableTagsListView.as_view(), name="available.tags"),
     # path("projects/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
-    path("projects/highlighted_projects/",ProjectHighlightedList.as_view(),name='projects.highlighted'),
     path("projects/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
     
     path("employees/", EmployeeList.as_view(), name="employee.list"),

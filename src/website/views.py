@@ -127,9 +127,7 @@ class ProjectList(ListAPIView):
         return response
 
 
-class ProjectHighlightedList(ListAPIView):
-    queryset = Project.objects.filter(is_highlight=True)
-    serializer_class = ProjectHighlightedSerializer
+
 
 
 class AvailableTagsListView(ListAPIView):
