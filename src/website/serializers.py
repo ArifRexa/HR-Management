@@ -203,7 +203,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "industries",
-            "thumbnail",
+            "featured_image",
             "project_results",
             "technologies",
         )
@@ -246,7 +246,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "services",
             "project_results",
             "description",
-            "thumbnail",
+            "featured_image",
             "video_url",
             "technologies",
             "available_tags",
