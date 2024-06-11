@@ -138,27 +138,18 @@ class Project(TimeStampMixin, AuthorMixin):
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     active = models.BooleanField(default=True)
-    is_highlight = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
     hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     activate_from = models.DateField(null=True,blank=True)
-    short_note = models.CharField(max_length=200,null=True,blank=True)
-    emergency_operation = models.BooleanField(default=False)
-    thumbnail = models.ImageField(null=True, blank=True)
-    video_url = models.URLField(null=True, blank=True)
+    featured_image = models.ImageField(null=True, blank=True)
+    featured_video = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag,related_name='projects')
     identifier = models.CharField(
         max_length=50,
         default=uuid4,  
     )
-    on_boarded_by = models.ForeignKey(
-        Employee,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        limit_choices_to={"active": True},
-    )
+   
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
   
     project_results = models.OneToOneField(
@@ -199,12 +190,7 @@ class Project(TimeStampMixin, AuthorMixin):
         duration = datetime.datetime.now() - self.created_at
         return duration.days
 
-    def colorize(self):
-        if self.emergency_operation:
-            return "text-danger"
-        elif self.durations() <= 28:
-            return "text-primary"
-        return ""
+
 
     @property
     def created_at_timestamp(self):
