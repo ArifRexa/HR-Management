@@ -185,3 +185,12 @@ class EmployeePerspective(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
     employee = models.ForeignKey(Employee,on_delete=models.CASCADE)
+
+
+class Lead(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    message = models.TextField()
+
+    def __str__(self):
+        return self.name

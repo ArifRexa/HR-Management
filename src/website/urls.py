@@ -33,7 +33,8 @@ from website.views import (
     BlogListByAuthorAPIView,
     IndustryListView,
     MainEmployeeListView,
-    SkillListView
+    SkillListView,
+    LeadCreateAPIView
     
     
 )
@@ -97,6 +98,7 @@ api_urls = [
     path("our_journey/",OurJourneyListView.as_view(),name=("our.journey")),
     path("employee_perspective/",EmployeePerspectiveListView.as_view(),name=("employee.perspective")),
     path('job_preference_request/', JobPreferenceRequestAPIView.as_view(), name='job_preference_request'),
+    path('leads/', LeadCreateAPIView.as_view(), name='lead-create')
 ]
 
 web_url = [path("", index)]
