@@ -138,7 +138,6 @@ class Project(TimeStampMixin, AuthorMixin):
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     active = models.BooleanField(default=True)
-    is_highlight = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
     hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     activate_from = models.DateField(null=True,blank=True)
