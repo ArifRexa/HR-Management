@@ -142,10 +142,9 @@ class Project(TimeStampMixin, AuthorMixin):
     in_active_at = models.DateField(null=True, blank=True)
     hourly_rate = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     activate_from = models.DateField(null=True,blank=True)
-    short_note = models.CharField(max_length=200,null=True,blank=True)
     emergency_operation = models.BooleanField(default=False)
-    thumbnail = models.ImageField(null=True, blank=True)
-    video_url = models.URLField(null=True, blank=True)
+    featured_image = models.ImageField(null=True, blank=True)
+    featured_video = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag,related_name='projects')
     identifier = models.CharField(
