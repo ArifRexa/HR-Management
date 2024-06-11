@@ -21,7 +21,7 @@ class IncomeAdmin(admin.ModelAdmin):
                     'hour_rate', 'convert_rate', 'payment_details', 'status_col')
     date_hierarchy = 'date'
     readonly_fields = ('payment',)
-    list_filter = ('status', 'project', 'project__on_boarded_by', 'hour_rate', 'date')
+    list_filter = ('status', 'project', 'hour_rate', 'date')
     actions = ['approve_selected', 'pending_selected', 'print_income_invoices']
     # list_editable = ('status',)
     formfield_overrides = {

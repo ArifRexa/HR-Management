@@ -149,13 +149,7 @@ class Project(TimeStampMixin, AuthorMixin):
         max_length=50,
         default=uuid4,  
     )
-    on_boarded_by = models.ForeignKey(
-        Employee,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        limit_choices_to={"active": True},
-    )
+   
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
   
     project_results = models.OneToOneField(
