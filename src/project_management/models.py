@@ -190,12 +190,7 @@ class Project(TimeStampMixin, AuthorMixin):
         duration = datetime.datetime.now() - self.created_at
         return duration.days
 
-    def colorize(self):
-        if self.emergency_operation:
-            return "text-danger"
-        elif self.durations() <= 28:
-            return "text-primary"
-        return ""
+
 
     @property
     def created_at_timestamp(self):
