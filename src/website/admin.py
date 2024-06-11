@@ -26,7 +26,8 @@ from website.models import (
     OurGrowth,
     OurJourney,
     EmployeePerspective,
-    Industry
+    Industry,
+    Lead
 
 )
 
@@ -295,3 +296,11 @@ class IndustryAdmin(admin.ModelAdmin):
 
     def has_module_permission(self,request):
         return False
+
+@admin.register(Lead)
+class LeadAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'message')
+    search_fields = ('name', 'email')
+    list_filter = ('name', 'email')
+    ordering = ('name',)
+    fields = ('name', 'email', 'message')
