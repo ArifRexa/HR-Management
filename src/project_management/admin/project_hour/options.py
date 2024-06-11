@@ -14,10 +14,11 @@ class ProjectFilter(admin.SimpleListFilter):
     parameter_name = 'project__id__exact'
 
     def lookups(self, request, model_admin):
-        project_types = Project.objects.filter(active=True).values_list('id', 'title').distinct()
+        project_types = Project.objects.filter(active=True).values_list('id', 'title', 'client__name').distinct()
         choices = []
-        for project_id, project_title in project_types:
-            choices.append((str(project_id), project_title))
+        for project_id, project_title, client_name in project_types:
+            display_name = f"{project_title} ({client_name})" if client_name else project_title
+            choices.append((str(project_id), display_name))
         return choices
 
     def choices(self, changelist):
@@ -32,7 +33,7 @@ class ProjectFilter(admin.SimpleListFilter):
             yield {
                 'selected': self.value() == str(lookup),
                 'query_string': changelist.get_query_string({self.parameter_name: lookup}),
-                'display' : format_html(f'<span style="color: red;">{title}</span>') if project.check_is_weekly_project_hour_generated == False else format_html(f'<span style="color: inherit;">{title}</span>')                                         
+                'display': format_html(f'<span style="color: red;">{title}</span>') if not project.check_is_weekly_project_hour_generated else format_html(f'<span style="color: inherit;">{title}</span>')                                         
             }
 
     def queryset(self, request, queryset):
