@@ -28,6 +28,7 @@ from project_management.models import (
     
     
     
+    
 
 )
 from settings.models import Designation
@@ -45,7 +46,8 @@ from website.models import (
     OurJourney,
     OurGrowth,
     EmployeePerspective,
-    Industry
+    Industry,
+    Lead,
 )
 
 
@@ -637,3 +639,9 @@ class EmployeePerspectiveSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeePerspective
         fields = ("title","description","employee_name","employee_designation","employee_image",)
+
+
+class LeadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Lead
+        fields = ['name', 'email', 'message']
