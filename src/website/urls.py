@@ -3,6 +3,8 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIView 
 
 from website.views import (
+    ClientLogoListView,
+    GalleryListView,
     ServiceList,
     ServiceDetails,
     ProjectList,
@@ -98,7 +100,9 @@ api_urls = [
     path("our_journey/",OurJourneyListView.as_view(),name=("our.journey")),
     path("employee_perspective/",EmployeePerspectiveListView.as_view(),name=("employee.perspective")),
     path('job_preference_request/', JobPreferenceRequestAPIView.as_view(), name='job_preference_request'),
-    path('leads/', LeadCreateAPIView.as_view(), name='lead-create')
+    path('leads/', LeadCreateAPIView.as_view(), name='lead-create'),
+    path("client/logo/", ClientLogoListView.as_view(), name="client-logo-list"),
+    path("gallery/", GalleryListView.as_view(), name="gallery"),
 ]
 
 web_url = [path("", index)]
