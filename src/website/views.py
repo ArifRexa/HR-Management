@@ -211,6 +211,7 @@ class DesignationListView(ListAPIView):
 class SkillListView(ListAPIView):
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
+    pagination_class = None
 
 
 class EmployeeWithDesignationView(APIView):

@@ -356,7 +356,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Employee
-        fields = ['id', 'full_name', 'designation', 'image', 'employeeskill']
+        fields = ['id', 'full_name', 'designation', 'image','operation', 'employeeskill']
 
     def get_designation(self, obj):
         if obj.designation:
