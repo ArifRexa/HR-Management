@@ -164,9 +164,7 @@ class EmployeeSkillFilter(FilterSet):
 
 class EmployeeList(ListAPIView):
     queryset = Employee.objects.filter(active=True, show_in_web=True).order_by(
-                "list_order",
                 "joining_date",
-                "-manager",
             )
     serializer_class = EmployeeSerializer
     pagination_class = PageNumberPagination
@@ -202,9 +200,7 @@ class MainEmployeeListView(ListAPIView):
 
     def get_queryset(self):
         return Employee.objects.filter(active=True, show_in_web=True,operation=True).order_by(
-                "list_order",
-                "joining_date",
-                "-manager",
+                "list_order"
             )
     
     
