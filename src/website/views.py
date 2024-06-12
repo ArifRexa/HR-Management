@@ -164,9 +164,9 @@ class EmployeeSkillFilter(FilterSet):
 
 class EmployeeList(ListAPIView):
     queryset = Employee.objects.filter(active=True, show_in_web=True).order_by(
+                "list_order",
                 "joining_date",
                 "-manager",
-                "list_order",
             )
     serializer_class = EmployeeSerializer
     pagination_class = PageNumberPagination
@@ -201,7 +201,11 @@ class MainEmployeeListView(ListAPIView):
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
-        return Employee.objects.filter(active=True, show_in_web=True,operation=True)
+        return Employee.objects.filter(active=True, show_in_web=True,operation=True).order_by(
+                "list_order",
+                "joining_date",
+                "-manager",
+            )
     
     
 class DesignationListView(ListAPIView):
@@ -499,7 +503,7 @@ class LeadCreateAPIView(CreateAPIView):
     serializer_class = LeadSerializer
     
 
-class ClientLogoListView(ListAPIView):
+class ClientLogoListView(APIView):
     serializer_class = ClientLogoSerializer
     
     def get(self, request, *args, **kwargs):
