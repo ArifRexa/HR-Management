@@ -2,15 +2,15 @@ from django.contrib import admin
 from django.db import models
 from django.db.models import Q
 from django.forms import Textarea
-
+from datetime import datetime
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from employee.models import SalaryHistory, Employee, BankAccount, EmployeeSkill, BookConferenceRoom
 from employee.models.attachment import Attachment
-from employee.models.employee import EmployeeLunch, Task, EmployeeNOC, Observation
-
+from employee.models.employee import EmployeeLunch, Task, EmployeeNOC, Observation,LateAttendanceFine
+from .filter import MonthFilter
 
 @admin.register(Employee)
 class EmployeeAdmin(
@@ -111,7 +111,7 @@ class EmployeeAdmin(
     def get_list_display(self, request):
         list_display = [
             "employee_info",
-            'employee_rating',
+            "total_late_attendance_fine",
             "leave_info",
             "salary_history",
             "skill",
@@ -123,6 +123,19 @@ class EmployeeAdmin(
         if not request.user.has_perm('employee.can_access_average_rating'):
             list_display.remove('employee_rating')
         return list_display
+
+    def total_late_attendance_fine(self, obj):
+        current_date = datetime.now()
+        current_month = current_date.month
+        current_year = current_date.year
+        late_fine = LateAttendanceFine.objects.filter(
+            employee=obj, 
+            month=current_month, 
+            year=current_year
+        ).first()
+        return late_fine.total_late_attendance_fine if late_fine else 0.0
+
+    total_late_attendance_fine.short_description = 'Total Late Fine'
 
     def get_queryset(self, request):
         if not request.user.is_superuser and not request.user.has_perm(
@@ -274,3 +287,15 @@ class EmployeeNOCAdmin(admin.ModelAdmin):
 #     list_display = ['employee', 'created_at']  # Add other fields as needed
 #     search_fields = ['employee__full_name', 'created_at']  # Add other fields as needed
 #     list_filter = ['created_at']  # Add other fields as needed
+from django.utils.html import format_html
+from calendar import month_name
+
+@admin.register(LateAttendanceFine)
+class LateAttendanceFineAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'get_month_name', 'year', 'total_late_attendance_fine')
+    list_filter = ('year', MonthFilter)  
+
+    def get_month_name(self, obj):
+        return month_name[obj.month]
+    get_month_name.short_description = 'Month'
+

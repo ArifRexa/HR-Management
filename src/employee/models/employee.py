@@ -579,3 +579,17 @@ class Observation(TimeStampMixin, AuthorMixin):
         verbose_name = "Observe New Lead/Managers or New Dev"
         unique_together = ("employee",)
         # verbose_name_plural = 'Observations'
+
+
+
+class LateAttendanceFine(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    month = models.IntegerField()
+    year = models.IntegerField()
+    total_late_attendance_fine = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        unique_together = ('employee', 'month', 'year')
+    
+    def __str__(self):
+        return f"{self.employee.user.username} - {self.month}/{self.year}"
