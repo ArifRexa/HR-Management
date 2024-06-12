@@ -194,3 +194,10 @@ class Lead(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+class Gallery(TimeStampMixin):
+    image = models.ImageField(upload_to="gallery_images/")
+
+    def __str__(self):
+        return str(self.id)

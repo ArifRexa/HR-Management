@@ -33,6 +33,7 @@ from project_management.models import (
 )
 from settings.models import Designation
 from website.models import (
+    Gallery,
     Service,
     Blog,
     Category,
@@ -645,3 +646,14 @@ class LeadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
         fields = ['name', 'email', 'message']
+        
+
+class ClientLogoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ['logo']
+        
+class GallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gallery
+        fields = ['image']

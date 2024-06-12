@@ -23,8 +23,10 @@ from project_management.models import Project,ProjectTechnology
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
 from project_management.models import Project,Tag,OurTechnology,Client
-from website.models import Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry,Lead
+from website.models import Gallery, Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry,Lead
 from website.serializers import (
+    ClientLogoSerializer,
+    GallerySerializer,
     ServiceSerializer,
     ProjectSerializer,
     EmployeeSerializer,
@@ -495,3 +497,24 @@ class IndustryListView(ListAPIView):
 class LeadCreateAPIView(CreateAPIView):
     queryset = Lead.objects.all()
     serializer_class = LeadSerializer
+    
+
+class ClientLogoListView(ListAPIView):
+    serializer_class = ClientLogoSerializer
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Client.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        logos = [request.build_absolute_uri(logo['logo']) for logo in serializer.data]
+        return Response({"results": logos})
+    
+    
+class GalleryListView(APIView):
+    serializer_class = GallerySerializer
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Gallery.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        images = [request.build_absolute_uri(image['image']) for image in serializer.data]
+        return Response({"results": images})
+    
