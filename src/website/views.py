@@ -508,3 +508,13 @@ class ClientLogoListView(ListAPIView):
         logos = [request.build_absolute_uri(logo['logo']) for logo in serializer.data]
         return Response({"results": logos})
     
+    
+class GalleryListView(APIView):
+    serializer_class = GallerySerializer
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Gallery.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        images = [request.build_absolute_uri(image['image']) for image in serializer.data]
+        return Response({"results": images})
+    
