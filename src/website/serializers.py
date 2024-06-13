@@ -33,6 +33,7 @@ from project_management.models import (
 )
 from settings.models import Designation
 from website.models import (
+    Award,
     Gallery,
     Service,
     Blog,
@@ -656,4 +657,10 @@ class ClientLogoSerializer(serializers.ModelSerializer):
 class GallerySerializer(serializers.ModelSerializer):
     class Meta:
         model = Gallery
+        fields = ['image']
+        
+
+class AwardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Award
         fields = ['image']
