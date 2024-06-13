@@ -20,7 +20,7 @@ from django.db.models import (
     Subquery,
     OuterRef,
 )
-
+from employee.models.employee import LateAttendanceFine
 from employee.models import (
     Employee,
     Leave,
@@ -33,6 +33,7 @@ from employee.models import (
     NeedHelpPosition,
     HRPolicy,
     EmployeeRating,
+    
 )
 from project_management.models import (
     ProjectHour,
@@ -527,3 +528,36 @@ def employee_attendance_old_data_delete(months):
     old_data = EmployeeAttendance.objects.filter(created_at__lt=target_date)
     
     old_data.delete()
+
+from datetime import datetime, time
+from django.db.models.functions import ExtractMonth, ExtractYear
+
+def late_attendance_calculate():
+    employees = Employee.objects.filter(active=True).exclude(salaryhistory__isnull=True)
+    late_entry = time(hour=11, minute=30)
+
+    current_date = datetime.now()
+    current_month = current_date.month
+    current_year = current_date.year
+    start_date = current_date.replace(day=1)
+    end_date = current_date
+
+    for employee in employees:
+        total_late_entry = EmployeeAttendance.objects.filter(
+            employee=employee,
+            date__range=(start_date, end_date),
+            entry_time__gt=late_entry
+        ).count()
+      
+        if total_late_entry > 3:
+            total_fine = (total_late_entry - 3) * 100  
+        else:
+            total_fine = 0.0
+
+        # Update or create the LateAttendanceFine entry
+        LateAttendanceFine.objects.update_or_create(
+            employee=employee,
+            month=current_month,
+            year=current_year,
+            defaults={'total_late_attendance_fine': total_fine}
+        )
