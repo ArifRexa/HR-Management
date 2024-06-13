@@ -187,7 +187,7 @@ class EmployeePerspective(models.Model):
     employee = models.ForeignKey(Employee,on_delete=models.CASCADE)
 
 
-class Lead(models.Model):
+class Lead(TimeStampMixin):
     name = models.CharField(max_length=255)
     email = models.EmailField()
     message = models.TextField()
