@@ -506,7 +506,7 @@ class ClientLogoListView(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Client.objects.all()
         serializer = self.serializer_class(queryset, many=True)
-        logos = [request.build_absolute_uri(logo['logo']) for logo in serializer.data]
+        logos = [request.build_absolute_uri(logo['logo']) for logo in serializer.data if logo['logo']]
         return Response({"results": logos})
     
     
