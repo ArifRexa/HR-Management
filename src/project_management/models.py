@@ -56,6 +56,7 @@ class Client(TimeStampMixin, AuthorMixin):
     logo = models.ImageField(null=True, blank=True)
     show_in_web = models.BooleanField(default=False)
     client_feedback = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to="client_images", null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -149,7 +150,7 @@ class Project(TimeStampMixin, AuthorMixin):
         max_length=50,
         default=uuid4,  
     )
-   
+    is_highlighted = models.BooleanField(verbose_name="Is Highlighted?", default=False)
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
   
     project_results = models.OneToOneField(
