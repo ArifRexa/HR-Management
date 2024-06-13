@@ -4,6 +4,7 @@ from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIV
 
 from website.views import (
     AwardListView,
+    ClientListAPIView,
     ClientLogoListView,
     GalleryListView,
     ServiceList,
@@ -105,6 +106,7 @@ api_urls = [
     path("client/logo/", ClientLogoListView.as_view(), name="client-logo-list"),
     path("gallery/", GalleryListView.as_view(), name="gallery"),
     path("awards/", AwardListView.as_view(), name="awards"),
+    path("clients/", ClientListAPIView.as_view(), name="client-list"),
 ]
 
 web_url = [path("", index)]
