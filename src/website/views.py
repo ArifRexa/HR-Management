@@ -27,6 +27,7 @@ from website.models import Award, Gallery, Service, Category, Blog, BlogComment,
 from website.serializers import (
     AwardSerializer,
     ClientLogoSerializer,
+    ClientSerializer,
     GallerySerializer,
     ServiceSerializer,
     ProjectSerializer,
@@ -529,3 +530,6 @@ class AwardListView(APIView):
         images = [request.build_absolute_uri(image['image']) for image in serializer.data]
         return Response({"results": images})
     
+class ClientListAPIView(ListAPIView):
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer

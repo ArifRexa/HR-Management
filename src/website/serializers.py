@@ -664,3 +664,9 @@ class AwardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Award
         fields = ['image']
+        
+
+class ClientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Client
+        fields = ['name', 'designation', 'image', 'client_feedback']
