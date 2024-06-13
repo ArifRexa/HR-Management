@@ -120,7 +120,7 @@ class ProjectList(ListAPIView):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["tags"]
+    filterset_fields = ["tags", "is_highlighted"]
     search_fields = ["title"]
     ordering_fields = ["created_at", "modified_at"]
 
