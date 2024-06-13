@@ -23,8 +23,9 @@ from project_management.models import Project,ProjectTechnology
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
 from project_management.models import Project,Tag,OurTechnology,Client
-from website.models import Gallery, Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry,Lead
+from website.models import Award, Gallery, Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry,Lead
 from website.serializers import (
+    AwardSerializer,
     ClientLogoSerializer,
     GallerySerializer,
     ServiceSerializer,
@@ -120,7 +121,7 @@ class ProjectList(ListAPIView):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["tags"]
+    filterset_fields = ["tags", "is_highlighted"]
     search_fields = ["title"]
     ordering_fields = ["created_at", "modified_at"]
 
@@ -514,6 +515,16 @@ class GalleryListView(APIView):
     
     def get(self, request, *args, **kwargs):
         queryset = Gallery.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        images = [request.build_absolute_uri(image['image']) for image in serializer.data]
+        return Response({"results": images})
+    
+
+class AwardListView(APIView):
+    serializer_class = AwardSerializer
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Award.objects.all()
         serializer = self.serializer_class(queryset, many=True)
         images = [request.build_absolute_uri(image['image']) for image in serializer.data]
         return Response({"results": images})

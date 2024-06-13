@@ -11,6 +11,7 @@ import requests
 
 # Register your models here.
 from website.models import (
+    Award,
     Gallery,
     Service,
     Blog,
@@ -31,6 +32,13 @@ from website.models import (
     Lead,
 )
 
+
+@admin.register(Award)
+class AwardAdmin(admin.ModelAdmin):
+    list_display = ["image"]
+    
+    def has_module_permission(self, request):
+        return False
 
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
@@ -320,3 +328,4 @@ class LeadAdmin(admin.ModelAdmin):
     list_filter = ("name", "email")
     ordering = ("name",)
     fields = ("name", "email", "message")
+    date_hierarchy = "created_at"
