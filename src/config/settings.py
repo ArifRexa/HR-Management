@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     # 'silk',
     "client_management",
     "mptt",
+    "academy",
 ]
 
 MIDDLEWARE = [
