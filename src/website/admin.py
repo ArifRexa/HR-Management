@@ -328,4 +328,4 @@ class LeadAdmin(admin.ModelAdmin):
     list_filter = ("name", "email")
     ordering = ("name",)
     fields = ("name", "email", "message")
-    date_hierarchy = "created_at"
+    # date_hierarchy = "created_at"
