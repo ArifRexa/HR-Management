@@ -54,7 +54,7 @@ class Client(TimeStampMixin, AuthorMixin):
     address = models.TextField(null=True, blank=True)
     country = models.CharField(max_length=200)
     logo = models.ImageField(null=True, blank=True)
-    show_in_web = models.BooleanField(default=False)
+    # show_in_web = models.BooleanField(default=False)
     client_feedback = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to="client_images", null=True, blank=True)
 
