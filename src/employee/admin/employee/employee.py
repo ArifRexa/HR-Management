@@ -293,9 +293,26 @@ from calendar import month_name
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = ('employee', 'get_month_name', 'year', 'total_late_attendance_fine')
-    list_filter = ('year', MonthFilter)  
+    list_filter = ('employee',)  
+    date_hierarchy = 'date'
 
     def get_month_name(self, obj):
         return month_name[obj.month]
     get_month_name.short_description = 'Month'
 
+    def get_fields(self, request, obj=None):
+        # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
+        fields = ['employee', 'total_late_attendance_fine']
+        return fields
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if not request.user.is_superuser:
+            return queryset.filter(employee__user=request.user)
+        return queryset
+
+    def get_list_filter(self, request):
+        # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
+        if request.user.is_superuser:
+            return 'employee', 'year', 'month'
+        return ('employee',)

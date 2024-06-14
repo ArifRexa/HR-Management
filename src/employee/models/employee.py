@@ -587,6 +587,7 @@ class LateAttendanceFine(models.Model):
     month = models.IntegerField()
     year = models.IntegerField()
     total_late_attendance_fine = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField(default=datetime.now,null=True,blank=True)
 
     class Meta:
         unique_together = ('employee', 'month', 'year')

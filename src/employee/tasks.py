@@ -550,7 +550,7 @@ def late_attendance_calculate():
         ).count()
       
         if total_late_entry > 3:
-            total_fine = (total_late_entry - 3) * 100  
+            total_fine = (total_late_entry - 3) * 80  
         else:
             total_fine = 0.0
 

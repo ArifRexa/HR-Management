@@ -29,6 +29,7 @@ from project_management.models import (
     
     
     
+    
 
 )
 from settings.models import Designation
@@ -50,6 +51,7 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
+    ServiceContent
 )
 
 
@@ -117,15 +119,21 @@ class ServiceSerializer(serializers.ModelSerializer):
         fields = ("title", "slug","short_description","feature","technologies","industry","feature_image")
 
 
+class ServiceContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceContent
+        fields = ("title", "content","image",)
 
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
     clients = ClientSerializer(many=True)
     technologies = ServiceTechnologySerializer(many=True, source="servicetechnology_set")
     service_process = ServiceProcessSerializer(many=True)
+    service_contents = ServiceContentSerializer(many=True, source="servicecontent_set")
     class Meta:
         model = Service
-        fields = ("slug","title","short_description","banner_image","feature_image","feature","service_process","technologies","clients")
+        fields = ("slug","title","short_description","banner_image","feature_image","feature","service_process","technologies","service_contents","clients")
+
 
 
 class ProjectTechnologySerializer(serializers.ModelSerializer):
