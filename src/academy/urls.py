@@ -1,4 +1,4 @@
-from academy.views import MarketingSliderAPIListView, StudentCreateAPIView, TrainingListAPIView, TrainingRetrieveAPIView
+from academy.views import MarketingSliderAPIListView, StudentCreateAPIView, SuccessStoryView, TrainingListAPIView, TrainingRetrieveAPIView
 from django.urls import path
 
 urlpatterns = [
@@ -6,4 +6,5 @@ urlpatterns = [
     path("training/<int:pk>/", TrainingRetrieveAPIView.as_view(), name="training"),
     path("trainings/", TrainingListAPIView.as_view(), name="trainings"),
     path("student/", StudentCreateAPIView.as_view(), name="student"),
+    path("success/story",SuccessStoryView.as_view(),name="success_story"),
 ]
