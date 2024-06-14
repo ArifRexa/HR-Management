@@ -96,8 +96,21 @@ class TrainingStructureModule(TimeStampMixin):
         related_name="training_structures",
         null=True,
     )
-    day = models.CharField(max_length=255, null=True, blank=True)
+    # day = models.CharField(max_length=255, null=True, blank=True)
     description = HTMLField()
 
     def __str__(self):
-        return self.day
+        return str(self.id)
+
+
+class Student(TimeStampMixin):
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255)
+    phone = models.CharField(max_length=255)
+    training = models.ManyToManyField(Training, related_name="students", blank=True)
+    details = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to="student_images", null=True, blank=True)
+    file = models.FileField(upload_to="student_files")
+
+    def __str__(self):
+        return self.name

@@ -12,6 +12,28 @@ from academy.models import (
 )
 
 
+from django import forms
+from project_management.models import ProjectTechnology
+
+
+class ProjectTechnologyInlineForm(forms.ModelForm):
+    title = forms.CharField(label="Title", widget=forms.TextInput)
+
+    class Meta:
+        model = TrainingTechnology
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Populate choices with distinct titles
+        distinct_titles = ProjectTechnology.objects.values_list(
+            "title", flat=True
+        ).distinct()
+        choices = [(title, title) for title in distinct_titles]
+        self.fields["title"].widget = forms.Select(choices=[("", "---")] + choices)
+        self.fields["title"].widget.attrs.update({"class": "select2"})
+
+
 @admin.register(TrainingStructureModule)
 class TrainingStructureModuleAdmin(admin.ModelAdmin):
     list_display = ("id", "training_structure")
@@ -40,6 +62,7 @@ class TrainingProjectInline(admin.StackedInline):
 class TrainingTechnologyInline(admin.StackedInline):
     model = TrainingTechnology
     extra = 1
+    form = ProjectTechnologyInlineForm
 
 
 class TrainingOutlineInline(admin.StackedInline):
