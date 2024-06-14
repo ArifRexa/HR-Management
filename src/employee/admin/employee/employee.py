@@ -304,3 +304,15 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
         fields = ['employee', 'total_late_attendance_fine']
         return fields
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        if not request.user.is_superuser:
+            return queryset.filter(employee__user=request.user)
+        return queryset
+
+    def get_list_filter(self, request):
+        # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
+        if request.user.is_superuser:
+            return 'employee', 'year', 'month'
+        return ('employee',)
