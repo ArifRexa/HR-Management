@@ -9,11 +9,19 @@ from academy.models import (
     TrainingStructure,
     TrainingStructureModule,
     TrainingTechnology,
+    Student,
 )
 
 
 from django import forms
 from project_management.models import ProjectTechnology
+
+
+@admin.register(Student)
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ["id", "name", "email", "phone"]
+    search_fields = ["name", "email"]
+    date_hierarchy = "created_at"
 
 
 class ProjectTechnologyInlineForm(forms.ModelForm):
