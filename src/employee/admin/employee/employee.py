@@ -293,7 +293,8 @@ from calendar import month_name
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = ('employee', 'get_month_name', 'year', 'total_late_attendance_fine')
-    list_filter = ('year', MonthFilter)  
+    list_filter = ('employee',)  
+    date_hierarchy = 'date'
 
     def get_month_name(self, obj):
         return month_name[obj.month]
