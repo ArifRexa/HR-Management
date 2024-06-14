@@ -300,3 +300,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         return month_name[obj.month]
     get_month_name.short_description = 'Month'
 
+    def get_fields(self, request, obj=None):
+        # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
+        fields = ['employee', 'total_late_attendance_fine']
+        return fields
