@@ -124,7 +124,6 @@ class TrainingSerializer(serializers.ModelSerializer):
 
 
 class TrainingListSerializer(serializers.ModelSerializer):
-    technology = TrainingTechnologySerializer()
 
     class Meta:
         model = Training
@@ -132,7 +131,15 @@ class TrainingListSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "description",
-            "technology",
             "image",
             "duration",
         ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["technology"] = TrainingTechnologySerializer(
+            instance=instance.training_technologies.all(),
+            many=True,
+            context={"request": self.context.get("request")},
+        ).data
+        return data
