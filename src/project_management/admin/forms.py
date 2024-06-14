@@ -1,5 +1,5 @@
 from django import forms
-from  project_management.models import ProjectTechnology
+from  project_management.models import ProjectTechnology,Project
 class ProjectTechnologyInlineForm(forms.ModelForm):
     title = forms.CharField(label="Title", widget=forms.TextInput)
 
@@ -14,3 +14,11 @@ class ProjectTechnologyInlineForm(forms.ModelForm):
         choices = [(title, title) for title in distinct_titles]
         self.fields['title'].widget = forms.Select(choices=[('', '---')] + choices)
         self.fields['title'].widget.attrs.update({'class': 'select2'})  # Optional: Add CSS class for better UI
+
+
+    
+class ProjectAdminForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = '__all__'
+        exclude = ['hourly_rate']

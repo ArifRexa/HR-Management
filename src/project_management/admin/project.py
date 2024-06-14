@@ -4,8 +4,8 @@ from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
-from .forms import ProjectTechnologyInlineForm
-
+from .forms import ProjectTechnologyInlineForm,ProjectAdminForm
+from django import forms
 from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService
 
 @admin.register(Technology)
@@ -84,12 +84,18 @@ class ProjectAdmin(admin.ModelAdmin):
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
-
+    form = ProjectAdminForm
     # def get_readonly_fields(self, request, obj=None):
     #     if not request.user.is_superuser:
     #         return ['on_boarded_by']
     #     return []
 
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if request.user.is_superuser:
+            form.base_fields['hourly_rate'] = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+        return form
+    
     def get_ordering(self, request):
         return ['title']
 
