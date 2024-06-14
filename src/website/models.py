@@ -36,6 +36,9 @@ class Industry(models.Model):
         return self.title
 
 
+
+
+
 class Service(models.Model):
     icon = models.ImageField()
     title = models.CharField(max_length=200)
@@ -44,11 +47,21 @@ class Service(models.Model):
     banner_image = models.ImageField()
     feature_image = models.ImageField()
     feature = HTMLField()
-    service_process = models.ManyToManyField(ServiceProcess)
-    industry = models.ManyToManyField(Industry)
-    clients = models.ManyToManyField(Client)
+    service_process = models.ManyToManyField(ServiceProcess,blank=True)
+    industry = models.ManyToManyField(Industry,blank=True)
+    clients = models.ManyToManyField(Client,blank=True)
     order = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.title
+    
+class ServiceContent(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Service, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    content = HTMLField()
+    image = models.ImageField(null=True, blank=True)
+    
 
     def __str__(self):
         return self.title
