@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from academy.models import (
     MarketingSlider,
+    Student,
     Training,
     TrainingLearningTopic,
     TrainingOutline,
@@ -23,7 +24,6 @@ class TrainingStructureModuleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrainingStructureModule
         fields = [
-            "day",
             "description",
         ]
 
@@ -124,7 +124,6 @@ class TrainingSerializer(serializers.ModelSerializer):
 
 
 class TrainingListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Training
         fields = [
@@ -143,3 +142,17 @@ class TrainingListSerializer(serializers.ModelSerializer):
             context={"request": self.context.get("request")},
         ).data
         return data
+
+
+class StudentCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Student
+        fields = [
+            "name",
+            "email",
+            "phone",
+            "details",
+            "training",
+            "image",
+            "file",
+        ]

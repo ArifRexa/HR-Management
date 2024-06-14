@@ -1,12 +1,14 @@
+from django.views.decorators.csrf import csrf_protect
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-
-from academy.models import MarketingSlider, Training
+from rest_framework.views import APIView
+from academy.models import MarketingSlider, Student, Training
 from academy.serializers import (
     MarketingSliderSerializer,
+    StudentCreateSerializer,
     TrainingListSerializer,
     TrainingSerializer,
 )
-from rest_framework import filters
+from rest_framework import filters, response, permissions, parsers
 # Create your views here.
 
 
@@ -30,3 +32,18 @@ class TrainingListAPIView(ListAPIView):
         filters.SearchFilter,
     ]
     search_fields = ["title"]
+
+
+class StudentCreateAPIView(APIView):
+    serializer_class = StudentCreateSerializer
+    permission_classes = [permissions.AllowAny]
+    parser_classes = [parsers.FormParser, parsers.MultiPartParser]
+
+    def post(self, request, *args, **kwargs):
+        file = request.FILES.get("file")
+        data = request.POST.copy()
+        data.update({"file": file})
+        serializer = StudentCreateSerializer(data=data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return response.Response({"result": serializer.data})
