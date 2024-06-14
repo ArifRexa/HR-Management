@@ -30,6 +30,7 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
+    ServiceContent
 )
 
 
@@ -57,12 +58,15 @@ class ServiceProcessAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
+class ServiceContentAdmin(admin.StackedInline):
+    model = ServiceContent
+    extra = 1
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-    inlines = (ServiceTechnologyInline,)
+    inlines = (ServiceTechnologyInline,ServiceContentAdmin)
 
     def has_module_permission(self, request):
         return False
