@@ -7,10 +7,22 @@ from academy.models import (
     TrainingOutline,
     TrainingProject,
     TrainingStructure,
+    TrainingStructureModule,
     TrainingTechnology,
 )
 
+
+@admin.register(TrainingStructureModule)
+class TrainingStructureModuleAdmin(admin.ModelAdmin):
+    list_display = ("id", "training_structure")
+
+
 # Register your models here.
+@admin.register(TrainingStructure)
+class TrainingStructureAdmin(admin.ModelAdmin):
+    list_display = ("id", "week")
+    date_hierarchy = "created_at"
+    search_fields = ["week"]
 
 
 @admin.register(MarketingSlider)
@@ -25,14 +37,20 @@ class TrainingProjectInline(admin.StackedInline):
     extra = 1
 
 
+class TrainingTechnologyInline(admin.StackedInline):
+    model = TrainingTechnology
+    extra = 1
+
+
 class TrainingOutlineInline(admin.StackedInline):
     model = TrainingOutline
     extra = 1
 
 
-class TrainingStructureInline(admin.StackedInline):
-    model = TrainingStructure
+class TrainingStructureModuleInline(admin.StackedInline):
+    model = TrainingStructureModule
     extra = 1
+    autocomplete_fields = ("training_structure",)
 
 
 class TrainingLearningTopicInline(admin.StackedInline):
@@ -61,5 +79,6 @@ class TrainingAdmin(admin.ModelAdmin):
         TrainingLearningTopicInline,
         TrainingProjectInline,
         TrainingOutlineInline,
-        TrainingStructureInline,
+        TrainingStructureModuleInline,
+        TrainingTechnologyInline,
     ]
