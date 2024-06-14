@@ -1,10 +1,11 @@
 from django.views.decorators.csrf import csrf_protect
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.views import APIView
-from academy.models import MarketingSlider, Student, Training
+from academy.models import MarketingSlider, Student, SuccessStory, Training
 from academy.serializers import (
     MarketingSliderSerializer,
     StudentCreateSerializer,
+    SuccessStorySerializer,
     TrainingListSerializer,
     TrainingSerializer,
 )
@@ -47,3 +48,8 @@ class StudentCreateAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return response.Response({"result": serializer.data})
+
+
+class SuccessStoryView(ListAPIView):
+    queryset = SuccessStory.objects.all()
+    serializer_class  = SuccessStorySerializer

@@ -3,6 +3,7 @@ from rest_framework import serializers
 from academy.models import (
     MarketingSlider,
     Student,
+    SuccessStory,
     Training,
     TrainingLearningTopic,
     TrainingOutline,
@@ -156,3 +157,9 @@ class StudentCreateSerializer(serializers.ModelSerializer):
             "image",
             "file",
         ]
+
+
+class SuccessStorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SuccessStory
+        fields = "__all__"

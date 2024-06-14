@@ -114,3 +114,13 @@ class Student(TimeStampMixin):
 
     def __str__(self):
         return self.name
+
+
+class SuccessStory(TimeStampMixin):
+    name = models.CharField(max_length=200)
+    image = models.ImageField(upload_to="success_story", null=True, blank=True)
+    description = models.TextField()
+    video = models.URLField()
+
+    def __str__(self):
+        return self.name

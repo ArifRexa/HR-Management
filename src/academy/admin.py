@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from academy.models import (
     MarketingSlider,
+    SuccessStory,
     Training,
     TrainingLearningTopic,
     TrainingOutline,
@@ -113,3 +114,10 @@ class TrainingAdmin(admin.ModelAdmin):
         TrainingStructureModuleInline,
         TrainingTechnologyInline,
     ]
+
+
+@admin.register(SuccessStory)
+class SuccessStoryAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    date_hierarchy = "created_at"
+    search_fields = ["name"]
