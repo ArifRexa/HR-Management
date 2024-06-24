@@ -412,14 +412,14 @@ class Employee(TimeStampMixin, AuthorMixin):
 
 
 class BookConferenceRoom(models.Model):
+    # Define TIME_CHOICES for 15-minute intervals
     TIME_CHOICES = [
-        # (time(hour, minute), f"{hour:02}:{minute:02}")
         (
             time(hour, minute),
             f"{(hour + 11) % 12 + 1}:{minute:02} {'AM' if hour < 12 else 'PM'}",
         )
         for hour in range(11, 21)
-        for minute in (0, 30)
+        for minute in (0, 15, 30, 45)  # Adjusted for 15-minute intervals
         if not (hour == 20 and minute == 30)
     ]
 
@@ -428,8 +428,7 @@ class BookConferenceRoom(models.Model):
         "project_management.Project", on_delete=models.CASCADE
     )
     start_time = models.TimeField(choices=TIME_CHOICES)
-    # end_time = models.TimeField(editable=False,)
-    created_at = models.DateTimeField(default=timezone.now)  # Add created_at field
+    created_at = models.DateTimeField(default=timezone.now)
 
     def clean(self):
         # Check if there is any booking with overlapping time
@@ -444,7 +443,7 @@ class BookConferenceRoom(models.Model):
 
         if existing_bookings.exists():
             raise ValidationError(
-                f"Another conference room is already booked at this time.{self.start_time}"
+                f"Another conference room is already booked at this time: {self.start_time}"
             )
 
     @property
@@ -452,12 +451,11 @@ class BookConferenceRoom(models.Model):
         start_time = self.start_time
         end_time = datetime.combine(
             timezone.now().date(), start_time
-        ) + timezone.timedelta(minutes=30)
+        ) + timezone.timedelta(minutes=15)  # Use timedelta for 15 minutes
         return end_time.time()
 
     def __str__(self):
         return f"Booking for {self.project_name} by {self.manager_or_lead.full_name} from {self.start_time}"
-
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
