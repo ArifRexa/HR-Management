@@ -539,25 +539,29 @@ def late_attendance_calculate():
     current_date = datetime.now()
     current_month = current_date.month
     current_year = current_date.year
-    start_date = current_date.replace(day=1)
-    end_date = current_date
-
     for employee in employees:
+        # Count late entries for the current month
         total_late_entry = EmployeeAttendance.objects.filter(
             employee=employee,
-            date__range=(start_date, end_date),
+            date__year=current_year,
+            date__month=current_month,
             entry_time__gt=late_entry
         ).count()
-      
-        if total_late_entry > 3:
-            total_fine = (total_late_entry - 3) * 80  
-        else:
-            total_fine = 0.0
 
-        # Update or create the LateAttendanceFine entry
-        LateAttendanceFine.objects.update_or_create(
+        # Check if there is a late entry for today
+        today_late_entry = EmployeeAttendance.objects.filter(
             employee=employee,
-            month=current_month,
-            year=current_year,
-            defaults={'total_late_attendance_fine': total_fine}
-        )
+            date=current_date,
+            entry_time__gt=late_entry
+        ).exists()
+
+        if total_late_entry > 3 and today_late_entry:
+             
+                # Create LateAttendanceFine entry
+                LateAttendanceFine.objects.create(
+                    employee=employee,
+                    month=current_month,
+                    year=current_year,
+                    date=current_date,
+                    total_late_attendance_fine=80.00
+                )
