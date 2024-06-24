@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from academy.models import (
+    InstructorFeedback,
     MarketingSlider,
     SuccessStory,
     Training,
@@ -118,6 +119,13 @@ class TrainingAdmin(admin.ModelAdmin):
 
 @admin.register(SuccessStory)
 class SuccessStoryAdmin(admin.ModelAdmin):
+    list_display = ("id", "name")
+    date_hierarchy = "created_at"
+    search_fields = ["name"]
+
+
+@admin.register(InstructorFeedback)
+class InstructorFeedbackAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
     date_hierarchy = "created_at"
     search_fields = ["name"]

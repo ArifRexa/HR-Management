@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from academy.models import (
+    InstructorFeedback,
     MarketingSlider,
     Student,
     SuccessStory,
@@ -163,3 +164,9 @@ class SuccessStorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SuccessStory
         fields = "__all__"
+
+
+class InstructorFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = InstructorFeedback
+        exclude = ["created_at", "updated_at"]

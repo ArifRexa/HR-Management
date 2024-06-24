@@ -124,3 +124,13 @@ class SuccessStory(TimeStampMixin):
 
     def __str__(self):
         return self.name
+
+
+class InstructorFeedback(TimeStampMixin):
+    name = models.CharField(max_length=200)
+    image = models.ImageField(upload_to="instructor_feedback", null=True, blank=True)
+    description = models.TextField()
+    video = models.URLField()
+
+    def __str__(self):
+        return self.name
