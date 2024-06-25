@@ -313,7 +313,7 @@
                         {% for employee_project in employee_projects %}
                         <li class="list-group-item">
                             <span class="float-start w-50">
-                                {% if employee_project.project_exists %}
+                                {% if employee_project.employee.is_online %}
                                 <span style="color: green">🟢</span>
                                 {% else %}
                                 <span>🔴</span>
