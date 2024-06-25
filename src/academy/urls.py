@@ -1,4 +1,5 @@
 from academy.views import (
+    HomePageAPIView,
     InstructorFeedbackView,
     MarketingSliderAPIListView,
     StudentCreateAPIView,
@@ -22,5 +23,10 @@ urlpatterns = [
         "instructor-feedback/",
         InstructorFeedbackView.as_view(),
         name="instructor_feedback",
+    ),
+    path(
+        "home/why-we-best/",
+        HomePageAPIView.as_view(),
+        name="why_we_best",
     ),
 ]

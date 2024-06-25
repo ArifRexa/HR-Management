@@ -1,18 +1,21 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from academy.models import (
+    HomePageWhyBest,
     InstructorFeedback,
     MarketingSlider,
     SuccessStory,
     Training,
 )
 from academy.serializers import (
+    HomePageSerializer,
     InstructorFeedbackSerializer,
     MarketingSliderSerializer,
     StudentCreateSerializer,
     SuccessStorySerializer,
     TrainingListSerializer,
     TrainingSerializer,
+    WhyWeBestSerializer,
 )
 from rest_framework import filters, response, permissions, parsers
 
@@ -62,3 +65,8 @@ class SuccessStoryView(ListAPIView):
 class InstructorFeedbackView(ListAPIView):
     queryset = InstructorFeedback.objects.all()
     serializer_class = InstructorFeedbackSerializer
+
+
+class HomePageAPIView(ListAPIView):
+    serializer_class = WhyWeBestSerializer
+    queryset = HomePageWhyBest.objects.all()

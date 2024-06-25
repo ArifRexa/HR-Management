@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from academy.models import (
+    HomePageWhyBest,
     InstructorFeedback,
     MarketingSlider,
     SuccessStory,
@@ -129,3 +130,10 @@ class InstructorFeedbackAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
     date_hierarchy = "created_at"
     search_fields = ["name"]
+    
+    
+@admin.register(HomePageWhyBest)
+class HomePageWhyBestAdmin(admin.ModelAdmin):
+    list_display = ("id", "title")
+    date_hierarchy = "created_at"
+    search_fields = ["title"]

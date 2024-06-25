@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from academy.models import (
+    HomePageWhyBest,
     InstructorFeedback,
     MarketingSlider,
     Student,
@@ -170,3 +171,12 @@ class InstructorFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = InstructorFeedback
         exclude = ["created_at", "updated_at"]
+
+
+class WhyWeBestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomePageWhyBest
+        exclude = ["created_at", "updated_at"]
+
+class HomePageSerializer(serializers.Serializer):
+    why_we_best = WhyWeBestSerializer(many=True)
