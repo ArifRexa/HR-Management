@@ -565,3 +565,20 @@ def late_attendance_calculate():
                     date=current_date,
                     total_late_attendance_fine=80.00
                 )
+                
+                
+                html_body = loader.render_to_string(
+                    "mails/late_entry_mail.html",
+                    context={"employee": employee},
+                )
+                print(html_body)
+                email = EmailMultiAlternatives()
+                email.subject = "Office Late Entry Today"
+                email.attach_alternative(html_body, "text/html")
+                
+                email.to = [employee.email]
+                print(email.to)
+                email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+                email.send()
+
+                
