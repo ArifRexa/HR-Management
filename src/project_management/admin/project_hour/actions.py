@@ -1,20 +1,27 @@
 import csv
+from decimal import Decimal
 
 from django.contrib import admin
 from django.http import HttpResponse
 
+from account.models import Income
 from project_management.admin.graph.admin import ExtraUrl
 
 
 class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
-    actions = ['export_as_csv', 'enable_payable_status', 'disable_payable_status']
+    actions = [
+        "export_as_csv",
+        "enable_payable_status",
+        "disable_payable_status",
+        "create_income",
+    ]
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        print(actions['export_as_csv'])
+        print(actions["export_as_csv"])
         if not request.user.is_superuser:
-            del actions['enable_payable_status']
-            del actions['disable_payable_status']
+            del actions["enable_payable_status"]
+            del actions["disable_payable_status"]
         return actions
 
     @admin.action()
@@ -28,21 +35,46 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
     @admin.action()
     def export_as_csv(self, request, queryset):
         response = HttpResponse(
-            content_type='text/csv',
-            headers={'Content-Disposition': 'attachment; filename="project_hour.csv"'},
+            content_type="text/csv",
+            headers={"Content-Disposition": 'attachment; filename="project_hour.csv"'},
         )
 
         writer = csv.writer(response)
-        writer.writerow(['Date', 'Project', 'Hours', 'Payment', 'Manager'])
+        writer.writerow(["Date", "Project", "Hours", "Payment", "Manager"])
         total = 0
         for project_hour in queryset:
             total += project_hour.hours * 10
-            writer.writerow([
-                project_hour.date,
-                project_hour.project,
-                project_hour.hours,
-                project_hour.hours * 10,
-                project_hour.manager
-            ])
-        writer.writerow(['', 'Total', '', total, ''])
+            writer.writerow(
+                [
+                    project_hour.date,
+                    project_hour.project,
+                    project_hour.hours,
+                    project_hour.hours * 10,
+                    project_hour.manager,
+                ]
+            )
+        writer.writerow(["", "Total", "", total, ""])
         return response
+
+    @admin.action(description="Create Income")
+    def create_income(self, request, queryset):
+        income_object = []
+        for project_hour in queryset:
+            project = project_hour.project
+            convert_rate = Decimal(90.0)
+            hourly_rate = project.hourly_rate or 0
+            hours = project_hour.hours or 0
+            payment = Decimal(hours) * Decimal(hourly_rate)*convert_rate
+            income_object.append(
+                Income(
+                    project=project,
+                    hours=hours,
+                    hour_rate=hourly_rate,
+                    convert_rate=convert_rate,
+                    date=project_hour.date,
+                    status="pending",
+                    payment=payment
+                )
+            )
+        Income.objects.bulk_create(income_object)
+        
