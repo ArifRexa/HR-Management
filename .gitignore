@@ -15,5 +15,5 @@ Pipfile.lock
 venv39
 .vscode
 
-# Ignore Django migration files
-src/*/migrations/
+*/migrations/
+!**/migrations/__init__.py
