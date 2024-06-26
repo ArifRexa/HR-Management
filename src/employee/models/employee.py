@@ -425,7 +425,7 @@ class BookConferenceRoom(models.Model):
 
     manager_or_lead = models.ForeignKey("employee.Employee", on_delete=models.CASCADE)
     project_name = models.ForeignKey(
-        "project_management.Project", on_delete=models.CASCADE
+        "project_management.Project", on_delete=models.CASCADE, limit_choices_to={"active": True}
     )
     start_time = models.TimeField(choices=TIME_CHOICES)
     created_at = models.DateTimeField(default=timezone.now)
