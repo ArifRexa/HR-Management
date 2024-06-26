@@ -588,7 +588,6 @@ class LateAttendanceFine(models.Model):
     date = models.DateField(default=datetime.now,null=True,blank=True)
 
     class Meta:
-        unique_together = ('employee', 'month', 'year')
         permissions = [
             ("can_view_all_late_attendance", "Can view all late attendance fines"),
         ]
