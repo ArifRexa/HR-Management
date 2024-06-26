@@ -553,9 +553,9 @@ def late_attendance_calculate():
             employee=employee,
             date=current_date,
             entry_time__gt=late_entry
-        ).exists()
+        )
 
-        if total_late_entry > 3 and today_late_entry:
+        if total_late_entry > 3 and today_late_entry.exists():
              
                 # Create LateAttendanceFine entry
                 LateAttendanceFine.objects.create(
@@ -569,16 +569,13 @@ def late_attendance_calculate():
                 
                 html_body = loader.render_to_string(
                     "mails/late_entry_mail.html",
-                    context={"employee": employee},
+                    context={"employee": employee,"entry_time":today_late_entry.first().entry_time},
                 )
-                print(html_body)
                 email = EmailMultiAlternatives()
-                email.subject = "Office Late Entry Today"
-                email.attach_alternative(html_body, "text/html")
-                
+                email.subject = f'Attention Required: Late Entry Logged {current_date}'
+                email.attach_alternative(html_body, "text/html")  
                 email.to = [employee.email]
-                print(email.to)
-                email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+                email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
                 email.send()
 
                 
