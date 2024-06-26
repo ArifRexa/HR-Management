@@ -14,3 +14,6 @@ Pipfile.lock
 .DS_Store
 venv39
 .vscode
+
+# Ignore Django migration files
+src/*/migrations/
