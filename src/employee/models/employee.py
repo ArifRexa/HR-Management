@@ -589,6 +589,8 @@ class LateAttendanceFine(models.Model):
 
     class Meta:
         unique_together = ('employee', 'month', 'year')
-    
+        permissions = [
+            ("can_view_all_late_attendance", "Can view all late attendance fines"),
+        ]
     def __str__(self):
         return f"{self.employee.user.username} - {self.month}/{self.year}"

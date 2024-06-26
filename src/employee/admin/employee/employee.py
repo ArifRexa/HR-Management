@@ -305,14 +305,14 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         fields = ['employee', 'total_late_attendance_fine']
         return fields
 
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        if not request.user.is_superuser:
-            return queryset.filter(employee__user=request.user)
-        return queryset
-
     def get_list_filter(self, request):
         # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
-        if request.user.is_superuser:
+        if request.user.is_superuser or request.user.has_perm('can_view_all_late_attendance'):
             return 'employee', 'year', 'month'
         return ('employee',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser or request.user.has_perm('employee.can_view_all_late_attendance'):
+            return qs
+        return qs.filter(employee=request.user.employee)
