@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from account.models import SalarySheet, EmployeeSalary, LoanPayment, Loan, SalarySheetTaxLoan
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
+from employee.models.employee import LateAttendanceFine
 from project_management.models import EmployeeProjectHour, ProjectHour
 from settings.models import PublicHolidayDate, EmployeeFoodAllowance
 from django.db.models import Count, Sum, Avg
@@ -149,7 +150,7 @@ class SalarySheetRepository:
         employee_salary.provident_fund = self.__calculate_provident_fund(
             employee=employee, salary_date=salary_sheet.date
         )
-
+        total_fine = self.__calculate_late_entry_fine(employee=employee, salary_date=salary_sheet.date)
         employee_salary.gross_salary = (
             employee_salary.net_salary
             + employee_salary.overtime
@@ -160,6 +161,7 @@ class SalarySheetRepository:
             + employee_salary.code_quality_bonus
             + employee_salary.loan_emi
             + employee_salary.provident_fund
+            + total_fine
             # + employee_salary.device_allowance
         )
         employee_salary.save()
@@ -570,7 +572,15 @@ class SalarySheetRepository:
 
         return -monthly_amount if monthly_amount else 0.0
 
-   
+    def __calculate_late_entry_fine(self, employee: Employee, salary_date: datetime.date):
+        current_month = datetime(salary_date).month if isinstance(salary_date, str) else salary_date.month
+        current_year = datetime(salary_date).year if isinstance(salary_date, str) else salary_date.year
+        total_fine = LateAttendanceFine.objects.filter(
+                    employee=employee,
+                    month=current_month,
+                    year=current_year,
+                ).aggregate(fine=Sum('total_late_attendance_fine'))
+        return -float(total_fine.get('fine', 0)) if total_fine.get('fine') else 0.00
 
     def __calculate_food_allowance(
         self, employee: Employee, salary_date

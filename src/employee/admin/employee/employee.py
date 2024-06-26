@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.forms import Textarea
 from datetime import datetime
 from employee.admin.employee._actions import EmployeeActions
@@ -126,14 +126,14 @@ class EmployeeAdmin(
 
     def total_late_attendance_fine(self, obj):
         current_date = datetime.now()
-        current_month = current_date.month
+        current_month = current_date.month-1
         current_year = current_date.year
         late_fine = LateAttendanceFine.objects.filter(
             employee=obj, 
             month=current_month, 
             year=current_year
-        ).first()
-        return late_fine.total_late_attendance_fine if late_fine else 0.0
+        ).aggregate(fine=Sum('total_late_attendance_fine'))
+        return late_fine.get('fine', 0.0) if late_fine.get('fine') else 0.0
 
     total_late_attendance_fine.short_description = 'Total Late Fine'
 
