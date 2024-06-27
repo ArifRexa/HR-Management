@@ -91,22 +91,44 @@
             <table class="list-table">
                 <thead>
                 <tr>
-                    <th>SL.</th>
-                    <th>Project Name</th>
-                    <th>Total Hours</th>
+                    <th>#</th>
+                    <th colspan="5">item & description</th>
+                    <th>Qty</th>
                     <th>Rate</th>
-                    <th>Total Amount</th>
+                    <th>Amount</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr>
+                <tr style="text-align: right;">
                     <td>1</td>
-                    <td>{{ invoice.project }}</td>
+                    <td colspan="5">{{ invoice.project }}</td>
                     <td>{{ invoice.hours }}</td>
                     <td>{{ invoice.hour_rate }}</td>
                     <td>{{ invoice.payment }}</td>
                 </tr>
                 </tbody>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                    </td>
+                    <td></td>
+                    <td>
+                        <br><br>
+                        <b>Total: {{ invoice.payment }}</b> <br>
+                        <b> Balance Due: ${{ invoice.payment }}</b>
+                    </td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                        {{ invoice.project.client.notes }}
+                    </td>
+                    <td></td>
+                    <td>
+                    </td>
+                </tr>
             </table>
         </div>
     {% endfor %}
