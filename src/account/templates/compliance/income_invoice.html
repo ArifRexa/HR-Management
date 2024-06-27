@@ -46,15 +46,21 @@
                 <tr>
                     <td colspan="3"><br></td>
                 </tr>
+                {% if invoice.project.client.bill_from %}
+                <tr>
+                    <td>
+                        {{ invoice.project.client.bill_from |strip_last_newline|safe}}
+                    </td>
+                </tr>
+                {% else %}
                 <tr>
                     <td><b>Mediusware Ltd.</b></td>
                     <td></td>
-                    <td><h1>Invoice</h1></td>
                 </tr>
                 <tr>
                     <td>Company ID: No. C-165786/2020</td>
                     <td></td>
-                    <td><b>#Invoice No {{ invoice.id }}</b></td>
+                    <td><b># INV-{{ invoice.id }}</b></td>
                 </tr>
                 <tr>
                     <td>
@@ -66,6 +72,7 @@
                     <td></td>
                     <td><h2>Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</h2></td>
                 </tr>
+                {% endif %}
                 <tr>
                     <td>
                         <br>
@@ -78,8 +85,8 @@
                     <td></td>
                     <td>
                         <br><br>
-                        Invoice Date: {{ invoice.date }}<br>
-                        Terms: Due on Receipt<br>
+                        Invoice Date: {{ invoice.date }}<br><br>
+                        Terms: Due on Receipt<br><br>
                         Due Date: {{ invoice.date }}<br>
                     </td>
                 </tr>
@@ -115,7 +122,7 @@
                     <td></td>
                     <td>
                         <br><br>
-                        <b style="margin-bottom: 20px;">Total: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b> <br>
+                        <b style="margin-bottom: 20px;">Total: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b> <br><br>
                         <b style="margin-top: 20px;"> Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b>
                     </td>
                 </tr>
