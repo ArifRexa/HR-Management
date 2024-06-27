@@ -64,7 +64,7 @@
                         Bangladesh<br>
                     </td>
                     <td></td>
-                    <td><h2>Balance Due: ${{ invoice.payment }}</h2></td>
+                    <td><h2>Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</h2></td>
                 </tr>
                 <tr>
                     <td>
@@ -104,7 +104,7 @@
                     <td colspan="5">{{ invoice.project.title }}: {{ invoice.date }}</td>
                     <td>{{ invoice.hours }}</td>
                     <td>{{ invoice.hour_rate }}</td>
-                    <td>{{ invoice.payment }}</td>
+                    <td>${% widthratio invoice.hours 1 invoice.hour_rate %}</td>
                 </tr>
                 </tbody>
             </table>
@@ -115,8 +115,8 @@
                     <td></td>
                     <td>
                         <br><br>
-                        <b style="margin-bottom: 20px;">Total: {{ invoice.payment }}</b> <br>
-                        <b style="margin-top: 20px;"> Balance Due: ${{ invoice.payment }}</b>
+                        <b style="margin-bottom: 20px;">Total: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b> <br>
+                        <b style="margin-top: 20px;"> Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b>
                     </td>
                 </tr>
             </table>
