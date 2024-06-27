@@ -158,9 +158,9 @@ class Income(TimeStampMixin, AuthorMixin):
 
     def save(self, *args, **kwargs):
         hour_rate_decimal = Decimal(self.hour_rate)
-        # convert_rate_decimal = Decimal(self.convert_rate)
+        convert_rate_decimal = Decimal(self.convert_rate)
         hours = Decimal(self.hours)
-        self.payment = hours * hour_rate_decimal #* convert_rate_decimal
+        self.payment = hours * hour_rate_decimal * convert_rate_decimal
         super(Income, self).save(*args, **kwargs)
 
 
