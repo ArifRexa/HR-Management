@@ -71,7 +71,7 @@
                         <br>
                         Bill to<br>
                         <b>{{invoice.project.client.name}}</b><br>
-                        <span>{{invoice.project.client.address}}<span><br>
+                        <span>{{invoice.project.client.address|strip_last_newline|safe}}<span><br>
                         <span>{{invoice.project.client.country}}</span>
                        
                     </td>
