@@ -101,7 +101,7 @@
                 <tbody>
                 <tr style="text-align: right;">
                     <td>1</td>
-                    <td colspan="5">{{ invoice.project }}</td>
+                    <td colspan="5">{{ invoice.project.title }}({{ invoice.date }})</td>
                     <td>{{ invoice.hours }}</td>
                     <td>{{ invoice.hour_rate }}</td>
                     <td>{{ invoice.payment }}</td>
@@ -115,7 +115,7 @@
                     <td></td>
                     <td>
                         <br><br>
-                        <b>Total: {{ invoice.payment }}</b> <br>
+                        <b>Total: {{ invoice.payment }}</b> <br><br>
                         <b> Balance Due: ${{ invoice.payment }}</b>
                     </td>
                 </tr>
