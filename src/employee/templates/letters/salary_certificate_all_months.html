@@ -1,5 +1,5 @@
 {% extends 'letters/extra/base.html' %}
-
+{% load employee_helper %}
 {% load humanize %}
 {% load humanize_extra %}
 {% load employee_helper %}
@@ -12,7 +12,7 @@
                 Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}
                 <br>
                 Date: {% now "jS F Y" %} <br>
-                <b>{{ employee.full_name | title }}</b>
+                <b>{{ employee.full_name | title }}</b><br>
                 Email: {{ employee.email }}<br>
             </p>
             <center><h2>To Whom It May Concern</h2></center>
@@ -56,145 +56,114 @@
 
             <table width="100%" border="1" cellpadding="5">
                 <tbody>
-                <tr>
-                    <td style="vertical-align: top">
-                        <table>
-                            <thead>
-                            <tr>
-                                <th align="left">Particulars</th>
-                                <th align="right">Amount (BDT)</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Basic (55%)</td>
-                                <td align="right">{{ employeesalary.net_salary | percentage:55 }}</td>
-                            </tr>
-                            <tr>
-                                <td>House Allowance (20%)</td>
-
-                                <td align="right">{{ employeesalary.net_salary | percentage:20 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Conveyance (15%)</td>
-
-                                <td align="right">{{ employeesalary.net_salary | percentage:15 }}</td>
-                            </tr>
-                            <tr>
-                                <td>Medical Allowance (10%)</td>
-
-                                <td align="right">
-                                    {{ employeesalary.net_salary | percentage:10 }}</td>
-                            </tr>
-                            {% if employeesalary.project_bonus %}
-                                <tr>
-                                    <td>Project Bonus</td>
-                                    <td align="right">
-                                        {{ employeesalary.project_bonus|floatformat:2|intcomma }}</td>
-                                </tr>
-                            {% endif %}
-                            {% if employeesalary.festival_bonus %}
-                                <tr>
-                                    <td>Festival Bonus</td>
-                                    <td align="right">
-                                        {{ employeesalary.festival_bonus|floatformat:2|intcomma }}</td>
-                                </tr>
-                            {% endif %}
-
-                            {% if employeesalary.overtime %}
-                                <tr>
-                                    <td>Overtime Bonus</td>
-                                    <td>{{ employeesalary.overtime|floatformat:2|intcomma }}</td>
-                                </tr>
-                            {% endif %}
-
-                            {% if employeesalary.leave_bonus %}
-                                <tr>
-                                    <td>Leave Bonus</td>
-                                    <td>{{ employeesalary.leave_bonus|floatformat:2|intcomma }}</td>
-                                </tr>
-                            {% endif %}
-                            <tr>
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
-                            <tr>
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
-                            </tbody>
-                            <tfoot>
-                            <tr>
-                                <th align="left">Total Earning/Salary</th>
-                                <th align="right">
-                                    {{employeesalary.net_salary |addition:employeesalary.project_bonus | floatformat:2|intcomma }}
-                                    BDT
-                                </th>
-                            </tr>
-                            </tfoot>
-                        </table>
-                    </td>
-                    <td>
-                        <table>
-                            <thead>
-                            <tr>
-                                <th align="left">Particulars</th>
-                                <th align="right">Amount (BDT)</th>
-                            </tr>
-                            </thead>
-
-                            <tbody>
-                            <tr>
-                                <td>PF (Org)</td>
-                                <td align="right">0.00</td>
-                            </tr>
-
-                            <tr>
-                                <td>PF (Own)</td>
-                                <td align="right">0.00</td>
-                            </tr>
-                            <tr>
-                                <td>PF Loan (P)</td>
-                                <td align="right">0.00</td>
-                            </tr>
-                            <tr>
-                                <td>PF Loan (I)</td>
-                                <td align="right">0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Laptop Loan</td>
-                                <td align="right">0.00</td>
-                            </tr>
-                            <tr>
-                                <td>Salary Advance Loan (P)</td>
-                                <td align="right">
-                                    {% if employeesalary.loan_emi %}
-                                        {{ employeesalary.loan_emi|floatformat:2 }}
-                                    {% else %}
-                                        0.00
+                    <tr>
+                        <td style="vertical-align: top;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th align="left">Particulars</th>
+                                        <th align="right">Amount (BDT)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Basic (55%)</td>
+                                        <td align="right">{{ employeesalary.net_salary | percentage:55 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>House Allowance (20%)</td>
+                                        <td align="right">{{ employeesalary.net_salary | percentage:20 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Conveyance (15%)</td>
+                                        <td align="right">{{ employeesalary.net_salary | percentage:15 }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Medical Allowance (10%)</td>
+                                        <td align="right">{{ employeesalary.net_salary | percentage:10 }}</td>
+                                    </tr>
+                                    {% if employeesalary.project_bonus %}
+                                        <tr>
+                                            <td>Project Bonus</td>
+                                            <td align="right">{{ employeesalary.project_bonus|floatformat:2|intcomma }}</td>
+                                        </tr>
                                     {% endif %}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Salary Advance Loan (I)</td>
-                                <td align="right">0.00</td>
-                            </tr>
-                            </tbody>
+                                    {% if employeesalary.festival_bonus %}
+                                        <tr>
+                                            <td>Festival Bonus</td>
+                                            <td align="right">{{ employeesalary.festival_bonus|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    {% if employeesalary.overtime %}
+                                        <tr>
+                                            <td>Overtime Bonus</td>
+                                            <td>{{ employeesalary.overtime|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    {% if employeesalary.leave_bonus %}
+                                        <tr>
+                                            <td>Leave Bonus</td>
+                                            <td>{{ employeesalary.leave_bonus|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                    {% endif %}
+                                    {% if employeesalary.food_allowance %}
+                                    <tr>
+                                        <td>Lunch Allowance</td>
+                                        <td align="right">{{ employeesalary.food_allowance|floatformat:2|intcomma }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    
+                                    
 
-                            <tfoot>
-                            <tr>
-                                <th align="left">Total Deduction</th>
-                                <th align="right">{{ employeesalary.loan_emi|floatformat:2  }}</th>
-                            </tr>
-                            </tfoot>
-
-
-                        </table>
-                    </td>
-                </tr>
+                                    <tr>
+                                        <td><br></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th align="left">Total Earning/Salary</th>
+                                        <th align="right">{{ employeesalary.net_salary | addition:employeesalary.project_bonus| addition:employeesalary.food_allowance| addition:employeesalary.festival_bonus | floatformat:2|intcomma }} BDT</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </td>
+                        <td style="vertical-align: top;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th align="left">Particulars</th>
+                                        <th align="right">Amount (BDT)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Salary Advance Loan</td>
+                                        <td align="right">
+                                            {% if employeesalary.loan_emi %}
+                                                {{ employeesalary.loan_emi|floatformat:2 }}
+                                            {% else %}
+                                                0.00
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                   
+                                    <tr>
+                                        <td><br><br><br><br><br><br></td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th align="left">Total Deduction</th>
+                                        <th align="right">{{ employeesalary.loan_emi|floatformat:2 }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
-
+            
+            
             <table width="100%" border="1" cellpadding="5">
 
 
@@ -203,7 +172,7 @@
                     <th align='left'>Net Salary:</th>
 
                     <th align="right">
-                        {{ employeesalary.net_salary |addition:employeesalary.project_bonus|floatformat:2|intcomma }}
+                        {{ employeesalary.gross_salary | floatformat:2|intcomma }}
                         BDT
                     </th>
                 </tr>
@@ -212,7 +181,7 @@
             <br>
             {% if employeesalary.loan_emi %}
                 <p>Deducted on salary :
-                    {{ employeesalary.net_salary | addition:employeesalary.project_bonus }}
+                    {{ employeesalary.net_salary | addition:employeesalary.project_bonus| addition:employeesalary.food_allowance| addition:employeesalary.festival_bonus | floatformat:2|intcomma }}
                     {{ employeesalary.loan_emi }} = <b>{{ employeesalary.gross_salary }}
                         Taka</b>
                 </p>
@@ -236,7 +205,7 @@
                     <td></td>
                 </tr>
                 <tr>
-                    <br>
+                    
                     <td>Md. Shahinur Rahman</td>
                     <td></td>
                 </tr>
