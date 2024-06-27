@@ -47,7 +47,7 @@ class Tag(TimeStampMixin, AuthorMixin):
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     designation = models.CharField(max_length=200, null=True, blank=True)
-    email = models.EmailField(max_length=80)
+    email = models.EmailField(max_length=80,null=True,blank=True)
     cc_email = models.TextField(
         null=True, blank=True, help_text="Comma-separated email addresses for CC"
     )
