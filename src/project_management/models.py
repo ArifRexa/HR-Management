@@ -57,6 +57,7 @@ class Client(TimeStampMixin, AuthorMixin):
     # show_in_web = models.BooleanField(default=False)
     client_feedback = models.TextField(null=True, blank=True)
     image = models.ImageField(upload_to="client_images", null=True, blank=True)
+    linkedin_url = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return self.name
