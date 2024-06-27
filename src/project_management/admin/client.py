@@ -25,6 +25,7 @@ class ClientAdmin(admin.ModelAdmin):
         "country",
         "notes",
     )
+    list_filter = ("project__active",)
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):

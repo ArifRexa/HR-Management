@@ -23,6 +23,12 @@ def get_account_number(employee: Employee):
     return 'bank account number not found'
 
 
+@register.filter(name='strip_last_newline')
+def strip_last_newline(value):
+    if value.endswith('\n'):
+        value = value[:-1]
+    return value.replace('\n', '<br />')
+
 @register.filter
 def _total_by_des_type(employee_salary_set):
     total = 0
