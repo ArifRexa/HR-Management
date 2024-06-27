@@ -2,7 +2,7 @@ from django.db import models
 from tinymce.models import HTMLField
 from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Technology
-
+from django.utils.text import slugify
 # Create your models here.
 
 
@@ -17,6 +17,7 @@ class MarketingSlider(TimeStampMixin):
 
 class Training(TimeStampMixin):
     title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     video = models.URLField(null=True, blank=True)
     image = models.ImageField(upload_to="training", null=True, blank=True)
@@ -24,6 +25,11 @@ class Training(TimeStampMixin):
 
     def __str__(self):
         return self.title if self.title else str(self.id)
+    
+    def save(self) -> None:
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save()
 
 
 class TrainingTechnology(TimeStampMixin):

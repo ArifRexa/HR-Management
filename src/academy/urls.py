@@ -15,7 +15,7 @@ urlpatterns = [
         MarketingSliderAPIListView.as_view(),
         name="marketing_slider",
     ),
-    path("training/<int:pk>/", TrainingRetrieveAPIView.as_view(), name="training"),
+    path("training/<slug:slug>/", TrainingRetrieveAPIView.as_view(), name="training"),
     path("trainings/", TrainingListAPIView.as_view(), name="trainings"),
     path("student/", StudentCreateAPIView.as_view(), name="student"),
     path("success/story", SuccessStoryView.as_view(), name="success_story"),
