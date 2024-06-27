@@ -99,11 +99,11 @@ class ProjectAdmin(admin.ModelAdmin):
             form.base_fields['hourly_rate'] = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
         return form
     
-    # def get_fields(self, request: HttpRequest, obj: Any | None = ...) -> Sequence[Callable[..., Any] | str]:
-    #     fields = super().get_fields(request, obj)
-    #     if not request.user.is_superuser:
-    #         fields.remove('hourly_rate')
-    #     return fields
+    def get_fields(self, request, obj):
+        fields = super().get_fields(request, obj)
+        if not request.user.is_superuser:
+            fields.remove('hourly_rate')
+        return fields
     
     def get_ordering(self, request):
         return ['title']
