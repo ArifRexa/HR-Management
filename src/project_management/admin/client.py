@@ -13,6 +13,18 @@ class ClientAdmin(admin.ModelAdmin):
         "country",
         "address",
     )
+    fields = (
+        "name",
+        "email",
+        "logo",
+        "client_feedback",
+        "image",
+        "linkedin_url",
+        "cc_email",
+        "address",
+        "country",
+        "notes",
+    )
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
