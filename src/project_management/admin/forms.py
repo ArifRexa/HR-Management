@@ -21,4 +21,4 @@ class ProjectAdminForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = '__all__'
-        exclude = ['hourly_rate']
+        # exclude = ['hourly_rate']
