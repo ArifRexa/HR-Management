@@ -107,6 +107,7 @@ class TrainingAdmin(admin.ModelAdmin):
         "description",
         "duration",
     )
+    prepopulated_fields = {"slug": ("title",)}
     date_hierarchy = "created_at"
     search_fields = ["title"]
     inlines = [
@@ -130,8 +131,8 @@ class InstructorFeedbackAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
     date_hierarchy = "created_at"
     search_fields = ["name"]
-    
-    
+
+
 @admin.register(HomePageWhyBest)
 class HomePageWhyBestAdmin(admin.ModelAdmin):
     list_display = ("id", "title")

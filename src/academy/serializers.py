@@ -91,7 +91,7 @@ class TrainingLearningTopicSerializer(serializers.ModelSerializer):
 class TrainingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Training
-        fields = ["id", "title", "description", "video", "duration", "image"]
+        fields = ["id", "title","slug", "description", "video", "duration", "image"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
@@ -132,6 +132,7 @@ class TrainingListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "title",
+            "slug",
             "description",
             "image",
             "duration",
