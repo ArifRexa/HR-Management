@@ -106,8 +106,10 @@ class IncomeAdmin(admin.ModelAdmin):
         pdf = PDF()
         pdf.file_name = f'Income Invoice'
         pdf.template_path = "compliance/income_invoice.html"
+        protocal = "https" if request.is_secure() else "http"
         pdf.context = {
             'invoices': queryset,
-            'seal': f"{STATIC_ROOT}/stationary/sign_md.png"
+            'seal': f"{STATIC_ROOT}/stationary/sign_md.png",
+            "host": f"{protocal}://{request.get_host()}"
         }
         return pdf.render_to_pdf(download=True)
