@@ -155,6 +155,7 @@ class Income(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
     add_to_balance_sheet = models.BooleanField(default=False)
+    is_send_clients = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         hour_rate_decimal = Decimal(self.hour_rate)
