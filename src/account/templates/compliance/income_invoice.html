@@ -51,6 +51,14 @@
                     <td>
                         {{ invoice.project.client.bill_from |strip_last_newline|safe}}
                     </td>
+                    <td></td>
+                    <td><b># INV-{{ invoice.id }}</b></td>
+                    
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td><h2>Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</h2></td>
                 </tr>
                 {% else %}
                 <tr>
@@ -65,8 +73,8 @@
                 <tr>
                     <td>
                         Ring Road<br>
-                        House: 18/5, Floor 3rd<br>
-                        Adabor, Dhaka 1207<br>
+                        House: 24/1, Floor 7th & 8th<br>
+                        Mohammadpur, Dhaka 1207<br>
                         Bangladesh<br>
                     </td>
                     <td></td>
@@ -108,7 +116,17 @@
                 <tbody>
                 <tr style="text-align: right;">
                     <td>1</td>
-                    <td colspan="5">{{ invoice.project.title }}: {{ invoice.date }}</td>
+                    <td colspan="5">{{ invoice.project.title }}: {{ invoice.date }}
+                        
+                        {% if invoice.project.client.is_hour_breakdown %}
+                        <br>
+                        <br>
+                        <b>
+                        Hour Breakdown: <a href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" style="cursor: pointer; text-decoration: underline;">Link</a>
+                    </b>
+                        {% endif %}
+                            
+                    </td>
                     <td>{{ invoice.hours }}</td>
                     <td>{{ invoice.hour_rate }}</td>
                     <td>${% widthratio invoice.hours 1 invoice.hour_rate %}</td>
