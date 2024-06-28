@@ -14,6 +14,7 @@ from employee.models import (
     EmployeeSkill,
     BookConferenceRoom,
 )
+from config.admin.utils import simple_request_filter
 from employee.models.attachment import Attachment
 from employee.models.employee import (
     EmployeeLunch,
@@ -342,6 +343,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = ("employee", "get_month_name", "year", "total_late_attendance_fine")
     list_filter = ("employee",)
     date_hierarchy = "date"
+    change_list_template = 'admin/total_fine.html'
 
     def get_month_name(self, obj):
         return month_name[obj.month]
@@ -368,3 +370,17 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         ):
             return qs
         return qs.filter(employee=request.user.employee)
+    
+    
+    def get_total_fine(self, request):
+        qs = self.get_queryset(request).filter(
+            **simple_request_filter(request))
+        if not request.user.is_superuser:
+            qs.filter(employee__id__exact=request.user.employee.id)
+        return qs.aggregate(total_fine=Sum('total_late_attendance_fine'))
+
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['total_fine'] = self.get_total_fine(request)['total_fine']
+        return super(self.__class__, self).changelist_view(request, extra_context=extra_context)
