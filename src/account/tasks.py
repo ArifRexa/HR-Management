@@ -81,15 +81,16 @@ def generate_attachment(incomes: List[Income]):
 
 
 def send_income_email_to_clients():
+
     today = datetime.today().date()
-    clients = Client.objects.filter(invoice_date=today)
+    clients = Client.objects.filter(clientinvoicedate__invoice_date=today).distinct()
+
     for client in clients:
         incomes = Income.objects.filter(
             is_send_clients=False, project__client=client
         ).select_related("project__client")
         pdf_file = generate_attachment(incomes)
-        print(type(pdf_file))
-        print(pdf_file)
+
         # Send email
         email = EmailMessage(
             subject="Income Invoice",
@@ -101,3 +102,6 @@ def send_income_email_to_clients():
 
         email.attach("Income_Invoice.pdf", pdf_file.create(), "application/pdf")
         email.send()
+        
+        # Update is_send_clients to True after sending the email
+        incomes.update(is_send_clients=True)
