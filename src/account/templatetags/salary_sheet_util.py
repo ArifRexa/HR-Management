@@ -3,7 +3,7 @@ from math import floor
 
 from django import template
 from django.db.models import Sum
-
+from dateutil.relativedelta import relativedelta
 from account.models import Invoice
 from employee.models import Employee
 
@@ -28,6 +28,10 @@ def strip_last_newline(value):
     if value.endswith('\n'):
         value = value[:-1]
     return value.replace('\n', '<br />')
+
+@register.filter(name="last_week")
+def last_week(value):
+    return value - relativedelta(days=6)
 
 @register.filter
 def _total_by_des_type(employee_salary_set):
