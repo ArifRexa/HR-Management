@@ -25,7 +25,7 @@ class ClientAdmin(admin.ModelAdmin):
         "address",
         "country",
         "notes",
-        "invoice_date"
+        "invoice_date",
         "is_hour_breakdown",
     )
     list_filter = ("project__active",)
