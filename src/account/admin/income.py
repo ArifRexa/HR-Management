@@ -20,6 +20,7 @@ class IncomeAdmin(admin.ModelAdmin):
     list_display = ('project', 'date', 'hours', 'loss_hours',
                     'hour_rate', 'convert_rate', 'payment_details', 'status_col')
     date_hierarchy = 'date'
+    exclude = ['is_send_clients']
     readonly_fields = ('payment',)
     list_filter = ('status', 'project', 'hour_rate', 'date')
     actions = ['approve_selected', 'pending_selected', 'print_income_invoices']
