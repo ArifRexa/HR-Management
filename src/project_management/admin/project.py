@@ -9,7 +9,7 @@ from django.utils.html import format_html
 from icecream import ic
 from .forms import ProjectTechnologyInlineForm,ProjectAdminForm
 from django import forms
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService,ClientInvoiceDate
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
@@ -80,7 +80,7 @@ class ProjectResultsAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('project_title_with_client','hourly_rate','last_increased', 'active','get_report_url')
+    list_display = ('project_title_with_client','client_invoice_date','hourly_rate','last_increased', 'active','get_report_url')
     search_fields = ('title', 'client__name', 'client__email')
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
@@ -134,8 +134,11 @@ class ProjectAdmin(admin.ModelAdmin):
             list_display = [field for field in list_display if field not in ('hourly_rate', 'increase_rate', 'last_increased')]
         return list_display
     
-    
-    
+    def client_invoice_date(self,obj):
+        client_date = ClientInvoiceDate.objects.filter(clients=obj.client).values_list('invoice_date',flat=True)
+
+        formatted_dates = "<br/>".join(str(date) for date in client_date)
+        return format_html(formatted_dates)
 
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
