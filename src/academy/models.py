@@ -18,7 +18,7 @@ class MarketingSlider(TimeStampMixin):
 class Training(TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
     video = models.URLField(null=True, blank=True)
     image = models.ImageField(upload_to="training", null=True, blank=True)
     duration = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -51,7 +51,7 @@ class TrainingOutline(TimeStampMixin):
         Training, on_delete=models.CASCADE, related_name="training_outlines", null=True
     )
     title = models.CharField(max_length=255, null=True, blank=True)
-    description = models.TextField(null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="training_outline")
 
     def __str__(self):
