@@ -1,6 +1,9 @@
+from ast import mod
 from datetime import datetime
 import datetime
 from datetime import timedelta
+from http import client
+from pyexpat import model
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 
@@ -62,11 +65,14 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     linkedin_url = models.URLField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
-    invoice_date = models.DateField(null=True, blank=True)
     is_hour_breakdown = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
+
+class ClientInvoiceDate(models.Model):
+    clients = models.ForeignKey(Client,on_delete=models.SET_NULL,null=True,blank=True)
+    invoice_date = models.DateField(null=True, blank=True)
 
 
 class ProjectOverview(TimeStampMixin, AuthorMixin):
