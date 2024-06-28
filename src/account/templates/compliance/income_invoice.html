@@ -122,7 +122,10 @@
                         <br>
                         <br>
                         <b>
-                        Hour Breakdown: <a href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" style="cursor: pointer; text-decoration: underline;">Link</a>
+                        Hours Breakdown: <a 
+                        href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
+                        style="cursor: pointer; text-decoration: underline; font-size: 24px;"
+                        target="_blank">Link</a>
                     </b>
                         {% endif %}
                             
@@ -148,7 +151,7 @@
             <table>
                 <tr>
                     <td>
-                        {{ invoice.project.client.notes }}
+                        {{ invoice.project.client.notes|strip_last_newline|safe }}
                     </td>
                     <td></td>
                     <td>
