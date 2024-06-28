@@ -72,10 +72,9 @@
                 </tr>
                 <tr>
                     <td>
-                        Ring Road<br>
-                        House: 24/1, Floor 7th & 8th<br>
-                        Mohammadpur, Dhaka 1207<br>
-                        Bangladesh<br>
+                        24/1, Floor 7th & 8th<br>
+                        Ring Road, Mohammadpur<br> 
+                        Dhaka 1207<br></vr> Bangladesh<br>
                     </td>
                     <td></td>
                     <td><h2>Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</h2></td>
@@ -124,7 +123,7 @@
                         <b>
                         Hours Breakdown: <a 
                         href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
-                        style="cursor: pointer; text-decoration: underline; font-size: 24px;"
+                        style="cursor: pointer; text-decoration: underline; font-size: 20px;"
                         target="_blank">Link</a>
                     </b>
                         {% endif %}
