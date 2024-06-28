@@ -42,6 +42,7 @@ class Industry(models.Model):
 class Service(models.Model):
     icon = models.ImageField()
     title = models.CharField(max_length=200)
+    sub_title = models.CharField(max_length=200, null=True, blank=True)
     slug = models.SlugField(unique=True)
     short_description = models.TextField()
     banner_image = models.ImageField()
