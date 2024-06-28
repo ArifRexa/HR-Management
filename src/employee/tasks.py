@@ -534,7 +534,7 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 
 def late_attendance_calculate():
     employees = Employee.objects.filter(active=True,show_in_attendance_list=True).exclude(salaryhistory__isnull=True)
-    late_entry = time(hour=11, minute=30)
+    late_entry = time(hour=11, minute=31)
 
     current_date = datetime.now()
     current_month = current_date.month
