@@ -62,6 +62,7 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     linkedin_url = models.URLField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
+    invoice_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.name

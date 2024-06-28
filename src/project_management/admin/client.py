@@ -25,6 +25,7 @@ class ClientAdmin(admin.ModelAdmin):
         "address",
         "country",
         "notes",
+        "invoice_date"
     )
     list_filter = ("project__active",)
 
