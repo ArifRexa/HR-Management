@@ -1,6 +1,14 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from project_management.models import Client
+from project_management.models import Client,ClientInvoiceDate
+
+
+
+
+
+class ClientInvoiceDateInline(admin.StackedInline):
+    model = ClientInvoiceDate
+    extra = 1
 
 
 @admin.register(Client)
@@ -25,10 +33,10 @@ class ClientAdmin(admin.ModelAdmin):
         "address",
         "country",
         "notes",
-        "invoice_date",
         "is_hour_breakdown",
     )
-    list_filter = ("project__active",)
+    list_filter = ("project__active","project")
+    inlines = (ClientInvoiceDateInline,)
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):

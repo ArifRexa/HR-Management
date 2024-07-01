@@ -17,21 +17,13 @@ from config.utils.pdf import PDF
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = (
-        "project",
-        "date",
-        "hours",
-        "loss_hours",
-        "hour_rate",
-        "convert_rate",
-        "payment_details",
-        "status_col",
-    )
-    date_hierarchy = "date"
-    exclude = ["is_send_clients"]
-    readonly_fields = ("payment",)
-    list_filter = ("status", "project", "hour_rate", "date")
-    actions = ["approve_selected", "pending_selected", "print_income_invoices"]
+    list_display = ('project', 'date', 'hours',
+                    'hour_rate', 'convert_rate', 'payment_details', 'status_col')
+    date_hierarchy = 'date'
+    exclude = ['is_send_clients']
+    readonly_fields = ('payment',)
+    list_filter = ('status', 'project', 'hour_rate', 'date')
+    actions = ['approve_selected', 'pending_selected', 'print_income_invoices']
     # list_editable = ('status',)
     formfield_overrides = {models.TextField: {"widget": Textarea(attrs={"rows": 2})}}
     autocomplete_fields = ["project"]
