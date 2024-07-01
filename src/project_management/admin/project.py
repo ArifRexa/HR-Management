@@ -136,7 +136,7 @@ class ProjectAdmin(admin.ModelAdmin):
     def get_list_display(self, request):
         
         list_display = super().get_list_display(request)
-        if not request.user.has_perm('project_management.can_see_all_project_field'):
+        if not request.user.is_superuser:
             list_display = [field for field in list_display if field not in ('hourly_rate', 'increase_rate', 'last_increased','client_invoice_date')]
         return list_display
     
