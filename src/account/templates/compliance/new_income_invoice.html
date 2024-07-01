@@ -121,7 +121,10 @@
                 <tr>
                     <th>#</th>
                     <th colspan="2">Date</th>
-                    <th colspan="3">item & description</th>
+                    <th colspan="2">item & description</th>
+                    {% if invoice.project.client.is_hour_breakdown %}
+                    <th>Breakdown</th>
+                    {% endif %}
                     <th>Qty</th>
                     <th>Rate</th>
                     <th>Amount</th>
@@ -134,7 +137,7 @@
                     
                     <td colspan="2">{{ invoice.date }}</td>
                         
-                    <td colspan="3">
+                    <td colspan="2">
                         
                         {% comment %}
                             
@@ -146,22 +149,27 @@
                             {{ invoice.project.title }}: {{ invoice.date }}
                         {% endif %} -->
                         {% endcomment %}
+                        
+                        {% if invoice.note %}
                         {{ invoice.note |strip_last_newline|safe }}
-                        {% if invoice.project.client.is_hour_breakdown %}
-                    <br>
-                    <br>
-                    <b>
-                        Breakdown: <a 
-                        href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
-                        style="cursor: pointer; text-decoration: underline; font-size: 16px;"
-                        target="_blank">Link</a>
-                    </b>
-                {% endif %}
-                            
+                        {% else %}
+                        {{ invoice.project.title }}: {{ invoice.date }}
+                        {% endif %}
                         
-                        
-                            
                     </td>
+                    {% if invoice.project.client.is_hour_breakdown %}
+                    
+                    <td style="align-items: center;">
+                    <b>
+                        <a 
+                            href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
+                            style="cursor: pointer; text-decoration: underline; font-size: 16px;"
+                            target="_blank">
+                                Link
+                        </a>
+                    </b>
+                </td>
+                {% endif %}
                     <td>{{ invoice.hours|floatformat:2 }}</td>
                     <td>{{ invoice.hour_rate }}</td>
                     <td>${% widthratio invoice.hours 1 invoice.hour_rate %}</td>
