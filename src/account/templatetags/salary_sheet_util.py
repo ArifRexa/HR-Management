@@ -25,6 +25,8 @@ def get_account_number(employee: Employee):
 
 @register.filter(name='strip_last_newline')
 def strip_last_newline(value):
+    if not value:
+        return value
     if value.endswith('\n'):
         value = value[:-1]
     return value.replace('\n', '<br />')
