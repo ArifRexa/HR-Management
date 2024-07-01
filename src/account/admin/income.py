@@ -17,7 +17,7 @@ from config.utils.pdf import PDF
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'date', 'hours', 'loss_hours',
+    list_display = ('project', 'date', 'hours',
                     'hour_rate', 'convert_rate', 'payment_details', 'status_col')
     date_hierarchy = 'date'
     exclude = ['is_send_clients']
