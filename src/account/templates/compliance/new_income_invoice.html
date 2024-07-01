@@ -153,7 +153,7 @@
                         {% if invoice.note %}
                         {{ invoice.note |strip_last_newline|safe }}
                         {% else %}
-                        {{ invoice.project.title }}: {{ invoice.date }}
+                        {{ invoice.project.title }}
                         {% endif %}
                         
                     </td>
