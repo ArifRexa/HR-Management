@@ -1,10 +1,12 @@
+from urllib import request
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Count, BooleanField, Case, When, Value, Min, Q, Prefetch
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-
+from django.db.models import Sum
+from datetime import timedelta
 from config.settings import employee_ids as management_ids
 
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
@@ -18,7 +20,7 @@ from employee.models import (
     HomeOffice,
     EmployeeNeedHelp,
     NeedHelpPosition,
-    Employee
+    Employee,
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
@@ -26,7 +28,7 @@ from employee.models.employee import Employee, BookConferenceRoom
 from employee.models import FavouriteMenu
 from employee.forms.employee_project import BookConferenceRoomForm
 from project_management.models import Project
-
+from employee.models.employee import LateAttendanceFine
 from settings.models import Announcement
 
 from datetime import datetime
@@ -140,6 +142,38 @@ def formal_summery(request):
         "new_lead_or_managers": employee_formal_summery.new_lead_or_manager,
     }
 
+
+
+def total_attendance_fine(request):
+        if not request.user.is_authenticated:
+            return ''
+        obj = request.user.employee
+        current_date = datetime.now()
+        current_month = current_date.month
+        last_month = current_date.month - 1
+        current_year = current_date.year
+        current_late_fine = LateAttendanceFine.objects.filter(
+            employee=obj, month=current_month, year=current_year
+        ).aggregate(fine=Sum("total_late_attendance_fine"))
+        last_late_fine = LateAttendanceFine.objects.filter(
+            employee=obj, month=last_month, year=current_year
+        ).aggregate(fine=Sum("total_late_attendance_fine"))
+        current_fine = (
+            current_late_fine.get("fine", 0.00)
+            if current_late_fine.get("fine")
+            else 0.00
+        )
+        last_fine = (
+            last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
+        )
+        
+
+        html = f'{current_fine}|{last_fine}'
+        is_super = request.user.is_superuser
+        return {
+            'is_super':is_super,
+          'late_attendance_fine':format_html(html)
+        }
 
 def employee_status_form(request):
     if (
@@ -329,6 +363,7 @@ def favourite_menu_list(request):
         data["object_list"] = f_menu
         return data
     return []
+
 from project_management.models import Project
 def project_lists(request):
     if request.user.is_authenticated:
@@ -393,3 +428,5 @@ def employee_project_list(request):
         project_list = None
     
     return {'employee_project_list': project_list}
+
+

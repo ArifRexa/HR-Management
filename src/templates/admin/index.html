@@ -101,6 +101,13 @@
 {#{% block bodyclass %}{{ block.super }} dashboard{% endblock %}#}
 
 {% block content_title %}
+
+{% if not is_super%}
+    <div style="float: right;">
+        <p style="color: red;">{{late_attendance_fine}}</p>
+    </div>
+{%endif%}       
+
 {#{% if not current_month_feedback_done %}#}
 {#<div id="feedback__marquee">#}
 {#    <span id="feedback__marquee__inner">#}
@@ -180,7 +187,6 @@
 
 {% block content %}
 <div class="container-fluid">
-
     <div class="row">
         <div class="col-md-4">
             {% include 'admin/form/employee_favourite_menu.html' %}
