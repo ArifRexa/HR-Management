@@ -51,7 +51,7 @@ class ClientAdmin(admin.ModelAdmin):
         "notes",
         "is_hour_breakdown",
     )
-    list_filter = ("project__active",ActiveProjectFilter)
+    list_filter = ("project__active",)
     inlines = (ClientInvoiceDateInline,)
     search_fields = ['name']
     @admin.display(description="Project Name")
