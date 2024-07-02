@@ -579,7 +579,7 @@ class DailyProjectUpdateGroupByClient(DailyProjectUpdate):
     class Meta:
         proxy = True
         permissions = [
-            ("see_group_by_client", "Can see group by client"),
+            ("see_all_employee_update", "Can see all daily update"),
         ]
         verbose_name = "Group By Client"
         verbose_name_plural = "Group By Client"
