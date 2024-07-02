@@ -755,7 +755,7 @@ class GallerySerializer(serializers.ModelSerializer):
 class AwardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Award
-        fields = ["image"]
+        fields = ["image","link"]
 
 
 class ClientSerializer(serializers.ModelSerializer):

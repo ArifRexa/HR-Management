@@ -115,7 +115,7 @@ class MostPopularBlogPagination(PageNumberPagination):
 
 
 class ProjectList(ListAPIView):
-    queryset = Project.objects.filter(show_in_website=True).all()
+    queryset = Project.objects.filter(show_in_website=True,active=True).all()
     serializer_class = ProjectSerializer
     filter_backends = [
         DjangoFilterBackend,
@@ -521,14 +521,15 @@ class GalleryListView(APIView):
         return Response({"results": images})
     
 
-class AwardListView(APIView):
+class AwardListView(ListAPIView):
+    queryset = Award.objects.all()
     serializer_class = AwardSerializer
     
-    def get(self, request, *args, **kwargs):
-        queryset = Award.objects.all()
-        serializer = self.serializer_class(queryset, many=True)
-        images = [request.build_absolute_uri(image['image']) for image in serializer.data]
-        return Response({"results": images})
+    # def get(self, request, *args, **kwargs):
+    #     queryset = Award.objects.all()
+    #     serializer = self.serializer_class(queryset, many=True)
+    #     images = [request.build_absolute_uri(image['image']) for image in serializer.data]
+    #     return Response({"results": images})
     
 class ClientListAPIView(ListAPIView):
     queryset = Client.objects.all()

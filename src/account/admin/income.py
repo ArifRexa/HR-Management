@@ -22,7 +22,7 @@ class IncomeAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     exclude = ['is_send_clients']
     readonly_fields = ('payment',)
-    list_filter = ('status', 'project', 'hour_rate', 'date')
+    list_filter = ('status', 'project','date')
     actions = ['approve_selected', 'pending_selected', 'print_income_invoices','send_income_invoices_email']
     # list_editable = ('status',)
     formfield_overrides = {models.TextField: {"widget": Textarea(attrs={"rows": 2})}}
