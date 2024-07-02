@@ -53,7 +53,7 @@ class ClientAdmin(admin.ModelAdmin):
     )
     list_filter = ("project__active",ActiveProjectFilter)
     inlines = (ClientInvoiceDateInline,)
-    search_fields = ['client']
+    search_fields = ['name']
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
