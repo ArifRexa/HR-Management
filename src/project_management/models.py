@@ -2,8 +2,6 @@ from ast import mod
 from datetime import datetime
 import datetime
 from datetime import timedelta
-from http import client
-from pyexpat import model
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 
@@ -50,7 +48,7 @@ class Tag(TimeStampMixin, AuthorMixin):
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     designation = models.CharField(max_length=200, null=True, blank=True)
-    email = models.EmailField(max_length=80,null=True,blank=True)
+    email = models.EmailField(max_length=80, null=True, blank=True)
     bill_from = models.TextField(null=True, blank=True)
     cc_email = models.TextField(
         null=True, blank=True, help_text="Comma-separated email addresses for CC"
@@ -70,8 +68,11 @@ class Client(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.name
 
+
 class ClientInvoiceDate(models.Model):
-    clients = models.ForeignKey(Client,on_delete=models.SET_NULL,null=True,blank=True)
+    clients = models.ForeignKey(
+        Client, on_delete=models.SET_NULL, null=True, blank=True
+    )
     invoice_date = models.DateField(null=True, blank=True)
 
 
@@ -572,6 +573,19 @@ class DailyProjectUpdateGroupByProject(DailyProjectUpdate):
 
     def __str__(self) -> str:
         return self.project.title
+
+
+class DailyProjectUpdateGroupByClient(DailyProjectUpdate):
+    class Meta:
+        proxy = True
+        permissions = [
+            ("see_group_by_client", "Can see group by client"),
+        ]
+        verbose_name = "Group By Client"
+        verbose_name_plural = "Group By Client"
+
+    def __str__(self) -> str:
+        return self.project.client.name
 
 
 class DailyProjectUpdateGroupByManager(DailyProjectUpdate):
