@@ -432,6 +432,7 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = [
             "id",
+            "slug",
             "full_name",
             "designation",
             "image",
