@@ -82,48 +82,50 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for c_key, c_values in daily_project_hours_data.items %}
-                        {% with total_rows=0 total_hour=0 %}
-                            
+                    {% with 0 as rowspan %}
+                        {% for c_key, c_values in daily_project_hours_data.items %}
+                    
+                
+                    
                             {% for key, values in c_values.items %}
+                            
                                 {% for hour in values %}
                                     <tr>
                                         <td>{{ hour.created_at }}</td>
-                                        
-                                        {% if forloop.parentloop.first and forloop.first %}
-                                        <td rowspan="{{ total_rows }}">{{ c_key }}</td>
-                                        {% endif %}
-                                        
-                                        {% if forloop.first %}
+                                        {% ifchanged key.client %}
+                                        <td rowspan="{{ values|length }}">{{ c_key }}</td>
+                                        {% endifchanged %}
+                                        {% ifchanged key %}
                                         <td rowspan="{{ values|length }}">{{ hour.project }}</td>
-                                        {% endif %}
-                                        
+                                        {% endifchanged %}
                                         <td>{{ hour.employee }} || ({{hour.hours}})</td>
-                                        
-                                        {% if forloop.parentloop.first and forloop.first %}
-                                        {% sum_project_hours c_values as total_project_hours %}
-                                        <td rowspan="{{ total_rows }}">
-                                            {% if total_project_hours <= 5 %} 
-                                                <b style="color: red; font-weight: bold">{{ total_project_hours }}</b>
+                                        {% ifchanged %}
+                                        <td rowspan="{{ values|length }}">
+                                            {% if key.total_project_hours <= 5 %} <b style="color: red; font-weight: bold">
+                                            {{ key.total_project_hours }}
+                                            </b>
                                             {% else %}
-                                                {{ total_project_hours }}
+                                            {{ key.total_project_hours }}
                                             {% endif %}
                                         </td>
-                                        {% endif %}
-                                        
+                                        {% endifchanged %}
                                         <td>{{ hour.manager }}</td>
                                         <td>
                                             {% if hour.status == "pending" %}
-                                                <b style="color: red">{{ hour.get_status_display }}</b>
+                                            <b style="color: red">
+                                            {{ hour.get_status_display }}
+                                            </b>
                                             {% else %}
-                                                <b style="color: green">{{ hour.get_status_display }}</b>
+                                            <b style="color: green">
+                                            {{ hour.get_status_display }}
+                                            </b>
                                             {% endif %}
                                         </td>
                                     </tr>
                                 {% endfor %}
                             {% endfor %}
-                        {% endwith %}
-                    {% endfor %}
+                        {% endfor %}
+                    {% endwith %}
                 </tbody>
             </table>
             
