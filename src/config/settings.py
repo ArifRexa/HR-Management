@@ -111,6 +111,7 @@ TEMPLATES = [
                 "config.context_processors.employees.conference_room_bookings_form",
                 "config.context_processors.employees.employee_context_processor",
                 "config.context_processors.employees.employee_project_list",
+                 "config.context_processors.employees.total_attendance_fine",
             ],
         },
     },
