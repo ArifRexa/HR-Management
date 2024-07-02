@@ -115,7 +115,7 @@ class MostPopularBlogPagination(PageNumberPagination):
 
 
 class ProjectList(ListAPIView):
-    queryset = Project.objects.filter(show_in_website=True).all()
+    queryset = Project.objects.filter(show_in_website=True,active=True).all()
     serializer_class = ProjectSerializer
     filter_backends = [
         DjangoFilterBackend,
