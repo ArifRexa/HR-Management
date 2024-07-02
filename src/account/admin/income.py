@@ -183,7 +183,8 @@ class IncomeAdmin(admin.ModelAdmin):
         body = body,
         email.attach_file(pdf.create())
         email.to = [client.email]
-        email.from_email = 'admin@mediusware.com'
+        email.from_email = 'coredeveloper.2013@gmail.com'
+        email.cc= client.cc_email.split(",") if client.cc_email else [],
         email.send()
 
 
