@@ -81,12 +81,13 @@ class ProjectResultsAdmin(admin.ModelAdmin):
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('project_title_with_client','client_invoice_date','hourly_rate','last_increased', 'active','get_report_url','get_live_link')
-    search_fields = ('title', 'client__name', 'client__email')
+    search_fields = ('title', 'client__name', 'client__email',)
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
+    autocomplete_fields = ['client']
     form = ProjectAdminForm
     # def get_readonly_fields(self, request, obj=None):
     #     if not request.user.is_superuser:
