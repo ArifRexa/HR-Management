@@ -167,8 +167,8 @@ def total_attendance_fine(request):
             last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
         )
         
-
-        html = f'{current_fine}|{last_fine}'
+        last_month_date = current_date + timedelta(days=-30)
+        html = f'{current_fine} ( {current_date.strftime("%b")} ) </br>{last_fine} ( {last_month_date.strftime("%b")} )'
         is_super = request.user.is_superuser
         return {
             'is_super':is_super,
