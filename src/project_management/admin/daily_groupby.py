@@ -330,6 +330,9 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
         css = {"all": ("css/list.css",)}
         js = ("js/list.js",)
 
+    def total_client_hours(self, data):
+        return sum(key.total_project_hours for key, value in data.items())
+
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
         yesterday = today - timedelta(days=1)
@@ -342,7 +345,10 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
             filters["created_at__date"] = yesterday
         daily_project_update_data = {}
         project_hours = (
-            self.get_queryset(request).filter(project__active=True).filter(**filters)
+            self.get_queryset(request)
+            .select_related("project", "project__client", "employee", "manager")
+            .filter(project__active=True)
+            .filter(**filters)
         )
         client_daily_project_update_data = {}
         for hours in project_hours:
@@ -366,7 +372,14 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
             else:
                 client_daily_project_update_data[key.client] = {key: value}
 
-        my_context = {"daily_project_hours_data": client_daily_project_update_data}
+        sorted_client_data_set = dict(
+            sorted(
+                client_daily_project_update_data.items(),
+                key=lambda x: self.total_client_hours(x[1]),
+            )
+        )
+
+        my_context = {"daily_project_hours_data": sorted_client_data_set}
         return super().changelist_view(request, extra_context=my_context)
 
     def has_change_permission(self, request, obj=None):
