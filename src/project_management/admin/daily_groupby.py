@@ -294,10 +294,8 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
     )
     list_filter = (
         "status",
-        "project__client",
         "project",
-        "employee",
-        "manager",
+        "project__client",
     )
     date_hierarchy = "created_at"
     autocomplete_fields = (
