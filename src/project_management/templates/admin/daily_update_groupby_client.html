@@ -93,9 +93,10 @@
                                 {% for hour in values %}
                                     <tr>
                                         <td>{{ hour.created_at }}</td>
-                                        {% ifchanged key.client %}
-                                        <td rowspan="{{ values|length }}">{{ c_key }}</td>
-                                        {% endifchanged %}
+                                        {% if forloop.parentloop.first and forloop.first %}
+                                        {% total_rowspan c_values as total_rowspan %}
+                                        <td rowspan="{{ total_rowspan }}">{{ c_key }}</td>
+                                        {% endif %}
                                         {% ifchanged key %}
                                         <td rowspan="{{ values|length }}">{{ hour.project }}</td>
                                         {% endifchanged %}
@@ -103,17 +104,17 @@
                                         {% ifchanged %}
                                         <td rowspan="{{ values|length }}">
                                             {% if key.total_project_hours <= 5 %} <b style="color: red; font-weight: bold">
-                                            {{ key.total_project_hours }}
+                                            {{ key.total_project_hours | floatformat:2 }}
                                             </b>
                                             {% else %}
-                                            {{ key.total_project_hours }}
+                                            {{ key.total_project_hours | floatformat:2 }}
                                             {% endif %}
                                         </td>
                                         {% endifchanged %}
-                                        {% ifchanged key.client %}
+                                        {% if forloop.parentloop.first and forloop.first %}
                                         {% sum_project_hours c_values as total_hours %}
-                                        <td rowspan="{{ values|length }}">{{ total_hours }}</td>
-                                        {% endifchanged %}
+                                        <td rowspan="{{ total_rowspan }}">{{ total_hours | floatformat:2 }}</td>
+                                        {% endif %}
                                         <td>{{ hour.manager }}</td>
                                         <td>
                                             {% if hour.status == "pending" %}
