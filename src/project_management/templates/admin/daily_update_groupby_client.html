@@ -104,16 +104,16 @@
                                         {% ifchanged %}
                                         <td rowspan="{{ values|length }}">
                                             {% if key.total_project_hours <= 5 %} <b style="color: red; font-weight: bold">
-                                            {{ key.total_project_hours }}
+                                            {{ key.total_project_hours | floatformat:2 }}
                                             </b>
                                             {% else %}
-                                            {{ key.total_project_hours }}
+                                            {{ key.total_project_hours | floatformat:2 }}
                                             {% endif %}
                                         </td>
                                         {% endifchanged %}
                                         {% if forloop.parentloop.first and forloop.first %}
                                         {% sum_project_hours c_values as total_hours %}
-                                        <td rowspan="{{ total_rowspan }}">{{ total_hours }}</td>
+                                        <td rowspan="{{ total_rowspan }}">{{ total_hours | floatformat:2 }}</td>
                                         {% endif %}
                                         <td>{{ hour.manager }}</td>
                                         <td>
