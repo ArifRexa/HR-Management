@@ -295,6 +295,7 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
     list_filter = (
         "status",
         "project__client",
+        "project",
         "employee",
         "manager",
     )
@@ -302,7 +303,6 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
     autocomplete_fields = (
         "employee",
         "project",
-        # "project__client",
     )
     change_list_template = "admin/daily_update_groupby_client.html"
     readonly_fields = ["status"]
@@ -330,20 +330,21 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
         css = {"all": ("css/list.css",)}
         js = ("js/list.js",)
 
-
     def custom_changelist_view(self, request, extra_context=None):
         today = datetime.datetime.now().date()
         yesterday = today - timedelta(days=1)
 
-        filters = dict()
+        filters = {}
         for key, value in request.GET.items():
             if value != "":
                 filters[key] = value
-        if len(filters) == 0:
+        if not filters:
             filters["created_at__date"] = yesterday
-        daily_project_update_data = dict()
-        project_hours = self.get_queryset(request).filter(**filters)
-        client_daily_project_update_data = dict()
+        daily_project_update_data = {}
+        project_hours = (
+            self.get_queryset(request).filter(project__active=True).filter(**filters)
+        )
+        client_daily_project_update_data = {}
         for hours in project_hours:
             key = hours.project
             key.set_project_hours(
@@ -352,7 +353,6 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
                 .get("total_hours")
             )
             daily_project_update_data.setdefault(key, []).append(hours)
-            
 
         sorted_data_set = dict(
             sorted(
@@ -362,9 +362,7 @@ class ProjectUpdateGroupByClientAdmin(admin.ModelAdmin):
         )
         for key, value in sorted_data_set.items():
             if key.client in client_daily_project_update_data:
-                client_daily_project_update_data[key.client].update({
-                    key: value
-                })
+                client_daily_project_update_data[key.client].update({key: value})
             else:
                 client_daily_project_update_data[key.client] = {key: value}
 
