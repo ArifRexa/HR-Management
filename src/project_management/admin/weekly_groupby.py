@@ -15,13 +15,18 @@ from employee.models.employee import Employee
 
 @admin.register(EmployeeProjectHourGroupByEmployee)
 class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
+
+    
     list_display = (
         "created_at",
         "employee",
+        "employee_monthly_expected_hours",
         "get_project",
         "hours",
         "get_manager",
     )
+
+    
     list_filter = (
         "project_hour__project",
         "employee",
@@ -29,6 +34,11 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
     date_hierarchy = "project_hour__date"
     change_list_template = "admin/weekly_update_groupby_employee.html"
 
+
+    @admin.display(description='Monthly Expected Hours')
+    def employee_monthly_expected_hours(self, obj):
+        return obj.employee.monthly_expected_hours
+    
     @admin.display(description="Project")
     def get_project(self, instance):
         return instance.project_hour.project.title
