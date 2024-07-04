@@ -289,10 +289,11 @@ class SalarySheetRepository:
             status="approved",
         ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
         if total_non_paid_leave:
-            return (
-                -(self.__employee_current_salary.payable_salary / 30)
-                * total_non_paid_leave
-            )
+            total_month_day = calendar.monthrange(salary_sheet.date.year,salary_sheet.date.month)
+            salary_cut = (self.__employee_current_salary.payable_salary / total_month_day) * total_non_paid_leave
+            lunch_cut = total_non_paid_leave * 100
+            total_cut = salary_cut + lunch_cut
+            return -total_cut
         return 0
 
     def __calculate_leave_in_cash(self, salary_sheet: SalarySheet, employee: Employee):
