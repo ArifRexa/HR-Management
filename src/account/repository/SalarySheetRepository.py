@@ -290,7 +290,7 @@ class SalarySheetRepository:
         ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
         if total_non_paid_leave:
             return (
-                -(self.__employee_current_salary.payable_salary / 31)
+                -(self.__employee_current_salary.payable_salary / 30)
                 * total_non_paid_leave
             )
         return 0
@@ -305,13 +305,14 @@ class SalarySheetRepository:
         @param salary_sheet:
         @return:
         """
+        total_month_day = calendar.monthrange(salary_sheet.date.year,salary_sheet.date.month)
         leave_in_cash = 0
         if (
             salary_sheet.date.month == 12
             and employee.leave_in_cash_eligibility
             and employee.permanent_date != None
         ):
-            one_day_salary = self.__employee_current_salary.payable_salary / 31
+            one_day_salary = self.__employee_current_salary.payable_salary / total_month_day[1]
             payable_medical_leave = employee.leave_available_leaveincash(
                 "medical_leave", salary_sheet.date
             ) - employee.leave_passed("medical", salary_sheet.date.year)
