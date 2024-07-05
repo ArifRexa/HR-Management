@@ -4,6 +4,7 @@ from website.hire_models import (
     FAQContent,
     HireEngagement,
     HireEngagementContent,
+    HirePricing,
     HireResource,
     HireResourceContent,
     HireResourceFAQ,
@@ -56,7 +57,14 @@ class QuoteSerializer(BaseModelSerializer):
 class PricingSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Pricing
-        exclude = ["created_at", "updated_at", "hire_resource_content"]
+        exclude = ["created_at", "updated_at"]
+        
+
+class HirePricingSerializer(BaseModelSerializer):
+    pricing_content = PricingSerializer(many=True)
+    class Meta(BaseModelSerializer.Meta):
+        model = HirePricing
+        exclude = ["created_at", "updated_at"]
 
 
 class HireServiceContentSerializer(BaseModelSerializer):
@@ -140,7 +148,7 @@ class HiringProcessSerializer(BaseModelSerializer):
 class HireResourceContentSerializer(BaseModelSerializer):
     awards = AwardSerializer(many=True)
     quote = QuoteSerializer()
-    pricings = PricingSerializer(many=True)
+    pricing = HirePricingSerializer()
     service = HireServiceSerializer()
     statistic = HireResourceStatisticSerializer()
     technologies = HireResourceTechnologySerializer(many=True)
