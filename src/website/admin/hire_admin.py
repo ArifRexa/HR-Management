@@ -22,8 +22,10 @@ from website.hire_models import (
     HireServiceContent,
     HiringProcess,
     HiringProcessContent,
+    OnDemandTeam,
     Quote,
     WhyWeAreContent,
+    WorldClassTalent,
 )
 
 
@@ -107,9 +109,23 @@ class HireResourceAdmin(HireResourceAdminMixin):
     form = HireResourceForm
 
 
+@admin.register(WorldClassTalent)
+class WorldClassTalentAdmin(HireResourceAdminMixin):
+    list_display = ("title", "sub_title", "description")
+
+
+@admin.register(OnDemandTeam)
+class OnDemandTeamInAdmin(HireResourceAdminMixin):
+    list_display = ("title", "sub_title", "description")
+
+
 @admin.register(HireResourceContent)
 class HireResourceContentAdmin(HireResourceAdminMixin):
-    inlines = [PricingInlineAdmin, HireTechnologyInlineAdmin, whyWeAreInlineAdmin]
+    inlines = [
+        PricingInlineAdmin,
+        HireTechnologyInlineAdmin,
+        whyWeAreInlineAdmin,
+    ]
     list_display = (
         "resource",
         "tag",
@@ -132,6 +148,8 @@ class HireResourceContentAdmin(HireResourceAdminMixin):
         "sub_title",
         "description",
         "awards",
+        "world_class_talent",
+        "on_demand_team",
         "quote",
     )
     form = HireResourceForm

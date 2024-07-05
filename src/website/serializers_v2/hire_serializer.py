@@ -16,6 +16,7 @@ from website.hire_models import (
     HiringProcessContent,
     Pricing,
     Quote,
+    HirePageStaticContent,
 )
 from website.serializers import AwardSerializer, TechnologySerializer
 
@@ -23,6 +24,12 @@ from website.serializers import AwardSerializer, TechnologySerializer
 class BaseModelSerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ["created_at", "updated_at"]
+
+
+class HirePageStaticContentSerializer(BaseModelSerializer):
+    class Meta:
+        model = HirePageStaticContent
+        fields = ["title", "description", "icon"]
 
 
 class QuoteSerializer(BaseModelSerializer):
@@ -73,16 +80,16 @@ class HireResourceTechnologySerializer(BaseModelSerializer):
 
 
 class HireResourceFeatureContentSerializer(BaseModelSerializer):
-    class Meta():
+    class Meta:
         model = HireResourceFeatureContent
         fields = ["title", "description"]
 
 
 class FAQContentSerializer(BaseModelSerializer):
-    class Meta():
+    class Meta:
         model = FAQContent
         fields = ["question", "answer"]
-        
+
 
 class HireResourceFAQSerializer(BaseModelSerializer):
     faqs = FAQContentSerializer(many=True)
@@ -90,6 +97,7 @@ class HireResourceFAQSerializer(BaseModelSerializer):
     class Meta:
         model = HireResourceFAQ
         fields = ["title", "sub_title", "description", "faqs"]
+
 
 class HireResourceFeatureSerializer(BaseModelSerializer):
     feature_contents = HireResourceFeatureContentSerializer(many=True)
@@ -123,6 +131,9 @@ class HireResourceContentSerializer(BaseModelSerializer):
     feature = HireResourceFeatureSerializer()
     hire_process = HiringProcessSerializer()
     faq = HireResourceFAQSerializer()
+    world_class_talent = HirePageStaticContentSerializer(many=True)
+    on_demand_team = HirePageStaticContentSerializer(many=True)
+
     class Meta(BaseModelSerializer.Meta):
         model = HireResourceContent
         exclude = ["created_at", "updated_at", "resource"]
