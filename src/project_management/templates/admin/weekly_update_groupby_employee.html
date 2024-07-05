@@ -71,15 +71,19 @@
                 </tr>
               </thead>
               <tbody>
-                {% for obj in cl.result_list %}
-                <tr>
-                  <td>{{ obj.created_at }}</td>
-                  <td>{{ obj.employee }}</td>
-                  <td>{{ obj.employee_monthly_expected_hours }}</td>
-                  <td>{{ obj.get_project }}</td>
-                  <td>{{ obj.hours }}</td>
-                  <td>{{ obj.get_manager }}</td>
-                </tr>
+                {% for key, values in employee_hours_data.items %}
+                  {% for hour in values %}
+                    <tr>
+                      <td>{{ hour.created_at }}</td>
+                      {% if forloop.first %}
+                      <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
+                      <td rowspan="{{ values|length }}">{{ hour.employee.monthly_expected_hours|default:"0.00" }}</td>
+                      {% endif %}
+                      <td>{{ hour.project_hour.project.title }}</td>
+                      <td>{{ hour.hours|default:"0.00" }}</td>
+                      <td>{{ hour.project_hour.manager.full_name }}</td>
+                    </tr>
+                  {% endfor %}
                 {% endfor %}
               </tbody>
             </table>
