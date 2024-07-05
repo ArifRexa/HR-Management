@@ -290,10 +290,10 @@ class SalarySheetRepository:
         ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
         if total_non_paid_leave:
             total_month_day = calendar.monthrange(salary_sheet.date.year,salary_sheet.date.month)
-            salary_cut = (self.__employee_current_salary.payable_salary / total_month_day) * total_non_paid_leave
-            lunch_cut = total_non_paid_leave * 100
-            total_cut = salary_cut + lunch_cut
-            return -total_cut
+            return (
+                -(self.__employee_current_salary.payable_salary / total_month_day[1])
+                * total_non_paid_leave
+            )
         return 0
 
     def __calculate_leave_in_cash(self, salary_sheet: SalarySheet, employee: Employee):
@@ -633,6 +633,16 @@ class SalarySheetRepository:
     def __calculate_food_allowance(self, employee: Employee, salary_date):
         if not employee.lunch_allowance:
             return 0.0
+        
+        total_non_paid_leave = employee.leave_set.filter(
+            start_date__month=salary_date.month,
+            start_date__year=salary_date.year,
+            end_date__year=salary_date.year,
+            end_date__month=salary_date.month,
+            leave_type="non_paid",
+            status="approved",
+        ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
+        
 
         if (
             employee.joining_date.year == salary_date.year
@@ -653,12 +663,18 @@ class SalarySheetRepository:
 
             # Calculate the number of days from the joining date to the last day of the month
             days_count = (last_day_of_month - joining_datetime).days + 1
-
+            if total_non_paid_leave:
+                days_count+=total_non_paid_leave
             total_pay = days_count * 100
             return min(total_pay, 3000)
 
         else:
-            return 3000
+            if not total_non_paid_leave:
+                return 3000
+            if total_non_paid_leave > 30:
+                return 0.00
+            else:
+                return 3000 - (total_non_paid_leave * 100)
 
         # date_range = calendar.monthrange(salary_date.year, salary_date.month)
         # import datetime
