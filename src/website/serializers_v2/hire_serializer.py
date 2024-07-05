@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from website.hire_models import (
     FAQContent,
+    HireEngagement,
+    HireEngagementContent,
     HireResource,
     HireResourceContent,
     HireResourceFAQ,
@@ -23,6 +25,20 @@ from website.serializers import AwardSerializer, TechnologySerializer
 
 class BaseModelSerializer(serializers.ModelSerializer):
     class Meta:
+        exclude = ["created_at", "updated_at"]
+
+
+class HireEngagementContentSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = HireEngagementContent
+        exclude = ["created_at", "updated_at"]
+
+
+class HireEngagementSerializer(BaseModelSerializer):
+    content = HireEngagementContentSerializer(many=True)
+
+    class Meta(BaseModelSerializer.Meta):
+        model = HireEngagement
         exclude = ["created_at", "updated_at"]
 
 
@@ -130,6 +146,7 @@ class HireResourceContentSerializer(BaseModelSerializer):
     technologies = HireResourceTechnologySerializer(many=True)
     feature = HireResourceFeatureSerializer()
     hire_process = HiringProcessSerializer()
+    engagement = HireEngagementSerializer()
     faq = HireResourceFAQSerializer()
     world_class_talent = HirePageStaticContentSerializer(many=True)
     on_demand_team = HirePageStaticContentSerializer(many=True)
