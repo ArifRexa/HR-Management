@@ -6,8 +6,6 @@ from website.hire_models import (
     Pricing,
     WhyWeAre,
     FAQContent,
-    WorldClassTalent,
-    OnDemandTeam
 )
 
 
@@ -16,10 +14,10 @@ class FAQContentInlineAdmin(admin.TabularInline):
     fields = ("question", "answer")
     extra = 1
 
-class PricingInlineAdmin(admin.TabularInline):
-    model = Pricing
-    fields = ("title", "sub_title", "price", "description", "is_active")
-    extra = 1
+# class PricingInlineAdmin(admin.TabularInline):
+#     model = Pricing
+#     fields = ("title", "sub_title", "price", "description", "is_active")
+#     extra = 1
 
 
 class HireTechnologyInlineAdmin(admin.TabularInline):

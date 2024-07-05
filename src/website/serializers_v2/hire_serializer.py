@@ -2,6 +2,9 @@ from rest_framework import serializers
 
 from website.hire_models import (
     FAQContent,
+    HireEngagement,
+    HireEngagementContent,
+    HirePricing,
     HireResource,
     HireResourceContent,
     HireResourceFAQ,
@@ -26,6 +29,20 @@ class BaseModelSerializer(serializers.ModelSerializer):
         exclude = ["created_at", "updated_at"]
 
 
+class HireEngagementContentSerializer(BaseModelSerializer):
+    class Meta(BaseModelSerializer.Meta):
+        model = HireEngagementContent
+        exclude = ["created_at", "updated_at"]
+
+
+class HireEngagementSerializer(BaseModelSerializer):
+    content = HireEngagementContentSerializer(many=True)
+
+    class Meta(BaseModelSerializer.Meta):
+        model = HireEngagement
+        exclude = ["created_at", "updated_at"]
+
+
 class HirePageStaticContentSerializer(BaseModelSerializer):
     class Meta:
         model = HirePageStaticContent
@@ -40,7 +57,14 @@ class QuoteSerializer(BaseModelSerializer):
 class PricingSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Pricing
-        exclude = ["created_at", "updated_at", "hire_resource_content"]
+        exclude = ["created_at", "updated_at"]
+        
+
+class HirePricingSerializer(BaseModelSerializer):
+    pricing_content = PricingSerializer(many=True)
+    class Meta(BaseModelSerializer.Meta):
+        model = HirePricing
+        exclude = ["created_at", "updated_at"]
 
 
 class HireServiceContentSerializer(BaseModelSerializer):
@@ -124,12 +148,13 @@ class HiringProcessSerializer(BaseModelSerializer):
 class HireResourceContentSerializer(BaseModelSerializer):
     awards = AwardSerializer(many=True)
     quote = QuoteSerializer()
-    pricings = PricingSerializer(many=True)
+    pricing = HirePricingSerializer()
     service = HireServiceSerializer()
     statistic = HireResourceStatisticSerializer()
     technologies = HireResourceTechnologySerializer(many=True)
     feature = HireResourceFeatureSerializer()
     hire_process = HiringProcessSerializer()
+    engagement = HireEngagementSerializer()
     faq = HireResourceFAQSerializer()
     world_class_talent = HirePageStaticContentSerializer(many=True)
     on_demand_team = HirePageStaticContentSerializer(many=True)
