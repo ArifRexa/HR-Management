@@ -1,5 +1,4 @@
-import datetime
-from datetime import timedelta
+from datetime import timedelta,datetime
 
 from django.contrib import admin
 from django.db.models import Sum
@@ -12,11 +11,8 @@ from functools import update_wrapper
 from django.urls import path
 from employee.models.employee import Employee
 
-
 @admin.register(EmployeeProjectHourGroupByEmployee)
 class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
-
-    
     list_display = (
         "created_at",
         "employee",
@@ -26,7 +22,6 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         "get_manager",
     )
 
-    
     list_filter = (
         "project_hour__project",
         "employee",
@@ -34,11 +29,10 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
     date_hierarchy = "project_hour__date"
     change_list_template = "admin/weekly_update_groupby_employee.html"
 
-
     @admin.display(description='Monthly Expected Hours')
     def employee_monthly_expected_hours(self, obj):
-        return obj.employee.monthly_expected_hours
-    
+        return obj.employee.monthly_expected_hours or 0.0
+
     @admin.display(description="Project")
     def get_project(self, instance):
         return instance.project_hour.project.title
@@ -51,40 +45,31 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         css = {"all": ("css/list.css",)}
         js = ("js/list.js",)
 
-    def custom_changelist_view(self, request, extra_context=None):
-        today = datetime.datetime.now().date()
+    def changelist_view(self, request, extra_context=None):
+        today = datetime.now().date()
         yesterday = today - timedelta(days=1)
 
-        filters = dict()
+        filters = {}
         for key, value in request.GET.items():
-            if value != "":
+            if value:
                 filters[key] = value
-        if len(filters) == 0:
+        if not filters:
             filters["created_at__date"] = yesterday
 
-        employee_hours_data = dict()
+        employee_hours_data = {}
         employee_hours = self.get_queryset(request).filter(**filters)
 
         for hours in employee_hours:
             key = hours.employee
-            key.set_employee_hours(
-                key.employeeprojecthour_set.filter(**filters)
-                .aggregate(total_hours=Coalesce(Sum("hours"), 0.0))
-                .get("total_hours")
-            )
+            key.employee_hours = key.employeeprojecthour_set.filter(**filters).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
             employee_hours_data.setdefault(key, []).append(hours)
 
-        sorted_data_set = dict(
-            sorted(
-                employee_hours_data.items(),
-                key=lambda x: x[0].employee_hours,
-            )
-        )
+        sorted_data_set = dict(sorted(employee_hours_data.items(), key=lambda x: x[0].employee_hours))
         
-        my_context = {
-            "employee_hours_data": sorted_data_set,
-        }
-        return super().changelist_view(request, extra_context=my_context)
+        extra_context = extra_context or {}
+        extra_context['employee_hours_data'] = sorted_data_set
+
+        return super().changelist_view(request, extra_context=extra_context)
 
     def get_urls(self):
         urls = super().get_urls()
@@ -100,7 +85,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         custom_urls = [
             path("admin/", wrap(self.changelist_view), name="%s_%s_changelist" % info),
             path(
-                "", self.custom_changelist_view, name="groupby_employee_changelist_view"
+                "", self.changelist_view, name="groupby_employee_changelist_view"
             ),
         ]
 
