@@ -6,6 +6,8 @@ from website.hire_models import (
     Pricing,
     WhyWeAre,
     FAQContent,
+    WorldClassTalent,
+    OnDemandTeam
 )
 
 

@@ -122,6 +122,47 @@ class FAQContent(ModelMixin):
     answer = models.TextField()
 
 
+class HirePageStaticContent(ModelMixin):
+    TYPE_CHOICES = (
+        ("wct", "World Class Talent"),
+        ("odt", "On Demand Team"),
+    )
+    icon = models.ImageField(null=True, blank=True, upload_to="hire_page")
+    content_type = models.CharField(max_length=3, choices=TYPE_CHOICES, default="wct")
+
+
+class WorldClassTalentManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset().filter(content_type="wct")
+
+
+class OnDemandTeamManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset().filter(content_type="odt")
+
+
+class WorldClassTalent(HirePageStaticContent):
+    objects = WorldClassTalentManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "World Class Talent"
+        verbose_name_plural = "World Class Talent"
+
+
+class OnDemandTeam(HirePageStaticContent):
+    objects = OnDemandTeamManager()
+
+    class Meta:
+        proxy = True
+        verbose_name = "On Demand Team"
+        verbose_name_plural = "On Demand Team"
+
+    def save(self, *args, **kwargs):
+        self.content_type = "odt"
+        super().save(*args, **kwargs)
+
+
 class HireResourceContent(ModelMixin):
     tag = models.CharField(null=True, blank=True, max_length=255)
     image = models.ImageField(null=True, upload_to="hire_resource")
@@ -173,6 +214,12 @@ class HireResourceContent(ModelMixin):
         related_name="hire_resource_contents",
         on_delete=models.CASCADE,
         null=True,
+    )
+    world_class_talent = models.ManyToManyField(
+        WorldClassTalent, blank=True, related_name="world_class_talent"
+    )
+    on_demand_team = models.ManyToManyField(
+        OnDemandTeam, blank=True, related_name="on_demand_team"
     )
 
 
