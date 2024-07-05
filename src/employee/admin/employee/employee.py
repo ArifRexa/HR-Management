@@ -133,7 +133,6 @@ class EmployeeAdmin(
             "leave_info",
             "salary_history",
             "skill",
-            "tour_allowance",
             "permanent_status",
         ]
         if not request.user.is_superuser and not request.user.has_perm(

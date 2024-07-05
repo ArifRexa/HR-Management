@@ -1,5 +1,7 @@
+from ast import mod
 import datetime
 from datetime import date as dt_date, time, datetime, timedelta
+from pyexpat import model
 import uuid
 import math
 from django.contrib.auth.models import Group, User
@@ -95,7 +97,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     need_hr = models.BooleanField(verbose_name="I need help from HR", default=False)
     need_hr_at = models.DateTimeField(null=True, blank=True)
     entry_pass_id = models.CharField(null=True, blank=True, max_length=255)
-
+    monthly_expected_hours = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
     def __str__(self):
         return self.full_name
 
