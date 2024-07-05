@@ -90,12 +90,17 @@ class HireEngagement(ModelMixin):
     content = models.ManyToManyField(HireEngagementContent, blank=True)
 
 
-class HireResourceFeatureContent(ModelMixin):
+class HireResourceFeature(ModelMixin):
     image = models.ImageField(null=True, blank=True, upload_to="feature_image")
 
 
-class HireResourceFeature(ModelMixin):
-    content = models.ManyToManyField(HireResourceFeatureContent, blank=True)
+class HireResourceFeatureContent(ModelMixin):
+    feature = models.ForeignKey(
+        HireResourceFeature,
+        on_delete=models.CASCADE,
+        related_name="feature_contents",
+        null=True,
+    )
 
 
 class HireResource(ModelMixin):
@@ -108,8 +113,11 @@ class HireResourceFAQ(ModelMixin):
         default="FAQ",
     )
 
+
 class FAQContent(ModelMixin):
-    faq = models.ForeignKey(HireResourceFAQ, on_delete=models.CASCADE, related_name="faqs", null=True)
+    faq = models.ForeignKey(
+        HireResourceFAQ, on_delete=models.CASCADE, related_name="faqs", null=True
+    )
     question = models.CharField(max_length=255)
     answer = models.TextField()
 

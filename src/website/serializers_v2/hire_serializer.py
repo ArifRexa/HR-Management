@@ -73,9 +73,9 @@ class HireResourceTechnologySerializer(BaseModelSerializer):
 
 
 class HireResourceFeatureContentSerializer(BaseModelSerializer):
-    class Meta(BaseModelSerializer.Meta):
+    class Meta():
         model = HireResourceFeatureContent
-        exclude = ["created_at", "updated_at"]
+        fields = ["title", "description"]
 
 
 class FAQContentSerializer(BaseModelSerializer):
@@ -92,11 +92,11 @@ class HireResourceFAQSerializer(BaseModelSerializer):
         fields = ["title", "sub_title", "description", "faqs"]
 
 class HireResourceFeatureSerializer(BaseModelSerializer):
-    content = HireResourceFeatureContentSerializer(many=True)
+    feature_contents = HireResourceFeatureContentSerializer(many=True)
 
     class Meta:
         model = HireResourceFeature
-        fields = ["title", "slug", "sub_title", "content"]
+        fields = ["title", "slug", "sub_title", "feature_contents"]
 
 
 class HiringProcessContentSerializer(BaseModelSerializer):

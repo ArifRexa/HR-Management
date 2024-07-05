@@ -1,8 +1,10 @@
 from django import forms
 from django.contrib import admin
+from django.http import HttpRequest
 
 from website.admin.hire_inline_admin import (
     FAQContentInlineAdmin,
+    HireResourceFeatureContentInlineAdmin,
     HireTechnologyInlineAdmin,
     PricingInlineAdmin,
     whyWeAreInlineAdmin,
@@ -14,7 +16,6 @@ from website.hire_models import (
     HireResourceContent,
     HireResourceFAQ,
     HireResourceFeature,
-    HireResourceFeatureContent,
     HireResourceStatistic,
     HireResourceStatisticContent,
     HireService,
@@ -42,19 +43,17 @@ class HireResourceAdminMixin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     date_hierarchy = "created_at"
 
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
 
 @admin.register(HireServiceContent)
-class HireServiceContentAdmin(admin.ModelAdmin):
+class HireServiceContentAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
 
 
 @admin.register(HireResourceStatisticContent)
-class HireResourceStatisticContentAdmin(admin.ModelAdmin):
-    list_display = ("title", "sub_title", "description")
-
-
-@admin.register(HireResourceFeatureContent)
-class HireResourceFeatureContentAdmin(admin.ModelAdmin):
+class HireResourceStatisticContentAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
 
 
@@ -80,6 +79,7 @@ class WhyWeAreContentAdmin(HireResourceAdminMixin):
 class HireResourceFeatureAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
+    inlines = [HireResourceFeatureContentInlineAdmin]
 
 
 @admin.register(HireResourceStatistic)
@@ -136,6 +136,9 @@ class HireResourceContentAdmin(HireResourceAdminMixin):
     )
     form = HireResourceForm
 
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return True
+
 
 @admin.register(HireEngagement)
 class HireEngagementAdmin(HireResourceAdminMixin):
@@ -150,7 +153,7 @@ class HireEngagementContentAdmin(HireResourceAdminMixin):
 
 
 @admin.register(HireResourceFAQ)
-class HireResourceFAQAdmin(admin.ModelAdmin):
+class HireResourceFAQAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
     inlines = [FAQContentInlineAdmin]

@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from website.hire_models import (
+    HireResourceFeatureContent,
     HireResourceTechnology,
     Pricing,
     WhyWeAre,
@@ -29,3 +30,10 @@ class whyWeAreInlineAdmin(admin.TabularInline):
     model = WhyWeAre
     fields = ("title", "sub_title", "description", "content")
     extra = 1
+
+
+
+
+class HireResourceFeatureContentInlineAdmin(admin.TabularInline):
+    model = HireResourceFeatureContent
+    fields = ("title", "description")
