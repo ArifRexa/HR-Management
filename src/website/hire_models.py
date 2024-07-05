@@ -163,6 +163,23 @@ class OnDemandTeam(HirePageStaticContent):
         super().save(*args, **kwargs)
 
 
+class PricingModelManager(models.Manager):
+    def get_queryset(self) -> models.QuerySet:
+        return super().get_queryset().filter(is_active=True)
+
+
+class Pricing(ModelMixin):
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    icon = models.ImageField(null=True, blank=True, upload_to="pricing_icon")
+    is_active = models.BooleanField(default=True)
+    objects = PricingModelManager()
+
+    def __str__(self):
+        return f"{self.title}"
+
+class HirePricing(ModelMixin):
+    pricing_content = models.ManyToManyField(Pricing, related_name="pricing_contents")
+
 class HireResourceContent(ModelMixin):
     tag = models.CharField(null=True, blank=True, max_length=255)
     image = models.ImageField(null=True, upload_to="hire_resource")
@@ -175,6 +192,12 @@ class HireResourceContent(ModelMixin):
     awards = models.ManyToManyField("website.Award")
     quote = models.ForeignKey(
         Quote,
+        related_name="hire_resource_contents",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    pricing = models.ForeignKey(
+        HirePricing,
         related_name="hire_resource_contents",
         on_delete=models.CASCADE,
         null=True,
@@ -245,19 +268,4 @@ class HireResourceTechnology(ModelMixin):
     technologies = models.ManyToManyField(Technology)
 
 
-class PricingModelManager(models.Manager):
-    def get_queryset(self) -> models.QuerySet:
-        return super().get_queryset().filter(is_active=True)
 
-
-class Pricing(ModelMixin):
-    price = models.DecimalField(max_digits=10, decimal_places=2)
-    hire_resource_content = models.ForeignKey(
-        HireResourceContent, related_name="pricings", on_delete=models.CASCADE
-    )
-    icon = models.ImageField(null=True, blank=True, upload_to="pricing_icon")
-    is_active = models.BooleanField(default=True)
-    objects = PricingModelManager()
-
-    def __str__(self):
-        return f"{self.hire_resource_content.title} | {self.title}"

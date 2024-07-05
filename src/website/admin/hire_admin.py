@@ -6,12 +6,12 @@ from website.admin.hire_inline_admin import (
     FAQContentInlineAdmin,
     HireResourceFeatureContentInlineAdmin,
     HireTechnologyInlineAdmin,
-    PricingInlineAdmin,
     whyWeAreInlineAdmin,
 )
 from website.hire_models import (
     HireEngagement,
     HireEngagementContent,
+    HirePricing,
     HireResource,
     HireResourceContent,
     HireResourceFAQ,
@@ -23,6 +23,7 @@ from website.hire_models import (
     HiringProcess,
     HiringProcessContent,
     OnDemandTeam,
+    Pricing,
     Quote,
     WhyWeAreContent,
     WorldClassTalent,
@@ -122,7 +123,6 @@ class OnDemandTeamInAdmin(HireResourceAdminMixin):
 @admin.register(HireResourceContent)
 class HireResourceContentAdmin(HireResourceAdminMixin):
     inlines = [
-        PricingInlineAdmin,
         HireTechnologyInlineAdmin,
         whyWeAreInlineAdmin,
     ]
@@ -137,6 +137,7 @@ class HireResourceContentAdmin(HireResourceAdminMixin):
     fields = (
         "resource",
         "service",
+        "pricing",
         "statistic",
         "feature",
         "hire_process",
@@ -175,3 +176,14 @@ class HireResourceFAQAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
     inlines = [FAQContentInlineAdmin]
+
+
+@admin.register(Pricing)
+class PricingAdmin(HireResourceAdminMixin):
+    list_display = ("title", "sub_title", "description")
+    search_fields = ("title", "sub_title", "description")
+
+@admin.register(HirePricing)
+class HirePricingAdmin(HireResourceAdminMixin):
+    list_display = ("title", "sub_title", "description")
+    search_fields = ("title", "sub_title", "description")
