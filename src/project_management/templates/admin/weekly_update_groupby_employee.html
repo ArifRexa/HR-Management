@@ -1,5 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static admin_list %}
+{% load startswith %}
+
 {% block extrastyle %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
@@ -10,6 +12,12 @@
     <script src="{% url 'admin:jsi18n' %}"></script>
   {% endif %}
   {{ media.css }}
+  <style>
+    .monthly-expected-hours {
+      font-weight: bold;
+      font-size: 1em; /* Increase font size by 20% */
+    }
+  </style>
 {% endblock %}
 
 {% block extrahead %}
@@ -64,8 +72,8 @@
                 <tr class="table__row" style="height: 30px;">
                   <th>Date</th>
                   <th>Employee</th>
-                  <th>Monthly Expected Hours</th>
                   <th>Project</th>
+                  <th>Monthly Expected Hours</th>
                   <th>Total Hours</th>
                   <th>Manager</th>
                 </tr>
@@ -77,9 +85,11 @@
                       <td>{{ hour.created_at }}</td>
                       {% if forloop.first %}
                       <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
-                      <td rowspan="{{ values|length }}">{{ hour.employee.monthly_expected_hours|default:"0.00" }}</td>
-                      {% endif %}
                       <td>{{ hour.project_hour.project.title }}</td>
+                      <td class="monthly-expected-hours" rowspan="{{ values|length }}">
+                        {{ hour.employee.monthly_expected_hours|default:"0.00" }} ({{ hour.employee.monthly_expected_hours|default:"0.00"|divide_by:4|floatformat:2 }})
+                      </td>
+                      {% endif %}
                       <td>{{ hour.hours|default:"0.00" }}</td>
                       <td>{{ hour.project_hour.manager.full_name }}</td>
                     </tr>
