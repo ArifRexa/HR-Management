@@ -31,7 +31,9 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
 
     @admin.display(description='Monthly Expected Hours')
     def employee_monthly_expected_hours(self, obj):
-        return obj.employee.monthly_expected_hours or 0.0
+        monthly_hours = obj.employee.monthly_expected_hours or 0.0
+        one_fourth_hours = monthly_hours / 4
+        return f"{monthly_hours:.2f}({one_fourth_hours:.2f})"
 
     @admin.display(description="Project")
     def get_project(self, instance):

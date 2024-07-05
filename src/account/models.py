@@ -20,7 +20,7 @@ from employee.models import Employee
 from project_management.models import Project, Client
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-
+from django.urls import reverse
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
     date = models.DateField(blank=False)
@@ -278,8 +278,6 @@ class ProjectCommission(TimeStampMixin, AuthorMixin):
     )
     payment = models.FloatField()
 
-
-from django.urls import reverse
 
 
 class AccountJournal(AuthorMixin, TimeStampMixin):
