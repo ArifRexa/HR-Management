@@ -602,5 +602,9 @@ class EmployeeUnderTPM(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='employees_under_tpm')
     tpm = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'is_tpm': True}, related_name='employees_overseen')
 
+    class Meta:
+        verbose_name = "Employee Under TPM"
+        verbose_name_plural = "Employee Under TPM"
+        
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
