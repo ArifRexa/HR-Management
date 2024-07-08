@@ -73,7 +73,11 @@ class Employee(TimeStampMixin, AuthorMixin):
         max_length=255,
         help_text="i.e: 59530389237, Circle–138, Zone-11, Dhaka",
     )
-    is_tpm = models.BooleanField(default=False, help_text="Indicates if the employee is a Technical Project Manager (TPM)", verbose_name="TPM")
+    is_tpm = models.BooleanField(
+        default=False,
+        help_text="Indicates if the employee is a Technical Project Manager (TPM)",
+        verbose_name="TPM",
+    )
     tax_eligible = models.BooleanField(default=True)
     manager = models.BooleanField(default=False)
     lead = models.BooleanField(default=False)
@@ -98,7 +102,10 @@ class Employee(TimeStampMixin, AuthorMixin):
     need_hr = models.BooleanField(verbose_name="I need help from HR", default=False)
     need_hr_at = models.DateTimeField(null=True, blank=True)
     entry_pass_id = models.CharField(null=True, blank=True, max_length=255)
-    monthly_expected_hours = models.DecimalField(max_digits=10, decimal_places=2,null=True,blank=True)
+    monthly_expected_hours = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+
     def __str__(self):
         return self.full_name
 
@@ -428,7 +435,9 @@ class BookConferenceRoom(models.Model):
 
     manager_or_lead = models.ForeignKey("employee.Employee", on_delete=models.CASCADE)
     project_name = models.ForeignKey(
-        "project_management.Project", on_delete=models.CASCADE, limit_choices_to={"active": True}
+        "project_management.Project",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
     )
     start_time = models.TimeField(choices=TIME_CHOICES)
     created_at = models.DateTimeField(default=timezone.now)
@@ -459,6 +468,7 @@ class BookConferenceRoom(models.Model):
 
     def __str__(self):
         return f"Booking for {self.project_name} by {self.manager_or_lead.full_name} from {self.start_time}"
+
 
 @receiver(post_save, sender=Employee, dispatch_uid="create_employee_lunch")
 def create_employee_lunch(sender, instance, **kwargs):
@@ -582,29 +592,38 @@ class Observation(TimeStampMixin, AuthorMixin):
         # verbose_name_plural = 'Observations'
 
 
-
 class LateAttendanceFine(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     month = models.IntegerField()
     year = models.IntegerField()
     total_late_attendance_fine = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateField(default=datetime.now,null=True,blank=True)
+    date = models.DateField(default=datetime.now, null=True, blank=True)
 
     class Meta:
         permissions = [
             ("can_view_all_late_attendance", "Can view all late attendance fines"),
         ]
+
     def __str__(self):
         return f"{self.employee.user.username} - {self.month}/{self.year}"
-    
+
 
 class EmployeeUnderTPM(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='employees_under_tpm')
-    tpm = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'is_tpm': True}, related_name='employees_overseen')
+    employee = models.ForeignKey(
+        Employee, on_delete=models.CASCADE, related_name="employees_under_tpm",
+        limit_choices_to={"active": True},
+    )
+    tpm = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"is_tpm": True},
+        related_name="employees_overseen",
+        verbose_name="TPM",
+    )
 
     class Meta:
-        verbose_name = "Employee Under TPM"
-        verbose_name_plural = "Employee Under TPM"
-        
+        verbose_name = "TPM"
+        verbose_name_plural = "TPM"
+
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
