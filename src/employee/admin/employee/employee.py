@@ -7,6 +7,7 @@ from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
+from django.contrib.admin import SimpleListFilter
 from employee.models import (
     SalaryHistory,
     Employee,
@@ -22,6 +23,7 @@ from employee.models.employee import (
     EmployeeNOC,
     Observation,
     LateAttendanceFine,
+    EmployeeUnderTPM,
 )
 from .filter import MonthFilter
 from django.utils.html import format_html
@@ -383,3 +385,10 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context['total_fine'] = self.get_total_fine(request)['total_fine']
         return super(self.__class__, self).changelist_view(request, extra_context=extra_context)
+
+
+@admin.register(EmployeeUnderTPM)
+class EmployeeUnderTPMAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'tpm')
+    search_fields = ('employee__full_name', 'tpm__full_name')
+  
