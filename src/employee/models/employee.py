@@ -73,6 +73,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         max_length=255,
         help_text="i.e: 59530389237, Circle–138, Zone-11, Dhaka",
     )
+    is_tpm = models.BooleanField(default=False, help_text="Indicates if the employee is a Technical Project Manager (TPM)")
     tax_eligible = models.BooleanField(default=True)
     manager = models.BooleanField(default=False)
     lead = models.BooleanField(default=False)
@@ -595,3 +596,11 @@ class LateAttendanceFine(models.Model):
         ]
     def __str__(self):
         return f"{self.employee.user.username} - {self.month}/{self.year}"
+    
+
+class EmployeeUnderTPM(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='employees_under_tpm')
+    tpm = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'is_tpm': True}, related_name='employees_overseen')
+
+    def __str__(self):
+        return f"{self.employee.full_name} under {self.tpm.full_name}"
