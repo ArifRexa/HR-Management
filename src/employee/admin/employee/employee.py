@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.db import models
+from django import forms
 from django.db.models import Q, Sum
 from django.forms import Textarea
 from datetime import datetime, timedelta
@@ -344,7 +345,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = ("employee", "get_month_name", "year", "total_late_attendance_fine")
     list_filter = ("employee",)
     date_hierarchy = "date"
-    change_list_template = 'admin/total_fine.html'
+    change_list_template = "admin/total_fine.html"
 
     def get_month_name(self, obj):
         return month_name[obj.month]
@@ -371,24 +372,39 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         ):
             return qs
         return qs.filter(employee=request.user.employee)
-    
-    
+
     def get_total_fine(self, request):
-        qs = self.get_queryset(request).filter(
-            **simple_request_filter(request))
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
             qs.filter(employee__id__exact=request.user.employee.id)
-        return qs.aggregate(total_fine=Sum('total_late_attendance_fine'))
-
+        return qs.aggregate(total_fine=Sum("total_late_attendance_fine"))
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context['total_fine'] = self.get_total_fine(request)['total_fine']
-        return super(self.__class__, self).changelist_view(request, extra_context=extra_context)
+        extra_context["total_fine"] = self.get_total_fine(request)["total_fine"]
+        return super(self.__class__, self).changelist_view(
+            request, extra_context=extra_context
+        )
+
+
+class EmployeeUnderTPMForm(forms.ModelForm):
+    tpm = forms.CharField(label="TPM", widget=forms.TextInput)
+
+    class Meta:
+        model = EmployeeUnderTPM
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        employees = Employee.objects.filter(active=True, is_tpm=True).distinct()
+        choices = [(employee.id, employee.full_name) for employee in employees]
+        self.fields["tpm"].widget = forms.Select(choices=[("", "---")] + choices)
+        self.fields["tpm"].widget.attrs.update({"class": "select2"})
 
 
 @admin.register(EmployeeUnderTPM)
 class EmployeeUnderTPMAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'tpm')
-    search_fields = ('employee__full_name', 'tpm__full_name')
-  
+    list_display = ("employee", "tpm")
+    search_fields = ("employee__full_name", "tpm__full_name")
+    autocomplete_fields = ("employee", )
+    # form = EmployeeUnderTPMForm

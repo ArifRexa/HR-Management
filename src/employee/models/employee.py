@@ -616,7 +616,7 @@ class EmployeeUnderTPM(models.Model):
     tpm = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
-        limit_choices_to={"is_tpm": True},
+        limit_choices_to={"is_tpm": True, "active": True},
         related_name="employees_overseen",
         verbose_name="TPM",
     )
