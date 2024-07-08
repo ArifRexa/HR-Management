@@ -79,12 +79,12 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        # qs = self.get_queryset(request).filter(
-        #     **simple_request_filter(request))
-        # if not request.user.is_superuser:
-        #     qs.filter(manager__id__exact=request.user.employee.id)
-        # return qs.aggregate(tot=Sum('hours'))['tot']
-        pass
+        qs = self.get_queryset(request).filter(
+            **simple_request_filter(request))
+        if not request.user.is_superuser:
+            qs.filter(manager__id__exact=request.user.employee.id)
+        return qs.aggregate(tot=Sum('hours'))['tot']
+    
 
     # override change list view
     # return total hour count
