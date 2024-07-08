@@ -17,6 +17,3 @@ class HireResourceContentDetailView(RetrieveAPIView):
     serializer_class = HireResourceContentSerializer
     # lookup_url_kwarg = "slug"
     lookup_field = "slug"
-
-    def get_object(self):
-        return self.get_queryset().get(slug=self.kwargs["slug"])
