@@ -610,7 +610,9 @@ class LateAttendanceFine(models.Model):
 
 class EmployeeUnderTPM(models.Model):
     employee = models.ForeignKey(
-        Employee, on_delete=models.CASCADE, related_name="employees_under_tpm",
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="employees_under_tpm",
         limit_choices_to={"active": True},
     )
     tpm = models.ForeignKey(
@@ -627,3 +629,27 @@ class EmployeeUnderTPM(models.Model):
 
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
+
+
+class TPMProject(TimeStampMixin):
+    tpm = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"is_tpm": True, "active": True},
+        related_name="tpm_projects",
+        verbose_name="TPM",
+    )
+    project = models.ForeignKey(
+        "project_management.Project",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="tpm_projects",
+        verbose_name="Project",
+    )
+
+    class Meta:
+        verbose_name = "TPM Project"
+        verbose_name_plural = "TPM Projects"
+
+    def __str__(self):
+        return f"{self.tpm.full_name} - {self.project.title}"

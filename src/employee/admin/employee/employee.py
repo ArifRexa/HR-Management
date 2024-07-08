@@ -1,9 +1,13 @@
+from typing import Any
 from django.contrib import admin
 from django.db import models
 from django import forms
 from django.db.models import Q, Sum
 from django.forms import Textarea
 from datetime import datetime, timedelta
+
+from django.http import HttpRequest
+from django.urls import path
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
@@ -20,6 +24,7 @@ from config.admin.utils import simple_request_filter
 from employee.models.attachment import Attachment
 from employee.models.employee import (
     EmployeeLunch,
+    TPMProject,
     Task,
     EmployeeNOC,
     Observation,
@@ -402,9 +407,96 @@ class EmployeeUnderTPMForm(forms.ModelForm):
         self.fields["tpm"].widget.attrs.update({"class": "select2"})
 
 
+class TPMFilter(admin.SimpleListFilter):
+    title = "TPM"
+    parameter_name = "employeeassignedasset__asset__category_id"
+
+    def lookups(self, request, model_admin):
+        objs = Employee.objects.filter(is_tpm=True, active=True)
+        lookups = [
+            (
+                ac.id,
+                ac.full_name,
+            )
+            for ac in objs
+        ]
+        return tuple(lookups)
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value is not None:
+            return queryset.filter(tpm__id=value)
+        return queryset
+
+
 @admin.register(EmployeeUnderTPM)
 class EmployeeUnderTPMAdmin(admin.ModelAdmin):
-    list_display = ("employee", "tpm")
+    list_display = ("employee", "tpm", "get_project")
     search_fields = ("employee__full_name", "tpm__full_name")
-    autocomplete_fields = ("employee", )
+    autocomplete_fields = ("employee",)
+    list_filter = (TPMFilter,)
     # form = EmployeeUnderTPMForm
+    change_list_template = "admin/employee/list/tpm_project.html"
+
+    @admin.display(description="Project")
+    def get_project(self, obj: EmployeeUnderTPM):
+        return list(
+            TPMProject.objects.filter(tpm=obj.tpm).values_list(
+                "project__title", flat=True
+            )
+        )
+
+    def get_queryset(self, request: HttpRequest) -> models.QuerySet[Any]:
+        return super().get_queryset(request).distinct()
+
+    def custom_changelist_view(self, request, extra_context=None):
+        from django.db.models.functions import Concat
+        from django.db.models import Value, CharField, F, Func
+
+        class GroupConcat(Func):
+            function = "GROUP_CONCAT"
+            template = '%(function)s(%(expressions)s SEPARATOR ", ")'
+
+        tpm_project_data = EmployeeUnderTPM.objects.all()
+        d: models.BaseManager[EmployeeUnderTPM] = EmployeeUnderTPM.objects.first()
+        temp_tpm = set()
+        tpm_employees = []
+        for d in tpm_project_data:
+            if d.tpm.id not in temp_tpm:
+                e = Employee.objects.filter(employees_under_tpm__tpm=d.tpm).values_list(
+                    "full_name", flat=True
+                )
+                tpm_employees.append({
+                    "tpm": d.tpm,
+                    "employees": ",".join(e)
+                })
+                temp_tpm.add(d.tpm.id)
+
+        my_context = {
+            "tpm_project_data": tpm_employees,
+        }
+        return super().changelist_view(request, extra_context=my_context)
+
+    def get_urls(self):
+        urls = super(EmployeeUnderTPMAdmin, self).get_urls()
+
+        # def wrap(view):
+        #     def wrapper(*args, **kwargs):
+        #         return self.admin_site.admin_view(view)(*args, **kwargs)
+
+        #     wrapper.model_admin = self
+        #     return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+        custome_urls = [
+            path("", self.custom_changelist_view, name="tpm_project_changelist_view"),
+        ]
+        return custome_urls + urls
+
+
+@admin.register(TPMProject)
+class TPMProjectAdmin(admin.ModelAdmin):
+    list_display = ("tpm", "project")
+    search_fields = ("tpm__full_name", "project__name")
+    autocomplete_fields = ("tpm", "project")
+    list_filter = ("tpm", "project")
