@@ -2,12 +2,14 @@ import datetime
 
 from django.contrib import admin
 from django.template.loader import get_template
+from django.test import Client
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+# from networkx import project
 
 from project_management.models import ProjectHour
 from employee.models import Employee
-from project_management.models import Project
+from project_management.models import Project,Client
 
 class ProjectFilter(admin.SimpleListFilter):
     title = 'Project Type'
@@ -95,6 +97,19 @@ class ProjectLeadFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(manager__id__exact=self.value())
 
+class ProjectClientFilter(admin.SimpleListFilter):
+    title = 'client'
+    parameter_name = 'client__id__exact'
+
+    def lookups(self, request, model_admin):
+        employees = Client.objects.values('id','name')
+        return tuple(
+            [(emp.get('id'), emp.get('name'),) for emp in employees]
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(project__client__id__exact=self.value())
 
 class ProjectHourOptions(admin.ModelAdmin):
     class Media:
@@ -112,7 +127,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = [ProjectTypeFilter, ProjectFilter, ProjectManagerFilter, ProjectLeadFilter, 'date']
+        filters = [ProjectTypeFilter, ProjectFilter, ProjectManagerFilter, ProjectLeadFilter, 'date',ProjectClientFilter]
         # if not request.user.is_superuser:
         #     filters.remove('manager')
         return filters
