@@ -73,7 +73,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         max_length=255,
         help_text="i.e: 59530389237, Circle–138, Zone-11, Dhaka",
     )
-    is_tpm = models.BooleanField(default=False, help_text="Indicates if the employee is a Technical Project Manager (TPM)")
+    TPM = models.BooleanField(default=False, help_text="Indicates if the employee is a Technical Project Manager (TPM)")
     tax_eligible = models.BooleanField(default=True)
     manager = models.BooleanField(default=False)
     lead = models.BooleanField(default=False)
