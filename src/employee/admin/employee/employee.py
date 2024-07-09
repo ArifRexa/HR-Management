@@ -435,12 +435,19 @@ class TPMFilter(admin.SimpleListFilter):
 
 @admin.register(EmployeeUnderTPM)
 class EmployeeUnderTPMAdmin(admin.ModelAdmin):
-    list_display = ("employee", "tpm", "project")
+    # list_display = ("employee", "tpm", "project")
+    list_display = ("tpm", "employee", "project")
     search_fields = ("employee__full_name", "tpm__full_name", "project__title")
     autocomplete_fields = ("employee", "project")
     list_filter = ("tpm", "project", "employee")
     form = EmployeeUnderTPMForm
     change_list_template = "admin/employee/list/tpm_project.html"
+
+    fieldsets = (
+        (None, {
+            'fields': ('tpm', 'employee', 'project',),
+        }),
+    )
 
     def custom_changelist_view(self, request, extra_context=None):
         tpm_project_data = EmployeeUnderTPM.objects.select_related(
@@ -449,6 +456,8 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         my_context = {
             "tpm_project_data": tpm_project_data,
         }
+
+        # print(tpm_project_data.prject.all())
         return super().changelist_view(request, extra_context=my_context)
 
     def get_urls(self):

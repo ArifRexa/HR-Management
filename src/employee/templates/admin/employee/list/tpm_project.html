@@ -58,10 +58,12 @@
             <thead>
             <tr>
                 <th scope="col">TPM</th>
-                <th scope="col">Employee Count</th>
+{#                <th scope="col">Employee Count</th>#}
                 <th scope="col">Employees</th>
-                <th scope="col">Project Count</th>
+{#                <th scope="col">Project Count</th>#}
                 <th scope="col">Projects</th>
+{#                <th scope="col">Client Count</th>#}
+                <th scope="col">Clients</th>
             </tr>
             </thead>
             <tbody>
@@ -70,8 +72,13 @@
                 {% for result in tpm_data %}
                 
                 <tr>
-                    <td>{{ result.grouper }}</td>
-                    <td>{{ result.list|total_employee_count }}</td>
+                    <td>
+                        {{ result.grouper }}<br>
+                        <b>Employees Count: </b>{{ result.list|total_employee_count }}<br>
+                        <b>Projects Count: </b>{{ result.list|total_project_count }}<br>
+                        <b>Clients Count: </b>{{ result.list|total_client_count }}
+                    </td>
+{#                    <td>{{ result.list|total_employee_count }}</td>#}
                     <td>
                         <ul>
                             {% for tpm in result.list %}
@@ -84,7 +91,7 @@
                             {% endfor %}
                         </ul>
                     </td>
-                    <td>{{ result.list|total_project_count }}</td>
+{#                    <td>{{ result.list|total_project_count }}</td>#}
                     <td>
                         <ul>
                             {% for p_tpm in result.list %}
@@ -94,6 +101,19 @@
                             <li>{{ p_tpm.project }}</li>
                             {% endifchanged %}
                                 
+                            {% endfor %}
+                        </ul>
+                    </td>
+{#                    <td>{{ result.list|total_client_count }}</td>#}
+                    <td>
+                        <ul>
+                            {% for p_tpm in result.list %}
+
+                            {% ifchanged  %}
+
+                            <li>{{ p_tpm.project.client }}</li>
+                            {% endifchanged %}
+
                             {% endfor %}
                         </ul>
                     </td>

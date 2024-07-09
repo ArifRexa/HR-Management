@@ -53,3 +53,10 @@ def total_employee_count(result):
 def total_project_count(result):
     e_ids = {e.project.id for e in result if e.project}
     return len(e_ids)
+
+
+@register.filter(name="total_client_count")
+def total_client_count(result):
+    projects = {e.project for e in result if e.project}
+    client_ids = {i.client.id for i in projects if i.client}
+    return len(client_ids)
