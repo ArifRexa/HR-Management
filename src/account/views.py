@@ -41,9 +41,24 @@ def payment_voucher(request, id):
     year = date_obj.strftime("%y")
     pv_no = f"{month}{year}/P00{index_of_id}"
 
+
+    #get all notes for daily expense
+    expense_note = ''
+
+    # Query Expense objects for the given date and concatenate notes
+    get_expense_notes = Expense.objects.filter(date=voucher.date)
+
+    for index, note in enumerate(get_expense_notes):
+        expense_note += note.note
+        # Add comma if it's not the last note
+        if index < len(get_expense_notes) - 1:
+            expense_note += ', '
+
+    # Print the concatenated notes
+
     template = get_template('pdf/payment_voucher.html')
     # get the context data
-    context = {'voucher': voucher, 'expenses': expenses,'pv_no':pv_no}
+    context = {'voucher': voucher, 'expenses': expenses,'pv_no':pv_no,'expense_note':expense_note}
     
     # Render the html template with the context data.
     html_content = template.render(context)
