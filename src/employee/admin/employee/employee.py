@@ -1,9 +1,13 @@
+from typing import Any
 from django.contrib import admin
 from django.db import models
 from django import forms
 from django.db.models import Q, Sum
-from django.forms import Textarea
+from django.forms import Textarea, ValidationError
 from datetime import datetime, timedelta
+
+from django.http import HttpRequest
+from django.urls import path
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
@@ -20,11 +24,11 @@ from config.admin.utils import simple_request_filter
 from employee.models.attachment import Attachment
 from employee.models.employee import (
     EmployeeLunch,
+    EmployeeUnderTPM,
     Task,
     EmployeeNOC,
     Observation,
     LateAttendanceFine,
-    EmployeeUnderTPM,
 )
 from .filter import MonthFilter
 from django.utils.html import format_html
@@ -388,23 +392,69 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
 
 class EmployeeUnderTPMForm(forms.ModelForm):
-    tpm = forms.CharField(label="TPM", widget=forms.TextInput)
 
     class Meta:
         model = EmployeeUnderTPM
         fields = "__all__"
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        employee = cleaned_data.get("employee")
+        tpm = cleaned_data.get("tpm")
+        project = cleaned_data.get("project")
+        e = EmployeeUnderTPM.objects.filter(employee=employee)
+        project_list = e.values_list("project", flat=True)
+        if e.exists() and e.first().tpm != tpm:
+            raise ValidationError("Employee already under TPM")
+        if e.exists() and e.first().tpm == tpm and project in project_list:
+            raise ValidationError("Employee already under this TPM with this project")
+        return cleaned_data
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        employees = Employee.objects.filter(active=True, is_tpm=True).distinct()
-        choices = [(employee.id, employee.full_name) for employee in employees]
-        self.fields["tpm"].widget = forms.Select(choices=[("", "---")] + choices)
-        self.fields["tpm"].widget.attrs.update({"class": "select2"})
+
+class TPMFilter(admin.SimpleListFilter):
+    title = "TPM"
+    parameter_name = "employeeassignedasset__asset__category_id"
+
+    def lookups(self, request, model_admin):
+        objs = Employee.objects.filter(is_tpm=True, active=True)
+        lookups = [
+            (
+                ac.id,
+                ac.full_name,
+            )
+            for ac in objs
+        ]
+        return tuple(lookups)
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value is not None:
+            return queryset.filter(tpm__id=value)
+        return queryset
 
 
 @admin.register(EmployeeUnderTPM)
 class EmployeeUnderTPMAdmin(admin.ModelAdmin):
-    list_display = ("employee", "tpm")
-    search_fields = ("employee__full_name", "tpm__full_name")
-    autocomplete_fields = ("employee", )
-    # form = EmployeeUnderTPMForm
+    list_display = ("employee", "tpm", "project")
+    search_fields = ("employee__full_name", "tpm__full_name", "project__title")
+    autocomplete_fields = ("employee", "project")
+    list_filter = ("tpm", "project", "employee")
+    form = EmployeeUnderTPMForm
+    change_list_template = "admin/employee/list/tpm_project.html"
+
+    def custom_changelist_view(self, request, extra_context=None):
+        tpm_project_data = EmployeeUnderTPM.objects.select_related(
+            "employee", "project", "tpm"
+        ).all()
+        my_context = {
+            "tpm_project_data": tpm_project_data,
+        }
+        return super().changelist_view(request, extra_context=my_context)
+
+    def get_urls(self):
+        urls = super(EmployeeUnderTPMAdmin, self).get_urls()
+        custom_urls = [
+            path("", self.custom_changelist_view, name="tpm_project_changelist_view"),
+        ]
+        return custom_urls + urls
+    
