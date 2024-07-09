@@ -21,13 +21,14 @@ from employee.models import (
     EmployeeNeedHelp,
     NeedHelpPosition,
     Employee,
+    LeaveManagement
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from employee.models.employee import Employee, BookConferenceRoom
 from employee.models import FavouriteMenu
 from employee.forms.employee_project import BookConferenceRoomForm
-from project_management.models import Project
+from project_management.models import Project,DailyProjectUpdate
 from employee.models.employee import LateAttendanceFine
 from settings.models import Announcement
 
@@ -430,3 +431,20 @@ def employee_project_list(request):
     return {'employee_project_list': project_list}
 
 
+def approval_info_leave_daily_update(request):
+    if not request.user.is_authenticated:
+        return ''  # Return empty response if user is not authenticated
+    
+    pending_leave = LeaveManagement.objects.filter(status='pending', manager=request.user.employee).count()
+    daily_update_pending = DailyProjectUpdate.objects.filter(status='pending', manager=request.user.employee).count()
+    
+    # Determine if counts are greater than 0 to apply style
+    leave_color = 'red' if pending_leave > 0 else 'green'
+    update_color = 'red' if daily_update_pending > 0 else 'green'
+    
+    # Create HTML string with conditional styles
+    leave_html = f'<span style="color: {leave_color};">Leave Approval: {pending_leave}</span>'
+    update_html = f'<span style="color: {update_color};">Daily Update: {daily_update_pending}</span>'
+    html = f'   {leave_html}<br/>   {update_html}'
+    
+    return {'approval_info_leave_daily_update': format_html(html)}
