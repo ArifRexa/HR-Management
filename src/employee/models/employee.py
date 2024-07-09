@@ -613,7 +613,7 @@ class EmployeeUnderTPM(models.Model):
         Employee,
         on_delete=models.CASCADE,
         related_name="employees_under_tpm",
-        limit_choices_to={"active": True},
+        limit_choices_to={"active": True, "is_tpm": False, },
     )
     tpm = models.ForeignKey(
         Employee,
@@ -622,34 +622,17 @@ class EmployeeUnderTPM(models.Model):
         related_name="employees_overseen",
         verbose_name="TPM",
     )
-
+    project = models.ForeignKey(
+        "project_management.Project",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="employees_under_tpm",
+        verbose_name="Project",
+        null=True,
+    )
     class Meta:
         verbose_name = "TPM"
         verbose_name_plural = "TPM"
 
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
-
-
-class TPMProject(TimeStampMixin):
-    tpm = models.ForeignKey(
-        Employee,
-        on_delete=models.CASCADE,
-        limit_choices_to={"is_tpm": True, "active": True},
-        related_name="tpm_projects",
-        verbose_name="TPM",
-    )
-    project = models.ForeignKey(
-        "project_management.Project",
-        on_delete=models.CASCADE,
-        limit_choices_to={"active": True},
-        related_name="tpm_projects",
-        verbose_name="Project",
-    )
-
-    class Meta:
-        verbose_name = "TPM Project"
-        verbose_name_plural = "TPM Projects"
-
-    def __str__(self):
-        return f"{self.tpm.full_name} - {self.project.title}"
