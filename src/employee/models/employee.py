@@ -610,8 +610,10 @@ class LateAttendanceFine(models.Model):
 
 class EmployeeUnderTPM(models.Model):
     employee = models.ForeignKey(
-        Employee, on_delete=models.CASCADE, related_name="employees_under_tpm",
-        limit_choices_to={"active": True},
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="employees_under_tpm",
+        limit_choices_to={"active": True, "is_tpm": False, },
     )
     tpm = models.ForeignKey(
         Employee,
@@ -620,7 +622,14 @@ class EmployeeUnderTPM(models.Model):
         related_name="employees_overseen",
         verbose_name="TPM",
     )
-
+    project = models.ForeignKey(
+        "project_management.Project",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="employees_under_tpm",
+        verbose_name="Project",
+        null=True,
+    )
     class Meta:
         verbose_name = "TPM"
         verbose_name_plural = "TPM"
