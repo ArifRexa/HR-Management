@@ -75,7 +75,12 @@
                     <td>
                         <ul>
                             {% for tpm in result.list %}
+                            
+                            {% ifchanged  %}
+                                
                             <li>{{ tpm.employee }}</li>
+                            {% endifchanged %}
+                                
                             {% endfor %}
                         </ul>
                     </td>
