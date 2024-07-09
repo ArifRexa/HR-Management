@@ -58,6 +58,7 @@
             <thead>
             <tr>
                 <th scope="col">TPM</th>
+                <th scope="col">Counts</th>
 {#                <th scope="col">Employee Count</th>#}
                 <th scope="col">Employees</th>
 {#                <th scope="col">Project Count</th>#}
@@ -73,7 +74,9 @@
                 
                 <tr>
                     <td>
-                        {{ result.grouper }}<br>
+                        {{ result.grouper }}
+                    </td>
+                    <td>
                         <b>Employees Count: </b>{{ result.list|total_employee_count }}<br>
                         <b>Projects Count: </b>{{ result.list|total_project_count }}<br>
                         <b>Clients Count: </b>{{ result.list|total_client_count }}
