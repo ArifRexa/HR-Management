@@ -7,7 +7,7 @@ from django.forms import Textarea
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html
-from django.core.mail import EmailMessage,EmailMultiAlternatives
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from account.models import Income
 from account.services.balance import BalanceSummery
 
@@ -17,13 +17,31 @@ from config.utils.pdf import PDF
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
-    list_display = ('project', 'date', 'hours',
-                    'hour_rate', 'convert_rate', 'payment_details', 'status_col')
-    date_hierarchy = 'date'
-    exclude = ['is_send_clients']
-    readonly_fields = ('payment',)
-    list_filter = ('status', 'project','date','project__client')
-    actions = ['approve_selected', 'pending_selected', 'print_income_invoices','send_income_invoices_email']
+    list_display = (
+        "project",
+        "date",
+        "hours",
+        "hour_rate",
+        "convert_rate",
+        "payment_details",
+        "status_col",
+    )
+    date_hierarchy = "date"
+    exclude = ["is_send_clients"]
+    readonly_fields = ("payment",)
+    list_filter = (
+        "status",
+        "project",
+        "date",
+        "project__client",
+        "project__client__payment_method",
+    )
+    actions = [
+        "approve_selected",
+        "pending_selected",
+        "print_income_invoices",
+        "send_income_invoices_email",
+    ]
     # list_editable = ('status',)
     formfield_overrides = {models.TextField: {"widget": Textarea(attrs={"rows": 2})}}
     autocomplete_fields = ["project"]
@@ -134,16 +152,15 @@ class IncomeAdmin(admin.ModelAdmin):
         invoice_total = (
             queryset.values("date", "hour_rate")
             .annotate(project_total=F("hours") * F("hour_rate"))
-            .aggregate(total = Sum("project_total"))
+            .aggregate(total=Sum("project_total"))
         )
         pdf.context = {
             "invoices": queryset,
             "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
             "host": f"{protocal}://{request.get_host()}",
-            "invoice_total": invoice_total.get("total")
+            "invoice_total": invoice_total.get("total"),
         }
         return pdf.render_to_pdf(download=True)
-
 
     @admin.action()
     def send_income_invoices_email(self, request, queryset):
@@ -154,7 +171,7 @@ class IncomeAdmin(admin.ModelAdmin):
         id_str = "|".join(list(map(str, income_list)))
         project_name = queryset.first().project.title
         client = queryset.first().project.client
-       
+
         pdf = PDF()
         pdf.file_name = f"Income Invoice-{project_name}-{id_str}"
         pdf.template_path = "compliance/new_income_invoice.html"
@@ -162,30 +179,27 @@ class IncomeAdmin(admin.ModelAdmin):
         invoice_total = (
             queryset.values("date", "hour_rate")
             .annotate(project_total=F("hours") * F("hour_rate"))
-            .aggregate(total = Sum("project_total"))
+            .aggregate(total=Sum("project_total"))
         )
         pdf.context = {
             "invoices": queryset,
             "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
             "host": f"{protocal}://{request.get_host()}",
-            "invoice_total": invoice_total.get("total")
+            "invoice_total": invoice_total.get("total"),
         }
-        
-        
+
         total_payment = invoice_total.get("total")
-        
-        body=f'Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}'
+
+        body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
         if client.notes:
-            body+=f'\n Notes:{client.notes}'
+            body += f"\n Notes:{client.notes}"
 
-
-        email = EmailMultiAlternatives(subject=f'Mediusware Invoice - {project_name} - {id_str}',)
-        body = body,
+        email = EmailMultiAlternatives(
+            subject=f"Mediusware Invoice - {project_name} - {id_str}",
+        )
+        body = (body,)
         email.attach_file(pdf.create())
         email.to = [client.email]
-        email.from_email = 'coredeveloper.2013@gmail.com'
-        email.cc= client.cc_email.split(",") if client.cc_email else [],
+        email.from_email = "coredeveloper.2013@gmail.com"
+        email.cc = (client.cc_email.split(",") if client.cc_email else [],)
         email.send()
-
-
-

@@ -45,6 +45,20 @@ class Tag(TimeStampMixin, AuthorMixin):
         return self.name
 
 
+class ClientReview(TimeStampMixin):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class PaymentMethod(TimeStampMixin):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     designation = models.CharField(max_length=200, null=True, blank=True)
@@ -64,6 +78,16 @@ class Client(TimeStampMixin, AuthorMixin):
     linkedin_url = models.URLField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
     is_hour_breakdown = models.BooleanField(default=False)
+    payment_method = models.ForeignKey(
+        PaymentMethod,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="clients",
+        blank=True,
+    )
+    review = models.ManyToManyField(
+        ClientReview, blank=True, verbose_name="Client Review", related_name="clients"
+    )
 
     def __str__(self):
         return self.name
