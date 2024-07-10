@@ -15,5 +15,5 @@ Pipfile.lock
 venv39
 .vscode
 
-*/migrations/
-!**/migrations/__init__.py
+# */migrations/
+# !**/migrations/__init__.py
