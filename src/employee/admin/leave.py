@@ -155,6 +155,11 @@ class LeaveManagement(admin.ModelAdmin):
                 project__in=projects.project.all(), employee__active=True
             )
             from django.db.models import Q
+            tpm = (
+                project_obj.filter(Q(employee__is_tpm=True))
+                .exclude(employee__id=employee.id)
+                .distinct()
+            )
 
             managers = (
                 project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
