@@ -21,11 +21,11 @@ class Migration(migrations.Migration):
             name='logo',
             field=models.ImageField(null=True, upload_to=''),
         ),
-        migrations.AddField(
-            model_name='client',
-            name='show_in_web',
-            field=models.BooleanField(default=False),
-        ),
+        # migrations.AddField(
+        #     model_name='client',
+        #     name='show_in_web',
+        #     field=models.BooleanField(default=False),
+        # ),
         migrations.AddField(
             model_name='project',
             name='thumbnail',

@@ -10,10 +10,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='client',
-            name='show_in_web',
-        ),
+        # migrations.RemoveField(
+        #     model_name='client',
+        #     name='show_in_web',
+        # ),
         # migrations.RemoveField(
         #     model_name='project',
         #     name='emergency_operation',
