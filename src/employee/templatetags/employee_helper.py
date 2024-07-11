@@ -41,3 +41,22 @@ def sum_employee_salary_with_festival_bonus(employee_salary: QuerySet):
     salary = sum_employee_salary(employee_salary, 'gross_salary')
     bonus = sum_employee_salary(employee_salary, 'festival_bonus')
     return salary + bonus
+
+
+@register.filter(name="total_employee_count")
+def total_employee_count(result):
+    e_ids = {e.employee.id for e in result if e.employee}
+    return len(e_ids)
+
+
+@register.filter(name="total_project_count")
+def total_project_count(result):
+    e_ids = {e.project.id for e in result if e.project}
+    return len(e_ids)
+
+
+@register.filter(name="total_client_count")
+def total_client_count(result):
+    projects = {e.project for e in result if e.project}
+    client_ids = {i.client.id for i in projects if i.client}
+    return len(client_ids)

@@ -14,6 +14,7 @@ from openpyxl.writer.excel import save_virtual_workbook
 from account.admin.salary.actions import SalarySheetAction
 from account.models import SalarySheet, EmployeeSalary
 from account.repository.SalarySheetRepository import SalarySheetRepository
+from employee.models.employee import LateAttendanceFine
 
 
 class EmployeeSalaryInline(admin.TabularInline):
@@ -33,6 +34,7 @@ class EmployeeSalaryInline(admin.TabularInline):
 
         # 'provident_fund', 'code_quality_bonus',
         'festival_bonus',
+        'get_late_fine',
         'gross_salary', #'get_details',
 
     )
@@ -49,6 +51,14 @@ class EmployeeSalaryInline(admin.TabularInline):
         if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet'):
             exclude.extend(self.superadminonly_fields)
         return exclude
+    def get_late_fine(self, obj):
+        fine = LateAttendanceFine.objects.filter(
+                    employee=obj.employee,
+                    month=obj.salary_sheet.date.month,
+                    year=obj.salary_sheet.date.year,
+                ).aggregate(fine=Sum('total_late_attendance_fine'))
+        return fine.get('fine', 0) if fine.get('fine') else 0.00
+    get_late_fine.short_description = "Late Fine"
     
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)

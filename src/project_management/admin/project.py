@@ -1,11 +1,15 @@
+from collections.abc import Callable, Sequence
 from datetime import datetime
+from typing import Any
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
+from django.http import HttpRequest
 from django.template.loader import get_template
 from django.utils.html import format_html
 from icecream import ic
-
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService
+from .forms import ProjectTechnologyInlineForm,ProjectAdminForm
+from django import forms
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService,ClientInvoiceDate
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
@@ -32,7 +36,9 @@ class TagAdmin(admin.ModelAdmin):
 
 class ProjectTechnologyInline(admin.StackedInline):
     model = ProjectTechnology
+    form = ProjectTechnologyInlineForm
     extra = 1
+    
 
 
 class ProjectScreenshotInline(admin.StackedInline):
@@ -74,19 +80,32 @@ class ProjectResultsAdmin(admin.ModelAdmin):
 
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ('title', 'client','hourly_rate','last_increased', 'active','get_report_url')
-    search_fields = ('title', 'client__name', 'client__email')
+    list_display = ('project_title_with_client','client_invoice_date','hourly_rate','last_increased', 'active','get_report_url','get_live_link')
+    search_fields = ('title', 'client__name', 'client__email',)
     date_hierarchy = 'created_at'
     inlines = (ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
+    autocomplete_fields = ['client']
+    form = ProjectAdminForm
+    # def get_readonly_fields(self, request, obj=None):
+    #     if not request.user.is_superuser:
+    #         return ['on_boarded_by']
+    #     return []
 
-    def get_readonly_fields(self, request, obj=None):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        if request.user.is_superuser:
+            form.base_fields['hourly_rate'] = forms.DecimalField(max_digits=10, decimal_places=2, required=False)
+        return form
+    
+    def get_fields(self, request, obj):
+        fields = super().get_fields(request, obj)
         if not request.user.is_superuser:
-            return ['on_boarded_by']
-        return []
-
+            fields.remove('hourly_rate')
+        return fields
+    
     def get_ordering(self, request):
         return ['title']
 
@@ -96,25 +115,37 @@ class ProjectAdmin(admin.ModelAdmin):
         return format_html(html_content)
     get_report_url.short_description = 'hours_breakdown'
 
+    def get_live_link(self, obj):
+        html_template = get_template("admin/project_management/list/live_link.html")
+        html_content = html_template.render({'project': obj})
+        return format_html(html_content)
+    get_live_link.short_description = 'Live Link'
+
     def last_increased(self,obj):
         six_month_ago = datetime.now().date() - relativedelta(months=6)
         if obj.activate_from and obj.activate_from > six_month_ago:
             return obj.activate_from
         return format_html('<span style="color:red;">{}</span>', obj.activate_from)
 
-               
+    def project_title_with_client(self, obj):
+        client_name = obj.client.name if obj.client else "No Client"
+        return f"{obj.title} ({client_name})"
+    project_title_with_client.short_description = 'Title'
     
     
 
     def get_list_display(self, request):
         
         list_display = super().get_list_display(request)
-        if not request.user.has_perm('project_management.can_see_all_project_field'):
-            list_display = [field for field in list_display if field not in ('hourly_rate', 'increase_rate', 'last_increased')]
+        if not request.user.is_superuser:
+            list_display = [field for field in list_display if field not in ('hourly_rate', 'increase_rate', 'last_increased','client_invoice_date')]
         return list_display
     
-    
-    
+    def client_invoice_date(self,obj):
+        client_date = ClientInvoiceDate.objects.filter(clients=obj.client).values_list('invoice_date',flat=True)
+
+        formatted_dates = "<br/>".join(str(date) for date in client_date)
+        return format_html(formatted_dates)
 
 @admin.register(ProjectNeed)
 class ProjectNeedAdmin(admin.ModelAdmin):
@@ -181,6 +212,17 @@ class ProjectIndustryAdmin(admin.ModelAdmin):
 @admin.register(ProjectService)
 class ProjectServiceAdmin(admin.ModelAdmin):
     list_display = ('title',)
+
+    def has_module_permission(self, request):
+        return False
+    
+
+
+@admin.register(ProjectTechnology)
+class ProjectTechnologyAdmin(admin.ModelAdmin):
+    list_display = ('title', 'project',)
+    search_fields = ('title',)
+    filter_horizontal = ('technologies',)
 
     def has_module_permission(self, request):
         return False

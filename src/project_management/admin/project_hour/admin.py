@@ -84,6 +84,7 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         if not request.user.is_superuser:
             qs.filter(manager__id__exact=request.user.employee.id)
         return qs.aggregate(tot=Sum('hours'))['tot']
+    
 
     # override change list view
     # return total hour count

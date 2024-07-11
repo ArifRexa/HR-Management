@@ -1,0 +1,162 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% load salary_sheet_util %}
+
+{% block content %}
+    <style>
+        .list-table {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .list-table th {
+            background-color: #333;
+            color: white;
+            border: 1px solid #dddddd;
+            padding: 8px;
+        }
+
+        .list-table td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .invoice-container {
+            page-break-after: always;
+        }
+    </style>
+
+    {% for invoice in invoices %}
+        <div class="invoice-container">
+            <table>
+                <thead>
+                <tr>
+                    <td colspan="3"><br></td>
+                </tr>
+                {% if invoice.project.client.bill_from %}
+                <tr>
+                    <td>
+                        {{ invoice.project.client.bill_from |strip_last_newline|safe}}
+                    </td>
+                    <td></td>
+                    <td><b># INV-{{ invoice.id }}</b></td>
+                    
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td><h2>Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</h2></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td><b>Mediusware Ltd.</b></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Company ID: No. C-165786/2020</td>
+                    <td></td>
+                    <td><b># INV-{{ invoice.id }}</b></td>
+                </tr>
+                <tr>
+                    <td>
+                        24/1, Floor 7th & 8th<br>
+                        Ring Road, Mohammadpur<br> 
+                        Dhaka 1207<br> Bangladesh<br>
+                    </td>
+                    <td></td>
+                    <td><h2>Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</h2></td>
+                </tr>
+                {% endif %}
+                <tr>
+                    <td>
+                        <br>
+                        Bill to<br>
+                        <b>{{invoice.project.client.name}}</b><br>
+                        <span>{{invoice.project.client.address|strip_last_newline|safe}}<span><br>
+                        <span>{{invoice.project.client.country}}</span>
+                       
+                    </td>
+                    <td></td>
+                    <td>
+                        <br><br>
+                        Invoice Date: {{ invoice.date }}<br><br>
+                        Terms: Due on Receipt<br><br>
+                        Due Date: {{ invoice.date }}<br>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3"></td>
+                </tr>
+                </thead>
+            </table>
+            <table class="list-table">
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th colspan="5">item & description</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr style="text-align: right;">
+                    <td>1</td>
+                    <td colspan="5">{{ invoice.project.title }}: {{ invoice.date }}
+                        
+                        {% if invoice.project.client.is_hour_breakdown %}
+                        <br>
+                        <br>
+                        <b>
+                        Hours Breakdown: <a 
+                        href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
+                        style="cursor: pointer; text-decoration: underline; font-size: 20px;"
+                        target="_blank">Link</a>
+                    </b>
+                        {% endif %}
+                            
+                    </td>
+                    <td>{{ invoice.hours }}</td>
+                    <td>{{ invoice.hour_rate }}</td>
+                    <td>${% widthratio invoice.hours 1 invoice.hour_rate %}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                    </td>
+                    <td></td>
+                    <td>
+                        <br><br>
+                        <b style="margin-bottom: 20px;">Total: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b> <br><br>
+                        <b style="margin-top: 20px;"> Balance Due: ${% widthratio invoice.hours 1 invoice.hour_rate %}</b>
+                    </td>
+                </tr>
+            </table>
+            <table>
+                <tr>
+                    <td>
+                        {{ invoice.project.client.notes|strip_last_newline|safe }}
+                    </td>
+                    <td></td>
+                    <td>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    {% endfor %}
+{% endblock %}

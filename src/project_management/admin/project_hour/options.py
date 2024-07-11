@@ -2,22 +2,25 @@ import datetime
 
 from django.contrib import admin
 from django.template.loader import get_template
+from django.test import Client
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+# from networkx import project
 
 from project_management.models import ProjectHour
 from employee.models import Employee
-from project_management.models import Project
+from project_management.models import Project,Client
 
 class ProjectFilter(admin.SimpleListFilter):
     title = 'Project Type'
     parameter_name = 'project__id__exact'
 
     def lookups(self, request, model_admin):
-        project_types = Project.objects.filter(active=True).values_list('id', 'title').distinct()
+        project_types = Project.objects.filter(active=True).values_list('id', 'title', 'client__name').distinct()
         choices = []
-        for project_id, project_title in project_types:
-            choices.append((str(project_id), project_title))
+        for project_id, project_title, client_name in project_types:
+            display_name = f"{project_title} ({client_name})" if client_name else project_title
+            choices.append((str(project_id), display_name))
         return choices
 
     def choices(self, changelist):
@@ -32,7 +35,7 @@ class ProjectFilter(admin.SimpleListFilter):
             yield {
                 'selected': self.value() == str(lookup),
                 'query_string': changelist.get_query_string({self.parameter_name: lookup}),
-                'display' : format_html(f'<span style="color: red;">{title}</span>') if project.check_is_weekly_project_hour_generated == False else format_html(f'<span style="color: inherit;">{title}</span>')                                         
+                'display': format_html(f'<span style="color: red;">{title}</span>') if not project.check_is_weekly_project_hour_generated else format_html(f'<span style="color: inherit;">{title}</span>')                                         
             }
 
     def queryset(self, request, queryset):
@@ -94,6 +97,19 @@ class ProjectLeadFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(manager__id__exact=self.value())
 
+class ProjectClientFilter(admin.SimpleListFilter):
+    title = 'client'
+    parameter_name = 'client__id__exact'
+
+    def lookups(self, request, model_admin):
+        employees = Client.objects.values('id','name')
+        return tuple(
+            [(emp.get('id'), emp.get('name'),) for emp in employees]
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(project__client__id__exact=self.value())
 
 class ProjectHourOptions(admin.ModelAdmin):
     class Media:
@@ -111,7 +127,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         return fields
 
     def get_list_filter(self, request):
-        filters = [ProjectTypeFilter, ProjectFilter, ProjectManagerFilter, ProjectLeadFilter, 'date']
+        filters = [ProjectTypeFilter, ProjectFilter,'date',]
         # if not request.user.is_superuser:
         #     filters.remove('manager')
         return filters
@@ -121,7 +137,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ['date', 'project', 'hours', 'manager', 'get_resources', 'operation_feedback_link', 'client_exp_feedback_link']
+        list_display = ['date', 'project', 'hours', 'manager', 'get_resources']
         # if not request.user.is_superuser:
         #     list_display.remove('payable')
         return list_display

@@ -1,10 +1,12 @@
+from urllib import request
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Count, BooleanField, Case, When, Value, Min, Q, Prefetch
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
-
+from django.db.models import Sum
+from datetime import timedelta
 from config.settings import employee_ids as management_ids
 
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
@@ -18,15 +20,16 @@ from employee.models import (
     HomeOffice,
     EmployeeNeedHelp,
     NeedHelpPosition,
-    Employee
+    Employee,
+    LeaveManagement
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from employee.models.employee import Employee, BookConferenceRoom
 from employee.models import FavouriteMenu
 from employee.forms.employee_project import BookConferenceRoomForm
-from project_management.models import Project
-
+from project_management.models import Project,DailyProjectUpdate
+from employee.models.employee import LateAttendanceFine
 from settings.models import Announcement
 
 from datetime import datetime
@@ -140,6 +143,38 @@ def formal_summery(request):
         "new_lead_or_managers": employee_formal_summery.new_lead_or_manager,
     }
 
+
+
+def total_attendance_fine(request):
+        if not request.user.is_authenticated:
+            return ''
+        obj = request.user.employee
+        current_date = datetime.now()
+        current_month = current_date.month
+        last_month = current_date.month - 1
+        current_year = current_date.year
+        current_late_fine = LateAttendanceFine.objects.filter(
+            employee=obj, month=current_month, year=current_year
+        ).aggregate(fine=Sum("total_late_attendance_fine"))
+        last_late_fine = LateAttendanceFine.objects.filter(
+            employee=obj, month=last_month, year=current_year
+        ).aggregate(fine=Sum("total_late_attendance_fine"))
+        current_fine = (
+            current_late_fine.get("fine", 0.00)
+            if current_late_fine.get("fine")
+            else 0.00
+        )
+        last_fine = (
+            last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
+        )
+        
+        last_month_date = current_date + timedelta(days=-30)
+        html = f'{current_fine} ( {current_date.strftime("%b")} ) </br>{last_fine} ( {last_month_date.strftime("%b")} )'
+        is_super = request.user.is_superuser
+        return {
+            'is_super':is_super,
+          'late_attendance_fine':format_html(html)
+        }
 
 def employee_status_form(request):
     if (
@@ -329,6 +364,7 @@ def favourite_menu_list(request):
         data["object_list"] = f_menu
         return data
     return []
+
 from project_management.models import Project
 def project_lists(request):
     if request.user.is_authenticated:
@@ -359,25 +395,25 @@ def employee_context_processor(request):
             is_manager = employee.manager
             is_lead = employee.lead
             is_sqa = employee.sqa
-            is_ba = employee.designation.title == "Business Analyst" if employee.designation else False
+            
         else:
             is_manager = False
             is_lead = False
             is_sqa = False
-            is_ba = False
+            
     else:
         employee = None
         is_manager = False
         is_lead = False
         is_sqa = False
-        is_ba = False
+        
     
     return {
         'employee': employee,
         'is_manager': is_manager,
         'is_lead': is_lead,
         'is_sqa': is_sqa,
-        'is_ba': is_ba,
+        
     }
 
 
@@ -393,3 +429,22 @@ def employee_project_list(request):
         project_list = None
     
     return {'employee_project_list': project_list}
+
+
+def approval_info_leave_daily_update(request):
+    if not request.user.is_authenticated:
+        return ''  # Return empty response if user is not authenticated
+    
+    pending_leave = LeaveManagement.objects.filter(status='pending', manager=request.user.employee).count()
+    daily_update_pending = DailyProjectUpdate.objects.filter(status='pending', manager=request.user.employee).count()
+    
+    # Determine if counts are greater than 0 to apply style
+    leave_color = 'red' if pending_leave > 0 else 'green'
+    update_color = 'red' if daily_update_pending > 0 else 'green'
+    
+    # Create HTML string with conditional styles
+    leave_html = f'<span style="color: {leave_color};">Leave Approval: {pending_leave}</span>'
+    update_html = f'<span style="color: {update_color};">Daily Update: {daily_update_pending}</span>'
+    html = f'   {leave_html}<br/>   {update_html}'
+    
+    return {'approval_info_leave_daily_update': format_html(html)}

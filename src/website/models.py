@@ -1,4 +1,4 @@
-import math
+from .hire_models import *  # noqa
 
 from django.db import models
 
@@ -13,13 +13,16 @@ from project_management.models import Client, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
 
+
 class ServiceProcess(models.Model):
-    img  = models.ImageField()
+    img = models.ImageField()
     title = models.CharField(max_length=200)
     description = models.TextField()
 
     def __str__(self):
         return self.title
+
+
 from django.core.exceptions import ValidationError
 
 
@@ -32,17 +35,19 @@ class Industry(models.Model):
     def __str__(self):
         return self.title
 
+
 class Service(models.Model):
     icon = models.ImageField()
     title = models.CharField(max_length=200)
+    sub_title = models.CharField(max_length=200, null=True, blank=True)
     slug = models.SlugField(unique=True)
     short_description = models.TextField()
     banner_image = models.ImageField()
     feature_image = models.ImageField()
     feature = HTMLField()
-    service_process = models.ManyToManyField(ServiceProcess)
-    industry = models.ManyToManyField(Industry)
-    clients = models.ManyToManyField(Client)
+    service_process = models.ManyToManyField(ServiceProcess, blank=True)
+    industry = models.ManyToManyField(Industry, blank=True)
+    clients = models.ManyToManyField(Client, blank=True)
     order = models.IntegerField(default=1)
     active = models.BooleanField(default=True)
 
@@ -50,6 +55,14 @@ class Service(models.Model):
         return self.title
 
 
+class ServiceContent(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Service, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    content = HTMLField()
+    image = models.ImageField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
 
 
 class ServiceTechnology(TimeStampMixin, AuthorMixin):
@@ -59,7 +72,7 @@ class ServiceTechnology(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
-    
+
 
 class Category(AuthorMixin, TimeStampMixin):
     name = models.CharField(max_length=255)
@@ -78,11 +91,11 @@ class Tag(AuthorMixin, TimeStampMixin):
 
 
 class Blog(AuthorMixin, TimeStampMixin):
-
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to="blog_images/")
     video = models.FileField(upload_to="blog_video", blank=True, null=True)
+    youtube_link = models.URLField(null=True, blank=True)
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
     short_description = models.TextField()
@@ -95,12 +108,14 @@ class Blog(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.title
 
-
     def clean(self):
-            if self.is_featured:
-                featured_blogs_count = Blog.objects.filter(is_featured=True).count()
-                if featured_blogs_count >= 3:
-                    raise ValidationError("Only up to 3 blogs can be featured.You have already added more than 3")
+        if self.is_featured:
+            featured_blogs_count = Blog.objects.filter(is_featured=True).count()
+            if featured_blogs_count >= 3:
+                raise ValidationError(
+                    "Only up to 3 blogs can be featured.You have already added more than 3"
+                )
+
     class Meta:
         permissions = [
             ("can_approve", "Can Approve"),
@@ -110,10 +125,14 @@ class Blog(AuthorMixin, TimeStampMixin):
         ]
 
     def clean(self):
-            if self.is_featured:
-                featured_blogs_count = Blog.objects.filter(is_featured=True).count()
-                if featured_blogs_count >= 3:
-                    raise ValidationError("Only up to 3 blogs can be featured.You have already added more than 3")
+        if self.is_featured:
+            featured_blogs_count = Blog.objects.filter(is_featured=True).count()
+            if featured_blogs_count >= 3:
+                raise ValidationError(
+                    "Only up to 3 blogs can be featured.You have already added more than 3"
+                )
+
+
 class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name="blog_contexts"
@@ -171,16 +190,41 @@ class OurAchievement(models.Model):
 class OurGrowth(models.Model):
     title = models.CharField(max_length=200)
     number = models.CharField(max_length=100)
-    
 
 
 class OurJourney(models.Model):
-    year = models.CharField(max_length =10)
+    year = models.CharField(max_length=10)
     title = models.CharField(max_length=100)
     description = models.TextField()
     img = models.ImageField()
 
+
 class EmployeePerspective(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
-    employee = models.ForeignKey(Employee,on_delete=models.CASCADE)
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+
+
+class Lead(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    message = models.TextField()
+
+    def __str__(self):
+        return self.name
+
+
+class Gallery(TimeStampMixin):
+    image = models.ImageField(upload_to="gallery_images/")
+
+    def __str__(self):
+        return str(self.id)
+
+
+class Award(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    image = models.ImageField(upload_to="award_images/")
+    link = models.URLField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title or str(self.id)

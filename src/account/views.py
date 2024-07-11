@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import HttpResponse
 from account.models import AccountJournal, Income, Expense
@@ -10,7 +11,7 @@ from django.db.models.functions import TruncDate, Concat, ExtractYear, ExtractMo
 from django.db.models import Sum, Count, Value, CharField, Min
 from django.db.models import DateField
 from django.db.models import F, ExpressionWrapper, DecimalField, Q
-from datetime import timedelta
+from datetime import date, timedelta,datetime
 from itertools import zip_longest
 
 
@@ -21,13 +22,43 @@ def payment_voucher(request, id):
     expenses = voucher.expenses.values('expanse_group__account_code', 'expanse_group__title') \
                                 .annotate(expense_amount=Sum('amount')) \
                                 .order_by('expanse_group__account_code') \
-                                .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount')
+                            .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount')
     
-    # get the template
-    template = get_template('pdf/payment_voucher.html')
 
+    #generate pv id / pv no
+    id_list = []
+    current_month = datetime.now().month
+    get_current_month_voucher = AccountJournal.objects.filter(date__month= current_month,type='daily')\
+    .order_by('date').values_list('id')
+
+    for d in get_current_month_voucher:
+        id_list.append(int(d[0]))
+    index_of_id = int(id_list.index(id)) + 1
+
+    date_in_str = str(voucher.date) 
+    date_obj = datetime.strptime(date_in_str, "%Y-%m-%d")
+    month = date_obj.strftime("%m")
+    year = date_obj.strftime("%y")
+    pv_no = f"{month}{year}/P00{index_of_id}"
+
+
+    #get all notes for daily expense
+    expense_note = ''
+
+    # Query Expense objects for the given date and concatenate notes
+    get_expense_notes = Expense.objects.filter(date=voucher.date)
+
+    for index, note in enumerate(get_expense_notes):
+        expense_note += note.note
+        # Add comma if it's not the last note
+        if index < len(get_expense_notes) - 1:
+            expense_note += ', '
+
+    # Print the concatenated notes
+
+    template = get_template('pdf/payment_voucher.html')
     # get the context data
-    context = {'voucher': voucher, 'expenses': expenses}
+    context = {'voucher': voucher, 'expenses': expenses,'pv_no':pv_no,'expense_note':expense_note}
     
     # Render the html template with the context data.
     html_content = template.render(context)

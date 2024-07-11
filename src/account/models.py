@@ -20,7 +20,7 @@ from employee.models import Employee
 from project_management.models import Project, Client
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
-
+from django.urls import reverse
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
     date = models.DateField(blank=False)
@@ -38,7 +38,10 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
         verbose_name = "Salary Sheet"
         verbose_name_plural = "Salary Sheets"
         permissions = (
-            ("can_see_salary_on_salary_sheet", "Can able to see Salary on Salary Sheet"),
+            (
+                "can_see_salary_on_salary_sheet",
+                "Can able to see Salary on Salary Sheet",
+            ),
         )
 
 
@@ -60,7 +63,7 @@ class EmployeeSalary(TimeStampMixin):
     @property
     def gross_amount(self):
         return self.gross_salary - self.festival_bonus
-    
+
 
 class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
     date = models.DateField(blank=False)
@@ -92,12 +95,17 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     employee = models.ManyToManyField(Employee)
     disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
 
+
 class ExpenseGroup(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255)
     note = models.TextField(null=True, blank=True)
     account_code = models.IntegerField(null=True, blank=True)
-    vds_rate = models.DecimalField(max_digits=4, decimal_places=2,validators=[MinValueValidator(0)], default=0.00)
-    tds_rate = models.DecimalField(max_digits=4, decimal_places=2,validators=[MinValueValidator(0)], default=0.00)
+    vds_rate = models.DecimalField(
+        max_digits=4, decimal_places=2, validators=[MinValueValidator(0)], default=0.00
+    )
+    tds_rate = models.DecimalField(
+        max_digits=4, decimal_places=2, validators=[MinValueValidator(0)], default=0.00
+    )
 
     def __str__(self):
         return self.title
@@ -129,10 +137,7 @@ class Expense(TimeStampMixin, AuthorMixin):
                 "can_approve_expense",
                 "Can Approve Expense",
             ),
-            (
-                "can_view_all_expenses",
-                "Can View All Expenses"
-            )
+            ("can_view_all_expenses", "Can View All Expenses"),
         )
 
 
@@ -155,6 +160,7 @@ class Income(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
     add_to_balance_sheet = models.BooleanField(default=False)
+    is_send_clients = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         hour_rate_decimal = Decimal(self.hour_rate)
@@ -272,15 +278,16 @@ class ProjectCommission(TimeStampMixin, AuthorMixin):
     )
     payment = models.FloatField()
 
-from django.urls import reverse
+
+
 class AccountJournal(AuthorMixin, TimeStampMixin):
-    journal_types = (
-        ('monthly', 'MONTHLY'),
-        ('daily', 'DAILY')
-    )
+    journal_types = (("monthly", "MONTHLY"), ("daily", "DAILY"))
     date = models.DateField(default=timezone.now)
     type = models.CharField(max_length=20, choices=journal_types)
-    expenses = models.ManyToManyField(Expense, related_name='expenses',)
+    expenses = models.ManyToManyField(
+        Expense,
+        related_name="expenses",
+    )
     pv_no = models.IntegerField(null=True, blank=True)
     note = models.TextField(blank=True, null=True)
 
@@ -288,34 +295,36 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
         return self.type
 
     def get_pdf_generate_url(self):
-        return reverse('account:payment_voucher', args=[str(self.id)])
-    
+        return reverse("account:payment_voucher", args=[str(self.id)])
+
     def get_monthly_journal(self):
-        return reverse('account:account_journal', args=[str(self.id)])
-    
+        return reverse("account:account_journal", args=[str(self.id)])
+
     def group_cost_url(self):
-        return reverse('account:group_costs', args=[str(self.id)])
-    
+        return reverse("account:group_costs", args=[str(self.id)])
+
     def balance_sheet_url(self):
-        return reverse('account:balance_sheet', args=[str(self.id)])
-    
+        return reverse("account:balance_sheet", args=[str(self.id)])
+
+
 class DailyPaymentVoucher(AccountJournal):
-    
     class Meta:
         proxy = True
-        verbose_name = 'Payment Voucher (Daily)'
-        verbose_name_plural = 'Payment Vouchers (Daily)'
+        verbose_name = "Payment Voucher (Daily)"
+        verbose_name_plural = "Payment Vouchers (Daily)"
+
 
 class MonthlyJournal(AccountJournal):
-
     class Meta:
         proxy = True
-        verbose_name = 'Account Journal (Monthly)'
-        verbose_name_plural = 'Accounts Journals (Monthly)'
+        verbose_name = "Account Journal (Monthly)"
+        verbose_name_plural = "Accounts Journals (Monthly)"
 
 
 class SalarySheetTaxLoan(models.Model):
-    salarysheet = models.ForeignKey(SalarySheet, null=True, blank=True, on_delete=models.CASCADE)
+    salarysheet = models.ForeignKey(
+        SalarySheet, null=True, blank=True, on_delete=models.CASCADE
+    )
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
 
     # Add any additional fields related to the relationship if needed
@@ -333,5 +342,7 @@ class SalarySheetTaxLoan(models.Model):
 def delete_related_loans(sender, instance, **kwargs):
     related_loans = Loan.objects.filter(salarysheettaxloan__salarysheet=instance)
     related_loans.delete()
-    related_salary_sheet_tax_loans = SalarySheetTaxLoan.objects.filter(salarysheet=instance)
+    related_salary_sheet_tax_loans = SalarySheetTaxLoan.objects.filter(
+        salarysheet=instance
+    )
     related_salary_sheet_tax_loans.delete()

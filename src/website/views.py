@@ -8,6 +8,7 @@ from icecream import ic
 from django.shortcuts import get_object_or_404
 
 
+from django_filters import FilterSet 
 from rest_framework.pagination import LimitOffsetPagination
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -22,8 +23,12 @@ from project_management.models import Project,ProjectTechnology
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
 from project_management.models import Project,Tag,OurTechnology,Client
-from website.models import Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry
+from website.models import Award, Gallery, Service, Category, Blog, BlogComment,FAQ,OurAchievement,OurJourney,OurGrowth,EmployeePerspective,Industry,Lead
 from website.serializers import (
+    AwardSerializer,
+    ClientLogoSerializer,
+    ClientSerializer,
+    GallerySerializer,
     ServiceSerializer,
     ProjectSerializer,
     EmployeeSerializer,
@@ -45,7 +50,9 @@ from website.serializers import (
     OurJourneySerializer,
     OurGrowthSerializer,
     EmployeePerspectiveSerializer,
-    IndustrySerializer
+    IndustrySerializer,
+    SkillSerializer,
+    LeadSerializer
 )
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from django_filters.rest_framework import DjangoFilterBackend
@@ -108,14 +115,14 @@ class MostPopularBlogPagination(PageNumberPagination):
 
 
 class ProjectList(ListAPIView):
-    queryset = Project.objects.filter(show_in_website=True).all()
+    queryset = Project.objects.filter(show_in_website=True,active=True).all()
     serializer_class = ProjectSerializer
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["tags"]
+    filterset_fields = ["tags", "is_highlighted"]
     search_fields = ["title"]
     ordering_fields = ["created_at", "modified_at"]
 
@@ -125,13 +132,11 @@ class ProjectList(ListAPIView):
         return response
 
 
-class ProjectHighlightedList(ListAPIView):
-    queryset = Project.objects.filter(is_highlight=True)
-    serializer_class = ProjectHighlightedSerializer
+
 
 
 class AvailableTagsListView(ListAPIView):
-    queryset = Tag.objects.annotate(tags_count=Count('projects'))
+    queryset = Tag.objects.all()
     serializer_class = AvailableTagSerializer
   
       
@@ -151,25 +156,33 @@ class ProjectDetails(APIView):
         return Response(serializer.data)
 
 
+
+class EmployeeSkillFilter(FilterSet):
+    skill = django_filters.CharFilter(field_name='employeeskill__skill__title', lookup_expr='exact')
+
+    class Meta:
+        model = Employee
+        fields = ['skill']
+
 class EmployeeList(ListAPIView):
     queryset = Employee.objects.filter(active=True, show_in_web=True).order_by(
                 "joining_date",
-                "-manager",
-                "list_order",
             )
     serializer_class = EmployeeSerializer
     pagination_class = PageNumberPagination
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['designation']
+    filter_backends = [DjangoFilterBackend]  # Should be a list
+    filterset_class = EmployeeSkillFilter  # Use the filter class
     pagination_class.page_size = 6
 
     def get_queryset(self):
-        search_query = self.request.query_params.get('search', None)
         queryset = super().get_queryset()
+        search_query = self.request.query_params.get('search')
         if search_query:
-            queryset = queryset.filter(designation__title__icontains=search_query)
+            queryset = queryset.filter(
+                Q(full_name__icontains=search_query) |
+                Q(designation__title__icontains=search_query)
+            )
         return queryset
-
 
 class EmployeeDetails(APIView):
     def get_object(self, slug):
@@ -188,14 +201,21 @@ class MainEmployeeListView(ListAPIView):
     serializer_class = EmployeeSerializer
 
     def get_queryset(self):
-        desired_designations = ['Managing Director', 'CTO', 'Co-Founder']
-        return Employee.objects.filter(designation__title__in=desired_designations)
-
+        return Employee.objects.filter(active=True, show_in_web=True,operation=True).order_by(
+                "list_order"
+            )
+    
+    
 class DesignationListView(ListAPIView):
-    queryset = Designation.objects.annotate(employee_count=Count('employee'))
+    queryset = Designation.objects.all()
     serializer_class = DesignationSetSerializer
 
     # def get(self,request,*args,**kwargs):
+
+class SkillListView(ListAPIView):
+    queryset = Skill.objects.all()
+    serializer_class = SkillSerializer
+    pagination_class = None
 
 
 class EmployeeWithDesignationView(APIView):
@@ -438,7 +458,7 @@ class BlogListByAuthorAPIView(ListAPIView):
 
     def get_queryset(self):
         author_id = self.kwargs.get('author_id')
-        return Blog.objects.filter(created_by__employee__id=author_id)
+        return Blog.objects.filter(created_by__employee__id=author_id).order_by('-total_view')
 
 class OurTechnologyListView(ListAPIView):
     queryset = OurTechnology.objects.all()
@@ -475,3 +495,42 @@ class EmployeePerspectiveListView(ListAPIView):
 class IndustryListView(ListAPIView):
     queryset = Industry.objects.all()
     serializer_class = IndustrySerializer
+
+class LeadCreateAPIView(CreateAPIView):
+    queryset = Lead.objects.all()
+    serializer_class = LeadSerializer
+    
+
+class ClientLogoListView(APIView):
+    serializer_class = ClientLogoSerializer
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Client.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        logos = [request.build_absolute_uri(logo['logo']) for logo in serializer.data if logo['logo']]
+        return Response({"results": logos})
+    
+    
+class GalleryListView(APIView):
+    serializer_class = GallerySerializer
+    
+    def get(self, request, *args, **kwargs):
+        queryset = Gallery.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        images = [request.build_absolute_uri(image['image']) for image in serializer.data]
+        return Response({"results": images})
+    
+
+class AwardListView(ListAPIView):
+    queryset = Award.objects.all()
+    serializer_class = AwardSerializer
+    
+    # def get(self, request, *args, **kwargs):
+    #     queryset = Award.objects.all()
+    #     serializer = self.serializer_class(queryset, many=True)
+    #     images = [request.build_absolute_uri(image['image']) for image in serializer.data]
+    #     return Response({"results": images})
+    
+class ClientListAPIView(ListAPIView):
+    queryset = Client.objects.all()
+    serializer_class = ClientSerializer
