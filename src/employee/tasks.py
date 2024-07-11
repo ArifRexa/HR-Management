@@ -532,7 +532,8 @@ from datetime import datetime, time
 from django.db.models.functions import ExtractMonth, ExtractYear
 
 
-def late_attendance_calculate():
+def late_attendance_calculate(late_entry_time):
+   
     employees = Employee.objects.filter(
         active=True, show_in_attendance_list=True
     ).exclude(salaryhistory__isnull=True)
@@ -547,9 +548,8 @@ def late_attendance_calculate():
             employee=employee,
             date__year=current_year,
             date__month=current_month,
-            entry_time__gt=late_entry,
+            entry_time__gt=late_entry_time,
         ).count()
-
         # Check if there is a late entry for today
         today_late_entry = EmployeeAttendance.objects.filter(
             employee=employee, date=current_date, entry_time__gt=late_entry
