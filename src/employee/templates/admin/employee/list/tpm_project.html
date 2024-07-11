@@ -68,10 +68,9 @@
             </tr>
             </thead>
             <tbody>
-                {% regroup tpm_project_data by tpm as tpm_data %}
-                
+
                 {% for result in tpm_data %}
-                
+
                 <tr>
                     <td>
                         {{ result.grouper }}
