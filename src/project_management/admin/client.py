@@ -69,6 +69,7 @@ class CountryAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
         "name",
+        "web_name",
         "get_project_name",
         "email",
         "linkedin_url",
@@ -78,6 +79,7 @@ class ClientAdmin(admin.ModelAdmin):
     )
     fields = (
         "name",
+        "web_name",
         "email",
         "logo",
         "client_feedback",
@@ -94,7 +96,7 @@ class ClientAdmin(admin.ModelAdmin):
     )
     list_filter = ["project__active", "review", "payment_method"]
     inlines = (ClientInvoiceDateInline,)
-    search_fields = ["name"]
+    search_fields = ["name", "web_name"]
     autocomplete_fields = ['country', 'payment_method']
 
     @admin.display(description="Project Name")
