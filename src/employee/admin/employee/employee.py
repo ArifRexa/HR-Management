@@ -453,8 +453,21 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         tpm_project_data = EmployeeUnderTPM.objects.select_related(
             "employee", "project", "tpm"
         ).all()
+
+        # Group by tpm
+        tpm_data = {}
+        for employee in tpm_project_data:
+            if employee.tpm_id not in tpm_data:
+                tpm_data[employee.tpm_id] = {
+                    'grouper': employee.tpm,
+                    'list': []
+                }
+            grouper = tpm_data[employee.tpm_id]
+            grouper['list'].append(employee)
+
         my_context = {
             "tpm_project_data": tpm_project_data,
+            "tpm_data": list(tpm_data.values()),
         }
 
         # print(tpm_project_data.prject.all())
@@ -466,4 +479,4 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             path("", self.custom_changelist_view, name="tpm_project_changelist_view"),
         ]
         return custom_urls + urls
-    
+
