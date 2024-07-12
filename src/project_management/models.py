@@ -59,6 +59,13 @@ class PaymentMethod(TimeStampMixin):
         return self.name
 
 
+class Country(TimeStampMixin):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     designation = models.CharField(max_length=200, null=True, blank=True)
@@ -68,7 +75,9 @@ class Client(TimeStampMixin, AuthorMixin):
         null=True, blank=True, help_text="Comma-separated email addresses for CC"
     )
     address = models.TextField(null=True, blank=True)
-    country = models.CharField(max_length=200)
+    country = models.ForeignKey(
+        Country, on_delete=models.SET_NULL, null=True, blank=True
+    )
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
     # show_in_web = models.BooleanField(default=False)
     client_feedback = models.TextField(null=True, blank=True)
