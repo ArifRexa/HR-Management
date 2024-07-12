@@ -160,18 +160,22 @@ class LeaveManagement(admin.ModelAdmin):
                 .exclude(employee__id=employee.id)
                 .distinct()
             )
-
-            managers = (
-                project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
-                .exclude(employee__id=employee.id)
-                .distinct()
-            )
-
-            for manager in managers:
-                leave_manage = leave.LeaveManagement(
-                    manager=manager.employee, leave=obj
-                )
+            if tpm.exists():
+                leave_manage = leave.LeaveManagement(manager=tpm.first().employee, leave=obj)
                 leave_manage.save()
+            else:
+
+                managers = (
+                    project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
+                    .exclude(employee__id=employee.id)
+                    .distinct()
+                )
+
+                for manager in managers:
+                    leave_manage = leave.LeaveManagement(
+                        manager=manager.employee, leave=obj
+                    )
+                    leave_manage.save()
         self.__send_leave_mail(request, obj, form, change)
         
     def has_add_permission(self, request):    
