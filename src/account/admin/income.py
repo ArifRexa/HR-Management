@@ -13,7 +13,21 @@ from account.services.balance import BalanceSummery
 
 from config.settings import STATIC_ROOT
 from config.utils.pdf import PDF
+from project_management.models import Client
 
+
+class ActiveClientFilter(admin.SimpleListFilter):
+    title = "Client"
+    parameter_name = "project__client__id"
+
+    def lookups(self, request, model_admin):
+        clients = Client.objects.filter(project__active=True).distinct()
+        return tuple((client.pk, client.name) for client in list(clients))
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(project__client__id=self.value())
+        return queryset
 
 @admin.register(Income)
 class IncomeAdmin(admin.ModelAdmin):
@@ -29,13 +43,12 @@ class IncomeAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     exclude = ["is_send_clients"]
     readonly_fields = ("payment",)
-    list_filter = (
+    list_filter = [
         "status",
         "project",
-        "date",
-        "project__client",
         "project__client__payment_method",
-    )
+        ActiveClientFilter,  
+    ]
     actions = [
         "approve_selected",
         "pending_selected",
@@ -49,6 +62,12 @@ class IncomeAdmin(admin.ModelAdmin):
     change_list_template = "admin/income/list.html"
 
     list_per_page = 20
+    
+    def get_list_filter(self, request):
+        if request.user.has_perm("project_management.view_client"):
+            return super().get_list_filter(request)
+        self.list_filter.remove("project__client__payment_method")
+        return self.list_filter
 
     @admin.action(description="Status")
     def status_col(self, obj):

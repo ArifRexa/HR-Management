@@ -9,6 +9,7 @@ from project_management.models import (
     Client,
     ClientInvoiceDate,
     ClientReview,
+    Country,
     PaymentMethod,
     Project,
     Technology,
@@ -29,11 +30,12 @@ class ActiveProjectFilter(admin.SimpleListFilter):
         project_title = Project.objects.filter(active=True).values_list(
             "title", flat=True
         )
-        return tuple([(title, title) for title in project_title])
+        return tuple((title, title) for title in project_title)
 
     def queryset(self, request, queryset):
-        qs = queryset.filter(project__title=request.GET.get(self.parameter_name))
-        return qs
+        if self.value():
+            return queryset.filter(project__title=self.value())
+        return queryset
 
 
 @admin.register(ClientReview)
@@ -54,6 +56,15 @@ class PaymentMethodAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ["name"]
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -63,7 +74,7 @@ class ClientAdmin(admin.ModelAdmin):
         "linkedin_url",
         "get_client_review",
         "country",
-        "address",
+        "payment_method",
     )
     fields = (
         "name",
@@ -81,15 +92,22 @@ class ClientAdmin(admin.ModelAdmin):
         "payment_method",
         "review",
     )
-    list_filter = ("project__active",)
+    list_filter = ["project__active", "review", "payment_method"]
     inlines = (ClientInvoiceDateInline,)
     search_fields = ["name"]
+    autocomplete_fields = ['country', 'payment_method']
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
+
+    def get_list_filter(self, request: HttpRequest):
+        if request.user.has_perm("project_management.view_client"):
+            return super().get_list_filter(request)
+        self.list_filter.remove("payment_method")
+        return self.list_filter
 
     # get_project_name.short_description = "Project Name"
     @admin.display(description="Client Review")
