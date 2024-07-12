@@ -9,6 +9,7 @@ from project_management.models import (
     Client,
     ClientInvoiceDate,
     ClientReview,
+    Country,
     PaymentMethod,
     Project,
     Technology,
@@ -55,6 +56,15 @@ class PaymentMethodAdmin(admin.ModelAdmin):
         return False
 
 
+@admin.register(Country)
+class CountryAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ["name"]
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -85,6 +95,7 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = ["project__active", "review", "payment_method"]
     inlines = (ClientInvoiceDateInline,)
     search_fields = ["name"]
+    autocomplete_fields = ['country', 'payment_method']
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
