@@ -70,7 +70,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         employee_hours: Manager[EmployeeProjectHourGroupByEmployee] = self.get_queryset(request).filter(**filters)
 
         for hour in employee_hours:
-            week = hour.project_hour.date.isocalendar().week
+            week = hour.project_hour.date.isocalendar()[1]
             employee = hour.employee
 
             if week not in employee_weekly_data:
