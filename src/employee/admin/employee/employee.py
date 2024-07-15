@@ -454,7 +454,7 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             "employee", "project__client", "tpm"
         ).all()
 
-        # Group by tpm
+        # Group employee by tpm
         tpm_data = {}
         temp_tpm_data = {}
         for employee in tpm_project_data:
