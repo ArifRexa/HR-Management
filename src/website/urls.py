@@ -46,6 +46,7 @@ from website.views_v2.hire_views import (
     HireResourceContentDetailView,
     HireResourceListView,
 )
+from website.views_v2.csr_views import CSRListAPIView
 
 
 api_urls = [
@@ -155,6 +156,7 @@ api_v2_urls = [
         HireResourceContentDetailView.as_view(),
         name="hire_resource_detail",
     ),
+    path("csr/",CSRListAPIView.as_view(),name="csr"),
 ]
 
 urlpatterns = [
