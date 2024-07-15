@@ -46,6 +46,7 @@ from website.views_v2.hire_views import (
     HireResourceContentDetailView,
     HireResourceListView,
 )
+from website.views_v2.woman_empowerments_views import WomanEmpowermentView
 from website.views_v2.industry_we_serve import (
     IndustryWeServeListAPIView,
     IndustryWeServeRetrieveAPIViewView,
@@ -160,6 +161,7 @@ api_v2_urls = [
         HireResourceContentDetailView.as_view(),
         name="hire_resource_detail",
     ),
+    path("woman-empowerment/", WomanEmpowermentView.as_view(), name="woman_empowerment"),
     path(
         "industry-we-serve/",
         IndustryWeServeListAPIView.as_view(),
