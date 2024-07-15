@@ -1,5 +1,5 @@
 from .hire_models import *  # noqa
-
+from .csr_models import * #noqa
 from django.db import models
 
 # Create your models here
