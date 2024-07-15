@@ -2,6 +2,7 @@ from datetime import timedelta,datetime
 
 from django.contrib import admin
 from django.db.models import Sum
+from django.db.models import Manager
 from django.db.models.functions import Coalesce
 from project_management.models import (
     EmployeeProjectHourGroupByEmployee,
@@ -50,6 +51,12 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         today = datetime.now().date()
         yesterday = today - timedelta(days=1)
+        year_start_date = datetime(
+            year=today.year,
+            month=1,
+            day=1
+        )
+        year_start_date_weekday = year_start_date.weekday()
 
         filters = {}
         for key, value in request.GET.items():
@@ -59,17 +66,54 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
             filters["created_at__date"] = yesterday
 
         employee_hours_data = {}
-        employee_hours = self.get_queryset(request).filter(**filters)
+        employee_weekly_data = {}
+        employee_hours: Manager[EmployeeProjectHourGroupByEmployee] = self.get_queryset(request).filter(**filters)
 
-        for hours in employee_hours:
-            key = hours.employee
-            key.employee_hours = key.employeeprojecthour_set.filter(**filters).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
-            employee_hours_data.setdefault(key, []).append(hours)
+        for hour in employee_hours:
+            week = hour.project_hour.date.isocalendar().week
+            employee = hour.employee
 
-        sorted_data_set = dict(sorted(employee_hours_data.items(), key=lambda x: x[0].employee_hours))
-        
+            if week not in employee_weekly_data:
+                week_start_date = (
+                    year_start_date + timedelta(
+                        weeks=week - 1,
+                        days=-year_start_date_weekday
+                    )
+                ).date()
+                employee_weekly_data[week] = {
+                    'week': week,
+                    'start_date': week_start_date,
+                    'end_date': week_start_date + timedelta(days=5),
+                    'employees': {}
+                }
+
+            weekly_data = employee_weekly_data[week]
+            if employee.pk not in weekly_data['employees']:
+                weekly_data['employees'][employee.pk] = {
+                    'employee': employee,
+                    'monthly_expected_hours': employee.monthly_expected_hours or 0.0,
+                    'weekly_expected_hours': (
+                        employee.monthly_expected_hours or 0.0
+                    ) / 4,
+                    'projects': {}
+                }
+
+            employee_data = weekly_data['employees'][employee.pk]
+            project_id = hour.project_hour.project.pk
+            if project_id not in employee_data['projects']:
+                employee_data['projects'][project_id] = {
+                    'project': hour.project_hour.project,
+                    'manager': hour.project_hour.manager,
+                    'total_hours': 0.0
+                }
+            employee_data['projects'][project_id]['total_hours'] += hour.hours
+
         extra_context = extra_context or {}
-        extra_context['employee_hours_data'] = sorted_data_set
+
+        extra_context['employee_weekly_data'] = dict(sorted(
+            employee_weekly_data.items(),
+            key=lambda x: x[0]
+        ))
 
         return super().changelist_view(request, extra_context=extra_context)
 
@@ -100,7 +144,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
             "project_management.see_all_employee_update"
         ):
             return query_set.filter(employee=request.user.employee.id)
-        return query_set.filter(employee__active=True).exclude(employee_id__in=[30])
+        return query_set.filter(employee__active=True)
 
     def has_module_permission(self, request):
         return True

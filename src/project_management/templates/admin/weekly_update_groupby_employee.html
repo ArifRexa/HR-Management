@@ -79,29 +79,24 @@
                 </tr>
               </thead>
               <tbody>
-                {% for key, values in employee_hours_data.items %}
-                  {% for hour in values %}
-                    <tr>
-                      <td>{{ hour.created_at }}</td>
-                      {% if forloop.first %}
-                      <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
-                      <td>{{ hour.project_hour.project.title }}</td>
-                      <td class="monthly-expected-hours" rowspan="{{ values|length }}">
-                        {{ hour.employee.monthly_expected_hours|default:"0.00" }} ({{ hour.employee.monthly_expected_hours|default:"0.00"|divide_by:4|floatformat:2 }})
-                      </td>
-                      {% else %}
-                      <td colspan="2"></td>
-                      {% endif %}
-                      <td>{{ hour.hours|default:"0.00" }}</td>
-                      <td>{{ hour.project_hour.manager.full_name }}</td>
-                    </tr>
-                  {% endfor %}
+                {% for week in employee_weekly_data.values %}
+                {% for employee in week.employees.values %}
+                {% for project in employee.projects.values %}
+                  <tr>
+                    <td title="{{week.week}}">{{week.start_date}} - {{week.end_date}}</td>
+                    <td>{{employee.employee}}</td>
+                    <td>{{project.project}}</td>
+                    <td>{{employee.monthly_expected_hours}} ({{employee.weekly_expected_hours}})</td>
+                    <td>{{project.total_hours}}</td>
+                    <td>{{project.manager}}</td>
+                  </tr>
+                {% endfor %}
+                {% endfor %}
                 {% endfor %}
               </tbody>
             </table>
           </div>
           {% endblock %}
-          {% block pagination %}{% pagination cl %}{% endblock %}
         </form>
       </div>
       {% block filters %}
