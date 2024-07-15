@@ -254,7 +254,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     )
     project_results = ProjectResultsSerializer()
     industries = serializers.SerializerMethodField()
-    title = serializers.CharField(source='web_title')  # Use web_title as the title field
+    title = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -267,7 +267,10 @@ class ProjectSerializer(serializers.ModelSerializer):
             "project_results",
             "technologies",
         )
-
+    
+    def get_title(self, obj):
+        return obj.web_title if obj.web_title else obj.title
+    
     def get_industries(self, obj):
         return [industry.title for industry in obj.industries.all()]
 
@@ -761,7 +764,10 @@ class AwardSerializer(serializers.ModelSerializer):
 
 
 class ClientSerializer(serializers.ModelSerializer):
-    name = serializers.CharField(source='web_name') # hide in api real name
+    name = serializers.SerializerMethodField()
     class Meta:
         model = Client
         fields = ["name", "designation", "image", "client_feedback"]
+
+    def get_name(self, obj):
+        return obj.web_name if obj.web_name else obj.name

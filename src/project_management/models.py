@@ -68,7 +68,7 @@ class Country(TimeStampMixin):
 
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
-    web_name = models.CharField(max_length=200, verbose_name="Web Name", null=True)
+    web_name = models.CharField(max_length=200, verbose_name="Web Name", null=True, blank=True)
     designation = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(max_length=80, null=True, blank=True)
     bill_from = models.TextField(null=True, blank=True)
@@ -183,7 +183,7 @@ class ProjectService(models.Model):
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
-    web_title = models.CharField(max_length=200, verbose_name="Web Title", null=True)
+    web_title = models.CharField(max_length=200, verbose_name="Web Title", null=True, blank=True)
     slug = models.SlugField(null=True, blank=True, unique=True)
     description = models.TextField()
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
