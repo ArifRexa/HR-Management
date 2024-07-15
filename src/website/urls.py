@@ -46,6 +46,10 @@ from website.views_v2.hire_views import (
     HireResourceContentDetailView,
     HireResourceListView,
 )
+from website.views_v2.industry_we_serve import (
+    IndustryWeServeListAPIView,
+    IndustryWeServeRetrieveAPIViewView,
+)
 from website.views_v2.csr_views import CSRListAPIView
 
 
@@ -155,6 +159,16 @@ api_v2_urls = [
         "hire-resource/<slug:slug>/",
         HireResourceContentDetailView.as_view(),
         name="hire_resource_detail",
+    ),
+    path(
+        "industry-we-serve/",
+        IndustryWeServeListAPIView.as_view(),
+        name="industry_we_serve",
+    ),
+    path(
+        "industry-we-serve/<slug:slug>/",
+        IndustryWeServeRetrieveAPIViewView.as_view(),
+        name="industry_we_serve",
     ),
     path("csr/",CSRListAPIView.as_view(),name="csr"),
 ]
