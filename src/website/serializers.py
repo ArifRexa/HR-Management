@@ -254,6 +254,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     )
     project_results = ProjectResultsSerializer()
     industries = serializers.SerializerMethodField()
+    title = serializers.CharField(source='web_title')  # Use web_title as the title field
 
     class Meta:
         model = Project
@@ -760,6 +761,7 @@ class AwardSerializer(serializers.ModelSerializer):
 
 
 class ClientSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='web_name') # hide in api real name
     class Meta:
         model = Client
         fields = ["name", "designation", "image", "client_feedback"]

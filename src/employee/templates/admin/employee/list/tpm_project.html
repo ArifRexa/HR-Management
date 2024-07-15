@@ -59,11 +59,8 @@
             <tr>
                 <th scope="col">TPM</th>
                 <th scope="col">Counts</th>
-{#                <th scope="col">Employee Count</th>#}
                 <th scope="col">Employees</th>
-{#                <th scope="col">Project Count</th>#}
                 <th scope="col">Projects</th>
-{#                <th scope="col">Client Count</th>#}
                 <th scope="col">Clients</th>
             </tr>
             </thead>
@@ -80,43 +77,25 @@
                         <b>Projects Count: </b>{{ result.list|total_project_count }}<br>
                         <b>Clients Count: </b>{{ result.list|total_client_count }}
                     </td>
-{#                    <td>{{ result.list|total_employee_count }}</td>#}
                     <td>
                         <ul>
-                            {% for tpm in result.list %}
-                            
-                            {% ifchanged  %}
-                                
-                            <li>{{ tpm.employee }}</li>
-                            {% endifchanged %}
-                                
+                            {% for employee in result.employees %}
+                            <li>{{ employee }}</li>
                             {% endfor %}
                         </ul>
                     </td>
-{#                    <td>{{ result.list|total_project_count }}</td>#}
                     <td>
                         <ul>
-                            {% for p_tpm in result.list %}
-                            
-                            {% ifchanged  %}
-                                
-                            <li>{{ p_tpm.project }}</li>
-                            {% endifchanged %}
-                                
-                            {% endfor %}
+                          {% for project in result.projects %}
+                          <li>{{ project.title }}</li>
+                          {% endfor %}
                         </ul>
                     </td>
-{#                    <td>{{ result.list|total_client_count }}</td>#}
                     <td>
                         <ul>
-                            {% for p_tpm in result.list %}
-
-                            {% ifchanged  %}
-
-                            <li>{{ p_tpm.project.client }}</li>
-                            {% endifchanged %}
-
-                            {% endfor %}
+                          {% for client in result.clients %}
+                          <li>{{ client }}</li>
+                          {% endfor %}
                         </ul>
                     </td>
                 </tr>
