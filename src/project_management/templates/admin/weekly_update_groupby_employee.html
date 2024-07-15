@@ -89,8 +89,6 @@
                       <td class="monthly-expected-hours" rowspan="{{ values|length }}">
                         {{ hour.employee.monthly_expected_hours|default:"0.00" }} ({{ hour.employee.monthly_expected_hours|default:"0.00"|divide_by:4|floatformat:2 }})
                       </td>
-                      {% else %}
-                      <td colspan="2"></td>
                       {% endif %}
                       <td>{{ hour.hours|default:"0.00" }}</td>
                       <td>{{ hour.project_hour.manager.full_name }}</td>
