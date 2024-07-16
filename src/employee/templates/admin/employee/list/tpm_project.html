@@ -70,12 +70,24 @@
 
                 <tr>
                     <td>
-                        {{ result.grouper }}
+                        {{ result.tpm }}
                     </td>
                     <td>
                         <b>Employees: </b>{{result.employees|length}}<br>
                         <b>Projects: </b>{{result.projects|length}}<br>
-                        <b>Clients: </b>{{result.clients|length}}
+                        <b>Clients: </b>{{result.clients|length}} <br>
+                        <span title="{{result.last_week_date_range.0.0}} - {{result.last_week_date_range.0.1}}">
+                          <b>Last Week Hour: </b>{{result.last_week_hours.0}}
+                        </span><br>
+                        <span title="{{result.last_week_date_range.1.0}} - {{result.last_week_date_range.1.1}}">
+                          <b>Last Week Hour (2nd): </b>{{result.last_week_hours.1}}
+                        </span><br>
+                        <span title="{{result.last_week_date_range.2.0}} - {{result.last_week_date_range.2.1}}">
+                          <b>Last Week Hour (3rd): </b>{{result.last_week_hours.2}}
+                        </span><br>
+                        <span title="{{result.last_week_date_range.3.0}} - {{result.last_week_date_range.3.1}}">
+                          <b>Last Week Hour (4th): </b>{{result.last_week_hours.3}}
+                        </span>
                     </td>
                     <td>
                         <ul>
