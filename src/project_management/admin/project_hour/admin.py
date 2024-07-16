@@ -6,6 +6,7 @@ from django.contrib import admin
 
 from django.core.exceptions import ValidationError
 from django import forms
+
 # Register your models here.
 from django.db.models import Sum, Q, F
 from django.template.context_processors import request
@@ -22,53 +23,63 @@ from project_management.models import Client, Project, ProjectHour, EmployeeProj
 class EmployeeHourAdmin(admin.TabularInline):
     model = EmployeeProjectHour
     extra = 1
-    autocomplete_fields = ('employee',)
+    autocomplete_fields = ("employee",)
 
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
         if obj is not None:
             if obj.created_at <= three_day_earlier and not request.user.is_superuser:
-                return ('hours', 'employee')
+                return ("hours", "employee")
         return ()
 
 
 class ProjectHourAdminForm(forms.ModelForm):
-
-     def clean(self):
+    def clean(self):
         data = super(ProjectHourAdminForm, self).clean()
-        if data.get('hour_type') != "bonus":
+        if data.get("hour_type") != "bonus":
             if self.request:
                 if self.request.path_info[-5:-1] == "/add":
-                    project = data.get('project')
-                    if project and ProjectHour.objects.filter(
-                        manager_id=self.request.user.employee.id, 
-                        project_id=project.id, 
-                        date=data.get('date')
-                    ).exists():
-                        raise ValidationError({
-                            'date': "Project Hour for this date with this project and manager already exists",
-                        })
+                    project = data.get("project")
+                    if (
+                        project
+                        and ProjectHour.objects.filter(
+                            manager_id=self.request.user.employee.id,
+                            project_id=project.id,
+                            date=data.get("date"),
+                        ).exists()
+                    ):
+                        raise ValidationError(
+                            {
+                                "date": "Project Hour for this date with this project and manager already exists",
+                            }
+                        )
             return data
 
+
 @admin.register(ProjectHour)
-class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin):
-    date_hierarchy = 'date'
-    search_fields = ['hours', 'manager__full_name', 'project__title', 'date']
+class ProjectHourAdmin(
+    ProjectHourAction, ProjectHourOptions, RecentEdit, admin.ModelAdmin
+):
+    date_hierarchy = "date"
+    search_fields = ["hours", "manager__full_name", "project__title", "date"]
     inlines = (EmployeeHourAdmin,)
-    change_list_template = 'admin/total.html'
-    autocomplete_fields = ['project']
+    change_list_template = "admin/total.html"
+    autocomplete_fields = ["project"]
     list_per_page = 50
-    ordering = ('-pk',)
-    add_form_template = 'admin/project_hour/project_hour.html'
+    ordering = ("-pk",)
+    add_form_template = "admin/project_hour/project_hour.html"
     fieldsets = (
-        ('Standard info', {
-            'fields': ('hour_type', 'project', 'date', 'hours')
-        }),
+        ("Standard info", {"fields": ("hour_type", "project", "date", "hours")}),
         (
-            'Administration Process', {
-                'fields': ('operation_feedback','client_exp_feedback', 'approved_by_cto')
-            }
-        )
+            "Administration Process",
+            {
+                "fields": (
+                    "operation_feedback",
+                    "client_exp_feedback",
+                    "approved_by_cto",
+                )
+            },
+        ),
     )
     form = ProjectHourAdminForm
 
@@ -79,12 +90,15 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        qs = self.get_queryset(request).filter(
-            **simple_request_filter(request))
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
             qs.filter(manager__id__exact=request.user.employee.id)
-        return qs.aggregate(tot=Sum('hours'))['tot']
-    
+        return qs.aggregate(tot=Sum("hours"))["tot"]
+
+    def lookup_allowed(self, key, *args, **kwargs):
+        if key in ("project__client__payment_method__id__exact", "project__client__id__exact"):
+            return True
+        return super(ProjectHourAdmin, self).lookup_allowed(key, *args, **kwargs)
 
     # override change list view
     # return total hour count
@@ -92,12 +106,14 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         my_context = dict(
             self.admin_site.each_context(request),
             total=self.get_total_hour(request),
-            series=self.get_data(request)
+            series=self.get_data(request),
         )
-        return super(ProjectHourAdmin, self).changelist_view(request, extra_context=my_context)
+        return super(ProjectHourAdmin, self).changelist_view(
+            request, extra_context=my_context
+        )
 
     def get_queryset(self, request):
-        """ Return query_set
+        """Return query_set
 
         overrides django admin query set
         allow super admin only to see all project hour
@@ -105,7 +121,9 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
         @type request: object
         """
         query_set = super(ProjectHourAdmin, self).get_queryset(request)
-        if not request.user.is_superuser and not request.user.has_perm('project_management.show_all_hours'):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "project_management.show_all_hours"
+        ):
             return query_set.filter(manager_id=request.user.employee.id)
         return query_set
 
@@ -121,69 +139,80 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
 
     def get_fieldsets(self, request, obj):
         fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
-        if not request.user.has_perm('project_management.weekly_project_hours_approve'):
-            return (fieldsets[0], )
+        if not request.user.has_perm("project_management.weekly_project_hours_approve"):
+            return (fieldsets[0],)
 
         return fieldsets
 
     def get_data(self, request):
-        print('*******************')
-        print('get_data has called')
+        print("*******************")
+        print("get_data has called")
         series = list()
-        selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
-        print('************** project id is *************', selected_projects)
-        print('*** selected projects are ', selected_projects)
+        selected_projects = (
+            self.get_changelist_instance(request)
+            .get_filters_params()
+            .get("project__id__exact")
+        )
+        print("************** project id is *************", selected_projects)
+        print("*** selected projects are ", selected_projects)
         if selected_projects:
-            projects = Project.objects.filter(id__in=[selected_projects], active=True).all()
+            projects = Project.objects.filter(
+                id__in=[selected_projects], active=True
+            ).all()
         else:
             projects = Project.objects.filter(active=True).all()
         date_to_check = datetime.date.today() - datetime.timedelta(days=60)
         for project in projects:
-            data = project.projecthour_set.filter(date__gte=date_to_check).annotate(
-                date_str=F('date')
-            ).extra(
-                select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
-            ).values(
-                'date_str'
-            ).annotate(
-                total_hours=Sum('hours')
-            ).values_list(
-                'date_str', 'total_hours'
-            ).order_by(
-                'date_str'
+            data = (
+                project.projecthour_set.filter(date__gte=date_to_check)
+                .annotate(date_str=F("date"))
+                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
+                .values("date_str")
+                .annotate(total_hours=Sum("hours"))
+                .values_list("date_str", "total_hours")
+                .order_by("date_str")
             )
 
             print(data)
             # TODO : must be optimize otherwise it will effect the load time
-            print('***************** data **************', data)
+            print("***************** data **************", data)
             array_date = []
             for value in data:
                 array_date.append(list(value))
 
-            series.append({
-                'type': 'spline',
-                # 'visible': 'false',
-                'name': project.title,
-                'data': list(array_date)
-            })
+            series.append(
+                {
+                    "type": "spline",
+                    # 'visible': 'false',
+                    "name": project.title,
+                    "data": list(array_date),
+                }
+            )
         if selected_projects:
-
-            sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
-                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
-            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+            sum_hours = (
+                ProjectHour.objects.filter(
+                    project_id__in=selected_projects, date__gte=date_to_check
+                )
+                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
+                .order_by("date")
+                .values_list("date_str")
+                .annotate(Sum("hours"))
+            )
 
         else:
-            sum_hours = ProjectHour.objects.filter(date__gte=date_to_check).extra(
-                select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
-            ).order_by('date').values_list('date_str').annotate(Sum('hours'))
+            sum_hours = (
+                ProjectHour.objects.filter(date__gte=date_to_check)
+                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
+                .order_by("date")
+                .values_list("date_str")
+                .annotate(Sum("hours"))
+            )
         sum_array = []
         # for sum_hour in sum_hours:
         #     sum_array.append(list(sum_hour)) #  it will return the total hours of projects.
-        series.append({
-            'type': 'spline',
-            'name': 'Total Project Hours',
-            'data': sum_array
-        })
+        series.append(
+            {"type": "spline", "name": "Total Project Hours", "data": sum_array}
+        )
         # print('************** series ***********', series)
         return series
 
@@ -230,4 +259,3 @@ class ProjectHourAdmin(ProjectHourAction, ProjectHourOptions, RecentEdit, admin.
     #         })
     #
     #     return series
-
