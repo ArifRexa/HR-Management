@@ -36,7 +36,7 @@ from website.models import (
 
 @admin.register(Award)
 class AwardAdmin(admin.ModelAdmin):
-    list_display = ["id","image"]
+    list_display = ["title","image", "short_description"]
     
     def has_module_permission(self, request):
         return False
