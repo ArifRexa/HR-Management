@@ -75,19 +75,11 @@
                     <td>
                         <b>Employees: </b>{{result.employees|length}}<br>
                         <b>Projects: </b>{{result.projects|length}}<br>
-                        <b>Clients: </b>{{result.clients|length}} <br>
-                        <span title="{{result.last_week_date_range.0.0}} - {{result.last_week_date_range.0.1}}">
-                          <b>Last Week Hours: </b>{{result.last_week_hours.0|floatformat:2}}
-                        </span><br>
-                        <span title="{{result.last_week_date_range.1.0}} - {{result.last_week_date_range.1.1}}">
-                          <b>2nd Last Week Hours: </b>{{result.last_week_hours.1|floatformat:2}}
-                        </span><br>
-                        <span title="{{result.last_week_date_range.2.0}} - {{result.last_week_date_range.2.1}}">
-                          <b>3rd Last Week Hours: </b>{{result.last_week_hours.2|floatformat:2}}
-                        </span><br>
-                        <span title="{{result.last_week_date_range.3.0}} - {{result.last_week_date_range.3.1}}">
-                          <b>4th Last Week Hours: </b>{{result.last_week_hours.3|floatformat:2}}
-                        </span>
+                        <b>Clients: </b>{{result.clients|length}}<br>
+                        <b>{{result.last_week_date_range.0.1}}: </b>{{result.last_week_hours.0|floatformat:2}}<br>
+                        <b>{{result.last_week_date_range.1.1}}: </b>{{result.last_week_hours.1|floatformat:2}}<br>
+                        <b>{{result.last_week_date_range.2.1}}: </b>{{result.last_week_hours.2|floatformat:2}}<br>
+                        <b>{{result.last_week_date_range.3.1}}: </b>{{result.last_week_hours.3|floatformat:2}}
                     </td>
                     <td>
                         <ul>
