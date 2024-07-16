@@ -169,7 +169,7 @@ def total_attendance_fine(request):
         )
         
         last_month_date = current_date + timedelta(days=-30)
-        html = f'{current_fine} ( {current_date.strftime("%b")} ) </br>{last_fine} ( {last_month_date.strftime("%b")} )'
+        html = f'{current_fine} ( {current_date.strftime("%b")} )  </br>{last_fine} ( {last_month_date.strftime("%b")} ) '
         is_super = request.user.is_superuser
         return {
             'is_super':is_super,
@@ -443,8 +443,16 @@ def approval_info_leave_daily_update(request):
     update_color = 'red' if daily_update_pending > 0 else 'green'
     
     # Create HTML string with conditional styles
-    leave_html = f'<span style="color: {leave_color};">Leave Approval: {pending_leave}</span>'
-    update_html = f'<span style="color: {update_color};">Daily Update: {daily_update_pending}</span>'
+    leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
+    update_html = f'<span style="color: {update_color};"> Daily Update: {daily_update_pending}</span>'
     html = f'   {leave_html}<br/>   {update_html}'
     
-    return {'approval_info_leave_daily_update': format_html(html)}
+
+    # Query to check if the user is manager, lead, or TPM
+    is_manager_lead_tpm = Employee.objects.filter(
+        Q(user=request.user, manager=True) |
+        Q(user=request.user, lead=True) |
+        Q(user=request.user, is_tpm=True)
+    ).exists()
+    
+    return {'approval_info_leave_daily_update': format_html(html),'is_manager_lead_tpm':is_manager_lead_tpm}
