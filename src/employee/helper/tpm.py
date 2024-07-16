@@ -12,7 +12,7 @@ from employee.models.employee import (
 )
 from project_management.models import Project
 from project_management.models import Client
-from project_management.models import EmployeeProjectHour
+from project_management.models import ProjectHour
 
 
 
@@ -69,7 +69,7 @@ class TPMObj:
     __employee_hash: t.Dict[int, Employee] = field(default_factory=dict, init=False, repr=False)
     __project_hash: t.Dict[int, Project] = field(default_factory=dict, init=False, repr=False)
     __client_hash: t.Dict[int, Client] = field(default_factory=dict, init=False, repr=False)
-    __cached_employee_hours_qs: t.Optional[Manager[EmployeeProjectHour]] = field(default=None, init=False, repr=False)
+    __cached_employee_hours_qs: t.Optional[Manager[ProjectHour]] = field(default=None, init=False, repr=False)
 
     def add_employee(self, data: Employee):
         employee_id = data.pk
@@ -101,29 +101,26 @@ class TPMObj:
         self.__client_hash[client_id] = data
         self.clients.append(data)
 
-    def _get_employee_hours(self) -> Manager[EmployeeProjectHour]:
+    def _get_employee_hours(self) -> Manager[ProjectHour]:
         if self.__cached_employee_hours_qs is None:
             start_date, end_date = _get_date_range_by_week(-1)
             start_date = end_date - timedelta(days=7*4) # last 4 weeks
-            self.__cached_employee_hours_qs = EmployeeProjectHour.objects.filter(
-                employee__in=self._employee_ids,
-                project_hour__project__in=self._project_ids,
-                project_hour__date__gt=start_date,
-                project_hour__date__lte=end_date,
-            ).select_related(
-                'project_hour'
+            self.__cached_employee_hours_qs = ProjectHour.objects.filter(
+                project__in=self._project_ids,
+                date__gt=start_date,
+                date__lte=end_date,
             )
         return self.__cached_employee_hours_qs
 
     def _update_hours_count(
             self,
-            data: EmployeeProjectHour,
+            data: ProjectHour,
             start_date: datetime,
             end_date: datetime,
             week_index=0
         ) -> float:
         hours = self.last_week_hours[week_index]
-        data_date = data.project_hour.date
+        data_date = data.date
         data_hours = data.hours or 0.0
         if data_date <= end_date and data_date > start_date:
             hours += data_hours
