@@ -270,7 +270,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
     def show_score(self, obj):
         title = self.get_score_title(obj.score)
         string = f'<strong style="color:green">{obj.score}/{title}</strong>'
-        if obj.score <= 5:
+        if obj.score <= 9:
             string = f'<strong style="color:red">{obj.score}/{title}</strong>'
         return format_html(string)
 
