@@ -224,19 +224,19 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         return format_html(html_content)
 
     def get_score_title_last_six_months(self, score):
-        match score:
-            case x if x in range(1, 54):
-                return "Poor"
-            case x if x in range(55, 90):
-                return "Needs Improvement"
-            case x if x in range(91, 114):
-                return "Fair"
-            case x if x in range(115, 132):
-                return "Good"
-            case x if x in range(133, 150):
-                return "Excellent"
-            case _:
-                return "N/A"
+        if score in range(1, 54):
+            return "Poor"
+        elif score in range(55, 90):
+            return "Needs Improvement"
+        elif score in range(91, 114):
+            return "Fair"
+        elif score in range(115, 132):
+            return "Good"
+        elif score in range(133, 150):
+            return "Excellent"
+        else:
+            return "N/A"
+        
 
     @admin.display(description="Last Six Months Score")
     def get_last_six_months_score(self, obj):
@@ -253,19 +253,18 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         return format_html(string)
 
     def get_score_title(self, score):
-        match score:
-            case x if x in range(1, 9):
-                return "Poor"
-            case x if x in range(10, 15):
-                return "Needs Improvement"
-            case x if x in range(16, 19):
-                return "Fair"
-            case x if x in range(20, 22):
-                return "Good"
-            case x if x in range(23, 25):
-                return "Excellent"
-            case _:
-                return "N/A"
+        if score in range(1, 9):
+            return "Poor"
+        elif score in range(10, 15):
+            return "Needs Improvement"
+        elif score in range(16, 19):
+            return "Fair"
+        elif score in range(20, 22):
+            return "Good"
+        elif score in range(23, 25):
+            return "Excellent"
+        else:
+            return "N/A"
 
     @admin.display(description="Show Score", ordering="score")
     def show_score(self, obj):
