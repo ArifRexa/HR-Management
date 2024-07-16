@@ -102,9 +102,15 @@
 
 {% block content_title %}
 
+{% if  is_manager_lead_tpm%}
+   <div style="float: right;">
+        <p>{{approval_info_leave_daily_update}}</p>
+    </div>
+{%endif%}  
+
 {% if not is_super%}
-    <div style="float: right;">
-        <p style="color: red;">{{late_attendance_fine}}</p>
+    <div style="float: right; margin-right: 10px;">
+        <p style="color: red;">{{late_attendance_fine }} </p>
     </div>
 {%endif%}       
 
@@ -127,10 +133,9 @@
     </div>
     <div class="col-md-7">
         {% if not is_management %}
-        <ul class="list-group list-group-horizontal-md float-end">
-           
-            <li class="list-group-item"> {% include 'admin/form/employee_project_form.html' %}</li>
-            <li class="list-group-item"> {% include 'admin/form/employee_status_form.html' %}</li>
+        <ul class="list-group list-group-horizontal-md float-end" style="margin-right: 20px;">
+            <li class="list-group-item">{% include 'admin/form/employee_project_form.html' %}</li>
+            <li class="list-group-item">{% include 'admin/form/employee_status_form.html' %}</li>
         </ul>
         {% endif %}
     </div>
