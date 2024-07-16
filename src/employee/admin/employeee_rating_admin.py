@@ -100,8 +100,8 @@ class EmployeeRatingForm(forms.ModelForm):
                 employee=clean_data.get("employee"),
                 created_by=request.user,
             ).exists()
-
-            if is_provided:
+            print(is_provided and self.instance.id is None)
+            if is_provided and self.instance.id is None:
                 raise forms.ValidationError(
                     {
                         "employee": "You have already given the rating for this employee in the current month. Please try again next month."
@@ -224,15 +224,15 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         return format_html(html_content)
 
     def get_score_title_last_six_months(self, score):
-        if score in range(1, 54):
+        if score in range(1, 55): # range exclude 1 from 55
             return "Poor"
-        elif score in range(55, 90):
+        elif score in range(55, 91):
             return "Needs Improvement"
-        elif score in range(91, 114):
+        elif score in range(91, 115):
             return "Fair"
-        elif score in range(115, 132):
+        elif score in range(115, 133):
             return "Good"
-        elif score in range(133, 150):
+        elif score in range(133, 151):
             return "Excellent"
         else:
             return "N/A"
@@ -253,15 +253,15 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         return format_html(string)
 
     def get_score_title(self, score):
-        if score in range(1, 9):
+        if score in range(1, 10): # range exclude 1 from 10
             return "Poor"
-        elif score in range(10, 15):
+        elif score in range(10, 16):
             return "Needs Improvement"
-        elif score in range(16, 19):
+        elif score in range(16, 20):
             return "Fair"
-        elif score in range(20, 22):
+        elif score in range(20, 23):
             return "Good"
-        elif score in range(23, 25):
+        elif score in range(23, 26):
             return "Excellent"
         else:
             return "N/A"
