@@ -32,6 +32,7 @@ from employee.models.employee import (
 )
 from .filter import MonthFilter
 from django.utils.html import format_html
+from employee.helper.tpm import TPMsBuilder
 
 
 @admin.register(Employee)
@@ -454,10 +455,14 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             "employee", "project__client", "tpm"
         ).all()
 
+        tpm_builder = TPMsBuilder()
+
         # Group employee by tpm
         tpm_data = {}
         temp_tpm_data = {}
         for employee in tpm_project_data:
+            tpm_builder.get_or_create(employee)
+
             tpm_id = employee.tpm.pk
             employee_id = employee.employee.pk
             project_id = employee.project_id
@@ -495,6 +500,8 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             if client_id and (client_id not in tmp_grouper['__client_ids']):
                 tmp_grouper['__client_ids'].append(client_id)
                 grouper['clients'].append(employee.project.client)
+
+        print(tpm_builder.tpm_list)
 
         my_context = {
             "tpm_project_data": tpm_project_data,
