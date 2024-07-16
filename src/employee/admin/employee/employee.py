@@ -457,58 +457,16 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
 
         tpm_builder = TPMsBuilder()
 
-        # Group employee by tpm
-        tpm_data = {}
-        temp_tpm_data = {}
         for employee in tpm_project_data:
             tpm_builder.get_or_create(employee)
 
-            tpm_id = employee.tpm.pk
-            employee_id = employee.employee.pk
-            project_id = employee.project_id
-            client_id = None
-            if employee.project.client:
-                client_id = employee.project.client.pk
-
-            if tpm_id not in tpm_data:
-                tpm_data[tpm_id] = {
-                    'grouper': employee.tpm,
-                    'list': [],
-
-                    'employees': [],
-                    'projects': [],
-                    'clients': [],
-                }
-                temp_tpm_data[tpm_id] = {
-                    '__employee_ids': [],
-                    '__project_ids': [],
-                    '__client_ids': [],
-                }
-
-            grouper = tpm_data[tpm_id]
-            tmp_grouper = temp_tpm_data[tpm_id]
-
-            if employee_id not in tmp_grouper['__employee_ids']:
-                tmp_grouper['__employee_ids'].append(employee_id)
-                grouper['list'].append(employee)
-                grouper['employees'].append(employee.employee)
-
-            if project_id not in tmp_grouper['__project_ids']:
-                tmp_grouper['__project_ids'].append(project_id)
-                grouper['projects'].append(employee.project)
-
-            if client_id and (client_id not in tmp_grouper['__client_ids']):
-                tmp_grouper['__client_ids'].append(client_id)
-                grouper['clients'].append(employee.project.client)
-
-        print(tpm_builder.tpm_list)
+        tpm_builder.update_hours_count()
 
         my_context = {
             "tpm_project_data": tpm_project_data,
-            "tpm_data": list(tpm_data.values()),
+            "tpm_data": tpm_builder.tpm_list,
         }
 
-        # print(tpm_project_data.prject.all())
         return super().changelist_view(request, extra_context=my_context)
 
     def get_urls(self):
