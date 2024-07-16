@@ -163,6 +163,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         filters = [ProjectTypeFilter, ProjectFilter, "project__client__payment_method", "project__client"]
         if not request.user.has_perm("project_management.view_client"):
             filters.remove("project__client__payment_method")
+            filters.remove("project__client")
         return filters
 
     def get_list_display(self, request):
