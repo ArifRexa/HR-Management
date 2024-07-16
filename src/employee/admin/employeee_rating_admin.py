@@ -4,7 +4,7 @@ from django import forms
 from django.utils.html import format_html
 from django.template.loader import get_template
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Case, When, Q, Value, Sum
 from django.db.models.functions import Coalesce
 from employee.models.employee_rating_models import EmployeeRating
 from employee.models import Employee
@@ -40,7 +40,6 @@ class EmployeeRatingForm(forms.ModelForm):
         rated_employee = clean_data.get("employee")
         if rated_employee is None:
             raise forms.ValidationError({"employee": "Please Select an Employee"})
-        
 
         if request.user.employee.id == self.cleaned_data.get("employee").id:
             raise forms.ValidationError(
@@ -112,6 +111,36 @@ class EmployeeRatingForm(forms.ModelForm):
         return clean_data
 
 
+class EmployeeRatingFilterByScoreTitle(admin.SimpleListFilter):
+    title = "Score Title"
+    parameter_name = "title"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("Poor", "Poor"),
+            ("Needs Improvement", "Needs Improvement"),
+            ("Fair", "Fair"),
+            ("Good", "Good"),
+            ("Excellent", "Excellent"),
+        )
+
+    def queryset(self, request, queryset):
+        if self.value() is not None:
+            return queryset.annotate(
+                score_title=Case(
+                    When(Q(score__lte=9, score__gte=1), then=Value("Poor")),
+                    When(
+                        Q(score__lte=15, score__gte=10), then=Value("Needs Improvement")
+                    ),
+                    When(Q(score__lte=19, score__gte=16), then=Value("Fair")),
+                    When(Q(score__lte=22, score__gte=20), then=Value("Good")),
+                    When(Q(score__lte=25, score__gte=23), then=Value("Excellent")),
+                )
+            ).filter(score_title=self.value())
+        else:
+            return queryset
+
+
 @admin.register(EmployeeRating)
 class EmployeeRatingAdmin(admin.ModelAdmin):
     list_display = [
@@ -119,6 +148,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         "rating_by",
         "see_comment",
         "show_score",
+        "get_last_six_months_score",
         "month",
         "year",
         "created_at",
@@ -149,7 +179,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         ),
     )
     date_hierarchy = "created_at"
-    list_filter = ["employee",]
+    list_filter = ["employee", EmployeeRatingFilterByScoreTitle]
     autocomplete_fields = [
         "employee",
     ]
@@ -192,19 +222,50 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
         html_template = get_template("admin/employee/list/employe_rating_comments.html")
         html_content = html_template.render({"comment": obj.comment})
         return format_html(html_content)
-    
+
+    def get_score_title_last_six_months(self, score):
+        match score:
+            case x if x in range(1, 54):
+                return "Poor"
+            case x if x in range(55, 90):
+                return "Needs Improvement"
+            case x if x in range(91, 114):
+                return "Fair"
+            case x if x in range(115, 132):
+                return "Good"
+            case x if x in range(133, 150):
+                return "Excellent"
+            case _:
+                return "N/A"
+
+    @admin.display(description="Last Six Months Score")
+    def get_last_six_months_score(self, obj):
+        employee_rating = EmployeeRating.objects.filter(
+            employee=obj.employee, created_at__lte=obj.created_at
+        ).order_by("-created_at")[:6]
+        total_score = employee_rating.aggregate(
+            total_score=Coalesce(Sum("score"), 0)
+        ).get("total_score", 0)
+        title = self.get_score_title_last_six_months(total_score)
+        string = f'<strong style="color:green">{total_score}/{title}({len(employee_rating)})</strong>'
+        if obj.score <= 54:
+            string = f'<strong style="color:red">{total_score}/{title}({len(employee_rating)})</strong>'
+        return format_html(string)
+
     def get_score_title(self, score):
         match score:
-            case x if x in range(1,9):
+            case x if x in range(1, 9):
                 return "Poor"
-            case x if x in range(10,15):
+            case x if x in range(10, 15):
                 return "Needs Improvement"
-            case x if x in range(16,19):
+            case x if x in range(16, 19):
                 return "Fair"
-            case x if x in range(20,22):
+            case x if x in range(20, 22):
                 return "Good"
-            case x if x in range(23,25):
+            case x if x in range(23, 25):
                 return "Excellent"
+            case _:
+                return "N/A"
 
     @admin.display(description="Show Score", ordering="score")
     def show_score(self, obj):
