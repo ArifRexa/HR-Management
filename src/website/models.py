@@ -224,6 +224,7 @@ class Gallery(TimeStampMixin):
 class Award(TimeStampMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
     image = models.ImageField(upload_to="award_images/")
+    short_description = models.TextField(null=True, blank=True)
     link = models.URLField(null=True, blank=True)
 
     def __str__(self):
