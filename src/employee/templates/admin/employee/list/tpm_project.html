@@ -73,9 +73,9 @@
                         {{ result.grouper }}
                     </td>
                     <td>
-                        <b>Employees: </b>{{ result.list|total_employee_count }}<br>
-                        <b>Projects: </b>{{ result.list|total_project_count }}<br>
-                        <b>Clients: </b>{{ result.list|total_client_count }}
+                        <b>Employees: </b>{{result.employees|length}}<br>
+                        <b>Projects: </b>{{result.projects|length}}<br>
+                        <b>Clients: </b>{{result.clients|length}}
                     </td>
                     <td>
                         <ul>
