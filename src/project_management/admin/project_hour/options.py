@@ -127,7 +127,7 @@ class ProjectClientFilter(admin.SimpleListFilter):
     parameter_name = "client__id__exact"
 
     def lookups(self, request, model_admin):
-        employees = Client.objects.filter(project__active=True).values("id", "name")
+        employees = Client.objects.filter(project__active=True).distinct().values("id", "name")
         return tuple(
             [
                 (
