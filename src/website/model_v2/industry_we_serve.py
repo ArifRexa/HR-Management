@@ -15,8 +15,10 @@ class IndustryPage(TimeStampMixin):
     sub_title = models.TextField(blank=True, null=True)
     short_description = models.TextField()
     description = models.TextField()
+    tag = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to="industry_we_serve")
     is_active = models.BooleanField(default=True)
+    parent = models.ForeignKey("self", on_delete=models.CASCADE, null=True, blank=True, related_name="children")
 
     objects = IndustryWeServeModelManager()
 
