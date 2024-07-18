@@ -121,11 +121,11 @@ class ProjectHourAdmin(
         @type request: object
         """
         query_set = super(ProjectHourAdmin, self).get_queryset(request)
-        if not request.user.is_superuser and not request.user.has_perm(
+        if request.user.is_superuser or request.user.has_perm(
             "project_management.show_all_hours"
         ):
-            return query_set.filter(manager_id=request.user.employee.id)
-        return query_set
+            return query_set
+        return query_set.filter(manager_id=request.user.employee.id)
 
     def save_model(self, request, obj, form, change):
         """
