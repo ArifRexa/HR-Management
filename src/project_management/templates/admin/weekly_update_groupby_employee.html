@@ -83,7 +83,7 @@
                 {% for key, values in employee_hours_data.items %}
                   {% for hour in values %}
                     <tr>
-                      <td>{{ hour.created_at }}</td>
+                      <td>{{ hour.project_hour.date }}</td>
                       {% if forloop.first %}
                       <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
                       {% endif %}
