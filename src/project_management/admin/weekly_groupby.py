@@ -2,6 +2,7 @@ from datetime import timedelta,datetime
 
 from django.contrib import admin
 from django.db.models import Sum
+from django.db.models import Q
 from django.db.models.functions import Coalesce
 from project_management.models import (
     EmployeeProjectHourGroupByEmployee,
@@ -94,13 +95,27 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def get_queryset(self, request):
-        query_set = super().get_queryset(request)
+        query_set = super().get_queryset(
+            request
+        ).select_related(
+            'employee'
+        )
 
-        if not request.user.is_superuser and not request.user.has_perm(
+        if request.user.is_superuser or request.user.has_perm(
             "project_management.see_all_employee_update"
         ):
-            return query_set.filter(employee=request.user.employee.id)
-        return query_set.filter(employee__active=True).exclude(employee_id__in=[30])
+            return query_set.filter(employee__active=True)
+
+        employee: Employee = request.user.employee
+
+        if employee.lead or employee.manager:
+            return query_set.filter(
+                Q(employee=employee.id)
+                | Q(project_hour__manager_id=employee.id)
+            )
+        return query_set.filter(
+            employee=employee.id
+        )
 
     def has_module_permission(self, request):
         return True
