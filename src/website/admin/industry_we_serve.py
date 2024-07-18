@@ -7,13 +7,18 @@ from website.model_v2.industry_we_serve import (
 from django.contrib import admin
 
 
+class IndustryWeServeInline(admin.TabularInline):
+    model = IndustryWeServe
+    extra = 1
+
+
 @admin.register(IndustryPage)
 class IndustryPageAdmin(admin.ModelAdmin):
     list_display = ("title", "is_active")
     prepopulated_fields = {"slug": ("title",)}
+    inlines = (IndustryWeServeInline,)
+
     
-    def has_module_permission(self, request: HttpRequest) -> bool:
-        return False
 
 
 class IndustryWeServeContentInline(admin.StackedInline):
@@ -32,7 +37,7 @@ class IndustryWeServeContentInline(admin.StackedInline):
 
 @admin.register(IndustryWeServe)
 class IndustryWeServeAdmin(admin.ModelAdmin):
-    list_display = ("title","page", "is_active")
+    list_display = ("title", "page", "is_active")
     inlines = (IndustryWeServeContentInline,)
     prepopulated_fields = {"slug": ("title",)}
     fields = [
@@ -43,3 +48,6 @@ class IndustryWeServeAdmin(admin.ModelAdmin):
         "image",
         "is_active",
     ]
+    
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
