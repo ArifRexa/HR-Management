@@ -192,15 +192,20 @@ class ProjectHourOptions(admin.ModelAdmin):
     @admin.display(description="Resources")
     def get_resources(self, obj: ProjectHour):
         html = ""
-        i = 1
+        i = 2
+        resources_total_hours = 0
         for elem in obj.employeeprojecthour_set.all():
+            resources_total_hours += elem.hours
             if elem.employee.sqa and elem.hours > 10:
                 html += f"<p style='color:red;'>{i}.{elem.employee.full_name} ({elem.hours})</p>"
                 i += 1
                 continue
             html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
             i += 1
-        return format_html(html)
+        return format_html(
+            f"<p>1.{obj.manager.full_name} ({obj.hours - resources_total_hours})</p>"
+            + html
+        )
 
     @admin.display(description="Operation Feedback")
     def operation_feedback_link(self, obj):
