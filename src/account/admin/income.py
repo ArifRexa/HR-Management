@@ -47,6 +47,7 @@ class IncomeAdmin(admin.ModelAdmin):
         "status",
         "project",
         "project__client__payment_method",
+        "project__client__invoice_type",
         ActiveClientFilter,  
     ]
     actions = [
