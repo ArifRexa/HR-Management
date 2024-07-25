@@ -1,5 +1,4 @@
 from .hire_models import *  # noqa
-from website.model_v2.industry_we_serve import * # noqafrom .csr_models import * #noqa
 from django.db import models
 
 # Create your models here

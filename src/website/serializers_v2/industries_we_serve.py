@@ -11,7 +11,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ServeCategory
-        fields = ['title', 'slug', 'short_description', 'industry_field_image', 'industry_banner', 'impressive_title', 'impressive_description', 'application_areas']
+        fields = ['title', 'slug', 'title_in_detail_page', 'short_description', 'industry_field_image', 'industry_banner', 'impressive_title', 'impressive_description', 'application_areas']
 
 class IndustryServeSerializer(serializers.ModelSerializer):
     serve_categories = ServeCategorySerializer(many=True, read_only=True)

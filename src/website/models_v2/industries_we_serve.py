@@ -5,6 +5,7 @@ from tinymce.models import HTMLField
 class ServeCategory(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
+    title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
     industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
     industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
