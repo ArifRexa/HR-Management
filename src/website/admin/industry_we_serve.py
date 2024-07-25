@@ -18,6 +18,8 @@ class IndustryPageAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     inlines = (IndustryWeServeInline,)
 
+    
+
 
 class IndustryWeServeContentInline(admin.StackedInline):
     model = IndustryWeServeContent
@@ -46,17 +48,6 @@ class IndustryWeServeAdmin(admin.ModelAdmin):
         "image",
         "is_active",
     ]
-
-
-@admin.register(IndustryWeServeContent)
-class IndustryWeServeContentAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("title",)}
-    fields = [
-        "industry",
-        "title",
-        "slug",
-        "description",
-        "content",
-        "image",
-        "is_active",
-    ]
+    
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
