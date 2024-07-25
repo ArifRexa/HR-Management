@@ -12,7 +12,16 @@ class OurEventListAPIView(ListAPIView):
     queryset = OurEvent.objects.all()
     serializer_class = OurEventSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context
+
 class OurEffortListAPIView(ListAPIView):
     queryset = OurEffort.objects.all()
     serializer_class = OurEffortSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({'request': self.request})
+        return context

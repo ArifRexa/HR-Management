@@ -58,6 +58,12 @@ class PaymentMethod(TimeStampMixin):
     def __str__(self):
         return self.name
 
+class InvoiceType(TimeStampMixin):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
 
 class Country(TimeStampMixin):
     name = models.CharField(max_length=200)
@@ -93,6 +99,12 @@ class Client(TimeStampMixin, AuthorMixin):
         on_delete=models.SET_NULL,
         null=True,
         related_name="clients",
+        blank=True,
+    )
+    invoice_type = models.ForeignKey(
+        InvoiceType,
+        on_delete=models.SET_NULL,
+        null=True,
         blank=True,
     )
     review = models.ManyToManyField(

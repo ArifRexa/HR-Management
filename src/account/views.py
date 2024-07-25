@@ -22,7 +22,7 @@ def payment_voucher(request, id):
     expenses = voucher.expenses.values('expanse_group__account_code', 'expanse_group__title') \
                                 .annotate(expense_amount=Sum('amount')) \
                                 .order_by('expanse_group__account_code') \
-                            .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount')
+                            .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount').exclude(add_to_balance_sheet=False)
     
 
     #generate pv id / pv no
