@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from website.models_v2.industries_we_serve import ApplicationAreas, ServeCategory
+from website.models_v2.industries_we_serve import ApplicationAreas, IndustryServe, ServeCategory
 
 class ApplicationAreasInline(admin.TabularInline):
     model = ApplicationAreas
-    extra = 1
+    extra = 0
 
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(admin.ModelAdmin):
@@ -12,8 +12,14 @@ class ServeCategoryAdmin(admin.ModelAdmin):
     inlines = [ApplicationAreasInline]
     prepopulated_fields = {'slug': ('title',)}
 
+class ServeCategoryInline(admin.TabularInline):
+    model = IndustryServe.serve_categories.through
+    extra = 1
 
-class TitleAdmin(admin.ModelAdmin):
-    list_display = ('title', 'short_description', 'motivation_title')
-    autocomplete_fields = ['serve_category']
-    search_fields = ['title']
+@admin.register(IndustryServe)
+class IndustryServeAdmin(admin.ModelAdmin):
+    inlines = [ServeCategoryInline]
+    list_display = ('title',)
+    search_fields = ('title',)
+    exclude = ('serve_categories',)
+    # filter_horizontal = ('serve_categories',)
