@@ -462,7 +462,7 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to={"active": True},
+        limit_choices_to={"active": True,"project_eligibility":True},
     )
 
     class Meta:
