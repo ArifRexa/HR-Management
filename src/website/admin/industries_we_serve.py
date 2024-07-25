@@ -8,7 +8,7 @@ class ApplicationAreasInline(admin.TabularInline):
 
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'short_description', 'impressive_title')
+    list_display = ('title', 'slug',)
     inlines = [ApplicationAreasInline]
     prepopulated_fields = {'slug': ('title',)}
 

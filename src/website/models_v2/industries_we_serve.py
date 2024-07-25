@@ -7,6 +7,7 @@ class ServeCategory(models.Model):
     slug = models.SlugField(unique=True)
     short_description = models.TextField(blank=True, null=True)
     industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
+    industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
     impressive_title = models.CharField(max_length=200, blank=True, null=True)
     impressive_description = models.TextField(blank=True, null=True)
 
