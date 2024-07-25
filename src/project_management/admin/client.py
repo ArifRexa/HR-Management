@@ -13,6 +13,7 @@ from project_management.models import (
     PaymentMethod,
     Project,
     Technology,
+    InvoiceType
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -49,6 +50,14 @@ class ClientReviewAdmin(admin.ModelAdmin):
 
 @admin.register(PaymentMethod)
 class PaymentMethodAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ["name"]
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+    
+@admin.register(InvoiceType)
+class InvoiceTypeAdmin(admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ["name"]
 
@@ -92,6 +101,7 @@ class ClientAdmin(admin.ModelAdmin):
         "notes",
         "is_hour_breakdown",
         "payment_method",
+        "invoice_type",
         "review",
     )
     list_filter = ["project__active", "review", "payment_method"]
