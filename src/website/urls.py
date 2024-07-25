@@ -46,11 +46,8 @@ from website.views_v2.hire_views import (
     HireResourceContentDetailView,
     HireResourceListView,
 )
+from website.views_v2.industries_we_serve import IndustryServeDetailView, IndustryServeListView
 from website.views_v2.woman_empowerments_views import WomanEmpowermentView
-from website.views_v2.industry_we_serve import (
-    IndustryWeServeListAPIView,
-    IndustryWeServeRetrieveAPIViewView,
-)
 from website.views_v2.csr_views import CSRListAPIView
 
 
@@ -162,17 +159,11 @@ api_v2_urls = [
         name="hire_resource_detail",
     ),
     path("woman-empowerment/", WomanEmpowermentView.as_view(), name="woman_empowerment"),
-    path(
-        "industry-we-serve/",
-        IndustryWeServeListAPIView.as_view(),
-        name="industry_we_serve",
-    ),
-    path(
-        "industry-we-serve/<slug:slug>/",
-        IndustryWeServeRetrieveAPIViewView.as_view(),
-        name="industry_we_serve",
-    ),
+
     path("csr/",CSRListAPIView.as_view(),name="csr"),
+
+    path("industry-serve/", IndustryServeListView.as_view(), name="industry-serve"),
+    path("industry-serve/<slug:slug>/", IndustryServeDetailView.as_view(), name="industry-serve")
 ]
 
 urlpatterns = [
