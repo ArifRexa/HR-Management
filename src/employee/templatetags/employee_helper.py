@@ -60,3 +60,10 @@ def total_client_count(result):
     projects = {e.project for e in result if e.project}
     client_ids = {i.client.id for i in projects if i.client}
     return len(client_ids)
+
+@register.filter
+def divisible_by(value):
+    try:
+        return value / 4
+    except (TypeError, ZeroDivisionError):
+        return None

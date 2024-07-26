@@ -419,7 +419,42 @@ class Employee(TimeStampMixin, AuthorMixin):
             integer_part = math.floor(available_leave)
             available_leave = integer_part + 0.50
             return available_leave
+    
+    @property
+    def get_last_four_project_hours(self):
+        from project_management.models import EmployeeProjectHour
 
+        # Get the last 4 project hours entries for this employee
+        recent_entries = EmployeeProjectHour.objects.filter(
+            employee=self
+        ).order_by('-project_hour__date')[:4]
+        
+        # Extract hours from these entries
+    
+        weekly_hours = [entry.hours for entry in recent_entries]
+        
+        # Fill in with zeroes if there are fewer than 4 entries
+        while len(weekly_hours) < 4:
+            weekly_hours.append(0)
+        
+        # Format the result as "12-24-42-23"
+        return '-'.join(map(str, reversed(weekly_hours)))
+
+    @property
+    def get_last_four_project_hours_sum(self):
+        from project_management.models import EmployeeProjectHour
+
+        # Get the last 4 project hours entries for this employee
+        recent_entries = EmployeeProjectHour.objects.filter(
+            employee=self
+        ).order_by('-project_hour__date')[:4]
+        
+        # Calculate the total hours from these entries
+        total_hours = recent_entries.aggregate(
+            total=Sum('hours')
+        )['total'] or 0
+        
+        return total_hours
     class Meta:
         db_table = "employees"
         permissions = (
