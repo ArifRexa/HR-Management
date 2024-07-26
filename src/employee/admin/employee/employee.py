@@ -30,9 +30,11 @@ from employee.models.employee import (
     Observation,
     LateAttendanceFine,
 )
+from employee.models.employee_activity import EmployeeProject
 from .filter import MonthFilter
 from django.utils.html import format_html
 from employee.helper.tpm import TPMsBuilder
+from employee.helper.tpm import TPMObj
 
 
 @admin.register(Employee)
@@ -454,11 +456,37 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         tpm_project_data = EmployeeUnderTPM.objects.select_related(
             "employee", "project__client", "tpm"
         ).all()
+        
+        # employees_without_tpm = EmployeeProject.objects.filter(
+        #     employee__active=True,
+        #     employee__project_eligibility=True
+        # ).exclude(
+        #     employee_id__in=EmployeeUnderTPM.objects.values('employee_id')
+        # )
+        employees_without_tpm = Employee.objects.filter(
+            active=True,
+            project_eligibility=True
+        ).exclude(
+            id__in=EmployeeUnderTPM.objects.values('employee_id')
+        )
 
         tpm_builder = TPMsBuilder()
 
         for employee in tpm_project_data:
             tpm_builder.get_or_create(employee)
+
+        other_emp_tpm = Employee(
+            full_name="Others"
+        )
+
+        for emp_proj in employees_without_tpm:
+            for project in emp_proj.employee_projects:
+                other_tpm = EmployeeUnderTPM(
+                    tpm=other_emp_tpm,
+                    employee=emp_proj,
+                    project=project
+                )
+                tpm_builder.get_or_create(other_tpm)
 
         tpm_builder.update_hours_count()
 

@@ -159,6 +159,16 @@ class Employee(TimeStampMixin, AuthorMixin):
             .project.filter(active=True)
             .values("title")
         )
+    
+    @property
+    def employee_projects(self):
+        from employee.models.employee_activity import EmployeeProject
+
+        return (
+            EmployeeProject.objects.filter(employee_id=self.id)
+            .first()
+            .project.filter(active=True)
+        )
 
     @property
     def top_one_skill(self):
