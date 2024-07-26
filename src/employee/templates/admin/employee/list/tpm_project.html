@@ -1,5 +1,6 @@
 {% extends "admin/base_site.html" %}
 {% load i18n admin_urls static admin_list employee_helper %}
+{% load employee_helper %}
 
 {% block extrastyle %}
   {{ block.super }}
@@ -84,7 +85,13 @@
                     <td>
                         <ul>
                             {% for employee in result.employees %}
-                            <li>{{ employee }}</li>
+                            <li>{{ employee}} 
+                                {% widthratio employee.monthly_expected_hours 4 1 %}
+                                [{{employee.get_last_four_project_hours}}]
+                                {{employee.get_last_four_project_hours_sum}}
+                                [{{employee.monthly_expected_hours}}]
+
+                            </li> 
                             {% endfor %}
                         </ul>
                     </td>
