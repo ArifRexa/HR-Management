@@ -423,6 +423,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def get_last_four_project_hours(self):
         from project_management.models import EmployeeProjectHour
+        from decimal import Decimal
 
         # Get the last 4 project hours entries for this employee
         recent_entries = EmployeeProjectHour.objects.filter(
@@ -430,15 +431,23 @@ class Employee(TimeStampMixin, AuthorMixin):
         ).order_by('-project_hour__date')[:4]
         
         # Extract hours from these entries
-    
-        weekly_hours = [entry.hours for entry in recent_entries]
+        weekly_hours = [Decimal(entry.hours) for entry in recent_entries]
         
         # Fill in with zeroes if there are fewer than 4 entries
         while len(weekly_hours) < 4:
-            weekly_hours.append(0)
+            weekly_hours.append(Decimal('0.00'))
         
-        # Format the result as "12-24-42-23"
-        return '-'.join(map(str, reversed(weekly_hours)))
+        # Format the hours: show decimals only if they are non-zero
+        formatted_hours = []
+        for hour in reversed(weekly_hours):
+            # Convert to string with or without decimals based on its value
+            if hour % 1 == 0:  # No decimal part
+                formatted_hours.append(f"{int(hour)}")
+            else:
+                formatted_hours.append(f"{hour:.2f}".rstrip('0').rstrip('.'))
+        
+        # Format the result as "12,24,42,23"
+        return ','.join(formatted_hours)
 
     @property
     def get_last_four_project_hours_sum(self):
