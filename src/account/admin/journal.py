@@ -91,9 +91,11 @@ class DailyPaymentVoucherAdmin(admin.ModelAdmin):
     
     @admin.display(description='Export Voucher')
     def export_btn(self, obj=None):
-        url = obj.get_pdf_generate_url()
+        url_payment = obj.get_pdf_generate_url_payment()
+        url_journal = obj.get_pdf_generate_url_journal()
         btn = f"""
-            <a href="{url}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Payment Voucher</a>
+            <a href="{url_payment}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Payment Voucher</a>
+            <a href="{url_journal}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Journal Voucher</a>
             """
         return format_html(btn)
     

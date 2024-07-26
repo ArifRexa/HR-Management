@@ -294,8 +294,11 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
     def __str__(self) -> str:
         return self.type
 
-    def get_pdf_generate_url(self):
+    def get_pdf_generate_url_payment(self):
         return reverse("account:payment_voucher", args=[str(self.id)])
+    
+    def get_pdf_generate_url_journal(self):
+        return reverse("account:journal_voucher", args=[str(self.id)])
 
     def get_monthly_journal(self):
         return reverse("account:account_journal", args=[str(self.id)])
@@ -310,8 +313,8 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
 class DailyPaymentVoucher(AccountJournal):
     class Meta:
         proxy = True
-        verbose_name = "Payment Voucher (Daily)"
-        verbose_name_plural = "Payment Vouchers (Daily)"
+        verbose_name = "Payment/Journal Voucher (Daily)"
+        verbose_name_plural = "Payment/Journal Vouchers (Daily)"
 
 
 class MonthlyJournal(AccountJournal):
