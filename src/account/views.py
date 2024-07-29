@@ -101,7 +101,7 @@ def journal_voucher(request, id):
     date_obj = datetime.strptime(date_in_str, "%Y-%m-%d")
     month = date_obj.strftime("%m")
     year = date_obj.strftime("%y")
-    pv_no = f"{month}{year}/J00{index_of_id}"
+    pv_no = f"{month}{year}/JV00{index_of_id}"
 
 
     #get all notes for daily expense
