@@ -437,16 +437,19 @@ class Employee(TimeStampMixin, AuthorMixin):
         while len(weekly_hours) < 4:
             weekly_hours.append(Decimal('0.00'))
         
-        # Format the hours: show decimals only if they are non-zero
+        # Calculate expected weekly hours
+        monthly_expected_hours = self.monthly_expected_hours or 0
+        expected_weekly_hours = monthly_expected_hours / 4
+        
+        # Format the hours with HTML styling
         formatted_hours = []
         for hour in reversed(weekly_hours):
-            # Convert to string with or without decimals based on its value
-            if hour % 1 == 0:  # No decimal part
-                formatted_hours.append(f"{int(hour)}")
+            if hour < Decimal(expected_weekly_hours):
+                formatted_hours.append(f'<span style="color: red;">{int(hour)}</span>')
             else:
-                formatted_hours.append(f"{hour:.2f}".rstrip('0').rstrip('.'))
+                formatted_hours.append(f'{int(hour)}')
         
-        # Format the result as "12,24,42,23"
+        # Join the formatted hours with commas
         return ','.join(formatted_hours)
 
     @property
