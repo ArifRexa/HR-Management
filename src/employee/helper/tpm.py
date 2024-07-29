@@ -77,7 +77,11 @@ class TPMObj:
         for i in self.employees:
             total+=i.monthly_expected_hours or 0
         return int(total)
+    @property
+    def get_weekly_expected_hour(self):
+        return int(self.tpm_expected_hour/4)
     
+
     def add_employee(self, data: Employee):
         employee_id = data.pk
         if employee_id in self.__employee_hash:
