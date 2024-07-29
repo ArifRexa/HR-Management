@@ -71,19 +71,24 @@
 
                 <tr>
                     <td>
-                        {{ result.tpm }} <br> <br>
-                        <b>Employees: </b>{{result.employees|length}}<br>
-                        <b>Projects: </b>{{result.projects|length}}<br>
-                        <b>Clients: </b>{{result.clients|length}}<br>
-                        <b>{{result.last_week_date_range.0.1}}: </b>{{result.last_week_hours.0|floatformat:2}}<br>
-                        <b>{{result.last_week_date_range.1.1}}: </b>{{result.last_week_hours.1|floatformat:2}}<br>
-                        <b>{{result.last_week_date_range.2.1}}: </b>{{result.last_week_hours.2|floatformat:2}}<br>
-                        <b>{{result.last_week_date_range.3.1}}: </b>{{result.last_week_hours.3|floatformat:2}}
+                      <span style="font-weight: bold; font-size: 1.5em;">{{ result.tpm }}</span> <br> <br>
+                        
+                      {% with result.get_formatted_date_ranges as formatted_dates %}
+                      <b>{{ formatted_dates.0 }}: </b><b>{{ result.last_week_hours.0|floatformat:0 }}</b><br>
+                      <b>{{ formatted_dates.1 }}: </b><b>{{ result.last_week_hours.1|floatformat:0 }}</b><br>
+                      <b>{{ formatted_dates.2 }}: </b><b>{{ result.last_week_hours.2|floatformat:0 }}</b><br>
+                      <b>{{ formatted_dates.3 }}: </b><b>{{ result.last_week_hours.3|floatformat:0 }}</b><br><br>
+                     {% endwith %}
+                     
+                        <span style="font-weight: bold; font-size: 1.2em;"><b>Last Four Week:</b>{{result.tpm_expected_hour}}<b>[{{result.total_last_four_week}}]</b></span>
                     </td>
                 
                     <td>
                         <ul>
+                          <span style="font-weight: bold; font-size: 1.5em;">{{result.employees|length}}</span>
+                          
                             {% for employee in result.employees %}
+                            
                             <li>{{ employee}} 
                                 [
                                   {% widthratio employee.monthly_expected_hours 4 1 %}
@@ -97,6 +102,7 @@
                         </ul>
                     </td>
                     <td>
+                      <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">{{result.projects|length}}</span>
                         <ul>
                           {% for project in result.projects %}
                           <li>{{ project.title }}</li>
@@ -104,6 +110,7 @@
                         </ul>
                     </td>
                     <td>
+                      <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">{{result.clients|length}}</span>
                         <ul>
                           {% for client in result.clients %}
                           <li>{{ client }}</li>
