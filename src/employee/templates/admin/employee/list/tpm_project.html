@@ -59,7 +59,7 @@
             <thead>
             <tr>
                 <th scope="col">TPM</th>
-                <th scope="col">Counts</th>
+          
                 <th scope="col">Employees</th>
                 <th scope="col">Projects</th>
                 <th scope="col">Clients</th>
@@ -71,9 +71,7 @@
 
                 <tr>
                     <td>
-                        {{ result.tpm }}
-                    </td>
-                    <td>
+                        {{ result.tpm }} <br> <br>
                         <b>Employees: </b>{{result.employees|length}}<br>
                         <b>Projects: </b>{{result.projects|length}}<br>
                         <b>Clients: </b>{{result.clients|length}}<br>
@@ -82,13 +80,14 @@
                         <b>{{result.last_week_date_range.2.1}}: </b>{{result.last_week_hours.2|floatformat:2}}<br>
                         <b>{{result.last_week_date_range.3.1}}: </b>{{result.last_week_hours.3|floatformat:2}}
                     </td>
+                
                     <td>
                         <ul>
                             {% for employee in result.employees %}
                             <li>{{ employee}} 
                                 [
                                   {% widthratio employee.monthly_expected_hours 4 1 %}
-                                  ({{employee.get_last_four_project_hours}}),
+                                  ({{ employee.get_last_four_project_hours|safe }}),
                                   {{employee.monthly_expected_hours|floatformat:0}}
                                   ({{employee.get_last_four_project_hours_sum|floatformat:0}} )
                                 ]
