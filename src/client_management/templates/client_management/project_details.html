@@ -106,10 +106,10 @@
                         </th>
                         {% endif %}
                         <th class="text-center">Updates</th>
-                        <th class="text-center">Link</th>
+                        <!-- <th class="text-center">Link</th>
                         <th class="text-center" style="max-width: 110px; width: 110px;">
                             Task Hour
-                        </th>
+                        </th> -->
                     </tr>
 
                     <!--ROW 01-->
@@ -134,7 +134,9 @@
                                         {% endif %}
 
                                         <td>{{ update_data.0 | replace_newline_wth_br }}</td>
-
+                                        
+                                        {% comment %}
+                                            
                                         <td style="text-align: center;">
                                             {% if update_data.2 and update_data.2|check_valid_url %}
                                                 <a href="{{update_data.2}}" target="_blank"
@@ -144,6 +146,8 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ update_data.1 | floatformat:2 }}</td>
+                                        {% endcomment %}
+                                            
                                     </tr>
                                 {% endfor %}
                             {% endfor %}

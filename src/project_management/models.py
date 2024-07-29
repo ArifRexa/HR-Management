@@ -464,6 +464,7 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         on_delete=models.RESTRICT,
         limit_choices_to={"active": True,"project_eligibility":True},
     )
+    update_data = models.TextField(blank=True, null=True, verbose_name="Update")
 
     class Meta:
         permissions = [
@@ -557,7 +558,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         # ic(out)
         if self.updates_json is not None:
             return "\n".join(
-                [f"{i[0]} - {i[1]}H" for index, i in enumerate(self.updates_json)]
+                [f"{i[0]}" for i in self.updates_json]
             )
         # return '\n'.join(
         #     [f"{i[0]} - {i[1]}H {i[2] if (lambda lst, idx: True if idx < len(lst) else False)(i, 2) else ''} " for
