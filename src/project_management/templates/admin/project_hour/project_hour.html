@@ -73,7 +73,7 @@
 
 {% block submit_buttons_bottom %}
 <div class="submit-row">
-    <input onclick="getThisWeekHour()" value="Generate" class="default" style="height: auto;" readonly>
+    <input onclick="getThisWeekHour()" id="generate-btn" value="Generate" class="default" style="height: auto;" readonly>
 </div>
 {% submit_row %}
 {% endblock %}
@@ -96,7 +96,7 @@
 </form></div>
 
 <script>
-    function getThisWeekHour(){
+    function getThisWeekHour(e){
         project = document.querySelector('#id_project');
         phour_date = document.querySelector("#id_date");
 
@@ -111,11 +111,19 @@
 
             success: function(data) {
                 hours = data.weekly_hour;
+                console.log(hours);
                 for(var i=0; i<hours.length; i++){
                     hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
                     employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
 
+                    update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_data`);
+                    update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
+                    update_id_input.value = hours[i].update_id;
+
                     hour_input.value = hours[i].total_hour;
+                    let update_data = hours[i].update;
+                    update_input.value = update_data[0][0];
+                    // console.log("hour", hour_input.value)
 
                     var optionNode = document.createElement("option");
                     optionNode.value = hours[i].id;
@@ -135,12 +143,16 @@
                 }
 
                 document.querySelector("#id_hours").value = data.total_project_hours;
+                generate_btn = document.querySelector("#generate-btn");
+                generate_btn.disabled = true;
+                console.log(generate_btn)
             },
             error: function(xhr) {
                 console.log("error");
                 console.log(data)
             }
         });
+        
     }
 </script>
 

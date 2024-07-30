@@ -17,13 +17,37 @@ from config.admin import ExportCsvMixin, RecentEdit
 from config.admin.utils import simple_request_filter
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
-from project_management.models import Client, Project, ProjectHour, EmployeeProjectHour
+from project_management.models import (
+    Client,
+    DailyProjectUpdate,
+    Project,
+    ProjectHour,
+    EmployeeProjectHour,
+)
+
+
+class EmployeeHourInlineForm(forms.ModelForm):
+    update_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+
+    class Meta:
+        model = EmployeeProjectHour
+        fields = ("hours", "employee", "update_data", "update_id")
+
+    def save(self, commit):
+        update_id = self.cleaned_data.get("update_id")
+        update = self.cleaned_data.get("update_data")
+        if update_id and update:
+            daily_update = DailyProjectUpdate.objects.get(id=update_id)
+            daily_update.updates_json = [[update, "0.0", ""]]
+            daily_update.save()
+        return super().save(commit)
 
 
 class EmployeeHourAdmin(admin.TabularInline):
     model = EmployeeProjectHour
     extra = 1
     autocomplete_fields = ("employee",)
+    form = EmployeeHourInlineForm
 
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
@@ -96,7 +120,10 @@ class ProjectHourAdmin(
         return qs.aggregate(tot=Sum("hours"))["tot"]
 
     def lookup_allowed(self, key, *args, **kwargs):
-        if key in ("project__client__payment_method__id__exact", "project__client__id__exact"):
+        if key in (
+            "project__client__payment_method__id__exact",
+            "project__client__id__exact",
+        ):
             return True
         return super(ProjectHourAdmin, self).lookup_allowed(key, *args, **kwargs)
 
