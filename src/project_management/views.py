@@ -51,7 +51,7 @@ def get_this_week_hour(request, project_id, hour_date):
 
     totalHours = sum(hour["total_hour"] for hour in employee)
 
-    employeeList = filter(lambda emp: emp["id"] != manager_id, employee)
+    employeeList = filter(lambda emp: emp["id"] , employee)
 
     data = {
         "manager_id": manager_id,
