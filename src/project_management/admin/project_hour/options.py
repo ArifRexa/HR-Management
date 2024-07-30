@@ -192,7 +192,7 @@ class ProjectHourOptions(admin.ModelAdmin):
     @admin.display(description="Resources")
     def get_resources(self, obj: ProjectHour):
         html = ""
-        i = 2
+        i = 1
         resources_total_hours = 0
         for elem in obj.employeeprojecthour_set.all():
             resources_total_hours += elem.hours
@@ -203,8 +203,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
             i += 1
         return format_html(
-            f"<p>1.{obj.manager.full_name} ({obj.hours - resources_total_hours})</p>"
-            + html
+            html
         )
 
     @admin.display(description="Operation Feedback")
