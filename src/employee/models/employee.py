@@ -421,36 +421,36 @@ class Employee(TimeStampMixin, AuthorMixin):
             return available_leave
     
     @property
-    def get_last_four_project_hours(self):
-        from project_management.models import EmployeeProjectHour
-        from decimal import Decimal
+    def get_last_four_weeks_total_hours(self):
+        from project_management.models import EmployeeProjectHour  # Adjust the import path if necessary
 
-        # Get the last 4 project hours entries for this employee
-        recent_entries = EmployeeProjectHour.objects.filter(
-            employee=self
-        ).order_by('-project_hour__date')[:4]
-        
-        # Extract hours from these entries
-        weekly_hours = [Decimal(entry.hours) for entry in recent_entries]
-        
-        # Fill in with zeroes if there are fewer than 4 entries
-        while len(weekly_hours) < 4:
-            weekly_hours.append(Decimal('0.00'))
-        
-        # Calculate expected weekly hours
-        monthly_expected_hours = self.monthly_expected_hours or 0
-        expected_weekly_hours = monthly_expected_hours / 4
-        
-        # Format the hours with HTML styling
-        formatted_hours = []
-        for hour in reversed(weekly_hours):
-            if hour < Decimal(expected_weekly_hours):
-                formatted_hours.append(f'<span style="color: red;">{int(hour)}</span>')
-            else:
-                formatted_hours.append(f'{int(hour)}')
-        
-        # Join the formatted hours with commas
-        return ','.join(formatted_hours)
+        today = timezone.now().date()
+
+        # Calculate the most recent Friday
+        days_since_friday = (today.weekday() - 4) % 7
+        most_recent_friday = today - timedelta(days=days_since_friday)
+
+        # Initialize list to store total hours for each of the last four weeks
+        weekly_totals = []
+
+        # Calculate the total hours for each of the last four weeks
+        for i in range(4):
+            end_of_range = most_recent_friday - timedelta(weeks=i)
+            start_of_range = end_of_range - timedelta(weeks=1)
+            
+            total_hours = EmployeeProjectHour.objects.filter(
+                employee=self,
+                project_hour__date__range=[start_of_range, end_of_range]
+            ).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
+
+            # Append the total hours as an integer (no decimal places)
+            weekly_totals.append(int(total_hours))
+
+        # Format the list as a comma-separated string
+        formatted_totals = ",".join(map(str, weekly_totals))
+        return formatted_totals
+
+
 
     @property
     def get_last_four_project_hours_sum(self):
