@@ -70,6 +70,17 @@ class TPMObj:
     __project_hash: t.Dict[int, Project] = field(default_factory=dict, init=False, repr=False)
     __client_hash: t.Dict[int, Client] = field(default_factory=dict, init=False, repr=False)
     __cached_employee_hours_qs: t.Optional[Manager[ProjectHour]] = field(default=None, init=False, repr=False)
+    
+    @property
+    def tpm_expected_hour(self):
+        total = 0
+        for i in self.employees:
+            total+=i.monthly_expected_hours or 0
+        return int(total)
+    @property
+    def get_weekly_expected_hour(self):
+        return int(self.tpm_expected_hour/4)
+    
 
     def add_employee(self, data: Employee):
         employee_id = data.pk
@@ -145,7 +156,18 @@ class TPMObj:
                     week_index=week_index
                 )
 
-
+    @property
+    def total_last_four_week(self) -> float:
+        return int(sum(self.last_week_hours))
+    
+    def get_formatted_date_ranges(self) -> t.List[str]:
+        formatted_ranges = []
+        for start_date, end_date in self.last_week_date_range:
+            if start_date:
+                formatted_ranges.append(start_date.strftime("%B %d"))
+            if end_date:
+                formatted_ranges.append(end_date.strftime("%B %d"))
+        return formatted_ranges
 
 @dataclass
 class TPMsBuilder:
@@ -170,3 +192,4 @@ class TPMsBuilder:
     def update_hours_count(self):
         for tpm in self.tpm_list:
             tpm.update_hours_count()
+    
