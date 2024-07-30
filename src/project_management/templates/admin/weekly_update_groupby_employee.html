@@ -87,9 +87,13 @@
                       {% if forloop.first %}
                       <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
                       {% endif %}
-                      <td>{{ hour.project_hour.project.title }}</td>
+                      {% if forloop.first %}
+                      <td rowspan="{{ values|length }}">{{ hour.project_hour.project.title }}</td>
+                      {% endif %}
                       <td>{{ hour.hours|default:"0.00" }}</td>
-                      <td>{{ hour.project_hour.manager.full_name }}</td>
+                      {% if forloop.first %}
+                      <td rowspan="{{ values|length }}">{{ hour.project_hour.manager.full_name }}</td>
+                      {% endif %}
                       {% if forloop.first %}
                       <td rowspan="{{ values|length }}">{{ key.employee_hours }}</td>
                       <td class="monthly-expected-hours" rowspan="{{ values|length }}">
