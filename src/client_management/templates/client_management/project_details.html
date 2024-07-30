@@ -162,15 +162,19 @@
                                             <td style="padding: 0.1rem 0.5rem;">
                                                 {{ line_update.0 | replace_newline_wth_br }}
                                             </td>
+                                            
+                                            {% comment %}
                                             <td style="text-align: center;">
                                                 {% if line_update.2 and line_update.2|check_valid_url %}
                                                     <a href="{{line_update.2}}" target="_blank"
-                                                       class="remove-underline text-decoration-none">
+                                                    class="remove-underline text-decoration-none">
                                                         {% link_icon url=line_update.2 %}
                                                     </a>
                                                 {% endif %}
                                             </td>
                                             <td class="text-center">{{ line_update.1 | floatformat:2 }}</td>
+                                            {% endcomment %}
+                                                
                                         </tr>
                                     {% endfor %}
                             </tr>
