@@ -106,10 +106,10 @@
                         </th>
                         {% endif %}
                         <th class="text-center">Updates</th>
-                        <th class="text-center">Link</th>
+                        <!-- <th class="text-center">Link</th>
                         <th class="text-center" style="max-width: 110px; width: 110px;">
                             Task Hour
-                        </th>
+                        </th> -->
                     </tr>
 
                     <!--ROW 01-->
@@ -134,7 +134,9 @@
                                         {% endif %}
 
                                         <td>{{ update_data.0 | replace_newline_wth_br }}</td>
-
+                                        
+                                        {% comment %}
+                                            
                                         <td style="text-align: center;">
                                             {% if update_data.2 and update_data.2|check_valid_url %}
                                                 <a href="{{update_data.2}}" target="_blank"
@@ -144,6 +146,8 @@
                                             {% endif %}
                                         </td>
                                         <td>{{ update_data.1 | floatformat:2 }}</td>
+                                        {% endcomment %}
+                                            
                                     </tr>
                                 {% endfor %}
                             {% endfor %}
@@ -158,15 +162,19 @@
                                             <td style="padding: 0.1rem 0.5rem;">
                                                 {{ line_update.0 | replace_newline_wth_br }}
                                             </td>
+                                            
+                                            {% comment %}
                                             <td style="text-align: center;">
                                                 {% if line_update.2 and line_update.2|check_valid_url %}
                                                     <a href="{{line_update.2}}" target="_blank"
-                                                       class="remove-underline text-decoration-none">
+                                                    class="remove-underline text-decoration-none">
                                                         {% link_icon url=line_update.2 %}
                                                     </a>
                                                 {% endif %}
                                             </td>
                                             <td class="text-center">{{ line_update.1 | floatformat:2 }}</td>
+                                            {% endcomment %}
+                                                
                                         </tr>
                                     {% endfor %}
                             </tr>

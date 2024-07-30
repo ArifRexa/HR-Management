@@ -111,11 +111,21 @@
 
             success: function(data) {
                 hours = data.weekly_hour;
+                console.log(hours);
                 for(var i=0; i<hours.length; i++){
                     hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
                     employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
 
+                    update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_data`);
+                    update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
+                    console.log(update_id_input)
+                    update_id_input.value = hours[i].update_id;
+
                     hour_input.value = hours[i].total_hour;
+                    let update_data = hours[i].update;
+                    update_input.value = update_data[0][0];
+                    // console.log("hour", hour_input.value)
+                    console.log(hours[i].update[0][0])
 
                     var optionNode = document.createElement("option");
                     optionNode.value = hours[i].id;
