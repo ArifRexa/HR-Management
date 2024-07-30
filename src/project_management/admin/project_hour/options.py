@@ -162,9 +162,11 @@ class ProjectHourOptions(admin.ModelAdmin):
     def get_list_filter(self, request):
         filters = [
             ProjectTypeFilter,
+
             ProjectFilter,
             "project__client__payment_method",
             ProjectClientFilter,
+            "manager"
         ]
         if not request.user.has_perm("project_management.view_client"):
             filters.remove("project__client__payment_method")
