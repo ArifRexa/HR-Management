@@ -6,7 +6,7 @@ from django.test import Client
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 # from networkx import project
-
+from django.db.models import Sum
 from project_management.models import ProjectHour
 from employee.models import Employee
 from project_management.models import Project, Client
@@ -193,14 +193,19 @@ class ProjectHourOptions(admin.ModelAdmin):
     def get_resources(self, obj: ProjectHour):
         html = ""
         i = 1
-        resources_total_hours = 0
+        emp_list = {}
         for elem in obj.employeeprojecthour_set.all():
-            resources_total_hours += elem.hours
-            if elem.employee.sqa and elem.hours > 10:
-                html += f"<p style='color:red;'>{i}.{elem.employee.full_name} ({elem.hours})</p>"
+            if emp_list.get(elem.employee):
+                emp_list[elem.employee] += elem.hours
+            else:
+                emp_list[elem.employee] = elem.hours
+
+        for elem, hour in emp_list.items():
+            if elem.sqa and hour > 10:
+                html += f"<p style='color:red;'>{i}.{elem.full_name} ({hour})</p>"
                 i += 1
                 continue
-            html += f"<p>{i}.{elem.employee.full_name} ({elem.hours})</p>"
+            html += f"<p>{i}.{elem.full_name} ({hour})</p>"
             i += 1
         return format_html(
             html
