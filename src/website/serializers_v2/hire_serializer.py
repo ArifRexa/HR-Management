@@ -57,7 +57,7 @@ class HireResourcePageListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["children"] = HireResourceChildrenSerializer(
-            instance.children.all(), many=True
+            instance.children.all(), many=True, context=self.context
         ).data
         return data
 
@@ -121,10 +121,10 @@ class HireResourcePageSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["faq_questions"] = FAQQuestionSerializer(
-            instance.questions.all(), many=True
+            instance.questions.all(), many=True, context=self.context
         ).data
         data["hiring_steps"] = HiringStepSerializer(
-            instance.steps.all(), many=True
+            instance.steps.all(), many=True, context=self.context
         ).data
         return data
 
