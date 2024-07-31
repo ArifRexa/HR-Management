@@ -432,6 +432,9 @@ class Employee(TimeStampMixin, AuthorMixin):
         weekly_totals = []
         total_sum = 0.0  # Initialize total sum of hours
 
+        # Calculate weekly expected hours
+        weekly_expected_hour = int(self.monthly_expected_hours / 4) if self.monthly_expected_hours else 0
+
         # Calculate the total hours for each of the last four weeks
         for i in range(4):
             start_of_range = most_recent_friday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Saturday)
@@ -442,11 +445,14 @@ class Employee(TimeStampMixin, AuthorMixin):
                 project_hour__date__range=[start_of_range, end_of_range]
             ).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
 
-            weekly_totals.append(int(weekly_total))
+            # Check if the weekly total is less than the weekly expected hours
+            weekly_total_display = f"<span style='color: red;'>{int(weekly_total)}</span>" if weekly_total < weekly_expected_hour else str(int(weekly_total))
+
+            weekly_totals.append(weekly_total_display)
             total_sum += weekly_total
 
-        # Format the weekly totals as a comma-separated string
-        formatted_totals = ",".join(map(str, weekly_totals))
+        # Join the weekly totals into a comma-separated string
+        formatted_totals = ",".join(weekly_totals)
         
         return formatted_totals, int(total_sum)
 
