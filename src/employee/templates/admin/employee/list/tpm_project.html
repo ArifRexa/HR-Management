@@ -79,7 +79,7 @@
                           {% if result.last_week_hours.1 < result.get_weekly_expected_hour %}
                               (<span style="color: red;">{{ result.last_week_hours.1|floatformat:0 }}</span>)
                           {% else %}
-                              ({{ result.last_week_hours.1|floatformat:0 }})
+                              ({{result.last_week_hours.1|floatformat:0 }})
                           {% endif %}
                       </b><br>
 
@@ -134,12 +134,7 @@
                             {% for employee in result.employees %}
                             
                             <li>{{ employee }} 
-                              [
-                                {% widthratio employee.monthly_expected_hours 4 1 %}
-                                ({% with employee.get_last_four_weeks_totals as totals %}
-                                    {{ totals.0 }}),
-                                    {{ employee.monthly_expected_hours|floatformat:0 }}
-                                    ({{ totals.1 }})
+                              [{% widthratio employee.monthly_expected_hours 4 1 %}({% with employee.get_last_four_weeks_totals as totals %}{{totals.0}}),{{employee.monthly_expected_hours|floatformat:0 }}({{totals.1 }})
                                 {% endwith %}
                               ]
                           </li>
@@ -148,11 +143,13 @@
                     </td>
                     <td>
                       <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">{{result.projects|length}}</span>
-                        <ul>
-                          {% for project in result.projects %}
-                          <li>{{ project.title }}</li>
-                          {% endfor %}
-                        </ul>
+                      <ul>
+                        {% for project in result.projects %}
+                          <li>
+                            {{ project.title }}({% for hours in result.last_four_project_hours|get_item:project.id %}{{hours}}{% if not forloop.last %},{% endif %}{% endfor %})
+                          </li>
+                        {% endfor %}
+                      </ul>
                     </td>
                     <td>
                       <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">{{result.clients|length}}</span>
