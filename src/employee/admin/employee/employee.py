@@ -475,8 +475,8 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         tpm_builder = TPMsBuilder()
 
         for employee in tpm_project_data:
-            tpm_builder.get_or_create(employee)
-
+            tpm_obj =tpm_builder.get_or_create(employee)
+            tpm_obj.add_project_hours(employee.project)
         other_emp_tpm = Employee(
             full_name="Others"
         )
@@ -488,7 +488,8 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
                     employee=emp_proj,
                     project=project
                 )
-                tpm_builder.get_or_create(other_tpm)
+                tpm_obj = tpm_builder.get_or_create(other_tpm)
+                tpm_obj.add_project_hours(project)
 
         tpm_builder.update_hours_count()
 

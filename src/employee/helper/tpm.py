@@ -61,6 +61,7 @@ class TPMObj:
 
     employees: t.List[Employee] = field(default_factory=list, init=False)
     projects: t.List[Project] = field(default_factory=list, init=False)
+    last_four_project_hours: t.Dict[int, t.List[float]] = field(default_factory=dict, init=False)
     clients: t.List[Client] = field(default_factory=list, init=False)
 
     _employee_ids: t.List[int] = field(default_factory=list, init=False)
@@ -101,6 +102,14 @@ class TPMObj:
         self._project_ids.append(project_id)
         self.__project_hash[project_id] = data
         self.projects.append(data)
+    
+    def add_project_hours(self, project: Project):
+        last_four_hours = ProjectHour.objects.filter(
+            project=project
+        ).order_by('-date')[:4]
+        # Store the hours in the dictionary using the project ID as the key
+        self.last_four_project_hours[project.id] = [int(ph.hours) for ph in last_four_hours]
+
 
     def add_client(self, data: t.Optional[Client]):
         if not data:
