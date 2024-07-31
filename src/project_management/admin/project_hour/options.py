@@ -124,7 +124,7 @@ class ProjectLeadFilter(admin.SimpleListFilter):
 
 class ProjectClientFilter(admin.SimpleListFilter):
     title = "client"
-    parameter_name = "client__id__exact"
+    parameter_name = "project__client__id__exact"
 
     def lookups(self, request, model_admin):
         employees = Client.objects.filter(project__active=True).distinct().values("id", "name")
@@ -166,7 +166,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             ProjectFilter,
             "project__client__payment_method",
             ProjectClientFilter,
-            "manager"
+            "manager",
         ]
         if not request.user.has_perm("project_management.view_client"):
             filters.remove("project__client__payment_method")

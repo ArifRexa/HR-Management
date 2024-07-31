@@ -419,54 +419,37 @@ class Employee(TimeStampMixin, AuthorMixin):
             integer_part = math.floor(available_leave)
             available_leave = integer_part + 0.50
             return available_leave
-    
+        
     @property
-    def get_last_four_weeks_total_hours(self):
+    def get_last_four_weeks_totals(self):
         from project_management.models import EmployeeProjectHour  # Adjust the import path if necessary
-
         today = timezone.now().date()
 
         # Calculate the most recent Friday
         days_since_friday = (today.weekday() - 4) % 7
         most_recent_friday = today - timedelta(days=days_since_friday)
 
-        # Initialize list to store total hours for each of the last four weeks
         weekly_totals = []
+        total_sum = 0.0  # Initialize total sum of hours
 
         # Calculate the total hours for each of the last four weeks
         for i in range(4):
-            end_of_range = most_recent_friday - timedelta(weeks=i)
-            start_of_range = end_of_range - timedelta(weeks=1)
-            
-            total_hours = EmployeeProjectHour.objects.filter(
+            start_of_range = most_recent_friday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Saturday)
+            end_of_range = most_recent_friday - timedelta(weeks=i)  # End of the week (Friday)
+
+            weekly_total = EmployeeProjectHour.objects.filter(
                 employee=self,
                 project_hour__date__range=[start_of_range, end_of_range]
             ).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
 
-            # Append the total hours as an integer (no decimal places)
-            weekly_totals.append(int(total_hours))
+            weekly_totals.append(int(weekly_total))
+            total_sum += weekly_total
 
-        # Format the list as a comma-separated string
+        # Format the weekly totals as a comma-separated string
         formatted_totals = ",".join(map(str, weekly_totals))
-        return formatted_totals
-
-
-
-    @property
-    def get_last_four_project_hours_sum(self):
-        from project_management.models import EmployeeProjectHour
-
-        # Get the last 4 project hours entries for this employee
-        recent_entries = EmployeeProjectHour.objects.filter(
-            employee=self
-        ).order_by('-project_hour__date')[:4]
         
-        # Calculate the total hours from these entries
-        total_hours = recent_entries.aggregate(
-            total=Sum('hours')
-        )['total'] or 0
-        
-        return total_hours
+        return formatted_totals, int(total_sum)
+
     class Meta:
         db_table = "employees"
         permissions = (
