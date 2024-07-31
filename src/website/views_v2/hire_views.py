@@ -1,11 +1,19 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
-from website.hire_models import HireResource, HireResourceContent
+from website.hire_models import HireResource
 from website.serializers_v2.hire_serializer import (
-    HireResourceContentSerializer,
+    HireResourcePageListSerializer,
+    HireResourcePageSerializer,
     HireResourceSerializer,
 )
-from website.models_v2.hire_resources import * # noqa
+from website.models_v2.hire_resources import HireResourcePage
+
+
+class HireResourcePageListView(ListAPIView):
+    queryset = HireResourcePage.objects.filter(parents__isnull=True)
+    serializer_class = HireResourcePageListSerializer
+    pagination_class = None
+    
 
 
 class HireResourceListView(ListAPIView):
@@ -13,8 +21,8 @@ class HireResourceListView(ListAPIView):
     serializer_class = HireResourceSerializer
 
 
-class HireResourceContentDetailView(RetrieveAPIView):
-    queryset = HireResourceContent.objects.all()
-    serializer_class = HireResourceContentSerializer
+class HireResourcePageDetailView(RetrieveAPIView):
+    queryset = HireResourcePage.objects.all()
+    serializer_class = HireResourcePageSerializer
     # lookup_url_kwarg = "slug"
     lookup_field = "slug"
