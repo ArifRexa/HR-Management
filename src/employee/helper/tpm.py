@@ -4,6 +4,7 @@ from django.db.models import Manager
 from datetime import datetime, timedelta
 from dataclasses import dataclass
 from dataclasses import field
+from employee.forms import employee_online
 from employee.models import (
     Employee,
 )
@@ -78,6 +79,7 @@ class TPMObj:
         for i in self.employees:
             total+=i.monthly_expected_hours or 0
         return int(total)
+    
     @property
     def get_weekly_expected_hour(self):
         return int(self.tpm_expected_hour/4)
@@ -109,6 +111,7 @@ class TPMObj:
         ).order_by('-date')[:4]
         # Store the hours in the dictionary using the project ID as the key
         self.last_four_project_hours[project.id] = [int(ph.hours) for ph in last_four_hours]
+        
 
 
     def add_client(self, data: t.Optional[Client]):
@@ -148,27 +151,23 @@ class TPMObj:
         return hours
 
     def update_hours_count(self):
-        self.last_week_hours = [0.0] * 4
+        # Initialize the weekly totals
+        weekly_totals = [0.0] * 4
         self.last_week_date_range = week_ranges = [
             _get_date_range_by_week(week=-1, days=WORKING_DAYS_IN_A_WEEK),
             _get_date_range_by_week(week=-2, days=WORKING_DAYS_IN_A_WEEK),
             _get_date_range_by_week(week=-3, days=WORKING_DAYS_IN_A_WEEK),
             _get_date_range_by_week(week=-4, days=WORKING_DAYS_IN_A_WEEK),
         ]
-        employee_hours = self._get_employee_hours()
-        for entry in employee_hours:
-            for week_index, (start_date, end_date) in enumerate(week_ranges):
-                self._update_hours_count(
-                    data=entry,
-                    start_date=start_date,
-                    end_date=end_date,
-                    week_index=week_index
-                )
+        
+        # Iterate over all projects and accumulate hours
+        for project_id, hours_list in self.last_four_project_hours.items():
+            for week_index, hours in enumerate(hours_list):
+                weekly_totals[week_index] += hours
 
-    @property
-    def total_last_four_week(self) -> float:
-        return int(sum(self.last_week_hours))
-    
+        # Update the last_week_hours with the aggregated totals
+        self.last_week_hours = weekly_totals
+
     def get_formatted_date_ranges(self) -> t.List[str]:
         formatted_ranges = []
         for start_date, end_date in self.last_week_date_range:

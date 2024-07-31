@@ -72,73 +72,29 @@
                 <tr>
                     <td>
                       <span style="font-weight: bold; font-size: 1.5em;">{{ result.tpm }}</span> <br> <br>
-                      {% with result.get_formatted_date_ranges as formatted_dates %}
-                      <b>{{ formatted_dates.1 }}: </b>
-                      <b>
-                          {{ result.get_weekly_expected_hour|floatformat:0 }}
-                          {% if result.last_week_hours.1 < result.get_weekly_expected_hour %}
-                              (<span style="color: red;">{{ result.last_week_hours.1|floatformat:0 }}</span>)
-                          {% else %}
-                              ({{result.last_week_hours.1|floatformat:0 }})
-                          {% endif %}
-                      </b><br>
-
-                      <b>{{ formatted_dates.0 }}: </b>
-                      <b>
-                          {{ result.get_weekly_expected_hour|floatformat:0 }}
-                          {% if result.last_week_hours.0 < result.get_weekly_expected_hour %}
-                              (<span style="color: red;">{{ result.last_week_hours.0|floatformat:0 }}</span>)
-                          {% else %}
-                              ({{ result.last_week_hours.0|floatformat:0 }})
-                          {% endif %}
-                      </b><br>
-
-                      <b>{{ formatted_dates.2 }}: </b>
-                      <b>
-                          {{ result.get_weekly_expected_hour|floatformat:0 }}
-                          {% if result.last_week_hours.2 < result.get_weekly_expected_hour %}
-                              (<span style="color: red;">{{ result.last_week_hours.2|floatformat:0 }}</span>)
-                          {% else %}
-                              ({{ result.last_week_hours.2|floatformat:0 }})
-                          {% endif %}
-                      </b><br>
-
-                      <b>{{ formatted_dates.3 }}: </b>
-                      <b>
-                          {{ result.get_weekly_expected_hour|floatformat:0 }}
-                          {% if result.last_week_hours.3 < result.get_weekly_expected_hour %}
-                              (<span style="color: red;">{{ result.last_week_hours.3|floatformat:0 }}</span>)
-                          {% else %}
-                              ({{ result.last_week_hours.3|floatformat:0 }})
-                          {% endif %}
-                      </b><br><br>
-                  {% endwith %}
-
-                      <span style="font-weight: bold; font-size: 1.2em;">
-                        <b>Last Four Weeks:</b> 
-                        {{ result.tpm_expected_hour }} 
-                        <b>
-                            {% if result.total_last_four_week < result.tpm_expected_hour %}
-                                (<span style="color: red;">{{ result.total_last_four_week }}</span>)
-                            {% else %}
-                                ({{ result.total_last_four_week }})
-                            {% endif %}
-                        </b>
-                    </span>
-                    </td>
-                
+                      
+                      <b>{{ result.last_week_date_range.0.1|date:"F j" }}: </b>
+                      <b>{{ result.get_weekly_expected_hour }}({% if result.last_week_hours.0 < result.get_weekly_expected_hour %}<span style="color: red;">{{ result.last_week_hours.0|floatformat:2 }}</span>{% else %}{{ result.last_week_hours.0|floatformat:2 }}{% endif %})</b><br>
+                      
+                      <b>{{ result.last_week_date_range.1.1|date:"F j" }}: </b>
+                      <b>{{ result.get_weekly_expected_hour }}({% if result.last_week_hours.1 < result.get_weekly_expected_hour %}<span style="color: red;">{{ result.last_week_hours.1|floatformat:2 }}</span>{% else %}{{ result.last_week_hours.1|floatformat:2 }}{% endif %})</b><br>
+                      
+                      <b>{{ result.last_week_date_range.2.1|date:"F j" }}: </b>
+                      <b>{{ result.get_weekly_expected_hour }}({% if result.last_week_hours.2 < result.get_weekly_expected_hour %}<span style="color: red;">{{ result.last_week_hours.2|floatformat:2 }}</span>{% else %}{{ result.last_week_hours.2|floatformat:2 }}{% endif %})</b><br>
+                      
+                      <b>{{ result.last_week_date_range.3.1|date:"F j" }}: </b>
+                      <b>{{ result.get_weekly_expected_hour }}({% if result.last_week_hours.3 < result.get_weekly_expected_hour %}<span style="color: red;">{{ result.last_week_hours.3|floatformat:2 }}</span>{% else %}{{ result.last_week_hours.3|floatformat:2 }}{% endif %})</b><br>
+              
                     <td>
                         <ul>
                           <span style="font-weight: bold; font-size: 1.5em;">{{result.employees|length}}</span>
                           
-                            {% for employee in result.employees %}
-                            
-                            <li>{{ employee }} 
-                              [{% widthratio employee.monthly_expected_hours 4 1 %}({% with employee.get_last_four_weeks_totals as totals %}{{totals.0}}),{{employee.monthly_expected_hours|floatformat:0 }}({{totals.1 }})
-                                {% endwith %}
-                              ]
+                          {% for employee in result.employees %}
+                          <li>{{ employee }} 
+                            [{% widthratio employee.monthly_expected_hours 4 1 %}({% with employee.get_last_four_weeks_totals as totals %}{{ totals.0|safe }}),{{ employee.monthly_expected_hours|floatformat:0 }}({{ totals.1 }})
+                            {% endwith %}]
                           </li>
-                            {% endfor %}
+                          {% endfor %}
                         </ul>
                     </td>
                     <td>
@@ -146,7 +102,8 @@
                       <ul>
                         {% for project in result.projects %}
                           <li>
-                            {{ project.title }}({% for hours in result.last_four_project_hours|get_item:project.id %}{{hours}}{% if not forloop.last %},{% endif %}{% endfor %})
+                            {{ project.title }}
+                            ({% for hours in result.last_four_project_hours|get_item:project.id %}{{hours}}{% if not forloop.last %},{% endif %}{% endfor %})
                           </li>
                         {% endfor %}
                       </ul>
