@@ -67,3 +67,7 @@ def divisible_by(value):
         return value / 4
     except (TypeError, ZeroDivisionError):
         return None
+    
+@register.filter
+def get_item(dictionary, key):
+    return dictionary.get(key)
