@@ -146,11 +146,7 @@
                       <ul>
                         {% for project in result.projects %}
                           <li>
-                            {{ project.title }}(
-                            {% for hours in result.last_four_project_hours|get_item:project.id %}
-                              {{ hours }}{% if not forloop.last %},{% endif %}
-                            {% endfor %}
-                            )
+                            {{ project.title }}({% for hours in result.last_four_project_hours|get_item:project.id %}{{hours}}{% if not forloop.last %},{% endif %}{% endfor %})
                           </li>
                         {% endfor %}
                       </ul>
