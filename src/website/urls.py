@@ -43,10 +43,13 @@ from website.views import (
     LeadCreateAPIView,
 )
 from website.views_v2.hire_views import (
-    HireResourceContentDetailView,
-    HireResourceListView,
+    HireResourcePageDetailView,
+    HireResourcePageListView,
 )
-from website.views_v2.industries_we_serve import IndustryServeDetailView, IndustryServeListView
+from website.views_v2.industries_we_serve import (
+    IndustryServeDetailView,
+    IndustryServeListView,
+)
 from website.views_v2.woman_empowerments_views import WomanEmpowermentView
 from website.views_v2.csr_views import CSRListAPIView
 
@@ -152,18 +155,22 @@ api_urls = [
 web_url = [path("", index)]
 
 api_v2_urls = [
-    path("hire-resource/", HireResourceListView.as_view(), name="hire_resource"),
+    path("hire-resource/", HireResourcePageListView.as_view(), name="hire_resource"),
     path(
         "hire-resource/<slug:slug>/",
-        HireResourceContentDetailView.as_view(),
+        HireResourcePageDetailView.as_view(),
         name="hire_resource_detail",
     ),
-    path("woman-empowerment/", WomanEmpowermentView.as_view(), name="woman_empowerment"),
-
-    path("csr/",CSRListAPIView.as_view(),name="csr"),
-
+    path(
+        "woman-empowerment/", WomanEmpowermentView.as_view(), name="woman_empowerment"
+    ),
+    path("csr/", CSRListAPIView.as_view(), name="csr"),
     path("industry-serve/", IndustryServeListView.as_view(), name="industry-serve"),
-    path("industry-serve/<slug:slug>/", IndustryServeDetailView.as_view(), name="industry-serve")
+    path(
+        "industry-serve/<slug:slug>/",
+        IndustryServeDetailView.as_view(),
+        name="industry-serve",
+    ),
 ]
 
 urlpatterns = [
