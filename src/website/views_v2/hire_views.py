@@ -5,6 +5,7 @@ from website.serializers_v2.hire_serializer import (
     HireResourceContentSerializer,
     HireResourceSerializer,
 )
+from website.models_v2.hire_resources import * # noqa
 
 
 class HireResourceListView(ListAPIView):

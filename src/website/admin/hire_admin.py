@@ -28,6 +28,101 @@ from website.hire_models import (
     WhyWeAreContent,
     WorldClassTalent,
 )
+from website.models_v2.hire_resources import (
+    FAQQuestion,
+    HireResourcePage,
+    HireResourceService,
+    HiringStep,
+    Cost,
+    CostType,
+    Criteria,
+    DeveloperPriceType,
+)
+
+
+@admin.register(CostType)
+class CostTypeAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+
+class CostAdmin(admin.TabularInline):
+    model = Cost
+    extra = 1
+
+
+class HiringStepAdmin(admin.TabularInline):
+    model = HiringStep
+    extra = 1
+
+
+@admin.register(Criteria)
+class CriteriaAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+
+class DeveloperPriceTypeAdmin(admin.TabularInline):
+    model = DeveloperPriceType
+    extra = 1
+
+
+class FAQQuestionInlineAdmin(admin.TabularInline):
+    model = FAQQuestion
+    extra = 1
+
+
+class HireResourceServiceAdmin(admin.StackedInline):
+    model = HireResourceService
+    extra = 1
+
+
+@admin.register(HireResourcePage)
+class HireResourcePageAdmin(admin.ModelAdmin):
+    inlines = [
+        CostAdmin,
+        DeveloperPriceTypeAdmin,
+        HiringStepAdmin,
+        HireResourceServiceAdmin,
+        FAQQuestionInlineAdmin,
+    ]
+    fieldsets = (
+        ("Page Hierarchy", {"fields": ("is_parent", "parents")}),
+        ("Banner", {"fields": ("title", "sub_title", "image", "slug")}),
+        ("Overview", {"fields": ("overview_title", "overview_description")}),
+        (
+            "Approx Cost",
+            {
+                "fields": (
+                    "pricing_title",
+                    "pricing_sub_title",
+                )
+            },
+        ),
+        (
+            "Developer Pricing",
+            {
+                "fields": (
+                    "developer_pricing_title",
+                    "developer_pricing_sub_title",
+                )
+            },
+        ),
+        (
+            "Hiring Process",
+            {
+                "fields": (
+                    "hiring_process_title",
+                    "hiring_process_sub_title",
+                )
+            },
+        ),
+        (
+            "FAQ",
+            {"fields": ("faq_sub_title",)},
+        ),
+    )
+    prepopulated_fields = {"slug": ("title",)}
 
 
 class HireResourceForm(forms.ModelForm):
@@ -182,6 +277,7 @@ class HireResourceFAQAdmin(HireResourceAdminMixin):
 class PricingAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
+
 
 @admin.register(HirePricing)
 class HirePricingAdmin(HireResourceAdminMixin):
