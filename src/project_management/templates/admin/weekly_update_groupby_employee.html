@@ -87,9 +87,9 @@
                       {% if forloop.first %}
                       <td rowspan="{{ values|length }}">{{ hour.employee }}</td>
                       {% endif %}
-                      {% if forloop.first %}
-                      <td rowspan="{{ values|length }}">{{ hour.project_hour.project.title }}</td>
-                      {% endif %}
+                      
+                      <td>{{ hour.project_hour.project.title }}</td>
+                      
                       <td>{{ hour.hours|default:"0.00" }}</td>
                       {% if forloop.first %}
                       <td rowspan="{{ values|length }}">{{ hour.project_hour.manager.full_name }}</td>
