@@ -42,7 +42,6 @@ from website.models_v2.hire_resources import (
 
 @admin.register(CostType)
 class CostTypeAdmin(admin.ModelAdmin):
-    
     def has_module_permission(self, request: HttpRequest) -> bool:
         return False
 
@@ -73,7 +72,7 @@ class FAQQuestionInlineAdmin(admin.TabularInline):
     extra = 1
 
 
-class HireResourceServiceAdmin(admin.TabularInline):
+class HireResourceServiceAdmin(admin.StackedInline):
     model = HireResourceService
     extra = 1
 
@@ -118,7 +117,6 @@ class HireResourcePageAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        
         (
             "FAQ",
             {"fields": ("faq_sub_title",)},
