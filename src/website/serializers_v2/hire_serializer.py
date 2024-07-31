@@ -24,6 +24,111 @@ from website.hire_models import (
 from website.serializers import AwardSerializer, TechnologySerializer
 
 
+from website.models_v2.hire_resources import (
+    HireResourcePage,
+    HireResourceService,
+    DeveloperPriceType,
+    FAQQuestion,
+    HiringStep,
+    Cost,
+    Criteria,
+    CostType,
+)
+
+
+class HireResourceChildrenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireResourcePage
+        fields = [
+            "title",
+            "slug",
+        ]
+
+
+class HireResourcePageListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireResourcePage
+        fields = [
+            "title",
+            "sub_title",
+            "slug",
+        ]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["children"] = HireResourceChildrenSerializer(
+            instance.children.all(), many=True, context=self.context
+        ).data
+        return data
+
+
+class CriteriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Criteria
+        fields = ["title"]
+
+
+class CostTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CostType
+        fields = ["title"]
+
+
+class CostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cost
+        exclude = ["hire_resource"]
+
+
+class HiringStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HiringStep
+        exclude = ["hiring_process"]
+
+
+class DeveloperPriceTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeveloperPriceType
+        exclude = ["hire_resource"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["criteria"] = instance.criteria.title
+        return data
+
+
+class FAQQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQQuestion
+        fields = ["question", "answer"]
+
+
+class HireResourceServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireResourceService
+        fields = ["title", "short_description", "description"]
+
+
+class HireResourcePageSerializer(serializers.ModelSerializer):
+    costs = CostSerializer(many=True)
+    developer_price_types = DeveloperPriceTypeSerializer(many=True)
+    services = HireResourceServiceSerializer(many=True)
+
+    class Meta:
+        model = HireResourcePage
+        exclude = ["parents", "is_parent"]
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["faq_questions"] = FAQQuestionSerializer(
+            instance.questions.all(), many=True, context=self.context
+        ).data
+        data["hiring_steps"] = HiringStepSerializer(
+            instance.steps.all(), many=True, context=self.context
+        ).data
+        return data
+
+
 class BaseModelSerializer(serializers.ModelSerializer):
     class Meta:
         exclude = ["created_at", "updated_at"]
@@ -58,10 +163,11 @@ class PricingSerializer(BaseModelSerializer):
     class Meta(BaseModelSerializer.Meta):
         model = Pricing
         exclude = ["created_at", "updated_at"]
-        
+
 
 class HirePricingSerializer(BaseModelSerializer):
     pricing_content = PricingSerializer(many=True)
+
     class Meta(BaseModelSerializer.Meta):
         model = HirePricing
         exclude = ["created_at", "updated_at"]
