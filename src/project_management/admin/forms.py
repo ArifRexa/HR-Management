@@ -29,7 +29,7 @@ class ProjectAdminForm(forms.ModelForm):
         fields = "__all__"
         # exclude = ['hourly_rate']
 
-    def clean(self) -> dict[str, Any]:
+    def clean(self):
         if self.cleaned_data.get("featured_video") and not self.cleaned_data.get(
             "thumbnail"
         ):
