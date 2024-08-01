@@ -61,6 +61,9 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
     class Meta:
         verbose_name = "Employee Attendance"
         verbose_name_plural = "Employee Attendances"
+        permissions = (
+            ("can_see_full_month_attendance", "Can see full month attendance"),
+        )
 
 
 class EmployeeActivity(TimeStampMixin, AuthorMixin):
@@ -85,7 +88,8 @@ class EmployeeProject(TimeStampMixin, AuthorMixin):
     @property
     def active_projects(self):
         return self.project.filter(active=True)
+
     # def __str__(self):
     #     return ', '.join([project.title for project in self.project.all()])
     def __str__(self):
-        return '\n'.join(project.title for project in self.project.all())
+        return "\n".join(project.title for project in self.project.all())
