@@ -137,10 +137,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         now = timezone.now()
         DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
+        day_range = 10
+        if request.user.has_perm("employee.can_see_full_month_attendance"):
+            day_range = 30
 
         last_x_dates = [
             (now - datetime.timedelta(i)).date()
-            for i in range(10)
+            for i in range(day_range)
             if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
         ]
         last_x_date = (now - datetime.timedelta(10)).date()
