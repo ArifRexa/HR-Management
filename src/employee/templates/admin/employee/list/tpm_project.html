@@ -104,7 +104,7 @@
                           
                           {% for employee in result.employees %}
                           <li>{{ employee }} 
-                            [{% widthratio employee.monthly_expected_hours 4 1 %}({% with employee.get_last_four_weeks_totals as totals %}{{ totals.0|safe }}),{{ employee.monthly_expected_hours|floatformat:0 }}({{ totals.1 }})
+                            [ {% widthratio employee.monthly_expected_hours 4 1 %}({% with employee.get_last_four_weeks_totals as totals %}{{ totals.0|safe }}) || {{ employee.monthly_expected_hours|floatformat:0 }}({{ totals.1 }})
                             {% endwith %}]
                           </li>
                           {% endfor %}
