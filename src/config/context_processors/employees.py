@@ -456,3 +456,17 @@ def approval_info_leave_daily_update(request):
     ).exists()
     
     return {'approval_info_leave_daily_update': format_html(html),'is_manager_lead_tpm':is_manager_lead_tpm}
+
+
+def last_four_week_project_hour(request):
+    if not request.user.is_authenticated:
+        return '' 
+    
+    employee = request.user.employee
+    monthly_expected_hours = int(employee.monthly_expected_hours or 0)
+    weekly_expected_hours = int(monthly_expected_hours / 4)
+    
+    return {
+            'weekly_expected_hours':weekly_expected_hours,
+            'monthly_expected_hours':monthly_expected_hours
+        }
