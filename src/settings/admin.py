@@ -19,6 +19,7 @@ from django.utils.safestring import mark_safe
 
 from config.utils.pdf import PDF
 from employee.models import Employee
+from project_management.models import Client
 from .models import (
     Designation,
     PayScale,
@@ -214,13 +215,13 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
     )
     
     actions = (
-        'send_mail',
+        'send_mail_employee',"send_mail_client"
     )
 
     inlines = (EmailAnnouncementAttatchmentInline,)
 
-    @admin.action(description="Send Email")
-    def send_mail(modeladmin, request, queryset):
+    @admin.action(description="Send Email(Employee)")
+    def send_mail_employee(modeladmin, request, queryset):
         chunk_size = 50
         hour = 0
 
@@ -231,6 +232,29 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
                 )
                 for i in range(0, len(employee_email_list), chunk_size):
                     chunk_emails = employee_email_list[i:i+chunk_size]
+
+                    schedule('settings.tasks.send_chunk_email',
+                            chunk_emails,
+                            announcement.id,
+                            name=f"Email announcement schedule - {timezone.now().microsecond}",
+                            schedule_type=Schedule.ONCE,
+                            next_run=timezone.now() + timedelta(hours=hour))
+                    
+                    hour += 1
+        if queryset:
+            messages.success(request, "Email sent successfully.")
+            
+    @admin.action(description="Send Email(Client)")
+    def send_mail_client(modeladmin, request, queryset):
+        chunk_size = 50
+        hour = 0
+
+        for announcement in queryset:
+                client_email_list = list(
+                    Client.objects.filter(project__active=True).distinct().values_list("email", flat=True)
+                )
+                for i in range(0, len(client_email_list), chunk_size):
+                    chunk_emails = client_email_list[i:i+chunk_size]
 
                     schedule('settings.tasks.send_chunk_email',
                             chunk_emails,
