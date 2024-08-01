@@ -220,7 +220,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
 
     inlines = (EmailAnnouncementAttatchmentInline,)
 
-    @admin.action(description="Send Email(Employee)")
+    @admin.action(description="Send Email To All Employees")
     def send_mail_employee(modeladmin, request, queryset):
         chunk_size = 50
         hour = 0
@@ -244,7 +244,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
         if queryset:
             messages.success(request, "Email sent successfully.")
             
-    @admin.action(description="Send Email(Client)")
+    @admin.action(description="Send Email To All Clients")
     def send_mail_client(modeladmin, request, queryset):
         chunk_size = 50
         hour = 0
