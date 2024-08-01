@@ -182,8 +182,11 @@ class TPMObj:
 
         # Update the last_week_hours with the aggregated totals
         self.last_week_hours = weekly_totals
-        self.projects.sort(key=lambda p: sum(self.last_four_project_hours.get(p.id, [])))
-        
+         # Sort projects based on the last week's project hours in ascending order
+        self.projects.sort(key=lambda p: self.last_four_project_hours.get(p.id, [0])[0])
+
+
+            
     def get_formatted_date_ranges(self) -> t.List[str]:
         formatted_ranges = []
         for start_date, end_date in self.last_week_date_range:
