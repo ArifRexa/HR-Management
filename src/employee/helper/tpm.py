@@ -15,7 +15,8 @@ from project_management.models import Project
 from project_management.models import Client
 from project_management.models import ProjectHour
 
-
+from django.db.models import Sum
+from django.db.models.functions import TruncWeek
 
 
 
@@ -95,6 +96,8 @@ class TPMObj:
         self.__employee_hash[employee_id] = data
         self.employees.append(data)
 
+        self.employees.sort(key=lambda e: e.monthly_expected_hours or 0, reverse=True)
+
     def add_project(self, data: Project):
         project_id = data.pk
         if project_id in self.__project_hash:
@@ -106,13 +109,17 @@ class TPMObj:
         self.projects.append(data)
     
     def add_project_hours(self, project: Project):
+        # Group hours by week
         last_four_hours = ProjectHour.objects.filter(
             project=project
-        ).order_by('-date')[:4]
-        # Store the hours in the dictionary using the project ID as the key
-        self.last_four_project_hours[project.id] = [int(ph.hours) for ph in last_four_hours]
-        
+        ).annotate(
+            week=TruncWeek('date')
+        ).values('week').annotate(
+            total_hours=Sum('hours')
+        ).order_by('-week')[:4]
 
+        # Store the summed hours in the dictionary using the project ID as the key
+        self.last_four_project_hours[project.id] = [int(ph['total_hours']) for ph in last_four_hours]
 
     def add_client(self, data: t.Optional[Client]):
         if not data:
@@ -167,7 +174,8 @@ class TPMObj:
 
         # Update the last_week_hours with the aggregated totals
         self.last_week_hours = weekly_totals
-
+        self.projects.sort(key=lambda p: sum(self.last_four_project_hours.get(p.id, [])))
+        
     def get_formatted_date_ranges(self) -> t.List[str]:
         formatted_ranges = []
         for start_date, end_date in self.last_week_date_range:
