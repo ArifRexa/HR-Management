@@ -37,6 +37,7 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
+    VideoTestimonial,
 )
 from website.serializers import (
     AwardSerializer,
@@ -69,6 +70,7 @@ from website.serializers import (
     IndustrySerializer,
     SkillSerializer,
     LeadSerializer,
+    VideoTestimonialSerializer,
 )
 from rest_framework.generics import (
     ListAPIView,
@@ -619,3 +621,8 @@ class AwardListView(ListAPIView):
 class ClientListAPIView(ListAPIView):
     queryset = Client.objects.all()
     serializer_class = ClientSerializer
+
+
+class VideoTestimonialListAPIView(ListAPIView):
+    queryset = VideoTestimonial.objects.all()
+    serializer_class = VideoTestimonialSerializer

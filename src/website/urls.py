@@ -13,6 +13,7 @@ from website.views import (
     ProjectList,
     ProjectDetails,
     EmployeeList,
+    VideoTestimonialListAPIView,
     index,
     EmployeeDetails,
     CategoryListView,
@@ -173,6 +174,7 @@ api_v2_urls = [
         name="industry-serve",
     ),
     path("projects/videos", ProjectVideoListAPIView.as_view(), name="project_video"),
+    path("video-testimonial/", VideoTestimonialListAPIView.as_view(), name="video_testimonial"),
 ]
 
 urlpatterns = [
