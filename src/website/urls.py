@@ -7,6 +7,7 @@ from website.views import (
     ClientListAPIView,
     ClientLogoListView,
     GalleryListView,
+    ProjectVideoListAPIView,
     ServiceList,
     ServiceDetails,
     ProjectList,
@@ -171,6 +172,7 @@ api_v2_urls = [
         IndustryServeDetailView.as_view(),
         name="industry-serve",
     ),
+    path("projects/videos", ProjectVideoListAPIView.as_view(), name="project_video"),
 ]
 
 urlpatterns = [

@@ -274,6 +274,11 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_industries(self, obj):
         return [industry.title for industry in obj.industries.all()]
 
+class ProjectListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Project
+        fields = ("description", "thumbnail", "featured_video")
 
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
