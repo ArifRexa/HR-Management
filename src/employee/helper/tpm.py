@@ -109,6 +109,9 @@ class TPMObj:
         self.projects.append(data)
     
     def add_project_hours(self, project: Project):
+        # Initialize a list with 0s for the last four weeks
+        weekly_hours = [0] * 4
+        
         # Group hours by week
         last_four_hours = ProjectHour.objects.filter(
             project=project
@@ -118,8 +121,13 @@ class TPMObj:
             total_hours=Sum('hours')
         ).order_by('-week')[:4]
 
+        # Map week to index for the last four weeks
+        for i, ph in enumerate(last_four_hours):
+            week_index = i
+            weekly_hours[week_index] = int(ph['total_hours'])
+        
         # Store the summed hours in the dictionary using the project ID as the key
-        self.last_four_project_hours[project.id] = [int(ph['total_hours']) for ph in last_four_hours]
+        self.last_four_project_hours[project.id] = weekly_hours
 
     def add_client(self, data: t.Optional[Client]):
         if not data:
