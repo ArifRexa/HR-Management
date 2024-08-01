@@ -49,6 +49,7 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
+    VideoTestimonial,
 )
 
 
@@ -274,6 +275,11 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_industries(self, obj):
         return [industry.title for industry in obj.industries.all()]
 
+class ProjectListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Project
+        fields = ("description", "thumbnail", "featured_video")
 
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -771,3 +777,14 @@ class ClientSerializer(serializers.ModelSerializer):
 
     def get_name(self, obj):
         return obj.web_name if obj.web_name else obj.name
+
+
+class VideoTestimonialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VideoTestimonial
+        fields = ["name", "client_image", "designation", "text", "video"]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["country"] = instance.country.name
+        return data

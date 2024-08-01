@@ -30,7 +30,8 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
-    ServiceContent
+    ServiceContent,
+    VideoTestimonial
 )
 
 
@@ -332,4 +333,13 @@ class LeadAdmin(admin.ModelAdmin):
     list_filter = ("name", "email")
     ordering = ("name",)
     fields = ("name", "email", "message")
+    # date_hierarchy = "created_at"
+
+
+@admin.register(VideoTestimonial)
+class VideoTestimonialAdmin(admin.ModelAdmin):
+    list_display = ("name", "designation", "country")
+    search_fields = ("name", "designation")
+    list_filter = ("name", "country")
+    ordering = ("name",)
     # date_hierarchy = "created_at"

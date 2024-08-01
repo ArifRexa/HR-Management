@@ -6,10 +6,11 @@ from django.utils import timezone
 from django_q.tasks import async_task
 
 
-def announcement_all_employee_mail(employee_email: str, subject: str, html_body: str, attachment_paths: str):
+def announcement_all_employee_mail(employee_email: str, subject: str, html_body: str, attachment_paths: str, cc_email: str):
     email = EmailMessage()
     email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.to = [employee_email]
+    email.cc = [cc_email]
     email.subject = subject
     email.body = html_body 
     email.content_subtype = "html"
@@ -31,7 +32,7 @@ def announcement_mail(employee_email: str, announcement: Announcement):
     email.send()
 
 
-def send_chunk_email(chunk_emails, announcement_id):
+def send_chunk_email(chunk_emails, announcement_id, cc_email):
     print('chanked email has called')
     for employee_email in chunk_emails:
         email_announcement = EmailAnnouncement.objects.get(id=announcement_id)
@@ -41,6 +42,6 @@ def send_chunk_email(chunk_emails, announcement_id):
         html_body = email_announcement.body
 
         async_task(
-                "settings.tasks.announcement_all_employee_mail", employee_email, subject, html_body, attachment_paths
+                "settings.tasks.announcement_all_employee_mail", employee_email, subject, html_body, attachment_paths, cc_email
             )
 

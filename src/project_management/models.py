@@ -217,6 +217,7 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     activate_from = models.DateField(null=True, blank=True)
     featured_image = models.ImageField(null=True, blank=True)
+    thumbnail = models.ImageField(upload_to="project_thumbnails", null=True, blank=True)
     featured_video = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="projects")

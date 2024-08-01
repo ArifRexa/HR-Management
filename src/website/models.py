@@ -8,7 +8,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-from project_management.models import Client, Technology
+from project_management.models import Client, Country, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
 
@@ -228,3 +228,17 @@ class Award(TimeStampMixin):
 
     def __str__(self):
         return self.title or str(self.id)
+
+
+class VideoTestimonial(TimeStampMixin):
+    name = models.CharField(max_length=255)
+    video = models.URLField()
+    client_image = models.ImageField(upload_to="video_testimonial/client_images/", null=True, blank=True)
+    thumbnail = models.ImageField(upload_to="video_testimonial/thumbnails/")
+    designation = models.CharField(max_length=255)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    text = models.TextField()
+    
+
+    def __str__(self):
+        return self.name
