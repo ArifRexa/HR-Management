@@ -81,6 +81,8 @@ class TPMObj:
             total+=i.monthly_expected_hours or 0
         return int(total)
     
+    
+    
     @property
     def get_weekly_expected_hour(self):
         return int(self.tpm_expected_hour/4)
@@ -220,3 +222,8 @@ class TPMsBuilder:
         for tpm in self.tpm_list:
             tpm.update_hours_count()
     
+    def get_total_expected_and_got_hour_tpm(self):
+        all_tmp_expected_hour = sum(tpm.tpm_expected_hour for tpm in self.tpm_list)
+        all_tmp_got_hour = sum(sum(tmp.last_week_hours) for tmp in self.tpm_list)
+
+        return all_tmp_expected_hour,all_tmp_got_hour
