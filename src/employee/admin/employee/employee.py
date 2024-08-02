@@ -492,10 +492,14 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
                 tpm_obj.add_project_hours(project)
 
         tpm_builder.update_hours_count()
+        
+        total_expected, total_actual = tpm_builder.get_total_expected_and_got_hour_tpm()
 
         my_context = {
             "tpm_project_data": tpm_project_data,
             "tpm_data": tpm_builder.tpm_list,
+            "total_expected":total_expected,
+            "total_actual":total_actual
         }
 
         return super().changelist_view(request, extra_context=my_context)
