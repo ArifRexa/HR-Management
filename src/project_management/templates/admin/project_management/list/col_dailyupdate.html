@@ -5,14 +5,14 @@
 
     <div class="popover-title">
         {% for update_line in update_json %}
-        {{ update_line.0 | strip_last_newline| safe | stringformat:".80s"}}
+        {{ update_line.0 | strip_last_newline| safe }}
             
         {% endfor %}
     </div>
     <div class="popover-message">
 
         {% for update_line in update_json %}
-            {{ update_line.0 | strip_last_newline| safe | stringformat:".80s"}}
+            {{ update_line.0 | strip_last_newline| safe }}
             
         {% endfor %}
     </div>

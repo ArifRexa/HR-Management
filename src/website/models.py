@@ -184,12 +184,12 @@ class FAQ(models.Model):
 class OurAchievement(models.Model):
     title = models.CharField(max_length=200)
     number = models.CharField(max_length=100)
+    icon = models.ImageField(upload_to="achievement", null=True, blank=True)
 
 
 class OurGrowth(models.Model):
     title = models.CharField(max_length=200)
     number = models.CharField(max_length=100)
-    icon = models.ImageField(upload_to="our_growth_icon", null=True, blank=True)
 
 
 class OurJourney(models.Model):
@@ -244,3 +244,11 @@ class VideoTestimonial(TimeStampMixin):
 
     def __str__(self):
         return self.name
+
+class IndustryWeServe(TimeStampMixin):
+    title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to="industry_we_serve/")
+    
+
+class LifeAtMediusware(TimeStampMixin):
+    image = models.ImageField(upload_to="life_at_mediusware/")

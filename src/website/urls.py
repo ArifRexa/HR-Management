@@ -7,6 +7,7 @@ from website.views import (
     ClientListAPIView,
     ClientLogoListView,
     GalleryListView,
+    IndustryWeServeListAPIView,
     ProjectVideoListAPIView,
     ServiceList,
     ServiceDetails,
@@ -52,6 +53,7 @@ from website.views_v2.industries_we_serve import (
     IndustryServeDetailView,
     IndustryServeListView,
 )
+from website.views_v2.services import ServiceListView, ServicePageDetailView
 from website.views_v2.woman_empowerments_views import WomanEmpowermentView
 from website.views_v2.csr_views import CSRListAPIView
 
@@ -59,6 +61,8 @@ from website.views_v2.csr_views import CSRListAPIView
 api_urls = [
     path("services/", ServiceList.as_view(), name="service.list"),
     path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
+    path("service-page/", ServiceListView.as_view(), name="service.list"),
+    path("service-page/<str:slug>/", ServicePageDetailView.as_view(), name="service.details"),
     path("industries/", IndustryListView.as_view(), name="industry-list"),
     path("projects/", ProjectList.as_view(), name="project.list"),
     path(
@@ -175,6 +179,7 @@ api_v2_urls = [
     ),
     path("projects/videos", ProjectVideoListAPIView.as_view(), name="project_video"),
     path("video-testimonial/", VideoTestimonialListAPIView.as_view(), name="video_testimonial"),
+    path("industry-we-serve/", IndustryWeServeListAPIView.as_view(), name="industry_we_serve"),
 ]
 
 urlpatterns = [

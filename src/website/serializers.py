@@ -33,6 +33,7 @@ from settings.models import Designation
 from website.models import (
     Award,
     Gallery,
+    IndustryWeServe,
     Service,
     Blog,
     Category,
@@ -683,28 +684,29 @@ class FAQSerializer(serializers.ModelSerializer):
 
 
 class OurClientsFeedbackSerializer(serializers.ModelSerializer):
-    client_name = serializers.SerializerMethodField()
-    client_designation = serializers.SerializerMethodField()
-    client_logo = serializers.SerializerMethodField()
+    client_name = serializers.CharField(source="name", read_only=True)
+    client_designation = serializers.CharField(source="designation", read_only=True)
+    client_logo = serializers.ImageField(source="logo", read_only=True)
     feedback = serializers.SerializerMethodField()
+    country = serializers.CharField(source="country.name", read_only=True)
 
     class Meta:
-        model = Project
-        fields = ("client_name", "client_designation", "client_logo", "feedback")
+        model = Client
+        fields = ("client_name", "client_designation", "client_logo", "company_name", "feedback", "country")
 
-    def get_client_name(self, obj):
-        return obj.client.name if obj.client else None
+    # def get_client_name(self, obj):
+    #     return obj.client.name if obj.client else None
 
-    def get_client_designation(self, obj):
-        return obj.client.designation if obj.client else None
+    # def get_client_designation(self, obj):
+    #     return obj.client.designation if obj.client else None
 
-    def get_client_logo(self, obj):
-        if obj.client and obj.client.logo:
-            return self.context["request"].build_absolute_uri(obj.client.logo.url)
-        return None
+    # def get_client_logo(self, obj):
+    #     if obj.client and obj.client.logo:
+    #         return self.context["request"].build_absolute_uri(obj.client.logo.url)
+    #     return None
 
     def get_feedback(self, obj):
-        clientfeedback = ClientFeedback.objects.filter(project=obj)
+        clientfeedback = ClientFeedback.objects.filter(project__client=obj)
         serializers = ClientFeedbackSerializer(instance=clientfeedback, many=True)
         return serializers.data
 
@@ -712,7 +714,7 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
 class OurAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurAchievement
-        fields = ("title", "number")
+        fields = ("title", "number", "icon")
 
 
 class OurGrowthSerializer(serializers.ModelSerializer):
@@ -788,3 +790,9 @@ class VideoTestimonialSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["country"] = instance.country.name
         return data
+    
+
+class IndustryWeServeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryWeServe
+        fields = ["title", "image"]
