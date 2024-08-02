@@ -189,6 +189,7 @@ class OurAchievement(models.Model):
 class OurGrowth(models.Model):
     title = models.CharField(max_length=200)
     number = models.CharField(max_length=100)
+    icon = models.ImageField(upload_to="our_growth_icon", null=True, blank=True)
 
 
 class OurJourney(models.Model):
@@ -233,12 +234,13 @@ class Award(TimeStampMixin):
 class VideoTestimonial(TimeStampMixin):
     name = models.CharField(max_length=255)
     video = models.URLField()
-    client_image = models.ImageField(upload_to="video_testimonial/client_images/", null=True, blank=True)
+    client_image = models.ImageField(
+        upload_to="video_testimonial/client_images/", null=True, blank=True
+    )
     thumbnail = models.ImageField(upload_to="video_testimonial/thumbnails/")
     designation = models.CharField(max_length=255)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     text = models.TextField()
-    
 
     def __str__(self):
         return self.name
