@@ -26,6 +26,7 @@ from project_management.models import Project, Tag, OurTechnology, Client
 from website.models import (
     Award,
     Gallery,
+    IndustryWeServe,
     Service,
     Category,
     Blog,
@@ -44,6 +45,7 @@ from website.serializers import (
     ClientLogoSerializer,
     ClientSerializer,
     GallerySerializer,
+    IndustryWeServeSerializer,
     ProjectListSerializer,
     ServiceSerializer,
     ProjectSerializer,
@@ -626,3 +628,8 @@ class ClientListAPIView(ListAPIView):
 class VideoTestimonialListAPIView(ListAPIView):
     queryset = VideoTestimonial.objects.all()
     serializer_class = VideoTestimonialSerializer
+    
+
+class IndustryWeServeListAPIView(ListAPIView):
+    queryset = IndustryWeServe.objects.all()
+    serializer_class = IndustryWeServeSerializer
