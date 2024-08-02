@@ -58,6 +58,7 @@ class PaymentMethod(TimeStampMixin):
     def __str__(self):
         return self.name
 
+
 class InvoiceType(TimeStampMixin):
     name = models.CharField(max_length=200)
 
@@ -74,7 +75,9 @@ class Country(TimeStampMixin):
 
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
-    web_name = models.CharField(max_length=200, verbose_name="Web Name", null=True, blank=True)
+    web_name = models.CharField(
+        max_length=200, verbose_name="Web Name", null=True, blank=True
+    )
     designation = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(max_length=80, null=True, blank=True)
     bill_from = models.TextField(null=True, blank=True)
@@ -87,6 +90,7 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
     # show_in_web = models.BooleanField(default=False)
+    company_name = models.CharField(max_length=255, null=True, blank=True)
     client_feedback = models.TextField(null=True, blank=True)
     image = models.ImageField(
         upload_to="client_images", null=True, blank=True, verbose_name="Client Image"
@@ -195,7 +199,9 @@ class ProjectService(models.Model):
 # Create your models here.
 class Project(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=200)
-    web_title = models.CharField(max_length=200, verbose_name="Web Title", null=True, blank=True)
+    web_title = models.CharField(
+        max_length=200, verbose_name="Web Title", null=True, blank=True
+    )
     slug = models.SlugField(null=True, blank=True, unique=True)
     description = models.TextField()
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
@@ -463,7 +469,7 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
-        limit_choices_to={"active": True,"project_eligibility":True},
+        limit_choices_to={"active": True, "project_eligibility": True},
     )
     update_data = models.TextField(blank=True, null=True, verbose_name="Update")
 
@@ -558,9 +564,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         # out = '\n'.join([f"{i[0]} [{i[1]}]" for i in self.updates_json])
         # ic(out)
         if self.updates_json is not None:
-            return "\n".join(
-                [f"{i[0]}" for i in self.updates_json]
-            )
+            return "\n".join([f"{i[0]}" for i in self.updates_json])
         # return '\n'.join(
         #     [f"{i[0]} - {i[1]}H {i[2] if (lambda lst, idx: True if idx < len(lst) else False)(i, 2) else ''} " for
         #      index, i in enumerate(self.updates_json)])

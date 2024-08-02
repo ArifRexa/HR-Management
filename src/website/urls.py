@@ -52,13 +52,16 @@ from website.views_v2.industries_we_serve import (
     IndustryServeDetailView,
     IndustryServeListView,
 )
+from website.views_v2.services import ServiceListView, ServicePageDetailView
 from website.views_v2.woman_empowerments_views import WomanEmpowermentView
 from website.views_v2.csr_views import CSRListAPIView
 
 
 api_urls = [
-    path("services/", ServiceList.as_view(), name="service.list"),
-    path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
+    # path("services/", ServiceList.as_view(), name="service.list"),
+    # path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
+    path("services/", ServiceListView.as_view(), name="service.list"),
+    path("services/<str:slug>/", ServicePageDetailView.as_view(), name="service.details"),
     path("industries/", IndustryListView.as_view(), name="industry-list"),
     path("projects/", ProjectList.as_view(), name="project.list"),
     path(

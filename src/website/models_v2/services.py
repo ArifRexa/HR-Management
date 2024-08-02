@@ -24,7 +24,6 @@ class ServicePage(TimeStampMixin):
     faq_short_description = models.TextField(verbose_name="Short Description")
     comparative_analysis_title = models.CharField(max_length=255, verbose_name="Title")
     comparative_analysis_sub_title = models.TextField(verbose_name="Sub Title")
-    
 
     def __str__(self):
         return self.title
@@ -85,7 +84,7 @@ class ComparativeAnalysis(TimeStampMixin):
         null=True,
     )
     sapphire_software_solutions = models.CharField(
-        max_length=255, verbose_name="Sapphire Software Solutions"
+        max_length=255, verbose_name="Mediusware Software Solutions"
     )
     in_house = models.CharField(max_length=255, verbose_name="In-House")
     freelance = models.CharField(max_length=255, verbose_name="Freelance")
@@ -103,7 +102,7 @@ class ServiceFAQQuestion(models.Model):
 
     def __str__(self):
         return self.question
-    
+
     class Meta:
         verbose_name = "Service FAQ"
         verbose_name_plural = "Service FAQs"
