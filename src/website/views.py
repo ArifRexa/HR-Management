@@ -547,7 +547,7 @@ class FAQListView(ListAPIView):
 
 
 class OurClientsFeedbackList(ListAPIView):
-    queryset = Project.objects.filter(client__isnull=False)
+    queryset = Client.objects.filter(project__isnull=False).distinct()
     serializer_class = OurClientsFeedbackSerializer
 
 
