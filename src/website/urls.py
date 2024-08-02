@@ -58,10 +58,10 @@ from website.views_v2.csr_views import CSRListAPIView
 
 
 api_urls = [
-    # path("services/", ServiceList.as_view(), name="service.list"),
-    # path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
-    path("services/", ServiceListView.as_view(), name="service.list"),
-    path("services/<str:slug>/", ServicePageDetailView.as_view(), name="service.details"),
+    path("services/", ServiceList.as_view(), name="service.list"),
+    path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
+    path("service-page/", ServiceListView.as_view(), name="service.list"),
+    path("service-page/<str:slug>/", ServicePageDetailView.as_view(), name="service.details"),
     path("industries/", IndustryListView.as_view(), name="industry-list"),
     path("projects/", ProjectList.as_view(), name="project.list"),
     path(
