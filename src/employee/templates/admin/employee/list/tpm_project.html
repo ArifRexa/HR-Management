@@ -55,6 +55,9 @@
     {% endblock %}
 
     <div class="results" >
+      <b style="font-size: 1em;">All Employees Last 4 Weeks Total: {{ total_expected }} 
+        ({% if total_actual < total_expected %}<span style="color: red;">{{ total_actual|floatformat:0 }}</span>{% else %}{{ total_actual|floatformat:0 }}{% endif %})</b>
+      <p>Data Presentation: [ Weekly Expected Hour(Last 4 Weeks Hours) || Monthly Expected Hour(Total Last 4 Weeks Hour) ]</p>
         <table id="tpm-extra-data" style="width: 83%;">
             <thead>
             <tr>
@@ -86,7 +89,7 @@
                       <b>{{ result.get_weekly_expected_hour }}({% if result.last_week_hours.3 < result.get_weekly_expected_hour %}<span style="color: red;">{{ result.last_week_hours.3|floatformat:0 }}</span>{% else %}{{ result.last_week_hours.3|floatformat:0 }}{% endif %})</b><br>
                     
                       <br><span style="font-weight: bold; font-size: 1.2em;">
-                        <b>Last Four Weeks:</b> 
+                        <b>Last 4 Weeks:</b> 
                         {{ result.tpm_expected_hour }} 
                         <b>
                             {% with total_hours=result.last_week_hours.0|add:result.last_week_hours.1|add:result.last_week_hours.2|add:result.last_week_hours.3 %}
