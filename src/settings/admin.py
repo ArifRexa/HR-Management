@@ -1,3 +1,4 @@
+import re
 from typing import Any
 from django import forms
 from django.contrib import admin, messages
@@ -224,7 +225,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
     def send_mail_employee(modeladmin, request, queryset):
         chunk_size = 50
         hour = 0
-
+        cc_email = request.user.employee.email
         for announcement in queryset:
            
                 employee_email_list = list(
@@ -238,7 +239,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
                             announcement.id,
                             name=f"Email announcement schedule - {timezone.now().microsecond}",
                             schedule_type=Schedule.ONCE,
-                            next_run=timezone.now() + timedelta(hours=hour))
+                            next_run=timezone.now() + timedelta(hours=hour),cc_email=cc_email)
                     
                     hour += 1
         if queryset:
@@ -248,7 +249,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
     def send_mail_client(modeladmin, request, queryset):
         chunk_size = 50
         hour = 0
-
+        cc_email = request.user.employee.email
         for announcement in queryset:
                 client_email_list = list(
                     Client.objects.filter(project__active=True).distinct().values_list("email", flat=True)
@@ -261,7 +262,7 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
                             announcement.id,
                             name=f"Email announcement schedule - {timezone.now().microsecond}",
                             schedule_type=Schedule.ONCE,
-                            next_run=timezone.now() + timedelta(hours=hour))
+                            next_run=timezone.now() + timedelta(hours=hour), cc_email=cc_email)
                     
                     hour += 1
         if queryset:
