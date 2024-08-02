@@ -41,28 +41,30 @@
 {% endif %}
 
 {% block coltype %}{% endblock %}
-
+<br><br>
 {% block content %}
-
-
+  <br>
   <div id="content-main">
     {% block object-tools %}
-        <ul class="object-tools">
-          {% block object-tools-items %}
+    <ul class="object-tools">
+        {% block object-tools-items %}
             {% change_list_object_tools %}
-          {% endblock %}
-        </ul>
-    {% endblock %}
+        {% endblock %}
+    </ul>
+{% endblock %}
+{% block content_title %}{% endblock %}
 
     <div class="results" >
-      <b style="font-size: 1em;">All Employees Last 4 Weeks Total: {{ total_expected }} 
-        ({% if total_actual < total_expected %}<span style="color: red;">{{ total_actual|floatformat:0 }}</span>{% else %}{{ total_actual|floatformat:0 }}{% endif %})</b>
-      <p>Data Presentation: [ Weekly Expected Hour(Last 4 Weeks Hours) || Monthly Expected Hour(Total Last 4 Weeks Hour) ]</p>
+        <div style="text-align: center;">
+          <b style="font-size: 1em;">All Employees Last 4 Weeks Total: {{ total_expected }} 
+            ({% if total_actual < total_expected %}<span style="color: red;">{{ total_actual|floatformat:0 }}</span>{% else %}{{ total_actual|floatformat:0 }}{% endif %})</b>
+          <p>Data Presentation: [ Weekly Expected Hour(Last 4 Weeks Hours) || Monthly Expected Hour(Total Last 4 Weeks Hour) ]</p>
+        </div>
+        <br>
         <table id="tpm-extra-data" style="width: 83%;">
             <thead>
             <tr>
                 <th scope="col">TPM</th>
-          
                 <th scope="col">Employees</th>
                 <th scope="col">Projects</th>
                 <th scope="col">Clients</th>
