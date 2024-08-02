@@ -33,6 +33,7 @@ from settings.models import Designation
 from website.models import (
     Award,
     Gallery,
+    IndustryWeServe,
     Service,
     Blog,
     Category,
@@ -713,13 +714,13 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
 class OurAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurAchievement
-        fields = ("title", "number")
+        fields = ("title", "number", "icon")
 
 
 class OurGrowthSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurGrowth
-        fields = ("title", "number", "icon")
+        fields = ("title", "number")
 
 
 class OurJourneySerializer(serializers.ModelSerializer):
@@ -789,3 +790,9 @@ class VideoTestimonialSerializer(serializers.ModelSerializer):
         data = super().to_representation(instance)
         data["country"] = instance.country.name
         return data
+    
+
+class IndustryWeServeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryWeServe
+        fields = ["title", "image"]

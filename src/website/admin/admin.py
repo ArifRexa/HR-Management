@@ -13,6 +13,8 @@ import requests
 from website.models import (
     Award,
     Gallery,
+    IndustryWeServe,
+    LifeAtMediusware,
     Service,
     Blog,
     Category,
@@ -343,3 +345,19 @@ class VideoTestimonialAdmin(admin.ModelAdmin):
     list_filter = ("name", "country")
     ordering = ("name",)
     # date_hierarchy = "created_at"
+    
+
+@admin.register(IndustryWeServe)
+class IndustryWeServeAdmin(admin.ModelAdmin):
+    list_display = ("title",)
+    
+    def has_module_permission(self, request):
+        return False
+    
+
+@admin.register(LifeAtMediusware)
+class LifeAtMediuswareAdmin(admin.ModelAdmin):
+    
+    
+    def has_module_permission(self, request):
+        return False
