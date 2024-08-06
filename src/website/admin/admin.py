@@ -12,6 +12,7 @@ import requests
 # Register your models here.
 from website.models import (
     Award,
+    BlogFAQ,
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
@@ -109,12 +110,15 @@ class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
 
+class BlogFAQInline(admin.TabularInline):
+    model = BlogFAQ
+    extra = 1
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (BlogContextInline,)
+    inlines = (BlogContextInline, BlogFAQInline)
     actions = ["clone_selected", "approve_selected", "unapprove_selected"]
 
     search_fields = ("title",)
