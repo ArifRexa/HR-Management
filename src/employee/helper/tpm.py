@@ -227,3 +227,13 @@ class TPMsBuilder:
         all_tmp_got_hour = sum(sum(tmp.last_week_hours) for tmp in self.tpm_list)
 
         return all_tmp_expected_hour,all_tmp_got_hour
+    
+    def get_formatted_weekly_sums(self) -> str:
+        weekly_sums = [0] * 4  # Initialize sums for the last four weeks
+        for tpm in self.tpm_list:
+            for i in range(4):
+                weekly_sums[i] += tpm.last_week_hours[i]
+        
+        # Format the sums for each week in brackets
+        formatted_sums = ','.join([f'{int(sum)}' for i, sum in enumerate((weekly_sums))])
+        return formatted_sums
