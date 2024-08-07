@@ -15,6 +15,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from config.admin import ExportCsvMixin, RecentEdit
 from config.admin.utils import simple_request_filter
+from employee.models.employee_activity import EmployeeProject
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
 from project_management.models import (
@@ -78,7 +79,14 @@ class ProjectHourAdminForm(forms.ModelForm):
                                 "date": "Project Hour for this date with this project and manager already exists",
                             }
                         )
-            return data
+
+        if self.request and self.request.user.employee.is_tpm:
+            if not EmployeeProject.objects.filter(
+                employee=self.request.user.employee, project=data.get("project")
+            ).exists():
+                if not self.request.path_info[-5:-1] == "/add":
+                    raise ValidationError("You are not assign TPM for this project")
+        return data
 
 
 @admin.register(ProjectHour)
@@ -97,13 +105,7 @@ class ProjectHourAdmin(
         ("Standard info", {"fields": ("hour_type", "project", "date", "hours")}),
         (
             "Administration Process",
-            {
-                "fields": (
-                    "operation_feedback",
-                    "client_exp_feedback",
-                    "approved_by_cto",
-                )
-            },
+            {"fields": ("status",)},
         ),
     )
     form = ProjectHourAdminForm
@@ -168,6 +170,8 @@ class ProjectHourAdmin(
     def get_fieldsets(self, request, obj):
         fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
         if not request.user.has_perm("project_management.weekly_project_hours_approve"):
+            return (fieldsets[0],)
+        if not request.user.employee.is_tpm:
             return (fieldsets[0],)
 
         return fieldsets
