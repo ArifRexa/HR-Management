@@ -103,7 +103,7 @@ class TPMObj:
     def add_project(self, data: Project):
         project_id = data.pk
         if project_id in self.__project_hash:
-            return
+            return  # Already added, skip
 
         self.__cached_employee_hours_qs = None
         self._project_ids.append(project_id)
@@ -203,20 +203,21 @@ class TPMsBuilder:
 
     __tpm_hash: t.Dict[int, TPMObj] = field(default_factory=dict, init=False)
     tpm_list: t.List[TPMObj] = field(default_factory=list, init=False)
+    added_projects: t.Set[int] = field(default_factory=set, init=False)  # Set to track added projects
 
     def get_or_create(self, data: EmployeeUnderTPM) -> TPMObj:
-        tpm_id = data.tpm.pk
-        if tpm_id not in self.__tpm_hash:
-            tpm = TPMObj(
-                tpm=data.tpm
-            )
-            self.__tpm_hash[tpm_id] = tpm
-            self.tpm_list.append(tpm)
-        tpm = self.__tpm_hash[tpm_id]
-        tpm.add_employee(data=data.employee)
-        tpm.add_project(data=data.project)
-        tpm.add_client(data=data.project.client)
-        return tpm
+            tpm_id = data.tpm.pk
+            if tpm_id not in self.__tpm_hash:
+                tpm = TPMObj(tpm=data.tpm)
+                self.__tpm_hash[tpm_id] = tpm
+                self.tpm_list.append(tpm)
+            tpm = self.__tpm_hash[tpm_id]
+            tpm.add_employee(data=data.employee)
+            if data.project.pk not in self.added_projects:
+                tpm.add_project(data.project)
+                self.added_projects.add(data.project.pk)  # Mark this project as added globally
+            tpm.add_client(data=data.project.client)
+            return tpm
 
     def update_hours_count(self):
         for tpm in self.tpm_list:
@@ -227,3 +228,13 @@ class TPMsBuilder:
         all_tmp_got_hour = sum(sum(tmp.last_week_hours) for tmp in self.tpm_list)
 
         return all_tmp_expected_hour,all_tmp_got_hour
+    
+    def get_formatted_weekly_sums(self) -> str:
+        weekly_sums = [0] * 4  # Initialize sums for the last four weeks
+        for tpm in self.tpm_list:
+            for i in range(4):
+                weekly_sums[i] += tpm.last_week_hours[i]
+        
+        # Format the sums for each week in brackets
+        formatted_sums = ','.join([f'{int(sum)}' for i, sum in enumerate((weekly_sums))])
+        return formatted_sums
