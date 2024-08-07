@@ -32,6 +32,7 @@ from project_management.models import (
 from settings.models import Designation
 from website.models import (
     Award,
+    BlogFAQ,
     Gallery,
     IndustryWeServe,
     Service,
@@ -581,10 +582,15 @@ class BlogListSerializer(serializers.ModelSerializer):
         data["table_of_contents"] = instance.blog_contexts.all().values("id", "title")
         return data
 
+class BlogFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogFAQ
+        fields = ["question", "answer"]
 
 class BlogDetailsSerializer(BlogListSerializer):
     tags = TagSerializer(many=True, source="tag")
     blog_contexts = BlogContextSerializer(many=True)
+    blog_faqs = BlogFAQSerializer(many=True)
 
     class Meta(BlogListSerializer.Meta):
         fields = (
@@ -600,6 +606,7 @@ class BlogDetailsSerializer(BlogListSerializer):
             "author",
             "content",
             "blog_contexts",
+            "blog_faqs",
         )
 
     def to_representation(self, instance):
