@@ -28,14 +28,15 @@ from project_management.models import (
 
 class EmployeeHourInlineForm(forms.ModelForm):
     update_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
+    update = forms.CharField(required=False, widget=forms.Textarea())
 
     class Meta:
         model = EmployeeProjectHour
-        fields = ("hours", "employee", "update_data", "update_id")
+        fields = ("hours", "employee")
 
     def save(self, commit):
         update_id = self.cleaned_data.get("update_id")
-        update = self.cleaned_data.get("update_data")
+        update = self.cleaned_data.get("update")
         if update_id and update:
             daily_update = DailyProjectUpdate.objects.get(id=update_id)
             daily_update.updates_json = [[update, "0.0", ""]]
