@@ -84,7 +84,8 @@ class ProjectHourAdminForm(forms.ModelForm):
             if not EmployeeProject.objects.filter(
                 employee=self.request.user.employee, project=data.get("project")
             ).exists():
-                raise ValidationError("You are not assign TPM for this project")
+                if not self.request.path_info[-5:-1] == "/add":
+                    raise ValidationError("You are not assign TPM for this project")
         return data
 
 
