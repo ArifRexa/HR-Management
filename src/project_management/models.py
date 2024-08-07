@@ -393,6 +393,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         ("project", "Project Hour"),
         ("bonus", "Bonus Project Hour"),
     )
+    STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
 
     manager = models.ForeignKey(
         Employee,
@@ -424,13 +425,22 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         blank=True,
     )
     payable = models.BooleanField(default=True)
-    approved_by_cto = models.BooleanField(default=False)
-    operation_feedback = models.URLField(
-        blank=True, null=True, verbose_name="Operation Feedback"
+    tpm = models.ForeignKey(
+        Employee,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="project_hours",
+        limit_choices_to={"active": True, "is_tpm": True},
+        verbose_name="TPM",
     )
-    client_exp_feedback = models.URLField(
-        blank=True, null=True, verbose_name="Client Experience Feedback"
-    )
+    # approved_by_cto = models.BooleanField(default=False)
+    # operation_feedback = models.URLField(
+    #     blank=True, null=True, verbose_name="Operation Feedback"
+    # )
+    # client_exp_feedback = models.URLField(
+    #     blank=True, null=True, verbose_name="Client Experience Feedback"
+    # )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending", verbose_name="TPM Approval Status")
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
