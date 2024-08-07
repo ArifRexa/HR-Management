@@ -167,6 +167,14 @@
         });
         
     }
+    const path = window.location.pathname;
+    const path_list = path.split("/").filter(n=>n);
+    const action = path_list[path_list.length-1];
+    console.log(action)
+    if (action == "change"){
+        console.log("change action")
+        getThisWeekHour();
+    }
 </script>
 
 {% endblock %}

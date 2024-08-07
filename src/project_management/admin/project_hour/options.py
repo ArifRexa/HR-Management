@@ -5,6 +5,7 @@ from django.template.loader import get_template
 from django.test import Client
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+
 # from networkx import project
 from django.db.models import Sum
 from project_management.models import ProjectHour
@@ -13,7 +14,7 @@ from project_management.models import Project, Client
 
 
 class ProjectFilter(admin.SimpleListFilter):
-    title = "Project Type"
+    title = "Project"
     parameter_name = "project__id__exact"
 
     def lookups(self, request, model_admin):
@@ -127,7 +128,9 @@ class ProjectClientFilter(admin.SimpleListFilter):
     parameter_name = "project__client__id__exact"
 
     def lookups(self, request, model_admin):
-        employees = Client.objects.filter(project__active=True).distinct().values("id", "name")
+        employees = (
+            Client.objects.filter(project__active=True).distinct().values("id", "name")
+        )
         return tuple(
             [
                 (
@@ -146,7 +149,7 @@ class ProjectClientFilter(admin.SimpleListFilter):
 class ProjectHourOptions(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css",)}
-        js = ("js/list.js",)
+        js = ("js/list.js", "js/update_project_hour.js")
 
     # override create / edit fields
     # manager filed will not appear if the authenticate user is not super user
@@ -157,12 +160,14 @@ class ProjectHourOptions(admin.ModelAdmin):
             fields.remove("payable")
             if not request.user.has_perm("project_management.select_hour_type"):
                 fields.remove("hour_type")
+            if not request.user.employee.is_tpm:
+                fields.remove("status")
         return fields
 
     def get_list_filter(self, request):
         filters = [
             ProjectTypeFilter,
-
+            "tpm",
             ProjectFilter,
             "project__client__payment_method",
             ProjectClientFilter,
@@ -178,7 +183,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ["date", "project", "hours", "manager", "get_resources"]
+        list_display = ["date", "project", "hours", "manager", "get_resources", "get_status"]
         # if not request.user.is_superuser:
         #     list_display.remove('payable')
         return list_display
@@ -209,9 +214,15 @@ class ProjectHourOptions(admin.ModelAdmin):
                 continue
             html += f"<p>{i}.{elem.full_name} ({hour})</p>"
             i += 1
-        return format_html(
-            html
-        )
+        return format_html(html)
+    
+    
+    @admin.display(description="Approved By TPM")
+    def get_status(self, obj):
+        color = "red"
+        if obj.status == "approved":
+            color = "green"
+        return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
     @admin.display(description="Operation Feedback")
     def operation_feedback_link(self, obj):
