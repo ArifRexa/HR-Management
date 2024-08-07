@@ -471,7 +471,7 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         on_delete=models.RESTRICT,
         limit_choices_to={"active": True, "project_eligibility": True},
     )
-    update_data = models.TextField(blank=True, null=True, verbose_name="Update")
+    # update_data = models.TextField(blank=True, null=True, verbose_name="Update")
 
     class Meta:
         permissions = [
