@@ -141,6 +141,10 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
     video = models.FileField(upload_to="blog_context_videos", blank=True, null=True)
 
+class BlogFAQ(AuthorMixin, TimeStampMixin):
+    blogs = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="blog_faqs")
+    question = models.CharField(max_length=255)
+    answer = models.TextField()
 
 class BlogCategory(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
