@@ -103,33 +103,34 @@ class TPMObj:
     def add_project(self, data: Project):
         project_id = data.pk
         if project_id in self.__project_hash:
-            return  # Already added, skip
+            return
 
         self.__cached_employee_hours_qs = None
         self._project_ids.append(project_id)
         self.__project_hash[project_id] = data
         self.projects.append(data)
     
-    def add_project_hours(self, project: Project):
-        # Initialize a list with 0s for the last four weeks
-        weekly_hours = [0] * 4
-        
-        # Group hours by week
-        last_four_hours = ProjectHour.objects.filter(
-            project=project
-        ).annotate(
-            week=TruncWeek('date')
-        ).values('week').annotate(
-            total_hours=Sum('hours')
-        ).order_by('-week')[:4]
+    def add_project_hours(self):
+        for project in self.projects:
+            # Initialize a list with 0s for the last four weeks
+            weekly_hours = [0] * 4
+            
+            # Group hours by week for the current project
+            last_four_hours = ProjectHour.objects.filter(
+                project=project
+            ).annotate(
+                week=TruncWeek('date')
+            ).values('week').annotate(
+                total_hours=Sum('hours')
+            ).order_by('-week')[:4]
 
-        # Map week to index for the last four weeks
-        for i, ph in enumerate(last_four_hours):
-            week_index = i
-            weekly_hours[week_index] = int(ph['total_hours'])
-        
-        # Store the summed hours in the dictionary using the project ID as the key
-        self.last_four_project_hours[project.id] = weekly_hours
+            # Map week to index for the last four weeks
+            for i, ph in enumerate(last_four_hours):
+                week_index = i
+                weekly_hours[week_index] = int(ph['total_hours'])
+            
+            # Store the summed hours in the dictionary using the project ID as the key
+            self.last_four_project_hours[project.id] = weekly_hours
 
     def add_client(self, data: t.Optional[Client]):
         if not data:
@@ -186,9 +187,8 @@ class TPMObj:
         self.last_week_hours = weekly_totals
          # Sort projects based on the last week's project hours in ascending order
         self.projects.sort(key=lambda p: self.last_four_project_hours.get(p.id, [0])[0])
-
-
-            
+        print(f"TPM: {self.tpm.full_name}, Last Week Hours: {self.last_week_hours}")
+          
     def get_formatted_date_ranges(self) -> t.List[str]:
         formatted_ranges = []
         for start_date, end_date in self.last_week_date_range:
@@ -203,21 +203,21 @@ class TPMsBuilder:
 
     __tpm_hash: t.Dict[int, TPMObj] = field(default_factory=dict, init=False)
     tpm_list: t.List[TPMObj] = field(default_factory=list, init=False)
-    added_projects: t.Set[int] = field(default_factory=set, init=False)  # Set to track added projects
+    added_projects: t.Set[int] = field(default_factory=set, init=False)
 
     def get_or_create(self, data: EmployeeUnderTPM) -> TPMObj:
-            tpm_id = data.tpm.pk
-            if tpm_id not in self.__tpm_hash:
-                tpm = TPMObj(tpm=data.tpm)
-                self.__tpm_hash[tpm_id] = tpm
-                self.tpm_list.append(tpm)
-            tpm = self.__tpm_hash[tpm_id]
-            tpm.add_employee(data=data.employee)
-            if data.project.pk not in self.added_projects:
-                tpm.add_project(data.project)
-                self.added_projects.add(data.project.pk)  # Mark this project as added globally
-            tpm.add_client(data=data.project.client)
-            return tpm
+        tpm_id = data.tpm.pk
+        if tpm_id not in self.__tpm_hash:
+            tpm = TPMObj(tpm=data.tpm)
+            self.__tpm_hash[tpm_id] = tpm
+            self.tpm_list.append(tpm)
+        tpm = self.__tpm_hash[tpm_id]
+        tpm.add_employee(data=data.employee)
+        if data.project.pk not in self.added_projects:
+            tpm.add_project(data.project)
+            self.added_projects.add(data.project.pk)  # Mark this project as added globally
+        tpm.add_client(data=data.project.client)
+        return tpm
 
     def update_hours_count(self):
         for tpm in self.tpm_list:
