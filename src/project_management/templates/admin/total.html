@@ -20,7 +20,9 @@
 
 {% block extrahead %}
 {{ block.super }}
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {{ media.js }}
+
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
@@ -72,13 +74,13 @@
         {% block pagination %}{% pagination cl %}{% endblock %}
         
         
-        <div style="width: 100%">
+        <!-- <div style="width: 100%">
             <h1>Project Summary</h1>
             <div id="graph" style="height: 80vh; min-width: 310px"></div>
             <div style="padding: 20px 40px">
                 <button id="button" class="autocompare">Toggle series</button>
             </div>
-        </div>
+        </div> -->
 
         </form>
 

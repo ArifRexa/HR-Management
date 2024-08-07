@@ -6,7 +6,7 @@ from employee.models import Employee
 from django.db.models import Sum, Q, F, Aggregate, CharField
 from django.db.models.functions import Coalesce
 
-from project_management.models import DailyProjectUpdate
+from project_management.models import DailyProjectUpdate, ProjectHour
 
 
 class GroupConcat(Aggregate):
@@ -28,7 +28,10 @@ class GroupConcat(Aggregate):
 
 # Create your views here.
 def get_this_week_hour(request, project_id, hour_date):
+    project_hour_id = request.GET.get("project_hour_id")
     manager_id = request.user.employee.id
+    if project_hour_id:
+        manager_id = ProjectHour.objects.get(id=project_hour_id).manager_id
 
     # employee = (
     #     Employee.objects.filter(active=True, project_eligibility=True)
@@ -59,6 +62,11 @@ def get_this_week_hour(request, project_id, hour_date):
         status="approved",
         created_at__date__lte=hour_date,
         created_at__date__gte=hour_date - timedelta(days=6),
+    )
+    d = DailyProjectUpdate.objects.filter(
+        q_obj,
+        employee__active=True,
+        employee__project_eligibility=True,
     )
     employee = (
         DailyProjectUpdate.objects.filter(
