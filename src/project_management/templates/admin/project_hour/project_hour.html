@@ -110,24 +110,37 @@
             type: "GET", //send it through get method
 
             success: function(data) {
-                hours = data.weekly_hour;
-                console.log(hours);
-                for(var i=0; i<hours.length; i++){
+                hour = data.weekly_hour;
+                console.log(hour);
+                for(var i=0; i<hour.length; i++){
                     hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
                     employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
 
                     update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_data`);
                     update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
-                    update_id_input.value = hours[i].update_id;
-
-                    hour_input.value = hours[i].total_hour;
-                    let update_data = hours[i].update;
-                    update_input.value = update_data[0][0];
+                    update_id_input.value = hour[i].id;
+                    console.log(hour[i].updates_json);
+                    hour_input.value = hour[i].hours;
+                    if (hour[i].updates_json){
+                        console.log("json", hour[i]);
+                        let v = ""
+                        for(var j=0; j<hour[i].updates_json.length; j++){
+                            v += hour[i].updates_json[j][0]
+                        }
+                        console.log(v)
+                        update_input.value = v;
+                    }else{
+                        console.log("not json", hour[i].updates_json);
+                        
+                        update_input.value = hour[i].update
+                    }
+                    // let update_data = hours[i].update;
+                    // update_input.value = update_data[0][0];
                     // console.log("hour", hour_input.value)
 
                     var optionNode = document.createElement("option");
-                    optionNode.value = hours[i].id;
-                    optionNode.textContent = hours[i].full_name;
+                    optionNode.value = hour[i].employee_id;
+                    optionNode.textContent = hour[i].full_name;
                     employee_select.appendChild(optionNode);
                     
                     {% comment %} employee_select.value = hours[i].id;  {% endcomment %}
