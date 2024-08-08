@@ -1,6 +1,8 @@
 import datetime
+from typing import Any
 
 from django.contrib import admin
+from django.http import HttpRequest
 from django.template.loader import get_template
 from django.test import Client
 from django.utils.html import format_html
@@ -163,6 +165,9 @@ class ProjectHourOptions(admin.ModelAdmin):
             if not request.user.employee.is_tpm:
                 fields.remove("status")
         return fields
+    
+    def get_readonly_fields(self, request, obj):
+        return ["tpm"]
 
     def get_list_filter(self, request):
         filters = [
@@ -183,7 +188,14 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         @type request: object
         """
-        list_display = ["date", "project", "hours", "manager", "get_resources", "get_status"]
+        list_display = [
+            "date",
+            "project",
+            "hours",
+            "manager",
+            "get_resources",
+            "get_status",
+        ]
         # if not request.user.is_superuser:
         #     list_display.remove('payable')
         return list_display
@@ -215,8 +227,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             html += f"<p>{i}.{elem.full_name} ({hour})</p>"
             i += 1
         return format_html(html)
-    
-    
+
     @admin.display(description="Approved By TPM")
     def get_status(self, obj):
         color = "red"
