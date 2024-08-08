@@ -10,6 +10,7 @@ from django.utils.safestring import mark_safe
 
 # from networkx import project
 from django.db.models import Sum
+from employee.models.employee_activity import EmployeeProject
 from project_management.models import ProjectHour
 from employee.models import Employee
 from project_management.models import Project, Client
@@ -18,6 +19,7 @@ from project_management.models import Project, Client
 class ProjectFilter(admin.SimpleListFilter):
     title = "Project"
     parameter_name = "project__id__exact"
+    template = "admin/project_management/project_filter.html"
 
     def lookups(self, request, model_admin):
         project_types = (
@@ -148,6 +150,40 @@ class ProjectClientFilter(admin.SimpleListFilter):
             return queryset.filter(project__client__id__exact=self.value())
 
 
+
+class TPMProjectFilter(admin.SimpleListFilter):
+    title = "TPM"
+    parameter_name = "project_id__in"
+
+    def lookups(self, request, model_admin):
+        employees = (
+            Employee.objects.filter(active=True, is_tpm=True)
+            .distinct()
+            .values("id", "full_name")
+        )
+        return tuple(
+            [
+                (
+                    emp.get("id"),
+                    emp.get("full_name"),
+                )
+                for emp in employees
+            ]
+        )
+
+    def queryset(self, request, queryset):
+        employee_project = EmployeeProject.objects.filter(
+            employee__id__exact=self.value()
+        )
+        project_list = (
+            employee_project.first().project.values_list("id", flat=True)
+            if employee_project.exists()
+            else []
+        )
+        if self.value():
+            return queryset.filter(project_id__in=project_list)
+
+
 class ProjectHourOptions(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css",)}
@@ -172,7 +208,7 @@ class ProjectHourOptions(admin.ModelAdmin):
     def get_list_filter(self, request):
         filters = [
             ProjectTypeFilter,
-            "tpm",
+            TPMProjectFilter,
             ProjectFilter,
             "project__client__payment_method",
             ProjectClientFilter,
