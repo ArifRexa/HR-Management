@@ -105,7 +105,7 @@ class ProjectHourAdmin(
         ("Standard info", {"fields": ("hour_type", "project", "date", "hours")}),
         (
             "Administration Process",
-            {"fields": ("status",)},
+            {"fields": ("tpm", "status")},
         ),
     )
     form = ProjectHourAdminForm
@@ -164,6 +164,12 @@ class ProjectHourAdmin(
         """
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
+
+        employee_project = EmployeeProject.objects.filter(
+            employee__is_tpm=True, project=obj.project
+        )
+        if not obj.tpm and employee_project.exists():
+            obj.tpm = employee_project.first().employee
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
 
