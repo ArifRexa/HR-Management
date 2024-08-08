@@ -375,25 +375,32 @@ class SalarySheetRepository:
         @return number:
         """
 
+
+        if (
+            employee.manager
+            or employee.lead
+        ):
+            project_hours = employee.projecthour_set.filter(
+                date__month=salary_sheet.date.month,
+                date__year=salary_sheet.date.year,
+                payable=True,
+            ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+
+            # Hour Bonus Amount Calculation
+            project_hours_amount = project_hours * 10
+
+            return project_hours_amount
+        
+        
         project_hours = employee.employeeprojecthour_set.filter(
             project_hour__date__month=salary_sheet.date.month,
             project_hour__date__year=salary_sheet.date.year,
         ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-
-        # if (
-        #     employee.manager
-        #     or employee.lead
-        # ):
-        project_hours += employee.projecthour_set.filter(
-            date__month=salary_sheet.date.month,
-            date__year=salary_sheet.date.year,
-            payable=True,
-        ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-
-        # Hour Bonus Amount Calculation
+         # Hour Bonus Amount Calculation
         project_hours_amount = project_hours * 10
 
         return project_hours_amount
+    
 
     def __calculate_code_quality_bonus(
         self, salary_sheet: SalarySheet, employee: Employee
