@@ -17,6 +17,7 @@ class ServicePage(TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     sub_title = models.TextField()
+    menu_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Menu Title")
     # image = models.ImageField(upload_to="service_page_image")
     banner_query = models.CharField(max_length=255)
     development_services_title = models.CharField(max_length=255, verbose_name="Title")
