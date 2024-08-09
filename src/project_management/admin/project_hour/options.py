@@ -10,6 +10,7 @@ from django.utils.safestring import mark_safe
 
 # from networkx import project
 from django.db.models import Sum
+from employee.models.employee import EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
 from project_management.models import ProjectHour
 from employee.models import Employee
@@ -153,7 +154,7 @@ class ProjectClientFilter(admin.SimpleListFilter):
 
 class TPMProjectFilter(admin.SimpleListFilter):
     title = "TPM"
-    parameter_name = "project_id__in"
+    parameter_name = "tpm_id__exact"
 
     def lookups(self, request, model_admin):
         employees = (
@@ -172,16 +173,20 @@ class TPMProjectFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        employee_project = EmployeeProject.objects.filter(
-            employee__id__exact=self.value()
-        )
-        project_list = (
-            employee_project.first().project.values_list("id", flat=True)
-            if employee_project.exists()
-            else []
-        )
+        tpm_project = EmployeeUnderTPM.objects.filter(
+            tpm__id__exact=self.value(),
+        ).values_list("project_id", flat=True).distinct()
+        # employee_project = EmployeeProject.objects.filter(
+        #     employee__id__exact=self.value()
+        # )
+        # project_list = (
+        #     employee_project.first().project.values_list("id", flat=True)
+        #     if employee_project.exists()
+        #     else []
+        # )
         if self.value():
-            return queryset.filter(project_id__in=project_list)
+            return queryset.filter(project_id__in=tpm_project)
+        return queryset
 
 
 class ProjectHourOptions(admin.ModelAdmin):
