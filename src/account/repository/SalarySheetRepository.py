@@ -54,13 +54,20 @@ class EmployeeTaxLoanRepository:
         tax = self.calculate_income_tax(taxable_income)
         print("tax", tax)
         print("investment rebate", self.get_investment_rebate(invest_amount=500000))
-        if rebate:=self.get_investment_rebate(invest_amount=500000) > 0:
+        rebate = self.get_investment_rebate(invest_amount=500000)
+        if rebate > 0:
             tax -= rebate
-        if vehicle_or_other_paid_tax:
+            print("rebate after tax", tax)
+        if vehicle_or_other_paid_tax and tax < vehicle_or_other_paid_tax:
+            print("vehicle or other paid tax", vehicle_or_other_paid_tax, tax)
+            return 0
+        elif vehicle_or_other_paid_tax and tax > vehicle_or_other_paid_tax:
+            print("vehicle or other paid tax", vehicle_or_other_paid_tax, tax)
             tax -= vehicle_or_other_paid_tax
+            return math.ceil(tax / 12)
 
         print("final tax", tax)
-        yearly_tax = 5000 if tax >= 0 and tax <= 5000 else tax
+        yearly_tax = 5000 if tax <= 5000 else tax
         return math.ceil(yearly_tax / 12)
 
     def calculate_income_tax(self, income):
@@ -96,7 +103,9 @@ class EmployeeTaxLoanRepository:
         Calculate yearly gross income
         gross_income = monthly_gross * 12 + 2 * festival_bonus
         """
-        gross_income = (self.monthly_pay_amount * 12) + 2 * (self.get_festival_bonus())
+        festival_bonus = self.monthly_pay_amount * 0.55
+        # gross_income = (self.monthly_pay_amount * 12) + 2 * (self.get_festival_bonus())
+        gross_income = (self.monthly_pay_amount * 12) + 2 * festival_bonus
         return gross_income
 
     def get_exemption(self):
