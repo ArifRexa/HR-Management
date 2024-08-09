@@ -420,14 +420,14 @@ class Employee(TimeStampMixin, AuthorMixin):
             available_leave = integer_part + 0.50
             return available_leave
         
-    @property
     def get_last_four_weeks_totals(self):
-        from project_management.models import EmployeeProjectHour  # Adjust the import path if necessary
+        
+        from project_management.models import EmployeeProjectHour 
         today = timezone.now().date()
 
-        # Calculate the most recent Friday
-        days_since_friday = (today.weekday() - 4) % 7
-        most_recent_friday = today - timedelta(days=days_since_friday)
+        # Calculate the most recent Thursday
+        days_since_thursday = (today.weekday() - 3) % 7
+        most_recent_thursday = today - timedelta(days=days_since_thursday)
 
         weekly_totals = []
         total_sum = 0.0  # Initialize total sum of hours
@@ -437,8 +437,8 @@ class Employee(TimeStampMixin, AuthorMixin):
 
         # Calculate the total hours for each of the last four weeks
         for i in range(4):
-            start_of_range = most_recent_friday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Saturday)
-            end_of_range = most_recent_friday - timedelta(weeks=i)  # End of the week (Friday)
+            start_of_range = most_recent_thursday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Friday)
+            end_of_range = most_recent_thursday - timedelta(weeks=i)  # End of the week (Thursday)
 
             weekly_total = EmployeeProjectHour.objects.filter(
                 employee=self,
