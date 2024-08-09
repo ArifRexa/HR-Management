@@ -9,6 +9,7 @@ from employee.models import (
     EmployeeSkill,
     EmployeeExpertTech,
 )
+from project_management.admin import client_feedback
 from project_management.models import (
     Project,
     Client,
@@ -696,10 +697,12 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
     client_logo = serializers.ImageField(source="logo", read_only=True)
     feedback = serializers.SerializerMethodField()
     country = serializers.CharField(source="country.name", read_only=True)
+    
+    
 
     class Meta:
         model = Client
-        fields = ("client_name", "client_designation", "client_logo", "company_name", "feedback", "country")
+        fields = ("client_name", "client_designation", "client_logo", "company_name", "feedback", "country","client_feedback")
 
     # def get_client_name(self, obj):
     #     return obj.client.name if obj.client else None
