@@ -79,13 +79,13 @@ class TPMObj:
         total = 0
         for i in self.employees:
             total+=i.monthly_expected_hours or 0
-        return int(total)
+        return (total)
     
     
     
     @property
     def get_weekly_expected_hour(self):
-        return int(self.tpm_expected_hour/4)
+        return (self.tpm_expected_hour/4)
     
 
     def add_employee(self, data: Employee):
@@ -127,7 +127,7 @@ class TPMObj:
             # Map week to index for the last four weeks
             for i, ph in enumerate(last_four_hours):
                 week_index = i
-                weekly_hours[week_index] = int(ph['total_hours'])
+                weekly_hours[week_index] = (ph['total_hours'])
             
             # Store the summed hours in the dictionary using the project ID as the key
             self.last_four_project_hours[project.id] = weekly_hours
