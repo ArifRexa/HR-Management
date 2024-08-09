@@ -56,7 +56,7 @@
 
     <div class="results" >
         <div style="text-align: center;">
-          <b style="font-size: 1em;">All Employees Last 4 Weeks Total: {{ total_expected }} 
+          <b style="font-size: 1em;">All Employees Last 4 Weeks Total: {{ total_expected|floatformat:0 }} 
             ({% if total_actual < total_expected %}<span style="color: red;">{{ total_actual|floatformat:0 }}</span>{% else %}{{ total_actual|floatformat:0 }}{% endif %}) ({{formatted_weekly_sums}})</b>
           <p>Data Presentation: [ Weekly Expected Hour(Last 4 Weeks Hours) || Monthly Expected Hour(Total Last 4 Weeks Hour) ]</p>
           
