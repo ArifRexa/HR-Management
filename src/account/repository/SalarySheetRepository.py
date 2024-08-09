@@ -1,4 +1,5 @@
 import calendar
+import math
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -25,18 +26,43 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 
 
 class EmployeeTaxLoanRepository:
-    def __init__(self, salary_sheet: SalarySheet):
-        self.salary_sheet = salary_sheet
+    __salary_sheet = SalarySheet()
+    __employee_current_salary = SalaryHistory()
 
-    def calculate_tax_loan(self, employee: Employee):
-        taxable_income = self.get_yearly_gross_income(employee) - self.get_exemption()
-        vehicle_or_other_paid_tax = 1090
+    def __init__(self, employee: Employee, date):
+        self.date = date
+        self.salary_date = datetime.strptime(self.date, "%Y-%m-%d").date()
+        self.salary_sheet = self.__salary_sheet
+        self.__salary_sheet, created = SalarySheet.objects.get_or_create(
+            date__month=self.salary_date.month,
+            date__year=self.salary_date.year,
+            defaults={"date": self.salary_date},
+        )
+        self.employee = employee
+        self.__employee_current_salary = employee.salaryhistory_set.filter(
+            active_from__lte=self.__salary_sheet.date.replace(day=1)
+        ).last()
+        self.monthly_pay_amount = self.__employee_current_salary.payable_salary
+
+    def calculate_tax_loan(self):
+        # TODO: calculate investment and vehicle or other paid tax
+        print("gross income", self.get_yearly_gross_income())
+        print("exemption", self.get_exemption())
+        taxable_income = self.get_yearly_gross_income() - self.get_exemption()
+        print("taxable income", taxable_income)
+        vehicle_or_other_paid_tax = 50000
         tax = self.calculate_income_tax(taxable_income)
-        if self.get_investment_rebate() > 0:
-            tax -= self.get_investment_rebate(employee)
+        print("tax", tax)
+        print("investment rebate", self.get_investment_rebate(invest_amount=500000))
+        if rebate:=self.get_investment_rebate(invest_amount=500000) > 0:
+            tax -= rebate
         if vehicle_or_other_paid_tax:
-            pass
-    
+            tax -= vehicle_or_other_paid_tax
+
+        print("final tax", tax)
+        yearly_tax = 5000 if tax >= 0 and tax <= 5000 else tax
+        return math.ceil(yearly_tax / 12)
+
     def calculate_income_tax(self, income):
         # Tax brackets and their corresponding rates
         brackets = [
@@ -44,12 +70,12 @@ class EmployeeTaxLoanRepository:
             (100000, 0.05),
             (400000, 0.10),
             (500000, 0.15),
-            (500000, 0.20)
+            (500000, 0.20),
         ]
-        
+
         # Start with no tax
         tax = 0
-        
+
         for bracket, rate in brackets:
             if income > bracket:
                 tax += bracket * rate
@@ -57,38 +83,31 @@ class EmployeeTaxLoanRepository:
             else:
                 tax += income * rate
                 return tax
-        
+            print("tax for", tax, bracket, rate, income)
+
         # If there's any remaining income above the last bracket
-        tax += income * 0.25
-        
+        if income:
+            tax += income * 0.25
+
         return tax
 
-    def get_yearly_gross_income(self, employee: Employee):
+    def get_yearly_gross_income(self):
         """
         Calculate yearly gross income
         gross_income = monthly_gross * 12 + 2 * festival_bonus
         """
-        employee_salary = EmployeeSalary.objects.filter(
-            employee=employee, salary_sheet=self.salary_sheet
-        )
-        gross_income = 0
-        if employee_salary := EmployeeSalary.objects.filter(
-            employee=employee, salary_sheet=self.salary_sheet
-        ):
-            last_salary = employee_salary.last()
-            gross_income = (last_salary.gross_amount * 12) + 2 * (
-                self.get_festival_bonus(employee, True)
-            )
+        gross_income = (self.monthly_pay_amount * 12) + 2 * (self.get_festival_bonus())
         return gross_income
-    
+
     def get_exemption(self):
+        print(self.get_yearly_gross_income())
         one_third = self.get_yearly_gross_income() / 3
         return min(one_third, 450000)
 
     def get_yearly_taxable_income(self, employee: Employee):
         pass
 
-    def get_festival_bonus(self, employee: Employee, festival_bonus: bool):
+    def get_festival_bonus(self):
         """Calculate festival bonus
 
         If this month has a festival bonus and if the employee has joined more than
@@ -109,118 +128,120 @@ class EmployeeTaxLoanRepository:
         @param employee: Employee object
         @return number: Festival bonus amount
         """
-        if festival_bonus:
-            # Determine the date for the previous and new policy cutoff
-            previous_policy_cutoff = datetime(2024, 1, 1).date()
-            new_policy_cutoff = self.__salary_sheet.date
+        # if festival_bonus:
+        # Determine the date for the previous and new policy cutoff
+        previous_policy_cutoff = datetime(2024, 1, 1).date()
+        new_policy_cutoff = self.__salary_sheet.date
 
-            if employee.joining_date < previous_policy_cutoff:
-                if employee.permanent_date:
-                    # Apply previous policy
-                    dtdelta = employee.joining_date + timedelta(days=180)
-                    seventyFivePercent = employee.joining_date + timedelta(days=150)
-                    fiftyPercent = employee.joining_date + timedelta(days=120)
-                    twinteeFivePercent = employee.joining_date + timedelta(days=90)
-                    tenPercent = employee.joining_date + timedelta(days=60)
-                    fivePercet = employee.joining_date + timedelta(days=30)
+        if self.employee.joining_date < previous_policy_cutoff:
+            if self.employee.permanent_date:
+                # Apply previous policy
+                dtdelta = self.employee.joining_date + timedelta(days=180)
+                seventyFivePercent = self.employee.joining_date + timedelta(days=150)
+                fiftyPercent = self.employee.joining_date + timedelta(days=120)
+                twinteeFivePercent = self.employee.joining_date + timedelta(days=90)
+                tenPercent = self.employee.joining_date + timedelta(days=60)
+                fivePercet = self.employee.joining_date + timedelta(days=30)
 
-                    basic_salary = (
-                        self.__employee_current_salary.payable_salary * 55
-                    ) / 100
+                basic_salary = (
+                    self.__employee_current_salary.payable_salary * 55
+                ) / 100
 
-                    if dtdelta < new_policy_cutoff:
-                        return basic_salary
+                if dtdelta < new_policy_cutoff:
+                    return basic_salary
 
-                    elif seventyFivePercent <= new_policy_cutoff:
-                        return round((basic_salary * 75) / 100, 2)
+                elif seventyFivePercent <= new_policy_cutoff:
+                    return round((basic_salary * 75) / 100, 2)
 
-                    elif fiftyPercent <= new_policy_cutoff:
-                        return round((basic_salary * 50) / 100, 2)
+                elif fiftyPercent <= new_policy_cutoff:
+                    return round((basic_salary * 50) / 100, 2)
 
-                    elif twinteeFivePercent <= new_policy_cutoff:
-                        return round((basic_salary * 25) / 100, 2)
+                elif twinteeFivePercent <= new_policy_cutoff:
+                    return round((basic_salary * 25) / 100, 2)
 
-                    elif tenPercent <= new_policy_cutoff:
-                        return round((basic_salary * 10) / 100, 2)
+                elif tenPercent <= new_policy_cutoff:
+                    return round((basic_salary * 10) / 100, 2)
 
-                    elif fivePercet <= new_policy_cutoff:
-                        return round((basic_salary * 5) / 100, 2)
-                else:
-                    return 0
-
+                elif fivePercet <= new_policy_cutoff:
+                    return round((basic_salary * 5) / 100, 2)
             else:
-                if employee.permanent_date:
-                    joining_date = employee.joining_date
-                    festival_bonus_date = self.__salary_sheet.date
+                return 0
 
-                    # Calculate the difference in years using relativedelta
-                    # full = employee.joining_date + timedelta(days=360)
-                    # ninety_percent = employee.joining_date + timedelta(days=330)
-                    # eighty_percent = employee.joining_date + timedelta(days=270)
-                    # sixty_percent = employee.joining_date + timedelta(days=210)
-                    # fourty_percent = employee.joining_date + timedelta(days=150)
-                    # twintee_percent = employee.joining_date + timedelta(days=90)
+        else:
+            if self.employee.permanent_date:
+                joining_date = self.employee.joining_date
+                festival_bonus_date = self.__salary_sheet.date
 
-                    delta = relativedelta(festival_bonus_date, joining_date)
+                # Calculate the difference in years using relativedelta
+                # full = employee.joining_date + timedelta(days=360)
+                # ninety_percent = employee.joining_date + timedelta(days=330)
+                # eighty_percent = employee.joining_date + timedelta(days=270)
+                # sixty_percent = employee.joining_date + timedelta(days=210)
+                # fourty_percent = employee.joining_date + timedelta(days=150)
+                # twintee_percent = employee.joining_date + timedelta(days=90)
 
-                    # Calculate the total months since joining
-                    months_since_joining = delta.years * 12 + delta.months
-                    days_since_joining = (
-                        (delta.years * 12 + delta.months) * 30
-                    ) + delta.days
-                    print(employee, months_since_joining)
+                delta = relativedelta(festival_bonus_date, joining_date)
 
-                    basic_salary = (
-                        self.__employee_current_salary.payable_salary * 55
-                    ) / 100
+                # Calculate the total months since joining
+                months_since_joining = delta.years * 12 + delta.months
+                days_since_joining = (
+                    (delta.years * 12 + delta.months) * 30
+                ) + delta.days
+                print(self.employee, months_since_joining)
 
-                    if days_since_joining < 90:
-                        return 0
-                    elif days_since_joining >= 90 and days_since_joining < 150:
-                        return round((basic_salary * 20) / 100, 2)
-                    elif days_since_joining >= 150 and days_since_joining < 210:
-                        return round((basic_salary * 40) / 100, 2)
-                    elif days_since_joining >= 210 and days_since_joining < 270:
-                        return round((basic_salary * 60) / 100, 2)
-                    elif days_since_joining >= 270 and days_since_joining < 330:
-                        return round((basic_salary * 80) / 100, 2)
-                    elif days_since_joining >= 330 and days_since_joining < 360:
-                        return round((basic_salary * 90) / 100, 2)
-                    else:
-                        return basic_salary
+                basic_salary = (
+                    self.__employee_current_salary.payable_salary * 55
+                ) / 100
 
-                    # if festival_bonus_date < twintee_percent:
-                    #     return 0
-                    # elif twintee_percent >= festival_bonus_date  and fourty_percent < festival_bonus_date:
-                    #     return round((basic_salary * 20) / 100, 2)
-                    # elif fourty_percent >= festival_bonus_date  and sixty_percent < festival_bonus_date:
-                    #     return round((basic_salary * 40) / 100, 2)
-                    # elif sixty_percent >= festival_bonus_date  and eighty_percent < festival_bonus_date:
-                    #     return round((basic_salary * 60) / 100, 2)
-                    # elif eighty_percent >= new_policy_cutoff  and ninety_percent < festival_bonus_date:
-                    #     return round((basic_salary * 80) / 100, 2)
-                    # elif ninety_percent >= festival_bonus_date:
-                    #     return round((basic_salary * 90) / 100, 2)
-                    # elif full >= festival_bonus_date:
-                    #     return round((basic_salary * 100) / 100, 2)
-                else:
+                if days_since_joining < 90:
                     return 0
+                elif days_since_joining >= 90 and days_since_joining < 150:
+                    return round((basic_salary * 20) / 100, 2)
+                elif days_since_joining >= 150 and days_since_joining < 210:
+                    return round((basic_salary * 40) / 100, 2)
+                elif days_since_joining >= 210 and days_since_joining < 270:
+                    return round((basic_salary * 60) / 100, 2)
+                elif days_since_joining >= 270 and days_since_joining < 330:
+                    return round((basic_salary * 80) / 100, 2)
+                elif days_since_joining >= 330 and days_since_joining < 360:
+                    return round((basic_salary * 90) / 100, 2)
+                else:
+                    return basic_salary
+
+                # if festival_bonus_date < twintee_percent:
+                #     return 0
+                # elif twintee_percent >= festival_bonus_date  and fourty_percent < festival_bonus_date:
+                #     return round((basic_salary * 20) / 100, 2)
+                # elif fourty_percent >= festival_bonus_date  and sixty_percent < festival_bonus_date:
+                #     return round((basic_salary * 40) / 100, 2)
+                # elif sixty_percent >= festival_bonus_date  and eighty_percent < festival_bonus_date:
+                #     return round((basic_salary * 60) / 100, 2)
+                # elif eighty_percent >= new_policy_cutoff  and ninety_percent < festival_bonus_date:
+                #     return round((basic_salary * 80) / 100, 2)
+                # elif ninety_percent >= festival_bonus_date:
+                #     return round((basic_salary * 90) / 100, 2)
+                # elif full >= festival_bonus_date:
+                #     return round((basic_salary * 100) / 100, 2)
+            else:
+                return 0
 
         return 0
 
     def get_yearly_tax(self, employee: Employee):
         pass
 
-    def get_investment_rebate(self, employee: Employee, invest_amount: float=0.00):
+    def get_investment_rebate(self, invest_amount: float = 0.00):
         """
-        A. 15% of Actual Investment					
-        B. 3% of net taxable income*					
-        C. Maximum Limit = 1000000		
-        Allowable investment Allowance (Lower of A, B & C)					
+        A. 15% of Actual Investment
+        B. 3% of net taxable income*
+        C. Maximum Limit = 1000000
+        Allowable investment Allowance (Lower of A, B & C)
         """
-        percentage_actual_invest = invest_amount*0.15
-        percentage_net_taxable_income = (self.get_yearly_gross_income(employee) - self.get_exemption())*0.03
-        return min([percentage_actual_invest, percentage_net_taxable_income, 1000000])        
+        percentage_actual_invest = invest_amount * 0.15
+        percentage_net_taxable_income = (
+            self.get_yearly_gross_income() - self.get_exemption()
+        ) * 0.03
+        return min([percentage_actual_invest, percentage_net_taxable_income, 1000000])
 
     def get_tax_for_vehicle(self, employee: Employee):
         pass
@@ -329,13 +350,17 @@ class SalarySheetRepository:
             if not SalarySheetTaxLoan.objects.filter(
                 salarysheet=salary_sheet, loan__employee=employee
             ):
+                employee_tax_loan = EmployeeTaxLoanRepository(
+                    employee=employee, date=self.date
+                )
+                monthly_tax = employee_tax_loan.calculate_tax_loan()
                 loan_instance = Loan.objects.create(
                     employee=employee,
                     witness=Employee.objects.filter(
                         id=30
                     ).first(),  # You might need to adjust this based on your requirements
-                    loan_amount=417,  # Set the loan amount
-                    emi=417,  # Set the EMI amount
+                    loan_amount=monthly_tax,  # Set the loan amount
+                    emi=monthly_tax,  # Set the EMI amount
                     effective_date=timezone.now(),
                     start_date=salary_sheet.date,
                     end_date=salary_sheet.date,
