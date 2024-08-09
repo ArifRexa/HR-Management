@@ -15,6 +15,7 @@ from django.template.loader import get_template
 from django.utils.html import format_html
 from config.admin import ExportCsvMixin, RecentEdit
 from config.admin.utils import simple_request_filter
+from employee.models.employee import EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
@@ -117,7 +118,14 @@ class ProjectHourAdmin(
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        qs = self.get_queryset(request).filter(**simple_request_filter(request))
+        filter_data = simple_request_filter(request)
+        if "tpm_id__exact" in request.GET:
+            tpm_project = EmployeeUnderTPM.objects.filter(
+                tpm__id__exact=request.GET.get("tpm_id__exact", 0),
+            ).values_list("project_id", flat=True).distinct()
+            filter_data.pop("tpm_id__exact")
+            filter_data["project_id__in"] = list(tpm_project)
+        qs = self.get_queryset(request).filter(**filter_data)
         if not request.user.is_superuser:
             qs.filter(manager__id__exact=request.user.employee.id)
         return qs.aggregate(tot=Sum("hours"))["tot"]
