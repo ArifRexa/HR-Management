@@ -8,3 +8,4 @@ from .invoice import admin
 from .project_commission import ProjectCommissionAdmin
 
 from account.admin.journal import MonthlyJournalAdmin
+from account.admin.tax import InvestmentAllowanceAdmin
