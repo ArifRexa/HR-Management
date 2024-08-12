@@ -24,7 +24,7 @@ function updateProjectHour(project_hour_id=null){
         update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
         update_id_input.value = hour[i].id;
         console.log(hour[i].updates_json);
-        hour_input.value = hour[i].hours;
+        // hour_input.value = hour[i].hours;
         if (hour[i].updates_json){
             console.log("json", hour[i]);
             let v = ""
@@ -42,10 +42,10 @@ function updateProjectHour(project_hour_id=null){
         // update_input.value = update_data[0][0];
         // console.log("hour", hour_input.value)
 
-        var optionNode = document.createElement("option");
-        optionNode.value = hour[i].employee_id;
-        optionNode.textContent = hour[i].full_name;
-        employee_select.appendChild(optionNode);
+        // var optionNode = document.createElement("option");
+        // optionNode.value = hour[i].employee_id;
+        // optionNode.textContent = hour[i].full_name;
+        // employee_select.appendChild(optionNode);
         
         // {% comment %} employee_select.value = hours[i].id;  {% endcomment %}
         // {% comment %} console.log(hours[i].id, i); {% endcomment %}
@@ -59,7 +59,7 @@ function updateProjectHour(project_hour_id=null){
         // add_btn.click();
     }
 
-    document.querySelector("#id_hours").value = data.total_project_hours;
+    // document.querySelector("#id_hours").value = data.total_project_hours;
     generate_btn = document.querySelector("#generate-btn");
     // generate_btn.disabled = true;
     // console.log(generate_btn)
