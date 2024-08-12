@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 
 from account.models import Income
+from employee.models.employee import EmployeeUnderTPM
 from project_management.admin.graph.admin import ExtraUrl
 
 
@@ -35,9 +36,12 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
     @admin.action()
     def approved_project_hour_status(self, request, queryset):
         if request.user.employee.is_tpm:
+            tpm_project = EmployeeUnderTPM.objects.filter(
+            tpm__id__exact=request.user.employee.id,
+        ).values_list("project_id", flat=True).distinct()
+            queryset.filter(project_id__in=tpm_project).update(status="approved")
+        elif request.user.is_superuser:
             queryset.update(status="approved")
-        else:
-            self.message_user(request, "You don't have permission.")
 
     @admin.action()
     def disable_payable_status(self, request, queryset):

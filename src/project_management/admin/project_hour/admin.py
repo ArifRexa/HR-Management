@@ -80,13 +80,17 @@ class ProjectHourAdminForm(forms.ModelForm):
                                 "date": "Project Hour for this date with this project and manager already exists",
                             }
                         )
-
-        if self.request and self.request.user.employee.is_tpm:
-            if not EmployeeProject.objects.filter(
-                employee=self.request.user.employee, project=data.get("project")
-            ).exists():
-                if not self.request.path_info[-5:-1] == "/add":
-                    raise ValidationError("You are not assign TPM for this project")
+        path_info_list = [item for item in self.request.path_info.split("/") if item != '' ]
+        if path_info_list[-1] == "/change":
+            if self.request and not self.request.user.is_superuser:
+                
+                if (
+                    self.request.user.employee.is_tpm
+                    and not EmployeeUnderTPM.objects.filter(
+                        tpm=self.request.user.employee, project=data.get("project")
+                    ).exists()
+                ):
+                   raise ValidationError("You are not assign TPM for this project")
         return data
 
 
@@ -120,9 +124,13 @@ class ProjectHourAdmin(
     def get_total_hour(self, request):
         filter_data = simple_request_filter(request)
         if "tpm_id__exact" in request.GET:
-            tpm_project = EmployeeUnderTPM.objects.filter(
-                tpm__id__exact=request.GET.get("tpm_id__exact", 0),
-            ).values_list("project_id", flat=True).distinct()
+            tpm_project = (
+                EmployeeUnderTPM.objects.filter(
+                    tpm__id__exact=request.GET.get("tpm_id__exact", 0),
+                )
+                .values_list("project_id", flat=True)
+                .distinct()
+            )
             filter_data.pop("tpm_id__exact")
             filter_data["project_id__in"] = list(tpm_project)
         qs = self.get_queryset(request).filter(**filter_data)
@@ -173,20 +181,28 @@ class ProjectHourAdmin(
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
 
-        employee_project = EmployeeProject.objects.filter(
-            employee__is_tpm=True, project=obj.project
+        tpm_project = EmployeeUnderTPM.objects.filter(
+            project=obj.project
         )
-        if not obj.tpm and employee_project.exists():
-            obj.tpm = employee_project.first().employee
+        if not obj.tpm and tpm_project.exists():
+            obj.tpm = tpm_project.first().tpm
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
 
     def get_fieldsets(self, request, obj):
         fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
+        
         if not request.user.has_perm("project_management.weekly_project_hours_approve"):
             return (fieldsets[0],)
         if not request.user.employee.is_tpm:
             return (fieldsets[0],)
+        if obj:
+            tpm_project = EmployeeUnderTPM.objects.filter(
+                tpm__id__exact=request.user.employee.id,
+                project=obj.project,
+            )
+            if not tpm_project.exists():
+                return (fieldsets[0],)
 
         return fieldsets
 
