@@ -216,6 +216,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             TPMProjectFilter,
             ProjectFilter,
             "project__client__payment_method",
+            "project__client__invoice_type",
             ProjectClientFilter,
             "manager",
         ]

@@ -655,6 +655,9 @@ class LateAttendanceFine(models.Model):
         return f"{self.employee.user.username} - {self.month}/{self.year}"
 
 
+
+
+
 class EmployeeUnderTPM(models.Model):
     employee = models.ForeignKey(
         Employee,
@@ -684,10 +687,29 @@ class EmployeeUnderTPM(models.Model):
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
 
-class TPMComplain(EmployeeUnderTPM):
+class TPMComplain(models.Model):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="employees",
+        limit_choices_to={"active": True, "is_tpm": False, },null=True,blank=True
+    )
+    tpm = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"is_tpm": True, "active": True},
+        verbose_name="TPM",null=True,blank=True
+    )
+    project = models.ForeignKey(
+        "project_management.Project",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        verbose_name="Project",
+        null=True,blank=True
+    )
     STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
-    complain = models.TextField()
-    management_feedback = models.TextField()
+    complain = models.TextField(null=True,blank=True)
+    management_feedback = models.TextField(null=True,blank=True)
     status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
 
     def __str__(self):
