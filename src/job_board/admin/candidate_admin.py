@@ -99,7 +99,7 @@ class CandidateAdmin(admin.ModelAdmin):
     def note(self, obj: Candidate):
         candidate_job = obj.candidatejob_set.last()
         if candidate_job:
-            return format_html(linebreaks(candidate_job.additional_message))
+            return format_html(linebreaks(candidate_job.additional_message.replace("{","_").replace("}", "_") if candidate_job.additional_message is not None else None))
 
     @admin.display(description='Send Default Promotional SMS')
     def send_default_sms(self, request, queryset):
