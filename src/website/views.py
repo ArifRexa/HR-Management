@@ -27,6 +27,7 @@ from website.models import (
     Award,
     Gallery,
     IndustryWeServe,
+    LifeAtMediusware,
     Service,
     Category,
     Blog,
@@ -46,6 +47,7 @@ from website.serializers import (
     ClientSerializer,
     GallerySerializer,
     IndustryWeServeSerializer,
+    LifeAtMediuswareSerializer,
     ProjectListSerializer,
     ServiceSerializer,
     ProjectSerializer,
@@ -602,6 +604,17 @@ class GalleryListView(APIView):
 
     def get(self, request, *args, **kwargs):
         queryset = Gallery.objects.all()
+        serializer = self.serializer_class(queryset, many=True)
+        images = [
+            request.build_absolute_uri(image["image"]) for image in serializer.data
+        ]
+        return Response({"results": images})
+
+class LifeAtMediuswareListView(APIView):
+    serializer_class = LifeAtMediuswareSerializer
+
+    def get(self, request, *args, **kwargs):
+        queryset = LifeAtMediusware.objects.all()
         serializer = self.serializer_class(queryset, many=True)
         images = [
             request.build_absolute_uri(image["image"]) for image in serializer.data
