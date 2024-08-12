@@ -20,12 +20,10 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        print(actions)
-        print(actions["export_as_csv"])
         if not request.user.is_superuser:
             del actions["enable_payable_status"]
             del actions["disable_payable_status"]
-        if not request.user.employee.is_tpm:
+        if not request.user.is_superuser and not request.user.employee.is_tpm:
             del actions["approved_project_hour_status"]
         return actions
 
