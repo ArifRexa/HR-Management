@@ -29,6 +29,7 @@ from employee.models.employee import (
     EmployeeNOC,
     Observation,
     LateAttendanceFine,
+    TPMComplain,
 )
 from employee.models.employee_activity import EmployeeProject
 from .filter import MonthFilter
@@ -513,3 +514,22 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
+
+@admin.register(TPMComplain)
+class TPMComplainAdmin(admin.ModelAdmin):
+    list_filter = ('tpm', 'employee', 'status')
+    list_display = ('employee', 'tpm', 'status', 'complain', 'management_feedback')
+    fields = ('tpm', 'employee', 'complain', 'management_feedback', 'status',)
+    autocomplete_fields = ('employee',)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('employee', 'tpm')
+
+    def employee(self, obj):
+        return obj.employee.full_name
+
+    def tpm(self, obj):
+        return obj.tpm.full_name
+
+ 
