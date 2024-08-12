@@ -14,127 +14,65 @@ from django.db.models import F, ExpressionWrapper, DecimalField, Q
 from datetime import date, timedelta,datetime
 from itertools import zip_longest
 
+def generate_voucher_pdf(voucher, voucher_type, template_name):
+    expenses = voucher.expenses.values('expanse_group__account_code', 'expanse_group__title') \
+                                .annotate(expense_amount=Sum('amount')) \
+                                .order_by('expanse_group__account_code') \
+                                .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount') \
+                                .exclude(add_to_balance_sheet=False)
+
+    # Generate voucher number
+    id_list = []
+    get_current_month_voucher = AccountJournal.objects.filter(type='daily') \
+        .order_by('date').values_list('id')
+
+    for d in get_current_month_voucher:
+        id_list.append(int(d[0]))
+    
+    index_of_id = int(id_list.index(voucher.id)) + 1
+
+    date_obj = voucher.date
+    month = date_obj.strftime("%m")
+    year = date_obj.strftime("%y")
+    pv_no = f"{month}{year}/{voucher_type}00{index_of_id}"
+
+    # Get all notes for daily expense
+    expense_note = ''
+    get_expense_notes = Expense.objects.filter(date=voucher.date)
+    
+    for index, note in enumerate(get_expense_notes):
+        expense_note += note.note
+        if index < len(get_expense_notes) - 1:
+            expense_note += ', '
+
+    # Render the HTML template
+    template = get_template(template_name)
+    context = {'voucher': voucher, 'expenses': expenses, 'pv_no': pv_no, 'expense_note': expense_note}
+    html_content = template.render(context)
+
+    # Generate PDF
+    html = HTML(string=html_content)
+    pdf_file = html.write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    filename = str(timezone.now())
+    response['Content-Disposition'] = f'attachment; filename="{voucher_type.lower()}-voucher-{filename}.pdf"'
+
+    return response
+
 
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")
 def payment_voucher(request, id):
     voucher = get_object_or_404(AccountJournal, id=id)
-    expenses = voucher.expenses.values('expanse_group__account_code', 'expanse_group__title') \
-                                .annotate(expense_amount=Sum('amount')) \
-                                .order_by('expanse_group__account_code') \
-                            .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount').exclude(add_to_balance_sheet=False)
-    
-
-    #generate pv id / pv no
-    id_list = []
-    current_month = datetime.now().month
-    get_current_month_voucher = AccountJournal.objects.filter(date__month= current_month,type='daily')\
-    .order_by('date').values_list('id')
-
-    for d in get_current_month_voucher:
-        id_list.append(int(d[0]))
-    index_of_id = int(id_list.index(id)) + 1
-
-    date_in_str = str(voucher.date) 
-    date_obj = datetime.strptime(date_in_str, "%Y-%m-%d")
-    month = date_obj.strftime("%m")
-    year = date_obj.strftime("%y")
-    pv_no = f"{month}{year}/P00{index_of_id}"
-
-
-    #get all notes for daily expense
-    expense_note = ''
-
-    # Query Expense objects for the given date and concatenate notes
-    get_expense_notes = Expense.objects.filter(date=voucher.date)
-
-    for index, note in enumerate(get_expense_notes):
-        expense_note += note.note
-        # Add comma if it's not the last note
-        if index < len(get_expense_notes) - 1:
-            expense_note += ', '
-
-    # Print the concatenated notes
-
-    template = get_template('pdf/payment_voucher.html')
-    # get the context data
-    context = {'voucher': voucher, 'expenses': expenses,'pv_no':pv_no,'expense_note':expense_note}
-    
-    # Render the html template with the context data.
-    html_content = template.render(context)
-
-    # Create weasyprint object from the html
-    html = HTML(string=html_content)
-
-    # generate pdf
-    pdf_file = html.write_pdf()
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    filename = str(timezone.now())
-    response['Content-Disposition'] = f'attachment; filename="payment-voucher-{filename}.pdf"'
-    
-    return response
-
-
+    return generate_voucher_pdf(voucher, 'PV', 'pdf/payment_voucher.html')
 
 
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")
 def journal_voucher(request, id):
     voucher = get_object_or_404(AccountJournal, id=id)
-    expenses = voucher.expenses.values('expanse_group__account_code', 'expanse_group__title') \
-                                .annotate(expense_amount=Sum('amount')) \
-                                .order_by('expanse_group__account_code') \
-                            .values('expanse_group__account_code', 'expanse_group__title', 'expense_amount').exclude(add_to_balance_sheet=False)
-    
+    return generate_voucher_pdf(voucher, 'JV', 'pdf/journal_voucher.html')
 
-    #generate pv id / pv no
-    id_list = []
-    current_month = datetime.now().month
-    get_current_month_voucher = AccountJournal.objects.filter(date__month= current_month,type='daily')\
-    .order_by('date').values_list('id')
-
-    for d in get_current_month_voucher:
-        id_list.append(int(d[0]))
-    index_of_id = int(id_list.index(id)) + 1
-
-    date_in_str = str(voucher.date) 
-    date_obj = datetime.strptime(date_in_str, "%Y-%m-%d")
-    month = date_obj.strftime("%m")
-    year = date_obj.strftime("%y")
-    pv_no = f"{month}{year}/JV00{index_of_id}"
-
-
-    #get all notes for daily expense
-    expense_note = ''
-
-    # Query Expense objects for the given date and concatenate notes
-    get_expense_notes = Expense.objects.filter(date=voucher.date)
-
-    for index, note in enumerate(get_expense_notes):
-        expense_note += note.note
-        # Add comma if it's not the last note
-        if index < len(get_expense_notes) - 1:
-            expense_note += ', '
-
-    # Print the concatenated notes
-
-    template = get_template('pdf/journal_voucher.html')
-    # get the context data
-    context = {'voucher': voucher, 'expenses': expenses,'pv_no':pv_no,'expense_note':expense_note}
-    
-    # Render the html template with the context data.
-    html_content = template.render(context)
-
-    # Create weasyprint object from the html
-    html = HTML(string=html_content)
-
-    # generate pdf
-    pdf_file = html.write_pdf()
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    filename = str(timezone.now())
-    response['Content-Disposition'] = f'attachment; filename="journal-voucher-{filename}.pdf"'
-    
-    return response
 
 @require_http_methods(["POST", "GET"])
 @login_required(login_url="/admin/login/")

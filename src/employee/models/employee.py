@@ -2,6 +2,7 @@ from ast import mod
 import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
+from tabnanny import verbose
 import uuid
 import math
 from django.contrib.auth.models import Group, User
@@ -420,14 +421,14 @@ class Employee(TimeStampMixin, AuthorMixin):
             available_leave = integer_part + 0.50
             return available_leave
         
-    @property
     def get_last_four_weeks_totals(self):
-        from project_management.models import EmployeeProjectHour  # Adjust the import path if necessary
+        
+        from project_management.models import EmployeeProjectHour 
         today = timezone.now().date()
 
-        # Calculate the most recent Friday
-        days_since_friday = (today.weekday() - 4) % 7
-        most_recent_friday = today - timedelta(days=days_since_friday)
+        # Calculate the most recent Thursday
+        days_since_thursday = (today.weekday() - 3) % 7
+        most_recent_thursday = today - timedelta(days=days_since_thursday)
 
         weekly_totals = []
         total_sum = 0.0  # Initialize total sum of hours
@@ -437,8 +438,8 @@ class Employee(TimeStampMixin, AuthorMixin):
 
         # Calculate the total hours for each of the last four weeks
         for i in range(4):
-            start_of_range = most_recent_friday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Saturday)
-            end_of_range = most_recent_friday - timedelta(weeks=i)  # End of the week (Friday)
+            start_of_range = most_recent_thursday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Friday)
+            end_of_range = most_recent_thursday - timedelta(weeks=i)  # End of the week (Thursday)
 
             weekly_total = EmployeeProjectHour.objects.filter(
                 employee=self,
@@ -654,6 +655,9 @@ class LateAttendanceFine(models.Model):
         return f"{self.employee.user.username} - {self.month}/{self.year}"
 
 
+
+
+
 class EmployeeUnderTPM(models.Model):
     employee = models.ForeignKey(
         Employee,
@@ -682,3 +686,34 @@ class EmployeeUnderTPM(models.Model):
 
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
+
+class TPMComplain(models.Model):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="employees",
+        limit_choices_to={"active": True, "is_tpm": False, },null=True,blank=True
+    )
+    tpm = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"is_tpm": True, "active": True},
+        verbose_name="TPM",null=True,blank=True
+    )
+    project = models.ForeignKey(
+        "project_management.Project",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        verbose_name="Project",
+        null=True,blank=True
+    )
+    STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+    complain = models.TextField(null=True,blank=True)
+    management_feedback = models.TextField(null=True,blank=True)
+    status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
+
+    def __str__(self):
+        return f"{self.employee.full_name} under tpm: {self.tpm.full_name}"
+    
+    class Meta:
+        verbose_name_plural = "TPM's Complain"

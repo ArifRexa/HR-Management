@@ -5,6 +5,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 
 from account.models import Income
+from employee.models.employee import EmployeeUnderTPM
 from project_management.admin.graph.admin import ExtraUrl
 
 
@@ -14,19 +15,31 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
         "enable_payable_status",
         "disable_payable_status",
         "create_income",
+        "approved_project_hour_status",
     ]
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        print(actions["export_as_csv"])
         if not request.user.is_superuser:
             del actions["enable_payable_status"]
             del actions["disable_payable_status"]
+        if not request.user.is_superuser and not request.user.employee.is_tpm:
+            del actions["approved_project_hour_status"]
         return actions
 
     @admin.action()
     def enable_payable_status(self, request, queryset):
         queryset.update(payable=True)
+
+    @admin.action()
+    def approved_project_hour_status(self, request, queryset):
+        if request.user.employee.is_tpm:
+            tpm_project = EmployeeUnderTPM.objects.filter(
+            tpm__id__exact=request.user.employee.id,
+        ).values_list("project_id", flat=True).distinct()
+            queryset.filter(project_id__in=tpm_project).update(status="approved")
+        elif request.user.is_superuser:
+            queryset.update(status="approved")
 
     @admin.action()
     def disable_payable_status(self, request, queryset):
@@ -64,7 +77,7 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
             convert_rate = Decimal(90.0)
             hourly_rate = project.hourly_rate or 0
             hours = project_hour.hours or 0
-            payment = Decimal(hours) * Decimal(hourly_rate)*convert_rate
+            payment = Decimal(hours) * Decimal(hourly_rate) * convert_rate
             income_object.append(
                 Income(
                     project=project,
@@ -73,8 +86,7 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
                     convert_rate=convert_rate,
                     date=project_hour.date,
                     status="pending",
-                    payment=payment
+                    payment=payment,
                 )
             )
         Income.objects.bulk_create(income_object)
-        

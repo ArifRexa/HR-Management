@@ -1,4 +1,6 @@
+import re
 from typing import Any
+from urllib import request
 from django.contrib import admin
 from django.db import models
 from django import forms
@@ -29,6 +31,7 @@ from employee.models.employee import (
     EmployeeNOC,
     Observation,
     LateAttendanceFine,
+    TPMComplain,
 )
 from employee.models.employee_activity import EmployeeProject
 from .filter import MonthFilter
@@ -513,3 +516,28 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
+
+@admin.register(TPMComplain)
+class TPMComplainAdmin(admin.ModelAdmin):
+    list_filter = ('tpm', 'employee', 'status')
+    list_display = ('employee', 'tpm', 'status', 'complain', 'management_feedback')
+    fields = ('tpm', 'employee','project', 'complain', 'management_feedback', 'status',)
+    autocomplete_fields = ('employee',)
+    readonly_fields = ()
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.employee.is_tpm:
+            return qs.filter(tpm=request.user.employee).select_related('employee', 'tpm')
+        return qs.select_related('employee', 'tpm')
+        
+
+    def employee(self, obj):
+        return obj.employee.full_name
+
+    def tpm(self, obj):
+        return obj.tpm.full_name
+
+    def get_readonly_fields(self, request, obj=None):
+        if request.user.employee.is_tpm:
+            return self.readonly_fields + ('management_feedback','status')
+        return self.readonly_fields
