@@ -142,6 +142,8 @@ class ProjectHourAdmin(
         if key in (
             "project__client__payment_method__id__exact",
             "project__client__id__exact",
+            "project__client__invoice_type__id__exact"
+
         ):
             return True
         return super(ProjectHourAdmin, self).lookup_allowed(key, *args, **kwargs)
