@@ -2,6 +2,7 @@ from ast import mod
 import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
+from tabnanny import verbose
 import uuid
 import math
 from django.contrib.auth.models import Group, User
@@ -682,3 +683,15 @@ class EmployeeUnderTPM(models.Model):
 
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
+
+class TPMComplain(EmployeeUnderTPM):
+    STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+    complain = models.TextField()
+    management_feedback = models.TextField()
+    status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
+
+    def __str__(self):
+        return f"{self.employee.full_name} under tpm: {self.tpm.full_name}"
+    
+    class Meta:
+        verbose_name_plural = "TPM's Complain"
