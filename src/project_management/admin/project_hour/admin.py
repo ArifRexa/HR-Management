@@ -54,8 +54,13 @@ class EmployeeHourAdmin(admin.TabularInline):
 
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
+        
         if obj is not None:
-            if obj.created_at <= three_day_earlier and not request.user.is_superuser:
+            if (
+                obj.created_at <= three_day_earlier
+                and not request.user.is_superuser
+                and not request.user.employee.is_tpm
+            ):
                 return ("hours", "employee")
         return ()
 
@@ -80,17 +85,18 @@ class ProjectHourAdminForm(forms.ModelForm):
                                 "date": "Project Hour for this date with this project and manager already exists",
                             }
                         )
-        path_info_list = [item for item in self.request.path_info.split("/") if item != '' ]
+        path_info_list = [
+            item for item in self.request.path_info.split("/") if item != ""
+        ]
         if path_info_list[-1] == "/change":
             if self.request and not self.request.user.is_superuser:
-                
                 if (
                     self.request.user.employee.is_tpm
                     and not EmployeeUnderTPM.objects.filter(
                         tpm=self.request.user.employee, project=data.get("project")
                     ).exists()
                 ):
-                   raise ValidationError("You are not assign TPM for this project")
+                    raise ValidationError("You are not assign TPM for this project")
         return data
 
 
@@ -183,9 +189,7 @@ class ProjectHourAdmin(
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
 
-        tpm_project = EmployeeUnderTPM.objects.filter(
-            project=obj.project
-        )
+        tpm_project = EmployeeUnderTPM.objects.filter(project=obj.project)
         if not obj.tpm and tpm_project.exists():
             obj.tpm = tpm_project.first().tpm
 
@@ -193,18 +197,18 @@ class ProjectHourAdmin(
 
     def get_fieldsets(self, request, obj):
         fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
-        
-        if not request.user.has_perm("project_management.weekly_project_hours_approve"):
-            return (fieldsets[0],)
+
         if not request.user.employee.is_tpm:
             return (fieldsets[0],)
         if obj:
             tpm_project = EmployeeUnderTPM.objects.filter(
-                tpm__id__exact=request.user.employee.id,
+                tpm__id=request.user.employee.id,
                 project=obj.project,
             )
             if not tpm_project.exists():
                 return (fieldsets[0],)
+        if not request.user.has_perm("project_management.weekly_project_hours_approve"):
+            return (fieldsets[0],)
 
         return fieldsets
 
