@@ -36,6 +36,7 @@ from website.models import (
     BlogFAQ,
     Gallery,
     IndustryWeServe,
+    LifeAtMediusware,
     Service,
     Blog,
     Category,
@@ -772,6 +773,12 @@ class ClientLogoSerializer(serializers.ModelSerializer):
 class GallerySerializer(serializers.ModelSerializer):
     class Meta:
         model = Gallery
+        fields = ["image"]
+
+
+class LifeAtMediuswareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LifeAtMediusware
         fields = ["image"]
 
 
