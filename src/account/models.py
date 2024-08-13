@@ -351,17 +351,23 @@ def delete_related_loans(sender, instance, **kwargs):
     related_salary_sheet_tax_loans.delete()
 
 
-class InvestmentAllowance(TimeStampMixin):
+class TaxDocumentInformation(TimeStampMixin):
     employee = models.ForeignKey(
         Employee,
-        related_name="investment_allowance",
+        related_name="%(class)s",
         on_delete=models.CASCADE,
-        limit_choices_to={"active": True},
+        limit_choices_to={"active": True, "tax_eligible": True},
     )
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Investment Amount", default=0.00
     )
+    approved = models.BooleanField(default=False)
 
+    class Meta:
+        abstract = True
+
+
+class InvestmentAllowance(TaxDocumentInformation):
     def __str__(self):
         return f"{self.employee.full_name} Investment - {self.amount}"
 
@@ -371,3 +377,13 @@ class InvestmentAllowanceAttachment(TimeStampMixin):
         InvestmentAllowance, on_delete=models.CASCADE
     )
     document = models.FileField(upload_to="uploads/investment_allowance/")
+
+
+class VehicleRebate(TaxDocumentInformation):
+    def __str__(self):
+        return f"{self.employee.full_name} Vehicle Tax - {self.amount}"
+
+
+class VehicleRebateAttachment(TimeStampMixin):
+    vehicle_rebate = models.ForeignKey(VehicleRebate, on_delete=models.CASCADE)
+    document = models.FileField(upload_to="uploads/vehicle_rebate/")
