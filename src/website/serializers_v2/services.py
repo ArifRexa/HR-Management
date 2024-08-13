@@ -15,19 +15,22 @@ class ServicePageChildSerializer(serializers.ModelSerializer):
             "title",
             "sub_title",
             "menu_title",
-            "banner_query",
             "slug",
         )
 
 
-class ServicePageSerializer(ServicePageChildSerializer):
-    # class Meta:
-    #     model = ServicePage
-    #     fields = (
-    #         "title",
-    #         "sub_title",
-    #         "slug",
-    #     )
+class ServicePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePage
+        fields = (
+            "title",
+            "sub_title",
+            "menu_title",
+            "banner_query",
+            "feature_image",
+            "icon",
+            "slug",
+        )
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
