@@ -361,14 +361,14 @@ class TaxDocumentInformation(TimeStampMixin):
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Investment Amount", default=0.00
     )
-    approved = models.BooleanField(default=False)
+    # approved = models.BooleanField(default=False)
 
     class Meta:
         abstract = True
         permissions = (
             (
                 "tax_information_approved",
-                "Can Approve Employee Tax Information",
+                "Can Approve Employee Tax Documents",
             ),
         )
 

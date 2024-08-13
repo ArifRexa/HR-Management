@@ -4,8 +4,9 @@ import math
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, DecimalField, Value
 from django.db.models.functions import Coalesce
+
 from django.utils import timezone
 
 from account.models import (
@@ -52,12 +53,14 @@ class EmployeeTaxLoanRepository:
         print("gross income", self.get_yearly_gross_income())
         print("exemption", self.get_exemption())
         taxable_income = self.get_yearly_gross_income() - self.get_exemption()
+        if taxable_income <= 350000:
+            return 0
         print("taxable income", taxable_income)
         vehicle_or_other_paid_tax = self.get_tax_for_vehicle()
         tax = Decimal(self.calculate_income_tax(taxable_income))
         print("tax", tax)
-        print("investment rebate", self.get_investment_rebate(invest_amount=500000))
-        rebate = self.get_investment_rebate(invest_amount=500000)
+        print("investment rebate", self.get_investment_rebate())
+        rebate = self.get_investment_rebate()
         if rebate > 0:
             tax -= Decimal(rebate)
             print("rebate after tax", tax)
@@ -112,7 +115,6 @@ class EmployeeTaxLoanRepository:
         return gross_income
 
     def get_exemption(self):
-        print(self.get_yearly_gross_income())
         one_third = self.get_yearly_gross_income() / 3
         return min(one_third, 450000)
 
@@ -242,7 +244,7 @@ class EmployeeTaxLoanRepository:
     def get_yearly_tax(self, employee: Employee):
         pass
 
-    def get_investment_rebate(self, invest_amount: float = 0.00):
+    def get_investment_rebate(self):
         """
         A. 15% of Actual Investment
         B. 3% of net taxable income*
@@ -250,8 +252,12 @@ class EmployeeTaxLoanRepository:
         Allowable investment Allowance (Lower of A, B & C)
         """
         total_investment = InvestmentAllowance.objects.filter(
-            approved=True, employee=self.employee
-        ).aggregate(total_allowance=Sum("amount"))
+            employee=self.employee
+        ).aggregate(
+            total_allowance=Coalesce(
+                Sum("amount"), Value(0.0), output_field=DecimalField()
+            )
+        )
         percentage_actual_invest = total_investment.get("total_allowance", 0) * Decimal(
             0.15
         )
@@ -262,8 +268,12 @@ class EmployeeTaxLoanRepository:
 
     def get_tax_for_vehicle(self):
         total = VehicleRebate.objects.filter(
-            approved=True, employee=self.employee
-        ).aggregate(total_rebate=Sum("amount"))
+            employee=self.employee
+        ).aggregate(
+            total_rebate=Coalesce(
+                Sum("amount"), Value(0.0), output_field=DecimalField()
+            )
+        )
         return total.get("total_rebate", 0)
 
 
@@ -363,37 +373,37 @@ class SalarySheetRepository:
         basic_salary = 0.55 * payable_salary
 
         # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        if (
-            employee.tax_eligible
-            and self.__employee_current_salary.payable_salary >= 43800
+        # if (
+        #     employee.tax_eligible
+        #     and self.__employee_current_salary.payable_salary >= 43800
+        # ):
+        if not SalarySheetTaxLoan.objects.filter(
+            salarysheet=salary_sheet, loan__employee=employee
         ):
-            if not SalarySheetTaxLoan.objects.filter(
-                salarysheet=salary_sheet, loan__employee=employee
-            ):
-                employee_tax_loan = EmployeeTaxLoanRepository(
-                    employee=employee, date=self.date
-                )
-                monthly_tax = employee_tax_loan.calculate_tax_loan()
-                loan_instance = Loan.objects.create(
-                    employee=employee,
-                    witness=Employee.objects.filter(
-                        id=30
-                    ).first(),  # You might need to adjust this based on your requirements
-                    loan_amount=monthly_tax,  # Set the loan amount
-                    emi=monthly_tax,  # Set the EMI amount
-                    effective_date=timezone.now(),
-                    start_date=salary_sheet.date,
-                    end_date=salary_sheet.date,
-                    tenor=1,  # Set the tenor/period in months
-                    payment_method="salary",  # Set the payment method
-                    loan_type="salary",  # Set the loan type
-                )
+            employee_tax_loan = EmployeeTaxLoanRepository(
+                employee=employee, date=self.date
+            )
+            monthly_tax = employee_tax_loan.calculate_tax_loan()
+            loan_instance = Loan.objects.create(
+                employee=employee,
+                witness=Employee.objects.filter(
+                    id=30
+                ).first(),  # You might need to adjust this based on your requirements
+                loan_amount=monthly_tax,  # Set the loan amount
+                emi=monthly_tax,  # Set the EMI amount
+                effective_date=timezone.now(),
+                start_date=salary_sheet.date,
+                end_date=salary_sheet.date,
+                tenor=1,  # Set the tenor/period in months
+                payment_method="salary",  # Set the payment method
+                loan_type="salary",  # Set the loan type
+            )
 
-                # loan_instance.save()
-                salarysheettax = SalarySheetTaxLoan.objects.create(
-                    salarysheet=salary_sheet, loan=loan_instance
-                )
-                salarysheettax.save()
+            # loan_instance.save()
+            salarysheettax = SalarySheetTaxLoan.objects.create(
+                salarysheet=salary_sheet, loan=loan_instance
+            )
+            salarysheettax.save()
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date
