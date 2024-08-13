@@ -3,6 +3,7 @@ import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
 from tabnanny import verbose
+from urllib import request
 import uuid
 import math
 from django.contrib.auth.models import Group, User
@@ -707,7 +708,11 @@ class TPMComplain(models.Model):
         verbose_name="Project",
         null=True,blank=True
     )
-    STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+    STATUS_CHOICE = (
+    ("pending", "⌛ Pending"),
+    ("approved", "✔ Approved"),
+    ("observation", "🔍 Observation"), 
+    )
     complain = models.TextField(null=True,blank=True)
     management_feedback = models.TextField(null=True,blank=True)
     status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
@@ -717,3 +722,5 @@ class TPMComplain(models.Model):
     
     class Meta:
         verbose_name_plural = "TPM's Complain"
+
+    

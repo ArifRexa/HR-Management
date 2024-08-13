@@ -519,9 +519,9 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
 
 @admin.register(TPMComplain)
 class TPMComplainAdmin(admin.ModelAdmin):
-    list_filter = ('tpm', 'employee', 'status')
-    list_display = ('employee', 'tpm', 'status', 'complain', 'management_feedback')
-    fields = ('tpm', 'employee','project', 'complain', 'management_feedback', 'status',)
+    list_filter = ('tpm','status', 'employee')
+    list_display = ('employee', 'tpm', 'short_complain', 'short_management_feedback', 'status_colored')
+    fields = ('employee','project', 'complain', 'management_feedback', 'status',)
     autocomplete_fields = ('employee',)
     readonly_fields = ()
     def get_queryset(self, request):
@@ -539,5 +539,46 @@ class TPMComplainAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.employee.is_tpm:
-            return self.readonly_fields + ('management_feedback','status')
+            return self.readonly_fields + ('management_feedback','status',)
         return self.readonly_fields
+    
+    def status_colored(self, obj):
+        if obj.status == "pending":
+            color = "red"
+        elif obj.status == "approved":
+            color = "green"
+        elif obj.status == "observation":
+            color = "blue"
+        else:
+            color = "black"  # Default color
+
+        return format_html(
+            '<span style="color: {};">{}</span>',
+            color,
+            obj.get_status_display(),
+        )
+    status_colored.short_description = 'Status'
+    def short_complain(self, obj):
+        return self._truncate_text_with_tooltip(obj.complain)
+
+    def short_management_feedback(self, obj):
+        return self._truncate_text_with_tooltip(obj.management_feedback)
+
+    def _truncate_text_with_tooltip(self, text, length=100):
+        if text:
+            if len(text) > length:
+                truncated_text = text[:length] + "..."
+            else:
+                truncated_text = text
+            return format_html(
+                '<span title="{}">{}</span>',
+                text,  # Full text for tooltip
+                truncated_text  # Shortened text for display
+            )
+    short_complain.short_description = 'Complain'
+    short_management_feedback.short_description = 'Management Feedback'
+
+    def save_model(self, request, obj, form, change):
+        if request.user.employee.is_tpm:
+            obj.tpm = request.user.employee
+        super().save_model(request, obj, form, change)
