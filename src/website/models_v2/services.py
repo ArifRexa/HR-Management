@@ -14,10 +14,16 @@ class ServicePage(TimeStampMixin):
         limit_choices_to={"is_parent": True},
         blank=True,
     )
+    icon = models.ImageField(upload_to="service_page/icons", null=True, blank=True)
+    feature_image = models.ImageField(
+        upload_to="service_page/feature_images", null=True, blank=True
+    )
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     sub_title = models.TextField()
-    menu_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Menu Title")
+    menu_title = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Menu Title"
+    )
     # image = models.ImageField(upload_to="service_page_image")
     banner_query = models.CharField(max_length=255)
     development_services_title = models.CharField(max_length=255, verbose_name="Title")
@@ -25,7 +31,9 @@ class ServicePage(TimeStampMixin):
     faq_short_description = models.TextField(verbose_name="Short Description")
     comparative_analysis_title = models.CharField(max_length=255, verbose_name="Title")
     comparative_analysis_sub_title = models.TextField(verbose_name="Sub Title")
-    why_choose_us_sub_title = models.TextField(verbose_name="Sub Title", null=True, blank=True)
+    why_choose_us_sub_title = models.TextField(
+        verbose_name="Sub Title", null=True, blank=True
+    )
 
     def __str__(self):
         return self.title

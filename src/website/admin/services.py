@@ -46,6 +46,7 @@ class ServicePageAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
         ("Banner", {"fields": ("title", "sub_title", "banner_query", "slug")}),
+        ("Explore Our Services", {"fields": ("icon", "feature_image")}),
         ("Menu", {"fields": ("menu_title",)}),
         ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
         (
