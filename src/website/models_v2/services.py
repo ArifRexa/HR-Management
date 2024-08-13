@@ -25,6 +25,7 @@ class ServicePage(TimeStampMixin):
     faq_short_description = models.TextField(verbose_name="Short Description")
     comparative_analysis_title = models.CharField(max_length=255, verbose_name="Title")
     comparative_analysis_sub_title = models.TextField(verbose_name="Sub Title")
+    why_choose_us_sub_title = models.TextField(verbose_name="Sub Title", null=True, blank=True)
 
     def __str__(self):
         return self.title

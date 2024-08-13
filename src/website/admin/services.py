@@ -47,6 +47,7 @@ class ServicePageAdmin(admin.ModelAdmin):
         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
         ("Banner", {"fields": ("title", "sub_title", "banner_query", "slug")}),
         ("Menu", {"fields": ("menu_title",)}),
+        ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
         (
             "Development Service Process",
             {
