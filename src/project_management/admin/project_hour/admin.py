@@ -56,10 +56,13 @@ class EmployeeHourAdmin(admin.TabularInline):
         three_day_earlier = timezone.now() - timedelta(days=2)
         
         if obj is not None:
+            tpm_project = EmployeeUnderTPM.objects.filter(
+                project=obj.project,tpm=request.user.employee
+            )
             if (
                 obj.created_at <= three_day_earlier
                 and not request.user.is_superuser
-                and not request.user.employee.is_tpm
+                and not tpm_project.exists()
             ):
                 return ("hours", "employee")
         return ()
@@ -207,8 +210,8 @@ class ProjectHourAdmin(
             )
             if not tpm_project.exists():
                 return (fieldsets[0],)
-        if not request.user.has_perm("project_management.weekly_project_hours_approve"):
-            return (fieldsets[0],)
+        # if not request.user.has_perm("project_management.weekly_project_hours_approve"):
+        #     return (fieldsets[0],)
 
         return fieldsets
 
