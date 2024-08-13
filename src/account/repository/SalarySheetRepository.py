@@ -1,4 +1,5 @@
 import calendar
+from decimal import Decimal
 import math
 from datetime import datetime, timedelta
 from collections import defaultdict
@@ -8,11 +9,13 @@ from django.db.models.functions import Coalesce
 from django.utils import timezone
 
 from account.models import (
+    InvestmentAllowance,
     SalarySheet,
     EmployeeSalary,
     LoanPayment,
     Loan,
     SalarySheetTaxLoan,
+    VehicleRebate,
 )
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from employee.models.employee import LateAttendanceFine
@@ -50,13 +53,13 @@ class EmployeeTaxLoanRepository:
         print("exemption", self.get_exemption())
         taxable_income = self.get_yearly_gross_income() - self.get_exemption()
         print("taxable income", taxable_income)
-        vehicle_or_other_paid_tax = 50000
-        tax = self.calculate_income_tax(taxable_income)
+        vehicle_or_other_paid_tax = self.get_tax_for_vehicle()
+        tax = Decimal(self.calculate_income_tax(taxable_income))
         print("tax", tax)
         print("investment rebate", self.get_investment_rebate(invest_amount=500000))
         rebate = self.get_investment_rebate(invest_amount=500000)
         if rebate > 0:
-            tax -= rebate
+            tax -= Decimal(rebate)
             print("rebate after tax", tax)
         if vehicle_or_other_paid_tax and tax < vehicle_or_other_paid_tax:
             print("vehicle or other paid tax", vehicle_or_other_paid_tax, tax)
@@ -246,14 +249,22 @@ class EmployeeTaxLoanRepository:
         C. Maximum Limit = 1000000
         Allowable investment Allowance (Lower of A, B & C)
         """
-        percentage_actual_invest = invest_amount * 0.15
+        total_investment = InvestmentAllowance.objects.filter(
+            approved=True, employee=self.employee
+        ).aggregate(total_allowance=Sum("amount"))
+        percentage_actual_invest = total_investment.get("total_allowance", 0) * Decimal(
+            0.15
+        )
         percentage_net_taxable_income = (
             self.get_yearly_gross_income() - self.get_exemption()
         ) * 0.03
         return min([percentage_actual_invest, percentage_net_taxable_income, 1000000])
 
-    def get_tax_for_vehicle(self, employee: Employee):
-        pass
+    def get_tax_for_vehicle(self):
+        total = VehicleRebate.objects.filter(
+            approved=True, employee=self.employee
+        ).aggregate(total_rebate=Sum("amount"))
+        return total.get("total_rebate", 0)
 
 
 class SalarySheetRepository:
