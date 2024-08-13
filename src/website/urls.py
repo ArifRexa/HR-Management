@@ -2,12 +2,14 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIView
 
+from website.models import LifeAtMediusware
 from website.views import (
     AwardListView,
     ClientListAPIView,
     ClientLogoListView,
     GalleryListView,
     IndustryWeServeListAPIView,
+    LifeAtMediuswareListView,
     ProjectVideoListAPIView,
     ServiceList,
     ServiceDetails,
@@ -154,6 +156,7 @@ api_urls = [
     path("leads/", LeadCreateAPIView.as_view(), name="lead-create"),
     path("client/logo/", ClientLogoListView.as_view(), name="client-logo-list"),
     path("gallery/", GalleryListView.as_view(), name="gallery"),
+    path("life-at-mediusware/", LifeAtMediuswareListView.as_view(), name="life-at-mediusware"),
     path("awards/", AwardListView.as_view(), name="awards"),
     path("clients/", ClientListAPIView.as_view(), name="client-list"),
 ]
