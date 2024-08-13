@@ -365,6 +365,12 @@ class TaxDocumentInformation(TimeStampMixin):
 
     class Meta:
         abstract = True
+        permissions = (
+            (
+                "tax_information_approved",
+                "Can Approve Employee Tax Information",
+            ),
+        )
 
 
 class InvestmentAllowance(TaxDocumentInformation):
@@ -380,6 +386,13 @@ class InvestmentAllowanceAttachment(TimeStampMixin):
 
 
 class VehicleRebate(TaxDocumentInformation):
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Vehicle Rebate Amount",
+        default=0.00,
+    )
+
     def __str__(self):
         return f"{self.employee.full_name} Vehicle Tax - {self.amount}"
 
