@@ -742,8 +742,9 @@ class TPMComplain(models.Model):
     def send_complain_email_tpm_to_management(self):
         # Prepare email subject and recipients
         subject = f"New Complaint Created by {self.tpm.full_name}"
-        from_email = f"{self.tpm.email}"
-        to_email =  ['"Mediusware-HR" <hr@mediusware.com>']
+        email = EmailMultiAlternatives(subject)
+        email.from_email = f"{self.tpm.email}"
+        email.to =  ['"Mediusware-HR" <hr@mediusware.com>']
         
         html_content = loader.render_to_string('mails/complaint_email_template.html', {
             'tpm': self.tpm,
@@ -752,15 +753,15 @@ class TPMComplain(models.Model):
         })
 
         # Create and send email
-        email = EmailMultiAlternatives(subject, from_email, to_email)
         email.attach_alternative(html_content, "text/html")
         email.send()
 
     def send_complain_email_management_tpm(self):
         # Prepare email subject and recipients
         subject = f"Management Feedback Created for {self.employee.full_name}"
-        from_email = '"Mediusware-HR" <hr@mediusware.com>'
-        to_email = [self.tpm.email]
+        email = EmailMultiAlternatives(subject)
+        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        email.to = [self.tpm.email]
         
         html_content = loader.render_to_string('mails/management_feedback_template.html', {
             'tpm': self.tpm,
@@ -768,8 +769,6 @@ class TPMComplain(models.Model):
             'management_feedback': self.management_feedback,
         })
 
-        # Create and send email
-        email = EmailMultiAlternatives(subject, from_email, to_email)
+        # Create and send email 
         email.attach_alternative(html_content, "text/html")
-        print(html_content)
         email.send()
