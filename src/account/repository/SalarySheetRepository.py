@@ -53,7 +53,11 @@ class EmployeeTaxLoanRepository:
         print("gross income", self.get_yearly_gross_income())
         print("exemption", self.get_exemption())
         taxable_income = self.get_yearly_gross_income() - self.get_exemption()
-        if taxable_income <= 350000:
+        tax_eligible_amount = {
+            "male": 350000,
+            "female": 400000,
+        }
+        if taxable_income <= tax_eligible_amount.get(self.employee.gender, 0):
             return 0
         print("taxable income", taxable_income)
         vehicle_or_other_paid_tax = self.get_tax_for_vehicle()
@@ -78,6 +82,7 @@ class EmployeeTaxLoanRepository:
 
     def calculate_income_tax(self, income):
         # Tax brackets and their corresponding rates
+        
         brackets = [
             (350000, 0.00),
             (100000, 0.05),
@@ -85,6 +90,17 @@ class EmployeeTaxLoanRepository:
             (500000, 0.15),
             (500000, 0.20),
         ]
+        
+        female_brackets = [
+            (400000, 0.00),
+            (100000, 0.05),
+            (400000, 0.10),
+            (500000, 0.15),
+            (500000, 0.20),
+        ]
+        if self.employee.gender == "female":
+            brackets = female_brackets
+        
 
         # Start with no tax
         tax = 0
@@ -117,9 +133,6 @@ class EmployeeTaxLoanRepository:
     def get_exemption(self):
         one_third = self.get_yearly_gross_income() / 3
         return min(one_third, 450000)
-
-    def get_yearly_taxable_income(self, employee: Employee):
-        pass
 
     def get_festival_bonus(self):
         """Calculate festival bonus
@@ -241,8 +254,6 @@ class EmployeeTaxLoanRepository:
 
         return 0
 
-    def get_yearly_tax(self, employee: Employee):
-        pass
 
     def get_investment_rebate(self):
         """
@@ -252,7 +263,7 @@ class EmployeeTaxLoanRepository:
         Allowable investment Allowance (Lower of A, B & C)
         """
         total_investment = InvestmentAllowance.objects.filter(
-            employee=self.employee
+            employee=self.employee, created_at__year=timezone.now().year
         ).aggregate(
             total_allowance=Coalesce(
                 Sum("amount"), Value(0.0), output_field=DecimalField()
@@ -268,10 +279,10 @@ class EmployeeTaxLoanRepository:
 
     def get_tax_for_vehicle(self):
         total = VehicleRebate.objects.filter(
-            employee=self.employee
+            employee=self.employee, created_at__year=timezone.now().year
         ).aggregate(
             total_rebate=Coalesce(
-                Sum("amount"), Value(0.0), output_field=DecimalField()
+                Sum("amount"), Value(0), output_field=DecimalField()
             )
         )
         return total.get("total_rebate", 0)
