@@ -27,6 +27,7 @@ from django.utils import timezone
 # from project_management.models import Project
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.template.loader import get_template
 class Appointment(AuthorMixin, TimeStampMixin):
     is_completed = models.BooleanField(default=False)
     subject = models.CharField(max_length=255, blank=True, null=True)
@@ -747,8 +748,8 @@ class TPMComplain(models.Model):
         email = EmailMultiAlternatives(subject)
         email.from_email = f"{self.tpm.email}"
         email.to =  ['"Mediusware-HR" <hr@mediusware.com>']
-        
-        html_content = loader.render_to_string('mails/complaint_email_template.html', {
+        html_template = get_template('mails/complaint_email_template.html')
+        html_content = html_template.render({
             'tpm': self.tpm,
             'employee': self.employee,
             'complain': self.complain,
@@ -764,8 +765,8 @@ class TPMComplain(models.Model):
         email = EmailMultiAlternatives(subject)
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.to = [self.tpm.email]
-        
-        html_content = loader.render_to_string('mails/management_feedback_template.html', {
+        html_template = get_template('mails/management_feedback_template.html')
+        html_content = html_template.render({
             'tpm': self.tpm,
             'employee': self.employee,
             'management_feedback': self.management_feedback,

@@ -545,7 +545,7 @@ class TPMComplainAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.employee.is_tpm:
-            return self.readonly_fields + ('management_feedback','status',)
+            return self.readonly_fields + ('management_feedback','status','feedback_title')
         return self.readonly_fields
     
     def status_colored(self, obj):
