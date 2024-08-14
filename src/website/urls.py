@@ -46,6 +46,7 @@ from website.views import (
     MainEmployeeListView,
     SkillListView,
     LeadCreateAPIView,
+    SpecialProjectListView
 )
 from website.views_v2.hire_views import (
     HireResourcePageDetailView,
@@ -74,6 +75,7 @@ api_urls = [
     ),
     # path("projects/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
     path("projects/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
+    path("special_projects/", SpecialProjectListView.as_view(), name="special_projects"),
     path("employees/", EmployeeList.as_view(), name="employee.list"),
     path(
         "employees/operation",
