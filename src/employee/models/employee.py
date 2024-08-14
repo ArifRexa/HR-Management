@@ -3,6 +3,7 @@ import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
 from tabnanny import verbose
+# from unittest import loader
 from urllib import request
 import uuid
 import math
@@ -24,8 +25,9 @@ from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 # from project_management.models import Project
-
-
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
+from django.template.loader import get_template
 class Appointment(AuthorMixin, TimeStampMixin):
     is_completed = models.BooleanField(default=False)
     subject = models.CharField(max_length=255, blank=True, null=True)
@@ -713,14 +715,63 @@ class TPMComplain(models.Model):
     ("approved", "✔ Approved"),
     ("observation", "🔍 Observation"), 
     )
-    complain = models.TextField(null=True,blank=True)
-    management_feedback = models.TextField(null=True,blank=True)
+    complain_title = models.CharField(max_length=250,null=True,blank=True)
+    complain = HTMLField(null=True,blank=True)
+    feedback_title = models.CharField(max_length=250,null=True,blank=True)
+    management_feedback = HTMLField(null=True,blank=True)
     status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
 
-    def __str__(self):
-        return f"{self.employee.full_name} under tpm: {self.tpm.full_name}"
+    # def __str__(self):
+    #     return f"{self.employee.full_name} under tpm: {self.tpm.full_name}"
     
     class Meta:
         verbose_name_plural = "TPM's Complain"
 
     
+    def save(self,*args,**kwargs):
+        is_new = self.pk is None
+        
+        if not is_new:
+            tpm_complain = TPMComplain.objects.get(pk=self.pk)
+            if tpm_complain.management_feedback != self.management_feedback:
+                self.send_complain_email_management_tpm()
+
+        super().save(*args,**kwargs)
+
+        if is_new:
+            self.send_complain_email_tpm_to_management()
+
+
+    def send_complain_email_tpm_to_management(self):
+        # Prepare email subject and recipients
+        subject = f"TPM Complain: {self.complain_title}"
+        email = EmailMultiAlternatives(subject)
+        email.from_email = f"{self.tpm.email}"
+        email.to =  ['"Mediusware-HR" <hr@mediusware.com>']
+        html_template = get_template('mails/complaint_email_template.html')
+        html_content = html_template.render({
+            'tpm': self.tpm,
+            'employee': self.employee,
+            'complain': format_html(self.complain)
+        })
+
+        # Create and send email
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+    def send_complain_email_management_tpm(self):
+        # Prepare email subject and recipients
+        subject = subject = f"Management Feedback: {self.feedback_title}"
+        email = EmailMultiAlternatives(subject)
+        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        email.to = [self.tpm.email]
+        html_template = get_template('mails/management_feedback_template.html')
+        html_content = html_template.render({
+            'tpm': self.tpm,
+            'employee': self.employee,
+            'management_feedback': format_html(self.management_feedback)
+        })
+
+        # Create and send email 
+        email.attach_alternative(html_content, "text/html")
+        email.send()

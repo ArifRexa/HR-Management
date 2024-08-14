@@ -35,7 +35,7 @@ from employee.models.employee import (
 )
 from employee.models.employee_activity import EmployeeProject
 from .filter import MonthFilter
-from django.utils.html import format_html
+from django.utils.html import format_html,strip_tags
 from employee.helper.tpm import TPMsBuilder
 from employee.helper.tpm import TPMObj
 
@@ -516,14 +516,20 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
-
 @admin.register(TPMComplain)
 class TPMComplainAdmin(admin.ModelAdmin):
     list_filter = ('tpm','status', 'employee')
-    list_display = ('employee', 'tpm', 'short_complain', 'short_management_feedback', 'status_colored')
-    fields = ('employee','project', 'complain', 'management_feedback', 'status',)
+    list_display = ('employee', 'tpm','short_complain','short_management_feedback', 'status_colored')
     autocomplete_fields = ('employee',)
     readonly_fields = ()
+
+    def get_fields(self, request, obj=None):
+        # Show the 'tpm' field only if the user is a superuser
+        fields = ['employee', 'project','complain_title', 'complain','feedback_title','management_feedback', 'status']
+        if request.user.is_superuser:
+            fields.insert(0, 'tpm')  # Insert 'tpm' at the beginning
+        return fields
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.employee.is_tpm:
@@ -532,14 +538,14 @@ class TPMComplainAdmin(admin.ModelAdmin):
         
 
     def employee(self, obj):
-        return obj.employee.full_name
+        return obj.employee.full_name or '-'
 
     def tpm(self, obj):
-        return obj.tpm.full_name
+        return obj.tpm.full_name or '-'
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.employee.is_tpm:
-            return self.readonly_fields + ('management_feedback','status',)
+            return self.readonly_fields + ('management_feedback','status','feedback_title')
         return self.readonly_fields
     
     def status_colored(self, obj):
@@ -559,10 +565,10 @@ class TPMComplainAdmin(admin.ModelAdmin):
         )
     status_colored.short_description = 'Status'
     def short_complain(self, obj):
-        return self._truncate_text_with_tooltip(obj.complain)
+        return self._truncate_text_with_tooltip(strip_tags(obj.complain))
 
     def short_management_feedback(self, obj):
-        return self._truncate_text_with_tooltip(obj.management_feedback)
+        return self._truncate_text_with_tooltip(strip_tags(obj.management_feedback))
 
     def _truncate_text_with_tooltip(self, text, length=100):
         if text:

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Complaint Created</title>
+</head>
+<body>
+    <p>New Complaint Created by {{ tpm.full_name }}</p>
+    <p><strong>Employee:</strong> {{ employee.full_name }}</p>
+    <p><strong>Complaint:</strong> {{ complain }}</p>
+
+    <p>
+        Best regards,<br>
+        {{tpm.email}}
+    </p>
+</body>
+</html>
