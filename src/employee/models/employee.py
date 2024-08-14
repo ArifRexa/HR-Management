@@ -752,7 +752,7 @@ class TPMComplain(models.Model):
         html_content = html_template.render({
             'tpm': self.tpm,
             'employee': self.employee,
-            'complain': self.complain,
+            'complain': format_html(self.complain)
         })
 
         # Create and send email
@@ -769,7 +769,7 @@ class TPMComplain(models.Model):
         html_content = html_template.render({
             'tpm': self.tpm,
             'employee': self.employee,
-            'management_feedback': self.management_feedback,
+            'management_feedback': format_html(self.management_feedback)
         })
 
         # Create and send email 
