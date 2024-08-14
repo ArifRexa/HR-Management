@@ -762,7 +762,7 @@ class TPMComplain(models.Model):
         from_email = '"Mediusware-HR" <hr@mediusware.com>'
         to_email = [self.tpm.email]
         
-        html_content = loader.render_to_string('mails/complaint_email_template.html', {
+        html_content = loader.render_to_string('mails/management_feedback_template.html', {
             'tpm': self.tpm,
             'employee': self.employee,
             'management_feedback': self.management_feedback,
@@ -771,4 +771,5 @@ class TPMComplain(models.Model):
         # Create and send email
         email = EmailMultiAlternatives(subject, from_email, to_email)
         email.attach_alternative(html_content, "text/html")
+        print(html_content)
         email.send()
