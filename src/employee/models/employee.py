@@ -714,8 +714,10 @@ class TPMComplain(models.Model):
     ("approved", "✔ Approved"),
     ("observation", "🔍 Observation"), 
     )
-    complain = models.TextField(null=True,blank=True)
-    management_feedback = models.TextField(null=True,blank=True)
+    complain_title = models.CharField(max_length=250,null=True,blank=True)
+    complain = HTMLField(null=True,blank=True)
+    feedback_title = models.CharField(max_length=250,null=True,blank=True)
+    management_feedback = HTMLField(null=True,blank=True)
     status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
 
     # def __str__(self):
@@ -741,7 +743,7 @@ class TPMComplain(models.Model):
 
     def send_complain_email_tpm_to_management(self):
         # Prepare email subject and recipients
-        subject = f"New Complaint Created by {self.tpm.full_name}"
+        subject = f"TPM Complain: {self.complain_title}"
         email = EmailMultiAlternatives(subject)
         email.from_email = f"{self.tpm.email}"
         email.to =  ['"Mediusware-HR" <hr@mediusware.com>']
@@ -758,7 +760,7 @@ class TPMComplain(models.Model):
 
     def send_complain_email_management_tpm(self):
         # Prepare email subject and recipients
-        subject = f"Management Feedback Created for {self.employee.full_name}"
+        subject = subject = f"Management Feedback: {self.feedback_title}"
         email = EmailMultiAlternatives(subject)
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.to = [self.tpm.email]
