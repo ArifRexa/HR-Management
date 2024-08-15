@@ -1,17 +1,22 @@
 import calendar
+from decimal import Decimal
+import math
 from datetime import datetime, timedelta
 from collections import defaultdict
 
-from django.db.models import Sum, Count
+from django.db.models import Sum, Count, DecimalField, Value
 from django.db.models.functions import Coalesce
+
 from django.utils import timezone
 
 from account.models import (
+    InvestmentAllowance,
     SalarySheet,
     EmployeeSalary,
     LoanPayment,
     Loan,
     SalarySheetTaxLoan,
+    VehicleRebate,
 )
 from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
 from employee.models.employee import LateAttendanceFine
@@ -22,6 +27,273 @@ from employee.models.config import Config
 from project_management.models import CodeReview
 from dateutil.relativedelta import relativedelta
 from django.db.models.functions import ExtractMonth, ExtractYear
+
+
+def get_fiscal_year_dates(start_month=7):
+    date = datetime.now()
+    year = date.year
+    if date.month < start_month:
+        start_year = year - 1
+    else:
+        start_year = year
+
+    start_date = datetime(start_year, start_month, 1)
+    end_date = datetime(start_year + 1, start_month, 1) - timedelta(days=1)
+
+    return start_date, end_date
+
+
+class EmployeeTaxLoanRepository:
+    __salary_sheet = SalarySheet()
+    __employee_current_salary = SalaryHistory()
+
+    def __init__(self, employee: Employee, date):
+        self.date = date
+        self.salary_date = datetime.strptime(self.date, "%Y-%m-%d").date()
+        self.salary_sheet = self.__salary_sheet
+        self.__salary_sheet, created = SalarySheet.objects.get_or_create(
+            date__month=self.salary_date.month,
+            date__year=self.salary_date.year,
+            defaults={"date": self.salary_date},
+        )
+        self.employee = employee
+        self.__employee_current_salary = employee.salaryhistory_set.filter(
+            active_from__lte=self.__salary_sheet.date.replace(day=1)
+        ).last()
+        if self.__employee_current_salary is None:
+            self.__employee_current_salary = self.employee.current_salary
+        self.monthly_pay_amount = self.__employee_current_salary.payable_salary
+        self.fiscal_start_date, self.fiscal_end_date = (
+            get_fiscal_year_dates()
+        )  # default 7th month if need adjust
+
+    def calculate_tax_loan(self):
+        taxable_income = self.get_yearly_gross_income() - self.get_exemption()
+        tax_eligible_amount = {
+            "male": 350000,
+            "female": 400000,
+        }
+        if taxable_income <= tax_eligible_amount.get(self.employee.gender, 0):
+            return 0
+        vehicle_or_other_paid_tax = self.get_tax_for_vehicle()
+        tax = Decimal(self.calculate_income_tax(taxable_income))
+        rebate = self.get_investment_rebate()
+        if rebate > 0:
+            tax -= Decimal(rebate)
+        if vehicle_or_other_paid_tax and tax < vehicle_or_other_paid_tax:
+            return 0
+        elif vehicle_or_other_paid_tax and tax > vehicle_or_other_paid_tax:
+            tax -= vehicle_or_other_paid_tax
+            return math.ceil(tax / 12)
+
+        yearly_tax = 5000 if tax <= 5000 else tax
+        return math.ceil(yearly_tax / 12)
+
+    def calculate_income_tax(self, income):
+        # Tax brackets and their corresponding rates
+
+        brackets = [
+            (350000, 0.00),
+            (100000, 0.05),
+            (400000, 0.10),
+            (500000, 0.15),
+            (500000, 0.20),
+        ]
+
+        female_brackets = [
+            (400000, 0.00),
+            (100000, 0.05),
+            (400000, 0.10),
+            (500000, 0.15),
+            (500000, 0.20),
+        ]
+        if self.employee.gender == "female":
+            brackets = female_brackets
+
+        # Start with no tax
+        tax = 0
+
+        for bracket, rate in brackets:
+            if income > bracket:
+                tax += bracket * rate
+                income -= bracket
+            else:
+                tax += income * rate
+                return tax
+
+        # If there's any remaining income above the last bracket
+        if income:
+            tax += income * 0.25
+
+        return tax
+
+    def get_yearly_gross_income(self):
+        """
+        Calculate yearly gross income
+        gross_income = monthly_gross * 12 + 2 * festival_bonus
+        """
+        festival_bonus = self.monthly_pay_amount * 0.55
+        # gross_income = (self.monthly_pay_amount * 12) + 2 * (self.get_festival_bonus())
+        gross_income = (self.monthly_pay_amount * 12) + 2 * festival_bonus
+        return gross_income
+
+    def get_exemption(self):
+        one_third = self.get_yearly_gross_income() / 3
+        return min(one_third, 450000)
+
+    def get_festival_bonus(self):
+        """Calculate festival bonus
+
+        If this month has a festival bonus and if the employee has joined more than
+        180 days or 6 months from the salary_sheet making date, they will be applicable for the festival bonus.
+
+        New policy effective from January 1, 2024:
+        Employees joining before January 1, 2024, will follow the previous bonus policy.
+        Employees joining from January 1, 2024, onwards will follow the new bonus policy.
+
+        Additionally, for permanent employees (new policy):
+        - Months 3-4: Bonus is 20% of basic salary
+        - Months 5-6: Bonus is 40% of basic salary
+        - Months 7-8: Bonus is 60% of basic salary
+        - Months 9-10: Bonus is 80% of basic salary
+        - Month 11: Bonus is 90% of basic salary
+        - Month 12 and beyond: Bonus is 10% of basic salary
+
+        @param employee: Employee object
+        @return number: Festival bonus amount
+        """
+        # if festival_bonus:
+        # Determine the date for the previous and new policy cutoff
+        previous_policy_cutoff = datetime(2024, 1, 1).date()
+        new_policy_cutoff = self.__salary_sheet.date
+
+        if self.employee.joining_date < previous_policy_cutoff:
+            if self.employee.permanent_date:
+                # Apply previous policy
+                dtdelta = self.employee.joining_date + timedelta(days=180)
+                seventyFivePercent = self.employee.joining_date + timedelta(days=150)
+                fiftyPercent = self.employee.joining_date + timedelta(days=120)
+                twinteeFivePercent = self.employee.joining_date + timedelta(days=90)
+                tenPercent = self.employee.joining_date + timedelta(days=60)
+                fivePercet = self.employee.joining_date + timedelta(days=30)
+
+                basic_salary = (
+                    self.__employee_current_salary.payable_salary * 55
+                ) / 100
+
+                if dtdelta < new_policy_cutoff:
+                    return basic_salary
+
+                elif seventyFivePercent <= new_policy_cutoff:
+                    return round((basic_salary * 75) / 100, 2)
+
+                elif fiftyPercent <= new_policy_cutoff:
+                    return round((basic_salary * 50) / 100, 2)
+
+                elif twinteeFivePercent <= new_policy_cutoff:
+                    return round((basic_salary * 25) / 100, 2)
+
+                elif tenPercent <= new_policy_cutoff:
+                    return round((basic_salary * 10) / 100, 2)
+
+                elif fivePercet <= new_policy_cutoff:
+                    return round((basic_salary * 5) / 100, 2)
+            else:
+                return 0
+
+        else:
+            if self.employee.permanent_date:
+                joining_date = self.employee.joining_date
+                festival_bonus_date = self.__salary_sheet.date
+
+                # Calculate the difference in years using relativedelta
+                # full = employee.joining_date + timedelta(days=360)
+                # ninety_percent = employee.joining_date + timedelta(days=330)
+                # eighty_percent = employee.joining_date + timedelta(days=270)
+                # sixty_percent = employee.joining_date + timedelta(days=210)
+                # fourty_percent = employee.joining_date + timedelta(days=150)
+                # twintee_percent = employee.joining_date + timedelta(days=90)
+
+                delta = relativedelta(festival_bonus_date, joining_date)
+
+                # Calculate the total months since joining
+                months_since_joining = delta.years * 12 + delta.months
+                days_since_joining = (
+                    (delta.years * 12 + delta.months) * 30
+                ) + delta.days
+                print(self.employee, months_since_joining)
+
+                basic_salary = (
+                    self.__employee_current_salary.payable_salary * 55
+                ) / 100
+
+                if days_since_joining < 90:
+                    return 0
+                elif days_since_joining >= 90 and days_since_joining < 150:
+                    return round((basic_salary * 20) / 100, 2)
+                elif days_since_joining >= 150 and days_since_joining < 210:
+                    return round((basic_salary * 40) / 100, 2)
+                elif days_since_joining >= 210 and days_since_joining < 270:
+                    return round((basic_salary * 60) / 100, 2)
+                elif days_since_joining >= 270 and days_since_joining < 330:
+                    return round((basic_salary * 80) / 100, 2)
+                elif days_since_joining >= 330 and days_since_joining < 360:
+                    return round((basic_salary * 90) / 100, 2)
+                else:
+                    return basic_salary
+
+                # if festival_bonus_date < twintee_percent:
+                #     return 0
+                # elif twintee_percent >= festival_bonus_date  and fourty_percent < festival_bonus_date:
+                #     return round((basic_salary * 20) / 100, 2)
+                # elif fourty_percent >= festival_bonus_date  and sixty_percent < festival_bonus_date:
+                #     return round((basic_salary * 40) / 100, 2)
+                # elif sixty_percent >= festival_bonus_date  and eighty_percent < festival_bonus_date:
+                #     return round((basic_salary * 60) / 100, 2)
+                # elif eighty_percent >= new_policy_cutoff  and ninety_percent < festival_bonus_date:
+                #     return round((basic_salary * 80) / 100, 2)
+                # elif ninety_percent >= festival_bonus_date:
+                #     return round((basic_salary * 90) / 100, 2)
+                # elif full >= festival_bonus_date:
+                #     return round((basic_salary * 100) / 100, 2)
+            else:
+                return 0
+
+        return 0
+
+    def get_investment_rebate(self):
+        """
+        A. 15% of Actual Investment
+        B. 3% of net taxable income*
+        C. Maximum Limit = 1000000
+        Allowable investment Allowance (Lower of A, B & C)
+        """
+        total_investment = InvestmentAllowance.objects.filter(
+            employee=self.employee,
+            created_at__date__gte=self.fiscal_start_date,
+            created_at__date__lte=self.fiscal_end_date,
+        ).aggregate(
+            total_allowance=Coalesce(
+                Sum("amount"), Value(0.0), output_field=DecimalField()
+            )
+        )
+        percentage_actual_invest = total_investment.get("total_allowance", 0) * Decimal(
+            0.15
+        )
+        percentage_net_taxable_income = (
+            self.get_yearly_gross_income() - self.get_exemption()
+        ) * 0.03
+        return min([percentage_actual_invest, percentage_net_taxable_income, 1000000])
+
+    def get_tax_for_vehicle(self):
+        total = VehicleRebate.objects.filter(
+            employee=self.employee,
+            created_at__date__gte=self.fiscal_start_date,
+            created_at__date__lte=self.fiscal_end_date,
+        ).aggregate(
+            total_rebate=Coalesce(Sum("amount"), Value(0), output_field=DecimalField())
+        )
+        return total.get("total_rebate", 0)
 
 
 class SalarySheetRepository:
@@ -120,33 +392,37 @@ class SalarySheetRepository:
         basic_salary = 0.55 * payable_salary
 
         # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        if (
-            employee.tax_eligible
-            and self.__employee_current_salary.payable_salary >= 43800
+        # if (
+        #     employee.tax_eligible
+        #     and self.__employee_current_salary.payable_salary >= 43800
+        # ):
+        if not SalarySheetTaxLoan.objects.filter(
+            salarysheet=salary_sheet, loan__employee=employee
         ):
-            if not SalarySheetTaxLoan.objects.filter(
-                salarysheet=salary_sheet, loan__employee=employee
-            ):
-                loan_instance = Loan.objects.create(
-                    employee=employee,
-                    witness=Employee.objects.filter(
-                        id=30
-                    ).first(),  # You might need to adjust this based on your requirements
-                    loan_amount=417,  # Set the loan amount
-                    emi=417,  # Set the EMI amount
-                    effective_date=timezone.now(),
-                    start_date=salary_sheet.date,
-                    end_date=salary_sheet.date,
-                    tenor=1,  # Set the tenor/period in months
-                    payment_method="salary",  # Set the payment method
-                    loan_type="salary",  # Set the loan type
-                )
+            employee_tax_loan = EmployeeTaxLoanRepository(
+                employee=employee, date=self.date
+            )
+            monthly_tax = employee_tax_loan.calculate_tax_loan()
+            loan_instance = Loan.objects.create(
+                employee=employee,
+                witness=Employee.objects.filter(
+                    id=30
+                ).first(),  # You might need to adjust this based on your requirements
+                loan_amount=monthly_tax,  # Set the loan amount
+                emi=monthly_tax,  # Set the EMI amount
+                effective_date=timezone.now(),
+                start_date=salary_sheet.date,
+                end_date=salary_sheet.date,
+                tenor=1,  # Set the tenor/period in months
+                payment_method="salary",  # Set the payment method
+                loan_type="salary",  # Set the loan type
+            )
 
-                # loan_instance.save()
-                salarysheettax = SalarySheetTaxLoan.objects.create(
-                    salarysheet=salary_sheet, loan=loan_instance
-                )
-                salarysheettax.save()
+            # loan_instance.save()
+            salarysheettax = SalarySheetTaxLoan.objects.create(
+                salarysheet=salary_sheet, loan=loan_instance
+            )
+            salarysheettax.save()
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date
@@ -257,7 +533,9 @@ class SalarySheetRepository:
                 "medical", salary_sheet.date.year
             )
             if passed_medical_leave > available_medical_leave:
-                medical_non_paid_amount = (available_medical_leave - passed_medical_leave)* one_day_salary
+                medical_non_paid_amount = (
+                    available_medical_leave - passed_medical_leave
+                ) * one_day_salary
 
             available_casual_leave = employee.leave_available_leaveincash(
                 "casual_leave", salary_sheet.date
@@ -266,7 +544,9 @@ class SalarySheetRepository:
                 "casual", salary_sheet.date.year
             )
             if passed_casual_leave > available_casual_leave:
-                casual_non_paid_amount = (available_casual_leave - passed_casual_leave) * one_day_salary
+                casual_non_paid_amount = (
+                    available_casual_leave - passed_casual_leave
+                ) * one_day_salary
 
             return medical_non_paid_amount + casual_non_paid_amount
         return 0
@@ -289,7 +569,9 @@ class SalarySheetRepository:
             status="approved",
         ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
         if total_non_paid_leave:
-            total_month_day = calendar.monthrange(salary_sheet.date.year,salary_sheet.date.month)
+            total_month_day = calendar.monthrange(
+                salary_sheet.date.year, salary_sheet.date.month
+            )
             return (
                 -(self.__employee_current_salary.payable_salary / total_month_day[1])
                 * total_non_paid_leave
@@ -306,14 +588,18 @@ class SalarySheetRepository:
         @param salary_sheet:
         @return:
         """
-        total_month_day = calendar.monthrange(salary_sheet.date.year,salary_sheet.date.month)
+        total_month_day = calendar.monthrange(
+            salary_sheet.date.year, salary_sheet.date.month
+        )
         leave_in_cash = 0
         if (
             salary_sheet.date.month == 12
             and employee.leave_in_cash_eligibility
             and employee.permanent_date != None
         ):
-            one_day_salary = self.__employee_current_salary.payable_salary / total_month_day[1]
+            one_day_salary = (
+                self.__employee_current_salary.payable_salary / total_month_day[1]
+            )
             payable_medical_leave = employee.leave_available_leaveincash(
                 "medical_leave", salary_sheet.date
             ) - employee.leave_passed("medical", salary_sheet.date.year)
@@ -375,11 +661,7 @@ class SalarySheetRepository:
         @return number:
         """
 
-
-        if (
-            employee.manager
-            or employee.lead
-        ):
+        if employee.manager or employee.lead:
             project_hours = employee.projecthour_set.filter(
                 date__month=salary_sheet.date.month,
                 date__year=salary_sheet.date.year,
@@ -390,17 +672,15 @@ class SalarySheetRepository:
             project_hours_amount = project_hours * 10
 
             return project_hours_amount
-        
-        
+
         project_hours = employee.employeeprojecthour_set.filter(
             project_hour__date__month=salary_sheet.date.month,
             project_hour__date__year=salary_sheet.date.year,
         ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-         # Hour Bonus Amount Calculation
+        # Hour Bonus Amount Calculation
         project_hours_amount = project_hours * 10
 
         return project_hours_amount
-    
 
     def __calculate_code_quality_bonus(
         self, salary_sheet: SalarySheet, employee: Employee
@@ -640,7 +920,7 @@ class SalarySheetRepository:
     def __calculate_food_allowance(self, employee: Employee, salary_date):
         if not employee.lunch_allowance:
             return 0.0
-        
+
         total_non_paid_leave = employee.leave_set.filter(
             start_date__month=salary_date.month,
             start_date__year=salary_date.year,
@@ -649,7 +929,6 @@ class SalarySheetRepository:
             leave_type="non_paid",
             status="approved",
         ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
-        
 
         if (
             employee.joining_date.year == salary_date.year
@@ -671,7 +950,7 @@ class SalarySheetRepository:
             # Calculate the number of days from the joining date to the last day of the month
             days_count = (last_day_of_month - joining_datetime).days + 1
             if total_non_paid_leave:
-                days_count+=total_non_paid_leave
+                days_count += total_non_paid_leave
             total_pay = days_count * 100
             return min(total_pay, 3000)
 

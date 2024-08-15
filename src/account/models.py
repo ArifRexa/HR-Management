@@ -22,6 +22,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.urls import reverse
 
+
 class SalarySheet(TimeStampMixin, AuthorMixin):
     date = models.DateField(blank=False)
     festival_bonus = models.BooleanField(default=False)
@@ -279,7 +280,6 @@ class ProjectCommission(TimeStampMixin, AuthorMixin):
     payment = models.FloatField()
 
 
-
 class AccountJournal(AuthorMixin, TimeStampMixin):
     journal_types = (("monthly", "MONTHLY"), ("daily", "DAILY"))
     date = models.DateField(default=timezone.now)
@@ -296,7 +296,7 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
 
     def get_pdf_generate_url_payment(self):
         return reverse("account:payment_voucher", args=[str(self.id)])
-    
+
     def get_pdf_generate_url_journal(self):
         return reverse("account:journal_voucher", args=[str(self.id)])
 
@@ -349,3 +349,54 @@ def delete_related_loans(sender, instance, **kwargs):
         salarysheet=instance
     )
     related_salary_sheet_tax_loans.delete()
+
+
+class TaxDocumentInformation(TimeStampMixin):
+    employee = models.ForeignKey(
+        Employee,
+        related_name="%(class)s",
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True, "tax_eligible": True},
+    )
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="Investment Amount", default=0.00
+    )
+    # approved = models.BooleanField(default=False)
+
+    class Meta:
+        abstract = True
+        permissions = (
+            (
+                "tax_information_approved",
+                "Can Approve Employee Tax Documents",
+            ),
+        )
+
+
+class InvestmentAllowance(TaxDocumentInformation):
+    def __str__(self):
+        return f"{self.employee.full_name} Investment - {self.amount}"
+
+
+class InvestmentAllowanceAttachment(TimeStampMixin):
+    investment_allowance = models.ForeignKey(
+        InvestmentAllowance, on_delete=models.CASCADE
+    )
+    document = models.FileField(upload_to="uploads/investment_allowance/")
+
+
+class VehicleRebate(TaxDocumentInformation):
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Vehicle Rebate Amount",
+        default=0.00,
+    )
+
+    def __str__(self):
+        return f"{self.employee.full_name} Vehicle Tax - {self.amount}"
+
+
+class VehicleRebateAttachment(TimeStampMixin):
+    vehicle_rebate = models.ForeignKey(VehicleRebate, on_delete=models.CASCADE)
+    document = models.FileField(upload_to="uploads/vehicle_rebate/")
