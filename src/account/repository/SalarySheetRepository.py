@@ -51,9 +51,6 @@ class EmployeeTaxLoanRepository:
         self.monthly_pay_amount = self.__employee_current_salary.payable_salary
 
     def calculate_tax_loan(self):
-        # TODO: calculate investment and vehicle or other paid tax
-        print("gross income", self.get_yearly_gross_income())
-        print("exemption", self.get_exemption())
         taxable_income = self.get_yearly_gross_income() - self.get_exemption()
         tax_eligible_amount = {
             "male": 350000,
@@ -61,24 +58,17 @@ class EmployeeTaxLoanRepository:
         }
         if taxable_income <= tax_eligible_amount.get(self.employee.gender, 0):
             return 0
-        print("taxable income", taxable_income)
         vehicle_or_other_paid_tax = self.get_tax_for_vehicle()
         tax = Decimal(self.calculate_income_tax(taxable_income))
-        print("tax", tax)
-        print("investment rebate", self.get_investment_rebate())
         rebate = self.get_investment_rebate()
         if rebate > 0:
             tax -= Decimal(rebate)
-            print("rebate after tax", tax)
         if vehicle_or_other_paid_tax and tax < vehicle_or_other_paid_tax:
-            print("vehicle or other paid tax", vehicle_or_other_paid_tax, tax)
             return 0
         elif vehicle_or_other_paid_tax and tax > vehicle_or_other_paid_tax:
-            print("vehicle or other paid tax", vehicle_or_other_paid_tax, tax)
             tax -= vehicle_or_other_paid_tax
             return math.ceil(tax / 12)
 
-        print("final tax", tax)
         yearly_tax = 5000 if tax <= 5000 else tax
         return math.ceil(yearly_tax / 12)
 
@@ -114,7 +104,6 @@ class EmployeeTaxLoanRepository:
             else:
                 tax += income * rate
                 return tax
-            print("tax for", tax, bracket, rate, income)
 
         # If there's any remaining income above the last bracket
         if income:
