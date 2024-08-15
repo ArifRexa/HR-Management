@@ -9,8 +9,7 @@ from django.utils.html import format_html
 from icecream import ic
 from .forms import ProjectTechnologyInlineForm,ProjectAdminForm
 from django import forms
-from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService,ClientInvoiceDate
-
+from project_management.models import Project, ProjectTechnology, ProjectScreenshot, ProjectContent, Technology, ProjectNeed, Tag, ProjectDocument, ProjectReport, EnableDailyUpdateNow, ObservationProject,ProjectOverview, ProjectStatement, ProjectChallenges ,ProjectSolution, ProjectKeyFeature,ProjectResults,OurTechnology, ProjectPlatform, ProjectIndustry, ProjectService,ClientInvoiceDate,ProjectKeyPoint
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
@@ -39,6 +38,11 @@ class ProjectTechnologyInline(admin.StackedInline):
     form = ProjectTechnologyInlineForm
     extra = 1
     
+class ProjectKeyPointInline(admin.StackedInline):
+    model = ProjectKeyPoint
+    extra = 1
+    
+
 
 
 class ProjectScreenshotInline(admin.StackedInline):
@@ -83,7 +87,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = ('project_title_with_client', 'web_title', 'client_invoice_date','hourly_rate','last_increased', 'active','get_report_url','get_live_link')
     search_fields = ('title', 'web_title', 'client__name', 'client__email',)
     date_hierarchy = 'created_at'
-    inlines = (ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
+    inlines = (ProjectKeyPointInline,ProjectTechnologyInline,ProjectContentAdmin,ProjectKeyFeatureInline, ProjectScreenshotInline,ProjectDocumentAdmin)
     list_filter = ('active', 'show_in_website')
     list_per_page = 20
     ordering = ('pk',)
