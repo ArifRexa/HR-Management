@@ -190,7 +190,7 @@ class ProjectHourAdmin(
             obj.manager_id = request.user.employee.id
 
         tpm_project = EmployeeUnderTPM.objects.filter(project=obj.project)
-        if not obj.tpm and tpm_project.exists():
+        if tpm_project.exists():
             obj.tpm = tpm_project.first().tpm
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
