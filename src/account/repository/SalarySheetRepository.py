@@ -46,6 +46,8 @@ class EmployeeTaxLoanRepository:
         self.__employee_current_salary = employee.salaryhistory_set.filter(
             active_from__lte=self.__salary_sheet.date.replace(day=1)
         ).last()
+        if self.__employee_current_salary is None:
+            self.__employee_current_salary = self.employee.current_salary
         self.monthly_pay_amount = self.__employee_current_salary.payable_salary
 
     def calculate_tax_loan(self):
