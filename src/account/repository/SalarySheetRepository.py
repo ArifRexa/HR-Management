@@ -29,6 +29,20 @@ from dateutil.relativedelta import relativedelta
 from django.db.models.functions import ExtractMonth, ExtractYear
 
 
+def get_fiscal_year_dates(start_month=7):
+    date = datetime.now()
+    year = date.year
+    if date.month < start_month:
+        start_year = year - 1
+    else:
+        start_year = year
+
+    start_date = datetime(start_year, start_month, 1)
+    end_date = datetime(start_year + 1, start_month, 1) - timedelta(days=1)
+
+    return start_date, end_date
+
+
 class EmployeeTaxLoanRepository:
     __salary_sheet = SalarySheet()
     __employee_current_salary = SalaryHistory()
@@ -49,6 +63,9 @@ class EmployeeTaxLoanRepository:
         if self.__employee_current_salary is None:
             self.__employee_current_salary = self.employee.current_salary
         self.monthly_pay_amount = self.__employee_current_salary.payable_salary
+        self.fiscal_start_date, self.fiscal_end_date = (
+            get_fiscal_year_dates()
+        )  # default 7th month if need adjust
 
     def calculate_tax_loan(self):
         taxable_income = self.get_yearly_gross_income() - self.get_exemption()
@@ -74,7 +91,7 @@ class EmployeeTaxLoanRepository:
 
     def calculate_income_tax(self, income):
         # Tax brackets and their corresponding rates
-        
+
         brackets = [
             (350000, 0.00),
             (100000, 0.05),
@@ -82,7 +99,7 @@ class EmployeeTaxLoanRepository:
             (500000, 0.15),
             (500000, 0.20),
         ]
-        
+
         female_brackets = [
             (400000, 0.00),
             (100000, 0.05),
@@ -92,7 +109,6 @@ class EmployeeTaxLoanRepository:
         ]
         if self.employee.gender == "female":
             brackets = female_brackets
-        
 
         # Start with no tax
         tax = 0
@@ -245,7 +261,6 @@ class EmployeeTaxLoanRepository:
 
         return 0
 
-
     def get_investment_rebate(self):
         """
         A. 15% of Actual Investment
@@ -254,7 +269,9 @@ class EmployeeTaxLoanRepository:
         Allowable investment Allowance (Lower of A, B & C)
         """
         total_investment = InvestmentAllowance.objects.filter(
-            employee=self.employee, created_at__year=timezone.now().year
+            employee=self.employee,
+            created_at__date__gte=self.fiscal_start_date,
+            created_at__date__lte=self.fiscal_end_date,
         ).aggregate(
             total_allowance=Coalesce(
                 Sum("amount"), Value(0.0), output_field=DecimalField()
@@ -270,11 +287,11 @@ class EmployeeTaxLoanRepository:
 
     def get_tax_for_vehicle(self):
         total = VehicleRebate.objects.filter(
-            employee=self.employee, created_at__year=timezone.now().year
+            employee=self.employee,
+            created_at__date__gte=self.fiscal_start_date,
+            created_at__date__lte=self.fiscal_end_date,
         ).aggregate(
-            total_rebate=Coalesce(
-                Sum("amount"), Value(0), output_field=DecimalField()
-            )
+            total_rebate=Coalesce(Sum("amount"), Value(0), output_field=DecimalField())
         )
         return total.get("total_rebate", 0)
 
