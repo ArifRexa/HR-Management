@@ -242,6 +242,7 @@ class VideoTestimonial(TimeStampMixin):
         upload_to="video_testimonial/client_images/", null=True, blank=True
     )
     thumbnail = models.ImageField(upload_to="video_testimonial/thumbnails/")
+    description = models.TextField(blank=True, null=True)
     designation = models.CharField(max_length=255)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     text = models.TextField()
