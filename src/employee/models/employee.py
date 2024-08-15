@@ -27,6 +27,7 @@ from django.utils import timezone
 # from project_management.models import Project
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
+from django.template.loader import get_template
 class Appointment(AuthorMixin, TimeStampMixin):
     is_completed = models.BooleanField(default=False)
     subject = models.CharField(max_length=255, blank=True, null=True)
@@ -714,8 +715,10 @@ class TPMComplain(models.Model):
     ("approved", "✔ Approved"),
     ("observation", "🔍 Observation"), 
     )
-    complain = models.TextField(null=True,blank=True)
-    management_feedback = models.TextField(null=True,blank=True)
+    complain_title = models.CharField(max_length=250,null=True,blank=True)
+    complain = HTMLField(null=True,blank=True)
+    feedback_title = models.CharField(max_length=250,null=True,blank=True)
+    management_feedback = HTMLField(null=True,blank=True)
     status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
 
     # def __str__(self):
@@ -741,34 +744,34 @@ class TPMComplain(models.Model):
 
     def send_complain_email_tpm_to_management(self):
         # Prepare email subject and recipients
-        subject = f"New Complaint Created by {self.tpm.full_name}"
-        from_email = f"{self.tpm.email}"
-        to_email =  ['"Mediusware-HR" <hr@mediusware.com>']
-        
-        html_content = loader.render_to_string('mails/complaint_email_template.html', {
+        subject = f"TPM Complain: {self.complain_title}"
+        email = EmailMultiAlternatives(subject)
+        email.from_email = f"{self.tpm.email}"
+        email.to =  ['"Mediusware-HR" <hr@mediusware.com>']
+        html_template = get_template('mails/complaint_email_template.html')
+        html_content = html_template.render({
             'tpm': self.tpm,
             'employee': self.employee,
-            'complain': self.complain,
+            'complain': format_html(self.complain)
         })
 
         # Create and send email
-        email = EmailMultiAlternatives(subject, from_email, to_email)
         email.attach_alternative(html_content, "text/html")
         email.send()
 
     def send_complain_email_management_tpm(self):
         # Prepare email subject and recipients
-        subject = f"Management Feedback Created for {self.employee.full_name}"
-        from_email = '"Mediusware-HR" <hr@mediusware.com>'
-        to_email = [self.tpm.email]
-        
-        html_content = loader.render_to_string('mails/complaint_email_template.html', {
+        subject = subject = f"Management Feedback: {self.feedback_title}"
+        email = EmailMultiAlternatives(subject)
+        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        email.to = [self.tpm.email]
+        html_template = get_template('mails/management_feedback_template.html')
+        html_content = html_template.render({
             'tpm': self.tpm,
             'employee': self.employee,
-            'management_feedback': self.management_feedback,
+            'management_feedback': format_html(self.management_feedback)
         })
 
-        # Create and send email
-        email = EmailMultiAlternatives(subject, from_email, to_email)
+        # Create and send email 
         email.attach_alternative(html_content, "text/html")
         email.send()

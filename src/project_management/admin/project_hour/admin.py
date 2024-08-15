@@ -54,17 +54,15 @@ class EmployeeHourAdmin(admin.TabularInline):
 
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
-        
+
         if obj is not None:
             tpm_project = EmployeeUnderTPM.objects.filter(
-                project=obj.project,tpm=request.user.employee
+                project=obj.project, tpm=request.user.employee
             )
-            if (
-                obj.created_at <= three_day_earlier
-                and not request.user.is_superuser
-                and not tpm_project.exists()
-            ):
-                return ("hours", "employee")
+            if not tpm_project.exists():
+                return ("hours", "employee",)
+            if obj.created_at <= three_day_earlier and not request.user.is_superuser:
+                return ("hours", "employee",)
         return ()
 
 
@@ -151,8 +149,7 @@ class ProjectHourAdmin(
         if key in (
             "project__client__payment_method__id__exact",
             "project__client__id__exact",
-            "project__client__invoice_type__id__exact"
-
+            "project__client__invoice_type__id__exact",
         ):
             return True
         return super(ProjectHourAdmin, self).lookup_allowed(key, *args, **kwargs)
