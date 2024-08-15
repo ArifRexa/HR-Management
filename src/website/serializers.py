@@ -1,3 +1,5 @@
+from pyexpat import model
+from attr import fields
 from rest_framework import serializers
 
 from employee.models import (
@@ -29,6 +31,7 @@ from project_management.models import (
     ProjectPlatform,
     ProjectIndustry,
     ProjectService,
+    ProjectKeyPoint
 )
 from settings.models import Designation
 from website.models import (
@@ -335,6 +338,34 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "project_design",
         )
 
+
+
+class ProjectKeyPointSerializer(serializers.ModelSerializer):
+    icon_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectKeyPoint
+        fields = ['title', 'icon_url']
+
+    def get_icon_url(self, obj):
+        request = self.context.get('request')
+        if obj.icon and request:
+            return request.build_absolute_uri(obj.icon.url)
+        return None
+    
+class SpecialProjectSerializer(serializers.ModelSerializer):
+    project_logo_url = serializers.SerializerMethodField()
+    project_key_points = ProjectKeyPointSerializer(source='projectkeypoint_set', many=True)
+
+    class Meta:
+        model = Project
+        fields = ['title', 'description', 'project_logo_url','special_image', 'project_key_points']
+
+    def get_project_logo_url(self, obj):
+        request = self.context.get('request')
+        if obj.project_logo and request:
+            return request.build_absolute_uri(obj.project_logo.url)
+        return None
 
 class ProjectHighlightedSerializer(serializers.ModelSerializer):
     project_results = ProjectResultsSerializer()

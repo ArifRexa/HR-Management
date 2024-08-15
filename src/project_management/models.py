@@ -217,12 +217,15 @@ class Project(TimeStampMixin, AuthorMixin):
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     active = models.BooleanField(default=True)
+    is_special = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
     hourly_rate = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     activate_from = models.DateField(null=True, blank=True)
     featured_image = models.ImageField(null=True, blank=True)
+    project_logo = models.ImageField(upload_to="project_logo", null=True, blank=True)
+    special_image = models.ImageField(upload_to="special_image", null=True, blank=True)
     thumbnail = models.ImageField(upload_to="project_thumbnails", null=True, blank=True)
     featured_video = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
@@ -345,6 +348,15 @@ class ProjectTechnology(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
     technologies = models.ManyToManyField(Technology)
+
+    def __str__(self):
+        return self.title
+    
+class ProjectKeyPoint(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    icon = models.ImageField(null=True,blank=True)
+    title = models.CharField(max_length=200,null=True,blank=True)
+    
 
     def __str__(self):
         return self.title
