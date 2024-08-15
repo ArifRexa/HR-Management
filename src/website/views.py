@@ -56,6 +56,7 @@ from website.serializers import (
     ProjectDetailsSerializer,
     EmployeeDetailsSerializer,
     CategoryListSerializer,
+    SpecialProjectSerializer,
     TagListSerializer,
     BlogListSerializer,
     BlogDetailsSerializer,
@@ -194,6 +195,12 @@ class ProjectDetails(APIView):
         }
         serializer = ProjectDetailsSerializer(project, context=serializer_context)
         return Response(serializer.data)
+
+
+class SpecialProjectListView(ListAPIView):
+    queryset = Project.objects.filter(is_special=True, active=True)
+    serializer_class = SpecialProjectSerializer
+    
 
 
 class EmployeeSkillFilter(FilterSet):
