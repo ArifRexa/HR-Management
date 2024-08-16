@@ -13,11 +13,17 @@ from academy.models import (
     TrainingStructureModule,
     TrainingTechnology,
     Student,
+    OurAchievement,
 )
 
 
 from django import forms
 from project_management.models import ProjectTechnology
+
+
+@admin.register(OurAchievement)
+class OurAchievementAdmin(admin.ModelAdmin):
+    list_display = ("title", "number")
 
 
 @admin.register(Student)
