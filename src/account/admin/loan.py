@@ -26,6 +26,7 @@ class LoadAdmin(admin.ModelAdmin):
     actions = ('print_loan_agreement', 'duplicate')
     list_filter = ('employee',)
     search_fields = ('employee__full_name',)
+    date_hierarchy = 'created_at'
 
     @admin.action(description='Print Agreement')
     def print_loan_agreement(self, request, queryset):
