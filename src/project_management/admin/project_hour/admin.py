@@ -150,6 +150,8 @@ class ProjectHourAdmin(
             "project__client__payment_method__id__exact",
             "project__client__id__exact",
             "project__client__invoice_type__id__exact",
+            "project__client__invoice_type__isnull",
+            "project__client__payment_method__isnull",
         ):
             return True
         return super(ProjectHourAdmin, self).lookup_allowed(key, *args, **kwargs)
