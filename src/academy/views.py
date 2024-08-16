@@ -4,12 +4,14 @@ from academy.models import (
     HomePageWhyBest,
     InstructorFeedback,
     MarketingSlider,
+    OurAchievement,
     SuccessStory,
     Training,
 )
 from academy.serializers import (
     InstructorFeedbackSerializer,
     MarketingSliderSerializer,
+    OurAchievementSerializer,
     StudentCreateSerializer,
     SuccessStorySerializer,
     TrainingListSerializer,
@@ -18,6 +20,9 @@ from academy.serializers import (
 )
 from rest_framework import filters, response, permissions, parsers
 
+class OurAchievementListView(ListAPIView):
+    queryset = OurAchievement.objects.all()
+    serializer_class = OurAchievementSerializer
 
 class MarketingSliderAPIListView(ListAPIView):
     serializer_class = MarketingSliderSerializer

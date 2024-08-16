@@ -25,7 +25,7 @@ class Training(TimeStampMixin):
 
     def __str__(self):
         return self.title if self.title else str(self.id)
-    
+
     def save(self) -> None:
         if not self.slug:
             self.slug = slugify(self.title)
@@ -153,3 +153,12 @@ class HomePageWhyBest(TimeStampMixin):
     class Meta:
         verbose_name = "Why We Are Best"
         verbose_name_plural = "Why We Are Best"
+
+
+class OurAchievement(models.Model):
+    title = models.CharField(max_length=200)
+    number = models.CharField(max_length=100)
+    icon = models.ImageField(upload_to="achievement", null=True, blank=True)
+    
+    def __str__(self):
+        return self.title

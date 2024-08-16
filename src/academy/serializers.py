@@ -13,9 +13,15 @@ from academy.models import (
     TrainingStructure,
     TrainingStructureModule,
     TrainingTechnology,
+    OurAchievement
 )
 from website.serializers import TechnologySerializer
 
+
+class OurAchievementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurAchievement
+        fields = ("title", "number", "icon")
 
 class MarketingSliderSerializer(serializers.ModelSerializer):
     class Meta:
