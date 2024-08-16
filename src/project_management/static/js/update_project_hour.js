@@ -153,8 +153,8 @@ if (action == "change"){
 
 function update_total_hour(e){
 
-    const total_hour = document.getElementById('id_hours')
-
+    const total_hour = document.getElementsByClassName('readonly')
+    console.log("total hour",total_hour)
     const child_hours = document.getElementsByClassName("field-hours")
     let total = 0
     for(var i=1; i<child_hours.length; i++){
@@ -163,7 +163,7 @@ function update_total_hour(e){
         }
         
     }
-    total_hour.value = total
+    total_hour[0].innerText = total
 }
 
 }
