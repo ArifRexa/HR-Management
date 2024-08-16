@@ -356,7 +356,7 @@ class TaxDocumentInformation(TimeStampMixin):
         Employee,
         related_name="%(class)s",
         on_delete=models.CASCADE,
-        limit_choices_to={"active": True, "tax_eligible": True},
+        limit_choices_to={"active": True},
     )
     amount = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="Investment Amount", default=0.00
