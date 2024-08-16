@@ -116,7 +116,6 @@ class ProjectHourAdmin(
     list_per_page = 50
     ordering = ("-pk",)
     add_form_template = "admin/project_hour/project_hour.html"
-    readonly_fields = ("hours",)
     fieldsets = (
         ("Standard info", {"fields": ("hour_type", "project", "date", "hours")}),
         (
@@ -125,9 +124,6 @@ class ProjectHourAdmin(
         ),
     )
     form = ProjectHourAdminForm
-
-    def get_readonly_fields(self, request, obj):
-        return ["hours"]
 
     def get_form(self, request, obj, change, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
