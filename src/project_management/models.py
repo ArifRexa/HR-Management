@@ -91,7 +91,7 @@ class Client(TimeStampMixin, AuthorMixin):
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
     # show_in_web = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
-    client_feedback = models.TextField(null=True, blank=True)
+    client_feedback = HTMLField(null=True, blank=True)
     image = models.ImageField(
         upload_to="client_images", null=True, blank=True, verbose_name="Client Image"
     )
