@@ -6,6 +6,7 @@ from academy.views import (
     SuccessStoryView,
     TrainingListAPIView,
     TrainingRetrieveAPIView,
+    OurAchievementListView
 )
 from django.urls import path
 
@@ -14,6 +15,11 @@ urlpatterns = [
         "marketing/sliders/",
         MarketingSliderAPIListView.as_view(),
         name="marketing_slider",
+    ),
+    path(
+        "our-achievement/",
+        OurAchievementListView.as_view(),
+        name="our_achievement",
     ),
     path("training/<slug:slug>/", TrainingRetrieveAPIView.as_view(), name="training"),
     path("trainings/", TrainingListAPIView.as_view(), name="trainings"),
