@@ -1,4 +1,6 @@
 window.onload = function(e){
+    const _hour = document.getElementById('id_hours')
+    _hour.readOnly=true
 console.log("update project hour")
 function updateProjectHour(project_hour_id=null){
     project = document.querySelector('#id_project');
@@ -153,8 +155,8 @@ if (action == "change"){
 
 function update_total_hour(e){
 
-    const total_hour = document.getElementsByClassName('readonly')
-    console.log("total hour",total_hour)
+    const total_hour = document.getElementById('id_hours')
+
     const child_hours = document.getElementsByClassName("field-hours")
     let total = 0
     for(var i=1; i<child_hours.length; i++){
@@ -163,7 +165,7 @@ function update_total_hour(e){
         }
         
     }
-    total_hour[0].innerText = total
+    total_hour.value = total
 }
 
 }
