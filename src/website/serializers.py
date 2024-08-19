@@ -31,7 +31,7 @@ from project_management.models import (
     ProjectPlatform,
     ProjectIndustry,
     ProjectService,
-    ProjectKeyPoint
+    ProjectKeyPoint,
 )
 from settings.models import Designation
 from website.models import (
@@ -82,6 +82,7 @@ class TechnologySerializer(serializers.ModelSerializer):
     class Meta:
         model = Technology
         fields = ("icon", "name")
+
 
 class ClientSerializer(serializers.ModelSerializer):
     class Meta:
@@ -275,18 +276,19 @@ class ProjectSerializer(serializers.ModelSerializer):
             "project_results",
             "technologies",
         )
-    
+
     def get_title(self, obj):
         return obj.web_title if obj.web_title else obj.title
-    
+
     def get_industries(self, obj):
         return [industry.title for industry in obj.industries.all()]
 
-class ProjectListSerializer(serializers.ModelSerializer):
 
+class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = ("description", "thumbnail", "featured_video")
+
 
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -325,6 +327,9 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "live_link",
             "location",
             "services",
+            "location_image",
+            "service_we_provide_image",
+            "industry_image",
             "project_results",
             "description",
             "featured_image",
@@ -338,6 +343,14 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "project_design",
         )
 
+    def to_representation(self, instance):
+        request = self.context.get("request")
+        data = super().to_representation(instance)
+        data["platform_image"] = [
+            request.build_absolute_uri(obj.image.url)
+            for obj in instance.platformimage_set.all()
+        ]
+        return data
 
 
 class ProjectKeyPointSerializer(serializers.ModelSerializer):
@@ -345,27 +358,37 @@ class ProjectKeyPointSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectKeyPoint
-        fields = ['title', 'icon_url']
+        fields = ["title", "icon_url"]
 
     def get_icon_url(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.icon and request:
             return request.build_absolute_uri(obj.icon.url)
         return None
-    
+
+
 class SpecialProjectSerializer(serializers.ModelSerializer):
     project_logo_url = serializers.SerializerMethodField()
-    project_key_points = ProjectKeyPointSerializer(source='projectkeypoint_set', many=True)
+    project_key_points = ProjectKeyPointSerializer(
+        source="projectkeypoint_set", many=True
+    )
 
     class Meta:
         model = Project
-        fields = ['title', 'description', 'project_logo_url','special_image', 'project_key_points']
+        fields = [
+            "title",
+            "description",
+            "project_logo_url",
+            "special_image",
+            "project_key_points",
+        ]
 
     def get_project_logo_url(self, obj):
-        request = self.context.get('request')
+        request = self.context.get("request")
         if obj.project_logo and request:
             return request.build_absolute_uri(obj.project_logo.url)
         return None
+
 
 class ProjectHighlightedSerializer(serializers.ModelSerializer):
     project_results = ProjectResultsSerializer()
@@ -615,10 +638,12 @@ class BlogListSerializer(serializers.ModelSerializer):
         data["table_of_contents"] = instance.blog_contexts.all().values("id", "title")
         return data
 
+
 class BlogFAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogFAQ
         fields = ["question", "answer"]
+
 
 class BlogDetailsSerializer(BlogListSerializer):
     tags = TagSerializer(many=True, source="tag")
@@ -729,12 +754,18 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
     client_logo = serializers.ImageField(source="logo", read_only=True)
     feedback = serializers.SerializerMethodField()
     country = serializers.CharField(source="country.name", read_only=True)
-    
-    
 
     class Meta:
         model = Client
-        fields = ("client_name", "client_designation", "client_logo", "company_name", "feedback", "country","client_feedback")
+        fields = (
+            "client_name",
+            "client_designation",
+            "client_logo",
+            "company_name",
+            "feedback",
+            "country",
+            "client_feedback",
+        )
 
     # def get_client_name(self, obj):
     #     return obj.client.name if obj.client else None
@@ -816,11 +847,17 @@ class LifeAtMediuswareSerializer(serializers.ModelSerializer):
 class AwardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Award
-        fields = ["title","image","link", "short_description",]
+        fields = [
+            "title",
+            "image",
+            "link",
+            "short_description",
+        ]
 
 
 class ClientSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField()
+
     class Meta:
         model = Client
         fields = ["name", "designation", "image", "client_feedback"]
@@ -833,12 +870,12 @@ class VideoTestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoTestimonial
         fields = ["name", "client_image", "designation", "text", "video"]
-        
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["country"] = instance.country.name
         return data
-    
+
 
 class IndustryWeServeSerializer(serializers.ModelSerializer):
     class Meta:
