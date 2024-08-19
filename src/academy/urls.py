@@ -1,4 +1,5 @@
 from academy.views import (
+    FAQListView,
     HomePageAPIView,
     InstructorFeedbackView,
     MarketingSliderAPIListView,
@@ -35,4 +36,5 @@ urlpatterns = [
         HomePageAPIView.as_view(),
         name="why_we_best",
     ),
+    path("faq/", FAQListView.as_view(), name="faq"),
 ]

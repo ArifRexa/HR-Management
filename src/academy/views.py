@@ -1,6 +1,7 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.views import APIView
 from academy.models import (
+    FAQ,
     HomePageWhyBest,
     InstructorFeedback,
     MarketingSlider,
@@ -9,6 +10,7 @@ from academy.models import (
     Training,
 )
 from academy.serializers import (
+    FAQSerializer,
     InstructorFeedbackSerializer,
     MarketingSliderSerializer,
     OurAchievementSerializer,
@@ -36,6 +38,11 @@ class TrainingRetrieveAPIView(RetrieveAPIView):
     serializer_class = TrainingSerializer
     queryset = Training.objects.all()
     lookup_field = "slug"
+
+class FAQListView(ListAPIView):
+    queryset = FAQ.objects.all()
+    serializer_class = FAQSerializer
+    pagination_class = None
 
 
 class TrainingListAPIView(ListAPIView):
