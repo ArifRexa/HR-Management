@@ -244,6 +244,10 @@ class Project(TimeStampMixin, AuthorMixin):
         blank=True,
         related_name="project",
     )
+    
+    location_image = models.ImageField(null=True, blank=True)
+    service_we_provide_image = models.ImageField(null=True, blank=True)
+    industry_image = models.ImageField(null=True, blank=True)
 
     class Meta:
         ordering = ["title"]
@@ -324,6 +328,22 @@ class Project(TimeStampMixin, AuthorMixin):
             employeeproject__project=self, employeeproject__project__active=True
         )
 
+
+class PlatformImage(TimeStampMixin):
+    image = models.ImageField(null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
+    
+
+class ProjectServiceSolution(TimeStampMixin):
+    project = models.ForeignKey(
+        Project,
+        related_name="service_solutions",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    title = models.CharField(max_length=255)
+    short_description = models.TextField()
+    description = HTMLField()
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
