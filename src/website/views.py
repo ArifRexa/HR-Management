@@ -200,7 +200,6 @@ class ProjectDetails(APIView):
 class SpecialProjectListView(ListAPIView):
     queryset = Project.objects.filter(is_special=True, active=True)
     serializer_class = SpecialProjectSerializer
-    
 
 
 class EmployeeSkillFilter(FilterSet):
@@ -617,6 +616,7 @@ class GalleryListView(APIView):
         ]
         return Response({"results": images})
 
+
 class LifeAtMediuswareListView(APIView):
     serializer_class = LifeAtMediuswareSerializer
 
@@ -648,7 +648,7 @@ class ClientListAPIView(ListAPIView):
 class VideoTestimonialListAPIView(ListAPIView):
     queryset = VideoTestimonial.objects.all()
     serializer_class = VideoTestimonialSerializer
-    
+
 
 class IndustryWeServeListAPIView(ListAPIView):
     queryset = IndustryWeServe.objects.all()
