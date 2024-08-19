@@ -13,10 +13,16 @@ from academy.models import (
     TrainingStructure,
     TrainingStructureModule,
     TrainingTechnology,
-    OurAchievement
+    OurAchievement,
+    FAQ,
 )
 from website.serializers import TechnologySerializer
 
+
+class FAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FAQ
+        fields = ("question", "answer")
 
 class OurAchievementSerializer(serializers.ModelSerializer):
     class Meta:
