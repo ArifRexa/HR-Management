@@ -1,8 +1,7 @@
-from ast import List
-import re
 from django.contrib import admin
 from django.http import HttpRequest
 from django.utils.html import format_html
+from django.utils.timesince import timesince
 
 # from networkx import project
 from project_management.models import (
@@ -85,6 +84,7 @@ class ClientAdmin(admin.ModelAdmin):
         "get_client_review",
         "country",
         "payment_method",
+        "get_client_age",
     )
     fields = (
         "name",
@@ -115,6 +115,10 @@ class ClientAdmin(admin.ModelAdmin):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
+    
+    @admin.display(description="Age")
+    def get_client_age(self, obj):
+        return timesince(obj.created_at)
 
     def get_list_filter(self, request: HttpRequest):
         if request.user.has_perm("project_management.view_client"):
