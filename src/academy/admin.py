@@ -14,12 +14,18 @@ from academy.models import (
     TrainingTechnology,
     Student,
     OurAchievement,
+    FAQ
 )
 
 
 from django import forms
 from project_management.models import ProjectTechnology
 
+
+@admin.register(FAQ)
+class FAQAdmin(admin.ModelAdmin):
+    list_display = ("id", "question")
+    list_display_links = ("id", "question")
 
 @admin.register(OurAchievement)
 class OurAchievementAdmin(admin.ModelAdmin):
