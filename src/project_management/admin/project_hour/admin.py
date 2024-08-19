@@ -165,7 +165,7 @@ class ProjectHourAdmin(
         my_context = dict(
             self.admin_site.each_context(request),
             total=self.get_total_hour(request),
-            series=self.get_data(request),
+            # series=self.get_data(request),
         )
         return super(ProjectHourAdmin, self).changelist_view(
             request, extra_context=my_context
