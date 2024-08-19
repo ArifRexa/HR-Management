@@ -1,4 +1,6 @@
 window.onload = function(e){
+    const _hour = document.getElementById('id_hours')
+    _hour.readOnly=true
 console.log("update project hour")
 function updateProjectHour(project_hour_id=null){
     project = document.querySelector('#id_project');

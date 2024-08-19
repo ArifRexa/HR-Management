@@ -28,6 +28,7 @@ class ServicePageSerializer(serializers.ModelSerializer):
             "menu_title",
             "banner_query",
             "feature_image",
+            "description",
             "icon",
             "slug",
         )

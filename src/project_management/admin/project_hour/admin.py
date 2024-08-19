@@ -59,10 +59,13 @@ class EmployeeHourAdmin(admin.TabularInline):
             tpm_project = EmployeeUnderTPM.objects.filter(
                 project=obj.project, tpm=request.user.employee
             )
-            if not tpm_project.exists():
-                return ("hours", "employee",)
+            if tpm_project.exists():
+                return ()
             if obj.created_at <= three_day_earlier and not request.user.is_superuser:
-                return ("hours", "employee",)
+                return (
+                    "hours",
+                    "employee",
+                )
         return ()
 
 
@@ -162,7 +165,7 @@ class ProjectHourAdmin(
         my_context = dict(
             self.admin_site.each_context(request),
             total=self.get_total_hour(request),
-            series=self.get_data(request),
+            # series=self.get_data(request),
         )
         return super(ProjectHourAdmin, self).changelist_view(
             request, extra_context=my_context
@@ -194,6 +197,8 @@ class ProjectHourAdmin(
         tpm_project = EmployeeUnderTPM.objects.filter(project=obj.project)
         if tpm_project.exists():
             obj.tpm = tpm_project.first().tpm
+        else:
+            obj.status = "approved"
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
 
