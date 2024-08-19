@@ -197,6 +197,8 @@ class ProjectHourAdmin(
         tpm_project = EmployeeUnderTPM.objects.filter(project=obj.project)
         if tpm_project.exists():
             obj.tpm = tpm_project.first().tpm
+        else:
+            obj.status = "approved"
 
         super(ProjectHourAdmin, self).save_model(request, obj, form, change)
 
