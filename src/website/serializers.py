@@ -1,5 +1,4 @@
-from pyexpat import model
-from attr import fields
+
 from rest_framework import serializers
 
 from employee.models import (
@@ -765,6 +764,7 @@ class OurClientsFeedbackSerializer(serializers.ModelSerializer):
             "feedback",
             "country",
             "client_feedback",
+            "image",
         )
 
     # def get_client_name(self, obj):
