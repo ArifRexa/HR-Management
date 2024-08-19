@@ -90,6 +90,7 @@ class ClientAdmin(admin.ModelAdmin):
         "name",
         "web_name",
         "email",
+        "designation",
         "company_name",
         "logo",
         "client_feedback",
