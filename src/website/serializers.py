@@ -14,6 +14,7 @@ from project_management.admin import client_feedback
 from project_management.models import (
     Project,
     Client,
+    ProjectServiceSolution,
     Technology,
     ProjectTechnology,
     ProjectContent,
@@ -288,6 +289,14 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = ("description", "thumbnail", "featured_video")
 
+class ProjectServiceSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectServiceSolution
+        fields = (
+            "title",
+            "short_description",
+            "description",
+        )
 
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -315,6 +324,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     platforms = ProjectPlatformSerializer(many=True)
     industries = ProjectIndustrySerializer(many=True)
     services = ProjectServiceSerializer(many=True)
+    service_solutions = ProjectServiceSolutionSerializer(many=True)
 
     class Meta:
         model = Project
@@ -340,6 +350,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "client",
             "client_feedback",
             "project_design",
+            "service_solutions",
         )
 
     def to_representation(self, instance):
