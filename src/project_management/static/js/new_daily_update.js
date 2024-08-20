@@ -57,6 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("change form")
             let existing_updates = JSON.parse(updates_json_input_field.innerText)
             console.log(existing_updates)
+            if (existing_updates == null) {
+                add_update_element()
+            }
             existing_updates.forEach((line_updates) => {
                 add_update_element(line_updates)
 
