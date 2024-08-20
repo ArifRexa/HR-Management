@@ -34,16 +34,17 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
-    VideoTestimonial
+    VideoTestimonial,
 )
 
 
 @admin.register(Award)
 class AwardAdmin(admin.ModelAdmin):
-    list_display = ["title","image", "short_description"]
-    
+    list_display = ["title", "image", "short_description"]
+
     def has_module_permission(self, request):
         return False
+
 
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
@@ -62,15 +63,17 @@ class ServiceProcessAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
+
 class ServiceContentAdmin(admin.StackedInline):
     model = ServiceContent
     extra = 1
+
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-    inlines = (ServiceTechnologyInline,ServiceContentAdmin)
+    inlines = (ServiceTechnologyInline, ServiceContentAdmin)
 
     def has_module_permission(self, request):
         return False
@@ -110,10 +113,12 @@ class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
 
+
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
 
+from django.utils.safestring import mark_safe
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -131,6 +136,20 @@ class BlogAdmin(admin.ModelAdmin):
         "updated_at",
         "active",
         # "approved",
+    )
+    fields = (
+        "title",
+        "slug",
+        "image",
+        "video",
+        "youtube_link",
+        "category",
+        "tag",
+        "short_description",
+        "is_featured",
+        "content",
+        "read_time_minute",
+        "total_view",
     )
 
     @admin.action(description="Deactivate selected blogs")
@@ -349,19 +368,17 @@ class VideoTestimonialAdmin(admin.ModelAdmin):
     list_filter = ("name", "country")
     ordering = ("name",)
     # date_hierarchy = "created_at"
-    
+
 
 @admin.register(IndustryWeServe)
 class IndustryWeServeAdmin(admin.ModelAdmin):
     list_display = ("title",)
-    
+
     def has_module_permission(self, request):
         return False
-    
+
 
 @admin.register(LifeAtMediusware)
 class LifeAtMediuswareAdmin(admin.ModelAdmin):
-    
-    
     def has_module_permission(self, request):
         return False
