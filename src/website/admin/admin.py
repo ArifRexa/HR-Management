@@ -152,6 +152,8 @@ class BlogAdmin(admin.ModelAdmin):
         "total_view",
     )
 
+    class Media:
+        js = ('js/blog_post_field_escape.js',)
     @admin.action(description="Deactivate selected blogs")
     def unapprove_selected(self, request, queryset):
         queryset.update(active=False)
