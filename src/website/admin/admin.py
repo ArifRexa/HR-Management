@@ -34,16 +34,17 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
-    VideoTestimonial
+    VideoTestimonial,
 )
 
 
 @admin.register(Award)
 class AwardAdmin(admin.ModelAdmin):
-    list_display = ["title","image", "short_description"]
-    
+    list_display = ["title", "image", "short_description"]
+
     def has_module_permission(self, request):
         return False
+
 
 @admin.register(Gallery)
 class GalleryAdmin(admin.ModelAdmin):
@@ -62,15 +63,17 @@ class ServiceProcessAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
+
 class ServiceContentAdmin(admin.StackedInline):
     model = ServiceContent
     extra = 1
+
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-    inlines = (ServiceTechnologyInline,ServiceContentAdmin)
+    inlines = (ServiceTechnologyInline, ServiceContentAdmin)
 
     def has_module_permission(self, request):
         return False
@@ -110,10 +113,12 @@ class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
 
+
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
 
+from django.utils.safestring import mark_safe
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -132,7 +137,23 @@ class BlogAdmin(admin.ModelAdmin):
         "active",
         # "approved",
     )
+    fields = (
+        "title",
+        "slug",
+        "image",
+        "video",
+        "youtube_link",
+        "category",
+        "tag",
+        "short_description",
+        "is_featured",
+        "content",
+        "read_time_minute",
+        "total_view",
+    )
 
+    class Media:
+        js = ('js/blog_post_field_escape.js',)
     @admin.action(description="Deactivate selected blogs")
     def unapprove_selected(self, request, queryset):
         queryset.update(active=False)
@@ -231,21 +252,21 @@ class BlogAdmin(admin.ModelAdmin):
         else:
             return querySet.filter(created_by=user)
 
-    def get_form(
-        self,
-        request: Any,
-        obj: Union[Any, None] = ...,
-        change: bool = ...,
-        **kwargs: Any,
-    ) -> Any:
-        try:
-            form = super().get_form(request, obj, change, **kwargs)
-            form.base_fields["active"].disabled = not request.user.has_perm(
-                "website.can_approve"
-            )
-        except Exception:
-            form = super().get_form(request, obj, **kwargs)
-        return form
+    # def get_form(
+    #     self,
+    #     request: Any,
+    #     obj: Union[Any, None] = ...,
+    #     change: bool = ...,
+    #     **kwargs: Any,
+    # ) -> Any:
+    #     try:
+    #         form = super().get_form(request, obj, change, **kwargs)
+    #         form.base_fields["active"].disabled = not request.user.has_perm(
+    #             "website.can_approve"
+    #         )
+    #     except Exception:
+    #         form = super().get_form(request, obj, **kwargs)
+    #     return form
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
@@ -266,11 +287,11 @@ class BlogAdmin(admin.ModelAdmin):
             return not obj.active and obj.created_by == user
         return permitted
 
-    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
-        form.base_fields["active"].disabled = not request.user.has_perm(
-            "website.can_approve"
-        )
-        return super().save_model(request, obj, form, change)
+    # def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
+    #     form.base_fields["active"].disabled = not request.user.has_perm(
+    #         "website.can_approve"
+    #     )
+    #     return super().save_model(request, obj, form, change)
 
 
 @admin.register(BlogComment)
@@ -349,19 +370,17 @@ class VideoTestimonialAdmin(admin.ModelAdmin):
     list_filter = ("name", "country")
     ordering = ("name",)
     # date_hierarchy = "created_at"
-    
+
 
 @admin.register(IndustryWeServe)
 class IndustryWeServeAdmin(admin.ModelAdmin):
     list_display = ("title",)
-    
+
     def has_module_permission(self, request):
         return False
-    
+
 
 @admin.register(LifeAtMediusware)
 class LifeAtMediuswareAdmin(admin.ModelAdmin):
-    
-    
     def has_module_permission(self, request):
         return False
