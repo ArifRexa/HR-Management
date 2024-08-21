@@ -140,8 +140,9 @@ class BlogForm(forms.ModelForm):
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
-            self.fields["status"].choices = (('pending', 'Pending'), ('moderator', 'Moderator'))
+        if self.fields:
+            if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
+                self.fields["status"].choices = (('pending', 'Pending'), ('moderator', 'Moderator'))
 
 
 @admin.register(Blog)
