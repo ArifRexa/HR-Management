@@ -10,12 +10,15 @@ window.onload = function() {
 
     const blog_context_group = document.getElementById("blog_contexts-group")
     const blog_context_field_container = blog_context_group.getElementsByClassName("inline-related")
-    for (let i = 0; i < blog_context_field_container.length-1; i++) {
+    for (let i = 0; i < blog_context_field_container.length; i++) {
 
         const blog_context_description = blog_context_field_container[i].getElementsByClassName("form-row field-description")[0]
         const description = blog_context_description.getElementsByClassName("readonly")[0]
-        description.innerHTML = description.innerText
-        console.log(description);
+        if(description!=undefined){
+
+            description.innerHTML = description.innerText
+            console.log(description);
+        }
 
     }
 
