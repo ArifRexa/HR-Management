@@ -1,4 +1,5 @@
 from typing import Any, Union
+from django import forms
 from django.contrib import admin
 from django.db.models.query import QuerySet
 from django.http.request import HttpRequest
@@ -13,6 +14,7 @@ import requests
 from website.models import (
     Award,
     BlogFAQ,
+    BlogModeratorFeedback,
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
@@ -36,6 +38,7 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
 )
+from django.forms.models import BaseInlineFormSet
 
 
 @admin.register(Award)
@@ -114,16 +117,35 @@ class BlogContextInline(admin.StackedInline):
     extra = 1
 
 
+# class BlogModeratorFeedbackFormSet(BaseInlineFormSet):
+#     def __init__(self, *args, **kwargs):
+#         super(BlogModeratorFeedbackFormSet, self).__init__(*args, **kwargs)
+#         created_by = 1
+#         if self.request and self.request.user.has_perm("website.can_approve"):
+#             created_by=2
+#         self.initial = [
+#             {"created_by_title": 2},
+#         ]
+
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
 
-from django.utils.safestring import mark_safe
+
+class BlogModeratorFeedbackInline(admin.StackedInline):
+    model = BlogModeratorFeedback
+    extra = 1
+    # formset = BlogModeratorFeedbackFormSet
+    fields = ("created_by_title", "feedback")
+    readonly_fields = ("created_by_title",)
+
+
+
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (BlogContextInline, BlogFAQInline)
+    inlines = (BlogContextInline, BlogFAQInline, BlogModeratorFeedbackInline)
     actions = ["clone_selected", "approve_selected", "unapprove_selected"]
 
     search_fields = ("title",)
@@ -153,7 +175,8 @@ class BlogAdmin(admin.ModelAdmin):
     )
 
     class Media:
-        js = ('js/blog_post_field_escape.js',)
+        js = ("js/blog_post_field_escape.js",)
+
     @admin.action(description="Deactivate selected blogs")
     def unapprove_selected(self, request, queryset):
         queryset.update(active=False)

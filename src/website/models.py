@@ -1,3 +1,4 @@
+from typing import Iterable
 from .hire_models import *  # noqa
 from django.db import models
 
@@ -145,6 +146,23 @@ class BlogFAQ(AuthorMixin, TimeStampMixin):
     blogs = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="blog_faqs")
     question = models.CharField(max_length=255)
     answer = models.TextField()
+
+
+class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
+    MODERATOR_FEEDBACK_TITLE = (
+        (1, "Moderator"),
+        (2, "Author"),
+    )
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+    feedback = HTMLField()
+    created_by_title = models.IntegerField(choices=MODERATOR_FEEDBACK_TITLE, verbose_name="Created By")
+    
+    def save(self,*args, **kwargs):
+        if self.created_by == self.blog.created_by:
+            self.created_by_title = 2
+        else:
+            self.created_by_title = 1
+        return super().save(*args, **kwargs)
 
 class BlogCategory(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
