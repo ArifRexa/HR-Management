@@ -89,6 +89,11 @@ class Tag(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.name
 
+class BlogStatus(models.TextChoices):
+    PENDING = 1, 'Pending'
+    AUTHOR = 2, 'Author'
+    MODERATOR = 3, 'Moderator'
+    APPROVED = 4, 'Approved'
 
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
@@ -104,6 +109,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
+    status = models.SmallIntegerField(default=BlogStatus.PENDING, choices=BlogStatus.choices)
 
     def __str__(self):
         return self.title
@@ -124,13 +130,6 @@ class Blog(AuthorMixin, TimeStampMixin):
             ("can_delete_after_approve", "Can Delete After Approve"),
         ]
 
-    def clean(self):
-        if self.is_featured:
-            featured_blogs_count = Blog.objects.filter(is_featured=True).count()
-            if featured_blogs_count >= 3:
-                raise ValidationError(
-                    "Only up to 3 blogs can be featured.You have already added more than 3"
-                )
 
 
 class BlogContext(AuthorMixin, TimeStampMixin):
@@ -146,7 +145,6 @@ class BlogFAQ(AuthorMixin, TimeStampMixin):
     blogs = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="blog_faqs")
     question = models.CharField(max_length=255)
     answer = models.TextField()
-
 
 class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     MODERATOR_FEEDBACK_TITLE = (
