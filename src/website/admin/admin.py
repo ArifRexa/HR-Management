@@ -315,6 +315,7 @@ class BlogAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
+        from django.urls import reverse
         for formset in formsets:
             for inline_form in formset.forms:
                 if (
@@ -325,10 +326,12 @@ class BlogAdmin(admin.ModelAdmin):
                     if request.user.has_perm("website.can_approve"):
                         content = inline_form.cleaned_data.get("feedback")
                         blog = inline_form.cleaned_data.get("blog")
+                        blog_url = request.build_absolute_uri(reverse("admin:website_blog_change", args=[blog.id]))
                         async_task(
                             "website.tasks.send_blog_moderator_feedback_email",
                             content,
-                            blog.created_by.employee,
+                            blog,
+                            blog_url,
                         )
 
         return super().save_related(request, form, formsets, change)
