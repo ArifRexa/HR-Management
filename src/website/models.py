@@ -90,10 +90,10 @@ class Tag(AuthorMixin, TimeStampMixin):
         return self.name
 
 class BlogStatus(models.TextChoices):
-    PENDING = 1, 'Pending'
-    AUTHOR = 2, 'Author'
-    MODERATOR = 3, 'Moderator'
-    APPROVED = 4, 'Approved'
+    PENDING = 'pending', 'Pending'
+    AUTHOR = 'author', 'Author'
+    MODERATOR = 'moderator', 'Moderator'
+    APPROVED = 'approved', 'Approved'
 
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
@@ -109,7 +109,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
-    status = models.SmallIntegerField(default=BlogStatus.PENDING, choices=BlogStatus.choices)
+    status = models.CharField(max_length=10,default=BlogStatus.PENDING, choices=BlogStatus.choices)
 
     def __str__(self):
         return self.title
