@@ -109,7 +109,7 @@
 
 {% block content_title %}
 
-{% if  is_manager_lead_tpm%}
+{% if  is_manager_lead_tpm and not request.user.is_superuser %}
    <div style="float: right;">
         <p>{{approval_info_leave_daily_update}}</p>
     </div>
@@ -128,6 +128,8 @@
 {#</div>#}
 {#{% endif %}#}
 
+
+{% if not request.user.is_superuser %}
 <div class="row mb-4">
     <div class="col-md-5 d-flex justify-content-center justify-content-md-start align-items-center">
         {% if title %}
@@ -137,15 +139,18 @@
     <div class="col-md-7">
         {% if not is_management %}
         <ul class="list-group list-group-horizontal-md float-end remove-float-end-on-mobile" style="margin-right: 20px;">
+          {% if not request.user.is_superuser%}
           <div style="display: flex; align-items: center; justify-content: space-between;">
+            
             <p style="margin-top: 15px;margin-right: 15px; ">Weekly: {{weekly_expected_hours}} ({{ request.user.employee.get_last_four_weeks_totals.0|safe }})<br>
                 Last 4 Weeks: {{monthly_expected_hours}} ({% if monthly_expected_hours > request.user.employee.get_last_four_weeks_totals.1 %}<span style="color: red;">{{ request.user.employee.get_last_four_weeks_totals.1 }}</span>{% else %}{{ request.user.employee.get_last_four_weeks_totals.1 }}{% endif %})</p>
             
-            {% if not is_super%}
                 <div style="float: right; margin-right: 10px; ">
                     <p style="color: red; margin-bottom: 0;">{{late_attendance_fine }} </p>
                 </div>
-            {%endif%}
+            
+          {%endif%}
+
           </div>
             <li class="list-group-item">{% include 'admin/form/employee_project_form.html' %}</li>
             <li class="list-group-item">{% include 'admin/form/employee_status_form.html' %}</li>
@@ -153,6 +158,7 @@
         {% endif %}
     </div>
 </div>
+{%endif%}
 
 <script>
     const feedback__marquee = document.getElementById("feedback__marquee");

@@ -9,6 +9,7 @@ from django.utils.html import format_html
 from django.db import transaction
 from django.forms.models import model_to_dict
 import requests
+from django_q.tasks import async_task
 
 # Register your models here.
 from website.models import (
@@ -117,15 +118,7 @@ class BlogContextInline(admin.StackedInline):
     extra = 1
 
 
-# class BlogModeratorFeedbackFormSet(BaseInlineFormSet):
-#     def __init__(self, *args, **kwargs):
-#         super(BlogModeratorFeedbackFormSet, self).__init__(*args, **kwargs)
-#         created_by = 1
-#         if self.request and self.request.user.has_perm("website.can_approve"):
-#             created_by=2
-#         self.initial = [
-#             {"created_by_title": 2},
-#         ]
+
 
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
@@ -139,6 +132,17 @@ class BlogModeratorFeedbackInline(admin.StackedInline):
     fields = ("created_by_title", "feedback")
     readonly_fields = ("created_by_title",)
 
+class BlogForm(forms.ModelForm):
+    
+    class Meta:
+        model = Blog
+        fields = "__all__"
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.fields:
+            if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
+                self.fields["status"].choices = (('pending', 'Pending'), ('moderator', 'Moderator'))
 
 
 @admin.register(Blog)
@@ -157,7 +161,7 @@ class BlogAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
         "active",
-        # "approved",
+        "status",
     )
     fields = (
         "title",
@@ -172,8 +176,10 @@ class BlogAdmin(admin.ModelAdmin):
         "content",
         "read_time_minute",
         "total_view",
+        "status",
     )
-
+    form = BlogForm
+    list_filter = ("status", )
     class Media:
         js = ("js/blog_post_field_escape.js",)
 
@@ -275,21 +281,16 @@ class BlogAdmin(admin.ModelAdmin):
         else:
             return querySet.filter(created_by=user)
 
-    # def get_form(
-    #     self,
-    #     request: Any,
-    #     obj: Union[Any, None] = ...,
-    #     change: bool = ...,
-    #     **kwargs: Any,
-    # ) -> Any:
-    #     try:
-    #         form = super().get_form(request, obj, change, **kwargs)
-    #         form.base_fields["active"].disabled = not request.user.has_perm(
-    #             "website.can_approve"
-    #         )
-    #     except Exception:
-    #         form = super().get_form(request, obj, **kwargs)
-    #     return form
+    def get_form(
+        self,
+        request: Any,
+        obj: Union[Any, None] = ...,
+        change: bool = ...,
+        **kwargs: Any,
+    ) -> Any:
+        form = super().get_form(request, obj, change, **kwargs)
+        form.request = request
+        return form
 
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
@@ -310,11 +311,30 @@ class BlogAdmin(admin.ModelAdmin):
             return not obj.active and obj.created_by == user
         return permitted
 
-    # def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
-    #     form.base_fields["active"].disabled = not request.user.has_perm(
-    #         "website.can_approve"
-    #     )
-    #     return super().save_model(request, obj, form, change)
+    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
+        return super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        from django.urls import reverse
+        for formset in formsets:
+            for inline_form in formset.forms:
+                if (
+                    inline_form._meta.model == BlogModeratorFeedback
+                    and inline_form.instance.id is None
+                    and inline_form.cleaned_data
+                ):
+                    if request.user.has_perm("website.can_approve"):
+                        content = inline_form.cleaned_data.get("feedback")
+                        blog = inline_form.cleaned_data.get("blog")
+                        blog_url = request.build_absolute_uri(reverse("admin:website_blog_change", args=[blog.id]))
+                        async_task(
+                            "website.tasks.send_blog_moderator_feedback_email",
+                            content,
+                            blog,
+                            blog_url,
+                        )
+
+        return super().save_related(request, form, formsets, change)
 
 
 @admin.register(BlogComment)

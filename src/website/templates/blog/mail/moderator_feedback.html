@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% load humanize_extra %}
+
+<p>Blog Link: {{ url }}</p>
+<br>
+<h3>Dear {{ employee.full_name | title }},</h3>
+<p>Fine Tune your Blog following Feedback.</p>
+<br>
+{{content|safe}}
+</body>
+</html>
