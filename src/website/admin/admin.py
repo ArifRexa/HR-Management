@@ -118,8 +118,6 @@ class BlogContextInline(admin.StackedInline):
     extra = 1
 
 
-
-
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
@@ -132,17 +130,22 @@ class BlogModeratorFeedbackInline(admin.StackedInline):
     fields = ("created_by_title", "feedback")
     readonly_fields = ("created_by_title",)
 
+
 class BlogForm(forms.ModelForm):
-    
     class Meta:
         model = Blog
         fields = "__all__"
-        
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.fields:
-            if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
-                self.fields["status"].choices = (('pending', 'Pending'), ('moderator', 'Moderator'))
+            if not self.request.user.is_superuser and not self.request.user.has_perm(
+                "website.can_approve"
+            ):
+                self.fields["status"].choices = (
+                    ("pending", "Pending"),
+                    ("moderator", "Moderator"),
+                )
 
 
 @admin.register(Blog)
@@ -178,8 +181,9 @@ class BlogAdmin(admin.ModelAdmin):
         "total_view",
         "status",
     )
-    form = BlogForm
-    list_filter = ("status", )
+    # form = BlogForm
+    list_filter = ("status",)
+
     class Media:
         js = ("js/blog_post_field_escape.js",)
 
@@ -311,11 +315,21 @@ class BlogAdmin(admin.ModelAdmin):
             return not obj.active and obj.created_by == user
         return permitted
 
-    def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
-        return super().save_model(request, obj, form, change)
+    def save_model(self, request, obj, form, change):
+        if (
+            request.user == obj.created_by
+            and obj.status in ["need_revision", "approved"]
+        ):
+            if obj:
+                obj.status = "submit_for_review"
+        if not change:
+            obj.status = "draft"
+        obj.save()
+        # return obj
 
     def save_related(self, request, form, formsets, change):
         from django.urls import reverse
+
         for formset in formsets:
             for inline_form in formset.forms:
                 if (
@@ -326,7 +340,9 @@ class BlogAdmin(admin.ModelAdmin):
                     if request.user.has_perm("website.can_approve"):
                         content = inline_form.cleaned_data.get("feedback")
                         blog = inline_form.cleaned_data.get("blog")
-                        blog_url = request.build_absolute_uri(reverse("admin:website_blog_change", args=[blog.id]))
+                        blog_url = request.build_absolute_uri(
+                            reverse("admin:website_blog_change", args=[blog.id])
+                        )
                         async_task(
                             "website.tasks.send_blog_moderator_feedback_email",
                             content,
