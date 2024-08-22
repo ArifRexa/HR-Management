@@ -40,6 +40,7 @@ from website.models import (
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
+    OfficeLocation,
     Service,
     Blog,
     Category,
@@ -892,3 +893,9 @@ class IndustryWeServeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryWeServe
         fields = ["title", "image"]
+
+
+class OfficeLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OfficeLocation
+        fields = ["office", "address", "contact", "image"]
