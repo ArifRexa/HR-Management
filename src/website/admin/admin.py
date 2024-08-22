@@ -148,8 +148,8 @@ class BlogForm(forms.ModelForm):
                 "website.can_approve"
             ):
                 self.fields["next_status"].choices = (
-                    ("draft", "Draft"),
-                    ("submit_for_review", "Submit For Review"),
+                    ("draft", "In Draft"),
+                    ("submit_for_review", "In Review"),
                 )
             elif not self.request.user.is_superuser and self.request.user.has_perm(
                 "website.can_approve"
@@ -159,7 +159,7 @@ class BlogForm(forms.ModelForm):
                 # else:
 
                 self.fields["next_status"].choices = (
-                    ("need_revision", "Need Revision"),
+                    ("need_revision", "In Revision"),
                     ("approved", "Approved"),
                 )
 
@@ -183,21 +183,22 @@ class BlogAdmin(admin.ModelAdmin):
     # prepopulated_fields = {"slug": ("title",)}
 
     inlines = (BlogContextInline, BlogFAQInline, BlogModeratorFeedbackInline)
-    actions = ["clone_selected", "approve_selected", "unapprove_selected"]
+    actions = [
+        "clone_selected",
+        "approve_selected",
+    ]
 
     search_fields = ("title",)
     autocomplete_fields = ["category", "tag"]
     list_display = (
         "title",
         "author",
-        "slug",
         "created_at",
         "updated_at",
-        "active",
         "status",
     )
     readonly_fields = ("status",)
-    exclude = ("slug", "active")
+    exclude = ("slug",)
     fields = (
         "title",
         "image",
@@ -219,16 +220,16 @@ class BlogAdmin(admin.ModelAdmin):
     class Media:
         js = ("js/blog_post_field_escape.js",)
 
-    @admin.action(description="Deactivate selected blogs")
-    def unapprove_selected(self, request, queryset):
-        queryset.update(active=False)
-        self.message_user(request, f"Successfully unapproved {queryset.count()} blogs.")
+    # @admin.action(description="Deactivate selected blogs")
+    # def unapprove_selected(self, request, queryset):
+    #     queryset.update(status=)
+    #     self.message_user(request, f"Successfully unapproved {queryset.count()} blogs.")
 
     # list_editable = ("active", "approved",)
 
     @admin.action(description="Activate selected blogs")
     def approve_selected(self, request, queryset):
-        queryset.update(active=True)
+        queryset.update(status=BlogStatus.APPROVED)
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
 
     @admin.action(description="Clone selected blogs")
@@ -305,7 +306,7 @@ class BlogAdmin(admin.ModelAdmin):
         if not request.user.has_perm("website.can_approve"):
             # If the user doesn't have permission, remove the 'approve_selected' action
             del actions["approve_selected"]
-            del actions["unapprove_selected"]
+            # del actions["unapprove_selected"]
 
         return actions
 
@@ -328,7 +329,9 @@ class BlogAdmin(admin.ModelAdmin):
         if permitted and request.user.has_perm("website.can_change_after_approve"):
             return True
         if permitted and obj:
-            return not obj.active and obj.created_by == request.user
+            return (
+                not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
+            )
         return False
 
     def has_delete_permission(
@@ -339,7 +342,7 @@ class BlogAdmin(admin.ModelAdmin):
         if permitted and user.has_perm("website.can_delete_after_approve"):
             return True
         elif permitted and isinstance(obj, Blog):
-            return not obj.active and obj.created_by == user
+            return not obj.status == BlogStatus.APPROVED and obj.created_by == user
         return permitted
 
     # def save_model(self, request, obj, form, change):
