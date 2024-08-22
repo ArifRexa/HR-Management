@@ -283,3 +283,13 @@ class IndustryWeServe(TimeStampMixin):
 
 class LifeAtMediusware(TimeStampMixin):
     image = models.ImageField(upload_to="life_at_mediusware/")
+
+
+class OfficeLocation(TimeStampMixin):
+    office = models.CharField(max_length=255)
+    address = models.TextField()
+    contact = models.CharField(max_length=255)
+    image = models.ImageField(upload_to="office_location/")
+    
+    def __str__(self, *args, **kwargs):
+        return self.office

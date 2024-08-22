@@ -10,6 +10,7 @@ from website.views import (
     GalleryListView,
     IndustryWeServeListAPIView,
     LifeAtMediuswareListView,
+    OfficeLocationListView,
     ProjectVideoListAPIView,
     ServiceList,
     ServiceDetails,
@@ -46,7 +47,7 @@ from website.views import (
     MainEmployeeListView,
     SkillListView,
     LeadCreateAPIView,
-    SpecialProjectListView
+    SpecialProjectListView,
 )
 from website.views_v2.hire_views import (
     HireResourcePageDetailView,
@@ -65,7 +66,11 @@ api_urls = [
     path("services/", ServiceList.as_view(), name="service.list"),
     path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
     path("service-page/", ServiceListView.as_view(), name="service.list"),
-    path("service-page/<str:slug>/", ServicePageDetailView.as_view(), name="service.details"),
+    path(
+        "service-page/<str:slug>/",
+        ServicePageDetailView.as_view(),
+        name="service.details",
+    ),
     path("industries/", IndustryListView.as_view(), name="industry-list"),
     path("projects/", ProjectList.as_view(), name="project.list"),
     path(
@@ -75,7 +80,9 @@ api_urls = [
     ),
     # path("projects/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
     path("projects/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
-    path("special_projects/", SpecialProjectListView.as_view(), name="special_projects"),
+    path(
+        "special_projects/", SpecialProjectListView.as_view(), name="special_projects"
+    ),
     path("employees/", EmployeeList.as_view(), name="employee.list"),
     path(
         "employees/operation",
@@ -158,7 +165,11 @@ api_urls = [
     path("leads/", LeadCreateAPIView.as_view(), name="lead-create"),
     path("client/logo/", ClientLogoListView.as_view(), name="client-logo-list"),
     path("gallery/", GalleryListView.as_view(), name="gallery"),
-    path("life-at-mediusware/", LifeAtMediuswareListView.as_view(), name="life-at-mediusware"),
+    path(
+        "life-at-mediusware/",
+        LifeAtMediuswareListView.as_view(),
+        name="life-at-mediusware",
+    ),
     path("awards/", AwardListView.as_view(), name="awards"),
     path("clients/", ClientListAPIView.as_view(), name="client-list"),
 ]
@@ -183,8 +194,17 @@ api_v2_urls = [
         name="industry-serve",
     ),
     path("projects/videos", ProjectVideoListAPIView.as_view(), name="project_video"),
-    path("video-testimonial/", VideoTestimonialListAPIView.as_view(), name="video_testimonial"),
-    path("industry-we-serve/", IndustryWeServeListAPIView.as_view(), name="industry_we_serve"),
+    path(
+        "video-testimonial/",
+        VideoTestimonialListAPIView.as_view(),
+        name="video_testimonial",
+    ),
+    path(
+        "industry-we-serve/",
+        IndustryWeServeListAPIView.as_view(),
+        name="industry_we_serve",
+    ),
+    path("office-location/", OfficeLocationListView.as_view(), name="office_location"),
 ]
 
 urlpatterns = [

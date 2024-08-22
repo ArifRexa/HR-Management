@@ -20,6 +20,7 @@ from website.models import (
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
+    OfficeLocation,
     Service,
     Blog,
     Category,
@@ -466,5 +467,12 @@ class IndustryWeServeAdmin(admin.ModelAdmin):
 
 @admin.register(LifeAtMediusware)
 class LifeAtMediuswareAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return False
+
+
+@admin.register(OfficeLocation)
+class OfficeLocationAdmin(admin.ModelAdmin):
+    list_display = ("office", "address", "contact",)
     def has_module_permission(self, request):
         return False
