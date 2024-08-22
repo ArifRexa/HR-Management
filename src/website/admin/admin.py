@@ -193,7 +193,6 @@ class BlogAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "author",
-        "slug",
         "created_at",
         "updated_at",
         "status",
