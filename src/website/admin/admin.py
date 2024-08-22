@@ -153,14 +153,14 @@ class BlogForm(forms.ModelForm):
             elif not self.request.user.is_superuser and self.request.user.has_perm(
                 "website.can_approve"
             ):
-                if self.change and self.instance.created_by == self.request.user:
-                    pass
-                else:
+                # if (self.change and self.instance.created_by == self.request.user) or not self.change:
+                #     pass
+                # else:
                     
-                    self.fields["next_status"].choices = (
-                        ("need_revision", "Need Revision"),
-                        ("approved", "Approved"),
-                    )
+                self.fields["next_status"].choices = (
+                    ("need_revision", "Need Revision"),
+                    ("approved", "Approved"),
+                )
 
     def save(self, commit=True):
         from django.utils.text import slugify
