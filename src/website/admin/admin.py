@@ -143,7 +143,6 @@ class BlogForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.fields:
-            self.fields["next_status"].initial = self.instance.status
             if not self.request.user.is_superuser and not self.request.user.has_perm(
                 "website.can_approve"
             ):
