@@ -91,9 +91,9 @@ class Tag(AuthorMixin, TimeStampMixin):
 
 
 class BlogStatus(models.TextChoices):
-    DRAFT = "draft", "Draft"
-    SUBMIT_FOR_REVIEW = "submit_for_review", "Submit For Review"
-    NEED_REVISION = "need_revision", "Need Revision"
+    DRAFT = "draft", "In Draft"
+    SUBMIT_FOR_REVIEW = "submit_for_review", "In Review"
+    NEED_REVISION = "need_revision", "In Revision"
     APPROVED = "approved", "Approved"
 
 
@@ -108,7 +108,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
     content = HTMLField()
-    active = models.BooleanField(default=False)
+    # active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
     status = models.CharField(
