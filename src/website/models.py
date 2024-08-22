@@ -89,11 +89,13 @@ class Tag(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.name
 
+
 class BlogStatus(models.TextChoices):
-    PENDING = 'pending', 'Pending'
-    AUTHOR = 'author', 'Author'
-    MODERATOR = 'moderator', 'Moderator'
-    APPROVED = 'approved', 'Approved'
+    DRAFT = "draft", "Draft"
+    SUBMIT_FOR_REVIEW = "submit_for_review", "Submit For Review"
+    NEED_REVISION = "need_revision", "Need Revision"
+    APPROVED = "approved", "Approved"
+
 
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
@@ -109,7 +111,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
-    status = models.CharField(max_length=10,default=BlogStatus.PENDING, choices=BlogStatus.choices)
+    status = models.CharField(
+        max_length=20, default=BlogStatus.DRAFT, choices=BlogStatus.choices
+    )
 
     def __str__(self):
         return self.title
@@ -131,7 +135,6 @@ class Blog(AuthorMixin, TimeStampMixin):
         ]
 
 
-
 class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name="blog_contexts"
@@ -141,10 +144,12 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
     video = models.FileField(upload_to="blog_context_videos", blank=True, null=True)
 
+
 class BlogFAQ(AuthorMixin, TimeStampMixin):
     blogs = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="blog_faqs")
     question = models.CharField(max_length=255)
     answer = models.TextField()
+
 
 class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     MODERATOR_FEEDBACK_TITLE = (
@@ -153,14 +158,17 @@ class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     )
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     feedback = HTMLField()
-    created_by_title = models.IntegerField(choices=MODERATOR_FEEDBACK_TITLE, verbose_name="Created By")
-    
-    def save(self,*args, **kwargs):
+    created_by_title = models.IntegerField(
+        choices=MODERATOR_FEEDBACK_TITLE, verbose_name="Created By"
+    )
+
+    def save(self, *args, **kwargs):
         if self.created_by == self.blog.created_by:
             self.created_by_title = 2
         else:
             self.created_by_title = 1
         return super().save(*args, **kwargs)
+
 
 class BlogCategory(models.Model):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
@@ -266,10 +274,11 @@ class VideoTestimonial(TimeStampMixin):
     def __str__(self):
         return self.name
 
+
 class IndustryWeServe(TimeStampMixin):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="industry_we_serve/")
-    
+
 
 class LifeAtMediusware(TimeStampMixin):
     image = models.ImageField(upload_to="life_at_mediusware/")
