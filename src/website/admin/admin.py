@@ -157,7 +157,7 @@ class BlogForm(forms.ModelForm):
                 # if (self.change and self.instance.created_by == self.request.user) or not self.change:
                 #     pass
                 # else:
-                    
+
                 self.fields["next_status"].choices = (
                     ("need_revision", "Need Revision"),
                     ("approved", "Approved"),
@@ -171,9 +171,9 @@ class BlogForm(forms.ModelForm):
         if not self.instance.slug:
             self.instance.slug = slugify(self.cleaned_data["title"])
         if self.request.user.is_superuser or self.request.user.has_perm(
-                "website.can_approve"
-            ):
-            if self.cleaned_data.get("next_status")=="approved":
+            "website.can_approve"
+        ):
+            if self.cleaned_data.get("next_status") == "approved":
                 self.instance.active = True
         return super().save(commit)
 
@@ -197,22 +197,22 @@ class BlogAdmin(admin.ModelAdmin):
         "status",
     )
     readonly_fields = ("status",)
-    exclude = ("slug","active")
-    # fields = (
-    #     "title",
-    #     "slug",
-    #     "image",
-    #     "video",
-    #     "youtube_link",
-    #     "category",
-    #     "tag",
-    #     "short_description",
-    #     "is_featured",
-    #     "content",
-    #     "read_time_minute",
-    #     "total_view",
-    #     "status",
-    # )
+    exclude = ("slug", "active")
+    fields = (
+        "title",
+        "image",
+        "video",
+        "youtube_link",
+        "category",
+        "tag",
+        "short_description",
+        "is_featured",
+        "content",
+        "read_time_minute",
+        "total_view",
+        "status",
+        "next_status",
+    )
     form = BlogForm
     list_filter = ("status",)
 
@@ -352,7 +352,7 @@ class BlogAdmin(admin.ModelAdmin):
     #     if not change:
     #         obj.status = "draft"
     #     obj.save()
-        # return obj
+    # return obj
 
     def save_related(self, request, form, formsets, change):
         from django.urls import reverse
@@ -473,6 +473,11 @@ class LifeAtMediuswareAdmin(admin.ModelAdmin):
 
 @admin.register(OfficeLocation)
 class OfficeLocationAdmin(admin.ModelAdmin):
-    list_display = ("office", "address", "contact",)
+    list_display = (
+        "office",
+        "address",
+        "contact",
+    )
+
     def has_module_permission(self, request):
         return False
