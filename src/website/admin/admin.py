@@ -131,10 +131,6 @@ class BlogModeratorFeedbackInline(admin.StackedInline):
     fields = ("created_by_title", "feedback")
     readonly_fields = ("created_by_title",)
 
-    def save_model(self, request, obj, form, change):
-        obj.created_by = request.user
-        super().save_model(request, obj, form, change)
-
 
 class BlogForm(forms.ModelForm):
     next_status = forms.ChoiceField(choices=BlogStatus.choices, required=False)
@@ -200,7 +196,7 @@ class BlogAdmin(admin.ModelAdmin):
         "status",
     )
     readonly_fields = ("status",)
-    exclude = ("slug",)
+    exclude = ("slug","active")
     # fields = (
     #     "title",
     #     "slug",
