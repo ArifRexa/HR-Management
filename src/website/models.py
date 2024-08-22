@@ -112,7 +112,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
     status = models.CharField(
-        max_length=20, default=BlogStatus.DRAFT, choices=BlogStatus.choices
+        max_length=20, default=BlogStatus.DRAFT, choices=BlogStatus.choices, verbose_name="Current Status"
     )
 
     def __str__(self):
@@ -159,15 +159,16 @@ class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
     feedback = HTMLField()
     created_by_title = models.IntegerField(
-        choices=MODERATOR_FEEDBACK_TITLE, verbose_name="Created By"
+        choices=MODERATOR_FEEDBACK_TITLE, verbose_name="Created By", null=True
     )
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if self.created_by == self.blog.created_by:
             self.created_by_title = 2
         else:
             self.created_by_title = 1
-        return super().save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class BlogCategory(models.Model):
@@ -282,3 +283,13 @@ class IndustryWeServe(TimeStampMixin):
 
 class LifeAtMediusware(TimeStampMixin):
     image = models.ImageField(upload_to="life_at_mediusware/")
+
+
+class OfficeLocation(TimeStampMixin):
+    office = models.CharField(max_length=255)
+    address = models.TextField()
+    contact = models.CharField(max_length=255)
+    image = models.ImageField(upload_to="office_location/")
+    
+    def __str__(self, *args, **kwargs):
+        return self.office

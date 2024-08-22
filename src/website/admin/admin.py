@@ -16,9 +16,11 @@ from website.models import (
     Award,
     BlogFAQ,
     BlogModeratorFeedback,
+    BlogStatus,
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
+    OfficeLocation,
     Service,
     Blog,
     Category,
@@ -132,6 +134,8 @@ class BlogModeratorFeedbackInline(admin.StackedInline):
 
 
 class BlogForm(forms.ModelForm):
+    next_status = forms.ChoiceField(choices=BlogStatus.choices, required=False)
+
     class Meta:
         model = Blog
         fields = "__all__"
@@ -139,18 +143,44 @@ class BlogForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if self.fields:
+            self.fields["next_status"].initial = self.instance.status
             if not self.request.user.is_superuser and not self.request.user.has_perm(
                 "website.can_approve"
             ):
-                self.fields["status"].choices = (
-                    ("pending", "Pending"),
-                    ("moderator", "Moderator"),
+                self.fields["next_status"].choices = (
+                    ("draft", "Draft"),
+                    ("submit_for_review", "Submit For Review"),
                 )
+            elif not self.request.user.is_superuser and self.request.user.has_perm(
+                "website.can_approve"
+            ):
+                # if (self.change and self.instance.created_by == self.request.user) or not self.change:
+                #     pass
+                # else:
+                    
+                self.fields["next_status"].choices = (
+                    ("need_revision", "Need Revision"),
+                    ("approved", "Approved"),
+                )
+
+    def save(self, commit=True):
+        from django.utils.text import slugify
+
+        if self.cleaned_data.get("next_status"):
+            self.instance.status = self.cleaned_data["next_status"]
+        if not self.instance.slug:
+            self.instance.slug = slugify(self.cleaned_data["title"])
+        if self.request.user.is_superuser or self.request.user.has_perm(
+                "website.can_approve"
+            ):
+            if self.cleaned_data.get("next_status")=="approved":
+                self.instance.active = True
+        return super().save(commit)
 
 
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("title",)}
+    # prepopulated_fields = {"slug": ("title",)}
 
     inlines = (BlogContextInline, BlogFAQInline, BlogModeratorFeedbackInline)
     actions = ["clone_selected", "approve_selected", "unapprove_selected"]
@@ -166,22 +196,24 @@ class BlogAdmin(admin.ModelAdmin):
         "active",
         "status",
     )
-    fields = (
-        "title",
-        "slug",
-        "image",
-        "video",
-        "youtube_link",
-        "category",
-        "tag",
-        "short_description",
-        "is_featured",
-        "content",
-        "read_time_minute",
-        "total_view",
-        "status",
-    )
-    # form = BlogForm
+    readonly_fields = ("status",)
+    exclude = ("slug","active")
+    # fields = (
+    #     "title",
+    #     "slug",
+    #     "image",
+    #     "video",
+    #     "youtube_link",
+    #     "category",
+    #     "tag",
+    #     "short_description",
+    #     "is_featured",
+    #     "content",
+    #     "read_time_minute",
+    #     "total_view",
+    #     "status",
+    # )
+    form = BlogForm
     list_filter = ("status",)
 
     class Media:
@@ -285,15 +317,10 @@ class BlogAdmin(admin.ModelAdmin):
         else:
             return querySet.filter(created_by=user)
 
-    def get_form(
-        self,
-        request: Any,
-        obj: Union[Any, None] = ...,
-        change: bool = ...,
-        **kwargs: Any,
-    ) -> Any:
-        form = super().get_form(request, obj, change, **kwargs)
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
         form.request = request
+        form.change = obj is not None
         return form
 
     def has_change_permission(self, request, obj=None):
@@ -315,16 +342,16 @@ class BlogAdmin(admin.ModelAdmin):
             return not obj.active and obj.created_by == user
         return permitted
 
-    def save_model(self, request, obj, form, change):
-        if (
-            request.user == obj.created_by
-            and obj.status in ["need_revision", "approved"]
-        ):
-            if obj:
-                obj.status = "submit_for_review"
-        if not change:
-            obj.status = "draft"
-        obj.save()
+    # def save_model(self, request, obj, form, change):
+    #     if request.user == obj.created_by and obj.status in [
+    #         "need_revision",
+    #         "approved",
+    #     ]:
+    #         if obj:
+    #             obj.status = "submit_for_review"
+    #     if not change:
+    #         obj.status = "draft"
+    #     obj.save()
         # return obj
 
     def save_related(self, request, form, formsets, change):
@@ -349,8 +376,7 @@ class BlogAdmin(admin.ModelAdmin):
                             blog,
                             blog_url,
                         )
-
-        return super().save_related(request, form, formsets, change)
+        super().save_related(request, form, formsets, change)
 
 
 @admin.register(BlogComment)
@@ -441,5 +467,12 @@ class IndustryWeServeAdmin(admin.ModelAdmin):
 
 @admin.register(LifeAtMediusware)
 class LifeAtMediuswareAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return False
+
+
+@admin.register(OfficeLocation)
+class OfficeLocationAdmin(admin.ModelAdmin):
+    list_display = ("office", "address", "contact",)
     def has_module_permission(self, request):
         return False

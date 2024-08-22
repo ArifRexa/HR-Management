@@ -28,6 +28,7 @@ from website.models import (
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
+    OfficeLocation,
     Service,
     Category,
     Blog,
@@ -48,6 +49,7 @@ from website.serializers import (
     GallerySerializer,
     IndustryWeServeSerializer,
     LifeAtMediuswareSerializer,
+    OfficeLocationSerializer,
     ProjectListSerializer,
     ServiceSerializer,
     ProjectSerializer,
@@ -653,3 +655,9 @@ class VideoTestimonialListAPIView(ListAPIView):
 class IndustryWeServeListAPIView(ListAPIView):
     queryset = IndustryWeServe.objects.all()
     serializer_class = IndustryWeServeSerializer
+
+
+class OfficeLocationListView(ListAPIView):
+    queryset = OfficeLocation.objects.all()
+    serializer_class = OfficeLocationSerializer
+    pagination_class = None
