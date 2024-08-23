@@ -344,12 +344,14 @@ class BlogAdmin(admin.ModelAdmin):
         return fields
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
+        # print(request.user.has_perm("website.can_change_after_approve"))
         if permitted and request.user.has_perm("website.can_change_after_approve"):
             return True
+        
         if permitted and obj:
-            return (
-                not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
-            )
+            author_permission = not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
+            moderator_permission = not obj.status == BlogStatus.APPROVED and request.user.has_perm("website.can_approve")
+            return author_permission or moderator_permission
         return False
 
     def has_delete_permission(
