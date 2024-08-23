@@ -11,8 +11,9 @@ from django.db import transaction
 from django.forms.models import model_to_dict
 import requests
 from django_q.tasks import async_task
-
+from django.urls import reverse
 # Register your models here.
+from employee.models.employee import Employee
 from website.models import (
     Award,
     BlogFAQ,
@@ -116,18 +117,34 @@ class BlogTagInline(admin.StackedInline):
     autocomplete_fields = ("tag",)
 
 
+class BlogContextForm(forms.ModelForm):
+    class Meta:
+        model = BlogContext
+        fields = "__all__"
+        widgets = {
+            "title": forms.Textarea(
+                attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+            ),
+        }
+
+
 class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
+    form = BlogContextForm
+
 
 class BlogFAQForm(forms.ModelForm):
     class Meta:
         model = BlogFAQ
         fields = ("question", "answer")
         widgets = {
-            "question": forms.Textarea(attrs={"rows": 2, "cols": 40, "style":"width: 95%;resize:none;"}),
-            "answer": forms.Textarea(attrs={"style":"width: 95%;"}),
+            "question": forms.Textarea(
+                attrs={"rows": 2, "cols": 40, "style": "width: 95%;resize:none;"}
+            ),
+            "answer": forms.Textarea(attrs={"style": "width: 95%;"}),
         }
+
 
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
@@ -150,6 +167,11 @@ class BlogForm(forms.ModelForm):
     class Meta:
         model = Blog
         fields = "__all__"
+        widgets = {
+            "title": forms.Textarea(
+                attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+            ),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -188,6 +210,20 @@ class BlogForm(forms.ModelForm):
         return super().save(commit)
 
 
+class ActiveEmployeeFilter(admin.SimpleListFilter):
+    title = "Employee"
+    parameter_name = "created_by__employee__id__exact"
+
+    def lookups(self, request, model_admin):
+        employees = Employee.objects.filter(active=True).distinct()
+        return tuple((employee.pk, employee.full_name) for employee in list(employees))
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(created_by__employee__id__exact=self.value())
+        return queryset
+
+
 @admin.register(Blog)
 class BlogAdmin(admin.ModelAdmin):
     # prepopulated_fields = {"slug": ("title",)}
@@ -224,7 +260,7 @@ class BlogAdmin(admin.ModelAdmin):
         "next_status",
     )
     form = BlogForm
-    list_filter = ("status",)
+    list_filter = ("status", ActiveEmployeeFilter)
 
     class Media:
         js = ("js/blog_post_field_escape.js",)
@@ -235,6 +271,10 @@ class BlogAdmin(admin.ModelAdmin):
     #     self.message_user(request, f"Successfully unapproved {queryset.count()} blogs.")
 
     # list_editable = ("active", "approved",)
+    def lookup_allowed(self, lookup, value):
+        if lookup in ["created_by__employee__id__exact"]:
+            return True
+        return super().lookup_allowed(lookup, value)
 
     @admin.action(description="Activate selected blogs")
     def approve_selected(self, request, queryset):
@@ -334,7 +374,7 @@ class BlogAdmin(admin.ModelAdmin):
         return form
 
     def get_fields(self, request, obj):
-        fields =  super().get_fields(request, obj)
+        fields = super().get_fields(request, obj)
         fields = list(fields)
         if not request.user.is_superuser and not request.user.has_perm(
             "website.can_approve"
@@ -342,15 +382,21 @@ class BlogAdmin(admin.ModelAdmin):
             fields.remove("is_featured")
             fields.remove("content")
         return fields
+
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
         # print(request.user.has_perm("website.can_change_after_approve"))
         if permitted and request.user.has_perm("website.can_change_after_approve"):
             return True
-        
+
         if permitted and obj:
-            author_permission = not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
-            moderator_permission = not obj.status == BlogStatus.APPROVED and request.user.has_perm("website.can_approve")
+            author_permission = (
+                not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
+            )
+            moderator_permission = (
+                not obj.status == BlogStatus.APPROVED
+                and request.user.has_perm("website.can_approve")
+            )
             return author_permission or moderator_permission
         return False
 
@@ -375,11 +421,19 @@ class BlogAdmin(admin.ModelAdmin):
     #     if not change:
     #         obj.status = "draft"
     #     obj.save()
-    # return obj
+    #     return obj
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if obj and obj.status == BlogStatus.APPROVED:
+            if request.user.is_superuser or request.user.has_perm("website.can_approve"):
+                publish_blog_url = f"https://mediusware.com/blog/details/{obj.slug}/"
+                async_task(
+                    "website.tasks.thank_you_message_to_author",
+                    obj,
+                    publish_blog_url,
+                )
 
     def save_related(self, request, form, formsets, change):
-        from django.urls import reverse
-
         for formset in formsets:
             for inline_form in formset.forms:
                 if (
@@ -387,7 +441,9 @@ class BlogAdmin(admin.ModelAdmin):
                     and inline_form.instance.id is None
                     and inline_form.cleaned_data
                 ):
-                    if request.user.has_perm("website.can_approve"):
+                    if request.user.is_superuser or request.user.has_perm(
+                        "website.can_approve"
+                    ):
                         content = inline_form.cleaned_data.get("feedback")
                         blog = inline_form.cleaned_data.get("blog")
                         blog_url = request.build_absolute_uri(
