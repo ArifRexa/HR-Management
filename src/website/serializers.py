@@ -37,6 +37,7 @@ from settings.models import Designation
 from website.models import (
     Award,
     BlogFAQ,
+    BlogStatus,
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
@@ -681,7 +682,7 @@ class BlogDetailsSerializer(BlogListSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["total_blogs"] = instance.created_by.website_blog_related.filter(
-            active=True
+            status=BlogStatus.APPROVED
         ).count()
         data["total_comments"] = instance.comments.count()
         data["table_of_contents"] = instance.blog_contexts.all().values("id", "title")
