@@ -298,7 +298,7 @@ class TagListView(ListAPIView):
 class CategoryListViewWithBlogCount(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Category.objects.annotate(
-            total_blog=Count("categories", filter=Q(categories__active=True))
+            total_blog=Count("categories", filter=Q(categories__status=BlogStatus.APPROVED))
         ).values("id", "name", "slug", "total_blog")
         return Response(
             data=queryset,
@@ -336,28 +336,28 @@ class FeaturedBlogListView(ListAPIView):
     pagination_class = CustomPagination
 
 
-class MostPopularBlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED).order_by("-total_view")
-    serializer_class = BlogListSerializer
-    pagination_class = MostPopularBlogPagination
+# class MostPopularBlogListView(ListAPIView):
+#     queryset = Blog.objects.filter(status=BlogStatus.APPROVED).order_by("-total_view")
+#     serializer_class = BlogListSerializer
+#     pagination_class = MostPopularBlogPagination
 
 
-class FeaturedBlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED, is_featured=True)
-    serializer_class = BlogListSerializer
-    pagination_class = CustomPagination
+# class FeaturedBlogListView(ListAPIView):
+#     queryset = Blog.objects.filter(status=BlogStatus.APPROVED, is_featured=True)
+#     serializer_class = BlogListSerializer
+#     pagination_class = CustomPagination
 
 
-class MostPopularBlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED).order_by("-total_view")
-    serializer_class = BlogListSerializer
-    pagination_class = MostPopularBlogPagination
+# class MostPopularBlogListView(ListAPIView):
+#     queryset = Blog.objects.filter(status=BlogStatus.APPROVED).order_by("-total_view")
+#     serializer_class = BlogListSerializer
+#     pagination_class = MostPopularBlogPagination
 
 
-class FeaturedBlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED, is_featured=True)
-    serializer_class = BlogListSerializer
-    pagination_class = CustomPagination
+# class FeaturedBlogListView(ListAPIView):
+#     queryset = Blog.objects.filter(status=BlogStatus.APPROVED, is_featured=True)
+#     serializer_class = BlogListSerializer
+#     pagination_class = CustomPagination
 
 
 class BlogDetailsView(RetrieveAPIView):
@@ -398,27 +398,27 @@ class BlogListByAuthorAPIView(ListAPIView):
         return Blog.objects.filter(created_by__employee__id=author_id, status=BlogStatus.APPROVED)
 
 
-class BlogCommentDeleteAPIView(APIView):
-    def get(self, request, blog_id, comment_id):
-        try:
-            comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
-            comment.delete()
-            return Response(
-                {"message": "Comment deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
-            )
-        except BlogComment.DoesNotExist:
-            return Response(
-                {"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND
-            )
+# class BlogCommentDeleteAPIView(APIView):
+#     def get(self, request, blog_id, comment_id):
+#         try:
+#             comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
+#             comment.delete()
+#             return Response(
+#                 {"message": "Comment deleted successfully."},
+#                 status=status.HTTP_204_NO_CONTENT,
+#             )
+#         except BlogComment.DoesNotExist:
+#             return Response(
+#                 {"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND
+#             )
 
 
-class BlogListByAuthorAPIView(ListAPIView):
-    serializer_class = BlogListSerializer
+# class BlogListByAuthorAPIView(ListAPIView):
+#     serializer_class = BlogListSerializer
 
-    def get_queryset(self):
-        author_id = self.kwargs.get("author_id")
-        return Blog.objects.filter(created_by__employee__id=author_id, status=BlogStatus.APPROVED)
+#     def get_queryset(self):
+#         author_id = self.kwargs.get("author_id")
+#         return Blog.objects.filter(created_by__employee__id=author_id, status=BlogStatus.APPROVED)
 
 
 class VerifyDocuments(APIView):
@@ -493,19 +493,19 @@ class BlogCommentDetailAPIView(APIView):
         return paginator.get_paginated_response({"results": results})
 
 
-class BlogCommentDeleteAPIView(APIView):
-    def get(self, request, blog_id, comment_id):
-        try:
-            comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
-            comment.delete()
-            return Response(
-                {"message": "Comment deleted successfully."},
-                status=status.HTTP_204_NO_CONTENT,
-            )
-        except BlogComment.DoesNotExist:
-            return Response(
-                {"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND
-            )
+# class BlogCommentDeleteAPIView(APIView):
+#     def get(self, request, blog_id, comment_id):
+#         try:
+#             comment = get_object_or_404(BlogComment, id=comment_id, blog_id=blog_id)
+#             comment.delete()
+#             return Response(
+#                 {"message": "Comment deleted successfully."},
+#                 status=status.HTTP_204_NO_CONTENT,
+#             )
+#         except BlogComment.DoesNotExist:
+#             return Response(
+#                 {"error": "Comment does not exist"}, status=status.HTTP_404_NOT_FOUND
+#             )
 
 
 class BlogNextCommentDetailAPIView(APIView):
@@ -539,14 +539,14 @@ class BlogNextCommentDetailAPIView(APIView):
         return paginator.get_paginated_response(query)
 
 
-class BlogListByAuthorAPIView(ListAPIView):
-    serializer_class = BlogListSerializer
+# class BlogListByAuthorAPIView(ListAPIView):
+#     serializer_class = BlogListSerializer
 
-    def get_queryset(self):
-        author_id = self.kwargs.get("author_id")
-        return Blog.objects.filter(created_by__employee__id=author_id, status=BlogStatus.APPROVED).order_by(
-            "-total_view"
-        )
+#     def get_queryset(self):
+#         author_id = self.kwargs.get("author_id")
+#         return Blog.objects.filter(created_by__employee__id=author_id, status=BlogStatus.APPROVED).order_by(
+#             "-total_view"
+#         )
 
 
 class OurTechnologyListView(ListAPIView):
