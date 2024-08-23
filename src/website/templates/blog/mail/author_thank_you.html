@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Author Thank You</title>
+</head>
+
+<body>
+    {% load humanize_extra %}
+
+
+    <br>
+    <h3>Dear {{ employee.full_name | title }},</h3>
+    
+    <br>
+    <p>Blog Link: {{ url }}</p>
+    <br>
+    <p>We wanted to take a moment to express our sincere appreciation for your recent blog post. Your insights and expertise have not only enriched our website but also helped position our company as a thought leader in the industry.</p>
+
+    <p>Thank you for taking the time to share your knowledge and contribute to our content efforts. Your dedication does not go unnoticed, and we’re proud to have such talented individuals like you as part of our team.</p>
+
+    <p>Keep up the great work, and we look forward to seeing more of your creative contributions!</p>
+    <br><br>
+    <div class="closing">
+        <p>Regards,</p>
+        <p>Moderator & Admin</p>
+        <p>Mediusware Ltd</p>
+    </div>
+</body>
+
+</html>

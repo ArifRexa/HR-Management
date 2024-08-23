@@ -142,6 +142,7 @@ class EmployeeAdmin(
     def get_list_display(self, request):
         list_display = [
             "employee_info",
+            "employee_rating",
             "total_late_attendance_fine",
             "leave_info",
             "salary_history",
