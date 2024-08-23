@@ -25,12 +25,12 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log('cannot edit updates')
         let updates = document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerText
         updates = JSON.parse(updates)
-        let html_updates = "<ol name='updates_json'>"
+        let html_updates = "<ul name='updates_json'>"
         for (i=1; i<=updates.length; i++){
             let git_link = updates[i-1][2] ? ` - <a href="${updates[i-1][2]}">${git_icon}</a>` : ""
-            html_updates += `<li> ${updates[i-1][0]} - ${updates[i-1][1]}H  ${git_link} </li>`
+            html_updates += `<li> ${updates[i-1][0]}</li>`
         }
-        html_updates += "</ol>"
+        html_updates += "</ul>"
         document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0].innerHTML = html_updates
         console.log(updates)
 
@@ -59,11 +59,13 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log(existing_updates)
             if (existing_updates == null) {
                 add_update_element()
-            }
-            existing_updates.forEach((line_updates) => {
-                add_update_element(line_updates)
+            }else{
 
-            })
+                existing_updates.forEach((line_updates) => {
+                    add_update_element(line_updates)
+    
+                })
+            }
 
         }
     }
