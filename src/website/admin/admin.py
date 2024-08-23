@@ -201,7 +201,7 @@ class BlogForm(forms.ModelForm):
         if self.cleaned_data.get("next_status"):
             self.instance.status = self.cleaned_data["next_status"]
         if not self.instance.slug:
-            self.instance.slug = slugify(self.cleaned_data["title"])
+            self.instance.slug = slugify(self.cleaned_data["title"])[:50]
         if self.request.user.is_superuser or self.request.user.has_perm(
             "website.can_approve"
         ):
