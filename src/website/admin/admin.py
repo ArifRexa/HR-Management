@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from typing import Any, Union
 from django import forms
 from django.contrib import admin
@@ -119,10 +120,20 @@ class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
 
+class BlogFAQForm(forms.ModelForm):
+    class Meta:
+        model = BlogFAQ
+        fields = ("question", "answer")
+        widgets = {
+            "question": forms.Textarea(attrs={"rows": 2, "cols": 40, "style":"width: 95%;resize:none;"}),
+            "answer": forms.Textarea(attrs={"style":"width: 95%;"}),
+        }
 
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
+    form = BlogFAQForm
+    # classes = ("collapse", "wide")
 
 
 class BlogModeratorFeedbackInline(admin.StackedInline):
@@ -201,15 +212,14 @@ class BlogAdmin(admin.ModelAdmin):
     fields = (
         "title",
         "image",
-        "video",
+        # "video",
         "youtube_link",
         "category",
         "tag",
-        "short_description",
+        # "short_description",
         "is_featured",
         "content",
         "read_time_minute",
-        "total_view",
         "status",
         "next_status",
     )
@@ -323,14 +333,25 @@ class BlogAdmin(admin.ModelAdmin):
         form.change = obj is not None
         return form
 
+    def get_fields(self, request, obj):
+        fields =  super().get_fields(request, obj)
+        fields = list(fields)
+        if not request.user.is_superuser and not request.user.has_perm(
+            "website.can_approve"
+        ):
+            fields.remove("is_featured")
+            fields.remove("content")
+        return fields
     def has_change_permission(self, request, obj=None):
         permitted = super().has_change_permission(request, obj=obj)
+        # print(request.user.has_perm("website.can_change_after_approve"))
         if permitted and request.user.has_perm("website.can_change_after_approve"):
             return True
+        
         if permitted and obj:
-            return (
-                not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
-            )
+            author_permission = not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
+            moderator_permission = not obj.status == BlogStatus.APPROVED and request.user.has_perm("website.can_approve")
+            return author_permission or moderator_permission
         return False
 
     def has_delete_permission(

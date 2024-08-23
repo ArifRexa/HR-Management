@@ -100,14 +100,14 @@ class BlogStatus(models.TextChoices):
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    image = models.ImageField(upload_to="blog_images/")
-    video = models.FileField(upload_to="blog_video", blank=True, null=True)
-    youtube_link = models.URLField(null=True, blank=True)
+    image = models.ImageField(upload_to="blog_images/", verbose_name="Banner Image")
+    # video = models.FileField(upload_to="blog_video", blank=True, null=True)
+    youtube_link = models.URLField(null=True, blank=True, verbose_name="Banner Youtube Video Link")
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
-    short_description = models.TextField()
+    # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
-    content = HTMLField()
+    content = HTMLField(verbose_name="LinkedIn Marketing Content")
     # active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
@@ -142,7 +142,7 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     title = models.CharField(null=True, blank=True, max_length=255)
     description = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
-    video = models.FileField(upload_to="blog_context_videos", blank=True, null=True)
+    video = models.URLField(blank=True, null=True, verbose_name="YouTube Video Link")
 
 
 class BlogFAQ(AuthorMixin, TimeStampMixin):
