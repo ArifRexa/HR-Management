@@ -1,11 +1,12 @@
 window.onload = function() {
-    let blog_content_el = document.getElementsByClassName('form-row field-content')[0].getElementsByClassName("readonly")[0]
-    console.log("blog_content_el", blog_content_el);
-    
-    if (blog_content_el!=undefined){
-        
-        blog_content_el.innerHTML = blog_content_el.innerText
-    }
+    const blog_content_container = document.getElementsByClassName('form-row field-content')[0]
+    console.log("blog_content_container", blog_content_container);
+    if (blog_content_container!=undefined){
+        let blog_content_el = blog_content_container.getElementsByClassName("readonly")[0]
+        if (blog_content_el!=undefined){
+            blog_content_el.innerHTML = blog_content_el.innerText
+        }
+}
     // console.log(blog_content_el.innerText);
 
     const blog_context_group = document.getElementById("blog_contexts-group")
