@@ -189,6 +189,24 @@ class TPMProjectFilter(admin.SimpleListFilter):
         return queryset
 
 
+class StatusFilter(admin.SimpleListFilter):
+    title = "Status"
+    parameter_name = "status__exact"
+
+    def lookups(self, request, model_admin):
+        STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+        return tuple(
+            [
+                status
+                for status in STATUS_CHOICE
+            ]
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(status=self.value())
+        return queryset
+
 class ProjectHourOptions(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css",)}
@@ -214,6 +232,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         filters = [
             ProjectTypeFilter,
             TPMProjectFilter,
+            StatusFilter,
             ProjectFilter,
             "project__client__payment_method",
             "project__client__invoice_type",
