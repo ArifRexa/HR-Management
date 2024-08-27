@@ -882,7 +882,7 @@ class ClientSerializer(serializers.ModelSerializer):
 class VideoTestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoTestimonial
-        fields = ["name", "client_image", "designation", "text", "video"]
+        fields = ["name", "client_image", "designation", "text", "video", "description"]
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
