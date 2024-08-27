@@ -2,10 +2,10 @@ from django.core.mail import EmailMultiAlternatives
 
 from django.template.loader import get_template
 
-from website.models import BlogModeratorFeedback
+from website.models import Blog
 
 
-def send_blog_moderator_feedback_email(content, blog: BlogModeratorFeedback, url):
+def send_blog_moderator_feedback_email(content, blog: Blog, url):
     employee = blog.created_by.employee
     html_template = get_template("blog/mail/moderator_feedback.html")
     html_content = html_template.render(
@@ -19,7 +19,7 @@ def send_blog_moderator_feedback_email(content, blog: BlogModeratorFeedback, url
     email.send()
 
 
-def thank_you_message_to_author(blog: BlogModeratorFeedback, url):
+def thank_you_message_to_author(blog: Blog, url):
     employee = blog.created_by.employee
     html_template = get_template("blog/mail/author_thank_you.html")
     html_content = html_template.render(
