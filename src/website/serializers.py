@@ -42,6 +42,7 @@ from website.models import (
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PostCredential,
     Service,
     Blog,
     Category,
@@ -60,6 +61,12 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
 )
+
+
+class PostCredentialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostCredential
+        fields = ("id", "name", "platform", "token", )
 
 
 class ProjectPlatformSerializer(serializers.ModelSerializer):

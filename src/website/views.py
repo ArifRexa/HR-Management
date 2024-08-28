@@ -30,6 +30,7 @@ from website.models import (
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PostCredential,
     Service,
     Category,
     Blog,
@@ -51,6 +52,7 @@ from website.serializers import (
     IndustryWeServeSerializer,
     LifeAtMediuswareSerializer,
     OfficeLocationSerializer,
+    PostCredentialSerializer,
     ProjectListSerializer,
     ServiceSerializer,
     ProjectSerializer,
@@ -662,3 +664,27 @@ class OfficeLocationListView(ListAPIView):
     queryset = OfficeLocation.objects.all()
     serializer_class = OfficeLocationSerializer
     pagination_class = None
+    
+
+class PostCredentialCreateView(APIView):
+    queryset = PostCredential.objects.all()
+    serializer_class = PostCredentialSerializer
+    permission_classes = ()
+    authentication_classes = ()
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        obj, created = PostCredential.objects.get_or_create(
+            platform = data.get("platform"),
+            defaults={
+                "token": data.get("token"),
+                "name": data.get("name"),
+            }
+        )
+        if not created:
+            obj.token = data.get("token")
+            obj.name = data.get("name")
+            obj.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

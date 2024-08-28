@@ -1,0 +1,112 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}
+    Employee Attendance
+{% endblock %}
+
+
+{% block content %}
+
+{% load humanize %}
+{% load static %}
+
+
+<h1>Automate Post</h1>
+<style>
+    .card {
+        /* border: 1px solid #ccc; */
+        padding: 10px;
+        max-width: 300px;
+    }
+    .form-inline{
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+    .token-form{
+        /* border: 1px solid #ccc; */
+        padding: 10px;
+    }
+    .label{
+        font-weight: bold;
+        margin-right: 20px;
+    }
+    .btn{
+        padding: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+    .row{
+        margin: 10px 0;
+    }
+    .post-count{
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+    .form-group{
+        max-width: 70%;
+    }
+</style>
+
+<div class="container">
+    <h2>LinkedIn Post</h2>
+    <div class="row">
+        <div class="card">
+            <p><strong>Total Queue</strong>: {{in_queue}}</p>
+            <p><strong>Total Posted</strong>: {{posted}}</p>
+        </div>
+        <div class="token-form">
+            <form class="form-inline">
+                <div class="form-group mx-sm-3 mb-2">
+                  <label for="inputPassword2" class="label">LinkedIn Token :</label>
+                  <textarea style="field-sizing: content; max-width: 87%;" class="form-control" id="linkedin-token" placeholder="Token" rows="2" cols="100" >{{linkedin_token|striptags}}</textarea>
+                </div>
+                <button type="button" class="btn" id="submit-btn">Submit</button>
+              </form>
+        </div>
+
+    </div>
+    <div class="row">
+        
+    </div>
+    
+</div>
+
+<script>
+    window.onload = function () {
+        console.log("onload")
+        const submitBtn = document.getElementById('submit-btn')
+        function addLinkedInToken(e){
+            e.preventDefault()
+            const token = document.getElementById('linkedin-token').value
+            console.log(token)
+            const base_url = window.location.origin
+            const url = `${base_url}/api/website/post-credential/`
+            const type= "POST"
+            const xhttp = new XMLHttpRequest();
+            xhttp.onload = function() {
+                const data = JSON.parse(this.responseText);
+                token.value = data.token
+                
+            },
+            xhttp.open(type, url);
+            xhttp.setRequestHeader('Content-Type', 'application/json');
+            const data = JSON.stringify({
+                "token": token,
+                "platform": "linkedin",
+                "name": "LinkedIn Access Token"
+            })
+            xhttp.send(data);
+        }
+
+        submitBtn.addEventListener('click', addLinkedInToken)
+    }
+</script>
+
+
+
+{% endblock %}
