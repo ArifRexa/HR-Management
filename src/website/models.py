@@ -102,7 +102,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     slug = models.SlugField(unique=True)
     image = models.ImageField(upload_to="blog_images/", verbose_name="Banner Image")
     # video = models.FileField(upload_to="blog_video", blank=True, null=True)
-    youtube_link = models.URLField(null=True, blank=True, verbose_name="Banner Youtube Video Link")
+    youtube_link = models.URLField(
+        null=True, blank=True, verbose_name="Banner Youtube Video Link"
+    )
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
@@ -112,8 +114,13 @@ class Blog(AuthorMixin, TimeStampMixin):
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
     status = models.CharField(
-        max_length=20, default=BlogStatus.DRAFT, choices=BlogStatus.choices, verbose_name="Current Status"
+        max_length=20,
+        default=BlogStatus.DRAFT,
+        choices=BlogStatus.choices,
+        verbose_name="Current Status",
     )
+    is_posted = models.BooleanField(default=False)
+    approved_at = models.DateTimeField(null=True, editable=False, blank=True)
 
     def __str__(self):
         return self.title
@@ -133,6 +140,22 @@ class Blog(AuthorMixin, TimeStampMixin):
             ("can_change_after_approve", "Can Change After Approve"),
             ("can_delete_after_approve", "Can Delete After Approve"),
         ]
+
+
+class PostPlatform(models.TextChoices):
+    LINKEDIN = "linkedin", "Linkedin"
+    FACEBOOK = "facebook", "Facebook"
+
+
+class PostCredential(TimeStampMixin, AuthorMixin):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    platform = models.CharField(
+        max_length=255, choices=PostPlatform.choices, default=PostPlatform.LINKEDIN
+    )
+    token = models.TextField()
+
+    def __str__(self):
+        return self.name or str(self.id)
 
 
 class BlogContext(AuthorMixin, TimeStampMixin):
@@ -290,6 +313,6 @@ class OfficeLocation(TimeStampMixin):
     address = models.TextField()
     contact = models.CharField(max_length=255)
     image = models.ImageField(upload_to="office_location/")
-    
+
     def __str__(self, *args, **kwargs):
         return self.office
