@@ -345,10 +345,9 @@ CACHES = {
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-# AWS_S3_REGION_NAME = 'your-region-name'  # e.g., 'us-west-2'
+AWS_S3_REGION_NAME = os.environ.get('REGION_NAME')  # e.g., 'us-west-2'
 AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
-# AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com/static'
-
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
 
 
 
@@ -363,8 +362,16 @@ class StaticStorage(S3Boto3Storage):
     location = STATICFILES_LOCATION
 
 class MediaStorage(S3Boto3Storage):
-    location = MEDIAFILES_LOCATION
+    bucket_name = 'mw-hr-staging'
+    location = 'media'
     file_overwrite = False
+    default_acl = 'public-read'
+
+    def url(self, name):
+        # Overriding the url method to ensure correct URL generation
+        url = super().url(name)
+        # Remove 's3.' from the generated URL if present
+        return url.replace('s3.sgp1.', 'sgp1.')
 
 
 # Static files (CSS, JavaScript, images)
@@ -373,6 +380,7 @@ STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
 
 # Media files (uploads)
 DEFAULT_FILE_STORAGE = 'config.settings.MediaStorage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 
