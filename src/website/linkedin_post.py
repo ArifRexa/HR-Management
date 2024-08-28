@@ -81,7 +81,6 @@ def automatic_blog_post_linkedin():
         token = PostCredential.objects.filter(platform=PostPlatform.LINKEDIN).first()
 
 
-        # access_token ='AQXxdlhuPelMDabM9X6o0l9C77gaydO_XNXrtollPXt3oPyU1VXFVsgGBzPZ3wIJb27bcbITcbtOnKCTSwqOAp5HzSxwsIa3MWusJAXiAeiK4SfvtwXelxgH6YxAtiM6ismk19d8gElpNv7itx5npOhAIjR_TkpGFFBG6-Km7_ECJfbludRlEUwJ9ppzfJzbSXkJ857opBrSa0XntUYlPEs_SXtWrpGnfLiy80eYrkYE0NrsdusTd8nr4J7lu7PKn4kkn7eGIzkhcWszGRChQHKmpGmWBsSfdm-LJ_C_SqAja0jIGZzZ14xITNWQahjvEmj0USXULIDBASujJSOBOosBPXebEA'
         access_token = token.token
 
         title = blog.title
