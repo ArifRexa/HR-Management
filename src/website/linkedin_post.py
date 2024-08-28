@@ -19,7 +19,7 @@ class LinkedinAutomate:
 
     def common_api_call_part(self, feed_type="feed", group_id=None):
         payload_dict = {
-            "author": f"urn:li:person:{self.user_id}",
+            "author": "urn:li:organization:28717447",
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
