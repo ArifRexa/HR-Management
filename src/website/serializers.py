@@ -900,7 +900,7 @@ class VideoTestimonialSerializer(serializers.ModelSerializer):
 class IndustryWeServeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryWeServe
-        fields = ["title", "image"]
+        fields = ["title", "image", "slug"]
 
 
 class OfficeLocationSerializer(serializers.ModelSerializer):
