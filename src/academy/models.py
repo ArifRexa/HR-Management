@@ -172,3 +172,124 @@ class FAQ(TimeStampMixin):
 
     def __str__(self):
         return self.question
+        
+
+
+class Instructor(models.Model):
+    name = models.CharField(max_length=255,null=True,blank=True)
+    image = models.ImageField(upload_to='instructors/images/',null=True,blank=True)
+    designation = models.CharField(max_length=255)
+    rating = models.DecimalField(max_digits=3, decimal_places=1,null=True,blank=True)  # e.g., 4.5
+    short_description = models.TextField(null=True,blank=True)
+    thumbnail = models.ImageField(upload_to='instructors/thumbnails/',null=True,blank=True)
+    video = models.URLField(max_length=200,null=True,blank=True)
+
+    def __str__(self):
+        return self.name
+    
+
+class PracticeProject(models.Model):
+    slug = models.SlugField(max_length=255, unique=True, editable=False)
+    title = models.CharField(max_length=255)
+    short_description = models.CharField(max_length=255)
+    description = models.TextField()
+
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+    
+class FeatureHighlight(models.Model):
+    practice_project = models.ForeignKey(PracticeProject,on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='feature_highlight/',null=True,blank=True) 
+
+class TrainingProgram(TimeStampMixin):
+    slug = models.SlugField(max_length=255, null=True, blank=True,editable=False)
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+    course_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    video = models.URLField(null=True,blank=True)
+    image = models.ImageField(upload_to="training_image", null=True, blank=True)
+    instructors = models.ManyToManyField(Instructor, related_name='training_programs')
+
+    course_overview_subtitle = models.CharField(max_length=255,null=True,blank=True)
+    course_overview_image = models.ImageField(upload_to='course_overviews/images/',null=True,blank=True)
+    course_overview_description = HTMLField()
+
+    training_reason_title = models.CharField(max_length=255,null=True,blank=True)
+
+    training_for_title = models.CharField(max_length=255,null=True,blank=True)
+    training_for_subtitle = models.TextField(null=True,blank=True)
+
+    training_outline_title = models.CharField(max_length=255,null=True,blank=True)
+    training_outline_subtitle = models.CharField(max_length=255,null=True,blank=True)
+
+    training_tools_title =  models.CharField(max_length=255,null=True,blank=True)
+    training_tools_subtitle =  models.CharField(max_length=255,null=True,blank=True)
+    training_technology = models.ManyToManyField(Technology)
+
+    project_title = models.CharField(max_length=255,null=True,blank=True)
+    project_subtitle = models.CharField(max_length=255,null=True,blank=True)
+    practice_projects = models.ManyToManyField(PracticeProject)
+
+    project_showcase_title = models.CharField(max_length=255,null=True,blank=True)
+    project_showcase_description = models.TextField(null=True,blank=True)
+
+    student_review_title = models.CharField(max_length=255,null=True,blank=True)
+    student_review_description = models.TextField(null=True,blank=True)
+
+    training_faq_subtitle = models.CharField(max_length=255,null=True,blank=True)
+
+    def save(self) -> None:
+        if not self.slug:
+            self.slug = slugify(self.title)
+        super().save()
+
+
+
+class TrainingReason(models.Model):
+    trainingprogram = models.ForeignKey(TrainingProgram, on_delete=models.CASCADE, related_name='training_reasons')
+    title = models.CharField(max_length=255,null=True,blank=True)
+    image = models.ImageField(upload_to='training_reasons/images/',null=True,blank=True)
+
+    def __str__(self):
+        return self.title
+    
+class TrainingFor(models.Model):
+    trainingprogram = models.ForeignKey(TrainingProgram, on_delete=models.CASCADE, related_name='training_for')
+    icon = models.ImageField(upload_to='training_for/images/',null=True,blank=True)
+    prospect = models.CharField(max_length=255,null=True,blank=True)
+    description = models.TextField(null=True,blank=True)
+    
+class Training_Outline(models.Model):
+    trainingprogram = models.ForeignKey(TrainingProgram, on_delete=models.CASCADE, related_name='trainingoutline')
+    title = models.CharField(max_length=255,null=True,blank=True)
+    duration = models.CharField(max_length=255,null=True,blank=True)
+    description = HTMLField()
+
+
+class ProjectShowcase(models.Model):
+    trainingprogram = models.ForeignKey(TrainingProgram, on_delete=models.CASCADE, related_name='project_showcase')
+    title = models.CharField(max_length=255,null=True,blank=True)
+    video = models.URLField()
+    thumbnail = models.ImageField(upload_to='projectshowcase/thumbnails/')
+
+class StudentReview(models.Model):
+    trainingprogram = models.ForeignKey(TrainingProgram, on_delete=models.CASCADE, related_name='student_review')
+    title = models.CharField(max_length=255,null=True,blank=True)
+    video = models.URLField()
+    thumbnail = models.ImageField(upload_to='studentreview/thumbnails/')
+
+
+class TrainingFAQ(models.Model):
+    trainingprogram = models.ForeignKey(TrainingProgram, on_delete=models.CASCADE, related_name='training_faq')
+    question = models.CharField(max_length=255, verbose_name="Question")
+    answer = models.TextField(verbose_name="Answer")
+
+
+    def __str__(self):
+        return self.question

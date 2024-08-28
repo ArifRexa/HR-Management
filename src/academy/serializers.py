@@ -15,6 +15,7 @@ from academy.models import (
     TrainingTechnology,
     OurAchievement,
     FAQ,
+    TrainingProgram
 )
 from website.serializers import TechnologySerializer
 
@@ -139,26 +140,20 @@ class TrainingSerializer(serializers.ModelSerializer):
 
 
 class TrainingListSerializer(serializers.ModelSerializer):
+    training_technology = TechnologySerializer(many=True, read_only=True)
     class Meta:
-        model = Training
+        model = TrainingProgram
         fields = [
             "id",
             "title",
             "slug",
             "description",
             "image",
-            "duration",
+            "training_technology",
+            
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["technology"] = TrainingTechnologySerializer(
-            instance=instance.training_technologies.all(),
-            many=True,
-            context={"request": self.context.get("request")},
-        ).data
-        return data
-
+    
 
 class StudentCreateSerializer(serializers.ModelSerializer):
     class Meta:

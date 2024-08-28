@@ -8,6 +8,7 @@ from academy.models import (
     OurAchievement,
     SuccessStory,
     Training,
+    TrainingProgram
 )
 from academy.serializers import (
     FAQSerializer,
@@ -36,7 +37,7 @@ class MarketingSliderAPIListView(ListAPIView):
 
 class TrainingRetrieveAPIView(RetrieveAPIView):
     serializer_class = TrainingSerializer
-    queryset = Training.objects.all()
+    queryset = TrainingProgram.objects.all()
     lookup_field = "slug"
 
 class FAQListView(ListAPIView):
@@ -47,7 +48,7 @@ class FAQListView(ListAPIView):
 
 class TrainingListAPIView(ListAPIView):
     serializer_class = TrainingListSerializer
-    queryset = Training.objects.all()
+    queryset = TrainingProgram.objects.all()
     filter_backends = [
         filters.SearchFilter,
     ]
