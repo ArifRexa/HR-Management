@@ -9,9 +9,6 @@
 
 {% load humanize %}
 {% load static %}
-
-
-<h1>Automate Post</h1>
 <style>
     .card {
         /* border: 1px solid #ccc; */
@@ -50,7 +47,31 @@
     .form-group{
         max-width: 70%;
     }
+    .alert{
+        width: 100%;
+        padding: 10px;
+    }
+    .alert-success{
+        background-color: green;
+    }
+    .alert-error{
+        background-color: red;
+    }
+    #message{
+        margin-left: -40px;
+    /* width: 98%; */
+        margin-top: -20px;
+        margin-bottom: 20px;
+    }
+    @media screen and (max-width: 768px) {
+        #message{
+            margin-left: -16px;
+        }
+    }
 </style>
+
+<div id="message"></div>
+<h1>Automate Post</h1>
 
 <div class="container">
     <h2>LinkedIn Post</h2>
@@ -83,15 +104,22 @@
         function addLinkedInToken(e){
             e.preventDefault()
             const token = document.getElementById('linkedin-token').value
-            console.log(token)
             const base_url = window.location.origin
             const url = `${base_url}/api/website/post-credential/`
             const type= "POST"
             const xhttp = new XMLHttpRequest();
             xhttp.onload = function() {
-                const data = JSON.parse(this.responseText);
-                token.value = data.token
-                
+                if(xhttp.status==201){
+                    
+                    console.log(xhttp.status)
+                    token.value = data.token
+                    document.getElementById('message').innerHTML = `<div id="message-text" class="alert alert-success">Token Added successfully</div>`
+                    removeMessage()
+                }
+                else{
+                    document.getElementById('message').innerHTML = `<div id="message-text" class="alert alert-error">Something went wrong</div>`
+                    removeMessage()
+                }
             },
             xhttp.open(type, url);
             xhttp.setRequestHeader('Content-Type', 'application/json');
@@ -100,10 +128,25 @@
                 "platform": "linkedin",
                 "name": "LinkedIn Access Token"
             })
+            xhttp.onerror = function() {
+                console.log("Something went wrong!");
+                console.log(this.responseText);
+                
+            }
             xhttp.send(data);
         }
 
         submitBtn.addEventListener('click', addLinkedInToken)
+        function removeMessage(){
+            setTimeout(function() {
+            // Get the element by its ID
+            var element = document.getElementById("message-text");
+            // Remove the element from the DOM
+            if (element) {
+                element.remove();
+            }
+        }, 3000);
+        }
     }
 </script>
 
