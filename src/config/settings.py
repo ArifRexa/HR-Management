@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "client_management",
     "mptt",
     "academy",
+    "storages"
 ]
 
 MIDDLEWARE = [
@@ -173,16 +174,16 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
+#STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
+#STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
 
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static')
 # ]
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
+#MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+#MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
 
 # alert message here
 from django.contrib.messages import constants as messages
@@ -319,3 +320,21 @@ CACHES = {
 # CACHE_MIDDLEWARE_ALIAS = 'default'
 # CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 minutes
 # CACHE_MIDDLEWARE_KEY_PREFIX = ''
+
+AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=86400',
+}
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+STATIC_ROOT = "static"
+STATIC_URL = AWS_S3_ENDPOINT_URL + '/static'
+MEDIA_ROOT = "media"
+MEDIA_URL = AWS_S3_ENDPOINT_URL + '/media'
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
