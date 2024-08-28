@@ -302,6 +302,7 @@ class VideoTestimonial(TimeStampMixin):
 class IndustryWeServe(TimeStampMixin):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="industry_we_serve/")
+    slug = models.SlugField(unique=True, null=True)
 
 
 class LifeAtMediusware(TimeStampMixin):

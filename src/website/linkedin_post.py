@@ -76,6 +76,7 @@ def automatic_blog_post_linkedin():
         .order_by("approved_at")
         .first()
     )
+    print(blog)
     if blog:
         token = PostCredential.objects.filter(platform=PostPlatform.LINKEDIN).first()
 
