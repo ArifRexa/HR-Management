@@ -1,0 +1,106 @@
+import requests
+import json
+from django.utils.html import strip_tags
+
+from website.models import Blog, BlogStatus, PostCredential, PostPlatform
+
+class LinkedinAutomate:
+    def __init__(self, access_token, blog_url, title, description, banner_image):
+        self.access_token = access_token
+        self.blog_url = blog_url
+        self.title = title
+        self.description = description
+        self.headers = {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json",
+            "X-Restli-Protocol-Version": "2.0.0",
+        }
+        self.banner_image = banner_image
+
+    def common_api_call_part(self, feed_type="feed", group_id=None):
+        payload_dict = {
+            "author": f"urn:li:person:{self.user_id}",
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {
+                "com.linkedin.ugc.ShareContent": {
+                    "shareCommentary": {"text": self.description},
+                    "shareMediaCategory": "ARTICLE",
+                    "media": [
+                        {
+                            "status": "READY",
+                            "description": {"text": self.description},
+                            "originalUrl": self.blog_url,
+                            "title": {"text": self.title},
+                            "thumbnails": [{"url": self.banner_image}],
+                        }
+                    ],
+                }
+            },
+            "visibility": {
+                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+                if feed_type == "feed"
+                else "CONTAINER"
+            },
+        }
+
+        return json.dumps(payload_dict)
+
+    def get_user_id(self):
+        url = "https://api.linkedin.com/v2/userinfo"
+        response = requests.get(url, headers=self.headers)
+        jsonData = response.json()
+        return jsonData["sub"]
+
+    def feed_post(self):
+        url = "https://api.linkedin.com/v2/ugcPosts"
+        payload = self.common_api_call_part()
+        return requests.post(url, headers=self.headers, data=payload)
+
+    def main_func(self):
+        self.user_id = self.get_user_id()
+        feed_post = self.feed_post()
+        print("feed_post", feed_post)
+        print("user id", self.user_id)
+        print(feed_post.status_code, feed_post.text)
+        return feed_post.status_code
+
+
+def automatic_blog_post_linkedin():
+    blog_base_url = "https://mediusware.com/"
+    banner_image_base_url = "https://hr.mediusware.xyz/"
+
+    blog = (
+        Blog.objects.filter(
+            status=BlogStatus.APPROVED, is_posted=False, approved_at__isnull=False
+        )
+        .order_by("approved_at")
+        .first()
+    )
+    print(blog)
+    if blog:
+        token = PostCredential.objects.filter(platform=PostPlatform.LINKEDIN).first()
+
+        # Example usage
+
+        # access_token ='AQXxdlhuPelMDabM9X6o0l9C77gaydO_XNXrtollPXt3oPyU1VXFVsgGBzPZ3wIJb27bcbITcbtOnKCTSwqOAp5HzSxwsIa3MWusJAXiAeiK4SfvtwXelxgH6YxAtiM6ismk19d8gElpNv7itx5npOhAIjR_TkpGFFBG6-Km7_ECJfbludRlEUwJ9ppzfJzbSXkJ857opBrSa0XntUYlPEs_SXtWrpGnfLiy80eYrkYE0NrsdusTd8nr4J7lu7PKn4kkn7eGIzkhcWszGRChQHKmpGmWBsSfdm-LJ_C_SqAja0jIGZzZ14xITNWQahjvEmj0USXULIDBASujJSOBOosBPXebEA'
+        access_token = token.token
+
+        # for blog in blogs_activated_today:
+        title = blog.title
+
+        # categories_with_hashtags = "  ".join(f"#{category.name.replace(' ', '_')}" for category in blog.category.all())
+        # description_with_categories = f"{description}\n\n{categories_with_hashtags}"
+        blog_url = f"{blog_base_url}blog/details/{blog.slug}"
+        description = strip_tags(blog.content)
+        thumbnail = f"{banner_image_base_url}{blog.image.url}"
+        status = LinkedinAutomate(
+                access_token,
+                blog_url,
+                title,
+                description,
+                thumbnail,
+            ).main_func()
+        if status == 201:
+            blog.is_posted = True
+            blog.save()
+

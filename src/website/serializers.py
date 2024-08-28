@@ -42,6 +42,7 @@ from website.models import (
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PostCredential,
     Service,
     Blog,
     Category,
@@ -60,6 +61,12 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
 )
+
+
+class PostCredentialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostCredential
+        fields = ("id", "name", "platform", "token", )
 
 
 class ProjectPlatformSerializer(serializers.ModelSerializer):
@@ -893,7 +900,7 @@ class VideoTestimonialSerializer(serializers.ModelSerializer):
 class IndustryWeServeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryWeServe
-        fields = ["title", "image"]
+        fields = ["title", "image", "slug"]
 
 
 class OfficeLocationSerializer(serializers.ModelSerializer):

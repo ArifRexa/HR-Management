@@ -1,4 +1,3 @@
-from collections.abc import Sequence
 from typing import Any, Union
 from django import forms
 from django.contrib import admin
@@ -12,6 +11,7 @@ from django.forms.models import model_to_dict
 import requests
 from django_q.tasks import async_task
 from django.urls import reverse
+
 # Register your models here.
 from employee.models.employee import Employee
 from website.models import (
@@ -23,6 +23,8 @@ from website.models import (
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PostCredential,
+    PostPlatform,
     Service,
     Blog,
     Category,
@@ -44,6 +46,8 @@ from website.models import (
     VideoTestimonial,
 )
 from django.forms.models import BaseInlineFormSet
+
+from website.linkedin_post import automatic_blog_post_linkedin
 
 
 @admin.register(Award)
@@ -278,7 +282,7 @@ class BlogAdmin(admin.ModelAdmin):
 
     @admin.action(description="Activate selected blogs")
     def approve_selected(self, request, queryset):
-        queryset.update(status=BlogStatus.APPROVED)
+        queryset.update(status=BlogStatus.APPROVED, approved_at=timezone.now())
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
 
     @admin.action(description="Clone selected blogs")
@@ -411,27 +415,56 @@ class BlogAdmin(admin.ModelAdmin):
             return not obj.status == BlogStatus.APPROVED and obj.created_by == user
         return permitted
 
-    # def save_model(self, request, obj, form, change):
-    #     if request.user == obj.created_by and obj.status in [
-    #         "need_revision",
-    #         "approved",
-    #     ]:
-    #         if obj:
-    #             obj.status = "submit_for_review"
-    #     if not change:
-    #         obj.status = "draft"
-    #     obj.save()
-    #     return obj
+    def get_urls(self):
+        from functools import update_wrapper
+        from django.urls import path
+
+        def wrap(view):
+            def wrapper(*args, **kwargs):
+                return self.admin_site.admin_view(view)(*args, **kwargs)
+
+            wrapper.model_admin = self
+            return update_wrapper(wrapper, view)
+
+        info = self.model._meta.app_label, self.model._meta.model_name
+
+        urls = super(BlogAdmin, self).get_urls()
+
+        automate_post_urls = [
+            path("automate-post/", wrap(self.automate_post_view), name="automate_post"),
+        ]
+        return automate_post_urls + urls
+
+    def automate_post_view(self, request, *args, **kwargs):
+        from django.template.response import TemplateResponse
+
+        blogs = Blog.objects.filter(status=BlogStatus.APPROVED)
+        posted = blogs.filter(is_posted=True).count()
+        linkedin_token = PostCredential.objects.filter(
+            platform=PostPlatform.LINKEDIN
+        ).first()
+        context = dict(
+            self.admin_site.each_context(request),
+            linkedin_token=linkedin_token.token if linkedin_token else None,
+            posted=posted,
+            in_queue=blogs.filter(is_posted=False).count(),
+        )
+        return TemplateResponse(request, "blog/automate_post.html", context)
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if obj and obj.status == BlogStatus.APPROVED:
-            if request.user.is_superuser or request.user.has_perm("website.can_approve"):
+            if request.user.is_superuser or request.user.has_perm(
+                "website.can_approve"
+            ):
                 publish_blog_url = f"https://mediusware.com/blog/details/{obj.slug}/"
                 async_task(
                     "website.tasks.thank_you_message_to_author",
                     obj,
                     publish_blog_url,
                 )
+                obj.approved_at = timezone.now()
+                obj.save()
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
