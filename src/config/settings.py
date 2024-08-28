@@ -321,20 +321,60 @@ CACHES = {
 # CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 minutes
 # CACHE_MIDDLEWARE_KEY_PREFIX = ''
 
+# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+# AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+# AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
+# AWS_S3_OBJECT_PARAMETERS = {
+#     'CacheControl': 'max-age=86400',
+# }
+# AWS_QUERYSTRING_AUTH = False
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
+#
+# STATIC_ROOT = "static"
+# STATIC_URL = AWS_S3_ENDPOINT_URL + '/static/'
+# MEDIA_ROOT = "media"
+# MEDIA_URL = AWS_S3_ENDPOINT_URL + '/media/'
+# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+
+# AWS S3 Settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
-AWS_S3_OBJECT_PARAMETERS = {
-    'CacheControl': 'max-age=86400',
-}
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+# AWS_S3_REGION_NAME = 'your-region-name'  # e.g., 'us-west-2'
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
+# AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com/static'
+
+
+
+
+# Optional: Specify different locations within the bucket for static and media files
+STATICFILES_LOCATION = 'static'
+MEDIAFILES_LOCATION = 'media'
+
+
+from storages.backends.s3boto3 import S3Boto3Storage
+# Define custom storage classes for static and media files
+class StaticStorage(S3Boto3Storage):
+    location = STATICFILES_LOCATION
+
+class MediaStorage(S3Boto3Storage):
+    location = MEDIAFILES_LOCATION
+    file_overwrite = False
+
+
+# Static files (CSS, JavaScript, images)
+STATICFILES_STORAGE = 'config.settings.StaticStorage'
+STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+
+# Media files (uploads)
+DEFAULT_FILE_STORAGE = 'config.settings.MediaStorage'
+MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
 
 STATIC_ROOT = "static"
-STATIC_URL = AWS_S3_ENDPOINT_URL + '/static'
 MEDIA_ROOT = "media"
-MEDIA_URL = AWS_S3_ENDPOINT_URL + '/media'
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
