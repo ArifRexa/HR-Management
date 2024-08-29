@@ -11,6 +11,8 @@ from django.forms.models import model_to_dict
 import requests
 from django_q.tasks import async_task
 from django.urls import reverse
+from django.forms.models import BaseInlineFormSet
+from django.core.exceptions import ValidationError
 
 # Register your models here.
 from employee.models.employee import Employee
@@ -150,11 +152,37 @@ class BlogFAQForm(forms.ModelForm):
         }
 
 
+class BlogFaqFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        valid_forms_count = 0
+        if not self.request.user.is_superuser or not self.request.user.has_perm(
+            "website.can_approve"
+        ):
+            for form in self.forms:
+                # Check if the form has valid data and is not marked for deletion
+                if form.cleaned_data and not form.cleaned_data.get("DELETE", False):
+                    # Skip forms that are completely empty
+                    if any(
+                        field for field in form.cleaned_data if form.cleaned_data[field]
+                    ):
+                        valid_forms_count += 1
+
+            if valid_forms_count < 3:
+                raise ValidationError("You must create at least 3 FAQ.")
+
+
 class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
     form = BlogFAQForm
-    # classes = ("collapse", "wide")
+    verbose_name_plural = "Blog FAQs(NB:Minimum 3 faq required)"
+    formset = BlogFaqFormSet
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.request = request
+        return formset
 
 
 class BlogModeratorFeedbackInline(admin.StackedInline):
@@ -235,6 +263,9 @@ class BlogAdmin(admin.ModelAdmin):
     inlines = (BlogContextInline, BlogFAQInline, BlogModeratorFeedbackInline)
     actions = [
         "clone_selected",
+        "draft_selected",
+        "in_revision_selected",
+        "submit_for_review_selected",
         "approve_selected",
     ]
 
@@ -280,10 +311,25 @@ class BlogAdmin(admin.ModelAdmin):
             return True
         return super().lookup_allowed(lookup, value)
 
-    @admin.action(description="Activate selected blogs")
+    @admin.action(description="Approved selected blogs")
     def approve_selected(self, request, queryset):
         queryset.update(status=BlogStatus.APPROVED, approved_at=timezone.now())
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
+
+    @admin.action(description="Move To Draft selected blogs")
+    def draft_selected(self, request, queryset):
+        queryset.update(status=BlogStatus.DRAFT, approved_at=None)
+        self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
+
+    @admin.action(description="Move To In Revision selected blogs")
+    def in_revision_selected(self, request, queryset):
+        queryset.update(status=BlogStatus.NEED_REVISION, approved_at=None)
+        self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
+
+    @admin.action(description="Move To In Review selected blogs")
+    def submit_for_review_selected(self, request, queryset):
+        queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
+        self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
     @admin.action(description="Clone selected blogs")
     def clone_selected(self, request, queryset):
@@ -359,7 +405,7 @@ class BlogAdmin(admin.ModelAdmin):
         if not request.user.has_perm("website.can_approve"):
             # If the user doesn't have permission, remove the 'approve_selected' action
             del actions["approve_selected"]
-            # del actions["unapprove_selected"]
+            del actions["in_revision_selected"]
 
         return actions
 
