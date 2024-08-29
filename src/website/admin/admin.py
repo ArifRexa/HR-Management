@@ -311,7 +311,7 @@ class BlogAdmin(admin.ModelAdmin):
             return True
         return super().lookup_allowed(lookup, value)
 
-    @admin.action(description="Activate selected blogs")
+    @admin.action(description="Approve selected blogs")
     def approve_selected(self, request, queryset):
         queryset.update(status=BlogStatus.APPROVED, approved_at=timezone.now())
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
