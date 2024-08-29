@@ -14,7 +14,10 @@ from academy.models import (
     TrainingTechnology,
     Student,
     OurAchievement,
-    FAQ
+    FAQ,
+    TrainingProgram, 
+    TrainingReason, TrainingFor, Training_Outline, 
+    PracticeProject, ProjectShowcase, StudentReview, TrainingFAQ,Instructor,FeatureHighlight
 )
 
 
@@ -150,3 +153,57 @@ class HomePageWhyBestAdmin(admin.ModelAdmin):
     list_display = ("id", "title")
     date_hierarchy = "created_at"
     search_fields = ["title"]
+
+
+class TrainingReasonInline(admin.TabularInline):
+    model = TrainingReason
+    extra = 1
+
+class TrainingForInline(admin.TabularInline):
+    model = TrainingFor
+    extra = 1
+
+class TrainingOutlineInline(admin.TabularInline):
+    model = Training_Outline
+    extra = 1
+
+class ProjectShowcaseInline(admin.TabularInline):
+    model = ProjectShowcase
+    extra = 1
+
+class StudentReviewInline(admin.TabularInline):
+    model = StudentReview
+    extra = 1
+
+class TrainingFAQInline(admin.TabularInline):
+    model = TrainingFAQ
+    extra = 1
+
+@admin.register(TrainingProgram)
+class TrainingProgramAdmin(admin.ModelAdmin):
+    inlines = [
+        TrainingReasonInline,
+        TrainingForInline,
+        TrainingOutlineInline,
+        ProjectShowcaseInline,
+        StudentReviewInline,
+        TrainingFAQInline
+    ]
+    list_display = ('title', 'course_fee', 'video')  # Adjust fields as needed
+    search_fields = ('title', 'description')  # Adjust fields as needed
+    list_filter = ('course_fee',)  # Adjust 
+
+@admin.register(Instructor)
+class InstructorAdmin(admin.ModelAdmin):
+    list_display = ('name', 'designation', 'rating')  # Adjust fields as needed
+
+
+
+class FeatureHighlightInline(admin.TabularInline):
+    model = FeatureHighlight
+    extra = 1
+
+@admin.register(PracticeProject)
+class PracticeProjectAdmin(admin.ModelAdmin):
+    inlines=(FeatureHighlightInline,)
+    list_display = ('title', 'description','slug')  
