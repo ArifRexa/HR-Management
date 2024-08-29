@@ -105,7 +105,7 @@ def send_client_feedback_email():
         # Check if the client exists and has an email address
         if client and client.email:
             email = EmailMultiAlternatives()
-            email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+            email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
             email.to = [client.email]
             email.subject = f"Feedback Request for {token.project.title}"
 
@@ -113,7 +113,7 @@ def send_client_feedback_email():
             context = {
                 'project_title': token.project.title,
                 'client_name': client.name,  # Adjust if necessary
-                'feedback_link': f"https://staging.hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+                'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
 
             # Render the HTML content
