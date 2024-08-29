@@ -8,7 +8,8 @@ from academy.models import (
     OurAchievement,
     SuccessStory,
     Training,
-    TrainingProgram
+    TrainingProgram,PracticeProject,
+    
 )
 from academy.serializers import (
     FAQSerializer,
@@ -18,8 +19,8 @@ from academy.serializers import (
     StudentCreateSerializer,
     SuccessStorySerializer,
     TrainingListSerializer,
-    TrainingSerializer,
-    WhyWeBestSerializer,
+    TrainingProgramDetailSerializer,
+    WhyWeBestSerializer,PracticeProjectDetailsSerializer
 )
 from rest_framework import filters, response, permissions, parsers
 
@@ -36,7 +37,7 @@ class MarketingSliderAPIListView(ListAPIView):
 
 
 class TrainingRetrieveAPIView(RetrieveAPIView):
-    serializer_class = TrainingSerializer
+    serializer_class = TrainingProgramDetailSerializer
     queryset = TrainingProgram.objects.all()
     lookup_field = "slug"
 
@@ -54,6 +55,20 @@ class TrainingListAPIView(ListAPIView):
     ]
     search_fields = ["title"]
 
+from django.http import Http404
+class PracticeProjectDetailView(RetrieveAPIView):
+    queryset = PracticeProject.objects.all()
+    serializer_class = PracticeProjectDetailsSerializer
+    lookup_field = 'slug'
+    
+    def get_object(self):
+        queryset = self.get_queryset()
+        training_slug = self.kwargs.get('training_slug')
+        project_slug = self.kwargs.get('project_slug')
+        obj = queryset.filter(slug=project_slug, trainingprogram__slug=training_slug).first()
+        if not obj:
+            raise Http404("No PracticeProject matches the given query.")
+        return obj
 
 class StudentCreateAPIView(APIView):
     serializer_class = StudentCreateSerializer

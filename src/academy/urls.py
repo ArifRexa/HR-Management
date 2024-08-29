@@ -7,7 +7,8 @@ from academy.views import (
     SuccessStoryView,
     TrainingListAPIView,
     TrainingRetrieveAPIView,
-    OurAchievementListView
+    OurAchievementListView,
+    PracticeProjectDetailView
 )
 from django.urls import path
 
@@ -23,6 +24,7 @@ urlpatterns = [
         name="our_achievement",
     ),
     path("training/<slug:slug>/", TrainingRetrieveAPIView.as_view(), name="training"),
+    path('training/<slug:training_slug>/practice_projects/<slug:project_slug>/', PracticeProjectDetailView.as_view(), name='practice-project-detail'),
     path("trainings/", TrainingListAPIView.as_view(), name="trainings"),
     path("student/", StudentCreateAPIView.as_view(), name="student"),
     path("success/story", SuccessStoryView.as_view(), name="success_story"),
