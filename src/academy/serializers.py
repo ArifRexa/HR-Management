@@ -15,9 +15,11 @@ from academy.models import (
     TrainingTechnology,
     OurAchievement,
     FAQ,
+    TrainingProgram, PracticeProject, FeatureHighlight, TrainingReason, TrainingFor, 
+    Training_Outline, ProjectShowcase, StudentReview, TrainingFAQ,Instructor
 )
 from website.serializers import TechnologySerializer
-
+from project_management.models import Technology
 
 class FAQSerializer(serializers.ModelSerializer):
     class Meta:
@@ -72,15 +74,15 @@ class TrainingOutlineSerializer(serializers.ModelSerializer):
         ]
 
 
-class TrainingTechnologySerializer(serializers.ModelSerializer):
-    technology_name = TechnologySerializer(many=True)
+# class TrainingTechnologySerializer(serializers.ModelSerializer):
+#     technology_name = TechnologySerializer(many=True)
 
-    class Meta:
-        model = TrainingTechnology
-        fields = [
-            "title",
-            "technology_name",
-        ]
+#     class Meta:
+#         model = TrainingTechnology
+#         fields = [
+#             "title",
+#             "technology_name",
+#         ]
 
 
 class TrainingProjectSerializer(serializers.ModelSerializer):
@@ -100,65 +102,135 @@ class TrainingLearningTopicSerializer(serializers.ModelSerializer):
         ]
 
 
-class TrainingSerializer(serializers.ModelSerializer):
+class InstructorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Training
-        fields = ["id", "title","slug", "description", "video", "duration", "image"]
+        model = Instructor
+        fields = ['id', 'name', 'image', 'designation', 'rating', 'short_description', 'thumbnail', 'video']
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        structure = TrainingStructure.objects.filter(
-            training_modules__training__id=instance.id
-        ).distinct()
-        data["training_structure"] = TrainingStructureSerializer(
-            instance=structure,
-            many=True,
-            context={"request": self.context.get("request"), "training": instance},
-        ).data
-        data["training_outline"] = TrainingOutlineSerializer(
-            instance=instance.training_outlines.all(),
-            many=True,
-            context={"request": self.context.get("request")},
-        ).data
-        data["training_project"] = TrainingProjectSerializer(
-            instance=instance.training_projects.all(),
-            many=True,
-            context={"request": self.context.get("request")},
-        ).data
-        data["learning_topic"] = TrainingLearningTopicSerializer(
-            instance=instance.training_learning_topics.all(),
-            many=True,
-            context={"request": self.context.get("request")},
-        ).data
-        data["technology"] = TrainingTechnologySerializer(
-            instance=instance.training_technologies.all(),
-            many=True,
-            context={"request": self.context.get("request")},
-        ).data
-        return data
+class PracticeProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PracticeProject
+        fields = ['id', 'slug', 'title', 'short_description', 'description']
+
+class TrainingReasonSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingReason
+        fields = ['id', 'title', 'image']
+
+class TrainingForSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingFor
+        fields = ['id', 'icon', 'prospect', 'description']
+
+class Training_OutlineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Training_Outline
+        fields = ['id', 'title', 'duration', 'description']
+
+class ProjectShowcaseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectShowcase
+        fields = ['id', 'title', 'video', 'thumbnail']
+
+class StudentReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentReview
+        fields = ['id', 'title', 'video', 'thumbnail']
+
+class TrainingFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrainingFAQ
+        fields = ['id', 'question', 'answer']
+
+class TrainingTechnologySerializer(serializers.ModelSerializer):
+    icon = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Technology  # Assuming you have a Technology model
+        fields = ['id', 'name', 'icon']  # Add relevant fields for technology
+
+    def get_icon(self, obj):
+        request = self.context.get('request')
+        if obj.icon and request:
+            return request.build_absolute_uri(obj.icon.url)
+        return None
+
+
+class FeatureHighlightSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FeatureHighlight
+        fields = ['id', 'image']
+class PracticeProjectDetailsSerializer(serializers.ModelSerializer):
+    feature_highlights = FeatureHighlightSerializer(many=True, source='featurehighlight_set')
+    training_technology = serializers.SerializerMethodField()
+    training_tools_title = serializers.SerializerMethodField()
+    training_tools_subtitle = serializers.SerializerMethodField()
+
+    class Meta:
+        model = PracticeProject
+        fields = [
+            'id', 'slug', 'title', 'short_description', 'description', 
+            'feature_highlights', 'training_technology',
+            'training_tools_title', 'training_tools_subtitle'
+        ]
+
+    def get_training_technology(self, obj):
+        request = self.context.get('request')
+        training_programs = TrainingProgram.objects.filter(practice_projects=obj)
+        technologies = Technology.objects.filter(trainingprogram__in=training_programs).distinct()
+        return TrainingTechnologySerializer(technologies, many=True ,context={'request': request}).data
+
+    def get_training_tools_title(self, obj):
+        training_program = TrainingProgram.objects.filter(practice_projects=obj).first()
+        return training_program.training_tools_title if training_program else None
+
+    def get_training_tools_subtitle(self, obj):
+        training_program = TrainingProgram.objects.filter(practice_projects=obj).first()
+        return training_program.training_tools_subtitle if training_program else None
+
+class TrainingProgramDetailSerializer(serializers.ModelSerializer):
+    instructors = InstructorSerializer(many=True)
+    practice_projects = PracticeProjectSerializer(many=True)
+    training_reasons = TrainingReasonSerializer(many=True)
+    training_for = TrainingForSerializer(many=True)
+    trainingoutline = Training_OutlineSerializer(many=True)
+    project_showcase = ProjectShowcaseSerializer(many=True)
+    student_review = StudentReviewSerializer(many=True)
+    training_faq = TrainingFAQSerializer(many=True)
+    training_technology = TrainingTechnologySerializer(many=True)
+    
+    class Meta:
+        model = TrainingProgram
+        fields = [
+            'id', 'slug', 'title', 'description', 'course_fee', 'video', 'image',
+            'instructors', 'course_overview_subtitle', 'course_overview_image', 
+            'course_overview_description', 'training_reason_title', 
+            'training_for_title', 'training_for_subtitle', 'training_outline_title', 
+            'training_outline_subtitle', 'training_tools_title', 'training_tools_subtitle', 
+            'training_technology', 'project_title', 'project_subtitle', 
+            'practice_projects', 'project_showcase_title', 
+            'project_showcase_description', 'student_review_title', 
+            'student_review_description', 'training_faq_subtitle',
+            'training_reasons', 'training_for', 'trainingoutline', 
+            'project_showcase', 'student_review', 'training_faq'
+        ]
 
 
 class TrainingListSerializer(serializers.ModelSerializer):
+    training_technology = TechnologySerializer(many=True, read_only=True)
     class Meta:
-        model = Training
+        model = TrainingProgram
         fields = [
             "id",
             "title",
             "slug",
             "description",
             "image",
-            "duration",
+            "training_technology",
+            
         ]
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
-        data["technology"] = TrainingTechnologySerializer(
-            instance=instance.training_technologies.all(),
-            many=True,
-            context={"request": self.context.get("request")},
-        ).data
-        return data
-
+    
 
 class StudentCreateSerializer(serializers.ModelSerializer):
     class Meta:

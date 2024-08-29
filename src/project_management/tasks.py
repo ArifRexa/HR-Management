@@ -97,28 +97,30 @@ def send_email_project_hourly_rate():
 
 
 def send_client_feedback_email():
-    print("aisi")
     tokens = ProjectToken.objects.filter(project__active=True)
-    # site = Site.objects.get_current()  # Get the current site
-    print(tokens)
-    # print(site)
 
     for token in tokens:
-        email = EmailMultiAlternatives()
-        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
-        email.to = [token.project.client.email]  # Replace with the client's email
-        email.subject = f"Feedback Request for {token.project.title}"
-        print(email.to)
-        print(email.subject)
+        client = token.project.client  # Get the client object
 
-        # Context for the email template
-        context = {
-            'project_title': token.project.title,
-            'client_name': token.project.client.name,  # Adjust if necessary
-            'feedback_link': f"https://staging.hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
-        }
+        # Check if the client exists and has an email address
+        if client and client.email:
+            email = EmailMultiAlternatives()
+            email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+            email.to = [client.email]
+            email.subject = f"Feedback Request for {token.project.title}"
 
-        # Render the HTML content
-        html_content = loader.render_to_string('mails/client_feedback_request.html', context)
-        email.attach_alternative(html_content, "text/html")
-        email.send()
+            # Context for the email template
+            context = {
+                'project_title': token.project.title,
+                'client_name': client.name,  # Adjust if necessary
+                'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+            }
+
+            # Render the HTML content
+            html_content = loader.render_to_string('mails/client_feedback_request.html', context)
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+        else:
+            # Log the missing client or email for further investigation
+            continue
+
