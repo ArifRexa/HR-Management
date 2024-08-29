@@ -90,6 +90,13 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:website_officelocation_changelist' %}">Office Locations</a></th>
             </tr>
+            
+            {% if "website.can_approve" in perms %}
+                <tr>
+                    <th scope="row"><a href="{% url 'admin:automate_post' %}">Automate Post</a></th>
+                </tr>
+            {% endif %}
+                
             <!-- Hidden from Main Index -->
 
         </table>

@@ -1,4 +1,3 @@
-
 from rest_framework import serializers
 
 from employee.models import (
@@ -42,6 +41,7 @@ from website.models import (
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PostCredential,
     Service,
     Blog,
     Category,
@@ -60,6 +60,17 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
 )
+
+
+class PostCredentialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PostCredential
+        fields = (
+            "id",
+            "name",
+            "platform",
+            "token",
+        )
 
 
 class ProjectPlatformSerializer(serializers.ModelSerializer):
@@ -291,6 +302,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = ("description", "thumbnail", "featured_video")
 
+
 class ProjectServiceSolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectServiceSolution
@@ -299,6 +311,7 @@ class ProjectServiceSolutionSerializer(serializers.ModelSerializer):
             "short_description",
             "description",
         )
+
 
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -603,9 +616,11 @@ class BlogCategoriesSerializer(serializers.ModelSerializer):
 
 
 class AuthorSerializer(serializers.ModelSerializer):
+    designation = serializers.CharField(source="designation.title", read_only=True)
+
     class Meta:
         model = Employee
-        fields = ("id", "full_name", "image")
+        fields = ("id", "full_name", "image", "designation")
 
 
 class BlogContextSerializer(serializers.ModelSerializer):
@@ -667,6 +682,7 @@ class BlogDetailsSerializer(BlogListSerializer):
             "id",
             "slug",
             "title",
+            "total_view",
             # "short_description",
             "image",
             "category",
@@ -893,7 +909,7 @@ class VideoTestimonialSerializer(serializers.ModelSerializer):
 class IndustryWeServeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryWeServe
-        fields = ["title", "image"]
+        fields = ["title", "image", "slug"]
 
 
 class OfficeLocationSerializer(serializers.ModelSerializer):

@@ -361,7 +361,7 @@ class ProjectToken(TimeStampMixin, AuthorMixin):
     token = models.CharField(default=uuid4, max_length=255)
 
     def __str__(self) -> str:
-        return f"{self.project.title} - {self.token[:-8]}"
+        return f"{self.project.title} - {str(self.token)[:-8]}"
 
 
 class ProjectTechnology(TimeStampMixin, AuthorMixin):

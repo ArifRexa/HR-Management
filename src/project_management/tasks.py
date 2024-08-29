@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.core import management
 from django_q.tasks import async_task
-from project_management.models import ObservationProject,Project,ProjectHour    
+from project_management.models import ObservationProject, Project, ProjectHour, ProjectToken
 from employee.models.employee import Observation
 from project_management.models import DailyProjectUpdate
 from dateutil.relativedelta import relativedelta
@@ -95,4 +95,32 @@ def send_email_project_hourly_rate():
     email.attach_alternative(html_content, "text/html")
     email.send()
 
+
+def send_client_feedback_email():
+    tokens = ProjectToken.objects.filter(project__active=True)
+
+    for token in tokens:
+        client = token.project.client  # Get the client object
+
+        # Check if the client exists and has an email address
+        if client and client.email:
+            email = EmailMultiAlternatives()
+            email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+            email.to = [client.email]
+            email.subject = f"Feedback Request for {token.project.title}"
+
+            # Context for the email template
+            context = {
+                'project_title': token.project.title,
+                'client_name': client.name,  # Adjust if necessary
+                'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+            }
+
+            # Render the HTML content
+            html_content = loader.render_to_string('mails/client_feedback_request.html', context)
+            email.attach_alternative(html_content, "text/html")
+            email.send()
+        else:
+            # Log the missing client or email for further investigation
+            continue
 

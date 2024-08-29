@@ -11,6 +11,7 @@ from website.views import (
     IndustryWeServeListAPIView,
     LifeAtMediuswareListView,
     OfficeLocationListView,
+    PostCredentialCreateView,
     ProjectVideoListAPIView,
     ServiceList,
     ServiceDetails,
@@ -205,6 +206,7 @@ api_v2_urls = [
         name="industry_we_serve",
     ),
     path("office-location/", OfficeLocationListView.as_view(), name="office_location"),
+    path("post-credential/", PostCredentialCreateView.as_view(), name="post_credential"),
 ]
 
 urlpatterns = [
