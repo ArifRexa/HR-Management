@@ -29,7 +29,7 @@ function updateProjectHour(project_hour_id=null){
         console.log(hour[i].updates_json);
         console.log(hour_input)
         if (hour_input != null){
-            hour_input.addEventListener("input", update_total_hour)
+            hour_input.addEventListener("onchange", update_total_hour)
         }
         // hour_input.value = hour[i].hours;
         if (hour[i].updates_json){
@@ -154,6 +154,7 @@ if (action == "change"){
 }
 
 function update_total_hour(e){
+    console.log("input on change event")
 
     const total_hour = document.getElementById('id_hours')
 
