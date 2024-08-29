@@ -97,19 +97,12 @@ def send_email_project_hourly_rate():
 
 
 def send_client_feedback_email():
-    print("aisi")
     tokens = ProjectToken.objects.filter(project__active=True)
-    # site = Site.objects.get_current()  # Get the current site
-    print(tokens)
-    # print(site)
-
     for token in tokens:
         email = EmailMultiAlternatives()
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.to = [token.project.client.email]  # Replace with the client's email
         email.subject = f"Feedback Request for {token.project.title}"
-        print(email.to)
-        print(email.subject)
 
         # Context for the email template
         context = {
