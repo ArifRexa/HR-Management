@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: #007bff;
+        }
+        .content {
+            line-height: 1.6;
+        }
+        .content p {
+            margin: 0 0 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>We Value Your Feedback!</h1>
+        </div>
+        <div class="content">
+            <p>Dear {{ client_name }},</p>
+            <p>We hope you're enjoying your experience with us. We would love to hear your thoughts on the recent work we've done on the project "<strong>{{ project_title }}</strong>".</p>
+            <p>Your feedback helps us improve our services and better serve you in the future.</p>
+            <p>Click the button below to share your feedback:</p>
+            <p>
+                <a href="{{ feedback_link }}" class="btn">Give Feedback</a>
+            </p>
+            <p>Thank you for your time and insights!</p>
+            <p>Best regards,</p>
+            <p>Your Company Name</p>
+        </div>
+        <div class="footer">
+            <p>If you have any questions, feel free to <a href="mailto:support@yourcompany.com">contact us</a>.</p>
+        </div>
+    </div>
+</body>
+</html>

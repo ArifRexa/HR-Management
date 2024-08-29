@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from django.core import management
 from django_q.tasks import async_task
-from project_management.models import ObservationProject,Project,ProjectHour    
+from project_management.models import ObservationProject, Project, ProjectHour, ProjectToken
 from employee.models.employee import Observation
 from project_management.models import DailyProjectUpdate
 from dateutil.relativedelta import relativedelta
@@ -96,3 +96,29 @@ def send_email_project_hourly_rate():
     email.send()
 
 
+def send_client_feedback_email():
+    print("aisi")
+    tokens = ProjectToken.objects.filter(project__active=True)
+    # site = Site.objects.get_current()  # Get the current site
+    print(tokens)
+    # print(site)
+
+    for token in tokens:
+        email = EmailMultiAlternatives()
+        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        email.to = [token.project.client.email]  # Replace with the client's email
+        email.subject = f"Feedback Request for {token.project.title}"
+        print(email.to)
+        print(email.subject)
+
+        # Context for the email template
+        context = {
+            'project_title': token.project.title,
+            'client_name': token.project.client.name,  # Adjust if necessary
+            'feedback_link': f"https://staging.hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+        }
+
+        # Render the HTML content
+        html_content = loader.render_to_string('mails/client_feedback_request.html', context)
+        email.attach_alternative(html_content, "text/html")
+        email.send()
