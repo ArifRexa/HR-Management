@@ -25,6 +25,15 @@ def get_last_x_friday(start_date, num_of_week):
     for i in range(-1, n, -1):
         yield start_date + relativedelta(weekday=FR(i))
 
+# @admin.site.register(ProjectToken)
+
+# class ProjectTokenAdmin(admin.ModelAdmin):
+class ProjectTokenAdmin(admin.ModelAdmin):
+    list_display = ('project', 'token', 'created_at', 'updated_at')
+    search_fields = ('project__title', 'token')
+    readonly_fields = ('token',)
+
+admin.site.register(ProjectToken, ProjectTokenAdmin)
 
 @admin.register(ClientFeedback)
 class ClientFeedbackAdmin(admin.ModelAdmin):
@@ -222,6 +231,6 @@ class ClientFeedbackAdmin(admin.ModelAdmin):
                 
                 return TemplateResponse(request, 'admin/client_feedback/client_feedback.html', context)
             
-    def has_module_permission(self, request):
-        return False
+    # def has_module_permission(self, request):
+    #     return False
 
