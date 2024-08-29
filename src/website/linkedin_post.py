@@ -59,8 +59,6 @@ class LinkedinAutomate:
     def main_func(self):
         self.user_id = self.get_user_id()
         feed_post = self.feed_post()
-        print("feed_post", feed_post)
-        print("user id", self.user_id)
         print(feed_post.status_code, feed_post.text)
         return feed_post.status_code
 
