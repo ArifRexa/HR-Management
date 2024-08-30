@@ -113,7 +113,7 @@ def send_client_feedback_email():
             context = {
                 'project_title': token.project.title,
                 'client_name': client.name,  # Adjust if necessary
-                'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+                'feedback_link': f"https://staging.hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
 
             # Render the HTML content
