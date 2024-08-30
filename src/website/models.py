@@ -315,6 +315,7 @@ class OfficeLocation(TimeStampMixin):
     address = models.TextField()
     contact = models.CharField(max_length=255)
     image = models.ImageField(upload_to="office_location/")
+    email = models.EmailField(null=True, blank=True)
 
     def __str__(self, *args, **kwargs):
         return self.office

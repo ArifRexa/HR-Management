@@ -915,7 +915,7 @@ class IndustryWeServeSerializer(serializers.ModelSerializer):
 class OfficeLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfficeLocation
-        fields = ["office", "address", "contact", "image"]
+        fields = ["office", "address", "contact", "image", "email"]
 
 
 class BrandSerializer(serializers.ModelSerializer):
