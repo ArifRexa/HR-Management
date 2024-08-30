@@ -49,6 +49,8 @@
             padding-top: 20px;
             font-size: 12px;
             color: #777;
+            display: block;
+            margin: auto;
         }
         .button_text_color{
             color: white; !important;
@@ -67,7 +69,8 @@
             <p>Your feedback helps us improve our services and better serve you in the future.</p>
             <p>Click the button below to share your feedback:</p>
             <p>
-                <a href="{{ feedback_link }}" class="btn text-light">Give Feedback</a>
+                <button type="button" class="btn btn-primary"><a href="{{ feedback_link }}" style="text-decoration: none; color: white;">Give Feedback</a></button>
+{#                <a href="{{ feedback_link }}" class="btn text-light">Give Feedback</a>#}
             </p>
             <p>Thank you for your time and insights!</p>
             <p>Best regards,</p>
