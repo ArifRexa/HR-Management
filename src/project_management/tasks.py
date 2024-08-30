@@ -107,7 +107,7 @@ def send_client_feedback_email():
             email = EmailMultiAlternatives()
             email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
             email.to = [client.email]
-            email.subject = f"Your Brutal Honesty Wanted: How Was Our Work?"
+            email.subject = "Your Brutal Honesty Wanted: How Was Our Work?"
 
             # Context for the email template
             context = {
