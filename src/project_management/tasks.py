@@ -107,14 +107,13 @@ def send_client_feedback_email():
             email = EmailMultiAlternatives()
             email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
             email.to = [client.email]
-            # email.subject = f"Feedback Request for {token.project.title}"
-            email.subject = f"Your Brutal Honesty Wanted: How Was Our Work?"
+            email.subject = "Your Brutal Honesty Wanted: How Was Our Work?"
 
             # Context for the email template
             context = {
                 'project_title': token.project.title,
                 'client_name': client.name,  # Adjust if necessary
-                'feedback_link': f"https://staging.hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+                'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
 
             # Render the HTML content
