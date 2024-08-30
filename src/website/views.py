@@ -42,7 +42,7 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
-    VideoTestimonial,
+    VideoTestimonial,Brand
 )
 from website.serializers import (
     AwardSerializer,
@@ -80,7 +80,7 @@ from website.serializers import (
     IndustrySerializer,
     SkillSerializer,
     LeadSerializer,
-    VideoTestimonialSerializer,
+    VideoTestimonialSerializer,BrandSerializer
 )
 from rest_framework.generics import (
     ListAPIView,
@@ -688,3 +688,9 @@ class PostCredentialCreateView(APIView):
             obj.name = data.get("name")
             obj.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+
+
+class BrandListCreateAPIView(ListAPIView):
+    queryset = Brand.objects.all()
+    serializer_class = BrandSerializer

@@ -318,3 +318,10 @@ class OfficeLocation(TimeStampMixin):
 
     def __str__(self, *args, **kwargs):
         return self.office
+
+
+class Brand(models.Model):
+    brandphoto = models.ImageField(upload_to='brand_photos/')
+    
+    def __str__(self):
+        return f"Brand {self.id}"

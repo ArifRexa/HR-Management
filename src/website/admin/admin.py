@@ -46,7 +46,7 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
-    VideoTestimonial,
+    VideoTestimonial,Brand
 )
 
 from website.linkedin_post import automatic_blog_post_linkedin
@@ -676,3 +676,9 @@ class OfficeLocationAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('id', 'brandphoto')
+    
+    
