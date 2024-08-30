@@ -853,12 +853,12 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
     feedback = models.TextField()
     avg_rating = models.FloatField()
 
-    rating_communication = models.FloatField(blank=True, null=True)
     rating_overall_satisfaction = models.FloatField(blank=True, null=True)
+    rating_communication = models.FloatField(blank=True, null=True)
     rating_quality_of_work = models.FloatField(blank=True, null=True)
     rating_time_management = models.FloatField(blank=True, null=True)
-    rating_value_for_money = models.FloatField(blank=True, null=True)
     rating_understanding_of_requirements = models.FloatField(blank=True, null=True)
+    rating_value_for_money = models.FloatField(blank=True, null=True)
     rating_recommendations = models.FloatField(blank=True, null=True)
 
     @property
