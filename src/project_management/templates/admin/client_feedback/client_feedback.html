@@ -23,6 +23,10 @@
         * {
             font-family: 'Barlow', sans-serif;
         }
+        .container {
+            padding-left: 6%; /* Adjust as needed */
+            padding-right: 6%; /* Adjust as needed */
+        }
         thead tr {
             background-color: #f9f9f9;
         }
@@ -38,6 +42,32 @@
         div.messages div.alert-danger {
             background: tomato;
         }
+
+        .table td, .table th {
+            vertical-align: middle;
+        }
+
+        .table th {
+            text-align: left;
+        }
+
+        .popover-wrapper {
+            position: relative;
+        }
+
+        .popover-title {
+            font-weight: bold;
+        }
+
+        .popover-message {
+            display: none;
+        }
+
+        .popover-wrapper:hover .popover-message {
+            display: block;
+        }
+
+
     </style>
 </head>
 <body>
@@ -58,40 +88,20 @@
 
         <!-- HEADING -->
         <div class="row">
-            <h2 class="h1 fs-1 py-4">Weekly Feedback ({{ project.title }})</h2>
+            <h2 class="h1 fs-1">Project Review & Satisfaction Survey</h2>
+            <h3 class="h3 fs-3"> Project: {{ project.title }}</h3>
+
             <hr>
-            <div class="col-lg-8">
+            <div class="">
                 <div class="">
                     <p>
-                        Hello, dear hope you are doing well. We are working together for a long time, 
-                        If  I did any wrong please share it with me feel free and, 
-                        please give me Feedback on my job. The Feedback will be an inspiration of mine to best work. 
-                        I will try to satisfy you with my level best.
-                    </p>
-                    <p>
                         <strong>
-                            Please don't hesitate to give your honest(Positive / Negative) opinion.
-                        Your feedback is my fuel to grow together in long term.
+{#                            Please don't hesitate to give your honest(Positive / Negative) opinion.#}
+{#                        Your feedback is my fuel to grow together in long term.#}
+                            We value your honest feedback as it helps us improve and deliver even better results in the future. Please take a few moments to share your thoughts on the project. Your insights are crucial to our growth and ensuring that we meet your expectations. Please don't hesitate to give your honest (positive/negative) opinion.
                         </strong>
                     </p>
                 </div>
-            </div>
-            <div class="col-lg-4">
-                <div class="video pb-4 mx-auto text-center">
-                    <iframe width="100%" style="max-width: 500px; height: 234px; border-radius: 8px;"
-                        src="{{ youtube_url }}?controls=0&autoplay=1&mute=0&loop=1&rel=0&showinfo=0&playlist=zrt7SWJXriY"
-                        title="YouTube video player" frameborder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                    </iframe>
-                </div>
-                
-                {% comment %} <div class="audio pb-3">
-                    <audio controls>
-                        <source src="{% static 'audio/client_feedback_intro.mp3' %}" type="audio/mpeg">
-                        Your browser does not support the audio element.
-                    </audio>
-                </div> {% endcomment %}
             </div>
         </div>
 
@@ -111,22 +121,19 @@
                 <div class="table-responsive">
                     <table class="table w-100 table-bordered rounded">
                         <thead>
-                            <tr>
-                                <th class="border" scope="col">Weekdate</th>
-                                <th class="border" scope="col">Feedback</th>
-                                <th class="border" scope="col">Communication</th>
-                                <th class="border" scope="col">Output</th>
-                                <th class="border" scope="col">Time Management</th>
-                                <th class="border" scope="col">Billing</th>
-                                <th class="border" scope="col">Long-Term Working Interest</th>
-                                <th class="border" scope="col">Average</th>
-                                <th class="border" scope="col">Action</th>
+                            <tr style="display: None">
+                                <th class="border" scope="col">Attribute</th>
+                                <th class="border" scope="col">Value</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for fback_obj in feedback_objs %}
                                 <tr>
-                                    <td>{{ fback_obj.feedback_week|date:"M d, Y" }}</td>
+                                    <td style="font-weight: bold;">Month</td>
+                                    <td>{{ fback_obj.feedback_month|date:"F Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Feedback</td>
                                     <td>
                                         {% if fback_obj.feedback|length >= 150 %}
                                             <div class="popover-wrapper">
@@ -141,28 +148,55 @@
                                             <div>{{ fback_obj.feedback }}</div>
                                         {% endif %}
                                     </td>
-                                    <td>{{ fback_obj.rating_communication }}</td>
-                                    <td>{{ fback_obj.rating_output }}</td>
-                                    <td>{{ fback_obj.rating_time_management }}</td>
-                                    <td>{{ fback_obj.rating_billing }}</td>
-                                    <td>{{ fback_obj.rating_long_term_interest }}</td>
-                                    <td>{{ fback_obj.avg_rating }}</td>
-        
-                                    {% if forloop.counter == 1 and current_feedback_exists %}
-                                        <td>
-                                            <a class="btn btn-secondary btn-sm text-light" href="{% url 'admin:client_feedback_form' token=temp_token %}">Edit</a>
-                                        </td>
-                                    {% else %}
-                                        <td></td>
-                                    {% endif %}
-                                    
                                 </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Communication</td>
+                                    <td>{{ fback_obj.rating_communication }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Overall Satisfaction</td>
+                                    <td>{{ fback_obj.rating_overall_satisfaction }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Quality of Work</td>
+                                    <td>{{ fback_obj.rating_quality_of_work }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Time Management</td>
+                                    <td>{{ fback_obj.rating_time_management }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Value for Money</td>
+                                    <td>{{ fback_obj.rating_value_for_money }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Understanding of Requirements</td>
+                                    <td>{{ fback_obj.rating_understanding_of_requirements }}</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold;">Recommendations</td>
+                                    <td>{{ fback_obj.rating_recommendations }}</td>
+                                </tr>
+                                <tr style="background-color: #2853a1; font-weight: bold; color: #ffffff; ">
+                                    <td>Average</td>
+                                    <td>{{ fback_obj.avg_rating }}</td>
+                                </tr>
+                                {% if forloop.counter == 1 and current_feedback_exists %}
+                                    <tr>
+                                        <td colspan="2">
+                                            <a class="btn btn-primary btn-sm" style="font-weight: bold" href="{% url 'admin:client_feedback_form' token=temp_token %}">Edit</a>
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
+
+
         
     </div>
 

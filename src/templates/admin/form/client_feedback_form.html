@@ -43,87 +43,110 @@
     input:checked ~ label:hover ~ label, /* highlight previous selected stars for new rating */
     label:hover ~ input:checked ~ label /* highlight previous selected stars */ { color: #A6E72D;  }
 
+    /* Thank you message styling */
+    .thank-you-message {
+        display: none; /* Hidden by default */
+        color: #28a745;
+        font-size: 1.2em;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+
+    @media only screen and (max-width: 425px){
+	/*Small smartphones [325px -> 425px]*/
+        #feedbackSubmit{
+            width: 100% !important;
+        }
+    }
+
 
 </style>
 
 <form action="{% url 'admin:client_feedback_form' token=temp_token %}" method="post" id="feedbackForm" class="m-1">
     {% csrf_token %}
-    
-    <div class="row">
+
+    <div class="">
         <div class="col-12">
             <div class="">
                 <label for="inputFeedback" class="form-label mb-0 fs-4">Feedback / Suggestion</label>
             </div>
         </div>
-        <div class="col-md-6 col-lg-8">
-            <div class="mb-3 mt-3">
-                <textarea 
-                    style="height: 172px;"
-                    class="form-control" 
-                    name="feedback" 
-                    id="inputFeedback" 
-                    cols="30" rows="7"
-                    placeholder="Please write your valuable feedback like &#10; &#10; Good things &#10; Bad things &#10; Suggestions"
-                    required
-                >{{ feedback_form.feedback.value|default_if_none:'' }}</textarea>
-            </div>
-        </div>
         <div class="col-md-6 col-lg-4">
-            {% for field in feedback_form.visible_fields %}
-                {% if field.name|startswith:'rating' %}
-                    <div class="align-items-center d-flex justify-content-between">
-                        <label for="{{ field.name }}_fieldset" class="form-label mb-0">{{ field.label }}</label>
-                        <div class="d-flex gap-3">
-                            <fieldset class="rate" id="{{ field.name }}_fieldset">
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}10" name="{{ field.name }}_mask" value="10" />
-                                <label for="{{ field.name }}10" title="5 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}9" name="{{ field.name }}_mask" value="9" />
-                                <label class="half" for="{{ field.name }}9" title="4.5 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}8" name="{{ field.name }}_mask" value="8" />
-                                <label for="{{ field.name }}8" title="4 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}7" name="{{ field.name }}_mask" value="7" />
-                                <label class="half" for="{{ field.name }}7" title="3.5 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}6" name="{{ field.name }}_mask" value="6" />
-                                <label for="{{ field.name }}6" title="3 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}5" name="{{ field.name }}_mask" value="5" />
-                                <label class="half" for="{{ field.name }}5" title="2.5 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}4" name="{{ field.name }}_mask" value="4" />
-                                <label for="{{ field.name }}4" title="2 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}3" name="{{ field.name }}_mask" value="3" />
-                                <label class="half" for="{{ field.name }}3" title="1.5 stars"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}2" name="{{ field.name }}_mask" value="2" />
-                                <label for="{{ field.name }}2" title="1 star"></label>
-                                <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}1" name="{{ field.name }}_mask" value="1" />
-                                <label class="half" for="{{ field.name }}1" title="0.5 star"></label>
-                            </fieldset>
+                {% for field in feedback_form.visible_fields %}
+                    {% if field.name|startswith:'rating' %}
+                        <div class="align-items-center d-flex justify-content-between">
+                            <label for="{{ field.name }}_fieldset" class="form-label mb-0">{{ field.label }}</label>
+                            <div class="d-flex gap-3">
+                                <fieldset class="rate" id="{{ field.name }}_fieldset">
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}10" name="{{ field.name }}_mask" value="10" />
+                                    <label for="{{ field.name }}10" title="5 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}9" name="{{ field.name }}_mask" value="9" />
+                                    <label class="half" for="{{ field.name }}9" title="4.5 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}8" name="{{ field.name }}_mask" value="8" />
+                                    <label for="{{ field.name }}8" title="4 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}7" name="{{ field.name }}_mask" value="7" />
+                                    <label class="half" for="{{ field.name }}7" title="3.5 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}6" name="{{ field.name }}_mask" value="6" />
+                                    <label for="{{ field.name }}6" title="3 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}5" name="{{ field.name }}_mask" value="5" />
+                                    <label class="half" for="{{ field.name }}5" title="2.5 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}4" name="{{ field.name }}_mask" value="4" />
+                                    <label for="{{ field.name }}4" title="2 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}3" name="{{ field.name }}_mask" value="3" />
+                                    <label class="half" for="{{ field.name }}3" title="1.5 stars"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}2" name="{{ field.name }}_mask" value="2" />
+                                    <label for="{{ field.name }}2" title="1 star"></label>
+                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}1" name="{{ field.name }}_mask" value="1" />
+                                    <label class="half" for="{{ field.name }}1" title="0.5 star"></label>
+                                </fieldset>
+                            </div>
+                            <input
+                                type="number" step="0.5"
+                                id="{{ field.name }}",
+                                name="{{ field.name }}"
+                                min="0.5" max="5.0"
+                                value="{{ field.value }}"
+                                hidden
+                            />
                         </div>
-                        <input
-                            type="number" step="0.5"
-                            id="{{ field.name }}",
-                            name="{{ field.name }}"
-                            min="0.5" max="5.0"
-                            value="{{ field.value }}"
-                            hidden
-                        />
-                    </div>
-                {% endif %}
-            {% endfor %}
-        </div>
-        <div class="col-12">
-            <div class="d-flex justify-content-end mb-3 mt-4">
-                <input 
-                    id="feedbackSubmit" 
-                    type="submit" 
-                    class="form-control w-auto text-white" 
-                    style="background:#0060AF;padding:10px 60px;" 
-                    value="{% if update_feedback %}Update{% else %}Submit{% endif %}" 
-                >
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="col-md-6 col-lg-8">
+                <div class="mb-3 mt-3">
+                    <textarea
+                        style="height: 172px;"
+                        class="form-control"
+                        name="feedback"
+                        id="inputFeedback"
+                        cols="30" rows="7"
+                        placeholder="Please write your valuable feedback like &#10; &#10; Good things &#10; Bad things &#10; Suggestions"
+                        required
+                    >{{ feedback_form.feedback.value|default_if_none:'' }}</textarea>
+                </div>
+            </div>
+
+            <div class="">
+                <div class="mb-3 mt-4">
+                    <input
+                        id="feedbackSubmit"
+                        type="submit"
+                        class="form-control w-auto text-white"
+                        style="background:#0060AF;padding:10px 60px;"
+                        value="{% if update_feedback %}Update{% else %}Submit{% endif %}"
+                    >
+                </div>
             </div>
         </div>
-    </div>
 
-    
+
 </form>
+
+<!-- Thank you message -->
+    <div id="thankYouMessage" class="thank-you-message">
+        Thank you for your feedback!
+    </div>
 
 <script>
     var rateInput;
@@ -140,4 +163,17 @@
             )?.click();
     //     {% endif %}
     // {% endfor %}
+
+document.getElementById('feedbackForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent the form from submitting normally
+
+    // Show thank you message
+    var thankYouMessage = document.getElementById('thankYouMessage');
+    thankYouMessage.style.display = 'block';
+
+    // Submit the form after showing the message
+    setTimeout(function() {
+        document.getElementById('feedbackForm').submit(); // Submit the form
+    }, 5000); // Show the message for 1 second before submitting
+});
 </script>
