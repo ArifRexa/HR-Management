@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "client_management",
     "mptt",
     "academy",
+    "user_auth",
 ]
 
 MIDDLEWARE = [
