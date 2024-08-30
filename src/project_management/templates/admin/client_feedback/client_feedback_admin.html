@@ -82,30 +82,32 @@
                                             {{ cl_fb.feedback|stringformat:".150s" }}
                                         </div>
                                     </div>
-                                    <div class="popover-message" style="width: 130%;">
+                                    <div class="popover-message" style="width: 180%;">
                                         {% if cl_fb.avg_rating <= 3 %}
                                             <div style="color: red;"><strong>Average Rating: {{ cl_fb.avg_rating }}</strong></div><br>
                                         {% else %}
                                             <div style="color: green;"><strong>Average Rating: {{ cl_fb.avg_rating }} </strong></div><br>
                                         {% endif %}
-                                        <div style="{% if cl_fb.rating_communication <= 3 %}color: red;{% endif %}">
-                                            Communication: {{ cl_fb.rating_communication }}
-                                        </div>
                                         <div style="{% if cl_fb.rating_overall_satisfaction <= 3 %}color: red;{% endif %}">
                                             Overall Satisfaction: {{ cl_fb.rating_overall_satisfaction }}
-                                        </div>
+                                        </div><br>
+                                        <div style="{% if cl_fb.rating_communication <= 3 %}color: red;{% endif %}">
+                                            Communication: {{ cl_fb.rating_communication }}
+                                        </div><br>
+
                                         <div style="{% if cl_fb.rating_quality_of_work <= 3 %}color: red;{% endif %}">
                                             Quality of Work: {{ cl_fb.rating_quality_of_work }}
-                                        </div>
+                                        </div><br>
                                         <div style="{% if cl_fb.rating_time_management <= 3 %}color: red;{% endif %}">
                                             Time Management: {{ cl_fb.rating_time_management }}
-                                        </div>
+                                        </div><br>
+                                        <div style="{% if cl_fb.rating_understanding_of_requirements <= 3 %}color: red;{% endif %}">
+                                             Requirements Understanding: {{ cl_fb.rating_understanding_of_requirements }}
+                                        </div><br>
                                         <div style="{% if cl_fb.rating_value_for_money <= 3 %}color: red;{% endif %}">
                                             Value for Money: {{ cl_fb.rating_value_for_money }}
-                                        </div>
-                                        <div style="{% if cl_fb.rating_understanding_of_requirements <= 3 %}color: red;{% endif %}">
-                                            Understanding of Requirements: {{ cl_fb.rating_understanding_of_requirements }}
-                                        </div>
+                                        </div><br>
+
                                         <div style="{% if cl_fb.rating_recommendations <= 3 %}color: red;{% endif %}">
                                             Recommendations: {{ cl_fb.rating_recommendations }}
                                         </div>

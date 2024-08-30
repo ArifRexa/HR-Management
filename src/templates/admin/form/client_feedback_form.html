@@ -63,6 +63,86 @@
 
 </style>
 
+{#<form action="{% url 'admin:client_feedback_form' token=temp_token %}" method="post" id="feedbackForm" class="m-1">#}
+{#    {% csrf_token %}#}
+{##}
+{#    <div class="">#}
+{#        <div class="col-12">#}
+{#            <div class="">#}
+{#                <label for="inputFeedback" class="form-label mb-0 fs-4">Feedback / Suggestion</label>#}
+{#            </div>#}
+{#        </div>#}
+{#        <div class="col-md-6 col-lg-4">#}
+{#                {% for field in feedback_form.visible_fields %}#}
+{#                    {% if field.name|startswith:'rating' %}#}
+{#                        <div class="align-items-center d-flex justify-content-between">#}
+{#                            <label for="{{ field.name }}_fieldset" class="form-label mb-0">{{ field.label }}</label>#}
+{#                            <div class="d-flex gap-3">#}
+{#                                <fieldset class="rate" id="{{ field.name }}_fieldset">#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}10" name="{{ field.name }}_mask" value="10" />#}
+{#                                    <label for="{{ field.name }}10" title="5 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}9" name="{{ field.name }}_mask" value="9" />#}
+{#                                    <label class="half" for="{{ field.name }}9" title="4.5 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}8" name="{{ field.name }}_mask" value="8" />#}
+{#                                    <label for="{{ field.name }}8" title="4 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}7" name="{{ field.name }}_mask" value="7" />#}
+{#                                    <label class="half" for="{{ field.name }}7" title="3.5 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}6" name="{{ field.name }}_mask" value="6" />#}
+{#                                    <label for="{{ field.name }}6" title="3 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}5" name="{{ field.name }}_mask" value="5" />#}
+{#                                    <label class="half" for="{{ field.name }}5" title="2.5 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}4" name="{{ field.name }}_mask" value="4" />#}
+{#                                    <label for="{{ field.name }}4" title="2 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}3" name="{{ field.name }}_mask" value="3" />#}
+{#                                    <label class="half" for="{{ field.name }}3" title="1.5 stars"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}2" name="{{ field.name }}_mask" value="2" />#}
+{#                                    <label for="{{ field.name }}2" title="1 star"></label>#}
+{#                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}1" name="{{ field.name }}_mask" value="1" />#}
+{#                                    <label class="half" for="{{ field.name }}1" title="0.5 star"></label>#}
+{#                                </fieldset>#}
+{#                            </div>#}
+{#                            <input#}
+{#                                type="number" step="0.5"#}
+{#                                id="{{ field.name }}",#}
+{#                                name="{{ field.name }}"#}
+{#                                min="0.5" max="5.0"#}
+{#                                value="{{ field.value }}"#}
+{#                                hidden#}
+{#                            />#}
+{#                        </div>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            </div>#}
+{#            <div class="col-md-6 col-lg-8">#}
+{#                <div class="mb-3 mt-3">#}
+{#                    <textarea#}
+{#                        style="height: 172px;"#}
+{#                        class="form-control"#}
+{#                        name="feedback"#}
+{#                        id="inputFeedback"#}
+{#                        cols="30" rows="7"#}
+{#                        placeholder="Please write your valuable feedback like &#10; &#10; Good things &#10; Bad things &#10; Suggestions"#}
+{#                        required#}
+{#                    >{{ feedback_form.feedback.value|default_if_none:'' }}</textarea>#}
+{#                </div>#}
+{#            </div>#}
+{##}
+{#            <div class="">#}
+{#                <div class="mb-3 mt-4">#}
+{#                    <input#}
+{#                        id="feedbackSubmit"#}
+{#                        type="submit"#}
+{#                        class="form-control w-auto text-white"#}
+{#                        style="background:#0060AF;padding:10px 60px;"#}
+{#                        value="{% if update_feedback %}Update{% else %}Submit{% endif %}"#}
+{#                    >#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{##}
+{#</form>#}
+
 <form action="{% url 'admin:client_feedback_form' token=temp_token %}" method="post" id="feedbackForm" class="m-1">
     {% csrf_token %}
 
@@ -72,81 +152,323 @@
                 <label for="inputFeedback" class="form-label mb-0 fs-4">Feedback / Suggestion</label>
             </div>
         </div>
+
         <div class="col-md-6 col-lg-4">
-                {% for field in feedback_form.visible_fields %}
-                    {% if field.name|startswith:'rating' %}
-                        <div class="align-items-center d-flex justify-content-between">
-                            <label for="{{ field.name }}_fieldset" class="form-label mb-0">{{ field.label }}</label>
-                            <div class="d-flex gap-3">
-                                <fieldset class="rate" id="{{ field.name }}_fieldset">
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}10" name="{{ field.name }}_mask" value="10" />
-                                    <label for="{{ field.name }}10" title="5 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}9" name="{{ field.name }}_mask" value="9" />
-                                    <label class="half" for="{{ field.name }}9" title="4.5 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}8" name="{{ field.name }}_mask" value="8" />
-                                    <label for="{{ field.name }}8" title="4 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}7" name="{{ field.name }}_mask" value="7" />
-                                    <label class="half" for="{{ field.name }}7" title="3.5 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}6" name="{{ field.name }}_mask" value="6" />
-                                    <label for="{{ field.name }}6" title="3 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}5" name="{{ field.name }}_mask" value="5" />
-                                    <label class="half" for="{{ field.name }}5" title="2.5 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}4" name="{{ field.name }}_mask" value="4" />
-                                    <label for="{{ field.name }}4" title="2 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}3" name="{{ field.name }}_mask" value="3" />
-                                    <label class="half" for="{{ field.name }}3" title="1.5 stars"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}2" name="{{ field.name }}_mask" value="2" />
-                                    <label for="{{ field.name }}2" title="1 star"></label>
-                                    <input class="{{ field.name }}_mask" type="radio" id="{{ field.name }}1" name="{{ field.name }}_mask" value="1" />
-                                    <label class="half" for="{{ field.name }}1" title="0.5 star"></label>
-                                </fieldset>
-                            </div>
-                            <input
-                                type="number" step="0.5"
-                                id="{{ field.name }}",
-                                name="{{ field.name }}"
-                                min="0.5" max="5.0"
-                                value="{{ field.value }}"
-                                hidden
-                            />
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            <div class="col-md-6 col-lg-8">
-                <div class="mb-3 mt-3">
-                    <textarea
-                        style="height: 172px;"
-                        class="form-control"
-                        name="feedback"
-                        id="inputFeedback"
-                        cols="30" rows="7"
-                        placeholder="Please write your valuable feedback like &#10; &#10; Good things &#10; Bad things &#10; Suggestions"
-                        required
-                    >{{ feedback_form.feedback.value|default_if_none:'' }}</textarea>
+            <!-- Overall Satisfaction -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_overall_satisfaction_fieldset" class="form-label mb-0">Overall Satisfaction</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_overall_satisfaction_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction10" name="rating_overall_satisfaction_mask" value="10" />
+                        <label for="rating_overall_satisfaction10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction9" name="rating_overall_satisfaction_mask" value="9" />
+                        <label class="half" for="rating_overall_satisfaction9" title="4.5 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction8" name="rating_overall_satisfaction_mask" value="8" />
+                        <label for="rating_overall_satisfaction8" title="4 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction7" name="rating_overall_satisfaction_mask" value="7" />
+                        <label class="half" for="rating_overall_satisfaction7" title="3.5 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction6" name="rating_overall_satisfaction_mask" value="6" />
+                        <label for="rating_overall_satisfaction6" title="3 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction5" name="rating_overall_satisfaction_mask" value="5" />
+                        <label class="half" for="rating_overall_satisfaction5" title="2.5 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction4" name="rating_overall_satisfaction_mask" value="4" />
+                        <label for="rating_overall_satisfaction4" title="2 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction3" name="rating_overall_satisfaction_mask" value="3" />
+                        <label class="half" for="rating_overall_satisfaction3" title="1.5 stars"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction2" name="rating_overall_satisfaction_mask" value="2" />
+                        <label for="rating_overall_satisfaction2" title="1 star"></label>
+                        <input class="rating_overall_satisfaction_mask" type="radio" id="rating_overall_satisfaction1" name="rating_overall_satisfaction_mask" value="1" />
+                        <label class="half" for="rating_overall_satisfaction1" title="0.5 star"></label>
+                    </fieldset>
                 </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_overall_satisfaction"
+                    name="rating_overall_satisfaction"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_overall_satisfaction.value }}"
+                    hidden
+                />
             </div>
 
-            <div class="">
-                <div class="mb-3 mt-4">
-                    <input
-                        id="feedbackSubmit"
-                        type="submit"
-                        class="form-control w-auto text-white"
-                        style="background:#0060AF;padding:10px 60px;"
-                        value="{% if update_feedback %}Update{% else %}Submit{% endif %}"
-                    >
+            <!-- Communication -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_communication_fieldset" class="form-label mb-0">Communication</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_communication_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_communication_mask" type="radio" id="rating_communication10" name="rating_communication_mask" value="10" />
+                        <label for="rating_communication10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_communication_mask" type="radio" id="rating_communication9" name="rating_communication_mask" value="9" />
+                        <label class="half" for="rating_communication9" title="4.5 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication8" name="rating_communication_mask" value="8" />
+                        <label for="rating_communication8" title="4 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication7" name="rating_communication_mask" value="7" />
+                        <label class="half" for="rating_communication7" title="3.5 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication6" name="rating_communication_mask" value="6" />
+                        <label for="rating_communication6" title="3 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication5" name="rating_communication_mask" value="5" />
+                        <label class="half" for="rating_communication5" title="2.5 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication4" name="rating_communication_mask" value="4" />
+                        <label for="rating_communication4" title="2 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication3" name="rating_communication_mask" value="3" />
+                        <label class="half" for="rating_communication3" title="1.5 stars"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication2" name="rating_communication_mask" value="2" />
+                        <label for="rating_communication2" title="1 star"></label>
+                        <input class="rating_communication_mask" type="radio" id="rating_communication1" name="rating_communication_mask" value="1" />
+                        <label class="half" for="rating_communication1" title="0.5 star"></label>
+                    </fieldset>
                 </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_communication"
+                    name="rating_communication"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_communication.value }}"
+                    hidden
+                />
+            </div>
+
+            <!-- Quality of Work -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_quality_of_work_fieldset" class="form-label mb-0">Quality of Work</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_quality_of_work_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work10" name="rating_quality_of_work_mask" value="10" />
+                        <label for="rating_quality_of_work10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work9" name="rating_quality_of_work_mask" value="9" />
+                        <label class="half" for="rating_quality_of_work9" title="4.5 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work8" name="rating_quality_of_work_mask" value="8" />
+                        <label for="rating_quality_of_work8" title="4 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work7" name="rating_quality_of_work_mask" value="7" />
+                        <label class="half" for="rating_quality_of_work7" title="3.5 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work6" name="rating_quality_of_work_mask" value="6" />
+                        <label for="rating_quality_of_work6" title="3 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work5" name="rating_quality_of_work_mask" value="5" />
+                        <label class="half" for="rating_quality_of_work5" title="2.5 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work4" name="rating_quality_of_work_mask" value="4" />
+                        <label for="rating_quality_of_work4" title="2 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work3" name="rating_quality_of_work_mask" value="3" />
+                        <label class="half" for="rating_quality_of_work3" title="1.5 stars"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work2" name="rating_quality_of_work_mask" value="2" />
+                        <label for="rating_quality_of_work2" title="1 star"></label>
+                        <input class="rating_quality_of_work_mask" type="radio" id="rating_quality_of_work1" name="rating_quality_of_work_mask" value="1" />
+                        <label class="half" for="rating_quality_of_work1" title="0.5 star"></label>
+                    </fieldset>
+                </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_quality_of_work"
+                    name="rating_quality_of_work"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_quality_of_work.value }}"
+                    hidden
+                />
+            </div>
+
+            <!-- Time Management -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_time_management_fieldset" class="form-label mb-0">Time Management</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_time_management_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management10" name="rating_time_management_mask" value="10" />
+                        <label for="rating_time_management10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management9" name="rating_time_management_mask" value="9" />
+                        <label class="half" for="rating_time_management9" title="4.5 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management8" name="rating_time_management_mask" value="8" />
+                        <label for="rating_time_management8" title="4 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management7" name="rating_time_management_mask" value="7" />
+                        <label class="half" for="rating_time_management7" title="3.5 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management6" name="rating_time_management_mask" value="6" />
+                        <label for="rating_time_management6" title="3 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management5" name="rating_time_management_mask" value="5" />
+                        <label class="half" for="rating_time_management5" title="2.5 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management4" name="rating_time_management_mask" value="4" />
+                        <label for="rating_time_management4" title="2 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management3" name="rating_time_management_mask" value="3" />
+                        <label class="half" for="rating_time_management3" title="1.5 stars"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management2" name="rating_time_management_mask" value="2" />
+                        <label for="rating_time_management2" title="1 star"></label>
+                        <input class="rating_time_management_mask" type="radio" id="rating_time_management1" name="rating_time_management_mask" value="1" />
+                        <label class="half" for="rating_time_management1" title="0.5 star"></label>
+                    </fieldset>
+                </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_time_management"
+                    name="rating_time_management"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_time_management.value }}"
+                    hidden
+                />
+            </div>
+
+            <!-- Understanding of Requirements -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_understanding_of_requirements_fieldset" class="form-label mb-0">Requirements Understanding</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_understanding_of_requirements_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements10" name="rating_understanding_of_requirements_mask" value="10" />
+                        <label for="rating_understanding_of_requirements10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements9" name="rating_understanding_of_requirements_mask" value="9" />
+                        <label class="half" for="rating_understanding_of_requirements9" title="4.5 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements8" name="rating_understanding_of_requirements_mask" value="8" />
+                        <label for="rating_understanding_of_requirements8" title="4 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements7" name="rating_understanding_of_requirements_mask" value="7" />
+                        <label class="half" for="rating_understanding_of_requirements7" title="3.5 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements6" name="rating_understanding_of_requirements_mask" value="6" />
+                        <label for="rating_understanding_of_requirements6" title="3 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements5" name="rating_understanding_of_requirements_mask" value="5" />
+                        <label class="half" for="rating_understanding_of_requirements5" title="2.5 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements4" name="rating_understanding_of_requirements_mask" value="4" />
+                        <label for="rating_understanding_of_requirements4" title="2 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements3" name="rating_understanding_of_requirements_mask" value="3" />
+                        <label class="half" for="rating_understanding_of_requirements3" title="1.5 stars"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements2" name="rating_understanding_of_requirements_mask" value="2" />
+                        <label for="rating_understanding_of_requirements2" title="1 star"></label>
+                        <input class="rating_understanding_of_requirements_mask" type="radio" id="rating_understanding_of_requirements1" name="rating_understanding_of_requirements_mask" value="1" />
+                        <label class="half" for="rating_understanding_of_requirements1" title="0.5 star"></label>
+                    </fieldset>
+                </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_understanding_of_requirements"
+                    name="rating_understanding_of_requirements"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_understanding_of_requirements.value }}"
+                    hidden
+                />
+            </div>
+
+            <!-- Value for Money -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_value_for_money_fieldset" class="form-label mb-0">Value for Money</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_value_for_money_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money10" name="rating_value_for_money_mask" value="10" />
+                        <label for="rating_value_for_money10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money9" name="rating_value_for_money_mask" value="9" />
+                        <label class="half" for="rating_value_for_money9" title="4.5 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money8" name="rating_value_for_money_mask" value="8" />
+                        <label for="rating_value_for_money8" title="4 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money7" name="rating_value_for_money_mask" value="7" />
+                        <label class="half" for="rating_value_for_money7" title="3.5 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money6" name="rating_value_for_money_mask" value="6" />
+                        <label for="rating_value_for_money6" title="3 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money5" name="rating_value_for_money_mask" value="5" />
+                        <label class="half" for="rating_value_for_money5" title="2.5 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money4" name="rating_value_for_money_mask" value="4" />
+                        <label for="rating_value_for_money4" title="2 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money3" name="rating_value_for_money_mask" value="3" />
+                        <label class="half" for="rating_value_for_money3" title="1.5 stars"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money2" name="rating_value_for_money_mask" value="2" />
+                        <label for="rating_value_for_money2" title="1 star"></label>
+                        <input class="rating_value_for_money_mask" type="radio" id="rating_value_for_money1" name="rating_value_for_money_mask" value="1" />
+                        <label class="half" for="rating_value_for_money1" title="0.5 star"></label>
+                    </fieldset>
+                </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_value_for_money"
+                    name="rating_value_for_money"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_value_for_money.value }}"
+                    hidden
+                />
+            </div>
+
+            <!-- Recommendations -->
+            <div class="align-items-center d-flex justify-content-between">
+                <label for="rating_recommendations_fieldset" class="form-label mb-0">Recommendations</label>
+                <div class="d-flex gap-3">
+                    <fieldset class="rate" id="rating_recommendations_fieldset">
+                        <!-- Radio buttons for rating -->
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations10" name="rating_recommendations_mask" value="10" />
+                        <label for="rating_recommendations10" title="5 stars"></label>
+                        <!-- Add the rest of the radio buttons here -->
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations9" name="rating_recommendations_mask" value="9" />
+                        <label class="half" for="rating_recommendations9" title="4.5 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations8" name="rating_recommendations_mask" value="8" />
+                        <label for="rating_recommendations8" title="4 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations7" name="rating_recommendations_mask" value="7" />
+                        <label class="half" for="rating_recommendations7" title="3.5 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations6" name="rating_recommendations_mask" value="6" />
+                        <label for="rating_recommendations6" title="3 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations5" name="rating_recommendations_mask" value="5" />
+                        <label class="half" for="rating_recommendations5" title="2.5 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations4" name="rating_recommendations_mask" value="4" />
+                        <label for="rating_recommendations4" title="2 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations3" name="rating_recommendations_mask" value="3" />
+                        <label class="half" for="rating_recommendations3" title="1.5 stars"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations2" name="rating_recommendations_mask" value="2" />
+                        <label for="rating_recommendations2" title="1 star"></label>
+
+                        <input class="rating_recommendations_mask" type="radio" id="rating_recommendations1" name="rating_recommendations_mask" value="1" />
+                        <label class="half" for="rating_recommendations1" title="0.5 star"></label>
+                    </fieldset>
+                </div>
+                <input
+                    type="number" step="0.5"
+                    id="rating_recommendations"
+                    name="rating_recommendations"
+                    min="0.5" max="5.0"
+                    value="{{ feedback_form.rating_recommendations.value }}"
+                    hidden
+                />
             </div>
         </div>
 
+        <div class="col-md-6 col-lg-8">
+            <div class="mb-3 mt-3">
+                <textarea
+                    style="height: 172px;"
+                    class="form-control"
+                    name="feedback"
+                    id="inputFeedback"
+                    cols="30" rows="7"
+                    placeholder="Please write your valuable feedback like &#10; &#10; Good things &#10; Bad things &#10; Suggestions"
+                    required
+                >{{ feedback_form.feedback.value|default_if_none:'' }}</textarea>
+            </div>
+        </div>
 
+        <div class="">
+            <div class="mb-3 mt-4">
+                <input
+                    id="feedbackSubmit"
+                    type="submit"
+                    class="form-control w-auto text-white"
+                    style="background:#0060AF;padding:10px 60px;"
+                    value="{% if update_feedback %}Update{% else %}Submit{% endif %}"
+                >
+            </div>
+        </div>
+    </div>
 </form>
 
-<!-- Thank you message -->
-    <div id="thankYouMessage" class="thank-you-message">
-        Thank you for your feedback!
-    </div>
+
+{#<!-- Thank you message -->#}
+{#    <div id="thankYouMessage" class="thank-you-message">#}
+{#        Thank you for your feedback!#}
+{#    </div>#}
 
 <script>
     var rateInput;
@@ -164,16 +486,16 @@
     //     {% endif %}
     // {% endfor %}
 
-document.getElementById('feedbackForm').addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent the form from submitting normally
-
-    // Show thank you message
-    var thankYouMessage = document.getElementById('thankYouMessage');
-    thankYouMessage.style.display = 'block';
-
-    // Submit the form after showing the message
-    setTimeout(function() {
-        document.getElementById('feedbackForm').submit(); // Submit the form
-    }, 5000); // Show the message for 1 second before submitting
-});
+{#document.getElementById('feedbackForm').addEventListener('submit', function(event) {#}
+{#    event.preventDefault(); // Prevent the form from submitting normally#}
+{##}
+{#    // Show thank you message#}
+{#    var thankYouMessage = document.getElementById('thankYouMessage');#}
+{#    thankYouMessage.style.display = 'block';#}
+{##}
+{#    // Submit the form after showing the message#}
+{#    setTimeout(function() {#}
+{#        document.getElementById('feedbackForm').submit(); // Submit the form#}
+{#    }, 5000); // Show the message for 1 second before submitting#}
+{#});#}
 </script>
