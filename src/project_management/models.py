@@ -298,6 +298,28 @@ class Project(TimeStampMixin, AuthorMixin):
             .exclude(project__active=False)
         )
 
+    # def last_n_months_feedback(self, num_of_months):
+    #     end_date = timezone.now().date()
+    #     start_date = end_date - relativedelta(months=num_of_months)
+    #
+    #
+    #     return ClientFeedback.objects.filter(
+    #         project=self,
+    #         feedback_month__range=[start_date, end_date]
+    #     ).order_by('feedback_month')
+    def last_n_months_feedback(self, num_of_months):
+        end_date = timezone.now().date()
+        start_date = end_date - relativedelta(months=num_of_months)
+
+        return (
+            self.clientfeedback_set.filter(
+                feedback_month__lte=end_date,
+                feedback_month__gt=start_date,
+            )
+            .order_by("feedback_month")
+            .exclude(project__active=False)
+        )
+
     @property
     def check_is_weekly_project_hour_generated(self):
         latest_project_hour = (
@@ -776,30 +798,80 @@ class ProjectNeed(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
 
 
+# class ClientFeedback(AuthorMixin, TimeStampMixin):
+#     project = models.ForeignKey(Project, on_delete=models.CASCADE)
+#
+#     feedback_week = models.DateField(null=True)
+#
+#     feedback = models.TextField()
+#     avg_rating = models.FloatField()
+#
+#     rating_communication = models.FloatField()
+#     rating_output = models.FloatField()
+#     rating_time_management = models.FloatField()
+#     rating_billing = models.FloatField()
+#     rating_long_term_interest = models.FloatField()
+#
+#     @property
+#     def has_red_rating(self):
+#         red_line = 3.5
+#
+#         return (
+#             self.rating_communication <= red_line
+#             or self.rating_output <= red_line
+#             or self.rating_time_management <= red_line
+#             or self.rating_billing <= red_line
+#             or self.rating_long_term_interest <= red_line
+#         )
+#
+#     class Meta:
+#         permissions = (
+#             ("can_see_client_feedback_admin", "Can see Client Feedback admin"),
+#         )
+#
+#     def save(self, *args, **kwargs):
+#         avg_rating = (
+#             self.rating_communication
+#             + self.rating_output
+#             + self.rating_time_management
+#             + self.rating_billing
+#             + self.rating_long_term_interest
+#         )
+#         avg_rating = round(avg_rating / 5, 1)
+#         self.avg_rating = avg_rating
+#         super(ClientFeedback, self).save(*args, **kwargs)
+#         self.feedback_week = self.created_at + relativedelta(weekday=FR(-1))
+#         return super(ClientFeedback, self).save(*args, **kwargs)
+#
+#     def __str__(self) -> str:
+#         return f"{self.project.title} ({str(self.avg_rating)})"
 class ClientFeedback(AuthorMixin, TimeStampMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
-    feedback_week = models.DateField(null=True)
-
+    # feedback_week = models.DateField(null=True)
+    feedback_month = models.DateField(null=True)
     feedback = models.TextField()
     avg_rating = models.FloatField()
 
-    rating_communication = models.FloatField()
-    rating_output = models.FloatField()
-    rating_time_management = models.FloatField()
-    rating_billing = models.FloatField()
-    rating_long_term_interest = models.FloatField()
+    rating_communication = models.FloatField(blank=True, null=True)
+    rating_overall_satisfaction = models.FloatField(blank=True, null=True)
+    rating_quality_of_work = models.FloatField(blank=True, null=True)
+    rating_time_management = models.FloatField(blank=True, null=True)
+    rating_value_for_money = models.FloatField(blank=True, null=True)
+    rating_understanding_of_requirements = models.FloatField(blank=True, null=True)
+    rating_recommendations = models.FloatField(blank=True, null=True)
 
     @property
     def has_red_rating(self):
         red_line = 3.5
-
         return (
-            self.rating_communication <= red_line
-            or self.rating_output <= red_line
-            or self.rating_time_management <= red_line
-            or self.rating_billing <= red_line
-            or self.rating_long_term_interest <= red_line
+            self.rating_communication is not None and self.rating_communication <= red_line
+            or self.rating_overall_satisfaction is not None and self.rating_overall_satisfaction <= red_line
+            or self.rating_quality_of_work is not None and self.rating_quality_of_work <= red_line
+            or self.rating_time_management is not None and self.rating_time_management <= red_line
+            or self.rating_value_for_money is not None and self.rating_value_for_money <= red_line
+            or self.rating_understanding_of_requirements is not None and self.rating_understanding_of_requirements <= red_line
+            or self.rating_recommendations is not None and self.rating_recommendations <= red_line
         )
 
     class Meta:
@@ -808,22 +880,49 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
         )
 
     def save(self, *args, **kwargs):
-        avg_rating = (
-            self.rating_communication
-            + self.rating_output
-            + self.rating_time_management
-            + self.rating_billing
-            + self.rating_long_term_interest
-        )
-        avg_rating = round(avg_rating / 5, 1)
+        # Calculate average rating based on available ratings
+        ratings = [
+            self.rating_communication,
+            self.rating_overall_satisfaction,
+            self.rating_quality_of_work,
+            self.rating_time_management,
+            self.rating_value_for_money,
+            self.rating_understanding_of_requirements,
+            self.rating_recommendations,
+        ]
+        valid_ratings = [r for r in ratings if r is not None]
+        if valid_ratings:
+            avg_rating = round(sum(valid_ratings) / len(valid_ratings), 1)
+        else:
+            avg_rating = None  # Handle cases where no ratings are provided
+
         self.avg_rating = avg_rating
         super(ClientFeedback, self).save(*args, **kwargs)
-        self.feedback_week = self.created_at + relativedelta(weekday=FR(-1))
+        # self.feedback_week = self.created_at + relativedelta(weekday=FR(-1))
+        self.feedback_month = timezone.now().date().replace(day=1)
         return super(ClientFeedback, self).save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.project.title} ({str(self.avg_rating)})"
 
+    @staticmethod
+    def get_current_month():
+        return timezone.now().date().replace(day=1)
+
+    @staticmethod
+    def get_last_two_months():
+        today = timezone.now().date()
+        current_month = today.replace(day=1)
+        last_month = (current_month - relativedelta(months=1)).replace(day=1)
+        two_months_ago = (current_month - relativedelta(months=2)).replace(day=1)
+        return [current_month, last_month, two_months_ago]
+
+    @staticmethod
+    def get_feedback_for_recent_months():
+        current_month, last_month, two_months_ago = ClientFeedback.get_last_two_months()
+        return ClientFeedback.objects.filter(
+            feedback_month__in=[current_month, last_month, two_months_ago]
+        )
 
 class CodeReview(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
