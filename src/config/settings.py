@@ -345,6 +345,7 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
     # Define custom storage classes for static and media files
     class StaticStorage(S3Boto3Storage):
         location = STATICFILES_LOCATION
+        default_acl = 'public-read'
 
     class MediaStorage(S3Boto3Storage):
         # bucket_name = 'mw-hr-staging'
