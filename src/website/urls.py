@@ -48,7 +48,7 @@ from website.views import (
     MainEmployeeListView,
     SkillListView,
     LeadCreateAPIView,
-    SpecialProjectListView,
+    SpecialProjectListView,BrandListCreateAPIView
 )
 from website.views_v2.hire_views import (
     HireResourcePageDetailView,
@@ -207,6 +207,7 @@ api_v2_urls = [
     ),
     path("office-location/", OfficeLocationListView.as_view(), name="office_location"),
     path("post-credential/", PostCredentialCreateView.as_view(), name="post_credential"),
+    path('brands_photo/', BrandListCreateAPIView.as_view(), name='brand-list-create'),
 ]
 
 urlpatterns = [
