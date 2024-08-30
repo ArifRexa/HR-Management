@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -9,5 +10,9 @@ class Profile(models.Model):
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_created_at = models.DateTimeField(auto_now_add=True)
 
-
-
+class UserLogs(models.Model):
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
+    name = models.CharField(max_length=255,null=True,blank=True)
+    email = models.EmailField(max_length=255, blank=True, null=True)
+    designation = models.CharField(max_length=255, blank=True, null=True)
+    loging_time = models.DateTimeField()
