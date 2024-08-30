@@ -95,6 +95,7 @@ class BlogStatus(models.TextChoices):
     SUBMIT_FOR_REVIEW = "submit_for_review", "In Review"
     NEED_REVISION = "need_revision", "In Revision"
     APPROVED = "approved", "Approved"
+    PUBLISHED = "published", "Published"
 
 
 class Blog(AuthorMixin, TimeStampMixin):
@@ -119,7 +120,7 @@ class Blog(AuthorMixin, TimeStampMixin):
         choices=BlogStatus.choices,
         verbose_name="Current Status",
     )
-    is_posted = models.BooleanField(default=False)
+    # is_posted = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True, editable=False, blank=True)
 
     def __str__(self):
