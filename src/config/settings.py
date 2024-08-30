@@ -362,16 +362,11 @@ class StaticStorage(S3Boto3Storage):
     location = STATICFILES_LOCATION
 
 class MediaStorage(S3Boto3Storage):
-    bucket_name = 'mw-hr-staging'
-    location = 'media'
+    # bucket_name = 'mw-hr-staging'
+    location = MEDIAFILES_LOCATION
     file_overwrite = False
     default_acl = 'public-read'
-
-    def url(self, name):
-        # Overriding the url method to ensure correct URL generation
-        url = super().url(name)
-        # Remove 's3.' from the generated URL if present
-        return url.replace('s3.sgp1.', 'sgp1.')
+    custom_domain = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
 
 
 # Static files (CSS, JavaScript, images)
