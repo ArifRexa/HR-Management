@@ -13,6 +13,7 @@ from django_q.tasks import async_task
 from django.urls import reverse
 from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 
 # Register your models here.
 from employee.models.employee import Employee
@@ -47,7 +48,6 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
 )
-from django.forms.models import BaseInlineFormSet
 
 from website.linkedin_post import automatic_blog_post_linkedin
 
@@ -94,7 +94,7 @@ class ServiceAdmin(admin.ModelAdmin):
 
 
 @admin.register(Category)
-class Category(admin.ModelAdmin):
+class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
 
@@ -103,7 +103,7 @@ class Category(admin.ModelAdmin):
 
 
 @admin.register(Tag)
-class Tag(admin.ModelAdmin):
+class TagAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
 
@@ -194,7 +194,7 @@ class BlogModeratorFeedbackInline(admin.StackedInline):
 
 
 class BlogForm(forms.ModelForm):
-    next_status = forms.ChoiceField(choices=BlogStatus.choices, required=False)
+    next_status = forms.ChoiceField(choices=BlogStatus.choices[:-1], required=False)
 
     class Meta:
         model = Blog
@@ -244,16 +244,40 @@ class BlogForm(forms.ModelForm):
 
 
 class ActiveEmployeeFilter(admin.SimpleListFilter):
-    title = "Employee"
+    title = "Author"
     parameter_name = "created_by__employee__id__exact"
 
     def lookups(self, request, model_admin):
-        employees = Employee.objects.filter(active=True).distinct()
-        return tuple((employee.pk, employee.full_name) for employee in list(employees))
+        employees = (
+            Employee.objects.filter(active=True)
+            .annotate(total_blog=Count("user__website_blog_related"))
+            .distinct()
+        )
+        return tuple(
+            (employee.pk, f"{employee.full_name} ({employee.total_blog})")
+            for employee in list(employees)
+        )
 
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(created_by__employee__id__exact=self.value())
+        return queryset
+
+
+class BlogCategoryFilter(admin.SimpleListFilter):
+    title = "Category"
+    parameter_name = "category__id__exact"
+
+    def lookups(self, request, model_admin):
+        categories = Category.objects.annotate(total_blog=Count("categories")).all()
+        return tuple(
+            (category.pk, f"{category.name} ({category.total_blog})")
+            for category in list(categories)
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(category__id__exact=self.value())
         return queryset
 
 
@@ -296,7 +320,7 @@ class BlogAdmin(admin.ModelAdmin):
         "next_status",
     )
     form = BlogForm
-    list_filter = ("status", ActiveEmployeeFilter)
+    list_filter = ("status", BlogCategoryFilter, ActiveEmployeeFilter)
 
     class Media:
         js = ("js/blog_post_field_escape.js",)
@@ -485,16 +509,14 @@ class BlogAdmin(admin.ModelAdmin):
     def automate_post_view(self, request, *args, **kwargs):
         from django.template.response import TemplateResponse
 
-        blogs = Blog.objects.filter(status=BlogStatus.APPROVED)
-        posted = blogs.filter(is_posted=True).count()
         linkedin_token = PostCredential.objects.filter(
             platform=PostPlatform.LINKEDIN
         ).first()
         context = dict(
             self.admin_site.each_context(request),
             linkedin_token=linkedin_token.token if linkedin_token else None,
-            posted=posted,
-            in_queue=blogs.filter(is_posted=False).count(),
+            posted=Blog.objects.filter(status=BlogStatus.PUBLISHED).count(),
+            in_queue=Blog.objects.filter(status=BlogStatus.APPROVED).count(),
         )
         return TemplateResponse(request, "blog/automate_post.html", context)
 
@@ -515,7 +537,6 @@ class BlogAdmin(admin.ModelAdmin):
                 # automatic_blog_post_linkedin()
         else:
             obj.approved_at = None
-            # obj.is_posted = False
             obj.save()
 
     def save_related(self, request, form, formsets, change):
