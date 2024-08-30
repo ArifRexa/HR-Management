@@ -321,25 +321,6 @@ CACHES = {
 # CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 minutes
 # CACHE_MIDDLEWARE_KEY_PREFIX = ''
 
-# AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-# AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-# AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-# AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
-# AWS_S3_OBJECT_PARAMETERS = {
-#     'CacheControl': 'max-age=86400',
-# }
-# AWS_QUERYSTRING_AUTH = False
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, 'static'),
-# ]
-#
-# STATIC_ROOT = "static"
-# STATIC_URL = AWS_S3_ENDPOINT_URL + '/static/'
-# MEDIA_ROOT = "media"
-# MEDIA_URL = AWS_S3_ENDPOINT_URL + '/media/'
-# STATICFILES_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
 
 # AWS S3 Settings
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
