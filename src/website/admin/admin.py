@@ -253,10 +253,15 @@ class ActiveEmployeeFilter(admin.SimpleListFilter):
             .annotate(total_blog=Count("user__website_blog_related"))
             .distinct()
         )
-        return tuple(
-            (employee.pk, f"{employee.full_name} ({employee.total_blog})")
-            for employee in list(employees)
-        )
+        looksup_list = []
+        for employee in list(employees):
+            if employee.total_blog == 0:
+                looksup_list.append((employee.pk, employee.full_name))
+            else:
+                looksup_list.append(
+                    (employee.pk, f"{employee.full_name} ({employee.total_blog})")
+                )
+        return tuple(looksup_list)
 
     def queryset(self, request, queryset):
         if self.value():
@@ -270,10 +275,15 @@ class BlogCategoryFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         categories = Category.objects.annotate(total_blog=Count("categories")).all()
-        return tuple(
-            (category.pk, f"{category.name} ({category.total_blog})")
-            for category in list(categories)
-        )
+        lookup_list = []
+        for category in list(categories):
+            if category.total_blog == 0:
+                lookup_list.append((category.pk, category.name))
+            else:
+                lookup_list.append(
+                    (category.pk, f"{category.name} ({category.total_blog})")
+                )
+        return tuple(lookup_list)
 
     def queryset(self, request, queryset):
         if self.value():
