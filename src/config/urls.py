@@ -46,6 +46,7 @@ extra_context = dict(
 urlpatterns = [
     path("", include("job_board.urls")),
     path("", include("website.urls")),
+    path("", include("user_auth.urls")),
     path("upload_image", upload_image, name="upload_image"),
     path("api-auth/", include("rest_framework.urls")),
     path("settings/", include("settings.urls")),

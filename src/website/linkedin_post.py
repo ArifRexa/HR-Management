@@ -19,7 +19,7 @@ class LinkedinAutomate:
 
     def common_api_call_part(self, feed_type="feed", group_id=None):
         payload_dict = {
-            "author": f"urn:li:person:{self.user_id}",
+            "author": "urn:li:organization:28717447",
             "lifecycleState": "PUBLISHED",
             "specificContent": {
                 "com.linkedin.ugc.ShareContent": {
@@ -59,8 +59,6 @@ class LinkedinAutomate:
     def main_func(self):
         self.user_id = self.get_user_id()
         feed_post = self.feed_post()
-        print("feed_post", feed_post)
-        print("user id", self.user_id)
         print(feed_post.status_code, feed_post.text)
         return feed_post.status_code
 
@@ -80,16 +78,11 @@ def automatic_blog_post_linkedin():
     if blog:
         token = PostCredential.objects.filter(platform=PostPlatform.LINKEDIN).first()
 
-        # Example usage
 
-        # access_token ='AQXxdlhuPelMDabM9X6o0l9C77gaydO_XNXrtollPXt3oPyU1VXFVsgGBzPZ3wIJb27bcbITcbtOnKCTSwqOAp5HzSxwsIa3MWusJAXiAeiK4SfvtwXelxgH6YxAtiM6ismk19d8gElpNv7itx5npOhAIjR_TkpGFFBG6-Km7_ECJfbludRlEUwJ9ppzfJzbSXkJ857opBrSa0XntUYlPEs_SXtWrpGnfLiy80eYrkYE0NrsdusTd8nr4J7lu7PKn4kkn7eGIzkhcWszGRChQHKmpGmWBsSfdm-LJ_C_SqAja0jIGZzZ14xITNWQahjvEmj0USXULIDBASujJSOBOosBPXebEA'
         access_token = token.token
 
-        # for blog in blogs_activated_today:
         title = blog.title
 
-        # categories_with_hashtags = "  ".join(f"#{category.name.replace(' ', '_')}" for category in blog.category.all())
-        # description_with_categories = f"{description}\n\n{categories_with_hashtags}"
         blog_url = f"{blog_base_url}blog/details/{blog.slug}"
         description = strip_tags(blog.content)
         thumbnail = f"{banner_image_base_url}{blog.image.url}"
