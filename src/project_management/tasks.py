@@ -116,6 +116,7 @@ def send_client_feedback_email():
                 'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
 
+
             # Render the HTML content
             html_content = loader.render_to_string('mails/client_feedback_request.html', context)
             email.attach_alternative(html_content, "text/html")

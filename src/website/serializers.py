@@ -58,7 +58,7 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
-    VideoTestimonial,
+    VideoTestimonial,Brand
 )
 
 
@@ -916,3 +916,9 @@ class OfficeLocationSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfficeLocation
         fields = ["office", "address", "contact", "image"]
+
+
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ['id', 'brandphoto']
