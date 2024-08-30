@@ -322,43 +322,57 @@ CACHES = {
 # CACHE_MIDDLEWARE_KEY_PREFIX = ''
 
 
-# AWS S3 Settings
-AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
-AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-AWS_S3_REGION_NAME = os.environ.get('REGION_NAME')  # e.g., 'us-west-2'
-AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
-AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
+if os.environ.get("AWS_ACCESS_KEY_ID"):
+
+    # AWS S3 Settings
+    AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
+    AWS_S3_REGION_NAME = os.environ.get('REGION_NAME')  # e.g., 'us-west-2'
+    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
+    AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
 
 
 
-# Optional: Specify different locations within the bucket for static and media files
-STATICFILES_LOCATION = 'static'
-MEDIAFILES_LOCATION = 'media'
+    # Optional: Specify different locations within the bucket for static and media files
+    STATICFILES_LOCATION = 'static'
+    MEDIAFILES_LOCATION = 'media'
 
 
-from storages.backends.s3boto3 import S3Boto3Storage
-# Define custom storage classes for static and media files
-class StaticStorage(S3Boto3Storage):
-    location = STATICFILES_LOCATION
+    from storages.backends.s3boto3 import S3Boto3Storage
+    # Define custom storage classes for static and media files
+    class StaticStorage(S3Boto3Storage):
+        location = STATICFILES_LOCATION
 
-class MediaStorage(S3Boto3Storage):
-    # bucket_name = 'mw-hr-staging'
-    location = MEDIAFILES_LOCATION
-    file_overwrite = False
-    default_acl = 'public-read'
-    custom_domain = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
-
-
-# Static files (CSS, JavaScript, images)
-STATICFILES_STORAGE = 'config.settings.StaticStorage'
-STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
-
-# Media files (uploads)
-DEFAULT_FILE_STORAGE = 'config.settings.MediaStorage'
-# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+    class MediaStorage(S3Boto3Storage):
+        # bucket_name = 'mw-hr-staging'
+        location = MEDIAFILES_LOCATION
+        file_overwrite = False
+        default_acl = 'public-read'
+        custom_domain = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
 
 
-STATIC_ROOT = "static"
-MEDIA_ROOT = "media"
+    # Static files (CSS, JavaScript, images)
+    STATICFILES_STORAGE = 'config.settings.StaticStorage'
+    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+
+    # Media files (uploads)
+    DEFAULT_FILE_STORAGE = 'config.settings.MediaStorage'
+    # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
+
+
+    STATIC_ROOT = "static"
+    MEDIA_ROOT = "media"
+
+else:
+    STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
+
+    STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
+
+    # STATICFILES_DIRS = [
+    #     os.path.join(BASE_DIR, 'static')
+    # ]
+
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+    MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
