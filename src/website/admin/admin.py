@@ -203,6 +203,7 @@ class BlogForm(forms.ModelForm):
             "title": forms.Textarea(
                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
             ),
+            "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -311,22 +312,22 @@ class BlogAdmin(admin.ModelAdmin):
             return True
         return super().lookup_allowed(lookup, value)
 
-    @admin.action(description="Approved selected blogs")
+    @admin.action(description="Change Status To Approved")
     def approve_selected(self, request, queryset):
         queryset.update(status=BlogStatus.APPROVED, approved_at=timezone.now())
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
 
-    @admin.action(description="Move To Draft selected blogs")
+    @admin.action(description="Change Status To Draft")
     def draft_selected(self, request, queryset):
         queryset.update(status=BlogStatus.DRAFT, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
-    @admin.action(description="Move To In Revision selected blogs")
+    @admin.action(description="Change Status To In Revision")
     def in_revision_selected(self, request, queryset):
         queryset.update(status=BlogStatus.NEED_REVISION, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
-    @admin.action(description="Move To In Review selected blogs")
+    @admin.action(description="Change Status To In Review")
     def submit_for_review_selected(self, request, queryset):
         queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
@@ -511,6 +512,10 @@ class BlogAdmin(admin.ModelAdmin):
                 )
                 obj.approved_at = timezone.now()
                 obj.save()
+                # automatic_blog_post_linkedin()
+        else:
+            obj.approved_at = None
+            obj.save()
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:
