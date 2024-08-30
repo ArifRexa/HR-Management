@@ -69,7 +69,7 @@ def automatic_blog_post_linkedin():
 
     blog = (
         Blog.objects.filter(
-            status=BlogStatus.APPROVED, is_posted=False, approved_at__isnull=False
+            status=BlogStatus.APPROVED, approved_at__isnull=False
         )
         .order_by("approved_at")
         .first()
@@ -94,6 +94,6 @@ def automatic_blog_post_linkedin():
                 thumbnail,
             ).main_func()
         if status == 201:
-            blog.is_posted = True
+            blog.status = BlogStatus.PUBLISHED
             blog.save()
 
