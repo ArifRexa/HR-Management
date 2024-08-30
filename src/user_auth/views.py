@@ -1,3 +1,6 @@
+import datetime
+import email
+from django.utils import timezone
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from .forms import OTPForm
@@ -8,7 +11,7 @@ from .utils import send_otp_via_email  #
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
-
+from .models import UserLogs
 User = get_user_model()
 
 def verify_otp(request):
@@ -28,8 +31,15 @@ def verify_otp(request):
 
                     # Log the user in
                     auth_login(request, user)
-
-                   
+                    user_logs, created = UserLogs.objects.update_or_create(
+                    user=user,
+                    defaults={
+                        'name': user.username,
+                        'email': user.email,
+                        'designation': getattr(user, 'employee', None).designation.title if hasattr(user, 'employee') else '',
+                        'loging_time': timezone.now()  # Update the login time to now
+                    }
+                )
                     request.session.pop('pre_login_user_id', None)
 
                     return redirect('/admin/')  # Redirect to the admin dashboard
