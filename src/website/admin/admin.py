@@ -512,6 +512,10 @@ class BlogAdmin(admin.ModelAdmin):
                 )
                 obj.approved_at = timezone.now()
                 obj.save()
+                # automatic_blog_post_linkedin()
+        else:
+            obj.approved_at = None
+            obj.save()
 
     def save_related(self, request, form, formsets, change):
         for formset in formsets:

@@ -29,7 +29,7 @@ function updateProjectHour(project_hour_id=null){
         console.log(hour[i].updates_json);
         console.log(hour_input)
         if (hour_input != null){
-            hour_input.addEventListener("onchange", update_total_hour)
+            hour_input.addEventListener("keyup", update_total_hour)
         }
         // hour_input.value = hour[i].hours;
         if (hour[i].updates_json){
