@@ -156,7 +156,7 @@ class BlogFaqFormSet(BaseInlineFormSet):
     def clean(self):
         super().clean()
         valid_forms_count = 0
-        if not self.request.user.is_superuser or not self.request.user.has_perm(
+        if not self.request.user.is_superuser and not self.request.user.has_perm(
             "website.can_approve"
         ):
             for form in self.forms:
@@ -515,7 +515,7 @@ class BlogAdmin(admin.ModelAdmin):
                 # automatic_blog_post_linkedin()
         else:
             obj.approved_at = None
-            obj.is_posted = False
+            # obj.is_posted = False
             obj.save()
 
     def save_related(self, request, form, formsets, change):
