@@ -367,8 +367,8 @@ class FeaturedBlogListView(ListAPIView):
 
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
-    q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
-    queryset = Blog.objects.filter(q_obj).all()
+    # q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    queryset = Blog.objects.filter(Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)).all()
     serializer_class = BlogDetailsSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 
