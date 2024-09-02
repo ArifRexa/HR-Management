@@ -4,28 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <title>Author Thank You</title>
+    <style>
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            width: 200px;
+            text-align: center;
+            font-weight: bold !important;
+        }
+    </style>
 </head>
 
 <body>
-    {% load humanize_extra %}
-
-
     <br>
     <h3>Dear {{ employee.full_name | title }},</h3>
-    
-    <br>
-    <p>Blog Link: {{ url }}</p>
-    <br>
-    <p>We wanted to take a moment to express our sincere appreciation for your recent blog post. Your insights and expertise have not only enriched our website but also helped position our company as a thought leader in the industry.</p>
 
-    <p>Thank you for taking the time to share your knowledge and contribute to our content efforts. Your dedication does not go unnoticed, and we’re proud to have such talented individuals like you as part of our team.</p>
+    <p>Great news! Your blog has been approved and is now live on our system. As a reward for your insightful writing, you've earned a 30-hour project bonus! 🏆</p>
+
+    <p>To see your bonus details, just log into the HR system.</p>
+
 
     <p>Keep up the great work, and we look forward to seeing more of your creative contributions!</p>
-    <br><br>
+    <p>And hey, don’t miss out—check out your published blog here:</p>
+    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" class="btn">Blog Link</a>
+    <p>Keep up the fantastic work and keep sharing your awesome ideas!</p>
+    <br>
     <div class="closing">
         <p>Regards,</p>
-        <p>Moderator & Admin</p>
-        <p>Mediusware Ltd</p>
+        <p>The Mediusware Team</p>
     </div>
 </body>
 
