@@ -17,6 +17,7 @@ from django.db.models import Count
 
 # Register your models here.
 from employee.models.employee import Employee
+from project_management.models import EmployeeProjectHour, ProjectHour
 from website.models import (
     Award,
     BlogFAQ,
@@ -46,7 +47,8 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
-    VideoTestimonial,Brand
+    VideoTestimonial,
+    Brand,
 )
 
 from website.linkedin_post import automatic_blog_post_linkedin
@@ -537,14 +539,28 @@ class BlogAdmin(admin.ModelAdmin):
                 "website.can_approve"
             ):
                 publish_blog_url = f"https://mediusware.com/blog/details/{obj.slug}/"
+                obj.approved_at = timezone.now()
+                obj.save()
                 async_task(
                     "website.tasks.thank_you_message_to_author",
                     obj,
                     publish_blog_url,
                 )
-                obj.approved_at = timezone.now()
-                obj.save()
                 # automatic_blog_post_linkedin()
+                project_hour = ProjectHour.objects.create(
+                    project_id=20,
+                    manager_id=30,
+                    hour_type="bonus",
+                    date=timezone.now().date(),
+                    hours=30,
+                    status="approved",
+                )
+                employee_hour = EmployeeProjectHour.objects.create(
+                    project_hour=project_hour,
+                    employee=obj.created_by.employee,
+                    hours=30,
+                )
+                print(project_hour, employee_hour)
         else:
             obj.approved_at = None
             obj.save()
@@ -677,8 +693,7 @@ class OfficeLocationAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
+
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ('id', 'brandphoto')
-    
-    
+    list_display = ("id", "brandphoto")
