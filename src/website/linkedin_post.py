@@ -64,7 +64,7 @@ class LinkedinAutomate:
         print(feed_post.status_code, feed_post.json())
         return feed_post.status_code, feed_post.json().get("id")
 
-def published_email_to_blog_author(blog: Blog, url):
+def published_email_to_blog_author(blog, url):
     employee = blog.created_by.employee
     html_template = get_template("blog/mail/blog_published.html")
     html_content = html_template.render(
