@@ -62,13 +62,33 @@ class PDF:
         @return:
         """
         bytecode = self.__get_string_from_template()
-        file = open(self.absolute_file_path(), "wb")
-        file.write(bytecode.getvalue())
-        file.close()
-        return self.absolute_file_path()
+        if config.settings.DEFAULT_S3_CLIENT:
+            s3_client = config.settings.DEFAULT_S3_CLIENT
+            file_obj = BytesIO(bytecode.getvalue())
+
+            # Upload the file-like object to the Space
+            s3_client.upload_fileobj(
+                file_obj,
+                config.settings.AWS_STORAGE_BUCKET_NAME,
+                self.absolute_file_path(),
+                ExtraArgs={'ContentType': self.__FILE_EXTENSION,
+                           'ACL': 'public-read'}
+            )
+            file_url = f"{config.settings.MEDIA_URL}/{self.absolute_file_path()}"
+            return file_url
+
+        else:
+            print('absolute file path: ', self.absolute_file_path())
+            file = open(self.absolute_file_path(), "wb")
+            file.write(bytecode.getvalue())
+            file.close()
+            return self.absolute_file_path()
 
     def absolute_file_path(self):
         return f"{self.__FILE_PATH}/{self.file_name}{self.__FILE_EXTENSION}"
+
+    def get_file_name(self):
+        return self.file_name + self.__FILE_EXTENSION
 
     def delete(self) -> bool:
         """
