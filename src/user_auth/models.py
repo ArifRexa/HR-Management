@@ -1,4 +1,5 @@
 from pyexpat import model
+from tabnanny import verbose
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -16,3 +17,8 @@ class UserLogs(models.Model):
     email = models.EmailField(max_length=255, blank=True, null=True)
     designation = models.CharField(max_length=255, blank=True, null=True)
     loging_time = models.DateTimeField()
+    device_name = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255, blank=True, null=True)
+    browser_name = models.CharField(max_length=255, blank=True, null=True)
+    class Meta:
+        verbose_name = "User Access Log"
