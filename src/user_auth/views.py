@@ -36,16 +36,17 @@ def get_browser_name(request):
     parsed_user_agent = parse(user_agent)
     return parsed_user_agent.browser.family
 
-# def get_location(ip_address):
-#     import requests
 
-#     # Example implementation using an external API (replace with actual API service)
-#     try:
-#         response = requests.get(f'http://ip-api.com/json/{ip_address}')
-#         data = response.json()
-#         return data.get('city', 'Unknown Location') + ', ' + data.get('country', 'Unknown Country')
-#     except requests.RequestException:
-#         return 'Unknown Location'
+def get_location_by_ip(request):
+    import requests
+
+    ip = request.META.get('REMOTE_ADDR')
+    response = requests.get(f'https://ipinfo.io/{ip}/json')
+    data = response.json()
+    
+    location = data.get('city', 'Unknown Location') + ', ' + data.get('country', 'Unknown Country')
+    return location
+
 
 def verify_otp(request):
     if request.method == 'POST':
@@ -65,6 +66,7 @@ def verify_otp(request):
                     # Log the user in
                     auth_login(request, user)
 
+                    location = get_location_by_ip(request)
                     device_name = get_device_name(request)
                     browser_name = get_browser_name(request)
                 
@@ -75,6 +77,7 @@ def verify_otp(request):
                         'email': user.email,
                         'designation': getattr(user, 'employee', None).designation.title if hasattr(user, 'employee') else '',
                         'loging_time': timezone.now() , # Update the login time to now
+                        'location':location,
                         'device_name': device_name,
                         'browser_name':browser_name,
                     }
