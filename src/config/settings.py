@@ -323,8 +323,10 @@ CACHES = {
 # CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 minutes
 # CACHE_MIDDLEWARE_KEY_PREFIX = ''
 
+DEFAULT_S3_CLIENT = None
 
 if os.environ.get("AWS_ACCESS_KEY_ID"):
+    import boto3
 
     # AWS S3 Settings
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
@@ -367,6 +369,15 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
 
     STATIC_ROOT = "static"
     MEDIA_ROOT = "media"
+
+    # Initialize the S3 client
+    DEFAULT_S3_CLIENT = boto3.client(
+        's3',
+        region_name=AWS_S3_REGION_NAME,
+        endpoint_url=AWS_S3_ENDPOINT_URL,
+        aws_access_key_id=AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    )
 
 else:
     STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
