@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>published Email</title>
+    <style>
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #ffffff !important;
+            text-decoration: none;
+            border-radius: 5px;
+            width: 200px;
+            text-align: center;
+            font-weight: bold !important;
+        }
+    </style>
+</head>
+
+<body>
+    <br>
+    <h3>Dear {{ employee.full_name | title }},</h3>
+
+    <p>Great news! Your blog has just been published on Mediusware Limited's LinkedIn page! 🎉 This is a fantastic opportunity to showcase your expertise to a wider audience.</p>
+
+    <p>We’d love for you to share the post and let your network see your amazing work. </p>
+
+    <p>Here’s the link to the post:</p>
+    <a href="{{ url }}" target="_blank" rel="noopener noreferrer" class="btn">LinkedIn Post Link</a>
+    <p>Keep inspiring others with your knowledge!</p>
+    <br>
+    <div class="closing">
+        <p>Regards,</p>
+        <p>The Mediusware Team</p>
+    </div>
+</body>
+
+</html>
