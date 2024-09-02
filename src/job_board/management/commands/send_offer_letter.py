@@ -1,3 +1,4 @@
+import requests
 from django.core.mail import EmailMultiAlternatives
 from django.core.management import BaseCommand
 from django.template.loader import get_template
@@ -30,6 +31,7 @@ def generate_attachment(candidate: Candidate):
 
 
 def send_mail(candidate: Candidate, pdf_location):
+    print(pdf_location)
     html_template = get_template('mail/offer_letter.html')
     html_content = html_template.render({
         'candidate': candidate
@@ -37,8 +39,19 @@ def send_mail(candidate: Candidate, pdf_location):
     email = EmailMultiAlternatives(subject=f'Mediusware Job - '
                                            f'You are selected for the position '
                                            f'of {candidate.candidatejob_set.last().job}')
-    email.attach_alternative(html_content, 'text/html')
-    email.attach_file(pdf_location)
+
+    if config.settings.DEFAULT_S3_CLIENT:
+        # URL of the PDF file
+        pdf_url = pdf_location
+
+        # Fetch the PDF content from the URL
+        response = requests.get(pdf_url)
+
+        email.attach_alternative(html_content, 'text/html')
+        email.attach(pdf_location.split('/')[-1], response.content, "application/pdf")
+    else:
+        email.attach_alternative(html_content, 'text/html')
+        email.attach_file(pdf_location)
     email.to = [candidate.email]
     email.cc = ['hr@mediusware.com']
     email.from_email = 'admin@mediusware.com'

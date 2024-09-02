@@ -74,7 +74,7 @@ class PDF:
                 ExtraArgs={'ContentType': self.__FILE_EXTENSION,
                            'ACL': 'public-read'}
             )
-            file_url = f"{config.settings.MEDIA_URL}/{self.absolute_file_path()}"
+            file_url = f"{config.settings.MEDIA_URL}{self.get_file_name()}"
             return file_url
 
         else:
