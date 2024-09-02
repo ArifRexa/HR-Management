@@ -67,7 +67,7 @@ INSTALLED_APPS = [
     "client_management",
     "mptt",
     "academy",
-    "storages"
+    "storages",
     "user_auth",
 ]
 
