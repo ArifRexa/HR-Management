@@ -98,7 +98,7 @@ def verify_otp(request):
 
 class CustomAdminLoginView(LoginView):
     form_class = AuthenticationForm
-    template_name = 'admin/login.html'
+    template_name = 'login.html'
 
     def form_valid(self, form):
         user = form.get_user()
