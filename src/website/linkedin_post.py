@@ -1,7 +1,9 @@
 import requests
 import json
 from django.utils.html import strip_tags
+from django.core.mail import EmailMultiAlternatives
 
+from django.template.loader import get_template
 from website.models import Blog, BlogStatus, PostCredential, PostPlatform
 
 class LinkedinAutomate:
@@ -59,13 +61,29 @@ class LinkedinAutomate:
     def main_func(self):
         self.user_id = self.get_user_id()
         feed_post = self.feed_post()
-        print(feed_post.status_code, feed_post.text)
-        return feed_post.status_code
+        print(feed_post.status_code, feed_post.json())
+        return feed_post.status_code, feed_post.json().get("id")
 
+def published_email_to_blog_author(blog, url):
+    employee = blog.created_by.employee
+    html_template = get_template("blog/mail/blog_published.html")
+    html_content = html_template.render(
+        {"employee": employee, "blog": blog, "url": url}
+    )
+
+    email = EmailMultiAlternatives(
+        subject="🌐 Your Blog is Now Live on LinkedIn! Share Your Success! 🚀"
+    )
+    email.attach_alternative(html_content, "text/html")
+    email.to = [employee.email]
+    email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+    email.send()
+    print("email sent")
 
 def automatic_blog_post_linkedin():
     blog_base_url = "https://mediusware.com/"
     banner_image_base_url = "https://hr.mediusware.xyz/"
+    linkedin_post_base_url = "https://www.linkedin.com/feed/update/"
 
     blog = (
         Blog.objects.filter(
@@ -86,7 +104,7 @@ def automatic_blog_post_linkedin():
         blog_url = f"{blog_base_url}blog/details/{blog.slug}"
         description = strip_tags(blog.content)
         thumbnail = f"{banner_image_base_url}{blog.image.url}"
-        status = LinkedinAutomate(
+        status, post_id = LinkedinAutomate(
                 access_token,
                 blog_url,
                 title,
@@ -96,4 +114,6 @@ def automatic_blog_post_linkedin():
         if status == 201:
             blog.status = BlogStatus.PUBLISHED
             blog.save()
+            linkedin_url = f"{linkedin_post_base_url}{post_id}"
+            published_email_to_blog_author(blog, linkedin_url)
 
