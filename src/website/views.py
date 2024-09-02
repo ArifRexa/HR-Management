@@ -300,7 +300,7 @@ class TagListView(ListAPIView):
 class CategoryListViewWithBlogCount(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Category.objects.annotate(
-            total_blog=Count("categories", filter=Q(categories__status=BlogStatus.APPROVED))
+            total_blog=Count("categories", filter=Q(categories__status=BlogStatus.APPROVED)|Q(categories__status=BlogStatus.PUBLISHED))
         ).values("id", "name", "slug", "total_blog")
         return Response(
             data=queryset,
@@ -309,7 +309,8 @@ class CategoryListViewWithBlogCount(APIView):
 
 
 class BlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED).all()
+    q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    queryset = Blog.objects.filter(q_obj).all()
     serializer_class = BlogListSerializer
     filter_backends = [
         django_filters.rest_framework.DjangoFilterBackend,
@@ -327,13 +328,15 @@ class BlogListView(ListAPIView):
 
 
 class MostPopularBlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED).order_by("-total_view")
+    q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    queryset = Blog.objects.filter(q_obj).order_by("-total_view")
     serializer_class = BlogListSerializer
     pagination_class = MostPopularBlogPagination
 
 
 class FeaturedBlogListView(ListAPIView):
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED, is_featured=True)
+    q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    queryset = Blog.objects.filter(q_obj, is_featured=True)
     serializer_class = BlogListSerializer
     pagination_class = CustomPagination
 
@@ -364,7 +367,8 @@ class FeaturedBlogListView(ListAPIView):
 
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
-    queryset = Blog.objects.filter(status=BlogStatus.APPROVED).all()
+    # q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    queryset = Blog.objects.filter(Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)).all()
     serializer_class = BlogDetailsSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 
@@ -396,8 +400,9 @@ class BlogListByAuthorAPIView(ListAPIView):
     serializer_class = BlogListSerializer
 
     def get_queryset(self):
+        q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
         author_id = self.kwargs.get("author_id")
-        return Blog.objects.filter(created_by__employee__id=author_id, status=BlogStatus.APPROVED)
+        return Blog.objects.filter(q_obj, created_by__employee__id=author_id)
 
 
 # class BlogCommentDeleteAPIView(APIView):
