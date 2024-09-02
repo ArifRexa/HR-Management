@@ -1,22 +1,82 @@
-{% extends "admin/base_site.html" %}
 {% load i18n static %}
 
 {% block extrastyle %}
-{{ block.super }}
 <link rel="stylesheet" href="{% static "admin/css/login.css" %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap"> <!-- Include Roboto font -->
 {{ form.media }}
 <style>
+    :root {
+        --header-bg: #417690; /* Define the color variable */
+    }
+
+    body {
+        font-family: 'Roboto', sans-serif; /* Apply Roboto font */
+    }
+
     .otp-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
         text-align: center;
+        max-width: 350px;
+        margin: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: #fff;
+        padding: 20px; /* Add padding to the container */
+    }
+    .otp-container h3 {
+        background-color: var(--header-bg); /* Use the color for header background */
+        color: #fff; /* White text color */
+        padding: 14px; /* Add padding for spacing */
+        margin: 0; /* Remove default margin */
+        width: 103%; /* Full width to match container */
+        text-align: center; /* Center text alignment */
+        font-weight: normal; /* Remove boldness */
+        margin-top: -20px;
+    }
+    .otp-container p {
+        margin-bottom: 20px;
+    }
+    .form-row {
+        margin-bottom: 20px;
+    }
+    .form-row label {
+        display: block;
+        margin-bottom: 5px;
+    }
+    .form-row input {
+        width: 100%;
+        height: 30px; /* Increase height of input boxes */
+        padding: 8px; /* Add some padding inside input boxes */
+        box-sizing: border-box; /* Ensure padding does not affect width */
+    }
+    .submit-row {
+        margin-top: 30px; /* Add top margin for spacing */
+    }
+    .submit-row input[type="submit"] {
+        background-color: var(--header-bg); /* Use the color for button background */
+        color: #fff; /* White text color */
+        border: 1px solid var(--header-bg); /* Border color to match the button */
+        border-radius: 4px;
+        padding: 8px 16px; /* Reduced padding for a smaller button */
+        font-size: 14px; /* Smaller font size */
+        cursor: pointer;
+    }
+    .submit-row input[type="submit"]:hover {
+        background-color: #345d66; /* Darker shade for hover effect */
+        border-color: #345d66;
+    }
+    .errornote {
+        color: red;
+        margin-bottom: 20px;
+    }
+    #content-main {
+        margin-top: 100px;
     }
 </style>
 {% endblock %}
-
-{% block bodyclass %}{{ block.super }} login{% endblock %}
 
 {% block usertools %}{% endblock %}
 
@@ -30,7 +90,7 @@
 
 {% block content %}
 <div id="content-main" class="otp-container">
-    <h2>{% blocktranslate %}OTP Verification{% endblocktranslate %}</h2>
+    <h3>Mediusware Ltd</h3> <!-- Updated header title -->
     <p>Please enter the One-Time (OTP) sent to your email.</p>
 
     {% if massage %}
