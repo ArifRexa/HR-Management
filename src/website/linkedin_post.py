@@ -82,7 +82,7 @@ def published_email_to_blog_author(blog, url):
 
 def automatic_blog_post_linkedin():
     blog_base_url = "https://mediusware.com/"
-    banner_image_base_url = "https://mw-hr.sgp1.digitaloceanspaces.com/"
+    banner_image_base_url = "https://mw-hr.sgp1.digitaloceanspaces.com"
     linkedin_post_base_url = "https://www.linkedin.com/feed/update/"
 
     blog = (
@@ -104,6 +104,7 @@ def automatic_blog_post_linkedin():
         blog_url = f"{blog_base_url}blog/details/{blog.slug}"
         description = strip_tags(blog.content)
         thumbnail = f"{banner_image_base_url}{blog.image.url}"
+        print(thumbnail)
         status, post_id = LinkedinAutomate(
                 access_token,
                 blog_url,
