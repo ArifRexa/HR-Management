@@ -1,0 +1,53 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="{% static "admin/css/login.css" %}">
+{{ form.media }}
+<style>
+    .otp-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div id="content-main" class="otp-container">
+    <h2>{% blocktranslate %}OTP Verification{% endblocktranslate %}</h2>
+    <p>Please enter the One-Time (OTP) sent to your email.</p>
+
+    {% if massage %}
+    <p class="errornote">
+        {{ massage }}
+    </p>
+    {% endif %}
+
+    <form method="post" id="otp-form">
+        {% csrf_token %}
+        <div class="form-row">
+            {{ form.otp.errors }}
+            {{ form.otp.label_tag }} {{ form.otp }}
+        </div>
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Verify OTP' %}">
+        </div>
+    </form>
+</div>
+{% endblock %}

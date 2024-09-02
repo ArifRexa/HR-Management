@@ -5,10 +5,12 @@ from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.http import HttpRequest
 from django.template.loader import get_template
+from django.urls import reverse
 from django.utils.html import format_html
 from icecream import ic
 from .forms import ProjectTechnologyInlineForm, ProjectAdminForm
 from django import forms
+from django.contrib.sites.shortcuts import get_current_site
 from project_management.models import (
     PlatformImage,
     Project,
@@ -34,7 +36,7 @@ from project_management.models import (
     ProjectIndustry,
     ProjectService,
     ClientInvoiceDate,
-    ProjectKeyPoint,
+    ProjectKeyPoint, ProjectToken,
 )
 
 
@@ -137,6 +139,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "active",
         "get_report_url",
         "get_live_link",
+        "client_feedback_link",
     )
     search_fields = (
         "title",
@@ -195,6 +198,27 @@ class ProjectAdmin(admin.ModelAdmin):
         return format_html(html_content)
 
     get_live_link.short_description = "Live Link"
+
+    def client_feedback_link(self, obj):
+        try:
+            token = obj.projecttoken.token
+            url = reverse('admin:client_feedback', args=[token])
+            return format_html(f'<a href="{url}">Client Feedback</a>')
+        except ProjectToken.DoesNotExist:
+            return "No Token Available"
+
+    # def client_feedback_link(self, obj):
+    #     request = self.request  # Use request to get the current site domain
+    #     try:
+    #         token = obj.projecttoken.token
+    #         current_site = get_current_site(request)
+    #         domain = current_site.domain
+    #         url = f'http://{domain}/client-feedback/{token}/'
+    #         return format_html(f'<a href="{url}">Client Feedback</a>')
+    #     except ProjectToken.DoesNotExist:
+    #         return "No Token Available"
+
+
 
     def last_increased(self, obj):
         six_month_ago = datetime.now().date() - relativedelta(months=6)
@@ -316,3 +340,4 @@ class ProjectTechnologyAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
