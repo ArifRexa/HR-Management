@@ -23,4 +23,5 @@ class UserLogs(models.Model):
     ip_address = models.GenericIPAddressField(null=True, blank=True)  # New field for IP address
     operating_system = models.CharField(max_length=255, blank=True,null=True)
     class Meta:
+        app_label = 'employee'
         verbose_name = "User Access Log"
