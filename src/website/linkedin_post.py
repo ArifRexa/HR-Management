@@ -59,7 +59,7 @@ class LinkedinAutomate:
         return requests.post(url, headers=self.headers, data=payload)
 
     def main_func(self):
-        self.user_id = self.get_user_id()
+        # self.user_id = self.get_user_id()
         feed_post = self.feed_post()
         print(feed_post.status_code, feed_post.json())
         return feed_post.status_code, feed_post.json().get("id")
