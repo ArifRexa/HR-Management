@@ -110,7 +110,7 @@ class InstructorSerializer(serializers.ModelSerializer):
 class PracticeProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = PracticeProject
-        fields = ['id', 'slug', 'title', 'short_description', 'description']
+        fields = ['id', 'slug', 'title','image', 'short_description', 'description']
 
 class TrainingReasonSerializer(serializers.ModelSerializer):
     class Meta:
