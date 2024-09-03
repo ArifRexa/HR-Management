@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import math
+import requests
 from dateutil.relativedelta import relativedelta, FR
 
 from .models import EmployeeAttendance
@@ -73,7 +74,17 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
-    email.attach_file(pdf)
+    if pdf.__contains__('http'):
+        # URL of the PDF file
+        pdf_url = pdf
+
+        # Fetch the PDF content from the URL
+        response = requests.get(pdf_url)
+
+        # email.attach_alternative(html_content, 'text/html')
+        email.attach(pdf.split('/')[-1], response.content, "application/pdf")
+    else:
+        email.attach_file(pdf)
     if letter_type == "EAL":
         hr_policy = HRPolicy.objects.last()
         file_path = hr_policy.policy_file.path
