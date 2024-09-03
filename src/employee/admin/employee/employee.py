@@ -202,14 +202,21 @@ class EmployeeAdmin(
         return super(EmployeeAdmin, self).get_queryset(request)
 
     def get_actions(self, request):
-        if not request.user.is_superuser:
-            return []
-        return super(EmployeeAdmin, self).get_actions(request)
+        actions = super(EmployeeAdmin, self).get_actions(request)
+        
+        if request.user.is_superuser:
+            return actions
+        
+        if request.user.has_perm('employee.can_print_salary_certificate'):
+            # Filter actions to only include the ones allowed for this permission
+            allowed_actions = ['print_salary_certificate', 'print_salary_certificate_all_months']
+            actions = {name: action for name, action in actions.items() if name in allowed_actions}
+            return actions
 
-    # def get_list_filter(self, request):
-    #     if request.user.is_superuser:
-    #         return ['active', 'permanent_date']
-    #     return []
+        # If the user doesn't have the required permission, return an empty dictionary
+        return {}
+        
+        
 
 
 @admin.register(EmployeeLunch)
