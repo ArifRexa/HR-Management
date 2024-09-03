@@ -12,7 +12,7 @@ from project_management.models import (
     PaymentMethod,
     Project,
     Technology,
-    InvoiceType
+    InvoiceType,
 )
 from django.utils.translation import gettext_lazy as _
 
@@ -54,7 +54,8 @@ class PaymentMethodAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request: HttpRequest) -> bool:
         return False
-    
+
+
 @admin.register(InvoiceType)
 class InvoiceTypeAdmin(admin.ModelAdmin):
     list_display = ("name",)
@@ -109,15 +110,15 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = ["project__active", "review", "payment_method"]
     inlines = (ClientInvoiceDateInline,)
     search_fields = ["name", "web_name"]
-    autocomplete_fields = ['country', 'payment_method']
+    autocomplete_fields = ["country", "payment_method"]
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
-    
-    @admin.display(description="Age")
+
+    @admin.display(description="Age", ordering="created_at")
     def get_client_age(self, obj):
         return timesince(obj.created_at)
 

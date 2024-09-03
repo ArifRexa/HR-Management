@@ -1066,7 +1066,7 @@ def create_income(sender, instance, created, **kwargs):
     print("sssssssssssssssssssssss create income has called ssssssssssssssssssss")
     from account.models import Income
 
-    if created:
+    if created and instance.hour_type == "project":
         project = instance.project
         if project:
             Income.objects.create(
