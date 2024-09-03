@@ -19,4 +19,4 @@ def send_otp_via_email(user):
     message = f'Your OTP code is {otp.otp}'
     email_from = 'admin@mediusware.com'
     recipient_list = [user.email]
-    send_mail(subject, message, email_from, recipient_list)
+    # send_mail(subject, message, email_from, recipient_list)
