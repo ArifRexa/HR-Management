@@ -12,7 +12,41 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
 from .models import UserLogs
+from user_agents import parse
+
 User = get_user_model()
+
+
+def get_device_name(request):
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+
+    if "Mobile" in user_agent:
+        device_type = "Mobile"
+    elif "Tablet" in user_agent:
+        device_type = "Tablet"
+    elif "Windows" in user_agent or "Macintosh" in user_agent or "Linux" in user_agent:
+        device_type = "Desktop"
+    else:
+        device_type = "Unknown"
+
+    return device_type
+
+def get_browser_name(request):
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    parsed_user_agent = parse(user_agent)
+    return parsed_user_agent.browser.family
+
+
+def get_location_by_ip(request):
+    import requests
+
+    ip = request.META.get('REMOTE_ADDR')
+    response = requests.get(f'https://ipinfo.io/{ip}/json')
+    data = response.json()
+    
+    location = data.get('city', 'Unknown Location') + ', ' + data.get('country', 'Unknown Country')
+    return location
+
 
 def verify_otp(request):
     if request.method == 'POST':
@@ -31,13 +65,21 @@ def verify_otp(request):
 
                     # Log the user in
                     auth_login(request, user)
+
+                    location = get_location_by_ip(request)
+                    device_name = get_device_name(request)
+                    browser_name = get_browser_name(request)
+                
                     user_logs, created = UserLogs.objects.update_or_create(
                     user=user,
                     defaults={
                         'name': user.username,
                         'email': user.email,
                         'designation': getattr(user, 'employee', None).designation.title if hasattr(user, 'employee') else '',
-                        'loging_time': timezone.now()  # Update the login time to now
+                        'loging_time': timezone.now() , # Update the login time to now
+                        'location':location,
+                        'device_name': device_name,
+                        'browser_name':browser_name,
                     }
                 )
                     request.session.pop('pre_login_user_id', None)
@@ -56,7 +98,7 @@ def verify_otp(request):
 
 class CustomAdminLoginView(LoginView):
     form_class = AuthenticationForm
-    template_name = 'admin/login.html'
+    template_name = 'login.html'
 
     def form_valid(self, form):
         user = form.get_user()
