@@ -661,24 +661,41 @@ class SalarySheetRepository:
         @return number:
         """
 
+        # if employee.manager or employee.lead:
+        #     project_hours = employee.projecthour_set.filter(
+        #         date__month=salary_sheet.date.month,
+        #         date__year=salary_sheet.date.year,
+        #         payable=True,
+        #     ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+
+        #     # Hour Bonus Amount Calculation
+        #     project_hours_amount = project_hours * 10
+
+        #     return project_hours_amount
+
+        project_hours_amount = 0
+        employee_project_hours = employee.employeeprojecthour_set.filter(
+            project_hour__date__month=salary_sheet.date.month,
+            project_hour__date__year=salary_sheet.date.year,
+        ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+        project_hours_amount += employee_project_hours * 10 
+
         if employee.manager or employee.lead:
-            project_hours = employee.projecthour_set.filter(
+            # Found lead hour from EmployeeProjectHour
+            employee_hours_as_lead  = employee.employeeprojecthour_set.filter(
+                project_hour__date__month=salary_sheet.date.month,
+                project_hour__date__year=salary_sheet.date.year,
+                project_hour__manager = employee
+            ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+            
+            lead_project_hours = employee.projecthour_set.filter(
                 date__month=salary_sheet.date.month,
                 date__year=salary_sheet.date.year,
                 payable=True,
             ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
 
-            # Hour Bonus Amount Calculation
-            project_hours_amount = project_hours * 10
-
+            project_hours_amount += (lead_project_hours - employee_hours_as_lead) * 10
             return project_hours_amount
-
-        project_hours = employee.employeeprojecthour_set.filter(
-            project_hour__date__month=salary_sheet.date.month,
-            project_hour__date__year=salary_sheet.date.year,
-        ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-        # Hour Bonus Amount Calculation
-        project_hours_amount = project_hours * 10
 
         return project_hours_amount
 
