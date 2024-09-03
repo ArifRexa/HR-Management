@@ -402,6 +402,7 @@ class SpecialProjectSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             "title",
+            "slug",
             "description",
             "project_logo_url",
             "special_image",
