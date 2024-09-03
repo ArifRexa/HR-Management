@@ -20,5 +20,7 @@ class UserLogs(models.Model):
     device_name = models.CharField(max_length=255, blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
     browser_name = models.CharField(max_length=255, blank=True, null=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)  # New field for IP address
+    operating_system = models.CharField(max_length=255, blank=True,null=True)
     class Meta:
         verbose_name = "User Access Log"

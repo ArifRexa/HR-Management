@@ -47,6 +47,13 @@ def get_location_by_ip(request):
     location = data.get('city', 'Unknown Location') + ', ' + data.get('country', 'Unknown Country')
     return location
 
+def get_ip_address(request):
+    return request.META.get('REMOTE_ADDR')
+
+def get_operating_system(request):
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    parsed_user_agent = parse(user_agent)
+    return parsed_user_agent.os.family
 
 def verify_otp(request):
     if request.method == 'POST':
@@ -69,7 +76,9 @@ def verify_otp(request):
                     location = get_location_by_ip(request)
                     device_name = get_device_name(request)
                     browser_name = get_browser_name(request)
-                
+                    ip_address = get_ip_address(request)  # Get IP address
+                    operating_system = get_operating_system(request)  # Get OS
+
                     user_logs, created = UserLogs.objects.update_or_create(
                     user=user,
                     defaults={
@@ -80,6 +89,8 @@ def verify_otp(request):
                         'location':location,
                         'device_name': device_name,
                         'browser_name':browser_name,
+                        'ip_address': ip_address,  # Save IP address
+                        'operating_system': operating_system,  # Save OS
                     }
                 )
                     request.session.pop('pre_login_user_id', None)
