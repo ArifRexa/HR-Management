@@ -191,6 +191,7 @@ class Instructor(models.Model):
 class PracticeProject(models.Model):
     slug = models.SlugField(max_length=255, unique=True, editable=False)
     title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='practice_projects/',null=True,blank=True)
     short_description = models.CharField(max_length=255)
     description = models.TextField()
 
