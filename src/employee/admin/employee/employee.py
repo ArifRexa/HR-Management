@@ -607,11 +607,11 @@ class ActiveUserOnlyFilter(RelatedOnlyFieldListFilter):
     def field_choices(self, field, request, model_admin):
         # Fetch users with first_name and last_name
         users = field.related_model.objects.filter(
-            Q(first_name__isnull=False) & Q(last_name__isnull=False)
+            is_active=True
         ).distinct()
 
         # Generate choices based on first_name and last_name
-        choices = [(user.id, f'{user.first_name} {user.last_name}') for user in users]
+        choices = [(user.id, f'{user.first_name} {user.last_name}') for user in users ]
         
         return [(None, 'All')] + choices
     
