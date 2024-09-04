@@ -81,13 +81,13 @@ def verify_otp(request):
 
                     user_logs, created = UserLogs.objects.update_or_create(
                     user=user,
+                    device_name=device_name,
                     defaults={
                         'name': user.username,
                         'email': user.email,
                         'designation': getattr(user, 'employee', None).designation.title if hasattr(user, 'employee') else '',
                         'loging_time': timezone.now() , # Update the login time to now
                         'location':location,
-                        'device_name': device_name,
                         'browser_name':browser_name,
                         'ip_address': ip_address,  # Save IP address
                         'operating_system': operating_system,  # Save OS
