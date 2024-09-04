@@ -621,16 +621,16 @@ class ActiveUserFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         return (
-            ('Logged Users', 'Logged Users'),
-            ('Logout Users', 'Logout Users'),
+            ('Active', 'Active'),
+            ('Inactive', 'Inactive'),
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'Logged Users':
+        if self.value() == 'Active':
             active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
             active_user_ids = [session.get_decoded().get('_auth_user_id') for session in active_sessions]
             return queryset.filter(user__id__in=active_user_ids)
-        elif self.value() == 'Logout Users':
+        elif self.value() == 'Inactive':
             active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
             active_user_ids = [session.get_decoded().get('_auth_user_id') for session in active_sessions]
             return queryset.exclude(user__id__in=active_user_ids)
