@@ -853,7 +853,7 @@ class EmployeePerspectiveSerializer(serializers.ModelSerializer):
 class LeadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
-        fields = ["name", "email", "message"]
+        fields = ["name", "email", "message","file"]
 
 
 class ClientLogoSerializer(serializers.ModelSerializer):
