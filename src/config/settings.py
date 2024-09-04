@@ -366,8 +366,10 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
 
 
-    STATIC_ROOT = "static"
-    MEDIA_ROOT = "media"
+    # STATIC_ROOT = "static"
+    # MEDIA_ROOT = "media"
+    STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
     # Initialize the S3 client
     DEFAULT_S3_CLIENT = boto3.client(
