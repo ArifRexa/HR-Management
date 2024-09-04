@@ -128,18 +128,16 @@
                         {% endif %}
                         <b>{{ employee.full_name }}</b>
                         <br><br>
-                        {% if employee.top_one_skill %}
-                            ( {{ employee.top_one_skill.skill }} )
-                        {% endif %}
-                        <br><br>
-                        {% if employee.employee_project_list %}
+                        
+                        <span>{{ employee.last_two_months_fines|linebreaksbr }}</span>
+                        <!-- {% if employee.employee_project_list %}
                             <span>
                             {% for project in employee.employee_project_list %}
                                 {% if forloop.counter0 != 0 %} <br> {% endif %}
                                     {{ project.title }}
                             {% endfor %}
                             </span>
-                        {% endif %}
+                        {% endif %} -->
                         
                         <strong>{{ employee.last_four_month_project_hours }}</strong>
                     </td>

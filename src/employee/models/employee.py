@@ -459,6 +459,46 @@ class Employee(TimeStampMixin, AuthorMixin):
         formatted_totals = ",".join(weekly_totals)
         
         return formatted_totals, int(total_sum)
+    
+
+    @property
+    def last_two_months_fines(self):
+        import calendar
+        today = timezone.now()
+        current_month = today.month
+        current_year = today.year
+
+        # Calculate the last month
+        last_month = current_month - 1 if current_month > 1 else 12
+        last_month_year = current_year if current_month > 1 else current_year - 1
+
+        # Query fine for the current month
+        current_month_fine = LateAttendanceFine.objects.filter(
+            employee=self,
+            month=current_month,
+            year=current_year
+        ).first()
+
+        # Query fine for the last month
+        last_month_fine = LateAttendanceFine.objects.filter(
+            employee=self,
+            month=last_month,
+            year=last_month_year
+        ).first()
+
+        # Get the fine amounts or default to 0 if no fine is found
+        current_month_fine_amount = current_month_fine.total_late_attendance_fine if current_month_fine else 0
+        last_month_fine_amount = last_month_fine.total_late_attendance_fine if last_month_fine else 0
+
+        # Get the month names
+        current_month_name = calendar.month_name[current_month]
+        last_month_name = calendar.month_name[last_month]
+
+        # Return a list of formatted fines without the year
+        fines_list = f"{current_month_name}: {current_month_fine_amount}\n{last_month_name}: {last_month_fine_amount}"
+        
+
+        return fines_list
 
     class Meta:
         db_table = "employees"
