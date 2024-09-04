@@ -105,6 +105,7 @@ def automatic_blog_post_linkedin():
         description = strip_tags(blog.content)
         thumbnail = f"{banner_image_base_url}{blog.image.url}"
         print(thumbnail)
+        print(blog.image.path)
         status, post_id = LinkedinAutomate(
                 access_token,
                 blog_url,
