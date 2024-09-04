@@ -36,6 +36,7 @@ from employee.models.employee import (
     TPMComplain,
 )
 from employee.models.employee_activity import EmployeeProject
+from user_auth.views import User
 from .filter import MonthFilter
 from django.utils.html import format_html,strip_tags
 from employee.helper.tpm import TPMsBuilder
@@ -642,7 +643,7 @@ class UserLogsAdmin(admin.ModelAdmin):
     search_fields = ('name', 'email', 'designation')
     list_filter = (ActiveUserFilter,'loging_time', ('user', ActiveUserOnlyFilter))
     ordering = ('-loging_time',)
-    actions = ['logout_selected_users']
+    actions = ['logout_selected_users','logout_all_users']
     
     def user_info(self, obj):
         user = obj.user
@@ -657,15 +658,29 @@ class UserLogsAdmin(admin.ModelAdmin):
         )
     user_info.short_description = 'User Info'
 
-    def logout_selected_users(self, request, queryset):
-        for log in queryset:
+    @staticmethod
+    def logout_user(queryset):
+         for log in queryset:
             # Get all sessions
             sessions = Session.objects.filter(expire_date__gte=timezone.now())
             for session in sessions:
                 data = session.get_decoded()
-                if data.get('_auth_user_id') == str(log.user.id):
+                if data.get('_auth_user_id') == str(log.id):
                     session.delete()  # Log out the user by deleting the session
 
+    def logout_selected_users(self, request, queryset):
+        self.logout_user(queryset)
         self.message_user(request, f"Selected users have been logged out.")
     
     logout_selected_users.short_description = "Logout selected users"
+
+    def logout_all_users(self, request, queryset):
+        from django.contrib.auth.models import User
+
+        # here i want to set custom queryset
+        custom_queryset = User.objects.filter(is_active=True)
+        self.logout_user(custom_queryset)
+        self.message_user(request, f"All users have been logged out.")  
+    logout_all_users.short_description = "Logout all users"
+
+ 
