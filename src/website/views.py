@@ -699,3 +699,4 @@ class PostCredentialCreateView(APIView):
 class BrandListCreateAPIView(ListAPIView):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
+    pagination_class = None
