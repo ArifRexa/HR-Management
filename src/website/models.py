@@ -262,7 +262,9 @@ class Lead(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField()
     message = models.TextField()
-
+    file = models.FileField(upload_to='leads_file/',null=True,blank=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True) 
+    updated_at = models.DateTimeField(auto_now=True,null=True,blank=True) 
     def __str__(self):
         return self.name
 
