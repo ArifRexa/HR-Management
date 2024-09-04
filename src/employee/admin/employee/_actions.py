@@ -350,7 +350,12 @@ class EmployeeActions:
         self, request, queryset, letter_type="EAL", context=None, extra_context={}
     ):
         qr_root = f"{config.settings.MEDIA_ROOT}/noc_qr"
-        os.makedirs(qr_root, exist_ok=True)
+        # print('qr_root', qr_root)
+        try:
+            os.makedirs(qr_root, exist_ok=True)
+        except Exception as e:
+            print(e)
+
 
         if letter_type == "NOC":
             extra_context["qr_root"] = qr_root
