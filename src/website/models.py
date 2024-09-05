@@ -328,3 +328,62 @@ class Brand(models.Model):
     
     def __str__(self):
         return f"Brand {self.id}"
+    
+
+# Base model without any fields
+class WebsiteTitle(models.Model):
+    def __str__(self):
+        return f"WebsiteTitle {self.pk}"  # Optional for admin display purposes
+
+# Abstract class to reduce repetition
+class BaseModelTitle(models.Model):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    sub_title = models.CharField(max_length=255, null=True, blank=True)
+    website_title = models.OneToOneField(WebsiteTitle, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+# Define all the required models with 'Title' added to the name
+class AwardsTitle(BaseModelTitle):
+    pass
+
+class WhyUsTitle(BaseModelTitle):
+    pass
+
+class AllServicesTitle(BaseModelTitle):
+    pass
+
+class TechnologyTitle(BaseModelTitle):
+    pass
+
+class VideoTestimonialTitle(BaseModelTitle):  # Already has Title in the name
+    pass
+
+class IndustryTitle(BaseModelTitle):
+    pass
+
+class LifeAtMediuswareTitle(BaseModelTitle):  # Already has Title in the name
+    pass
+
+class ProjectsVideoTitle(BaseModelTitle):
+    pass
+
+class BlogTitle(BaseModelTitle):
+    pass
+
+class TextualTestimonialTitle(BaseModelTitle):  # Already has Title in the name
+    pass
+
+class SpecialProjectsTitle(BaseModelTitle):
+    pass
+
+class FAQHomeTitle(BaseModelTitle):
+    pass
+
+class OurJourneyTitle(BaseModelTitle):  # Already has Title in the name
+    pass
+
+# New model inheriting from BaseModelTitle
+class ModelTitle(BaseModelTitle):
+    pass
