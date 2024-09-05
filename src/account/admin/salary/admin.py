@@ -25,12 +25,13 @@ class EmployeeSalaryInline(admin.TabularInline):
         'provident_fund',
         'code_quality_bonus',
         'festival_bonus',
-        'device_allowance'
+        'device_allowance',
+        "loan_emi"
     ]
     readonly_fields = (
         'employee', 'net_salary', 'overtime',
         'project_bonus', 'leave_bonus', #'festival_bonus', 
-        'food_allowance', 'loan_emi',
+        'food_allowance', 'get_tax_loan',"get_salary_loan",
 
         # 'provident_fund', 'code_quality_bonus',
         'festival_bonus',
@@ -46,12 +47,17 @@ class EmployeeSalaryInline(admin.TabularInline):
 
     can_delete = False
 
+    def get_tax_loan(self, obj):
+        return obj.loan_emi
+    get_tax_loan.short_description = 'Tax Loan'
+
     def get_exclude(self, request, obj=None):
         exclude = list(super().get_exclude(request, obj))
         if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet'):
             exclude.extend(self.superadminonly_fields)
         return exclude
     def get_late_fine(self, obj):
+        
         fine = LateAttendanceFine.objects.filter(
                     employee=obj.employee,
                     month=obj.salary_sheet.date.month,
@@ -59,7 +65,18 @@ class EmployeeSalaryInline(admin.TabularInline):
                 ).aggregate(fine=Sum('total_late_attendance_fine'))
         return fine.get('fine', 0) if fine.get('fine') else 0.00
     get_late_fine.short_description = "Late Fine"
-    
+
+    def get_salary_loan(self, obj):
+        salary_loan = obj.employee.loan_set.filter(
+            start_date__lte=obj.salary_sheet.date,
+            end_date__gte=obj.salary_sheet.date,
+            loan_type="salary"
+        )
+        loan_amount = salary_loan.aggregate(Sum("emi"))
+
+        return loan_amount["emi__sum"] if loan_amount["emi__sum"] else 0.0
+    get_salary_loan.short_description = "Salary Loan"
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = super().get_readonly_fields(request, obj)
         if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet'):
