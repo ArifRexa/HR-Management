@@ -26,6 +26,7 @@ from website.models import (
     Gallery,
     IndustryWeServe,
     LifeAtMediusware,
+    ModelTitle,
     OfficeLocation,
     PostCredential,
     PostPlatform,
@@ -49,6 +50,9 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
     Brand,
+    WebsiteTitle, AwardsTitle, WhyUsTitle, AllServicesTitle, TechnologyTitle, 
+    VideoTestimonialTitle, IndustryTitle, LifeAtMediuswareTitle, ProjectsVideoTitle, 
+    BlogTitle, TextualTestimonialTitle, SpecialProjectsTitle, FAQHomeTitle, OurJourneyTitle
 )
 
 from website.linkedin_post import automatic_blog_post_linkedin
@@ -697,3 +701,86 @@ class OfficeLocationAdmin(admin.ModelAdmin):
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ("id", "brandphoto")
+
+
+
+# Inline classes for each model
+class AwardsTitleInline(admin.StackedInline):
+    model = AwardsTitle
+    can_delete = False
+    extra = 1
+
+class WhyUsTitleInline(admin.StackedInline):
+    model = WhyUsTitle
+    can_delete = False
+    extra = 1
+
+class AllServicesTitleInline(admin.StackedInline):
+    model = AllServicesTitle
+    can_delete = False
+    extra = 1
+
+class TechnologyTitleInline(admin.StackedInline):
+    model = TechnologyTitle
+    can_delete = False
+    extra = 1
+
+class VideoTestimonialTitleInline(admin.StackedInline):
+    model = VideoTestimonialTitle
+    can_delete = False
+    extra = 1
+
+class IndustryTitleInline(admin.StackedInline):
+    model = IndustryTitle
+    can_delete = False
+    extra = 1
+
+class LifeAtMediuswareTitleInline(admin.StackedInline):
+    model = LifeAtMediuswareTitle
+    can_delete = False
+    extra = 1
+
+class ProjectsVideoTitleInline(admin.StackedInline):
+    model = ProjectsVideoTitle
+    can_delete = False
+    extra = 1
+
+class BlogTitleInline(admin.StackedInline):
+    model = BlogTitle
+    can_delete = False
+    extra = 1
+
+class TextualTestimonialTitleInline(admin.StackedInline):
+    model = TextualTestimonialTitle
+    can_delete = False
+    extra = 1
+
+class SpecialProjectsTitleInline(admin.StackedInline):
+    model = SpecialProjectsTitle
+    can_delete = False
+    extra = 1
+
+class FAQHomeTitleInline(admin.StackedInline):
+    model = FAQHomeTitle
+    can_delete = False
+    extra = 1
+
+class OurJourneyTitleInline(admin.StackedInline):
+    model = OurJourneyTitle
+    can_delete = False
+    extra = 1
+
+class ModelTitleInline(admin.StackedInline):
+    model = ModelTitle
+    can_delete = False
+    extra = 1
+
+# Register the WebsiteTitle admin with all the inlines
+@admin.register(WebsiteTitle)
+class WebsiteTitleAdmin(admin.ModelAdmin):
+    inlines = [
+        AwardsTitleInline, WhyUsTitleInline, AllServicesTitleInline, TechnologyTitleInline,
+        VideoTestimonialTitleInline, IndustryTitleInline, LifeAtMediuswareTitleInline,
+        ProjectsVideoTitleInline, BlogTitleInline, TextualTestimonialTitleInline, 
+        SpecialProjectsTitleInline,ModelTitleInline, FAQHomeTitleInline, OurJourneyTitleInline,
+    ]
