@@ -42,7 +42,8 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
-    VideoTestimonial,Brand
+    VideoTestimonial,Brand,
+    WebsiteTitle,
 )
 from website.serializers import (
     AwardSerializer,
@@ -80,7 +81,8 @@ from website.serializers import (
     IndustrySerializer,
     SkillSerializer,
     LeadSerializer,
-    VideoTestimonialSerializer,BrandSerializer
+    VideoTestimonialSerializer,BrandSerializer,
+    WebsiteTitleSerializer
 )
 from rest_framework.generics import (
     ListAPIView,
@@ -700,3 +702,20 @@ class BrandListCreateAPIView(ListAPIView):
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
     pagination_class = None
+
+
+from django.http import JsonResponse
+from django.views import View
+class WebsiteTitleView(View):
+    def get(self, request, *args, **kwargs):
+        try:
+            # Assuming there's only one WebsiteTitle object
+            website_title = WebsiteTitle.objects.first()  # Adjust query as needed
+            if website_title is None:
+                return JsonResponse({'error': 'No WebsiteTitle object found'}, status=404)
+
+            serializer = WebsiteTitleSerializer(website_title)
+            return JsonResponse(serializer.data, safe=False, json_dumps_params={'indent': 2})
+
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
