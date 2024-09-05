@@ -1,0 +1,184 @@
+{% extends 'letters/extra/base.html' %}
+{% load employee_helper %}
+{% load humanize %}
+{% load humanize_extra %}
+
+{% block content %}
+    {% for employee in employees %}
+        {% for employeesalary in employee.employeesalary_set.all %}
+        <div class="employee-details" style="page-break-after: always;">
+            <div style="text-align: center; font-weight: bold;font-size: 1.3em;">
+                Mediusware Ltd.<br>
+                [Company Address]<br>
+                Payslip for the Month of {{ employeesalary.salary_sheet.date | date:"F, Y" }}<br>
+            </div>
+            <br>
+            <div>
+                <strong>Employee Information:</strong><br>
+                Employee Name: {{ employee.full_name | title }}<br>
+                Employee ID: MWL-{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}<br>
+                Designation: {{ employee.designation }}<br>
+                Department: [Department Name]<br>
+                Date of Joining: {{ employee.joining_date }}<br>
+            </div>
+            
+
+           <!-- Wrapper Table to contain Earnings and Deductions side by side -->
+<table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <!-- Earnings Table - 50% width -->
+        <td width="50%" valign="top" style="padding-right: 5px;">
+            <!-- Earnings Table -->
+            <table width="100%" border="0.5" cellpadding="4">
+                <thead>
+                    <tr>
+                        <th align="left">Earning</th>
+                        <th align="right">Amount (BDT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Basic Salary (55%)</td>
+                        <td align="right">{{ employeesalary.net_salary | percentage:55 }}</td>
+                    </tr>
+                    <tr>
+                        <td>House Rent Allowance (20%)</td>
+                        <td align="right">{{ employeesalary.net_salary | percentage:20 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Conveyance (15%)</td>
+                        <td align="right">{{ employeesalary.net_salary | percentage:15 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Medical Allowance (10%)</td>
+                        <td align="right">{{ employeesalary.net_salary | percentage:10 }}</td>
+                    </tr>
+                    <tr>
+                        <td>Project Bonus</td>
+                        <td align="right">{{ employeesalary.project_bonus|default_if_none:"0.0" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Festival Bonus</td>
+                        <td align="right">{{ employeesalary.festival_bonus|default_if_none:"0.0" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Overtime Bonus</td>
+                        <td align="right">{{ employeesalary.overtime|default_if_none:"0.0" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Leave Bonus</td>
+                        <td align="right">{{ employeesalary.leave_bonus|default_if_none:"0.0" }}</td>
+                    </tr>
+                    <tr>
+                        <td>Lunch Allowance</td>
+                        <td align="right">{{ employeesalary.food_allowance|default_if_none:"0.0" }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th align="left">Gross Earnings</th>
+                        <th align="right">
+                            {{ employeesalary.net_salary | addition:employeesalary.project_bonus|  addition:employeesalary.leave_bonus| addition:employeesalary.overtime| addition:employeesalary.food_allowance | addition:employeesalary.festival_bonus  }}
+                            BDT
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        </td>
+           
+        <!-- Deductions Table - 50% width -->
+        <td width="50%" valign="top" style="padding-left:5px;">
+            <!-- Deductions Table -->
+            <table width="100%" border="1" cellpadding="5">
+                <thead>
+                    <tr>
+                        <th align="left">Deduction</th>
+                        <th align="right">Amount (BDT)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if employeesalary.loan_emi %}
+                        <tr>
+                            <td>Salary Advance Loan</td>
+                            <td align="right">{{ employeesalary.loan_emi }}</td>
+                        </tr>
+                        
+                    {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th align="left">Total Deduction</th>
+                        <th align="right">
+                            {% if employeesalary.loan_emi %}
+                                {{ employeesalary.loan_emi }}
+                            {% else %}
+                                0.00
+                            {% endif %}
+                        </th>
+                    </tr>
+                    
+                </tfoot>
+            </table>
+        </td>
+    </tr>
+</table>
+
+            <br>
+
+            <!-- Net Pay Table -->
+            <table width="100%" border="1" cellpadding="5">
+                <tfoot style="border-top: 1px solid black;">
+                <tr>
+                    <th align='left'>Net Salary:</th>
+                    <th align="right">
+                        {% if employeesalary.loan_emi %}
+                            {{ employeesalary.net_salary | addition:employeesalary.project_bonus | addition:employeesalary.food_allowance | addition:employeesalary.festival_bonus | addition:employeesalary.loan_emi}}
+                        {% else %}
+                            {{ employeesalary.net_salary | addition:employeesalary.project_bonus | addition:employeesalary.food_allowance | addition:employeesalary.festival_bonus }}
+                        {% endif %}
+                        BDT
+                    </th>
+                </tr>
+                </tfoot>
+            </table>
+            <br>
+
+            <!-- Signature Section -->
+            <div>
+                <strong>Authorized Signature</strong><br>
+                [Name]<br>
+                [Designation]<br>
+                Date: {% now "jS F Y" %}
+            </div>
+            <br>
+
+            <table width="100%">
+                <tr>
+                    <td rowspan="1">
+                        <img src="{{ seal }}" height="80px" alt="">
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>
+                        <br>
+                    </td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Md. Shahinur Rahman</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Managing Director</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Mediusware Ltd.</td>
+                    <td></td>
+                </tr>
+            </table>
+        </div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
