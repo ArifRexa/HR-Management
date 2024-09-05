@@ -65,7 +65,7 @@ class LoadAdmin(admin.ModelAdmin):
         email.attach_alternative(html_content, 'text/html')
         email.to = [obj.employee.email]
         email.from_email = 'admin@mediusware.com'
-        email.send()
+        # email.send()
 
         return super().save_model(request, obj, form, change)
 

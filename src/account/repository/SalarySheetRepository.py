@@ -392,37 +392,34 @@ class SalarySheetRepository:
         basic_salary = 0.55 * payable_salary
 
         # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        # if (
-        #     employee.tax_eligible
-        #     and self.__employee_current_salary.payable_salary >= 43800
-        # ):
-        if not SalarySheetTaxLoan.objects.filter(
-            salarysheet=salary_sheet, loan__employee=employee
-        ):
-            employee_tax_loan = EmployeeTaxLoanRepository(
-                employee=employee, date=self.date
-            )
-            monthly_tax = employee_tax_loan.calculate_tax_loan()
-            loan_instance = Loan.objects.create(
-                employee=employee,
-                witness=Employee.objects.filter(
-                    id=30
-                ).first(),  # You might need to adjust this based on your requirements
-                loan_amount=monthly_tax,  # Set the loan amount
-                emi=monthly_tax,  # Set the EMI amount
-                effective_date=timezone.now(),
-                start_date=salary_sheet.date,
-                end_date=salary_sheet.date,
-                tenor=1,  # Set the tenor/period in months
-                payment_method="salary",  # Set the payment method
-                loan_type="salary",  # Set the loan type
-            )
+        if (employee.tax_eligible):
+            if not SalarySheetTaxLoan.objects.filter(
+                salarysheet=salary_sheet, loan__employee=employee
+            ):
+                employee_tax_loan = EmployeeTaxLoanRepository(
+                    employee=employee, date=self.date
+                )
+                monthly_tax = employee_tax_loan.calculate_tax_loan()
+                loan_instance = Loan.objects.create(
+                    employee=employee,
+                    witness=Employee.objects.filter(
+                        id=30
+                    ).first(),  # You might need to adjust this based on your requirements
+                    loan_amount=monthly_tax,  # Set the loan amount
+                    emi=monthly_tax,  # Set the EMI amount
+                    effective_date=timezone.now(),
+                    start_date=salary_sheet.date,
+                    end_date=salary_sheet.date,
+                    tenor=1,  # Set the tenor/period in months
+                    payment_method="salary",  # Set the payment method
+                    loan_type="tds",  # Set the loan type
+                )
 
-            # loan_instance.save()
-            salarysheettax = SalarySheetTaxLoan.objects.create(
-                salarysheet=salary_sheet, loan=loan_instance
-            )
-            salarysheettax.save()
+                # loan_instance.save()
+                salarysheettax = SalarySheetTaxLoan.objects.create(
+                    salarysheet=salary_sheet, loan=loan_instance
+                )
+                salarysheettax.save()
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date
@@ -432,6 +429,9 @@ class SalarySheetRepository:
             employee=employee, salary_date=salary_sheet.date
         )
         total_fine = self.__calculate_late_entry_fine(
+            employee=employee, salary_date=salary_sheet.date
+        )
+        salary_loans = self._calculate_salary_loan( 
             employee=employee, salary_date=salary_sheet.date
         )
         employee_salary.gross_salary = (
@@ -445,6 +445,7 @@ class SalarySheetRepository:
             + employee_salary.loan_emi
             + employee_salary.provident_fund
             + total_fine
+            + salary_loans
             # + employee_salary.device_allowance
         )
         employee_salary.save()
@@ -873,6 +874,8 @@ class SalarySheetRepository:
         employee_loans = employee.loan_set.filter(
             start_date__lte=salary_date,
             end_date__gte=salary_date,
+            loan_type='tds'
+
         )
 
         # insert into loan payment table if the sum amount is not zero
@@ -888,6 +891,15 @@ class SalarySheetRepository:
         emi_amount = employee_loans.aggregate(Sum("emi"))
 
         return -emi_amount["emi__sum"] if emi_amount["emi__sum"] else 0.0
+    
+    def _calculate_salary_loan(self, employee: Employee, salary_date: datetime.date):
+        employee_loans = employee.loan_set.filter(
+            start_date__lte=salary_date,
+            end_date__gte=salary_date,
+            loan_type='salary'
+            ).aggregate(Sum("emi"))
+        
+        return -employee_loans["emi__sum"] if employee_loans["emi__sum"] else 0.0
 
     def __calculate_provident_fund(
         self, employee: Employee, salary_date: datetime.date

@@ -27,8 +27,12 @@ def percentage(number, arg):
 
 @register.filter
 def addition(number, addition_number):
-    return number + addition_number
-
+    try:
+        # Convert inputs to float to ensure the addition operation works
+        return float(number) + float(addition_number)
+    except (ValueError, TypeError):
+        # Handle cases where conversion fails or inputs are not numbers
+        return 0
 
 @register.filter
 def int_to_month(value):

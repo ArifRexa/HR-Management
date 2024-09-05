@@ -70,9 +70,16 @@ class EmployeeActions:
         "mail_increment_letter",
         "mail_noc_letter",
         "download_employee_info",
+        "print_salary_pay_slip_all_months",
         
     ]
 
+    @admin.action(description="Print Salary Pay Slip (All months)")
+    def print_salary_pay_slip_all_months(self, request, queryset):
+        return self.generate_pdf(
+            request, queryset=queryset, letter_type="ESPS"
+        ).render_to_pdf()
+    
     @admin.action(description="Generate NOC Letter")
     def generate_noc_letter(self, request, queryset):
         names: list[str] = []
@@ -399,5 +406,6 @@ class EmployeeActions:
             "AFL": "letters/salary_account_forwarding_letter.html",
             "EPRL": "letters/promotion_letter.html",
             "EXPL": "letters/experience_letter.html",
+            "ESPS": "letters/payslip_all_months.html",
         }
         return switcher.get(letter_type, "")
