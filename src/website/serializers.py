@@ -35,12 +35,15 @@ from project_management.models import (
 from settings.models import Designation
 from website.models import (
     Award,
+    BannerImage,
     BlogFAQ,
     BlogStatus,
     Gallery,
+    HomeBanner,
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PageBanner,
     PostCredential,
     Service,
     Blog,
@@ -58,10 +61,23 @@ from website.models import (
     Industry,
     Lead,
     ServiceContent,
-    VideoTestimonial,Brand,
-     WebsiteTitle, ModelTitle, AwardsTitle, WhyUsTitle, AllServicesTitle, TechnologyTitle,
-    VideoTestimonialTitle, IndustryTitle, LifeAtMediuswareTitle, ProjectsVideoTitle,
-    BlogTitle, TextualTestimonialTitle, SpecialProjectsTitle, FAQHomeTitle, OurJourneyTitle
+    VideoTestimonial,
+    Brand,
+    WebsiteTitle,
+    ModelTitle,
+    AwardsTitle,
+    WhyUsTitle,
+    AllServicesTitle,
+    TechnologyTitle,
+    VideoTestimonialTitle,
+    IndustryTitle,
+    LifeAtMediuswareTitle,
+    ProjectsVideoTitle,
+    BlogTitle,
+    TextualTestimonialTitle,
+    SpecialProjectsTitle,
+    FAQHomeTitle,
+    OurJourneyTitle,
 )
 
 
@@ -856,7 +872,7 @@ class EmployeePerspectiveSerializer(serializers.ModelSerializer):
 class LeadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lead
-        fields = ["name", "email", "message","file"]
+        fields = ["name", "email", "message", "file"]
 
 
 class ClientLogoSerializer(serializers.ModelSerializer):
@@ -925,97 +941,163 @@ class OfficeLocationSerializer(serializers.ModelSerializer):
 class BrandSerializer(serializers.ModelSerializer):
     class Meta:
         model = Brand
-        fields = ['id', 'brandphoto']
+        fields = ["id", "brandphoto"]
 
 
 # Define serializers for related models with only 'title' and 'sub_title'
 class ModelTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ModelTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class AwardsTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = AwardsTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class WhyUsTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = WhyUsTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class AllServicesTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = AllServicesTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class TechnologyTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TechnologyTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class VideoTestimonialTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = VideoTestimonialTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class IndustryTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class LifeAtMediuswareTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = LifeAtMediuswareTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class ProjectsVideoTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectsVideoTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class BlogTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class TextualTestimonialTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TextualTestimonialTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class SpecialProjectsTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = SpecialProjectsTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class FAQHomeTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQHomeTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 class OurJourneyTitleSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurJourneyTitle
-        fields = ['title', 'sub_title']
+        fields = ["title", "sub_title"]
+
 
 # Define the WebsiteTitleSerializer with related fields
 class WebsiteTitleSerializer(serializers.ModelSerializer):
-    model_title = ModelTitleSerializer(source='modeltitle', read_only=True)
-    awards_title = AwardsTitleSerializer(source='awardstitle', read_only=True)
-    why_us_title = WhyUsTitleSerializer(source='whyustitle', read_only=True)
-    all_services_title = AllServicesTitleSerializer(source='allservicestitle', read_only=True)
-    technology_title = TechnologyTitleSerializer(source='technologytitle', read_only=True)
-    video_testimonial_title = VideoTestimonialTitleSerializer(source='videotestimonialtitle', read_only=True)
-    industry_title = IndustryTitleSerializer(source='industrytitle', read_only=True)
-    life_at_mediusware_title = LifeAtMediuswareTitleSerializer(source='lifeatmediuswaretitle', read_only=True)
-    projects_video_title = ProjectsVideoTitleSerializer(source='projectsvideotitle', read_only=True)
-    blog_title = BlogTitleSerializer(source='blogtitle', read_only=True)
-    textual_testimonial_title = TextualTestimonialTitleSerializer(source='textualtestimonialtitle', read_only=True)
-    special_projects_title = SpecialProjectsTitleSerializer(source='specialprojectstitle', read_only=True)
-    faq_home_title = FAQHomeTitleSerializer(source='faqhometitle', read_only=True)
-    our_journey_title = OurJourneyTitleSerializer(source='ourjourneytitle', read_only=True)
+    model_title = ModelTitleSerializer(source="modeltitle", read_only=True)
+    awards_title = AwardsTitleSerializer(source="awardstitle", read_only=True)
+    why_us_title = WhyUsTitleSerializer(source="whyustitle", read_only=True)
+    all_services_title = AllServicesTitleSerializer(
+        source="allservicestitle", read_only=True
+    )
+    technology_title = TechnologyTitleSerializer(
+        source="technologytitle", read_only=True
+    )
+    video_testimonial_title = VideoTestimonialTitleSerializer(
+        source="videotestimonialtitle", read_only=True
+    )
+    industry_title = IndustryTitleSerializer(source="industrytitle", read_only=True)
+    life_at_mediusware_title = LifeAtMediuswareTitleSerializer(
+        source="lifeatmediuswaretitle", read_only=True
+    )
+    projects_video_title = ProjectsVideoTitleSerializer(
+        source="projectsvideotitle", read_only=True
+    )
+    blog_title = BlogTitleSerializer(source="blogtitle", read_only=True)
+    textual_testimonial_title = TextualTestimonialTitleSerializer(
+        source="textualtestimonialtitle", read_only=True
+    )
+    special_projects_title = SpecialProjectsTitleSerializer(
+        source="specialprojectstitle", read_only=True
+    )
+    faq_home_title = FAQHomeTitleSerializer(source="faqhometitle", read_only=True)
+    our_journey_title = OurJourneyTitleSerializer(
+        source="ourjourneytitle", read_only=True
+    )
 
     class Meta:
         model = WebsiteTitle
-        fields = '__all__'
+        fields = "__all__"
+
+
+class BaseBannerImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeBanner
+        exclude = ["page_banner", "created_at", "updated_at"]
+
+
+class PageBannerSerializer(serializers.ModelSerializer):
+    home = BaseBannerImageSerializer(source="homebanner", read_only=True)
+    why_we_are = BaseBannerImageSerializer(source="whywearebanner", read_only=True)
+    woman_empowerment = BaseBannerImageSerializer(
+        source="womenempowermentbanner", read_only=True
+    )
+    csr = BaseBannerImageSerializer(source="csrbanner", read_only=True)
+    delivery_model = BaseBannerImageSerializer(
+        source="deliverymodelbanner", read_only=True
+    )
+    engagement_model = BaseBannerImageSerializer(
+        source="engagementmodelbanner", read_only=True
+    )
+    development_methodology = BaseBannerImageSerializer(
+        source="developmentmethodologybanner", read_only=True
+    )
+    client_testimonial = BaseBannerImageSerializer(
+        source="clienttestimonialbanner", read_only=True
+    )
+    clutch_testimonial = BaseBannerImageSerializer(
+        source="clutchtestimonialbanner", read_only=True
+    )
+    award = BaseBannerImageSerializer(source="awardsbanner", read_only=True)
+    contact = BaseBannerImageSerializer(source="contactbanner", read_only=True)
+
+    class Meta:
+        model = PageBanner
+        exclude = ["id", "created_at", "updated_at"]
