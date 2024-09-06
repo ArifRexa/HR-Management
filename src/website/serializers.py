@@ -1097,6 +1097,7 @@ class PageBannerSerializer(serializers.ModelSerializer):
     )
     award = BaseBannerImageSerializer(source="awardsbanner", read_only=True)
     contact = BaseBannerImageSerializer(source="contactbanner", read_only=True)
+    all_projects = BaseBannerImageSerializer(source="allprojectsbanner", read_only=True)
 
     class Meta:
         model = PageBanner
