@@ -463,3 +463,7 @@ class AwardsBanner(BannerImage):
 
 class ContactBanner(BannerImage):
     pass
+
+
+class AllProjectsBanner(BannerImage):
+    pass
