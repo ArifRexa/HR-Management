@@ -6,6 +6,7 @@ from academy.models import (
     InstructorFeedback,
     MarketingSlider,
     OurAchievement,
+    PageBanner,
     SuccessStory,
     Training,
     TrainingProgram,PracticeProject,
@@ -16,6 +17,7 @@ from academy.serializers import (
     InstructorFeedbackSerializer,
     MarketingSliderSerializer,
     OurAchievementSerializer,
+    PageBannerSerializer,
     StudentCreateSerializer,
     SuccessStorySerializer,
     TrainingListSerializer,
@@ -98,3 +100,11 @@ class InstructorFeedbackView(ListAPIView):
 class HomePageAPIView(ListAPIView):
     serializer_class = WhyWeBestSerializer
     queryset = HomePageWhyBest.objects.all()
+
+
+class PageBannerAPIView(RetrieveAPIView):
+    queryset = PageBanner.objects.all()
+    serializer_class = PageBannerSerializer
+    
+    def get_object(self):
+        return PageBanner.objects.first()

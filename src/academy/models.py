@@ -294,3 +294,30 @@ class TrainingFAQ(models.Model):
 
     def __str__(self):
         return self.question
+
+class PageBanner(TimeStampMixin):
+    def __str__(self):
+        return "Page Banner"
+
+class AcademyBanner(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    sub_title = models.TextField(max_length=255, null=True, blank=True)
+    image = models.ImageField(upload_to="academy/banner", null=True, blank=True)
+    video = models.URLField(null=True, blank=True)
+    page_banner = models.OneToOneField(PageBanner, on_delete=models.CASCADE, null=True, blank=True)
+    
+    class Meta:
+        abstract = True
+
+class HomeBanner(AcademyBanner):
+    pass
+
+
+class AllTrainingBanner(AcademyBanner):
+    pass
+
+class InstructorBanner(AcademyBanner):
+    pass
+
+class SuccessStoryBanner(AcademyBanner):
+    pass
