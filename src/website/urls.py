@@ -11,6 +11,7 @@ from website.views import (
     IndustryWeServeListAPIView,
     LifeAtMediuswareListView,
     OfficeLocationListView,
+    PageBannerListAPIView,
     PostCredentialCreateView,
     ProjectVideoListAPIView,
     ServiceList,
@@ -173,6 +174,7 @@ api_urls = [
     ),
     path("awards/", AwardListView.as_view(), name="awards"),
     path("clients/", ClientListAPIView.as_view(), name="client-list"),
+    path("page-banner/", PageBannerListAPIView.as_view(), name="page-banner"),
 ]
 
 web_url = [path("", index)]

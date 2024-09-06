@@ -30,6 +30,7 @@ from website.models import (
     IndustryWeServe,
     LifeAtMediusware,
     OfficeLocation,
+    PageBanner,
     PostCredential,
     Service,
     Category,
@@ -53,6 +54,7 @@ from website.serializers import (
     IndustryWeServeSerializer,
     LifeAtMediuswareSerializer,
     OfficeLocationSerializer,
+    PageBannerSerializer,
     PostCredentialSerializer,
     ProjectListSerializer,
     ServiceSerializer,
@@ -719,3 +721,12 @@ class WebsiteTitleView(View):
 
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
+        
+        
+class PageBannerListAPIView(RetrieveAPIView):
+    queryset = PageBanner.objects.all()
+    serializer_class = PageBannerSerializer
+    pagination_class=None
+    
+    def get_object(self):
+        return PageBanner.objects.first()
