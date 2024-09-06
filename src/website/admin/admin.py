@@ -20,14 +20,25 @@ from employee.models.employee import Employee
 from project_management.models import EmployeeProjectHour, ProjectHour
 from website.models import (
     Award,
+    AwardsBanner,
+    BannerImage,
     BlogFAQ,
     BlogModeratorFeedback,
     BlogStatus,
+    CSRBanner,
+    ClientTestimonialBanner,
+    ClutchTestimonialBanner,
+    ContactBanner,
+    DeliveryModelBanner,
+    DevelopmentMethodologyBanner,
+    EngagementModelBanner,
     Gallery,
+    HomeBanner,
     IndustryWeServe,
     LifeAtMediusware,
     ModelTitle,
     OfficeLocation,
+    PageBanner,
     PostCredential,
     PostPlatform,
     Service,
@@ -52,7 +63,9 @@ from website.models import (
     Brand,
     WebsiteTitle, AwardsTitle, WhyUsTitle, AllServicesTitle, TechnologyTitle, 
     VideoTestimonialTitle, IndustryTitle, LifeAtMediuswareTitle, ProjectsVideoTitle, 
-    BlogTitle, TextualTestimonialTitle, SpecialProjectsTitle, FAQHomeTitle, OurJourneyTitle
+    BlogTitle, TextualTestimonialTitle, SpecialProjectsTitle, FAQHomeTitle, OurJourneyTitle,
+    WhyWeAreBanner,
+    WomenEmpowermentBanner
 )
 
 from website.linkedin_post import automatic_blog_post_linkedin
@@ -783,4 +796,65 @@ class WebsiteTitleAdmin(admin.ModelAdmin):
         VideoTestimonialTitleInline, IndustryTitleInline, LifeAtMediuswareTitleInline,
         ProjectsVideoTitleInline, BlogTitleInline, TextualTestimonialTitleInline, 
         SpecialProjectsTitleInline,ModelTitleInline, FAQHomeTitleInline, OurJourneyTitleInline,
+    ]
+    
+    
+class BaseInline(admin.StackedInline):
+    can_delete = False
+    extra = 1
+
+class HomeBannerBannerInline(BaseInline):
+    model = HomeBanner
+    verbose_name = "Home Banner"
+# why we are, women empowerment, csr, delivery model, engagement model, development methodology, client testimonial, clutch testimonials, awards, contact
+class WhyWeAreBannerInline(BaseInline):
+    model = WhyWeAreBanner
+    verbose_name = "Why We Are Banner"
+    
+
+class WomenEmpowermentBannerInline(BaseInline):
+    model = WomenEmpowermentBanner
+    verbose_name = "Women Empowerment Banner"
+
+class CSRBannerInline(BaseInline):
+    model = CSRBanner
+    verbose_name = "CSR Banner"
+
+class DeliveryModelBannerInline(BaseInline):
+    model = DeliveryModelBanner
+    verbose_name = "Delivery Model Banner"
+
+class EngagementModelBannerInline(BaseInline):
+    model = EngagementModelBanner
+    verbose_name = "Engagement Model Banner"
+
+class DevelopmentMethodologyBannerInline(BaseInline):
+    model = DevelopmentMethodologyBanner
+    verbose_name = "Development Methodology Banner"
+
+class ClientTestimonialBannerInline(BaseInline):
+    model = ClientTestimonialBanner
+    verbose_name = "Client Testimonial Banner"
+
+
+class ClutchTestimonialBannerInline(BaseInline):
+    model = ClutchTestimonialBanner
+    verbose_name = "Clutch Testimonial Banner"
+
+
+class AwardsBannerInline(BaseInline):
+    model = AwardsBanner
+    verbose_name = "Awards Banner"
+
+class ContactBannerInline(BaseInline):
+    model = ContactBanner
+    verbose_name = "Contact Banner"
+
+
+@admin.register(PageBanner)
+class PageBannerAdmin(admin.ModelAdmin):
+    inlines = [
+        HomeBannerBannerInline, WhyWeAreBannerInline, WomenEmpowermentBannerInline, CSRBannerInline, DeliveryModelBannerInline,
+        EngagementModelBannerInline, DevelopmentMethodologyBannerInline, ClientTestimonialBannerInline,
+        ClutchTestimonialBannerInline, AwardsBannerInline, ContactBannerInline
     ]
