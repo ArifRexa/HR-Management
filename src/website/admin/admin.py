@@ -19,6 +19,7 @@ from django.db.models import Count
 from employee.models.employee import Employee
 from project_management.models import EmployeeProjectHour, ProjectHour
 from website.models import (
+    AllProjectsBanner,
     Award,
     AwardsBanner,
     BannerImage,
@@ -849,6 +850,10 @@ class AwardsBannerInline(BaseInline):
 class ContactBannerInline(BaseInline):
     model = ContactBanner
     verbose_name = "Contact Banner"
+    
+class AllProjectsBannerInline(BaseInline):
+    model = AllProjectsBanner
+    verbose_name = "All Projects Banner"
 
 
 @admin.register(PageBanner)
@@ -856,5 +861,5 @@ class PageBannerAdmin(admin.ModelAdmin):
     inlines = [
         HomeBannerBannerInline, WhyWeAreBannerInline, WomenEmpowermentBannerInline, CSRBannerInline, DeliveryModelBannerInline,
         EngagementModelBannerInline, DevelopmentMethodologyBannerInline, ClientTestimonialBannerInline,
-        ClutchTestimonialBannerInline, AwardsBannerInline, ContactBannerInline
+        ClutchTestimonialBannerInline, AwardsBannerInline, ContactBannerInline, AllProjectsBannerInline
     ]
