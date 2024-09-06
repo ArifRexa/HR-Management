@@ -1,9 +1,11 @@
 from rest_framework import serializers
 
 from academy.models import (
+    HomeBanner,
     HomePageWhyBest,
     InstructorFeedback,
     MarketingSlider,
+    PageBanner,
     Student,
     SuccessStory,
     Training,
@@ -265,3 +267,20 @@ class WhyWeBestSerializer(serializers.ModelSerializer):
 
 class HomePageSerializer(serializers.Serializer):
     why_we_best = WhyWeBestSerializer(many=True)
+    
+    
+class BaseBannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomeBanner
+        exclude = ['id', 'created_at', 'updated_at', 'page_banner']
+        
+
+class PageBannerSerializer(serializers.ModelSerializer):
+    home = BaseBannerSerializer(source="homebanner", read_only=True)
+    all_training = BaseBannerSerializer(source="alltrainingbanner", read_only=True)
+    instructor = BaseBannerSerializer(source="instructorbanner", read_only=True)
+    success_story = BaseBannerSerializer(source="successstorybanner", read_only=True)
+    
+    class Meta:
+        model = PageBanner
+        exclude = ['id', 'created_at', 'updated_at']

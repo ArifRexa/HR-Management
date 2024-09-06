@@ -3,6 +3,7 @@ from academy.views import (
     HomePageAPIView,
     InstructorFeedbackView,
     MarketingSliderAPIListView,
+    PageBannerAPIView,
     StudentCreateAPIView,
     SuccessStoryView,
     TrainingListAPIView,
@@ -11,6 +12,8 @@ from academy.views import (
     PracticeProjectDetailView
 )
 from django.urls import path
+
+from website.views import PageBannerListAPIView
 
 urlpatterns = [
     path(
@@ -39,4 +42,5 @@ urlpatterns = [
         name="why_we_best",
     ),
     path("faq/", FAQListView.as_view(), name="faq"),
+    path('page-banner/', PageBannerAPIView.as_view(), name='page_banner'),
 ]
