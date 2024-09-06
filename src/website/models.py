@@ -262,9 +262,10 @@ class Lead(models.Model):
     name = models.CharField(max_length=255)
     email = models.EmailField()
     message = models.TextField()
-    file = models.FileField(upload_to='leads_file/',null=True,blank=True)
-    created_at = models.DateTimeField(auto_now_add=True,null=True,blank=True) 
-    updated_at = models.DateTimeField(auto_now=True,null=True,blank=True) 
+    file = models.FileField(upload_to="leads_file/", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True, blank=True)
+
     def __str__(self):
         return self.name
 
@@ -324,16 +325,17 @@ class OfficeLocation(TimeStampMixin):
 
 
 class Brand(models.Model):
-    brandphoto = models.ImageField(upload_to='brand_photos/')
-    
+    brandphoto = models.ImageField(upload_to="brand_photos/")
+
     def __str__(self):
         return f"Brand {self.id}"
-    
+
 
 # Base model without any fields
 class WebsiteTitle(models.Model):
     def __str__(self):
         return f"WebsiteTitle {self.pk}"  # Optional for admin display purposes
+
 
 # Abstract class to reduce repetition
 class BaseModelTitle(models.Model):
@@ -344,46 +346,124 @@ class BaseModelTitle(models.Model):
     class Meta:
         abstract = True
 
+
 # Define all the required models with 'Title' added to the name
 class AwardsTitle(BaseModelTitle):
     pass
 
+
 class WhyUsTitle(BaseModelTitle):
     pass
+
 
 class AllServicesTitle(BaseModelTitle):
     pass
 
+
 class TechnologyTitle(BaseModelTitle):
     pass
+
 
 class VideoTestimonialTitle(BaseModelTitle):  # Already has Title in the name
     pass
 
+
 class IndustryTitle(BaseModelTitle):
     pass
+
 
 class LifeAtMediuswareTitle(BaseModelTitle):  # Already has Title in the name
     pass
 
+
 class ProjectsVideoTitle(BaseModelTitle):
     pass
+
 
 class BlogTitle(BaseModelTitle):
     pass
 
+
 class TextualTestimonialTitle(BaseModelTitle):  # Already has Title in the name
     pass
+
 
 class SpecialProjectsTitle(BaseModelTitle):
     pass
 
+
 class FAQHomeTitle(BaseModelTitle):
     pass
+
 
 class OurJourneyTitle(BaseModelTitle):  # Already has Title in the name
     pass
 
+
 # New model inheriting from BaseModelTitle
 class ModelTitle(BaseModelTitle):
+    pass
+
+
+class PageBanner(TimeStampMixin):
+
+    def __str__(self):
+        return str(self.id)
+
+class BannerImage(TimeStampMixin):
+    image = models.ImageField(upload_to="banner_images/", null=True, blank=True)
+    video = models.URLField(null=True, blank=True)
+    page_banner = models.OneToOneField(PageBanner, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Banner Image"
+        verbose_name_plural = "Banner Images"
+        abstract = True
+
+
+class HomeBanner(BannerImage):
+    pass
+
+
+class WhyWeAreBanner(BannerImage):
+    pass
+
+
+class WomenEmpowermentBanner(BannerImage):
+    pass
+
+
+class CSRBanner(BannerImage):
+    pass
+
+
+class DeliveryModelBanner(BannerImage):
+    pass
+
+
+class EngagementModelBanner(BannerImage):
+    pass
+
+
+class DevelopmentMethodologyBanner(BannerImage):
+    pass
+
+
+class ClientTestimonialBanner(BannerImage):
+    pass
+
+
+class ClutchTestimonialBanner(BannerImage):
+    pass
+
+
+class AwardsBanner(BannerImage):
+    pass
+
+
+class ContactBanner(BannerImage):
+    pass
+
+
+class AllProjectsBanner(BannerImage):
     pass
