@@ -8,8 +8,7 @@
     {% for employee in employees %}
         {% for employeesalary in employee.employeesalary_set.all %}
         <div class="employee-details" style="page-break-after: always;">
-            <p>Ref: Mediusware
-                Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}
+            <p>Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}
                 <br>
                 Date: {% now "jS F Y" %} <br>
                 <b>{{ employee.full_name | title }}</b><br>
@@ -41,7 +40,7 @@
                 </tr>
                 <tr>
                     <td>Monthly gross Salary</td>
-                    <td>: {{ employeesalary.net_salary |floatformat:2|intcomma }}</td>
+                    <td>: {{ employeesalary.net_salary|floatformat:2|intcomma|default:"0.00" }}</td>
                 </tr>
                 <tr>
                     <td>Model Of Salary Payment</td>
@@ -49,7 +48,7 @@
                 </tr>
                 <tr>
                     <td>Salary Date</td>
-                    <td>: {{ employeesalary.salary_sheet.date}}</td>
+                    <td>: {{ employeesalary.salary_sheet.date }}</td>
                 </tr>
                 </tbody>
             </table>
@@ -68,53 +67,36 @@
                                 <tbody>
                                     <tr>
                                         <td>Basic (55%)</td>
-                                        <td align="right">{{ employeesalary.net_salary | percentage:55 }}</td>
+                                        <td align="right">{{ employeesalary.net_salary|percentage:55|default:"0.00" }}</td>
                                     </tr>
                                     <tr>
                                         <td>House Allowance (20%)</td>
-                                        <td align="right">{{ employeesalary.net_salary | percentage:20 }}</td>
+                                        <td align="right">{{ employeesalary.net_salary|percentage:20|default:"0.00" }}</td>
                                     </tr>
                                     <tr>
                                         <td>Conveyance (15%)</td>
-                                        <td align="right">{{ employeesalary.net_salary | percentage:15 }}</td>
+                                        <td align="right">{{ employeesalary.net_salary|percentage:15|default:"0.00" }}</td>
                                     </tr>
                                     <tr>
                                         <td>Medical Allowance (10%)</td>
-                                        <td align="right">{{ employeesalary.net_salary | percentage:10 }}</td>
+                                        <td align="right">{{ employeesalary.net_salary|percentage:10|default:"0.00" }}</td>
                                     </tr>
-                                    {% if employeesalary.project_bonus %}
-                                        <tr>
-                                            <td>Project Bonus</td>
-                                            <td align="right">{{ employeesalary.project_bonus|floatformat:2|intcomma }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {% if employeesalary.festival_bonus %}
-                                        <tr>
-                                            <td>Festival Bonus</td>
-                                            <td align="right">{{ employeesalary.festival_bonus|floatformat:2|intcomma }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {% if employeesalary.overtime %}
-                                        <tr>
-                                            <td>Overtime Bonus</td>
-                                            <td>{{ employeesalary.overtime|floatformat:2|intcomma }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {% if employeesalary.leave_bonus %}
-                                        <tr>
-                                            <td>Leave Bonus</td>
-                                            <td>{{ employeesalary.leave_bonus|floatformat:2|intcomma }}</td>
-                                        </tr>
-                                    {% endif %}
-                                    {% if employeesalary.food_allowance %}
+                                    <tr>
+                                        <td>Project Bonus</td>
+                                        <td align="right">{{ employeesalary.project_bonus|default:"0.00" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Festival Bonus</td>
+                                        <td align="right">{{ employeesalary.festival_bonus|default:"0.00" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Overtime Bonus</td>
+                                        <td align="right">{{ employeesalary.overtime|default:"0.00" }}</td>
+                                    </tr>
                                     <tr>
                                         <td>Lunch Allowance</td>
-                                        <td align="right">{{ employeesalary.food_allowance|floatformat:2|intcomma }}</td>
+                                        <td align="right">{{ employeesalary.food_allowance|default:"0.00" }}</td>
                                     </tr>
-                                    {% endif %}
-                                    
-                                    
-
                                     <tr>
                                         <td><br></td>
                                     </tr>
@@ -122,7 +104,7 @@
                                 <tfoot>
                                     <tr>
                                         <th align="left">Total Earning/Salary</th>
-                                        <th align="right">{{ employeesalary.net_salary | addition:employeesalary.project_bonus| addition:employeesalary.food_allowance| addition:employeesalary.festival_bonus | floatformat:2|intcomma }} BDT</th>
+                                        <th align="right">{{ employeesalary.net_salary|addition:employeesalary.project_bonus|addition:employeesalary.food_allowance|addition:employeesalary.festival_bonus|floatformat:2|intcomma|default:"0.00" }} BDT</th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -138,23 +120,21 @@
                                 <tbody>
                                     <tr>
                                         <td>Salary Advance Loan</td>
-                                        <td align="right">
-                                            {% if employeesalary.loan_emi %}
-                                                {{ employeesalary.loan_emi|floatformat:2 }}
-                                            {% else %}
-                                                0.00
-                                            {% endif %}
-                                        </td>
+                                        <td align="right">{{ employeesalary.salary_loan_total|floatformat:2|default:"0.00" }}</td>
                                     </tr>
-                                   
                                     <tr>
-                                        <td><br><br><br><br><br><br></td>
+                                        <td>Tax Loan</td>
+                                        <td align="right">{{ employeesalary.tax_loan_total|floatformat:2|default:"0.00" }}</td>
+                                    </tr>
+                                    <tr>
+                                    
+                                        <td><br><br><br><br><br><br><br></td>
                                     </tr>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <th align="left">Total Deduction</th>
-                                        <th align="right">{{ employeesalary.loan_emi|floatformat:2 }}</th>
+                                        <th align="right">{{  employeesalary.salary_loan_total|addition:employeesalary.tax_loan_total }}</th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -162,31 +142,23 @@
                     </tr>
                 </tbody>
             </table>
-            
-            
+
             <table width="100%" border="1" cellpadding="5">
-
-
                 <tfoot style="border-top: 1px solid black;">
                 <tr>
                     <th align='left'>Net Salary:</th>
-
-                    <th align="right">
-                        {{ employeesalary.gross_salary | floatformat:2|intcomma }}
-                        BDT
-                    </th>
+                    <th align="right">{{ employeesalary.gross_salary|floatformat:2|intcomma|default:"0.00" }} BDT</th>
                 </tr>
                 </tfoot>
             </table>
             <br>
             {% if employeesalary.loan_emi %}
                 <p>Deducted on salary :
-                    {{ employeesalary.net_salary | addition:employeesalary.project_bonus| addition:employeesalary.food_allowance| addition:employeesalary.festival_bonus | floatformat:2|intcomma }}
-                    {{ employeesalary.loan_emi }} = <b>{{ employeesalary.gross_salary }}
-                        Taka</b>
+                    {{ employeesalary.net_salary|addition:employeesalary.project_bonus|addition:employeesalary.food_allowance|addition:employeesalary.festival_bonus|floatformat:2|intcomma|default:"0.00" }}
+                    {{ employeesalary.loan_emi|floatformat:2|default:"0.00" }} = <b>{{ employeesalary.gross_salary|floatformat:2|default:"0.00" }} Taka</b>
                 </p>
 
-                <p><b>In Word : </b>{{employeesalary.gross_salary | num_to_word }} Taka only</p>
+                <p><b>In Word : </b>{{ employeesalary.gross_salary|num_to_word|default:"Zero" }} Taka only</p>
             {% endif %}
             <table width="100%">
                 <tr>
@@ -194,18 +166,12 @@
                 </tr>
                 <tr>
                     <td rowspan="1">
-                                            <img src="{{ seal }}" height="80px" alt="">
+                        <img src="{{ seal }}" height="80px" alt="">
                     </td>
                     <td></td>
                 </tr>
+            
                 <tr>
-                    <td>
-                        <br>
-                    </td>
-                    <td></td>
-                </tr>
-                <tr>
-                    
                     <td>Md. Shahinur Rahman</td>
                     <td></td>
                 </tr>
@@ -218,8 +184,8 @@
                     <td></td>
                 </tr>
             </table>
-  
+
         </div>
-    {% endfor %}
+        {% endfor %}
     {% endfor %}
 {% endblock %}
