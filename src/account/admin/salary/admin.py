@@ -16,6 +16,9 @@ from account.models import SalarySheet, EmployeeSalary
 from account.repository.SalarySheetRepository import SalarySheetRepository
 from employee.models.employee import LateAttendanceFine
 from decimal import Decimal
+from django.db.models import Count
+
+from employee.templatetags.employee_helper import total_employee_count
 
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
@@ -96,37 +99,45 @@ class EmployeeSalaryInline(admin.TabularInline):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         
+        # Filter by the current SalarySheet
+        salary_sheet_id = self.parent_model.objects.filter(id=request.resolver_match.kwargs.get('object_id')).values_list('id', flat=True).first()
+        qs = qs.filter(salary_sheet_id=salary_sheet_id)
+        
         # Calculate totals
         self.total_values = qs.aggregate(
+            total_employees = Count('id'),
             total_net_salary=Sum('net_salary'),
             total_overtime=Sum('overtime'),
             total_project_bonus=Sum('project_bonus'),
             total_leave_bonus=Sum('leave_bonus'),
             total_food_allowance=Sum('food_allowance'),
-            total_tax_loan=Sum('loan_emi'),  # Assuming tax loan is stored in 'loan_emi'
-            total_salary_loan=Sum('loan_emi'),  # Assuming salary loan is also in 'loan_emi'
             total_festival_bonus=Sum('festival_bonus'),
             total_gross_salary=Sum('gross_salary'),
         )
         
         # Initialize total_late_fine as Decimal
         total_late_fine = Decimal('0.00')
+        total_tax_loan = Decimal('0.00')
+        total_salary_loan = Decimal('0.00')
 
         # Calculate custom total for late fines manually
         for obj in qs:
             total_late_fine += Decimal(self.get_late_fine(obj))
+            total_tax_loan += Decimal(self.get_tax_loan(obj))
+            total_salary_loan+= Decimal(self.get_salary_loan(obj))
         
         self.total_values['total_late_fine'] = total_late_fine
+        self.total_values['total_tax_loan'] = -total_tax_loan
+        self.total_values['total_salary_loan'] = -total_salary_loan
 
         return qs
-
-
 @admin.register(SalarySheet)
 class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
     list_display = ('date', 'created_at', 'total', 'total_employee', 'festival_bonus')
     fields = ('date', 'festival_bonus')
     inlines = (EmployeeSalaryInline,)
     change_form_template = ('admin/salary_sheet.html')
+    
 
     def save_model(self, request, salary_sheet, form, change):
         # TODO : add festival bonus
