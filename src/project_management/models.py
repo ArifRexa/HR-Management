@@ -220,7 +220,7 @@ class Project(TimeStampMixin, AuthorMixin):
         ProjectPlatform, related_name="projects", blank=True
     )
     industries = models.ForeignKey(
-        IndustryServe, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
+        "website.IndustryWeServe", related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
     )
     services = models.ForeignKey(
         ServicePage, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
