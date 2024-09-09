@@ -219,9 +219,9 @@ class Project(TimeStampMixin, AuthorMixin):
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
-    # industries = models.ForeignKey(
-    #     ServeCategory, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
-    # )
+    industries = models.ForeignKey(
+        "website.IndustryWeServe", related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
+    )
     services = models.ForeignKey(
         ServicePage, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
     )
