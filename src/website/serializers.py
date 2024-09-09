@@ -268,9 +268,9 @@ class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
             "feedback",
             "avg_rating",
             "rating_communication",
-            "rating_output",
+            # "rating_output",
             "rating_time_management",
-            "rating_billing",
+            # "rating_billing",
             "rating_long_term_interest",
         )
 
@@ -368,9 +368,9 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     )
     # available_tags = TagSerializer(read_only=True, many=True, source="tags")
     client = ClientSerializer()
-    client_feedback = ProjectClientFeedbackSerializer(
-        many=True, source="clientfeedback_set"
-    )
+    # client_feedback = ProjectClientFeedbackSerializer(
+    #     many=True, source="clientfeedback_set"
+    # )
     project_design = ProjectScreenshotSerializer(
         source="projectscreenshot_set", many=True, read_only=True
     )
@@ -411,7 +411,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "project_contents",
             "project_key_feature",
             "client",
-            "client_feedback",
+            # "client_feedback",
             "project_design",
             "service_solutions",
         )
