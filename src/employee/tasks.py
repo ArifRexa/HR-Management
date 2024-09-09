@@ -46,15 +46,15 @@ from account.models import Loan
 
 def set_default_exit_time():
     NOW = datetime.datetime.now()
-    DEFAULT_EXIT_HOUR = 12 + 8  # 24 hour time == 9pm
-    DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
+    DEFAULT_EXIT_HOUR = 0  # 24-hour time == 12:00 AM (midnight)
+    DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0, microsecond=0)
 
     employee_onlines = EmployeeOnline.objects.filter(active=True)
 
     for emp_online in employee_onlines:
-        attandance = emp_online.employee.employeeattendance_set.last()
+        attendance = emp_online.employee.employeeattendance_set.last()
 
-        activities = attandance.employeeactivity_set.all()
+        activities = attendance.employeeactivity_set.all()
         if activities.exists():
             activities = list(activities)
             start_time = activities[-1].start_time
@@ -66,7 +66,6 @@ def set_default_exit_time():
                     activities[-1].end_time = start_time
                 activities[-1].is_updated_by_bot = True
                 activities[-1].save()
-
 
 def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email = EmailMultiAlternatives()
