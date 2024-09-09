@@ -103,7 +103,7 @@ class ProjectPlatformSerializer(serializers.ModelSerializer):
 
 class ProjectIndustrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = IndustryServe
+        model = IndustryWeServe
         fields = ("title",)
 
 
@@ -415,7 +415,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "project_design",
             "service_solutions",
         )
-    
+
     def get_country(self, obj):
         if not obj.country:
             return None
@@ -1136,3 +1136,21 @@ class PageBannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = PageBanner
         exclude = ["id", "created_at", "updated_at"]
+
+
+class ProjectTechnologyCountSerializer(serializers.ModelSerializer):
+    project_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Technology
+        fields = ["name", "project_count"]
+
+    # def get_project_count(self, obj):
+    #     from django.db.models import Count
+
+    #     p = Technology.objects.annotate(
+    #         project_count=Count("projecttechnology__project")
+    #     ).values("name", "project_count")
+    #     return Project.objects.filter(
+    #         show_in_website=True, projecttechnology__technologies=obj
+    #     ).count()
