@@ -18,7 +18,7 @@ from rest_framework import filters, status
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.pagination import PageNumberPagination
 from employee.models import Employee, EmployeeNOC
-from project_management.models import Project, ProjectTechnology
+from project_management.models import Project, ProjectTechnology, Technology
 
 from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
 from settings.models import Designation
@@ -43,7 +43,8 @@ from website.models import (
     EmployeePerspective,
     Industry,
     Lead,
-    VideoTestimonial,Brand,
+    VideoTestimonial,
+    Brand,
     WebsiteTitle,
 )
 from website.serializers import (
@@ -57,6 +58,7 @@ from website.serializers import (
     PageBannerSerializer,
     PostCredentialSerializer,
     ProjectListSerializer,
+    ProjectTechnologyCountSerializer,
     ServiceSerializer,
     ProjectSerializer,
     EmployeeSerializer,
@@ -83,8 +85,9 @@ from website.serializers import (
     IndustrySerializer,
     SkillSerializer,
     LeadSerializer,
-    VideoTestimonialSerializer,BrandSerializer,
-    WebsiteTitleSerializer
+    VideoTestimonialSerializer,
+    BrandSerializer,
+    WebsiteTitleSerializer,
 )
 from rest_framework.generics import (
     ListAPIView,
@@ -304,7 +307,11 @@ class TagListView(ListAPIView):
 class CategoryListViewWithBlogCount(APIView):
     def get(self, request, *args, **kwargs):
         queryset = Category.objects.annotate(
-            total_blog=Count("categories", filter=Q(categories__status=BlogStatus.APPROVED)|Q(categories__status=BlogStatus.PUBLISHED))
+            total_blog=Count(
+                "categories",
+                filter=Q(categories__status=BlogStatus.APPROVED)
+                | Q(categories__status=BlogStatus.PUBLISHED),
+            )
         ).values("id", "name", "slug", "total_blog")
         return Response(
             data=queryset,
@@ -372,7 +379,9 @@ class FeaturedBlogListView(ListAPIView):
 class BlogDetailsView(RetrieveAPIView):
     lookup_field = "slug"
     # q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
-    queryset = Blog.objects.filter(Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)).all()
+    queryset = Blog.objects.filter(
+        Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    ).all()
     serializer_class = BlogDetailsSerializer
     filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
 
@@ -673,31 +682,30 @@ class OfficeLocationListView(ListAPIView):
     queryset = OfficeLocation.objects.all()
     serializer_class = OfficeLocationSerializer
     pagination_class = None
-    
+
 
 class PostCredentialCreateView(APIView):
     queryset = PostCredential.objects.all()
     serializer_class = PostCredentialSerializer
     permission_classes = ()
     authentication_classes = ()
-    
+
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         obj, created = PostCredential.objects.get_or_create(
-            platform = data.get("platform"),
+            platform=data.get("platform"),
             defaults={
                 "token": data.get("token"),
                 "name": data.get("name"),
-            }
+            },
         )
         if not created:
             obj.token = data.get("token")
             obj.name = data.get("name")
             obj.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
 
 
 class BrandListCreateAPIView(ListAPIView):
@@ -708,25 +716,46 @@ class BrandListCreateAPIView(ListAPIView):
 
 from django.http import JsonResponse
 from django.views import View
+
+
 class WebsiteTitleView(View):
     def get(self, request, *args, **kwargs):
         try:
             # Assuming there's only one WebsiteTitle object
             website_title = WebsiteTitle.objects.first()  # Adjust query as needed
             if website_title is None:
-                return JsonResponse({'error': 'No WebsiteTitle object found'}, status=404)
+                return JsonResponse(
+                    {"error": "No WebsiteTitle object found"}, status=404
+                )
 
             serializer = WebsiteTitleSerializer(website_title)
-            return JsonResponse(serializer.data, safe=False, json_dumps_params={'indent': 2})
+            return JsonResponse(
+                serializer.data, safe=False, json_dumps_params={"indent": 2}
+            )
 
         except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-        
-        
+            return JsonResponse({"error": str(e)}, status=500)
+
+
 class PageBannerListAPIView(RetrieveAPIView):
     queryset = PageBanner.objects.all()
     serializer_class = PageBannerSerializer
-    pagination_class=None
-    
+    pagination_class = None
+
     def get_object(self):
         return PageBanner.objects.first()
+
+
+class ProjectTechnologyListAPIView(APIView):
+    # queryset = ProjectTechnology.objects.all()
+    # serializer_class = ProjectTechnologyCountSerializer
+    # pagination_class = None
+
+    def get(self, request, *args, **kwargs):
+        qs = Technology.objects.annotate(
+            project_count=Count("projecttechnology__project")
+        ).values("name", "project_count")
+        # serializer = ProjectTechnologyCountSerializer(data=qs, many=True)
+        # serializer.is_valid(raise_exception=True)
+        # print(serializer.validated_data)
+        return Response(qs)
