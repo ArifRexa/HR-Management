@@ -407,7 +407,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "featured_image",
             "featured_video",
             "technologies",
-            "available_tags",
+            # "available_tags",
             "project_contents",
             "project_key_feature",
             "client",
