@@ -383,7 +383,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     industries = ProjectIndustrySerializer()
     services = ProjectServiceSerializer()
     service_solutions = ProjectServiceSolutionSerializer(many=True)
-    country = serializers.CharField(source="country.name")
+    country = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -415,6 +415,11 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "project_design",
             "service_solutions",
         )
+    
+    def get_country(self, obj):
+        if not obj.country:
+            return None
+        return obj.country
 
     def to_representation(self, instance):
         request = self.context.get("request")
