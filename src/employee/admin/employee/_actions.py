@@ -304,27 +304,15 @@ class EmployeeActions:
             print(type(pdf))
             # pdf = [pdf, pdf]
             enoc = EmployeeNOC.objects.filter(employee_id=employee.id)
-            if enoc.exists():
-                enoc = enoc.first()
-                if pdf.__contains__('http'):
-                    file_obj = requests.get(pdf).content
-                    file_name = pdf.split('/')[-1]
-                    image_name = file_name[:-4] + ".jpg"
-                    enoc.noc_pdf.save(file_name, ContentFile(file_obj, file_name))
-                    image_file = pdf2image.convert_from_bytes(file_obj)[0]
-                    image_io = BytesIO()
-                    image_file.save(image_io, format="jpeg", quality=100)
-                    enoc.noc_image.save(
-                        name=image_name,
-                        content=ContentFile(image_io.getvalue()),
-                    )
-                    enoc.save(update_fields=["noc_pdf", "noc_image"])
-                else:
-                    with open(file=pdf, mode="rb") as file_obj:
-                        file_name = os.path.basename(file_obj.name)
+            if letter_type == 'NOC':
+                if enoc.exists():
+                    enoc = enoc.first()
+                    if pdf.__contains__('http'):
+                        file_obj = requests.get(pdf).content
+                        file_name = pdf.split('/')[-1]
                         image_name = file_name[:-4] + ".jpg"
-                        enoc.noc_pdf.save(file_name, File(file_obj, file_name))
-                        image_file = pdf2image.convert_from_path(pdf)[0]
+                        enoc.noc_pdf.save(file_name, ContentFile(file_obj, file_name))
+                        image_file = pdf2image.convert_from_bytes(file_obj)[0]
                         image_io = BytesIO()
                         image_file.save(image_io, format="jpeg", quality=100)
                         enoc.noc_image.save(
@@ -332,6 +320,19 @@ class EmployeeActions:
                             content=ContentFile(image_io.getvalue()),
                         )
                         enoc.save(update_fields=["noc_pdf", "noc_image"])
+                    else:
+                        with open(file=pdf, mode="rb") as file_obj:
+                            file_name = os.path.basename(file_obj.name)
+                            image_name = file_name[:-4] + ".jpg"
+                            enoc.noc_pdf.save(file_name, File(file_obj, file_name))
+                            image_file = pdf2image.convert_from_path(pdf)[0]
+                            image_io = BytesIO()
+                            image_file.save(image_io, format="jpeg", quality=100)
+                            enoc.noc_image.save(
+                                name=image_name,
+                                content=ContentFile(image_io.getvalue()),
+                            )
+                            enoc.save(update_fields=["noc_pdf", "noc_image"])
 
             context = {
                 "employee": employee,
