@@ -118,7 +118,7 @@ class TPMObj:
             # Group hours by week for the current project
             last_four_hours = ProjectHour.objects.filter(
                 project=project
-            ).annotate(
+            ).exclude(hour_type='bonus').annotate(
                 week=TruncWeek('date')
             ).values('week').annotate(
                 total_hours=Sum('hours')

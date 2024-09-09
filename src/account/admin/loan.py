@@ -24,7 +24,7 @@ class LoadAdmin(admin.ModelAdmin):
     list_display = ('employee', 'loan_amount', 'due', 'emi', 'tenor')
     inlines = (LoadGuarantorInline, LoadAttachmentInline)
     actions = ('print_loan_agreement', 'duplicate')
-    list_filter = ('employee',)
+    list_filter = ('loan_type','employee',)
     search_fields = ('employee__full_name',)
     date_hierarchy = 'created_at'
 
