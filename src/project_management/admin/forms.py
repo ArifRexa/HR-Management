@@ -24,6 +24,12 @@ class ProjectTechnologyInlineForm(forms.ModelForm):
 
 
 class ProjectAdminForm(forms.ModelForm):
+    description = forms.CharField(
+        widget=forms.Textarea(
+            attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
+        )
+    )
+
     class Meta:
         model = Project
         fields = "__all__"

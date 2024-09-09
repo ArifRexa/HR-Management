@@ -13,6 +13,7 @@ from project_management.admin import client_feedback
 from project_management.models import (
     Project,
     Client,
+    ProjectResultStatistic,
     ProjectServiceSolution,
     Technology,
     ProjectTechnology,
@@ -79,6 +80,8 @@ from website.models import (
     FAQHomeTitle,
     OurJourneyTitle,
 )
+from website.models_v2.industries_we_serve import IndustryServe
+from website.models_v2.services import ServicePage
 
 
 class PostCredentialSerializer(serializers.ModelSerializer):
@@ -100,13 +103,13 @@ class ProjectPlatformSerializer(serializers.ModelSerializer):
 
 class ProjectIndustrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProjectIndustry
+        model = IndustryServe
         fields = ("title",)
 
 
 class ProjectServiceSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProjectService
+        model = ServicePage
         fields = ("title",)
 
 
@@ -261,13 +264,13 @@ class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientFeedback
         fields = (
-            "feedback_week",
+            # "feedback_week",
             "feedback",
             "avg_rating",
             "rating_communication",
-            "rating_output",
+            # "rating_output",
             "rating_time_management",
-            "rating_billing",
+            # "rating_billing",
             "rating_long_term_interest",
         )
 
@@ -289,13 +292,23 @@ class ProjectResultsSerializer(serializers.ModelSerializer):
         )
 
 
+class ProjectResultStatisticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectResultStatistic
+        fields = (
+            "title",
+            "result",
+        )
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(
         many=True, source="projecttechnology_set"
     )
-    project_results = ProjectResultsSerializer()
-    industries = serializers.SerializerMethodField()
+    project_results = ProjectResultStatisticsSerializer(many=True)
+    # industries = serializers.SerializerMethodField()
     title = serializers.SerializerMethodField()
+    service_solution_title = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -307,13 +320,24 @@ class ProjectSerializer(serializers.ModelSerializer):
             "featured_image",
             "project_results",
             "technologies",
+            "service_solution_title",
         )
 
     def get_title(self, obj):
         return obj.web_title if obj.web_title else obj.title
 
-    def get_industries(self, obj):
-        return [industry.title for industry in obj.industries.all()]
+    # def get_industries(self, obj):
+    #     return [industry.title for industry in obj.industries.all()]
+
+    def get_service_solution_title(self, obj):
+        if not obj:
+            return []
+        return [obj.title for obj in obj.service_solutions.all()]
+
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+    #     data['service_solution_title'] = [item.title for item in instance.service_solutions.all()]
+    #     return data
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -342,11 +366,11 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(
         many=True, source="projecttechnology_set"
     )
-    available_tags = TagSerializer(read_only=True, many=True, source="tags")
+    # available_tags = TagSerializer(read_only=True, many=True, source="tags")
     client = ClientSerializer()
-    client_feedback = ProjectClientFeedbackSerializer(
-        many=True, source="clientfeedback_set"
-    )
+    # client_feedback = ProjectClientFeedbackSerializer(
+    #     many=True, source="clientfeedback_set"
+    # )
     project_design = ProjectScreenshotSerializer(
         source="projectscreenshot_set", many=True, read_only=True
     )
@@ -354,11 +378,12 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     project_key_feature = ProjectKeyFeatureSerializer(
         many=True, source="projectkeyfeature_set"
     )
-    project_results = ProjectResultsSerializer()
+    project_results = ProjectResultStatisticsSerializer(many=True)
     platforms = ProjectPlatformSerializer(many=True)
-    industries = ProjectIndustrySerializer(many=True)
-    services = ProjectServiceSerializer(many=True)
+    industries = ProjectIndustrySerializer()
+    services = ProjectServiceSerializer()
     service_solutions = ProjectServiceSolutionSerializer(many=True)
+    country = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -368,24 +393,33 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "platforms",
             "industries",
             "live_link",
-            "location",
+            "country",
             "services",
-            "location_image",
-            "service_we_provide_image",
-            "industry_image",
+            "client_web_name",
+            "client_image",
+            "client_review",
+            "project_logo",
+            # "location_image",
+            # "service_we_provide_image",
+            # "industry_image",
             "project_results",
             "description",
             "featured_image",
             "featured_video",
             "technologies",
-            "available_tags",
+            # "available_tags",
             "project_contents",
             "project_key_feature",
             "client",
-            "client_feedback",
+            # "client_feedback",
             "project_design",
             "service_solutions",
         )
+    
+    def get_country(self, obj):
+        if not obj.country:
+            return None
+        return obj.country
 
     def to_representation(self, instance):
         request = self.context.get("request")
