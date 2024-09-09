@@ -103,7 +103,7 @@ class ProjectPlatformSerializer(serializers.ModelSerializer):
 
 class ProjectIndustrySerializer(serializers.ModelSerializer):
     class Meta:
-        model = IndustryServe
+        model = IndustryWeServe
         fields = ("title",)
 
 
