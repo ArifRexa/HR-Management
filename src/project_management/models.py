@@ -29,7 +29,7 @@ from icecream import ic
 # from employee.models import LeaveManagement
 from django.apps import apps
 
-from website.models_v2.industries_we_serve import IndustryServe
+from website.models_v2.industries_we_serve import IndustryServe, ServeCategory
 from website.models_v2.services import ServicePage
 
 
@@ -219,9 +219,9 @@ class Project(TimeStampMixin, AuthorMixin):
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
-    industries = models.ForeignKey(
-        "website.IndustryWeServe", related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
-    )
+    # industries = models.ForeignKey(
+    #     ServeCategory, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
+    # )
     services = models.ForeignKey(
         ServicePage, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
     )
