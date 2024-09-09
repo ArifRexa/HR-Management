@@ -172,6 +172,10 @@ class FAQ(TimeStampMixin):
 
     def __str__(self):
         return self.question
+    
+    class Meta:
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"
         
 
 

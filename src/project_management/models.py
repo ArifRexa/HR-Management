@@ -458,7 +458,7 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=300)
     description = HTMLField()
-    img = models.ImageField(verbose_name="Image", upload_to="project_images/", null=True, blank=True)
+    img = models.ImageField(verbose_name="Image", upload_to="projects/key_features/", null=True, blank=True)
     img2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
 
     def __str__(self):
