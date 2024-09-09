@@ -13,6 +13,7 @@ from website.views import (
     OfficeLocationListView,
     PageBannerListAPIView,
     PostCredentialCreateView,
+    ProjectTechnologyListAPIView,
     ProjectVideoListAPIView,
     ServiceList,
     ServiceDetails,
@@ -210,7 +211,8 @@ api_v2_urls = [
     path("office-location/", OfficeLocationListView.as_view(), name="office_location"),
     path("post-credential/", PostCredentialCreateView.as_view(), name="post_credential"),
     path('brands_photo/', BrandListCreateAPIView.as_view(), name='brand-list-create'),
-     path('website-title/', WebsiteTitleView.as_view(), name='website-title'),
+    path('website-title/', WebsiteTitleView.as_view(), name='website-title'),
+    path("project/technologies/", ProjectTechnologyListAPIView.as_view(), name="project_technology"),
 ]
 
 urlpatterns = [
