@@ -264,7 +264,7 @@ class ProjectClientFeedbackSerializer(serializers.ModelSerializer):
     class Meta:
         model = ClientFeedback
         fields = (
-            "feedback_week",
+            # "feedback_week",
             "feedback",
             "avg_rating",
             "rating_communication",
