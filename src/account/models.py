@@ -64,6 +64,27 @@ class EmployeeSalary(TimeStampMixin):
     @property
     def gross_amount(self):
         return self.gross_salary - self.festival_bonus
+    
+    @property
+    def salary_loan_total(self):
+        loans = Loan.objects.filter(
+            employee=self.employee,
+            start_date__lte=self.salary_sheet.date,
+            end_date__gte=self.salary_sheet.date,
+            loan_type="salary"
+        )
+        return -sum(loan.emi for loan in loans)
+
+    @property
+    def tax_loan_total(self):
+        loans = Loan.objects.filter(
+            employee=self.employee,
+            start_date__lte=self.salary_sheet.date,
+            end_date__gte=self.salary_sheet.date,
+            loan_type="tds"
+        )
+        return -sum(loan.emi for loan in loans)
+
 
 
 class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
