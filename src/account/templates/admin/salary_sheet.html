@@ -1,9 +1,31 @@
 {% extends 'admin/change_form.html' %}
 
 {% block content %}
-    <table>
+    
+    <style>
+        /* Style only the specific table with the ID 'custom-stats-table' */
+        .object-tools a:link.historylink{
+            display: none;
+        }
+        #custom-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        #custom-stats-table th, #custom-stats-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Center the text */
+        }
+        #custom-stats-table th {
+            background-color: #f4f4f4;
+        }
+    </style>
+
+    <!-- Add an ID to the table to target it specifically -->
+    <table id="custom-stats-table">
         <thead>
             <tr>
+                <th>Total Employees</th>
                 <th>Total Net Salary</th>
                 <th>Total Overtime</th>
                 <th>Total Project Bonus</th>
@@ -18,20 +40,26 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ total_values.total_net_salary }}</td>
-                <td>{{ total_values.total_overtime }}</td>
-                <td>{{ total_values.total_project_bonus }}</td>
-                <td>{{ total_values.total_leave_bonus }}</td>
-                <td>{{ total_values.total_food_allowance }}</td>
-                <td>{{ total_values.total_tax_loan }}</td>
-                <td>{{ total_values.total_salary_loan }}</td>
-                <td>{{ total_values.total_festival_bonus }}</td>
-                <td>{{ total_values.total_late_fine }}</td>
-                <td>{{ total_values.total_gross_salary }}</td>
+                <td>{{total_values.total_employees|floatformat:2 }}</td>
+                <td>{{ total_values.total_net_salary|floatformat:2  }}</td>
+                <td>{{ total_values.total_overtime|floatformat:2  }}</td>
+                <td>{{ total_values.total_project_bonus |floatformat:2 }}</td>
+                <td>{{ total_values.total_leave_bonus|floatformat:2  }}</td>
+                <td>{{ total_values.total_food_allowance|floatformat:2  }}</td>
+                <td>{{ total_values.total_tax_loan|floatformat:2  }}</td>
+                <td>{{ total_values.total_salary_loan |floatformat:2 }}</td>
+                <td>{{ total_values.total_festival_bonus|floatformat:2  }}</td>
+                <td>{{ total_values.total_late_fine |floatformat:2 }}</td>
+                <td>{{ total_values.total_gross_salary|floatformat:2  }}</td>
             </tr>
         </tbody>
     </table>
+    <br>
 
     <!-- Include the original content of the form -->
     {{ block.super }}
+    <script>
+        here 
+    </script>
 {% endblock %}
+
