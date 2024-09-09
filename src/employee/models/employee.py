@@ -430,7 +430,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         today = timezone.now().date()
 
         # Calculate the most recent Thursday
-        days_since_thursday = (today.weekday() - 3) % 7
+        days_since_thursday = (today.weekday() - 4) % 7
         most_recent_thursday = today - timedelta(days=days_since_thursday)
 
         weekly_totals = []
