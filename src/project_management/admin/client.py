@@ -78,7 +78,7 @@ class CountryAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "web_name",
+        # "web_name",
         "get_project_name",
         "email",
         "linkedin_url",
@@ -89,7 +89,7 @@ class ClientAdmin(admin.ModelAdmin):
     )
     fields = (
         "name",
-        "web_name",
+        # "web_name",
         "email",
         "designation",
         "company_name",

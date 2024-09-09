@@ -14,6 +14,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from project_management.models import (
     PlatformImage,
     Project,
+    ProjectResultStatistic,
+    ProjectResults,
     ProjectServiceSolution,
     ProjectTechnology,
     ProjectScreenshot,
@@ -30,13 +32,13 @@ from project_management.models import (
     ProjectChallenges,
     ProjectSolution,
     ProjectKeyFeature,
-    ProjectResults,
     OurTechnology,
     ProjectPlatform,
     ProjectIndustry,
     ProjectService,
     ClientInvoiceDate,
-    ProjectKeyPoint, ProjectToken,
+    ProjectKeyPoint,
+    ProjectToken,
 )
 
 
@@ -74,6 +76,8 @@ class ProjectTechnologyInline(admin.StackedInline):
 class ProjectKeyPointInline(admin.StackedInline):
     model = ProjectKeyPoint
     extra = 1
+    verbose_name = "Special Project Key Point"
+    verbose_name_plural = "Special Project Key Points"
 
 
 class ProjectScreenshotInline(admin.StackedInline):
@@ -89,11 +93,13 @@ class ProjectDocumentAdmin(admin.StackedInline):
 class ProjectContentAdmin(admin.StackedInline):
     model = ProjectContent
     extra = 1
+    fields = ("title", "content", "image")
 
 
 class ProjectKeyFeatureInline(admin.StackedInline):
     model = ProjectKeyFeature
     extra = 1
+    fields = ("title", "description", "img")
 
 
 @admin.register(ProjectKeyFeature)
@@ -128,6 +134,10 @@ class ProjectServiceInline(admin.StackedInline):
     extra = 1
 
 
+class ProjectResultInline(admin.StackedInline):
+    model = ProjectResultStatistic
+    extra = 1
+
 @admin.register(Project)
 class ProjectAdmin(admin.ModelAdmin):
     list_display = (
@@ -149,20 +159,55 @@ class ProjectAdmin(admin.ModelAdmin):
     )
     date_hierarchy = "created_at"
     inlines = (
+        ProjectResultInline,
         ProjectKeyPointInline,
         ProjectTechnologyInline,
         ProjectContentAdmin,
+        ProjectServiceInline,
         ProjectKeyFeatureInline,
         ProjectScreenshotInline,
-        ProjectDocumentAdmin,
-        ProjectPlatformImageInline,
-        ProjectServiceInline,
+        # ProjectDocumentAdmin,
+        # ProjectPlatformImageInline,
     )
     list_filter = ("active", "show_in_website")
     list_per_page = 20
     ordering = ("pk",)
     autocomplete_fields = ["client"]
     form = ProjectAdminForm
+    fields = (
+        "title",
+        "web_title",
+        "description",
+        "client",
+        "client_web_name",
+        "client_image",
+        "client_review",
+        "platforms",
+        "industries",
+        "services",
+        "live_link",
+        # "location",
+        "country",
+        "is_team",
+        "active",
+        "show_in_website",
+        "is_special",
+        "special_image",
+        # "in_active_at",
+        "hourly_rate",
+        "activate_from",
+        "featured_image",
+        "project_logo",
+        "thumbnail",
+        "featured_video",
+        # "tags",
+        # "identifier",
+        # "is_highlighted",
+        # "project_results",
+        # "location_image",
+        # "service_we_provide_image",
+        # "industry_image",
+    )
     # def get_readonly_fields(self, request, obj=None):
     #     if not request.user.is_superuser:
     #         return ['on_boarded_by']
@@ -202,7 +247,7 @@ class ProjectAdmin(admin.ModelAdmin):
     def client_feedback_link(self, obj):
         try:
             token = obj.projecttoken.token
-            url = reverse('admin:client_feedback', args=[token])
+            url = reverse("admin:client_feedback", args=[token])
             return format_html(f'<a href="{url}">Client Feedback</a>')
         except ProjectToken.DoesNotExist:
             return "No Token Available"
@@ -217,8 +262,6 @@ class ProjectAdmin(admin.ModelAdmin):
     #         return format_html(f'<a href="{url}">Client Feedback</a>')
     #     except ProjectToken.DoesNotExist:
     #         return "No Token Available"
-
-
 
     def last_increased(self, obj):
         six_month_ago = datetime.now().date() - relativedelta(months=6)
@@ -340,4 +383,3 @@ class ProjectTechnologyAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
-

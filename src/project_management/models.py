@@ -2,6 +2,7 @@ from ast import mod
 from datetime import datetime
 import datetime
 from datetime import timedelta
+from typing import Iterable
 from dateutil.relativedelta import relativedelta, FR
 from uuid import uuid4
 
@@ -22,11 +23,14 @@ from config.model.TimeStampMixin import TimeStampMixin
 from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
-
+from django.utils.text import slugify
 from icecream import ic
 
 # from employee.models import LeaveManagement
 from django.apps import apps
+
+from website.models_v2.industries_we_serve import IndustryServe
+from website.models_v2.services import ServicePage
 
 
 class Technology(TimeStampMixin, AuthorMixin):
@@ -203,19 +207,27 @@ class Project(TimeStampMixin, AuthorMixin):
         max_length=200, verbose_name="Web Title", null=True, blank=True
     )
     slug = models.SlugField(null=True, blank=True, unique=True)
-    description = models.TextField()
+    description = models.TextField(verbose_name="Sub Title")
     client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
+    client_web_name = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Client Web Name"
+    )
+    client_image = models.ImageField(
+        upload_to="client_images", null=True, blank=True, verbose_name="Client Image"
+    )
+    client_review = models.TextField(null=True, blank=True)
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
-    industries = models.ManyToManyField(
-        ProjectIndustry, related_name="projects", blank=True
+    industries = models.ForeignKey(
+        IndustryServe, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
     )
-    services = models.ManyToManyField(
-        ProjectService, related_name="projects", blank=True
+    services = models.ForeignKey(
+        ServicePage, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
     )
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
+    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
     active = models.BooleanField(default=True)
     is_special = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
@@ -223,7 +235,7 @@ class Project(TimeStampMixin, AuthorMixin):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     activate_from = models.DateField(null=True, blank=True)
-    featured_image = models.ImageField(null=True, blank=True)
+    featured_image = models.ImageField(null=True, blank=True, verbose_name="Banner Image")
     project_logo = models.ImageField(upload_to="project_logo", null=True, blank=True)
     special_image = models.ImageField(upload_to="special_image", null=True, blank=True)
     thumbnail = models.ImageField(upload_to="project_thumbnails", null=True, blank=True)
@@ -236,18 +248,23 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     is_highlighted = models.BooleanField(verbose_name="Is Highlighted?", default=False)
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
-
-    project_results = models.OneToOneField(
-        ProjectResults,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="project",
-    )
     
-    location_image = models.ImageField(null=True, blank=True)
-    service_we_provide_image = models.ImageField(null=True, blank=True)
-    industry_image = models.ImageField(null=True, blank=True)
+    # project_results = models.OneToOneField(
+    #     ProjectResults,
+    #     on_delete=models.CASCADE,
+    #     null=True,
+    #     blank=True,
+    #     related_name="project",
+    # )
+    
+    # location_image = models.ImageField(null=True, blank=True)
+    # service_we_provide_image = models.ImageField(null=True, blank=True)
+    # industry_image = models.ImageField(null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if self.slug is None:
+            self.slug = slugify(self.title[:51])
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["title"]
@@ -351,6 +368,18 @@ class Project(TimeStampMixin, AuthorMixin):
         )
 
 
+class ProjectResultStatistic(TimeStampMixin):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    number = models.CharField(max_length=20)
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        verbose_name = "Project Result"
+        verbose_name_plural = "Project Results"
+
 class PlatformImage(TimeStampMixin):
     image = models.ImageField(null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
@@ -429,7 +458,7 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=300)
     description = HTMLField()
-    img = models.ImageField()
+    img = models.ImageField(verbose_name="Image", upload_to="project_images/", null=True, blank=True)
     img2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
 
     def __str__(self):
