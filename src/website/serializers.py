@@ -419,7 +419,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     def get_country(self, obj):
         if not obj.country:
             return None
-        return obj.country
+        return obj.country.name
 
     def to_representation(self, instance):
         request = self.context.get("request")
