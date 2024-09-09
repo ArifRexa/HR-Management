@@ -15,7 +15,7 @@ from account.admin.salary.actions import SalarySheetAction
 from account.models import SalarySheet, EmployeeSalary
 from account.repository.SalarySheetRepository import SalarySheetRepository
 from employee.models.employee import LateAttendanceFine
-
+from decimal import Decimal
 
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
@@ -90,6 +90,35 @@ class EmployeeSalaryInline(admin.TabularInline):
 
     def has_add_permission(self, request, obj):
         return False
+    
+     
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        
+        # Calculate totals
+        self.total_values = qs.aggregate(
+            total_net_salary=Sum('net_salary'),
+            total_overtime=Sum('overtime'),
+            total_project_bonus=Sum('project_bonus'),
+            total_leave_bonus=Sum('leave_bonus'),
+            total_food_allowance=Sum('food_allowance'),
+            total_tax_loan=Sum('loan_emi'),  # Assuming tax loan is stored in 'loan_emi'
+            total_salary_loan=Sum('loan_emi'),  # Assuming salary loan is also in 'loan_emi'
+            total_festival_bonus=Sum('festival_bonus'),
+            total_gross_salary=Sum('gross_salary'),
+        )
+        
+        # Initialize total_late_fine as Decimal
+        total_late_fine = Decimal('0.00')
+
+        # Calculate custom total for late fines manually
+        for obj in qs:
+            total_late_fine += Decimal(self.get_late_fine(obj))
+        
+        self.total_values['total_late_fine'] = total_late_fine
+
+        return qs
 
 
 @admin.register(SalarySheet)
@@ -97,6 +126,7 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
     list_display = ('date', 'created_at', 'total', 'total_employee', 'festival_bonus')
     fields = ('date', 'festival_bonus')
     inlines = (EmployeeSalaryInline,)
+    change_form_template = ('admin/salary_sheet.html')
 
     def save_model(self, request, salary_sheet, form, change):
         # TODO : add festival bonus
@@ -122,3 +152,15 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
 
     def total_employee(self, obj):
         return obj.employeesalary_set.count()
+    
+ # Override change_view to pass the calculated totals to the template
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        salary_sheet = self.get_object(request, object_id)
+        inline_instance = self.get_inline_instances(request, salary_sheet)[0]
+        inline_instance_queryset = inline_instance.get_queryset(request)
+
+        # Add total values from EmployeeSalaryInline to the context
+        extra_context = extra_context or {}
+        extra_context['total_values'] = inline_instance.total_values
+
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
