@@ -213,7 +213,7 @@ class Project(TimeStampMixin, AuthorMixin):
         max_length=255, null=True, blank=True, verbose_name="Client Web Name"
     )
     client_image = models.ImageField(
-        upload_to="client_images", null=True, blank=True, verbose_name="Client Image"
+        upload_to="client_images", null=True, blank=True, verbose_name="Client Web Image"
     )
     client_review = models.TextField(null=True, blank=True)
     platforms = models.ManyToManyField(
@@ -369,9 +369,9 @@ class Project(TimeStampMixin, AuthorMixin):
 
 
 class ProjectResultStatistic(TimeStampMixin):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_results", null=True)
     title = models.CharField(max_length=255)
-    number = models.CharField(max_length=20)
+    result = models.CharField(max_length=20)
     
     def __str__(self):
         return self.title
