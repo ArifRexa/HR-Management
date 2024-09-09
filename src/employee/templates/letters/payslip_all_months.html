@@ -127,8 +127,12 @@
                                         <td align="right">{{ employeesalary.tax_loan_total|floatformat:2|default:"0.00" }}</td>
                                     </tr>
                                     <tr>
+                                        <td>Late Attendance Fine</td>
+                                        <td align="right">{{ employeesalary.current_month_late_fee|floatformat:2|default:"0.00" }}</td>
+                                    </tr>
+                                    <tr>
                                     
-                                        <td><br><br><br><br><br><br><br></td>
+                                        <td><br><br><br><br><br><br></td>
                                     </tr>
                                 </tbody>
                                 <tfoot>

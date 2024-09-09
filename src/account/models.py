@@ -16,7 +16,9 @@ from django_userforeignkey.models.fields import UserForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
+import employee
 from employee.models import Employee
+from employee.models.employee import LateAttendanceFine
 from project_management.models import Project, Client
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -74,6 +76,11 @@ class EmployeeSalary(TimeStampMixin):
             loan_type="salary"
         )
         return -sum(loan.emi for loan in loans)
+    
+    @property
+    def current_month_late_fee(self):
+        late_fee = LateAttendanceFine.objects.filter(employee=self.employee,month=self.salary_sheet.date.month,year=self.salary_sheet.date.year).aggregate(total_fine=Sum('total_late_attendance_fine'))['total_fine'] or 0
+        return -late_fee
 
     @property
     def tax_loan_total(self):
