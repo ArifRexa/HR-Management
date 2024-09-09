@@ -1,0 +1,37 @@
+{% extends 'admin/change_form.html' %}
+
+{% block content %}
+    <table>
+        <thead>
+            <tr>
+                <th>Total Net Salary</th>
+                <th>Total Overtime</th>
+                <th>Total Project Bonus</th>
+                <th>Total Leave Bonus</th>
+                <th>Total Food Allowance</th>
+                <th>Tax Loan</th>
+                <th>Salary Loan</th>
+                <th>Festival Bonus</th>
+                <th>Late Fine</th>
+                <th>Gross Salary</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ total_values.total_net_salary }}</td>
+                <td>{{ total_values.total_overtime }}</td>
+                <td>{{ total_values.total_project_bonus }}</td>
+                <td>{{ total_values.total_leave_bonus }}</td>
+                <td>{{ total_values.total_food_allowance }}</td>
+                <td>{{ total_values.total_tax_loan }}</td>
+                <td>{{ total_values.total_salary_loan }}</td>
+                <td>{{ total_values.total_festival_bonus }}</td>
+                <td>{{ total_values.total_late_fine }}</td>
+                <td>{{ total_values.total_gross_salary }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Include the original content of the form -->
+    {{ block.super }}
+{% endblock %}
