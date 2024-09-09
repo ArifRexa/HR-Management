@@ -223,9 +223,10 @@ class ProjectAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj):
         fields = super().get_fields(request, obj)
+        remove_fields = list(fields)
         if not request.user.is_superuser:
-            fields.remove("hourly_rate")
-        return fields
+            remove_fields.remove("hourly_rate")
+        return tuple(remove_fields)
 
     def get_ordering(self, request):
         return ["title"]
