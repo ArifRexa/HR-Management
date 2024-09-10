@@ -89,7 +89,17 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
         hr_policy = HRPolicy.objects.last()
         file_path = hr_policy.policy_file.url
         if file_path:
-            email.attach_file(file_path)
+            if file_path.__contains__('http'):
+                pdf_url = file_path
+
+                # Fetch the PDF content from the URL
+                response = requests.get(pdf_url)
+
+                # email.attach_alternative(html_content, 'text/html')
+                print('file name:', file_path.split('/')[-1])
+                email.attach(file_path.split('/')[-1], response.content, "application/pdf")
+            else:
+                email.attach_file(file_path)
     email.send()
 
 
