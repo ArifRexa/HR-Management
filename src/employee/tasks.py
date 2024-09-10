@@ -96,8 +96,8 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
                 response = requests.get(pdf_url)
 
                 # email.attach_alternative(html_content, 'text/html')
-                print('file name:', pdf.split('/')[-1])
-                email.attach(pdf.split('/')[-1], response.content, "application/pdf")
+                print('file name:', file_path.split('/')[-1])
+                email.attach(file_path.split('/')[-1], response.content, "application/pdf")
             else:
                 email.attach_file(file_path)
     email.send()
