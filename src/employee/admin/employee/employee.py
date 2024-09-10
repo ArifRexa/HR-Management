@@ -209,17 +209,27 @@ class EmployeeAdmin(
         
         if request.user.is_superuser:
             return actions
+
+        # Define permission-based allowed actions
+        permission_action_map = {
+            'employee.can_print_salary_certificate': ['print_salary_certificate', 'print_salary_certificate_all_months'],
+            'employee.can_print_salary_payslip': ['print_salary_pay_slip_all_months']
+        }
         
-        if request.user.has_perm('employee.can_print_salary_certificate'):
-            # Filter actions to only include the ones allowed for this permission
-            allowed_actions = ['print_salary_certificate', 'print_salary_certificate_all_months']
+        allowed_actions = []
+
+        # Check permissions and collect allowed actions
+        for perm, action_list in permission_action_map.items():
+            if request.user.has_perm(perm):
+                allowed_actions.extend(action_list)
+        
+        # If there are allowed actions, filter the actions
+        if allowed_actions:
             actions = {name: action for name, action in actions.items() if name in allowed_actions}
             return actions
 
-        # If the user doesn't have the required permission, return an empty dictionary
         return {}
-        
-        
+            
 
 
 @admin.register(EmployeeLunch)
