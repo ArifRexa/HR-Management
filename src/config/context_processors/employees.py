@@ -470,3 +470,8 @@ def last_four_week_project_hour(request):
             'weekly_expected_hours':weekly_expected_hours,
             'monthly_expected_hours':monthly_expected_hours
         }
+def can_show_permanent_increment(reqeust):
+    can_show = False
+    if reqeust.user.has_perm("employee.can_show_permanent_increment"):
+        can_show = True
+    return {'can_show_permanent_increment':can_show}
