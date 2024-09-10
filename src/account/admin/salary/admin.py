@@ -77,7 +77,7 @@ class EmployeeSalaryInline(admin.TabularInline):
         )
         loan_amount = salary_loan.aggregate(Sum("emi"))
 
-        return loan_amount["emi__sum"] if loan_amount["emi__sum"] else 0.0
+        return -loan_amount["emi__sum"] if loan_amount["emi__sum"] else 0.0
     get_salary_loan.short_description = "Salary Loan"
 
     def get_readonly_fields(self, request, obj=None):
