@@ -307,7 +307,7 @@ class IndustryWeServe(TimeStampMixin):
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="industry_we_serve/")
     slug = models.SlugField(unique=True, null=True)
-    
+
     def __str__(self):
         return self.title
 
@@ -408,15 +408,41 @@ class ModelTitle(BaseModelTitle):
     pass
 
 
-class PageBanner(TimeStampMixin):
+class ProjectServiceSolutionTitle(BaseModelTitle):
+    pass
 
+
+class ProjectKeyFeatureTitle(BaseModelTitle):
+    pass
+
+
+class ProjectResultsTitle(BaseModelTitle):
+    pass
+
+
+class ProjectScreenshotTitle(BaseModelTitle):
+    pass
+
+
+class ProjectTechnologyTitle(BaseModelTitle):
+    pass
+
+
+class ProjectClientReviewTitle(BaseModelTitle):
+    pass
+
+
+class PageBanner(TimeStampMixin):
     def __str__(self):
         return str(self.id)
+
 
 class BannerImage(TimeStampMixin):
     image = models.ImageField(upload_to="banner_images/", null=True, blank=True)
     video = models.URLField(null=True, blank=True)
-    page_banner = models.OneToOneField(PageBanner, on_delete=models.CASCADE, null=True, blank=True)
+    page_banner = models.OneToOneField(
+        PageBanner, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     class Meta:
         verbose_name = "Banner Image"

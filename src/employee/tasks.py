@@ -576,7 +576,16 @@ def late_attendance_calculate(late_entry_time):
             employee=employee, date=current_date, entry_time__gt=late_entry
         )
 
-        if total_late_entry > 3 and today_late_entry.exists():
+        if total_late_entry > 6 and today_late_entry.exists():
+             # Create LateAttendanceFine entry
+            LateAttendanceFine.objects.create(
+                employee=employee,
+                month=current_month,
+                year=current_year,
+                date=current_date,
+                total_late_attendance_fine=500.00,
+            )
+        elif total_late_entry > 3 and today_late_entry.exists():
             # Create LateAttendanceFine entry
             LateAttendanceFine.objects.create(
                 employee=employee,
