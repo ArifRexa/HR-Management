@@ -10,7 +10,7 @@ from django.utils.html import format_html
 from django.utils import timezone
 from django_q.tasks import async_task
 from icecream import ic
-
+from django.core.mail import EmailMessage
 from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
@@ -62,10 +62,10 @@ class LeaveForm(forms.ModelForm):
 
 
 
-    def __init__(self, *args, **kwargs):
-        super(LeaveForm, self).__init__(*args, **kwargs)
-        if self.fields.get("message"):
-            self.fields["message"].initial = self.placeholder
+    # def __init__(self, *args, **kwargs):
+    #     super(LeaveForm, self).__init__(*args, **kwargs)
+    #     if self.fields.get("message"):
+    #         self.fields["message"].initial = self.placeholder
 
     
 
@@ -145,9 +145,7 @@ class LeaveManagement(admin.ModelAdmin):
             obj.status_changed_at = date.today()
         
         super().save_model(request, obj, form, change)
-
-
-
+        
         employee = form.cleaned_data.get("employee") or request.user.employee
         if not change:
             projects = EmployeeProject.objects.get(employee=employee)
@@ -178,6 +176,31 @@ class LeaveManagement(admin.ModelAdmin):
                     leave_manage.save()
         self.__send_leave_mail(request, obj, form, change)
         
+
+    def save_formset(self, request, form, formset, change):
+        # Override save_formset to capture changes in inline feedback
+        if formset.model == leave.LeaveFeedback:
+            instances = formset.save(commit=False)
+            for instance in instances:
+                if instance.feedback:  # Check if feedback is provided
+                    self.send_feedback_email(instance.leave, instance.feedback)
+                instance.save()
+            formset.save_m2m()  # Save many-to-many relationships if needed
+        else:
+            formset.save()  # Save other inline models as usual
+
+    def send_feedback_email(self, leave_instance, feedback):
+        """Send an email notification when feedback is provided."""
+        
+        # Email subject and recipients
+        subject = "Management feedback on your leave application"
+        recipient_email = leave_instance.employee.email  # Assuming the employee model has an 'email' field
+        message_content = f"Dear {leave_instance.employee.full_name},\n\nFeedback on your leave: {feedback}\n\nBest regards,\nHR Department"
+        from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        email = EmailMessage(subject, message_content, from_email=from_email, to=[recipient_email])
+        email.send()
+
+
     def has_add_permission(self, request):    
         
         current_datetime = datetime.datetime.now()
