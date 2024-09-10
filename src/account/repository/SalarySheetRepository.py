@@ -400,7 +400,8 @@ class SalarySheetRepository:
                     employee=employee, date=self.date
                 )
                 monthly_tax = employee_tax_loan.calculate_tax_loan()
-                loan_instance = Loan.objects.create(
+                if monthly_tax > 0:
+                    loan_instance = Loan.objects.create(
                     employee=employee,
                     witness=Employee.objects.filter(
                         id=30
@@ -415,11 +416,11 @@ class SalarySheetRepository:
                     loan_type="tds",  # Set the loan type
                 )
 
-                # loan_instance.save()
-                salarysheettax = SalarySheetTaxLoan.objects.create(
-                    salarysheet=salary_sheet, loan=loan_instance
-                )
-                salarysheettax.save()
+                    # loan_instance.save()
+                    salarysheettax = SalarySheetTaxLoan.objects.create(
+                        salarysheet=salary_sheet, loan=loan_instance
+                    )
+                    salarysheettax.save()
 
         employee_salary.loan_emi = self.__calculate_loan_emi(
             employee=employee, salary_date=salary_sheet.date
