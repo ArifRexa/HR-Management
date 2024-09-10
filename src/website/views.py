@@ -764,3 +764,9 @@ class ClientReviewListAPIView(ListAPIView):
     queryset = Project.objects.filter(show_in_website=True)
     serializer_class = ClientReviewSerializer
     pagination_class = None
+
+
+class PreviewBlogRetrieveAPIView(RetrieveAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogDetailsSerializer
+    lookup_field = "slug"
