@@ -46,6 +46,7 @@ from website.models import (
     OfficeLocation,
     PageBanner,
     PostCredential,
+    ProjectServiceSolutionTitle,
     Service,
     Blog,
     Category,
@@ -391,6 +392,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "title",
             "slug",
             "platforms",
+            "web_title",
             "industries",
             "live_link",
             "country",
@@ -1063,6 +1065,12 @@ class OurJourneyTitleSerializer(serializers.ModelSerializer):
         fields = ["title", "sub_title"]
 
 
+class BaseTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectServiceSolutionTitle
+        fields = ["title", "sub_title"]
+
+
 # Define the WebsiteTitleSerializer with related fields
 class WebsiteTitleSerializer(serializers.ModelSerializer):
     model_title = ModelTitleSerializer(source="modeltitle", read_only=True)
@@ -1094,6 +1102,22 @@ class WebsiteTitleSerializer(serializers.ModelSerializer):
     faq_home_title = FAQHomeTitleSerializer(source="faqhometitle", read_only=True)
     our_journey_title = OurJourneyTitleSerializer(
         source="ourjourneytitle", read_only=True
+    )
+    project_service_solution = BaseTitleSerializer(
+        source="projectservicesolutiontitle", read_only=True
+    )
+    project_key_feature = BaseTitleSerializer(
+        source="projectkeyfeaturetitle", read_only=True
+    )
+    project_results = BaseTitleSerializer(source="projectresultstitle", read_only=True)
+    project_screenshot = BaseTitleSerializer(
+        source="projectscreenshottitle", read_only=True
+    )
+    project_technology = BaseTitleSerializer(
+        source="projecttechnologiestitle", read_only=True
+    )
+    project_client_review = BaseTitleSerializer(
+        source="projectclientreviewtitle", read_only=True
     )
 
     class Meta:
