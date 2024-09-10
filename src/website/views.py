@@ -60,6 +60,7 @@ from website.serializers import (
     BrandSerializer,
     CategoryListSerializer,
     ClientLogoSerializer,
+    ClientReviewSerializer,
     ClientSerializer,
     DesignationSetSerializer,
     EmployeeDetailsSerializer,
@@ -757,3 +758,9 @@ class ProjectTechnologyListAPIView(APIView):
         # serializer.is_valid(raise_exception=True)
         # print(serializer.validated_data)
         return Response(qs)
+
+
+class ClientReviewListAPIView(ListAPIView):
+    queryset = Project.objects.filter(show_in_website=True)
+    serializer_class = ClientReviewSerializer
+    pagination_class = None

@@ -1178,3 +1178,24 @@ class ProjectTechnologyCountSerializer(serializers.ModelSerializer):
     #     return Project.objects.filter(
     #         show_in_website=True, projecttechnology__technologies=obj
     #     ).count()
+
+
+class ClientReviewSerializer(serializers.ModelSerializer):
+    country = serializers.SerializerMethodField()
+    project_title = serializers.CharField(source="web_title")
+
+    class Meta:
+        model = Project
+        fields = [
+            "project_title",
+            "project_logo",
+            "client_web_name",
+            "client_image",
+            "client_review",
+            "country",
+        ]
+
+    def get_country(self, obj):
+        if obj.country is None:
+            return None
+        return obj.country.name
