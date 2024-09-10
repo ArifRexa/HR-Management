@@ -517,10 +517,10 @@ class BlogAdmin(admin.ModelAdmin):
 
         if permitted and obj:
             author_permission = (
-                not obj.status == BlogStatus.APPROVED and obj.created_by == request.user
+                not (obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED) and obj.created_by == request.user
             )
             moderator_permission = (
-                not obj.status == BlogStatus.APPROVED
+                not (obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED)
                 and request.user.has_perm("website.can_approve")
             )
             return author_permission or moderator_permission

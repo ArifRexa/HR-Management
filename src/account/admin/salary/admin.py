@@ -71,13 +71,12 @@ class EmployeeSalaryInline(admin.TabularInline):
 
     def get_salary_loan(self, obj):
         salary_loan = obj.employee.loan_set.filter(
-            start_date__lte=obj.salary_sheet.date,
-            end_date__gte=obj.salary_sheet.date,
+            start_date__month=obj.salary_sheet.date.month,
+            end_date__year=obj.salary_sheet.date.year,
             loan_type="salary"
         )
-        loan_amount = salary_loan.aggregate(Sum("emi"))
-
-        return -loan_amount["emi__sum"] if loan_amount["emi__sum"] else 0.0
+        loan_amount = salary_loan.aggregate(Sum("loan_amount"))
+        return -loan_amount["loan_amount__sum"] if loan_amount["loan_amount__sum"] else 0.0
     get_salary_loan.short_description = "Salary Loan"
 
     def get_readonly_fields(self, request, obj=None):
