@@ -14,6 +14,7 @@ from website.views import (
     OfficeLocationListView,
     PageBannerListAPIView,
     PostCredentialCreateView,
+    PreviewBlogRetrieveAPIView,
     ProjectTechnologyListAPIView,
     ProjectVideoListAPIView,
     ServiceList,
@@ -215,6 +216,7 @@ api_v2_urls = [
     path('website-title/', WebsiteTitleView.as_view(), name='website-title'),
     path("project/technologies/", ProjectTechnologyListAPIView.as_view(), name="project_technology"),
     path("client-review/", ClientReviewListAPIView.as_view(), name="client_review"),
+    path("blog/preview/<slug:slug>/", PreviewBlogRetrieveAPIView.as_view(), name="blog_preview"),
 ]
 
 urlpatterns = [
