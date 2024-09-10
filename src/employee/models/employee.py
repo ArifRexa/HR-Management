@@ -508,6 +508,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_access_average_rating", "Can access average rating of Employee."),
             ("can_see_salary_history", "Can able to see salary history."),
             ("can_print_salary_certificate", "Can print salary certificate"),
+            ("can_print_salary_payslip", "Can print salary payslip"),
         )
         ordering = ["full_name"]
 

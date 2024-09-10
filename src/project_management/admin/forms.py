@@ -1,6 +1,7 @@
 from typing import Any
 from django import forms
 from project_management.models import ProjectTechnology, Project
+from website.models_v2.services import ServicePage
 
 
 class ProjectTechnologyInlineForm(forms.ModelForm):
@@ -24,16 +25,33 @@ class ProjectTechnologyInlineForm(forms.ModelForm):
 
 
 class ProjectAdminForm(forms.ModelForm):
-    description = forms.CharField(
-        widget=forms.Textarea(
-            attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
-        )
+    services = forms.ModelChoiceField(
+        queryset=ServicePage.objects.all(),
+        required=False,
+        widget=forms.Select(
+            attrs={
+                "class": "select2",
+            }
+        ),
+        empty_label='------'
     )
 
     class Meta:
         model = Project
         fields = "__all__"
         # exclude = ['hourly_rate']
+        widgets = {
+            "description": forms.Textarea(
+                attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
+            )
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(ProjectAdminForm, self).__init__(*args, **kwargs)
+        self.fields['services'].label_from_instance = self.custom_service_label
+
+    def custom_service_label(self, obj):
+        return obj.menu_title
 
     def clean(self):
         if self.cleaned_data.get("featured_video") and not self.cleaned_data.get(
