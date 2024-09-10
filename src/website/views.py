@@ -1,102 +1,98 @@
 import django_filters
+from django.db.models import Count, F, Q
 from django.http import Http404
-from django.shortcuts import render
-from django.db.models import Count, Q, F
-from icecream import ic
-
-
-from django.shortcuts import get_object_or_404
-
-
+from django.shortcuts import get_object_or_404, render
 from django_filters import FilterSet
-from rest_framework.pagination import LimitOffsetPagination
-from django.shortcuts import get_object_or_404
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from django_filters.rest_framework import DjangoFilterBackend
+from icecream import ic
+from rest_framework import filters, status
+from rest_framework.generics import (
+    CreateAPIView,
+    DestroyAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    UpdateAPIView,
+)
+from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import filters, status
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.pagination import PageNumberPagination
-from employee.models import Employee, EmployeeNOC
-from project_management.models import Project, ProjectTechnology, Technology
 
-from employee.models import Employee, EmployeeNOC, Skill, EmployeeSkill
+from employee.models import Employee, EmployeeNOC, EmployeeSkill, Skill
+from project_management.models import (
+    Client,
+    OurTechnology,
+    Project,
+    ProjectTechnology,
+    Tag,
+    Technology,
+)
 from settings.models import Designation
-from project_management.models import Project, Tag, OurTechnology, Client
 from website.models import (
+    FAQ,
     Award,
+    Blog,
+    BlogComment,
     BlogStatus,
+    Brand,
+    Category,
+    EmployeePerspective,
     Gallery,
+    Industry,
     IndustryWeServe,
+    Lead,
     LifeAtMediusware,
     OfficeLocation,
+    OurAchievement,
+    OurGrowth,
+    OurJourney,
     PageBanner,
     PostCredential,
     Service,
-    Category,
-    Blog,
-    BlogComment,
-    FAQ,
-    OurAchievement,
-    OurJourney,
-    OurGrowth,
-    EmployeePerspective,
-    Industry,
-    Lead,
     VideoTestimonial,
-    Brand,
     WebsiteTitle,
 )
 from website.serializers import (
+    AvailableTagSerializer,
     AwardSerializer,
+    BlogCommentSerializer,
+    BlogDetailsSerializer,
+    BlogListSerializer,
+    BrandSerializer,
+    CategoryListSerializer,
     ClientLogoSerializer,
     ClientSerializer,
+    DesignationSetSerializer,
+    EmployeeDetailsSerializer,
+    EmployeeNOCSerializer,
+    EmployeePerspectiveSerializer,
+    EmployeeSerializer,
+    FAQSerializer,
     GallerySerializer,
+    IndustrySerializer,
     IndustryWeServeSerializer,
+    LeadSerializer,
     LifeAtMediuswareSerializer,
     OfficeLocationSerializer,
+    OurAchievementSerializer,
+    OurClientsFeedbackSerializer,
+    OurGrowthSerializer,
+    OurJourneySerializer,
+    OurTechnologySerializer,
     PageBannerSerializer,
     PostCredentialSerializer,
-    ProjectListSerializer,
-    ProjectTechnologyCountSerializer,
-    ServiceSerializer,
-    ProjectSerializer,
-    EmployeeSerializer,
-    ServiceDetailsSerializer,
     ProjectDetailsSerializer,
-    EmployeeDetailsSerializer,
-    CategoryListSerializer,
+    ProjectHighlightedSerializer,
+    ProjectListSerializer,
+    ProjectSerializer,
+    ProjectTechnologyCountSerializer,
+    ServiceDetailsSerializer,
+    ServiceSerializer,
+    SkillSerializer,
     SpecialProjectSerializer,
     TagListSerializer,
-    BlogListSerializer,
-    BlogDetailsSerializer,
-    EmployeeNOCSerializer,
-    BlogCommentSerializer,
-    DesignationSetSerializer,
-    AvailableTagSerializer,
-    ProjectHighlightedSerializer,
-    OurTechnologySerializer,
-    FAQSerializer,
-    OurClientsFeedbackSerializer,
-    OurAchievementSerializer,
-    OurJourneySerializer,
-    OurGrowthSerializer,
-    EmployeePerspectiveSerializer,
-    IndustrySerializer,
-    SkillSerializer,
-    LeadSerializer,
     VideoTestimonialSerializer,
-    BrandSerializer,
     WebsiteTitleSerializer,
 )
-from rest_framework.generics import (
-    ListAPIView,
-    RetrieveAPIView,
-    CreateAPIView,
-    UpdateAPIView,
-    DestroyAPIView,
-)
-from django_filters.rest_framework import DjangoFilterBackend
 
 
 def index(request):
@@ -714,27 +710,29 @@ class BrandListCreateAPIView(ListAPIView):
     pagination_class = None
 
 
-from django.http import JsonResponse
-from django.views import View
+class WebsiteTitleView(RetrieveAPIView):
+    queryset = WebsiteTitle.objects.all()
+    serializer_class = WebsiteTitleSerializer
 
+    def get_object(self):
+        return self.queryset.first()
 
-class WebsiteTitleView(View):
-    def get(self, request, *args, **kwargs):
-        try:
-            # Assuming there's only one WebsiteTitle object
-            website_title = WebsiteTitle.objects.first()  # Adjust query as needed
-            if website_title is None:
-                return JsonResponse(
-                    {"error": "No WebsiteTitle object found"}, status=404
-                )
+    # def get(self, request, *args, **kwargs):
+    #     try:
+    #         # Assuming there's only one WebsiteTitle object
+    #         website_title = WebsiteTitle.objects.first()  # Adjust query as needed
+    #         if website_title is None:
+    #             return JsonResponse(
+    #                 {"error": "No WebsiteTitle object found"}, status=404
+    #             )
 
-            serializer = WebsiteTitleSerializer(website_title)
-            return JsonResponse(
-                serializer.data, safe=False, json_dumps_params={"indent": 2}
-            )
+    #         serializer = WebsiteTitleSerializer(website_title)
+    #         return JsonResponse(
+    #             serializer.data, safe=False, json_dumps_params={"indent": 2}
+    #         )
 
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
+    #     except Exception as e:
+    #         return JsonResponse({"error": str(e)}, status=500)
 
 
 class PageBannerListAPIView(RetrieveAPIView):
