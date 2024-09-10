@@ -391,6 +391,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             "title",
             "slug",
             "platforms",
+            "web_title",
             "industries",
             "live_link",
             "country",
