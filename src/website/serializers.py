@@ -326,6 +326,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "project_results",
             "technologies",
             "service_solution_title",
+            "project_logo",
         )
 
     def get_title(self, obj):
