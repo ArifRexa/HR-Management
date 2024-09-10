@@ -44,13 +44,13 @@ from project_management.models import (
 from account.models import Loan
 
 
-def set_default_exit_time():
+def set_default_exit_time(default_time):
+    import datetime
     NOW = datetime.datetime.now()
-    DEFAULT_EXIT_HOUR = 0  # 24-hour time == 12:00 AM (midnight)
+    DEFAULT_EXIT_HOUR = int(default_time)  # 24-hour time == 12:00 AM (midnight)
     DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0, microsecond=0)
 
     employee_onlines = EmployeeOnline.objects.filter(active=True)
-
     for emp_online in employee_onlines:
         attendance = emp_online.employee.employeeattendance_set.last()
 

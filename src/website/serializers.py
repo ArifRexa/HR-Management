@@ -307,7 +307,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         many=True, source="projecttechnology_set"
     )
     project_results = ProjectResultStatisticsSerializer(many=True)
-    # industries = serializers.SerializerMethodField()
+    platforms = ProjectPlatformSerializer(many=True)
+    industries = ProjectIndustrySerializer()
+    services = ProjectServiceSerializer()
     title = serializers.SerializerMethodField()
     service_solution_title = serializers.SerializerMethodField()
 
@@ -318,6 +320,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             "slug",
             "description",
             "industries",
+            "services",
+            "platforms",
             "featured_image",
             "project_results",
             "technologies",

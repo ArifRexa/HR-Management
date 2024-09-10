@@ -509,6 +509,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_see_salary_history", "Can able to see salary history."),
             ("can_print_salary_certificate", "Can print salary certificate"),
             ("can_print_salary_payslip", "Can print salary payslip"),
+            ("can_show_permanent_increment","Can show permanent increment")
         )
         ordering = ["full_name"]
 
