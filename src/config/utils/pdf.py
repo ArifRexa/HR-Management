@@ -65,21 +65,23 @@ class PDF:
         if config.settings.DEFAULT_S3_CLIENT:
             s3_client = config.settings.DEFAULT_S3_CLIENT
             file_obj = BytesIO(bytecode.getvalue())
-            print('at filename: ', self.get_file_name())
             file_obj.seek(0)
             # Upload the file-like object to the Space
-            s3_client.upload_fileobj(
-            # s3_client.upload_file(
-                file_obj,
-                config.settings.AWS_STORAGE_BUCKET_NAME,
-                # self.absolute_file_path(),
-                self.get_file_name(),
-                ExtraArgs={'ContentType': self.__FILE_EXTENSION,
-                           'ACL': 'public-read'}
-            )
+            try:
+                s3_client.upload_fileobj(
+                # s3_client.upload_file(
+                    file_obj,
+                    config.settings.AWS_STORAGE_BUCKET_NAME,
+                    # self.absolute_file_path(),
+                    f"media/{self.get_file_name()}",
+                    ExtraArgs={'ContentType': 'application/pdf',
+                               'ACL': 'public-read'}
+                )
+            except Exception as e:
+                print('Upload error: ', e)
             file_url = f"{config.settings.MEDIA_URL}{self.get_file_name()}"
             print('at file upload: ', file_url, self.__FILE_EXTENSION)
-            print('at filename: ', self.get_file_name())
+            # print('at filename: ', bytecode.getvalue())
             return file_url
 
         else:
