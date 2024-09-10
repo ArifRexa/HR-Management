@@ -1,0 +1,57 @@
+{% extends "admin/change_form.html" %}
+
+
+{% block submit_buttons_bottom %}
+<div class="submit-row">
+    
+    {% if request.user == original.created_by or request.user.is_superuser %}
+        
+        <div class="preview">
+            <button type="button" class="extra-button">Preview</button>
+        </div>
+    {% endif %}
+        
+    {{ block.super }}
+</div>
+<style>
+    .preview{
+        padding: 12px 14px;
+    }
+    .extra-button {
+        background-color: var(--button-bg);;
+        color: white;
+        border: none;
+        outline: none;
+        padding: 5px 15px;
+        /* margin-right: 10px; */
+        cursor: pointer;
+        border-radius: 4px;
+        height: 35px;
+
+    }
+    .extra-button:hover {
+        background-color: var(--button-hover-bg);
+    }
+    @media screen and (max-width: 767px) {
+        .extra-button {
+            width: 100%;
+        }
+        
+    }
+</style>
+<script>
+    document.querySelector('.extra-button').addEventListener('click', function() {
+        const url = window.location.pathname.split("/")
+        const slug = "{{original.slug}}"
+        if(url[url.length - 2] != "change"){
+
+            alert("You can't Preview Blog Before Save")
+            
+        }else{
+
+            window.open(`https://www.mediusware.com/blog/details/${slug}/?q=preview`, "_blank");
+        }
+
+    });
+</script>
+{% endblock %}
