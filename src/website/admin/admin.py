@@ -17,7 +17,11 @@ from django.db.models import Count
 
 # Register your models here.
 from employee.models.employee import Employee
-from project_management.models import EmployeeProjectHour, ProjectHour
+from project_management.models import (
+    EmployeeProjectHour,
+    ProjectHour,
+    ProjectServiceSolution,
+)
 from website.models import (
     AllProjectsBanner,
     Award,
@@ -42,6 +46,12 @@ from website.models import (
     PageBanner,
     PostCredential,
     PostPlatform,
+    ProjectClientReviewTitle,
+    ProjectKeyFeatureTitle,
+    ProjectResultsTitle,
+    ProjectScreenshotTitle,
+    ProjectServiceSolutionTitle,
+    ProjectTechnologyTitle,
     Service,
     Blog,
     Category,
@@ -62,11 +72,22 @@ from website.models import (
     ServiceContent,
     VideoTestimonial,
     Brand,
-    WebsiteTitle, AwardsTitle, WhyUsTitle, AllServicesTitle, TechnologyTitle, 
-    VideoTestimonialTitle, IndustryTitle, LifeAtMediuswareTitle, ProjectsVideoTitle, 
-    BlogTitle, TextualTestimonialTitle, SpecialProjectsTitle, FAQHomeTitle, OurJourneyTitle,
+    WebsiteTitle,
+    AwardsTitle,
+    WhyUsTitle,
+    AllServicesTitle,
+    TechnologyTitle,
+    VideoTestimonialTitle,
+    IndustryTitle,
+    LifeAtMediuswareTitle,
+    ProjectsVideoTitle,
+    BlogTitle,
+    TextualTestimonialTitle,
+    SpecialProjectsTitle,
+    FAQHomeTitle,
+    OurJourneyTitle,
     WhyWeAreBanner,
-    WomenEmpowermentBanner
+    WomenEmpowermentBanner,
 )
 
 from website.linkedin_post import automatic_blog_post_linkedin
@@ -717,121 +738,194 @@ class BrandAdmin(admin.ModelAdmin):
     list_display = ("id", "brandphoto")
 
 
-
 # Inline classes for each model
 class AwardsTitleInline(admin.StackedInline):
     model = AwardsTitle
     can_delete = False
     extra = 1
 
+
 class WhyUsTitleInline(admin.StackedInline):
     model = WhyUsTitle
     can_delete = False
     extra = 1
+
 
 class AllServicesTitleInline(admin.StackedInline):
     model = AllServicesTitle
     can_delete = False
     extra = 1
 
+
 class TechnologyTitleInline(admin.StackedInline):
     model = TechnologyTitle
     can_delete = False
     extra = 1
+
 
 class VideoTestimonialTitleInline(admin.StackedInline):
     model = VideoTestimonialTitle
     can_delete = False
     extra = 1
 
+
 class IndustryTitleInline(admin.StackedInline):
     model = IndustryTitle
     can_delete = False
     extra = 1
+
 
 class LifeAtMediuswareTitleInline(admin.StackedInline):
     model = LifeAtMediuswareTitle
     can_delete = False
     extra = 1
 
+
 class ProjectsVideoTitleInline(admin.StackedInline):
     model = ProjectsVideoTitle
     can_delete = False
     extra = 1
+
 
 class BlogTitleInline(admin.StackedInline):
     model = BlogTitle
     can_delete = False
     extra = 1
 
+
 class TextualTestimonialTitleInline(admin.StackedInline):
     model = TextualTestimonialTitle
     can_delete = False
     extra = 1
+
 
 class SpecialProjectsTitleInline(admin.StackedInline):
     model = SpecialProjectsTitle
     can_delete = False
     extra = 1
 
+
 class FAQHomeTitleInline(admin.StackedInline):
     model = FAQHomeTitle
     can_delete = False
     extra = 1
+
 
 class OurJourneyTitleInline(admin.StackedInline):
     model = OurJourneyTitle
     can_delete = False
     extra = 1
 
+
 class ModelTitleInline(admin.StackedInline):
     model = ModelTitle
     can_delete = False
     extra = 1
 
+
+class ProjectServiceSolutionInline(admin.StackedInline):
+    model = ProjectServiceSolutionTitle
+    can_delete = False
+    extra = 1
+
+
+class ProjectKeyFeatureTitleInline(admin.StackedInline):
+    model = ProjectKeyFeatureTitle
+    can_delete = False
+    extra = 1
+
+
+class ProjectScreenshotTitleInline(admin.StackedInline):
+    model = ProjectScreenshotTitle
+    can_delete = False
+    extra = 1
+
+
+class ProjectResultsTitleInline(admin.StackedInline):
+    model = ProjectResultsTitle
+    can_delete = False
+    extra = 1
+
+
+class ProjectTechnologyTitleInline(admin.StackedInline):
+    model = ProjectTechnologyTitle
+    can_delete = False
+    extra = 1
+
+
+class ProjectClientReviewTitleInline(admin.StackedInline):
+    model = ProjectClientReviewTitle
+    can_delete = False
+    extra = 1
+
+
 # Register the WebsiteTitle admin with all the inlines
 @admin.register(WebsiteTitle)
 class WebsiteTitleAdmin(admin.ModelAdmin):
     inlines = [
-        AwardsTitleInline, WhyUsTitleInline, AllServicesTitleInline, TechnologyTitleInline,
-        VideoTestimonialTitleInline, IndustryTitleInline, LifeAtMediuswareTitleInline,
-        ProjectsVideoTitleInline, BlogTitleInline, TextualTestimonialTitleInline, 
-        SpecialProjectsTitleInline,ModelTitleInline, FAQHomeTitleInline, OurJourneyTitleInline,
+        AwardsTitleInline,
+        WhyUsTitleInline,
+        AllServicesTitleInline,
+        TechnologyTitleInline,
+        VideoTestimonialTitleInline,
+        IndustryTitleInline,
+        LifeAtMediuswareTitleInline,
+        ProjectsVideoTitleInline,
+        BlogTitleInline,
+        TextualTestimonialTitleInline,
+        SpecialProjectsTitleInline,
+        ModelTitleInline,
+        FAQHomeTitleInline,
+        OurJourneyTitleInline,
+        ProjectClientReviewTitleInline,
+        ProjectKeyFeatureTitleInline,
+        ProjectScreenshotTitleInline,
+        ProjectResultsTitleInline,
+        ProjectServiceSolutionInline,
+        ProjectTechnologyTitleInline,
     ]
-    
-    
+
+
 class BaseInline(admin.StackedInline):
     can_delete = False
     extra = 1
 
+
 class HomeBannerBannerInline(BaseInline):
     model = HomeBanner
     verbose_name = "Home Banner"
+
+
 # why we are, women empowerment, csr, delivery model, engagement model, development methodology, client testimonial, clutch testimonials, awards, contact
 class WhyWeAreBannerInline(BaseInline):
     model = WhyWeAreBanner
     verbose_name = "Why We Are Banner"
-    
+
 
 class WomenEmpowermentBannerInline(BaseInline):
     model = WomenEmpowermentBanner
     verbose_name = "Women Empowerment Banner"
 
+
 class CSRBannerInline(BaseInline):
     model = CSRBanner
     verbose_name = "CSR Banner"
+
 
 class DeliveryModelBannerInline(BaseInline):
     model = DeliveryModelBanner
     verbose_name = "Delivery Model Banner"
 
+
 class EngagementModelBannerInline(BaseInline):
     model = EngagementModelBanner
     verbose_name = "Engagement Model Banner"
 
+
 class DevelopmentMethodologyBannerInline(BaseInline):
     model = DevelopmentMethodologyBanner
     verbose_name = "Development Methodology Banner"
+
 
 class ClientTestimonialBannerInline(BaseInline):
     model = ClientTestimonialBanner
@@ -847,10 +941,12 @@ class AwardsBannerInline(BaseInline):
     model = AwardsBanner
     verbose_name = "Awards Banner"
 
+
 class ContactBannerInline(BaseInline):
     model = ContactBanner
     verbose_name = "Contact Banner"
-    
+
+
 class AllProjectsBannerInline(BaseInline):
     model = AllProjectsBanner
     verbose_name = "All Projects Banner"
@@ -859,7 +955,16 @@ class AllProjectsBannerInline(BaseInline):
 @admin.register(PageBanner)
 class PageBannerAdmin(admin.ModelAdmin):
     inlines = [
-        HomeBannerBannerInline, WhyWeAreBannerInline, WomenEmpowermentBannerInline, CSRBannerInline, DeliveryModelBannerInline,
-        EngagementModelBannerInline, DevelopmentMethodologyBannerInline, ClientTestimonialBannerInline,
-        ClutchTestimonialBannerInline, AwardsBannerInline, ContactBannerInline, AllProjectsBannerInline
+        HomeBannerBannerInline,
+        WhyWeAreBannerInline,
+        WomenEmpowermentBannerInline,
+        CSRBannerInline,
+        DeliveryModelBannerInline,
+        EngagementModelBannerInline,
+        DevelopmentMethodologyBannerInline,
+        ClientTestimonialBannerInline,
+        ClutchTestimonialBannerInline,
+        AwardsBannerInline,
+        ContactBannerInline,
+        AllProjectsBannerInline,
     ]

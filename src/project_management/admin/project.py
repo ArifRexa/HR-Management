@@ -44,6 +44,7 @@ from project_management.models import (
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
     def has_module_permission(self, request):
         return False
 
@@ -71,6 +72,8 @@ class ProjectTechnologyInline(admin.StackedInline):
     model = ProjectTechnology
     form = ProjectTechnologyInlineForm
     extra = 1
+    autocomplete_fields = ["technologies"]
+    
 
 
 class ProjectKeyPointInline(admin.StackedInline):
