@@ -7,6 +7,7 @@ from website.views import (
     AwardListView,
     ClientListAPIView,
     ClientLogoListView,
+    ClientReviewListAPIView,
     GalleryListView,
     IndustryWeServeListAPIView,
     LifeAtMediuswareListView,
@@ -213,6 +214,7 @@ api_v2_urls = [
     path('brands_photo/', BrandListCreateAPIView.as_view(), name='brand-list-create'),
     path('website-title/', WebsiteTitleView.as_view(), name='website-title'),
     path("project/technologies/", ProjectTechnologyListAPIView.as_view(), name="project_technology"),
+    path("client-review/", ClientReviewListAPIView.as_view(), name="client_review"),
 ]
 
 urlpatterns = [
