@@ -1114,7 +1114,7 @@ class WebsiteTitleSerializer(serializers.ModelSerializer):
         source="projectscreenshottitle", read_only=True
     )
     project_technology = BaseTitleSerializer(
-        source="projecttechnologiestitle", read_only=True
+        source="projecttechnologytitle", read_only=True
     )
     project_client_review = BaseTitleSerializer(
         source="projectclientreviewtitle", read_only=True
