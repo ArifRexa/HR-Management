@@ -41,6 +41,7 @@ from website.models import (
     Gallery,
     HomeBanner,
     IndustryWeServe,
+    LeaderShipBanner,
     LifeAtMediusware,
     ModelTitle,
     OfficeLocation,
@@ -896,6 +897,9 @@ class BaseInline(admin.StackedInline):
     can_delete = False
     extra = 1
 
+class LeaderShipBannerInline(BaseInline):
+    model = LeaderShipBanner
+    verbose_name = "Leadership Banner"
 
 class HomeBannerBannerInline(BaseInline):
     model = HomeBanner
@@ -973,4 +977,5 @@ class PageBannerAdmin(admin.ModelAdmin):
         AwardsBannerInline,
         ContactBannerInline,
         AllProjectsBannerInline,
+        LeaderShipBannerInline,
     ]

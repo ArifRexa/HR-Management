@@ -496,3 +496,7 @@ class ContactBanner(BannerImage):
 
 class AllProjectsBanner(BannerImage):
     pass
+
+
+class LeaderShipBanner(BannerImage):
+    pass
