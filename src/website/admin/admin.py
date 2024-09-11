@@ -42,6 +42,8 @@ from website.models import (
     HomeBanner,
     IndustryWeServe,
     LeaderShipBanner,
+    Leadership,
+    LeadershipSpeech,
     LifeAtMediusware,
     ModelTitle,
     OfficeLocation,
@@ -979,3 +981,20 @@ class PageBannerAdmin(admin.ModelAdmin):
         AllProjectsBannerInline,
         LeaderShipBannerInline,
     ]
+
+
+class LeadershipSpeechInline(admin.StackedInline):
+    model = LeadershipSpeech
+    extra = 1
+    autocomplete_fields = ("leader",)
+    search_fields = ("leader__full_name", )
+    fields = ("leader", "video_url", "thumbnail", "speech")
+    
+    
+@admin.register(Leadership)
+class LeadershipAdmin(admin.ModelAdmin):
+    list_display = ("title",)
+    inlines = [
+        LeadershipSpeechInline
+    ]
+    search_fields = ("leader__full_name", )
