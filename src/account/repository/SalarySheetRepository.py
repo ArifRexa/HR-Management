@@ -492,8 +492,8 @@ class SalarySheetRepository:
         # print(f'Employee {employee.full_name} payable days : {payable_days}')
         latest_salary = self.__employee_current_salary
         if payable_days == 0:
-            return latest_salary.payable_salary
-        return (latest_salary.payable_salary / working_days) * payable_days
+            return int(latest_salary.payable_salary)
+        return int((latest_salary.payable_salary / working_days) * payable_days)
 
     def __calculate_overtime(self, salary_sheet: SalarySheet, employee: Employee):
         """Calculate Overtime
@@ -895,12 +895,13 @@ class SalarySheetRepository:
     
     def _calculate_salary_loan(self, employee: Employee, salary_date: datetime.date):
         employee_loans = employee.loan_set.filter(
-            start_date__lte=salary_date,
-            end_date__gte=salary_date,
+            start_date__month=salary_date.month,
+            end_date__year=salary_date.year,
             loan_type='salary'
             ).aggregate(Sum("emi"))
+        print(employee_loans["emi__sum"],employee)
         
-        return -employee_loans["emi__sum"] if employee_loans["emi__sum"] else 0.0
+        return -employee_loans["emi__sum"] if employee_loans["emi__sum"] else 0
 
     def __calculate_provident_fund(
         self, employee: Employee, salary_date: datetime.date

@@ -31,26 +31,26 @@
                 <th>Total Project Bonus</th>
                 <th>Total Leave Bonus</th>
                 <th>Total Food Allowance</th>
+                <th>Festival Bonus</th>
                 <th>Tax Loan</th>
                 <th>Salary Loan</th>
-                <th>Festival Bonus</th>
                 <th>Late Fine</th>
                 <th>Gross Salary</th>
             </tr>
         </thead>
         <tbody>
             <tr>
-                <td>{{total_values.total_employees|floatformat:2 }}</td>
-                <td>{{ total_values.total_net_salary|floatformat:2  }}</td>
-                <td>{{ total_values.total_overtime|floatformat:2  }}</td>
-                <td>{{ total_values.total_project_bonus |floatformat:2 }}</td>
-                <td>{{ total_values.total_leave_bonus|floatformat:2  }}</td>
-                <td>{{ total_values.total_food_allowance|floatformat:2  }}</td>
-                <td>{{ total_values.total_tax_loan|floatformat:2  }}</td>
-                <td>{{ total_values.total_salary_loan |floatformat:2 }}</td>
-                <td>{{ total_values.total_festival_bonus|floatformat:2  }}</td>
-                <td>{{ total_values.total_late_fine |floatformat:2 }}</td>
-                <td>{{ total_values.total_gross_salary|floatformat:2  }}</td>
+                <td>{{total_values.total_employees}}</td>
+                <td>{{ total_values.total_net_salary|floatformat:0  }}</td>
+                <td>{{ total_values.total_overtime|floatformat:0  }}</td>
+                <td>{{ total_values.total_project_bonus |floatformat:0 }}</td>
+                <td>{{ total_values.total_leave_bonus|floatformat:0  }}</td>
+                <td>{{ total_values.total_food_allowance|floatformat:0  }}</td>
+                <td>{{ total_values.total_festival_bonus|floatformat:0  }}</td>
+                <td>{{ total_values.total_tax_loan|floatformat:0  }}</td>
+                <td>{{ total_values.total_salary_loan |floatformat:0 }}</td>
+                <td>{{ total_values.total_late_fine |floatformat:0 }}</td>
+                <td>{{ total_values.total_gross_salary|floatformat:0  }}</td>
             </tr>
         </tbody>
     </table>
