@@ -29,17 +29,20 @@ class EmployeeSalaryInline(admin.TabularInline):
         'code_quality_bonus',
         'festival_bonus',
         'device_allowance',
-        "loan_emi"
+        "loan_emi",
+        'net_salary', 'overtime',
+        'project_bonus', 'leave_bonus', #'festival_bonus', 
+        'food_allowance',
+        'gross_salary',
     ]
     readonly_fields = (
-        'employee', 'net_salary', 'overtime',
-        'project_bonus', 'leave_bonus', #'festival_bonus', 
-        'food_allowance', 'get_tax_loan',"get_salary_loan",
+        'employee', 'formatted_net_salary', 'formatted_overtime',
+        'formatted_project_bonus', 'formatted_leave_bonus', 
+        'formatted_food_allowance', 'formatted_festival_bonus',  'get_tax_loan',"get_salary_loan",
 
         # 'provident_fund', 'code_quality_bonus',
-        'festival_bonus',
         'get_late_fine',
-        'gross_salary', #'get_details',
+        'formatted_gross_salary', #'get_details',
 
     )
     superadminonly_fields = (
@@ -50,8 +53,43 @@ class EmployeeSalaryInline(admin.TabularInline):
 
     can_delete = False
 
+    def formatted_net_salary(self, obj):
+        return int(obj.net_salary)
+    
+    def formatted_overtime(self, obj):
+        return int(obj.overtime)
+    
+    def formatted_project_bonus(self, obj):
+        return int(obj.project_bonus)
+
+    def formatted_leave_bonus(self, obj):
+        return int(obj.leave_bonus)
+    
+    def formatted_food_allowance(self, obj):
+        return int(obj.food_allowance)
+    
+    def formatted_festival_bonus(self, obj):
+        return int(obj.festival_bonus)
+    def formatted_gross_salary(self, obj):
+        return int(obj.gross_salary)
+    
+    formatted_net_salary.short_description = "Net Salary"
+    formatted_overtime.short_description = "Overtime"
+    formatted_project_bonus.short_description = "Project Bonus"
+    formatted_leave_bonus.short_description = "Leave Bonus"
+    formatted_food_allowance.short_description = "Food Allowance"
+    formatted_festival_bonus.short_description = "Festival Bonus"
+    formatted_gross_salary.short_description = "Gross Bonus"
+
+
     def get_tax_loan(self, obj):
-        return obj.loan_emi
+        salary_loan = obj.employee.loan_set.filter(
+            start_date__month=obj.salary_sheet.date.month,
+            end_date__year=obj.salary_sheet.date.year,
+            loan_type="tds"
+        )
+        loan_amount = salary_loan.aggregate(Sum("emi"))
+        return int(-loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
     get_tax_loan.short_description = 'Tax Loan'
 
     def get_exclude(self, request, obj=None):
@@ -66,7 +104,7 @@ class EmployeeSalaryInline(admin.TabularInline):
                     month=obj.salary_sheet.date.month,
                     year=obj.salary_sheet.date.year,
                 ).aggregate(fine=Sum('total_late_attendance_fine'))
-        return fine.get('fine', 0) if fine.get('fine') else 0.00
+        return int(fine.get('fine', 0)) if fine.get('fine') else 0
     get_late_fine.short_description = "Late Fine"
 
     def get_salary_loan(self, obj):
@@ -75,8 +113,8 @@ class EmployeeSalaryInline(admin.TabularInline):
             end_date__year=obj.salary_sheet.date.year,
             loan_type="salary"
         )
-        loan_amount = salary_loan.aggregate(Sum("loan_amount"))
-        return -loan_amount["loan_amount__sum"] if loan_amount["loan_amount__sum"] else 0.0
+        loan_amount = salary_loan.aggregate(Sum("emi"))
+        return int(-loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
     get_salary_loan.short_description = "Salary Loan"
 
     def get_readonly_fields(self, request, obj=None):
