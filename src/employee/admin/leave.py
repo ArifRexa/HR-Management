@@ -183,19 +183,23 @@ class LeaveManagement(admin.ModelAdmin):
             instances = formset.save(commit=False)
             for instance in instances:
                 if instance.feedback:  # Check if feedback is provided
-                    self.send_feedback_email(instance.leave, instance.feedback)
+                    leave_status = instance.leave.leavemanagement_set.first().status
+                    self.send_feedback_email(instance.leave, instance.feedback,leave_status)
                 instance.save()
             formset.save_m2m()  # Save many-to-many relationships if needed
         else:
             formset.save()  # Save other inline models as usual
 
-    def send_feedback_email(self, leave_instance, feedback):
-        """Send an email notification when feedback is provided."""
+    def send_feedback_email(self, leave_instance, feedback, status):
         
-        # Email subject and recipients
-        subject = "Management feedback on your leave application"
-        recipient_email = leave_instance.employee.email  # Assuming the employee model has an 'email' field
-        message_content = f"Dear {leave_instance.employee.full_name},\n\nFeedback on your leave: {feedback}\n\nBest regards,\nHR Department"
+        subject = "Feedback on your leave application"
+        recipient_email = leave_instance.employee.email  
+        message_content = (
+            f"Dear {leave_instance.employee.full_name},\n\n"
+            f"Feedback on your leave: {feedback}\n"
+            f"Leave Status: {status}\n\n"
+            f"Best regards,\nHR Department"
+        )
         from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email = EmailMessage(subject, message_content, from_email=from_email, to=[recipient_email])
         email.send()
