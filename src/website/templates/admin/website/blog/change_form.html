@@ -2,11 +2,11 @@
 
 
 {% block content_title %}
-    {% if request.user.is_superuser %}
+    {% if has_change_permission %}
         <div class="preview sticky-title">
             <button type="button" class="extra-button">See Before Publish</button>
         </div>
-    {% elif original.status != "approved" and original.status != "published" and original.created_by == request.user %}
+    {% elif not original %}
         <div class="preview sticky-title">
             <button type="button" class="extra-button">See Before Publish</button>
         </div>
