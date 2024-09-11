@@ -140,14 +140,19 @@ class LeaveManagement(admin.ModelAdmin):
         if not obj.employee_id:
             obj.employee_id = request.user.employee.id
 
+        # Update status change information for users with the necessary permissions
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
         
+        # Save the leave object first
         super().save_model(request, obj, form, change)
         
         employee = form.cleaned_data.get("employee") or request.user.employee
+        
+        # Check if this is a new leave or an update
         if not change:
+            # For new leaves, assign a manager based on the employee's projects
             projects = EmployeeProject.objects.get(employee=employee)
             project_obj = EmployeeProject.objects.filter(
                 project__in=projects.project.all(), employee__active=True
@@ -162,20 +167,19 @@ class LeaveManagement(admin.ModelAdmin):
                 leave_manage = leave.LeaveManagement(manager=tpm.first().employee, leave=obj)
                 leave_manage.save()
             else:
-
                 managers = (
                     project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
                     .exclude(employee__id=employee.id)
                     .distinct()
                 )
-
                 for manager in managers:
                     leave_manage = leave.LeaveManagement(
                         manager=manager.employee, leave=obj
                     )
                     leave_manage.save()
+
+        # Send the email after saving the leave (for both new and updated leaves)
         self.__send_leave_mail(request, obj, form, change)
-        
 
     def save_formset(self, request, form, formset, change):
         # Override save_formset to capture changes in inline feedback
