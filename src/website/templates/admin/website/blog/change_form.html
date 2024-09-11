@@ -1,56 +1,79 @@
 {% extends "admin/change_form.html" %}
 
 
-{% block submit_buttons_bottom %}
-<div class="submit-row">
-    {% if has_change_permission %}
-        
-        <div class="preview">
-            <button type="button" class="extra-button">Preview</button>
+{% block content_title %}
+    {% if request.user.is_superuser %}
+        <div class="preview sticky-title">
+            <button type="button" class="extra-button">See Before Publish</button>
+        </div>
+    {% elif original.status != "approved" and original.status != "published" and original.created_by == request.user %}
+        <div class="preview sticky-title">
+            <button type="button" class="extra-button">See Before Publish</button>
         </div>
     {% endif %}
-        
-    {{ block.super }}
-</div>
-<style>
-    .preview{
-        padding: 12px 14px;
-    }
-    .extra-button {
-        background-color: var(--button-bg);;
-        color: white;
-        border: none;
-        outline: none;
-        padding: 5px 15px;
-        /* margin-right: 10px; */
-        cursor: pointer;
-        border-radius: 4px;
-        height: 35px;
 
-    }
-    .extra-button:hover {
-        background-color: var(--button-hover-bg);
-    }
-    @media screen and (max-width: 767px) {
-        .extra-button {
-            width: 100%;
-        }
         
-    }
-</style>
-<script>
-    document.querySelector('.extra-button').addEventListener('click', function() {
-        const url = window.location.pathname.split("/")
-        const slug = "{{original.slug}}"
-        if(url[url.length - 2] != "change"){
-
-            alert("You can't Preview Blog Before Save")
             
-        }else{
 
-            window.open(`https://www.mediusware.com/blog/details/${slug}/?q=preview`, "_blank");
+    <style>
+        .sticky-title {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            /* background-color: var(--header-bg); */
+            padding: 10px;
+            margin-top: -20px;
+            margin-left: -40px;
+            margin-right: -40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            
         }
 
-    });
-</script>
+        .preview{
+            padding: 12px 14px;
+        }
+        .extra-button {
+            background-color: var(--button-bg);;
+            color: white;
+            border: none;
+            outline: none;
+            padding: 10px 20px;
+            /* margin-right: 10px; */
+            margin-top: -12px;
+            cursor: pointer;
+            border-radius: 4px;
+            /* height: 35px; */
+            font-weight: bold;
+            font-size: 1.5rem;
+    
+        }
+        .extra-button:hover {
+            background-color: var(--button-hover-bg);
+        }
+        @media screen and (max-width: 767px) {
+            .extra-button {
+                width: 100%;
+            }
+            
+        }
+    </style>
+    <script>
+        document.querySelector('.extra-button').addEventListener('click', function() {
+            const url = window.location.pathname.split("/")
+            const slug = "{{original.slug}}"
+            if(url[url.length - 2] != "change"){
+    
+                alert("You can't Preview Blog Before Save")
+                
+            }else{
+    
+                window.open(`https://www.mediusware.com/blog/details/${slug}/?q=preview`, "_blank");
+            }
+    
+        });
+    </script>
 {% endblock %}
+
