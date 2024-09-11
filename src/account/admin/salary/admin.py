@@ -37,8 +37,8 @@ class EmployeeSalaryInline(admin.TabularInline):
     ]
     readonly_fields = (
         'employee', 'formatted_net_salary', 'formatted_overtime',
-        'formatted_project_bonus', 'formatted_leave_bonus', 
-        'formatted_food_allowance', 'formatted_festival_bonus',  'get_tax_loan',"get_salary_loan",
+        'formatted_project_bonus', 
+        'formatted_food_allowance', 'formatted_festival_bonus', 'formatted_leave_bonus', 'get_tax_loan',"get_salary_loan",
 
         # 'provident_fund', 'code_quality_bonus',
         'get_late_fine',
@@ -89,7 +89,7 @@ class EmployeeSalaryInline(admin.TabularInline):
             loan_type="tds"
         )
         loan_amount = salary_loan.aggregate(Sum("emi"))
-        return int(-loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
+        return int(loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
     get_tax_loan.short_description = 'Tax Loan'
 
     def get_exclude(self, request, obj=None):
@@ -114,7 +114,7 @@ class EmployeeSalaryInline(admin.TabularInline):
             loan_type="salary"
         )
         loan_amount = salary_loan.aggregate(Sum("emi"))
-        return int(-loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
+        return int(loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
     get_salary_loan.short_description = "Salary Loan"
 
     def get_readonly_fields(self, request, obj=None):
@@ -164,8 +164,8 @@ class EmployeeSalaryInline(admin.TabularInline):
             total_salary_loan+= Decimal(self.get_salary_loan(obj))
         
         self.total_values['total_late_fine'] = total_late_fine
-        self.total_values['total_tax_loan'] = -total_tax_loan
-        self.total_values['total_salary_loan'] = -total_salary_loan
+        self.total_values['total_tax_loan'] = total_tax_loan
+        self.total_values['total_salary_loan'] = total_salary_loan
 
         return qs
 @admin.register(SalarySheet)
