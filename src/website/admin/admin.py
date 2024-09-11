@@ -14,7 +14,7 @@ from django.urls import reverse
 from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.db.models import Count
-
+from datetime import timedelta
 # Register your models here.
 from employee.models.employee import Employee
 from project_management.models import (
@@ -22,6 +22,7 @@ from project_management.models import (
     ProjectHour,
     ProjectServiceSolution,
 )
+from settings.models import Announcement
 from website.models import (
     AllProjectsBanner,
     Award,
@@ -594,6 +595,11 @@ class BlogAdmin(admin.ModelAdmin):
                     hours=30,
                     status="approved",
                 )
+                anouncement = Announcement.objects.create(
+                        start_datetime=timezone.now(),
+                        end_datetime=timezone.now() + timedelta(days=1),  # Assuming the end is the next day
+                        description=f"{obj.created_by} Earns 30-Hour Bonus for Stellar Blogging!"  # Add context to the description
+                    )
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
