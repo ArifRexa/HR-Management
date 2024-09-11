@@ -72,7 +72,7 @@ class LoadAdmin(admin.ModelAdmin):
             queryset = cl.queryset
 
             # Calculate the total loan amount
-            total_loan = queryset.aggregate(total=models.Sum('loan_amount'))['total'] or 0
+            total_loan = queryset.aggregate(total=models.Sum('emi'))['total'] or 0
 
             # Add the total loan amount to the extra context
             extra_context['total_loan'] = total_loan
