@@ -770,3 +770,8 @@ class PreviewBlogRetrieveAPIView(RetrieveAPIView):
     queryset = Blog.objects.all()
     serializer_class = BlogDetailsSerializer
     lookup_field = "slug"
+    
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        response.headers["Access-Control-Allow-Origin"] = "*"
+        return response
