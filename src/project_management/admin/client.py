@@ -6,6 +6,7 @@ from django.utils.timesince import timesince
 # from networkx import project
 from project_management.models import (
     Client,
+    ClientFeedbackEmail,
     ClientInvoiceDate,
     ClientReview,
     Country,
@@ -137,3 +138,13 @@ class ClientAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+@admin.register(ClientFeedbackEmail)
+class ClientFeedbackEmailAdmin(admin.ModelAdmin):
+    list_display = ('subject',)
+
+
+
+    def has_module_permission(self, request):
+        return False
+    
