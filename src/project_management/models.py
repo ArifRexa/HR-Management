@@ -456,13 +456,13 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
 
 class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    title = models.CharField(max_length=300)
+    title = models.CharField(max_length=300, null=True, blank=True)
     description = HTMLField()
     img = models.ImageField(verbose_name="Image", upload_to="projects/key_features/", null=True, blank=True)
     img2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.title or str(self.pk)
 
 
 class ProjectHour(TimeStampMixin, AuthorMixin):
