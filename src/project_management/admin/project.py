@@ -102,7 +102,7 @@ class ProjectContentAdmin(admin.StackedInline):
 class ProjectKeyFeatureInline(admin.StackedInline):
     model = ProjectKeyFeature
     extra = 1
-    fields = ("title", "description", "img")
+    fields = ("description", "img")
 
 
 @admin.register(ProjectKeyFeature)
