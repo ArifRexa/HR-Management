@@ -462,7 +462,7 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     img2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
 
     def __str__(self):
-        return self.title
+        return self.title or str(self.pk)
 
 
 class ProjectHour(TimeStampMixin, AuthorMixin):
