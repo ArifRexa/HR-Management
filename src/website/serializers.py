@@ -325,6 +325,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "services",
             "platforms",
             "featured_image",
+            "display_image",
             "project_results",
             "technologies",
             "service_solution_title",
