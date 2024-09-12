@@ -514,11 +514,11 @@ class Leadership(TimeStampMixin):
 class LeadershipSpeech(TimeStampMixin):
     video_url = models.URLField()
     thumbnail = models.ImageField(upload_to="leadership_speech/")
-    speech = models.TextField()
+    speech = HTMLField()
     leader = models.ForeignKey(
-        Employee, on_delete=models.CASCADE, related_name="speeches"
+        Employee, on_delete=models.CASCADE, related_name="speeches", limit_choices_to={"active": True}
     )
-    leadership = models.ForeignKey(Leadership, on_delete=models.CASCADE, null=True)
+    leadership = models.ForeignKey(Leadership, on_delete=models.CASCADE, null=True, related_name="speeches")
 
     def __str__(self):
         return self.leader.full_name

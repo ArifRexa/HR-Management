@@ -10,6 +10,7 @@ from website.views import (
     ClientReviewListAPIView,
     GalleryListView,
     IndustryWeServeListAPIView,
+    LeadershipAPIView,
     LifeAtMediuswareListView,
     OfficeLocationListView,
     PageBannerListAPIView,
@@ -217,6 +218,7 @@ api_v2_urls = [
     path("project/technologies/", ProjectTechnologyListAPIView.as_view(), name="project_technology"),
     path("client-review/", ClientReviewListAPIView.as_view(), name="client_review"),
     path("blog/preview/<slug:slug>/", PreviewBlogRetrieveAPIView.as_view(), name="blog_preview"),
+    path("leadership/", LeadershipAPIView.as_view(), name="leadership"),
 ]
 
 urlpatterns = [

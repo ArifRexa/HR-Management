@@ -40,6 +40,7 @@ from website.models import (
     Industry,
     IndustryWeServe,
     Lead,
+    Leadership,
     LifeAtMediusware,
     OfficeLocation,
     OurAchievement,
@@ -72,6 +73,7 @@ from website.serializers import (
     IndustrySerializer,
     IndustryWeServeSerializer,
     LeadSerializer,
+    LeadershipSerializer,
     LifeAtMediuswareSerializer,
     OfficeLocationSerializer,
     OurAchievementSerializer,
@@ -775,3 +777,11 @@ class PreviewBlogRetrieveAPIView(RetrieveAPIView):
     #     response = super().get(request, *args, **kwargs)
     #     response.headers["Access-Control-Allow-Origin"] = "*"
     #     return response
+    
+
+class LeadershipAPIView(RetrieveAPIView):
+    queryset = Leadership.objects.all()
+    serializer_class = LeadershipSerializer
+    
+    def get_object(self):
+        return self.queryset.first()

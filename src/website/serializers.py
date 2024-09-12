@@ -42,6 +42,8 @@ from website.models import (
     Gallery,
     HomeBanner,
     IndustryWeServe,
+    Leadership,
+    LeadershipSpeech,
     LifeAtMediusware,
     OfficeLocation,
     PageBanner,
@@ -1205,3 +1207,17 @@ class ClientReviewSerializer(serializers.ModelSerializer):
         if obj.country is None:
             return None
         return obj.country.name
+
+
+class LeadershipSpeechSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LeadershipSpeech
+        exclude = ["leadership", "created_at", "updated_at"]
+
+
+class LeadershipSerializer(serializers.ModelSerializer):
+    speeches = LeadershipSpeechSerializer(many=True)
+
+    class Meta:
+        model = Leadership
+        exclude = ["created_at", "updated_at"]
