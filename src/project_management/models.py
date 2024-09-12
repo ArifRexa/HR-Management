@@ -1108,3 +1108,9 @@ def create_income(sender, instance, created, **kwargs):
                 date=instance.date,
                 status="pending",
             )
+
+
+class ClientFeedbackEmail(models.Model):
+    subject = models.CharField(max_length=255,null=True,blank=True)
+    body = HTMLField()
+    
