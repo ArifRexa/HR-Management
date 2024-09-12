@@ -96,7 +96,9 @@ def send_email_project_hourly_rate():
     email.send()
 
 
-def send_client_feedback_email():
+def send_client_feedback_email(**kwargs):
+    subject = kwargs.get('subject')
+    email_body = kwargs.get('email_body')
     tokens = ProjectToken.objects.filter(project__active=True)
 
     for token in tokens:
@@ -107,12 +109,13 @@ def send_client_feedback_email():
             email = EmailMultiAlternatives()
             email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
             email.to = [client.email]
-            email.subject = "Your Brutal Honesty Wanted: How Was Our Work?"
-
+            email.subject = subject
+            
             # Context for the email template
             context = {
                 'project_title': token.project.title,
                 'client_name': client.name,  # Adjust if necessary
+                'email_body':email_body,
                 'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
 
