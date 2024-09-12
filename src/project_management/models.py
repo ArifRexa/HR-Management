@@ -236,6 +236,7 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     activate_from = models.DateField(null=True, blank=True)
     featured_image = models.ImageField(null=True, blank=True, verbose_name="Banner Image")
+    display_image = models.ImageField(null=True, blank=True, upload_to="project/display_image")
     project_logo = models.ImageField(upload_to="project_logo", null=True, blank=True)
     special_image = models.ImageField(upload_to="special_image", null=True, blank=True)
     thumbnail = models.ImageField(upload_to="project_thumbnails", null=True, blank=True)
@@ -1108,3 +1109,9 @@ def create_income(sender, instance, created, **kwargs):
                 date=instance.date,
                 status="pending",
             )
+
+
+class ClientFeedbackEmail(models.Model):
+    subject = models.CharField(max_length=255,null=True,blank=True)
+    body = HTMLField()
+    

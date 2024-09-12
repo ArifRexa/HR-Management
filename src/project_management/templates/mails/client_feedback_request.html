@@ -58,21 +58,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>We Value Your Feedback!</h1>
-        </div>
-        <div class="content">
-            <p>Dear {{ client_name }},</p>
-            <p>We hope you're enjoying your experience with us. We would love to hear your thoughts on the recent work we've done on the project "<strong>{{ project_title }}</strong>".</p>
-            <p>Your feedback helps us improve our services and better serve you in the future.</p>
-            <p>Click the button below to share your feedback:</p>
-            <p>
-                <a href="{{ feedback_link }}" class="btn button_text_color">Give Feedback</a>
-            </p>
-            <p>Thank you for your time and insights!</p>
-            <p>Best regards,</p>
-            <p>Mediusware LTD</p>
-        </div>
+        {{email_body | safe}}
         <div class="footer">
             <p>Visit our website: <a href="https://mediusware.com/" target="_blank" style="text-decoration: none">Mediusware.com</a></p>
             <p>Connect with us on LinkedIn: <a href="https://www.linkedin.com/company/mediusware-ltd/mycompany/" target="_blank" style="text-decoration: none">LinkedIn</a></p>

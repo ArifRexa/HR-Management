@@ -200,6 +200,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "hourly_rate",
         "activate_from",
         "featured_image",
+        "display_image",
         "project_logo",
         "thumbnail",
         "featured_video",
