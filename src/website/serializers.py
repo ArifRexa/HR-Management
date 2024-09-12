@@ -1207,9 +1207,17 @@ class ClientReviewSerializer(serializers.ModelSerializer):
         if obj.country is None:
             return None
         return obj.country.name
+    
+
+class LeaderSerializer(serializers.ModelSerializer):
+    designation = serializers.CharField(source="designation.title")
+    class Meta:
+        model = Employee
+        fields = ("full_name", "designation")
 
 
 class LeadershipSpeechSerializer(serializers.ModelSerializer):
+    leader = LeaderSerializer(read_only=True)
     class Meta:
         model = LeadershipSpeech
         exclude = ["leadership", "created_at", "updated_at"]
