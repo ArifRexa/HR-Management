@@ -1,4 +1,5 @@
 import datetime
+import re
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from datetime import timedelta
@@ -253,6 +254,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         js = ("js/list.js", "js/new_daily_update.js")
 
     def get_readonly_fields(self, request, obj=None):
+
+        if request.user.is_superuser or request.user.has_perm('project_management.can_submit_previous_daily_project_update'):
+            return []
         if request.user.has_perm(
             "project_management.can_approve_or_edit_daily_update_at_any_time"
         ):
