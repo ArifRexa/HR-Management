@@ -590,6 +590,7 @@ class EmployeeProjectHourGroupByEmployee(EmployeeProjectHour):
 
 
 class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
+    created_at = models.DateTimeField(default=timezone.now)
     employee = models.ForeignKey(
         Employee,
         on_delete=models.RESTRICT,
@@ -635,6 +636,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
                 "can_approve_or_edit_daily_update_at_any_time",
                 "Can approve or update daily project update at any time",
             ),
+            ("can_submit_previous_daily_project_update","Can Submit Previous Daily Project Update")
         ]
         verbose_name = "Daily Project Update"
         verbose_name_plural = "Daily Project Updates"
