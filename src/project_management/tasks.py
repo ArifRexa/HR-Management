@@ -119,7 +119,7 @@ def client_feedback_email(email_content):
             # Render the HTML content
             html_content = loader.render_to_string('mails/client_feedback_request.html', context)
             email.attach_alternative(html_content, "text/html")
-            # email.send()
+            email.send()
         else:
             # Log the missing client or email for further investigation
             continue
