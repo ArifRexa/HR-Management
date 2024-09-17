@@ -110,7 +110,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
-    content = HTMLField(verbose_name="LinkedIn Marketing Content")
+    content = HTMLField(verbose_name="LinkedIn Marketing Content", blank=True, null=True)
     # active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)

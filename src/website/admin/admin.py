@@ -1,3 +1,4 @@
+import re
 from typing import Any, Union
 from django import forms
 from django.contrib import admin
@@ -15,6 +16,7 @@ from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 from datetime import timedelta
+from django.template.loader import get_template
 # Register your models here.
 from employee.models.employee import Employee
 from project_management.models import (
@@ -354,9 +356,10 @@ class BlogAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "author",
-        "created_at",
-        "updated_at",
+        "get_created_at",
+        "get_updated_at",
         "status",
+        "get_preview_link",
     )
     readonly_fields = ("status",)
     exclude = ("slug",)
@@ -366,7 +369,7 @@ class BlogAdmin(admin.ModelAdmin):
         # "video",
         "youtube_link",
         "category",
-        "tag",
+        # "tag",
         # "short_description",
         "is_featured",
         "content",
@@ -390,23 +393,38 @@ class BlogAdmin(admin.ModelAdmin):
         if lookup in ["created_by__employee__id__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
+    
+    @admin.display(description="Created At")
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%d %b %Y")
+    
+    @admin.display(description="Updated At")
+    def get_updated_at(self, obj):
+        return obj.updated_at.strftime("%d %b %Y")
 
-    @admin.action(description="Change Status In To Approved")
+    @admin.display(description="Preview")
+    def get_preview_link(self, obj):
+        url = f"https://www.mediusware.com/blog/details/{obj.slug}/?q=preview"
+        html_template = get_template("blog/col_preview_link.html")
+        html_content = html_template.render({"url": url})
+        return format_html(html_content)
+
+    @admin.action(description="Change Status To Approved")
     def approve_selected(self, request, queryset):
         queryset.update(status=BlogStatus.APPROVED, approved_at=timezone.now())
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
 
-    @admin.action(description="Change Status In To Draft")
+    @admin.action(description="Change Status To Draft")
     def draft_selected(self, request, queryset):
         queryset.update(status=BlogStatus.DRAFT, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
-    @admin.action(description="Change Status In To Revision")
+    @admin.action(description="Change Status To Revision")
     def in_revision_selected(self, request, queryset):
         queryset.update(status=BlogStatus.NEED_REVISION, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
-    @admin.action(description="Change Status In To Review")
+    @admin.action(description="Change Status To Review")
     def submit_for_review_selected(self, request, queryset):
         queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
@@ -521,12 +539,15 @@ class BlogAdmin(admin.ModelAdmin):
 
         if permitted and obj:
             author_permission = (
-                not (obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED) and obj.created_by == request.user
+                not (
+                    obj.status == BlogStatus.APPROVED
+                    or obj.status == BlogStatus.PUBLISHED
+                )
+                and obj.created_by == request.user
             )
-            moderator_permission = (
-                not (obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED)
-                and request.user.has_perm("website.can_approve")
-            )
+            moderator_permission = not (
+                obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED
+            ) and request.user.has_perm("website.can_approve")
             return author_permission or moderator_permission
         return False
 
@@ -599,10 +620,11 @@ class BlogAdmin(admin.ModelAdmin):
                     status="approved",
                 )
                 anouncement = Announcement.objects.create(
-                        start_datetime=timezone.now(),
-                        end_datetime=timezone.now() + timedelta(days=1),  # Assuming the end is the next day
-                        description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!"  # Add context to the description
-                    )
+                    start_datetime=timezone.now(),
+                    end_datetime=timezone.now()
+                    + timedelta(days=1),  # Assuming the end is the next day
+                    description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!",  # Add context to the description
+                )
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
@@ -899,9 +921,11 @@ class BaseInline(admin.StackedInline):
     can_delete = False
     extra = 1
 
+
 class LeaderShipBannerInline(BaseInline):
     model = LeaderShipBanner
     verbose_name = "Leadership Banner"
+
 
 class HomeBannerBannerInline(BaseInline):
     model = HomeBanner
@@ -987,14 +1011,12 @@ class LeadershipSpeechInline(admin.StackedInline):
     model = LeadershipSpeech
     extra = 1
     autocomplete_fields = ("leader",)
-    search_fields = ("leader__full_name", )
+    search_fields = ("leader__full_name",)
     fields = ("leader", "video_url", "thumbnail", "speech")
-    
-    
+
+
 @admin.register(Leadership)
 class LeadershipAdmin(admin.ModelAdmin):
     list_display = ("title",)
-    inlines = [
-        LeadershipSpeechInline
-    ]
-    search_fields = ("leader__full_name", )
+    inlines = [LeadershipSpeechInline]
+    search_fields = ("leader__full_name",)
