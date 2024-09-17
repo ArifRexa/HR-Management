@@ -15,6 +15,7 @@ from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 from datetime import timedelta
+
 # Register your models here.
 from employee.models.employee import Employee
 from project_management.models import (
@@ -95,6 +96,34 @@ from website.models import (
 )
 
 from website.linkedin_post import automatic_blog_post_linkedin
+
+
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import (
+    UserAdmin as BaseUserAdmin,
+    GroupAdmin as BaseGroupAdmin,
+)
+
+
+class UserAdmin(BaseUserAdmin):
+    class Media:
+        js = ("js/custom_permission_search.js",)
+        css = {"all": ("css/user.css",)}
+
+
+class GroupAdmin(BaseGroupAdmin):
+    class Media:
+        js = ("js/custom_permission_search.js",)
+        css = {"all": ("css/user.css",)}
+
+
+# Unregister the existing User admin
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+# Register the customized User admin
+admin.site.register(User, UserAdmin)
+admin.site.register(Group, GroupAdmin)
 
 
 @admin.register(Award)
@@ -521,12 +550,15 @@ class BlogAdmin(admin.ModelAdmin):
 
         if permitted and obj:
             author_permission = (
-                not (obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED) and obj.created_by == request.user
+                not (
+                    obj.status == BlogStatus.APPROVED
+                    or obj.status == BlogStatus.PUBLISHED
+                )
+                and obj.created_by == request.user
             )
-            moderator_permission = (
-                not (obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED)
-                and request.user.has_perm("website.can_approve")
-            )
+            moderator_permission = not (
+                obj.status == BlogStatus.APPROVED or obj.status == BlogStatus.PUBLISHED
+            ) and request.user.has_perm("website.can_approve")
             return author_permission or moderator_permission
         return False
 
@@ -599,10 +631,11 @@ class BlogAdmin(admin.ModelAdmin):
                     status="approved",
                 )
                 anouncement = Announcement.objects.create(
-                        start_datetime=timezone.now(),
-                        end_datetime=timezone.now() + timedelta(days=1),  # Assuming the end is the next day
-                        description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!"  # Add context to the description
-                    )
+                    start_datetime=timezone.now(),
+                    end_datetime=timezone.now()
+                    + timedelta(days=1),  # Assuming the end is the next day
+                    description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!",  # Add context to the description
+                )
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
@@ -899,9 +932,11 @@ class BaseInline(admin.StackedInline):
     can_delete = False
     extra = 1
 
+
 class LeaderShipBannerInline(BaseInline):
     model = LeaderShipBanner
     verbose_name = "Leadership Banner"
+
 
 class HomeBannerBannerInline(BaseInline):
     model = HomeBanner
@@ -987,14 +1022,12 @@ class LeadershipSpeechInline(admin.StackedInline):
     model = LeadershipSpeech
     extra = 1
     autocomplete_fields = ("leader",)
-    search_fields = ("leader__full_name", )
+    search_fields = ("leader__full_name",)
     fields = ("leader", "video_url", "thumbnail", "speech")
-    
-    
+
+
 @admin.register(Leadership)
 class LeadershipAdmin(admin.ModelAdmin):
     list_display = ("title",)
-    inlines = [
-        LeadershipSpeechInline
-    ]
-    search_fields = ("leader__full_name", )
+    inlines = [LeadershipSpeechInline]
+    search_fields = ("leader__full_name",)
