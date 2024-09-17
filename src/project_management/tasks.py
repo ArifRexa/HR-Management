@@ -114,19 +114,8 @@ def client_feedback_email(email_content):
                 'email_body':email_content.body,
                 'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
-
-
-            # Render the email body content with the context
-            email_body_template = Template(email_content.body)
-            email_body_rendered = email_body_template.render(Context(context))
             
-            # Update the context to include the rendered email body
-            context['email_body'] = email_body_rendered
-
-            # Render the complete HTML content
             html_content = loader.render_to_string('mails/client_feedback_request.html', context)
-            print("HTML *****************************88888")
-            print(html_content)
             email.attach_alternative(html_content, "text/html")
             email.send()
         else:
