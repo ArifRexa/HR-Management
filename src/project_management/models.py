@@ -93,6 +93,7 @@ class Client(TimeStampMixin, AuthorMixin):
         Country, on_delete=models.SET_NULL, null=True, blank=True
     )
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
+    is_need_feedback = models.BooleanField(default=False,verbose_name="Is Need Feedback")
     # show_in_web = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
     client_feedback = HTMLField(null=True, blank=True)
@@ -1114,6 +1115,12 @@ def create_income(sender, instance, created, **kwargs):
 
 
 class ClientFeedbackEmail(models.Model):
+    Feedback_Type_Choices = [
+        ('initial','Initial Feedback'),
+        ('reminder','Reminder Feedback')
+    ]
     subject = models.CharField(max_length=255,null=True,blank=True)
     body = HTMLField()
+    feedback_type = models.CharField(max_length=50,choices=Feedback_Type_Choices,default='initial')
+
     

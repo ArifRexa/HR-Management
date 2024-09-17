@@ -95,11 +95,8 @@ def send_email_project_hourly_rate():
     email.attach_alternative(html_content, "text/html")
     email.send()
 
-
-def send_client_feedback_email():
-    email_content = ClientFeedbackEmail.objects.last()
-    tokens = ProjectToken.objects.filter(project__active=True)
-
+def client_feedback_email(email_content):
+    tokens = ProjectToken.objects.filter(project__active=True,project__client__is_need_feedback = True)
     for token in tokens:
         client = token.project.client  # Get the client object
 
@@ -122,8 +119,18 @@ def send_client_feedback_email():
             # Render the HTML content
             html_content = loader.render_to_string('mails/client_feedback_request.html', context)
             email.attach_alternative(html_content, "text/html")
-            email.send()
+            # email.send()
         else:
             # Log the missing client or email for further investigation
             continue
 
+
+def send_client_feedback_email():
+    email_content = ClientFeedbackEmail.objects.filter(feedback_type ='initial').last()
+    if email_content:
+        client_feedback_email(email_content)
+
+def send_reminder_client_feedback_email():
+    email_content = ClientFeedbackEmail.objects.filter(feedback_type ='reminder').last()
+    if email_content:
+        client_feedback_email(email_content)
