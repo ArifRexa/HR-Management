@@ -57,6 +57,8 @@ class LoadAdmin(admin.ModelAdmin):
         return f'{due_amount} ({obj.loanpayment_set.count()})'
     
     def has_module_permission(self, request):
+        if not request.user.is_superuser and request.user.has_perm('account.can_view_tax_loans'):
+            return True
         return False
 
     def changelist_view(self, request, extra_context=None):
@@ -98,6 +100,14 @@ class LoadAdmin(admin.ModelAdmin):
 
         return super().save_model(request, obj, form, change)
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        if request.user.is_superuser:
+            return qs
+        elif request.user.has_perm('account.can_view_tax_loans'):
+            return qs.filter(loan_type='tds')
+        
 
 @admin.register(LoanPayment)
 class LoanPaymentAdmin(admin.ModelAdmin):
