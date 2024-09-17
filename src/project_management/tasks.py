@@ -14,7 +14,7 @@ from django_q.tasks import async_task, schedule
 from django.core.mail import EmailMultiAlternatives
 from django.template import Context, loader
 from django.db.models import Q
-
+from django.template import Template, Context
 
 def mark_employee_free():
     management.call_command('mark_employee_free')
@@ -114,12 +114,10 @@ def client_feedback_email(email_content):
                 'email_body':email_content.body,
                 'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
             }
-
-
-            # Render the HTML content
+            
             html_content = loader.render_to_string('mails/client_feedback_request.html', context)
             email.attach_alternative(html_content, "text/html")
-            # email.send()
+            email.send()
         else:
             # Log the missing client or email for further investigation
             continue
