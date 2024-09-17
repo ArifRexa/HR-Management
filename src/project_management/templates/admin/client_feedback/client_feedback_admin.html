@@ -67,7 +67,7 @@
             <tbody>
                 {% for project, monthly_feedback in monthly_feedbacks %}
                 <tr class="table__row">
-                    <td class="align-middle">{{ project.title }}</td>
+                    <td class="align-middle"><b>{{ project.client.name }} </b><br>{{ project.title }}</td>
 
                     {% for cl_fb in monthly_feedback %}
                         {% if cl_fb %}

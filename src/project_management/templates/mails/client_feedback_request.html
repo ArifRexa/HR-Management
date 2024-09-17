@@ -58,12 +58,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>We Value Your Feedback!</h1>
-        </div>
-        <div class="content">
-            {{ email_body|safe }}
-        </div>
+        {{email_body | safe}}
         <div class="footer">
             <p>Visit our website: <a href="https://mediusware.com/" target="_blank" style="text-decoration: none">Mediusware.com</a></p>
             <p>Connect with us on LinkedIn: <a href="https://www.linkedin.com/company/mediusware-ltd/mycompany/" target="_blank" style="text-decoration: none">LinkedIn</a></p>
