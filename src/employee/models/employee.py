@@ -447,7 +447,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             weekly_total = EmployeeProjectHour.objects.filter(
                 employee=self,
                 project_hour__date__range=[start_of_range, end_of_range]
-            ).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
+            ).exclude(project_hour__hour_type='bonus').aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
 
             # Check if the weekly total is less than the weekly expected hours
             weekly_total_display = f"<span style='color: red;'>{int(weekly_total)}</span>" if weekly_total < weekly_expected_hour else str(int(weekly_total))

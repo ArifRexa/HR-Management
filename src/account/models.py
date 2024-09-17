@@ -251,9 +251,15 @@ class Loan(TimeStampMixin, AuthorMixin):
     tenor = models.IntegerField(help_text="Period month")
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD)
     loan_type = models.CharField(max_length=50, choices=LOAN_TYPE)
+    tax_calan_no = models.CharField(max_length=100,null=True,blank=True)
 
     def __str__(self):
         return f"{self.employee}-{self.loan_amount}"
+    
+    class Meta:
+        permissions = [
+            ("can_view_tax_loans", "Can view tax loans"),
+        ]
 
 
 class LoanGuarantor(TimeStampMixin, AuthorMixin):
