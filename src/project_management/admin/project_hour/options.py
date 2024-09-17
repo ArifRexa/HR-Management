@@ -70,16 +70,17 @@ class ProjectTypeFilter(admin.SimpleListFilter):
     parameter_name = "hour_type"
 
     def lookups(self, request, model_admin):
-        return (("bonus", "Bonus"),)
+        return (("bonus", "Bonus"),("project", "Project"))
 
     def queryset(self, request, queryset):
         if self.value() == "bonus":
             return queryset.filter(
                 hour_type="bonus",
             )
-        return queryset.filter(
-            hour_type="project",
-        )
+        elif self.value() == "project":
+            return queryset.filter(
+                hour_type="project",
+            )
 
 
 class ProjectManagerFilter(admin.SimpleListFilter):
