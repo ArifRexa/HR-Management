@@ -1094,24 +1094,24 @@ def create_observation(sender, instance, created, **kwargs):
         ObservationProject.objects.create(project_name=instance)
 
 
-@receiver(post_save, sender=ProjectHour)
-def create_income(sender, instance, created, **kwargs):
-    print("sssssssssssssssssssssss create income has called ssssssssssssssssssss")
-    from account.models import Income
+# @receiver(post_save, sender=ProjectHour)
+# def create_income(sender, instance, created, **kwargs):
+#     print("sssssssssssssssssssssss create income has called ssssssssssssssssssss")
+#     from account.models import Income
 
-    if created and instance.hour_type == "project":
-        project = instance.project
-        if project:
-            Income.objects.create(
-                project=project,
-                hours=instance.hours,
-                hour_rate=project.hourly_rate
-                if project.hourly_rate is not None
-                else 0.00,
-                convert_rate=90.0,  # Default convert rate
-                date=instance.date,
-                status="pending",
-            )
+#     if created and instance.hour_type == "project":
+#         project = instance.project
+#         if project:
+#             Income.objects.create(
+#                 project=project,
+#                 hours=instance.hours,
+#                 hour_rate=project.hourly_rate
+#                 if project.hourly_rate is not None
+#                 else 0.00,
+#                 convert_rate=90.0,  # Default convert rate
+#                 date=instance.date,
+#                 status="pending",
+#             )
 
 
 class ClientFeedbackEmail(models.Model):
