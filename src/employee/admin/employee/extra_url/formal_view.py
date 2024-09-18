@@ -171,7 +171,7 @@ class EmployeeNearbySummery:
             current_salary_active_from=Max("salaryhistory__active_from"),
         ).filter(
             salaryhistory_count__gte=0,
-            current_salary_active_from__lte=(self.today - datetime.timedelta(days=120)),
+            current_salary_active_from__lte=(self.today - datetime.timedelta(days=180)),
         )
         return qs
 
