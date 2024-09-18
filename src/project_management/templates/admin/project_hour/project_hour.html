@@ -115,6 +115,10 @@
                 for(var i=0; i<hour.length; i++){
                     hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
                     employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
+                    date = document.querySelector(`#id_employeeprojecthour_set-${i}-date`);
+                console.log(hour[i].created_at,"Print the date ");
+                date.value = hour[i].created_at.substring(0, 10);
+
 
                     update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update`);
                     update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
@@ -170,7 +174,8 @@
     const path = window.location.pathname;
     const path_list = path.split("/").filter(n=>n);
     const action = path_list[path_list.length-1];
-    console.log(action)
+    console.log(action,"This is text")
+    getThisWeekHour();
     if (action == "change"){
         console.log("change action")
         getThisWeekHour();

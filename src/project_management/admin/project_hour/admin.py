@@ -29,8 +29,10 @@ from project_management.models import (
 
 
 class EmployeeHourInlineForm(forms.ModelForm):
+    date = forms.DateTimeField(required=False)
     update_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     update = forms.CharField(required=False, widget=forms.Textarea())
+    
 
     class Meta:
         model = EmployeeProjectHour
@@ -51,7 +53,7 @@ class EmployeeHourAdmin(admin.TabularInline):
     extra = 1
     autocomplete_fields = ("employee",)
     form = EmployeeHourInlineForm
-
+    
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
 
