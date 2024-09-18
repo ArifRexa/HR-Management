@@ -36,7 +36,7 @@ class EmployeeHourInlineForm(forms.ModelForm):
 
     class Meta:
         model = EmployeeProjectHour
-        fields = ("hours", "employee")
+        fields = ("date","hours", "employee")
 
     def save(self, commit):
         update_id = self.cleaned_data.get("update_id")
