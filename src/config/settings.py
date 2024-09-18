@@ -241,17 +241,26 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "height": 350,
-    "menubar": False,
+    "menubar": True,
     "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
     "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
     "code,help,wordcount,codesample,spellchecker",
-    "toolbar": "undo redo | formatselect | "
+    "toolbar": "undo redo | formatselect | fontselect | fontsizeselect | "
     "bold italic backcolor forecolor | alignleft aligncenter "
     "alignright alignjustify | bullist numlist outdent indent table | "
-    "removeformat codesample image | preview fullscreen help",
+    "removeformat codesample image link | preview fullscreen help",
     "contextmenu": "copy | paste | link",
     "images_upload_url": "/upload_image",
     "default_link_target": "_blank",
+    "content_style":"""
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+        """,
+    "font_formats": "Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde;"
+    "Book Antiqua=book antiqua,palatino; Baskerville=baskerville,serif; Courier New=courier new,courier;"
+    "Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif;"
+    "Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva;"
+    "Webdings=webdings; Wingdings=wingdings,zapf dingbats; Afacad=afacad,sans-serif; Marcellus=marcellus,serif; Poppins=poppins,sans-serif; Raleway=raleway,sans-serif;",
+    "font_css": "https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
 }
 
 TINYMCE_SPELLCHECKER = True
