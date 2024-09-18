@@ -64,7 +64,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
 
         for hours in employee_hours:
             key = hours.employee
-            key.employee_hours = key.employeeprojecthour_set.filter(**filters).aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
+            key.employee_hours = key.employeeprojecthour_set.filter(**filters).exclude(project_hour__hour_type='bonus').aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
             employee_hours_data.setdefault(key, []).append(hours)
 
         sorted_data_set = dict(sorted(employee_hours_data.items(), key=lambda x: x[0].employee_hours))
@@ -104,7 +104,7 @@ class WeeklyEmployeeHoursAdmin(admin.ModelAdmin):
         if request.user.is_superuser or request.user.has_perm(
             "project_management.see_all_employee_update"
         ):
-            return query_set.filter(employee__active=True)
+            return query_set.filter(employee__active=True).exclude(project_hour__hour_type='bonus')
 
         employee: Employee = request.user.employee
 
