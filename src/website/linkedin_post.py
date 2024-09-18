@@ -151,12 +151,12 @@ class Linkedin:
     #     return feed_post.status_code, feed_post.json().get("id")
 
     def get_image_upload_url(self):
-        try:
-            user = self.get_user_id()
-            if user:
-                self.linkedin_urn = f"urn:li:person:{user}"
-        except Exception as e:
-            print(e)
+        # try:
+        #     user = self.get_user_id()
+        #     if user:
+        #         self.linkedin_urn = f"urn:li:person:{user}"
+        # except Exception as e:
+        #     print(e)
         upload_init_data = {
             "registerUploadRequest": {
                 "recipes": ["urn:li:digitalmediaRecipe:feedshare-image"],
