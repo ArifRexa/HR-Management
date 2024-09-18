@@ -110,7 +110,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
-    content = HTMLField(verbose_name="LinkedIn Marketing Content", blank=True, null=True)
+    content = HTMLField(
+        verbose_name="LinkedIn Marketing Content", blank=True, null=True
+    )
     # active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
@@ -516,9 +518,38 @@ class LeadershipSpeech(TimeStampMixin):
     thumbnail = models.ImageField(upload_to="leadership_speech/")
     speech = HTMLField()
     leader = models.ForeignKey(
-        Employee, on_delete=models.CASCADE, related_name="speeches", limit_choices_to={"active": True}
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="speeches",
+        limit_choices_to={"active": True},
     )
-    leadership = models.ForeignKey(Leadership, on_delete=models.CASCADE, null=True, related_name="speeches")
+    leadership = models.ForeignKey(
+        Leadership, on_delete=models.CASCADE, null=True, related_name="speeches"
+    )
 
     def __str__(self):
         return self.leader.full_name
+
+
+class EventCalenderStatus(models.TextChoices):
+    PENDING = "Pending", "Pending"
+    PUBLISHED = "Published", "Published"
+
+
+class EventCalender(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True)
+    description = models.TextField()
+    image = models.ImageField(upload_to="event_calender/")
+    publish_date = models.DateField(verbose_name="Date")
+    publish_status = models.CharField(
+        max_length=10,
+        choices=EventCalenderStatus.choices,
+        default=EventCalenderStatus.PENDING,
+    )
+
+    def __str__(self):
+        return self.title or str(self.id)
+
+    class Meta:
+        verbose_name = "Event Calender Automate"
+        verbose_name_plural = "Event Calender Automate"
