@@ -17,6 +17,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Count
 from datetime import timedelta
 from django.template.loader import get_template
+
 # Register your models here.
 from employee.models.employee import Employee
 from project_management.models import (
@@ -40,6 +41,7 @@ from website.models import (
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
     EngagementModelBanner,
+    EventCalender,
     Gallery,
     HomeBanner,
     IndustryWeServe,
@@ -96,7 +98,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 
-from website.linkedin_post import automatic_blog_post_linkedin
+from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
 
 
 @admin.register(Award)
@@ -393,11 +395,11 @@ class BlogAdmin(admin.ModelAdmin):
         if lookup in ["created_by__employee__id__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
-    
+
     @admin.display(description="Created At")
     def get_created_at(self, obj):
         return obj.created_at.strftime("%d %b %Y")
-    
+
     @admin.display(description="Updated At")
     def get_updated_at(self, obj):
         return obj.updated_at.strftime("%d %b %Y")
@@ -1020,3 +1022,14 @@ class LeadershipAdmin(admin.ModelAdmin):
     list_display = ("title",)
     inlines = [LeadershipSpeechInline]
     search_fields = ("leader__full_name",)
+
+
+@admin.register(EventCalender)
+class EventCalenderAdmin(admin.ModelAdmin):
+    list_display = ("title", "publish_date")
+    search_fields = ("title",)
+    date_hierarchy = "publish_date"
+    fields = ("title", "description", "image", "publish_date")
+
+    def has_module_permission(self, request):
+        return False
