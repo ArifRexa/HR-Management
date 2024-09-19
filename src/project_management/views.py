@@ -78,9 +78,9 @@ def get_this_week_hour(request, project_id, hour_date):
             full_name=F("employee__full_name"),
         )
         .exclude(hours=0.0)
-        .values("id", "employee_id", "full_name", "hours", "update", "updates_json")
+        .values("id","created_at","employee_id", "full_name", "hours", "update", "updates_json")
     )
-
+    
     totalHours = sum(hour["hours"] for hour in employee)
 
     employeeList = filter(lambda emp: emp["employee_id"], employee)
