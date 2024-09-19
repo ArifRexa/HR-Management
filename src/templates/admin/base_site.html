@@ -40,63 +40,71 @@
             to { color: #41a6fa; }
         }
 
-       
-        /* Style for the toggle button */
-        .toggle-filter-button {
+        /* Container for h3 and button */
+        .filter-header {
             display: flex;
-            justify-content: center;
+            justify-content: space-between; /* Align h3 and button on opposite ends */
             align-items: center;
+        }
+
+        /* Style for the toggle buttons beside h3 */
+        .toggle-filter-button {
             cursor: pointer;
             background: none;
             border: none;
-            padding: 10px; /* Increased padding for better click area */
-            outline: none;
             font-size: 18px;
-           
-            top: 50%; /* Vertically centered */
-            left: 0; /* Positioned on the left side */
-            transform: translateY(-50%); /* Centered vertically */
-            z-index: 1000; /* Ensures it's above other elements */
+            margin-left: 10px;
+            outline: none;
         }
 
-        .toggle-filter-button svg {
-            transition: transform 0.3s ease;
-        }
-
-        .toggle-filter-button.open svg {
-            transform: rotate(180deg);
+        .toggle-filter-button:focus {
+            outline: none;
         }
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Create a button to toggle filters
-            console.log("Found the JS");
-            var toggleButton = document.createElement('button');
-            toggleButton.className = 'sticky toggle-nav-sidebar toggle-filter-button';
-            toggleButton.id = 'toggle-filter-sidebar';
-            toggleButton.setAttribute('aria-label', 'Toggle filter navigation');
-
-            // Create an icon (using Font Awesome or a similar icon library for the arrow icon)
-            toggleButton.innerHTML = '<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"/></svg>';
-
             // Get the filter section
             var filterSection = document.querySelector('#changelist-filter');
-            
-            var changeList = document.querySelector('#changelist');
-            
-            // Ensure the filter section exists before adding the button
             if (filterSection) {
-                // Append the button after the filters
-                filterSection.parentNode.insertBefore(toggleButton, filterSection.nextSibling);
+                // Get all h3 elements within the filter section
+                var headings = filterSection.querySelectorAll('h3');
 
-                // Add click event to toggle filters
-                toggleButton.addEventListener('click', function() {
-                    if (filterSection.style.display === 'none' || filterSection.style.display === '') {
-                        filterSection.style.display = 'block';
-                        toggleButton.classList.add('open');
-                    } else {
-                        filterSection.style.display = 'none';
-                        toggleButton.classList.remove('open');
+                headings.forEach(function(h3) {
+                    // Create a wrapper div for h3 and button
+                    var wrapper = document.createElement('div');
+                    wrapper.className = 'filter-header';
+
+                    // Move the existing h3 content into the wrapper
+                    wrapper.appendChild(h3.firstChild);
+
+                    // Create a button for each h3
+                    var toggleButton = document.createElement('button');
+                    toggleButton.className = 'toggle-filter-button';
+                    toggleButton.setAttribute('aria-label', 'Toggle this list');
+                    toggleButton.textContent = '+'; // Initially set to '+'
+
+                    // Insert the button into the wrapper
+                    wrapper.appendChild(toggleButton);
+
+                    // Insert the wrapper into the DOM
+                    h3.appendChild(wrapper);
+
+                    // Get the next sibling ul element
+                    var ul = h3.nextElementSibling;
+                    if (ul && ul.tagName.toLowerCase() === 'ul') {
+                        // Initially hide all ul elements
+                        ul.style.display = 'none';
+
+                        // Add click event to toggle visibility of the ul
+                        toggleButton.addEventListener('click', function() {
+                            if (ul.style.display === 'none') {
+                                ul.style.display = 'block';
+                                toggleButton.textContent = '-';
+                            } else {
+                                ul.style.display = 'none';
+                                toggleButton.textContent = '+';
+                            }
+                        });
                     }
                 });
             }
