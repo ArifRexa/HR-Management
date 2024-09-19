@@ -1,7 +1,3 @@
-<!-- The path and name for this file should be "templates/admin/base_site.html". -->
-<!-- It overrides the original admin template and will be picked up by all of its children. -->
-<!-- This template override has been verified for Django 1.11 and 2.0. -->
-
 {% extends "admin/base_site.html" %}
 
 {% load static %}
@@ -22,19 +18,19 @@
     <link rel="shortcut icon" type="image/x-icon"
           href="https://mediusware.com/wp-content/uploads/2021/04/apple-icon-120x120-1.png">
     <style>
-        #result_list{
-            min-height:50vh
+        #result_list {
+            min-height: 50vh;
         }
 
         select {
             overflow: overlay;
         }
+
         ul.messagelist li.alert-danger {
-            /* Initial CSS properties */
-            /* For example, let's set the color to green */
-            color: white !important; /* Important rule */
-            background: red !important; /* Important rule */
+            color: white !important;
+            background: red !important;
         }
+
         .blinking-text {
             animation: blink 1.5s infinite alternate;
         }
@@ -43,7 +39,73 @@
             from { color: red; }
             to { color: #41a6fa; }
         }
+
+       
+        /* Style for the toggle button */
+        .toggle-filter-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 10px; /* Increased padding for better click area */
+            outline: none;
+            font-size: 18px;
+           
+            top: 50%; /* Vertically centered */
+            left: 0; /* Positioned on the left side */
+            transform: translateY(-50%); /* Centered vertically */
+            z-index: 1000; /* Ensures it's above other elements */
+        }
+
+        .toggle-filter-button svg {
+            transition: transform 0.3s ease;
+        }
+
+        .toggle-filter-button.open svg {
+            transform: rotate(180deg);
+        }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create a button to toggle filters
+            console.log("Found the JS");
+            var toggleButton = document.createElement('button');
+            toggleButton.className = 'sticky toggle-nav-sidebar toggle-filter-button';
+            toggleButton.id = 'toggle-filter-sidebar';
+            toggleButton.setAttribute('aria-label', 'Toggle filter navigation');
+
+            // Create an icon (using Font Awesome or a similar icon library for the arrow icon)
+            toggleButton.innerHTML = '<svg width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 9l6 6 6-6"/></svg>';
+
+            // Get the filter section
+            var filterSection = document.querySelector('#changelist-filter');
+            
+            var changeList = document.querySelector('#changelist');
+            
+            // Ensure the filter section exists before adding the button
+            if (filterSection) {
+                // Append the button after the filters
+                filterSection.parentNode.insertBefore(toggleButton, filterSection.nextSibling);
+
+                // Add click event to toggle filters
+                toggleButton.addEventListener('click', function() {
+                    if (filterSection.style.display === 'none' || filterSection.style.display === '') {
+                        filterSection.style.display = 'block';
+                        toggleButton.classList.add('open');
+                    } else {
+                        filterSection.style.display = 'none';
+                        toggleButton.classList.remove('open');
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
 {% endblock %}
 
 {% block footer %}
@@ -53,4 +115,3 @@
     {% endif %}
 </div>
 {% endblock %}
-
