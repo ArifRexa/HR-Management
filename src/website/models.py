@@ -165,10 +165,19 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name="blog_contexts"
     )
-    title = models.CharField(null=True, blank=True, max_length=255)
-    description = HTMLField(null=True, blank=True)
-    image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
-    video = models.URLField(blank=True, null=True, verbose_name="YouTube Video Link")
+    title = models.CharField(
+        null=True, blank=True, max_length=255, verbose_name="Section Title"
+    )
+    description = HTMLField(null=True, blank=True, verbose_name="Section Description")
+    image = models.ImageField(
+        upload_to="blog_context_images",
+        blank=True,
+        null=True,
+        verbose_name="Section Image",
+    )
+    video = models.URLField(
+        blank=True, null=True, verbose_name="Section YouTube Video Link"
+    )
 
 
 class BlogFAQ(AuthorMixin, TimeStampMixin):

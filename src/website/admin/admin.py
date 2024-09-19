@@ -187,6 +187,8 @@ class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
     form = BlogContextForm
+    verbose_name = "Blog Section"
+    verbose_name_plural = "Blog Sections"
 
 
 class BlogFAQForm(forms.ModelForm):
@@ -225,7 +227,7 @@ class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
     form = BlogFAQForm
-    verbose_name_plural = "Blog FAQs(NB:Minimum 3 faq required)"
+    verbose_name_plural = "Blog FAQ (NB:Minimum 3 faq required)"
     formset = BlogFaqFormSet
 
     def get_formset(self, request, obj=None, **kwargs):
