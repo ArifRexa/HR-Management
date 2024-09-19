@@ -1,5 +1,6 @@
 from decimal import Decimal
 from math import floor
+from pyexpat import model
 
 from django.db import transaction
 
@@ -434,3 +435,12 @@ class VehicleRebate(TaxDocumentInformation):
 class VehicleRebateAttachment(TimeStampMixin):
     vehicle_rebate = models.ForeignKey(VehicleRebate, on_delete=models.CASCADE)
     document = models.FileField(upload_to="uploads/vehicle_rebate/")
+
+class SalaryReport(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self) -> str:
+        return f"Salary Report from {self.start_date} to {self.end_date}"
+    
+    
