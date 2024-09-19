@@ -241,11 +241,11 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",
     "height": 350,
-    "menubar": True,
+    "menubar": False,
     "plugins": "advlist,autolink,lists,link,image,charmap,print,preview,anchor,"
     "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table,paste,"
     "code,help,wordcount,codesample,spellchecker",
-    "toolbar": "undo redo | formatselect | fontselect | fontsizeselect | "
+    "toolbar": "undo redo | formatselect | fontsizeselect | "
     "bold italic backcolor forecolor | alignleft aligncenter "
     "alignright alignjustify | bullist numlist outdent indent table | "
     "removeformat codesample image link | preview fullscreen help",
