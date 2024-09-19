@@ -61,55 +61,60 @@
             outline: none;
         }
     </style>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get the filter section
-            var filterSection = document.querySelector('#changelist-filter');
-            if (filterSection) {
-                // Get all h3 elements within the filter section
-                var headings = filterSection.querySelectorAll('h3');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the filter section
+        var filterSection = document.querySelector('#changelist-filter');
+        if (filterSection) {
+            // Get all h3 elements within the filter section
+            var headings = filterSection.querySelectorAll('h3');
 
-                headings.forEach(function(h3) {
-                    // Create a wrapper div for h3 and button
-                    var wrapper = document.createElement('div');
-                    wrapper.className = 'filter-header';
+            headings.forEach(function(h3) {
+                // Create a wrapper div for h3 and button
+                var wrapper = document.createElement('div');
+                wrapper.className = 'filter-header';
 
-                    // Move the existing h3 content into the wrapper
-                    wrapper.appendChild(h3.firstChild);
+                // Move the existing h3 content into the wrapper
+                wrapper.appendChild(h3.firstChild);
 
-                    // Create a button for each h3
-                    var toggleButton = document.createElement('button');
-                    toggleButton.className = 'toggle-filter-button';
-                    toggleButton.setAttribute('aria-label', 'Toggle this list');
-                    toggleButton.textContent = '+'; // Initially set to '+'
+                // Create a button for each h3
+                var toggleButton = document.createElement('button');
+                toggleButton.className = 'toggle-filter-button';
+                toggleButton.setAttribute('aria-label', 'Toggle this list');
+                toggleButton.textContent = '+'; // Initially set to '+'
 
-                    // Insert the button into the wrapper
-                    wrapper.appendChild(toggleButton);
+                // Insert the button into the wrapper
+                wrapper.appendChild(toggleButton);
 
-                    // Insert the wrapper into the DOM
-                    h3.appendChild(wrapper);
+                // Insert the wrapper into the DOM
+                h3.appendChild(wrapper);
 
-                    // Get the next sibling ul element
-                    var ul = h3.nextElementSibling;
-                    if (ul && ul.tagName.toLowerCase() === 'ul') {
-                        // Initially hide all ul elements
-                        ul.style.display = 'none';
+                // Get the next sibling ul element
+                var ul = h3.nextElementSibling;
+                if (ul && ul.tagName.toLowerCase() === 'ul') {
+                    // Initially hide all ul elements
+                    ul.style.display = 'none';
 
-                        // Add click event to toggle visibility of the ul
-                        toggleButton.addEventListener('click', function() {
-                            if (ul.style.display === 'none') {
-                                ul.style.display = 'block';
-                                toggleButton.textContent = '-';
-                            } else {
-                                ul.style.display = 'none';
-                                toggleButton.textContent = '+';
-                            }
-                        });
+                    // Function to toggle visibility
+                    function toggleVisibility() {
+                        if (ul.style.display === 'none') {
+                            ul.style.display = 'block';
+                            toggleButton.textContent = '-';
+                        } else {
+                            ul.style.display = 'none';
+                            toggleButton.textContent = '+';
+                        }
                     }
-                });
-            }
-        });
-    </script>
+
+                    // Add click event to toggle visibility of the ul for both button and h3
+                    toggleButton.addEventListener('click', toggleVisibility);
+                    h3.addEventListener('click', toggleVisibility);
+                }
+            });
+        }
+    });
+</script>
+
 {% endblock %}
 
 {% block content %}
