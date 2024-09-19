@@ -12,7 +12,7 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 from account.admin.salary.actions import SalarySheetAction
-from account.models import SalarySheet, EmployeeSalary
+from account.models import SalarySheet, EmployeeSalary,SalaryReport
 from account.repository.SalarySheetRepository import SalarySheetRepository
 from employee.models.employee import LateAttendanceFine
 from decimal import Decimal
@@ -212,3 +212,8 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
         extra_context['total_values'] = inline_instance.total_values
 
         return super().change_view(request, object_id, form_url, extra_context=extra_context)
+    
+
+@admin.register(SalaryReport)
+class SalaryReportAdmin(admin.ModelAdmin):
+    list_display = ('start_date', 'end_date')
