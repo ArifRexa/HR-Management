@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
+from django.db.models.signals import post_save
 from django.db.models import Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -443,4 +444,16 @@ class SalaryReport(models.Model):
     def __str__(self) -> str:
         return f"Salary Report from {self.start_date} to {self.end_date}"
     
+@receiver(post_save,sender=SalaryReport)
+def generate_salary_report(sender,instance,**kwargs):
+    start_date = instance.start_date
+    end_date = instance.end_date
+    
+    salaries = EmployeeSalary.objects.filter(
+        salary_sheet__date__month__range = (start_date.month,end_date.month),
+        salary_sheet__date__year__range = (start_date.year,end_date.year),
+    )
+
+    
+
     
