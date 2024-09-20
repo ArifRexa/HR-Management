@@ -66,10 +66,18 @@
         // Get the filter section
         var filterSection = document.querySelector('#changelist-filter');
         if (filterSection) {
+            // Get the current URL to match filters
+            var currentUrl = window.location.href;
+
             // Get all h3 elements within the filter section
             var headings = filterSection.querySelectorAll('h3');
 
             headings.forEach(function(h3) {
+                // Skip the "Clear all filters" h3 by checking the ID
+                if (h3.id === 'changelist-filter-clear') {
+                    return; // Skip this h3
+                }
+
                 // Create a wrapper div for h3 and button
                 var wrapper = document.createElement('div');
                 wrapper.className = 'filter-header';
@@ -95,7 +103,7 @@
                     // Initially hide all ul elements
                     ul.style.display = 'none';
 
-                    // Function to toggle visibility
+                    // Function to toggle visibility of the ul
                     function toggleVisibility() {
                         if (ul.style.display === 'none') {
                             ul.style.display = 'block';
@@ -109,6 +117,21 @@
                     // Add click event to toggle visibility of the ul for both button and h3
                     toggleButton.addEventListener('click', toggleVisibility);
                     h3.addEventListener('click', toggleVisibility);
+
+                    // Stop the h3 from toggling the ul when clicking inside the ul (e.g., on an li)
+                    ul.addEventListener('click', function(event) {
+                        // Prevent hiding the ul when clicking inside it (on a filter item)
+                        event.stopPropagation();
+                    });
+
+                    // Check if the id of the ul is present in the URL and show it if it matches
+                    var ulId = ul.id.replace(/ /g, '_');  // Replace spaces with underscores to match URL format
+                   
+                    if (currentUrl.includes(ulId+'__exact') || currentUrl.includes(ulId+'__id__exact')) {
+                        
+                        ul.style.display = 'block'; // Show the ul if the id matches
+                        toggleButton.textContent = '-'; // Set button text to '-'
+                    }
                 }
             });
         }
