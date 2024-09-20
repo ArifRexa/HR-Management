@@ -97,13 +97,13 @@ class LeaveManagement(admin.ModelAdmin):
         "status_",
         "date_range",
         'management__feedback',
+         "attachment_link", 
         
     ]
         if not request.user.has_perm("employee.view_leavefeedback"):
             if 'management__feedback' in list_display: list_display.remove('management__feedback')
         return list_display
 
-   
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
@@ -115,6 +115,24 @@ class LeaveManagement(admin.ModelAdmin):
         #     fields.remove("display_feedback")
         #     print(fields)
         return fields
+    
+    def attachment_link(self, obj):
+        # Check if there are attachments
+        attachments = obj.leaveattachment_set.all()
+        
+        if attachments:
+            # Use the first attachment's URL
+            url = attachments[0].attachment.url
+            return format_html(
+                '<a href="{}" target="_blank" style="color: black;">&#x1F4C4;</a>',  # 📄 document icon
+                url
+            )
+        else:
+            # Return an icon for no attachment with black color
+            return format_html('<span style="color: black;">&#x1F4C4;</span>')  # Document icon (no attachment)
+
+    attachment_link.short_description = "Attachments"
+   
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
