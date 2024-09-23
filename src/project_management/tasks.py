@@ -1,10 +1,11 @@
 from datetime import datetime, timedelta
 
 from django.core import management
+from django.test import Client
 from django_q.tasks import async_task
 from project_management.models import ClientFeedbackEmail, ObservationProject, Project, ProjectHour, ProjectToken
 from employee.models.employee import Observation
-from project_management.models import DailyProjectUpdate
+from project_management.models import DailyProjectUpdate,Client
 from dateutil.relativedelta import relativedelta
 from datetime import date
 from django.core.mail import send_mail
@@ -96,32 +97,85 @@ def send_email_project_hourly_rate():
     email.send()
 
 def client_feedback_email(email_content):
-    tokens = ProjectToken.objects.filter(project__active=True,project__client__is_need_feedback = True)
-    for token in tokens:
-        client = token.project.client  # Get the client object
+   
+    clients = Client.objects.filter(is_need_feedback = True)
+    if clients:
+        for client in clients:
+            if client.email:
+                client_all_projects = Project.objects.filter(
+                    active=True,
+                    client__id=client.id,
+                    client__is_need_feedback=True
+                ).exclude(
+                    projecttoken__isnull=True
+                ).values_list('title', 'projecttoken__token')
+                
+                projects_with_links = []
+                for title,token in client_all_projects:
+                    feedback_link = f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token}/"
+                    projects_with_links.append({'title':title,'feedback_link':feedback_link})
 
-        # Check if the client exists and has an email address
-        if client and client.email:
-            email = EmailMultiAlternatives()
-            email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
-            email.to = [client.email]
-            email.subject = email_content.subject
-            
-            # Context for the email template
-            context = {
-                'project_title': token.project.title,
-                'client_name': client.name,  # Adjust if necessary
-                'email_body':email_content.body,
-                'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
-            }
-            
-            html_content = loader.render_to_string('mails/client_feedback_request.html', context)
-            email.attach_alternative(html_content, "text/html")
-            email.send()
-        else:
-            # Log the missing client or email for further investigation
-            continue
+                    # Prepare the email context
+                context = {
+                    'client_name': client.name,
+                    'projects_with_links': projects_with_links,
+                    'email_body': email_content.body,
+                }
 
+                # Render the email HTML content
+                html_content = loader.render_to_string('mails/client_feedback_request.html', context)
+
+                # Send the email
+                email = EmailMultiAlternatives(
+                    subject=email_content.subject,
+                    body=email_content.body,
+                    from_email='"Mediusware-Admin" <admin@mediusware.com>',
+                    to=[client.email]
+                )
+                email.attach_alternative(html_content, "text/html")
+                email.send()
+
+
+        
+
+    # for token in tokens:
+    #     if token.project.client.id not in client_id:
+    #         client_id.append(token.project.client.id)
+
+    #         client = token.project.client
+
+    #         #Get this client's all projects
+    #         client_all_projects = Project.objects.filter(
+    #             active=True,
+    #             client__id=client.id,
+    #             client__is_need_feedback=True
+    #         ).exclude(
+    #             projecttoken__isnull=True
+    #         ).values_list('title', flat=True)
+            
+    #         #Get all project token for this client
+    #         client_feedback_link = 
+    #         print(client_all_projects)
+
+
+    #         if client and client.email:
+                # email = EmailMultiAlternatives()
+                # email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+                # email.to = [client.email]
+                # email.subject = email_content.subject
+                
+                # # Context for the email template
+                # context = {
+                #     'project_title': token.project.title,
+                #     'client_name': client.name,  # Adjust if necessary
+                #     'email_body':email_content.body,
+                #     'feedback_link': f"https://hr.mediusware.xyz/admin/project_management/clientfeedback/client-feedback/{token.token}/"
+                # }
+                
+                # html_content = loader.render_to_string('mails/client_feedback_request.html', context)
+                # email.attach_alternative(html_content, "text/html")
+                # # email.send()
+    # client_id.clear()
 
 def send_client_feedback_email():
     email_content = ClientFeedbackEmail.objects.filter(feedback_type ='initial').last()
