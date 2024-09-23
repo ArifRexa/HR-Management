@@ -184,17 +184,17 @@ class LeaveManagement(admin.ModelAdmin):
             if tpm.exists():
                 leave_manage = leave.LeaveManagement(manager=tpm.first().employee, leave=obj)
                 leave_manage.save()
-            else:
-                managers = (
-                    project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
-                    .exclude(employee__id=employee.id)
-                    .distinct()
-                )
-                for manager in managers:
-                    leave_manage = leave.LeaveManagement(
-                        manager=manager.employee, leave=obj
-                    )
-                    leave_manage.save()
+            # else:
+            #     managers = (
+            #         project_obj.filter(Q(employee__manager=True) | Q(employee__lead=True))
+            #         .exclude(employee__id=employee.id)
+            #         .distinct()
+            #     )
+            #     for manager in managers:
+            #         leave_manage = leave.LeaveManagement(
+            #             manager=manager.employee, leave=obj
+            #         )
+            #         leave_manage.save()
 
         # Send the email after saving the leave (for both new and updated leaves)
         self.__send_leave_mail(request, obj, form, change)
