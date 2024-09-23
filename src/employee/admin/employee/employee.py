@@ -624,7 +624,7 @@ class ActiveUserOnlyFilter(RelatedOnlyFieldListFilter):
         # Generate choices based on first_name and last_name
         choices = [(user.id, f'{user.first_name} {user.last_name}') for user in users ]
         
-        return [(None, 'All')] + choices
+        return choices
     
 class ActiveUserFilter(admin.SimpleListFilter):
     title = 'currently logged in'

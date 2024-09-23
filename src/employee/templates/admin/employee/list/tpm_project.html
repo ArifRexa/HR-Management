@@ -178,7 +178,7 @@
                 {% if cl.add_facets %}<a href="{{ cl.remove_facet_link }}" class="hidelink">{% translate "Hide counts" %}</a>
                 {% else %}<a href="{{ cl.add_facet_link }}" class="viewlink">{% translate "Show counts" %}</a>{% endif %}
               </h3>{% endif %}
-              {% if cl.has_active_filters %}<h3>
+              {% if cl.has_active_filters %}<h3 id="changelist-filter-clear">
                 <a href="{{ cl.clear_all_filters_qs }}">&#10006; {% translate "Clear all filters" %}</a>
               </h3>{% endif %}
             </div>{% endif %}
