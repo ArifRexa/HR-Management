@@ -1,0 +1,249 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Page</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: 100vh;
+            display: flex;
+        }
+        .chat-sidebar {
+            background-color: #f8f9fa;
+            width: 25%;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        .chat-main {
+            width: 75%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .chat-header {
+            padding: 1rem;
+            background-color: #343a40;
+            color: #fff;
+        }
+        .chat-messages {
+            flex-grow: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            background-color: #e9ecef;
+        }
+        .message {
+            margin-bottom: 1rem;
+        }
+        .message .user-name {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .message .text {
+            padding: 0.5rem;
+            background-color: #fff;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        .chat-input {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid chat-container">
+    <!-- Sidebar -->
+    <div class="chat-sidebar p-3">
+        <h4>Chat Users</h4>
+        <ul class="list-group">
+            <li class="list-group-item">User 1</li>
+            <li class="list-group-item">User 2</li>
+            <li class="list-group-item">User 3</li>
+            <!-- Add more users -->
+        </ul>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="chat-main">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <h5>Chat Room</h5>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chat-messages">
+            <!-- Message from another user -->
+            <div class="message">
+                <div class="user-name">User 1</div>
+                <div class="text bg-light">Hello, how are you?</div>
+            </div>
+            <!-- Message from self -->
+            <div class="message text-end">
+                <div class="user-name">You</div>
+                <div class="text bg-primary text-white">I am good, thank you!</div>
+            </div>
+            <!-- Add more messages -->
+        </div>
+
+        <!-- Input Field -->
+        <div class="chat-input" id="chat-form">
+            <form class="d-flex">
+                <input type="text" class="form-control me-2" placeholder="Type a message..." id="message-input">
+                <button class="btn btn-primary" type="submit" id="chat-message-input">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<!-- <script>
+        const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+        function generateString(length) {
+            let result = ' ';
+            const charactersLength = characters.length;
+            for ( let i = 0; i < length; i++ ) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+
+            return result;
+        }
+
+        const type_obj = {
+            1: 'send.message',
+            2: 'create.room',
+            3: 'create.group',
+            4: 'add.member'
+        }
+        
+
+        // const roomName = JSON.parse(document.getElementById('room-name').textContent);
+        // const pk = JSON.parse(document.getElementById('pk').textContent);
+        let chatSocket = new WebSocket('ws://127.0.0.1:8000/ws/chat/');
+        {% comment %} const chatSocket = new WebSocket('ws://127.0.0.1:8000/send/?key=ewruwiern34373895wierjkfds'); {% endcomment %}
+        let messageCreate = function(data){
+            console.log("create message", data.data.body)
+            let message;
+            if(pk == data.data.sender){
+                message = `<div class="right-side">
+                    <strong style="margin-right:10px">${data.data.sender}</strong>${data.data.body}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
+                </div>`
+            }
+            else{
+                message = `<div class="">
+                    <strong style="margin-right:10px">${data.data.sender}</strong>${data.data.body}<span style="color:gray; font-size:0.8rem; margin-left:10px">{{message.created_at|naturaltime}}</span><br>
+                </div>`
+            }
+            console.log('create element', message)
+            
+            document.getElementById('message-list').append(`${message}`)
+        }
+        chatSocket.onopen = function(e){
+            console.log("connected....", e)
+        }
+        document.getElementById('connect').onclick = function(){
+            console.log('click')
+            chatSocket = new WebSocket('ws://127.0.0.1:8000/send/'+roomName+'/');
+        }
+
+        chatSocket.onmessage = function(e) {
+            console.log("message...", e.data)
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').append(data.data.body + '\n');
+            const path = window.location.pathname.split('/')
+            if(path.length<=4){
+                window.location.href = 'http://127.0.0.1:8000/room/'+ data.data.room.room_id +'/'+pk +'/'
+            }
+            
+        };
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly');
+            console.log('Chat socket closed unexpectedly', e);
+            
+        };
+
+        chatSocket.onerror = function(e){
+            console.log("some error", e)
+        }
+
+        document.querySelector('#chat-message-input').focus();
+        document.querySelector('#chat-message-input').onkeyup = function(e) {
+            if (e.key === 'Enter') {  // enter, return
+                document.querySelector('#chat-message-submit').click();
+            }
+        };
+
+        document.querySelector('#chat-message-submit').onclick = function(e) {
+            e.preventDefault();
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const message = messageInputDom.value;
+            chatSocket.send(JSON.stringify({
+                'body': message,
+                'event_type': 'chat.message',
+                'member': pk
+            }));
+            messageInputDom.value = '';
+        };
+    </script> -->
+
+    <script>
+        // WebSocket connection
+        const chatSocket = new WebSocket(
+            'ws://' + window.location.host + '/ws/chat/'
+        );
+    
+        // Event listener for receiving messages
+        chatSocket.onmessage = function(e) {
+            console.log("on message")
+            const data = JSON.parse(e.data);
+            const chatMessages = document.getElementById('chat-messages');
+            
+            const newMessage = `
+                <div class="message">
+                    <div class="user-name">${data.username}</div>
+                    <div class="text bg-light">${data.message}</div>
+                </div>
+            `;
+            
+            chatMessages.innerHTML += newMessage;
+            chatMessages.scrollTop = chatMessages.scrollHeight;  // Auto-scroll to the latest message
+        };
+    
+        // Handle errors
+        chatSocket.onerror = function(e) {
+            console.error('WebSocket error:', e);
+        };
+        chatSocket.onopen = function(e){
+            console.log("connected....", e)
+        }
+    
+        // Send message when the form is submitted
+        const chatForm = document.getElementById('chat-form');
+        chatForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value;
+    
+            // Send the message through WebSocket
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'username': 'You',  // Replace with actual username from your app
+                'type': 'chat_message'
+            }));
+    
+            // Clear the input field
+            messageInput.value = '';
+        };
+    </script>
+
+
+</body>
+</html>
