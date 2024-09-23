@@ -42,10 +42,10 @@ window.onload = () => {
         phour_date = document.querySelector("#id_date");
 
         add_btn = document.querySelector(".add-row a");
-        if (project.value == "" || phour_date.value == "") {
-            alert("Please select project and project hours date !!!");
-            return;
-        }
+        // if (project.value == "" || phour_date.value == "") {
+        //     alert("Please select project and project hours date !!!");
+        //     return;
+        // }
         $.ajax({
             url: "/projects/get-this-week-hour/" + project.value +"/" + phour_date.value + "/",
             type: "GET", //send it through get method
