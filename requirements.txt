@@ -79,3 +79,4 @@ slackclient==2.9.4
 weasyprint==60.2
 user-agents==2.2.0
 channels==3.0.0
+channels-redis==3.3.1
