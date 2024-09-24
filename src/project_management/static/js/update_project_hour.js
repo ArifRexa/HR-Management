@@ -6,10 +6,10 @@ function updateProjectHour(project_hour_id=null){
     project = document.querySelector('#id_project');
     phour_date = document.querySelector("#id_date");
     add_btn = document.querySelector(".add-row a");
-    if (project.value == "" || phour_date.value == "") {
-        alert("Please select project and project hours date !!!");
-        return;
-    }
+    // if (project.value == "" || phour_date.value == "") {
+    //     alert("Please select project and project hours date !!!");
+    //     return;
+    // }
    let url= "/projects/get-this-week-hour/" + project.value +"/" + phour_date.value + "/"
     if (project_hour_id!=null){
         url +="?project_hour_id=" + project_hour_id
@@ -75,10 +75,10 @@ function getThisWeekHour(e){
     phour_date = document.querySelector("#id_date");
     console.log(project, phour_date);
     add_btn = document.querySelector(".add-row a");
-    if (project.value == "" || phour_date.value == "") {
-        alert("Please select project and project hours date !!!");
-        return;
-    }
+    // if (project.value == "" || phour_date.value == "") {
+    //     alert("Please select project and project hours date !!!");
+    //     return;
+    // }
     const xhttp = new XMLHttpRequest();
     
     $.ajax({

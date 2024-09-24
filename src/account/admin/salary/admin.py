@@ -1,4 +1,5 @@
 from math import floor
+import re
 from typing import Any, Optional, Sequence
 
 from django.contrib import admin
@@ -12,13 +13,15 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 from account.admin.salary.actions import SalarySheetAction
-from account.models import SalarySheet, EmployeeSalary,SalaryReport
+from account.models import Loan, SalarySheet, EmployeeSalary,SalaryReport
 from account.repository.SalarySheetRepository import SalarySheetRepository
 from employee.models.employee import LateAttendanceFine
 from decimal import Decimal
 from django.db.models import Count
+from employee.models import Employee
 
 from employee.templatetags.employee_helper import total_employee_count
+from job_board.models import job
 
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
@@ -217,3 +220,95 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
 @admin.register(SalaryReport)
 class SalaryReportAdmin(admin.ModelAdmin):
     list_display = ('start_date', 'end_date')
+    change_form_template = "admin/salary_report.html"
+
+    def change_view(self, request, object_id, form_url='',extra_context=None):
+        salary_report = self.get_object(request,object_id)
+        start_date= salary_report.start_date
+        end_date = salary_report.end_date
+
+        employees = Employee.objects.filter(
+            active=True, joining_date__lte=start_date
+        ).exclude(salaryhistory__isnull=True)
+
+        employee_salary_data = []
+
+        for employee in employees:
+            employee_salarys = EmployeeSalary.objects.filter(employee=employee,salary_sheet__date__range=[start_date,end_date])
+            
+            total_gross_salary = 0
+            total_basic_salary = 0
+            total_house_allowance = 0
+            total_conveyance = 0
+            total_medical_allowance = 0
+            total_project_bonus = 0
+            total_overtime = 0
+            total_festival_bonus = 0
+            total_food_allowance = 0
+            total_leave_bonus = 0
+            total_tds = 0
+
+            for emp_salary in employee_salarys:
+
+                net_salary = emp_salary.net_salary
+                gross_salary = emp_salary.gross_salary
+                
+                total_gross_salary+=gross_salary
+                total_basic_salary+=net_salary * 0.55
+                total_house_allowance+=net_salary * 0.20
+                total_conveyance += net_salary * 0.15
+                total_medical_allowance +=net_salary * 0.10
+                total_project_bonus+=emp_salary.project_bonus
+                total_overtime +=emp_salary.overtime
+                total_festival_bonus+=emp_salary.festival_bonus
+                total_food_allowance +=emp_salary.food_allowance
+                total_tds +=emp_salary.loan_emi
+                total_leave_bonus+=emp_salary.leave_bonus
+
+            #Retrive the chalan no from loan
+            loans = Loan.objects.filter(employee=employee,loan_type='tds',created_at__range=[start_date,end_date]).values_list('tax_calan_no',flat=True)
+            loan_list = [loan for loan in loans if loan is not None ]
+            tressury_challn_no = ',<br>'.join(loan_list)    
+
+            #Total salary loan Calculation for each employee
+            total_salary_emi = Loan.objects.filter(
+                employee=employee,
+                loan_type='salary',
+                created_at__range=[start_date, end_date]
+            ).aggregate(total_emi=Sum('emi'))['total_emi'] 
+            
+            #Total Late Fine amount for each employee
+            total_late_fine = LateAttendanceFine.objects.filter(employee=employee,date__range=[start_date,end_date]).aggregate(late_fine=Sum('total_late_attendance_fine'))['late_fine'] 
+
+
+
+
+            tin = employee.tax_info or ''
+
+            employee_salary_data.append({
+                'index': len(employee_salary_data) + 1,
+                'name': employee.full_name,
+                'designation': employee.designation.title,
+                'tin': tin,
+                'gross_salary': total_gross_salary,
+                'basic_salary': total_basic_salary,
+                'house_allowance': total_house_allowance,
+                'conveyance': total_conveyance,
+                'medical_allowance': total_medical_allowance,
+                'project_bonus': total_project_bonus,  # New field: Project Bonus
+                'overtime': total_overtime,  # New field: Overtime
+                'festival_bonus': total_festival_bonus,
+                'leave_bonus':total_leave_bonus,  # New field: Festival Bonus
+                'food_allowance': total_food_allowance,  # New field: Food Allowance
+                'tds': total_tds,
+                'salary_loan':total_salary_emi,
+                'late_fine':total_late_fine,
+                'chalan_no': tressury_challn_no
+            })
+
+        extra_context = extra_context or {}
+        extra_context['start_date'] = start_date
+        extra_context['end_date'] = end_date
+        extra_context['employee_salary_data'] = employee_salary_data
+
+        return super().change_view(request, object_id, form_url, extra_context)

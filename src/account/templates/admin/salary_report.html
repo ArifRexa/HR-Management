@@ -1,0 +1,104 @@
+{% extends 'admin/change_form.html' %}
+
+{% block content_title %}
+    <h1>Employee Salary Report</h1>
+{% endblock %}
+
+{% block content %}
+    {{block.super}}
+    <h1 style="text-align: center;margin-top: 20px;">Report Period: <b>{{ start_date }}</b> to <b>{{ end_date }}</b></h1>
+    
+    <!-- Custom table styling -->
+    <style>
+        table.salary-report-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 1em;
+            font-family: 'Arial', sans-serif;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+        table.salary-report-table thead tr {
+            background-color: #4CAF50;
+            color: #ffffff;
+            text-align: center;
+            font-weight: bold;
+        }
+        table.salary-report-table th, table.salary-report-table td {
+            padding: 12px 15px;
+            text-align: center; /* Center the text in both headers and data cells */
+        }
+        table.salary-report-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+        table.salary-report-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+        table.salary-report-table tbody tr:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+    </style>
+
+    <!-- Table layout -->
+    <table class="table table-bordered salary-report-table">
+        <thead>
+            <tr>
+                <th>SL No</th>
+                <th>Name of Employee</th>
+                <th>Designation</th>
+                <th>TIN</th>
+                <th>Total Salary(Yearly)</th>
+                <th>Basic (55%)</th>
+                <th>House Allowance (20%)</th>
+                <th>Conveyance (15%)</th>
+                <th>Medical Allowance (10%)</th>
+                <th>Project Bonus</th>
+                <th>Overtime</th>
+                <th>Festival Bonus</th>
+                <th>Food Allowance</th>
+                <th>Leave Bonus</th>
+                <th>TDS</th>
+                <th>Salary Laon</th>
+                <th>Late Fine</th>
+                <th>Treasury Challan No.</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in employee_salary_data %}
+                <tr>
+                    <td>{{ data.index }}</td>
+                    <td>{{ data.name }}</td>
+                    <td>{{ data.designation }}</td>
+                    <td>{{ data.tin }}</td>
+                    <td>{{ data.gross_salary|floatformat:0 }}</td>
+                    <td>{{ data.basic_salary|floatformat:0 }}</td>
+                    <td>{{ data.house_allowance|floatformat:0 }}</td>
+                    <td>{{ data.conveyance|floatformat:0 }}</td>
+                    <td>{{ data.medical_allowance|floatformat:0 }}</td>
+                    <td>{{data.project_bonus|floatformat:0}}</td>
+                    <td>{{data.overtime|floatformat:0}}</td>
+                    <td>{{data.festival_bonus|floatformat:0}}</td>
+                    <td>{{data.food_allowance|floatformat:0}}</td>
+                    <td>{{data.leave_bonus|floatformat:0}}</td>
+                    <td>{{ data.tds|floatformat:0 }}</td>
+                    
+                    {%if data.salary_loan%}
+                        <td>-{{data.salary_loan|floatformat:0}}</td>
+                    {%else%}
+                        <td>0</td>
+                    {% endif %}
+
+                    {%if data.late_fine%}
+                    <td>{{data.late_fine|floatformat:0}}</td>
+                    {%else%}
+                        <td>0</td>
+                    {% endif %}
+
+                   
+                    <td>{{ data.chalan_no|safe }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
