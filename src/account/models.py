@@ -19,7 +19,8 @@ from django_userforeignkey.models.fields import UserForeignKey
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 import employee
-from employee.models import Employee
+from employee.models import Employee, salary_history
+
 from employee.models.employee import LateAttendanceFine
 from project_management.models import Project, Client
 from django.core.exceptions import ValidationError
@@ -437,23 +438,94 @@ class VehicleRebateAttachment(TimeStampMixin):
     vehicle_rebate = models.ForeignKey(VehicleRebate, on_delete=models.CASCADE)
     document = models.FileField(upload_to="uploads/vehicle_rebate/")
 
+
+from django.db import models
+from django.http import HttpResponse
+from openpyxl import Workbook
+from openpyxl.writer.excel import save_virtual_workbook
+from math import floor
+
 class SalaryReport(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
+    
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs)  # Call the original save method
+    #     self.generate_salary_report()
 
-    def __str__(self) -> str:
-        return f"Salary Report from {self.start_date} to {self.end_date}"
-    
-@receiver(post_save,sender=SalaryReport)
-def generate_salary_report(sender,instance,**kwargs):
-    start_date = instance.start_date
-    end_date = instance.end_date
-    
-    salaries = EmployeeSalary.objects.filter(
-        salary_sheet__date__month__range = (start_date.month,end_date.month),
-        salary_sheet__date__year__range = (start_date.year,end_date.year),
-    )
+    # def generate_salary_report(self):
+    #     start_date = self.start_date
+    #     end_date = self.end_date
 
-    
+    #     # Prepare Excel workbook
+    #     wb = Workbook()
+    #     ws = wb.active
+    #     ws.title = f'Salary Report'
 
-    
+    #     # Add the heading row
+    #     headings = [
+    #         'SL No', 'Name of Employee', 'Designation', 'TIN',
+    #         'Total Salary', 'Basic (55%)', 'House Allowance (20%)',
+    #         'Conveyance (15%)', 'Medical Allowance (10%)', 'TDS', 'Chalan No'
+    #     ]
+    #     ws.append(headings)
+
+    #     # Fetch employees who have salaries in the given date range
+    #     employees = Employee.objects.filter(
+    #         active=True, joining_date__lte=start_date
+    #     ).exclude(salaryhistory__isnull=True)
+
+    #     # Populate the Excel sheet with employee data
+    #     for index, employee in enumerate(employees, start=1):
+    #         # Fetch all salary records for the employee within the date range
+    #         salaries = EmployeeSalary.objects.filter(
+    #             employee=employee,
+    #             salary_sheet__date__range=[start_date, end_date]
+    #         )
+
+    #         # Initialize totals for the employee
+    #         total_gross_salary = 0
+    #         total_basic_salary = 0
+    #         total_house_allowance = 0
+    #         total_conveyance = 0
+    #         total_medical_allowance = 0
+
+    #         # Calculate the totals for each salary within the date range
+    #         for salary in salaries:
+    #             gross_salary = salary.gross_salary
+    #             total_gross_salary += gross_salary
+
+    #             # Calculate salary breakdowns
+    #             total_basic_salary += gross_salary * 0.55
+    #             total_house_allowance += gross_salary * 0.20
+    #             total_conveyance += gross_salary * 0.15
+    #             total_medical_allowance += gross_salary * 0.10
+
+    #         # Assuming the Employee model has 'tin' and 'designation' fields
+    #         tin = "employee.tin"
+    #         designation = employee.designation.title
+
+    #         # Fetch TDS and Chalan No
+    #         tds = "employee.get_tds_for_period(start_date, end_date)"  # Assumed to be a custom method
+    #         chalan_no = "employee.get_chalan_no()"  # Assumed to be stored or calculated
+
+    #         # Add the data to the worksheet
+    #         row = [
+    #             index,
+    #             employee.full_name,
+    #             designation,
+    #             tin,
+    #             floor(total_gross_salary),
+    #             floor(total_basic_salary),
+    #             floor(total_house_allowance),
+    #             floor(total_conveyance),
+    #             floor(total_medical_allowance),
+    #             tds,
+    #             chalan_no
+    #         ]
+    #         ws.append(row)
+    #         print(row)
+    #     # Save the workbook to a virtual file (in memory) for download
+    #     response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
+    #     response['Content-Disposition'] = f'attachment; filename=SalaryReport_{start_date}_to_{end_date}.xlsx'
+    #     return response
