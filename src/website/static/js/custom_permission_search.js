@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         function addSearchFunctionality() {
             console.log("addSearchFunctionality");
-            
+            let selected_permissions_box = document.getElementById(
+                id_name
+            );
             let interval_count = 0
             if (selected_permissions_box == null) {
                 console.log("null", interval_count);
@@ -22,9 +24,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }else{
                 clearInterval(intervalId);
             }
-            let selected_permissions_box = document.getElementById(
-                id_name
-            );
+            
             let newHtml = `<p id="id_user_permissions_filter" class="selector-filter">
             <label for="id_user_permissions_selected_input">
             <span class="help-tooltip search-label-icon" title="Type into this box to filter down the list of available verbose name."></span>

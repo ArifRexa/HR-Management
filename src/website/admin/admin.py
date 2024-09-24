@@ -108,7 +108,7 @@ from django.contrib.auth.admin import (
 class UserAdmin(BaseUserAdmin):
     class Media:
         js = ("js/custom_permission_search.js",)
-        css = {"all": ("css/user.css",)}
+        # css = {"all": ("css/user.css",)}
 
 
 class GroupAdmin(BaseGroupAdmin):
