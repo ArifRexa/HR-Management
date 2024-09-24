@@ -101,6 +101,34 @@ from website.models import (
 from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
 
 
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import (
+    UserAdmin as BaseUserAdmin,
+    GroupAdmin as BaseGroupAdmin,
+)
+
+
+class UserAdmin(BaseUserAdmin):
+    class Media:
+        js = ("js/custom_permission_search.js",)
+        # css = {"all": ("css/user.css",)}
+
+
+class GroupAdmin(BaseGroupAdmin):
+    class Media:
+        js = ("js/custom_permission_search.js",)
+        css = {"all": ("css/user.css",)}
+
+
+# Unregister the existing User admin
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+# Register the customized User admin
+admin.site.register(User, UserAdmin)
+admin.site.register(Group, GroupAdmin)
+
+
 @admin.register(Award)
 class AwardAdmin(admin.ModelAdmin):
     list_display = ["title", "image", "short_description"]

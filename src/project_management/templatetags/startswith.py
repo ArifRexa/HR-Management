@@ -15,3 +15,15 @@ def divide_by(value, divisor):
         return float(value) / float(divisor)
     except (ValueError, ZeroDivisionError):
         return 0.0
+    
+    
+@register.filter(name='create_id')
+def create_id(value):
+    value = value[1:]
+    sanitized = value.split("=")[0].split("__")
+    if len(sanitized) > 1:
+        id = "__".join(sanitized)
+    else:
+        id = sanitized[0]
+    # print(id)
+    return id
