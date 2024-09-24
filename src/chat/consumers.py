@@ -10,6 +10,8 @@ from django.db.models import Count, Q
 from django.core.files.base import ContentFile
 from django.contrib.contenttypes.models import ContentType
 
+from chat.models import Chat
+
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
     receiver_id: int
@@ -20,13 +22,12 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
 
     async def connect(self):
         print("connected")
-        self.room_name = "general"
-        # receiver_id = int(self.scope["url_route"]["kwargs"].get("receiver"))
-        # self.receiver_id = receiver_id
-        # self.room_name = receiver_id
+        receiver_id = int(self.scope["url_route"]["kwargs"].get("receiver")) # get uuid for unique channel
+        self.receiver_id = receiver_id
+        self.room_name = receiver_id
         self.room_group_name = f"chat_{self.room_name}"
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        # participants = {receiver_id, self.scope["user"].id}
+        participants = {receiver_id, self.scope["user"].id}
         # existing_chat = (
         #     await Chat.objects.annotate(
         #         count_participants=Count(
@@ -40,15 +41,15 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         # if existing_chat:
         #     self.chat = existing_chat
         # else:
-        #     if (
-        #         receiver_id
-        #         and self.scope["user"].id
-        #         and (receiver_id != self.scope["user"].id)
-        #     ):
-        #         chat = Chat()
-        #         await chat.asave()
-        #         await chat.participants.aadd(*participants)
-        #         self.chat = chat
+        if (
+            receiver_id
+            and self.scope["user"].id
+            and (receiver_id != self.scope["user"].id)
+        ):
+            chat = Chat(chat_id=self.receiver_id)
+            await chat.asave()
+            await chat.participants.aadd(*participants)
+            self.chat = chat
         await self.accept()
 
     async def disconnect(self, close_code):

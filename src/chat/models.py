@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth import get_user_model
+from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 
 # Create your models here.
@@ -28,10 +29,10 @@ class ChatStatus(models.IntegerChoices):
 
 class Chat(TimeStampMixin):
     chat_id = models.UUIDField(primary_key=True, default=uuid.uuid4(), editable=False)
-    agent = models.ForeignKey(
-        User, related_name="chats", on_delete=models.SET_NULL, null=True, blank=True
+    agent = models.ManyToManyField(
+        User, related_name="chats", blank=True
     )
-    sender = models.ForeignKey(
+    sender = models.OneToOneField(
         ChatUser, related_name="chats", on_delete=models.CASCADE, null=True, blank=True
     )
     status = models.SmallIntegerField(
@@ -46,7 +47,7 @@ class Chat(TimeStampMixin):
         verbose_name_plural = "Chat"
 
 
-class Message(TimeStampMixin):
+class Message(TimeStampMixin, AuthorMixin):
     chat = models.ForeignKey(Chat, related_name="messages", on_delete=models.CASCADE)
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
