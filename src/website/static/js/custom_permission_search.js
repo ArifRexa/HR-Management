@@ -9,13 +9,11 @@ document.addEventListener("DOMContentLoaded", function () {
             id_name = 'id_user_permissions_to';
         }
         function addSearchFunctionality() {
-            console.log("addSearchFunctionality");
             let selected_permissions_box = document.getElementById(
                 id_name
             );
             let interval_count = 0
             if (selected_permissions_box == null) {
-                console.log("null", interval_count);
                 interval_count = interval_count + 1
                 if (interval_count > 30) {
                     clearInterval(intervalId);
@@ -52,13 +50,11 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             selectedSearchInput.addEventListener("keyup", function () {
-                console.log("key up");
                 filterList(selectedSearchInput, selected_permissions_box);
             });
         }
 
 
         var intervalId = setInterval(addSearchFunctionality, 100);
-        console.log(intervalId)
     }
 });
