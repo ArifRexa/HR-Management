@@ -1,7 +1,3 @@
-<!-- The path and name for this file should be "templates/admin/base_site.html". -->
-<!-- It overrides the original admin template and will be picked up by all of its children. -->
-<!-- This template override has been verified for Django 1.11 and 2.0. -->
-
 {% extends "admin/base_site.html" %}
 
 {% load static %}
@@ -22,19 +18,19 @@
     <link rel="shortcut icon" type="image/x-icon"
           href="https://mediusware.com/wp-content/uploads/2021/04/apple-icon-120x120-1.png">
     <style>
-        #result_list{
-            min-height:50vh
+        #result_list {
+            min-height: 50vh;
         }
 
         select {
             overflow: overlay;
         }
+
         ul.messagelist li.alert-danger {
-            /* Initial CSS properties */
-            /* For example, let's set the color to green */
-            color: white !important; /* Important rule */
-            background: red !important; /* Important rule */
+            color: white !important;
+            background: red !important;
         }
+
         .blinking-text {
             animation: blink 1.5s infinite alternate;
         }
@@ -43,7 +39,155 @@
             from { color: red; }
             to { color: #41a6fa; }
         }
+
+        /* Container for h3 and button */
+        .filter-header {
+            display: flex;
+            justify-content: space-between; /* Align h3 and button on opposite ends */
+            align-items: center;
+        }
+
+        /* Style for the toggle buttons beside h3 */
+        .toggle-filter-button {
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 18px;
+            margin-left: 10px;
+            outline: none;
+        }
+
+        .toggle-filter-button:focus {
+            outline: none;
+        }
     </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log("filter")
+        // Get the filter section
+        var filterSection = document.querySelector('#changelist-filter');
+        const key_obj = JSON.parse(localStorage.getItem("filter_id"))
+        // localStorage.clear();
+        let currentPath;
+        if (filterSection) {
+            // Get the current URL to match filters
+            var currentUrl = window.location.href;
+            currentPath = window.location.pathname
+
+            const segments = currentPath.split('/'); // Split by '/'
+            const path_last = segments[segments.length - 2]; // Get the second last segment
+
+            
+            // Get all h3 elements within the filter section
+            var headings = filterSection.querySelectorAll('h3');
+
+            let filter_id = {}
+            if (key_obj != null){
+                filter_id = key_obj
+            }
+            headings.forEach(function(h3) {
+                // console.log("add filter", h3.innerText)
+                
+                // Skip the "Clear all filters" h3 by checking the ID
+                if (h3.id === 'changelist-filter-clear') {
+                    
+                    return; // Skip this h3
+                }
+
+                // Create a wrapper div for h3 and button
+                var wrapper = document.createElement('div');
+                wrapper.className = 'filter-header';
+
+                // Move the existing h3 content into the wrapper
+                wrapper.appendChild(h3.firstChild);
+
+                // Create a button for each h3
+                var toggleButton = document.createElement('button');
+                toggleButton.className = 'toggle-filter-button';
+                toggleButton.setAttribute('aria-label', 'Toggle this list');
+                toggleButton.textContent = '+'; // Initially set to '+'
+
+                // Insert the button into the wrapper
+                wrapper.appendChild(toggleButton);
+
+                // Insert the wrapper into the DOM
+                h3.appendChild(wrapper);
+
+                // Get the next sibling ul element
+                
+                var ul = h3.nextElementSibling;
+                let key = h3.innerText.replace(/[\n+]/g, '').replace(/\s+/g, '_');
+                let key_name = key+"_"+path_last
+                if (key_obj == null){
+                    filter_id[key_name] = ul.id
+                }else if (key_obj[key_name] == null){
+                    filter_id[key_name] = ul.id
+                }else if (key_obj[key_name] == ""){
+                    filter_id[key_name] = ul.id
+                }
+
+                if (ul && ul.tagName.toLowerCase() === 'ul') {
+                    // Initially hide all ul elements
+                    if(key_obj != null){
+
+                        if (key_obj[key_name] != null){
+                            
+                            ul.id = key_obj[key_name]
+                        }
+                    }
+                    
+                    ul.style.display = 'none';
+
+                    // Function to toggle visibility of the ul
+                    function toggleVisibility() {
+                        if (ul.style.display === 'none') {
+                            ul.style.display = 'block';
+                            toggleButton.textContent = '-';
+                        } else {
+                            ul.style.display = 'none';
+                            toggleButton.textContent = '+';
+                        }
+                    }
+
+                    // Add click event to toggle visibility of the ul for both button and h3
+                    toggleButton.addEventListener('click', toggleVisibility);
+                    h3.addEventListener('click', toggleVisibility);
+
+                    // Stop the h3 from toggling the ul when clicking inside the ul (e.g., on an li)
+                    ul.addEventListener('click', function(event) {
+                        // Prevent hiding the ul when clicking inside it (on a filter item)
+                        event.stopPropagation();
+                    });
+
+                    // Check if the id of the ul is present in the URL and show it if it matches
+                    // var ulId = ul.id.replace(/ /g, '_');  // Replace spaces with underscores to match URL format
+                    // console.log("before filter", ul.id, key_obj[key_name])
+                    // if (currentUrl.includes(ulId+'__exact') || currentUrl.includes(ulId+'__id__exact') || currentUrl.includes(ulId+'__id') || currentUrl.includes(ulId+'__gt') || currentUrl.includes(ulId+'__lt')) {
+                    //     // console.log("filter form")
+                    //     ul.style.display = 'block'; // Show the ul if the id matches
+                    //     toggleButton.textContent = '-'; // Set button text to '-'
+                    // }
+
+                    if (currentUrl.includes(ul.id)) {
+                        ul.style.display = 'block'; // Show the ul if the id matches
+                        toggleButton.textContent = '-'; // Set button text to '-'
+                    }
+                }
+            });
+            localStorage.clear();
+            if (localStorage.getItem("filter_id")==null) {
+                
+                localStorage.setItem("filter_id", JSON.stringify(filter_id))
+            }
+            
+        }
+    });
+</script>
+
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
 {% endblock %}
 
 {% block footer %}
@@ -53,4 +197,3 @@
     {% endif %}
 </div>
 {% endblock %}
-

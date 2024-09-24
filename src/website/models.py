@@ -110,7 +110,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
-    content = HTMLField(verbose_name="LinkedIn Marketing Content")
+    content = HTMLField(
+        verbose_name="LinkedIn Marketing Content", blank=True, null=True
+    )
     # active = models.BooleanField(default=False)
     read_time_minute = models.IntegerField(default=1)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
@@ -163,10 +165,19 @@ class BlogContext(AuthorMixin, TimeStampMixin):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name="blog_contexts"
     )
-    title = models.CharField(null=True, blank=True, max_length=255)
-    description = HTMLField(null=True, blank=True)
-    image = models.ImageField(upload_to="blog_context_images", blank=True, null=True)
-    video = models.URLField(blank=True, null=True, verbose_name="YouTube Video Link")
+    title = models.CharField(
+        null=True, blank=True, max_length=255, verbose_name="Section Title"
+    )
+    description = HTMLField(null=True, blank=True, verbose_name="Section Description")
+    image = models.ImageField(
+        upload_to="blog_context_images",
+        blank=True,
+        null=True,
+        verbose_name="Section Image",
+    )
+    video = models.URLField(
+        blank=True, null=True, verbose_name="Section YouTube Video Link"
+    )
 
 
 class BlogFAQ(AuthorMixin, TimeStampMixin):
@@ -516,9 +527,38 @@ class LeadershipSpeech(TimeStampMixin):
     thumbnail = models.ImageField(upload_to="leadership_speech/")
     speech = HTMLField()
     leader = models.ForeignKey(
-        Employee, on_delete=models.CASCADE, related_name="speeches", limit_choices_to={"active": True}
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="speeches",
+        limit_choices_to={"active": True},
     )
-    leadership = models.ForeignKey(Leadership, on_delete=models.CASCADE, null=True, related_name="speeches")
+    leadership = models.ForeignKey(
+        Leadership, on_delete=models.CASCADE, null=True, related_name="speeches"
+    )
 
     def __str__(self):
         return self.leader.full_name
+
+
+class EventCalenderStatus(models.TextChoices):
+    PENDING = "Pending", "Pending"
+    PUBLISHED = "Published", "Published"
+
+
+class EventCalender(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True)
+    description = models.TextField()
+    image = models.ImageField(upload_to="event_calender/")
+    publish_date = models.DateField(verbose_name="Date")
+    publish_status = models.CharField(
+        max_length=10,
+        choices=EventCalenderStatus.choices,
+        default=EventCalenderStatus.PENDING,
+    )
+
+    def __str__(self):
+        return self.title or str(self.id)
+
+    class Meta:
+        verbose_name = "Event Calender Automate"
+        verbose_name_plural = "Event Calender Automate"

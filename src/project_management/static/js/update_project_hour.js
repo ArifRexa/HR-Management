@@ -22,12 +22,11 @@ function updateProjectHour(project_hour_id=null){
     for(var i=0; i<hour.length; i++){
         hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
         employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
-
         update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update`);
         update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
         update_id_input.value = hour[i].id;
-        console.log(hour[i].updates_json);
-        console.log(hour_input)
+        date = document.querySelector(`#id_employeeprojecthour_set-${i}-date`);
+        date.value = hour[i].created_at.substring(0, 10);
         if (hour_input != null){
             hour_input.addEventListener("keyup", update_total_hour)
         }
@@ -88,16 +87,17 @@ function getThisWeekHour(e){
 
         success: function(data) {
             hour = data.weekly_hour;
-            console.log(hour);
+            console.log(hour,"This is update hour");
+            
             for(var i=0; i<hour.length; i++){
                 hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
                 employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
-
+                date = document.querySelector(`#id_employeeprojecthour_set-${i}-date`);
+                date.value = hour[i].created_at.substring(0, 10);
                 update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update`);
                 update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
                 update_id_input.value = hour[i].id;
-                console.log(hour[i].updates_json);
-                hour_input.value = hour[i].hours;
+                console.log(hour[i].created_at,"This is date")
                 if (hour[i].updates_json){
                     console.log("json", hour[i]);
                     let v = ""

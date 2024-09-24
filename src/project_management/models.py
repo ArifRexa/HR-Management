@@ -93,7 +93,7 @@ class Client(TimeStampMixin, AuthorMixin):
         Country, on_delete=models.SET_NULL, null=True, blank=True
     )
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
-    is_need_feedback = models.BooleanField(default=False,verbose_name="Is Need Feedback")
+    is_need_feedback = models.BooleanField(default=False,verbose_name="Need Feedback")
     # show_in_web = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
     client_feedback = HTMLField(null=True, blank=True)
@@ -1094,24 +1094,24 @@ def create_observation(sender, instance, created, **kwargs):
         ObservationProject.objects.create(project_name=instance)
 
 
-@receiver(post_save, sender=ProjectHour)
-def create_income(sender, instance, created, **kwargs):
-    print("sssssssssssssssssssssss create income has called ssssssssssssssssssss")
-    from account.models import Income
+# @receiver(post_save, sender=ProjectHour)
+# def create_income(sender, instance, created, **kwargs):
+#     print("sssssssssssssssssssssss create income has called ssssssssssssssssssss")
+#     from account.models import Income
 
-    if created and instance.hour_type == "project":
-        project = instance.project
-        if project:
-            Income.objects.create(
-                project=project,
-                hours=instance.hours,
-                hour_rate=project.hourly_rate
-                if project.hourly_rate is not None
-                else 0.00,
-                convert_rate=90.0,  # Default convert rate
-                date=instance.date,
-                status="pending",
-            )
+#     if created and instance.hour_type == "project":
+#         project = instance.project
+#         if project:
+#             Income.objects.create(
+#                 project=project,
+#                 hours=instance.hours,
+#                 hour_rate=project.hourly_rate
+#                 if project.hourly_rate is not None
+#                 else 0.00,
+#                 convert_rate=90.0,  # Default convert rate
+#                 date=instance.date,
+#                 status="pending",
+#             )
 
 
 class ClientFeedbackEmail(models.Model):

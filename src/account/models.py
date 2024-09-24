@@ -1,5 +1,6 @@
 from decimal import Decimal
 from math import floor
+from pyexpat import model
 
 from django.db import transaction
 
@@ -8,6 +9,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
+from django.db.models.signals import post_save
 from django.db.models import Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -251,9 +253,15 @@ class Loan(TimeStampMixin, AuthorMixin):
     tenor = models.IntegerField(help_text="Period month")
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD)
     loan_type = models.CharField(max_length=50, choices=LOAN_TYPE)
+    tax_calan_no = models.CharField(max_length=100,null=True,blank=True)
 
     def __str__(self):
         return f"{self.employee}-{self.loan_amount}"
+    
+    class Meta:
+        permissions = [
+            ("can_view_tax_loans", "Can view tax loans"),
+        ]
 
 
 class LoanGuarantor(TimeStampMixin, AuthorMixin):
@@ -428,3 +436,24 @@ class VehicleRebate(TaxDocumentInformation):
 class VehicleRebateAttachment(TimeStampMixin):
     vehicle_rebate = models.ForeignKey(VehicleRebate, on_delete=models.CASCADE)
     document = models.FileField(upload_to="uploads/vehicle_rebate/")
+
+class SalaryReport(models.Model):
+    start_date = models.DateField()
+    end_date = models.DateField()
+
+    def __str__(self) -> str:
+        return f"Salary Report from {self.start_date} to {self.end_date}"
+    
+@receiver(post_save,sender=SalaryReport)
+def generate_salary_report(sender,instance,**kwargs):
+    start_date = instance.start_date
+    end_date = instance.end_date
+    
+    salaries = EmployeeSalary.objects.filter(
+        salary_sheet__date__month__range = (start_date.month,end_date.month),
+        salary_sheet__date__year__range = (start_date.year,end_date.year),
+    )
+
+    
+
+    

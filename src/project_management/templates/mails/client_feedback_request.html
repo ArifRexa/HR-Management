@@ -54,14 +54,43 @@
             color: white; !important;
             font-weight: bold; !important;
         }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         {{email_body | safe}}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Project Name</th>
+                    <th>Feedback Link</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects_with_links %}
+                <tr>
+                    <td>{{ project.title }}</td>
+                    <td><a href="{{ project.feedback_link }}" class="btn button_text_color">Give Feedback</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
         <div class="footer">
             <p>Visit our website: <a href="https://mediusware.com/" target="_blank" style="text-decoration: none">Mediusware.com</a></p>
             <p>Connect with us on LinkedIn: <a href="https://www.linkedin.com/company/mediusware-ltd/mycompany/" target="_blank" style="text-decoration: none">LinkedIn</a></p>
+            <p>Thank you for your time and insights!</p>
+            <p>Best regards,</p>
+            <p>Mediusware LTD</p>
         </div>
     </div>
 </body>

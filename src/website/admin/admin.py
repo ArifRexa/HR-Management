@@ -1,3 +1,4 @@
+import re
 from typing import Any, Union
 from django import forms
 from django.contrib import admin
@@ -15,6 +16,7 @@ from django.forms.models import BaseInlineFormSet
 from django.core.exceptions import ValidationError
 from django.db.models import Count
 from datetime import timedelta
+from django.template.loader import get_template
 
 # Register your models here.
 from employee.models.employee import Employee
@@ -39,6 +41,7 @@ from website.models import (
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
     EngagementModelBanner,
+    EventCalender,
     Gallery,
     HomeBanner,
     IndustryWeServe,
@@ -95,7 +98,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 
-from website.linkedin_post import automatic_blog_post_linkedin
+from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
 
 
 from django.contrib.auth.models import User, Group
@@ -212,6 +215,8 @@ class BlogContextInline(admin.StackedInline):
     model = BlogContext
     extra = 1
     form = BlogContextForm
+    verbose_name = "Blog Section"
+    verbose_name_plural = "Blog Sections"
 
 
 class BlogFAQForm(forms.ModelForm):
@@ -250,7 +255,7 @@ class BlogFAQInline(admin.TabularInline):
     model = BlogFAQ
     extra = 1
     form = BlogFAQForm
-    verbose_name_plural = "Blog FAQs(NB:Minimum 3 faq required)"
+    verbose_name_plural = "Blog FAQ (NB:Minimum 3 faq required)"
     formset = BlogFaqFormSet
 
     def get_formset(self, request, obj=None, **kwargs):
@@ -383,9 +388,10 @@ class BlogAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "author",
-        "created_at",
-        "updated_at",
+        "get_created_at",
+        "get_updated_at",
         "status",
+        "get_preview_link",
     )
     readonly_fields = ("status",)
     exclude = ("slug",)
@@ -395,7 +401,7 @@ class BlogAdmin(admin.ModelAdmin):
         # "video",
         "youtube_link",
         "category",
-        "tag",
+        # "tag",
         # "short_description",
         "is_featured",
         "content",
@@ -420,22 +426,37 @@ class BlogAdmin(admin.ModelAdmin):
             return True
         return super().lookup_allowed(lookup, value)
 
-    @admin.action(description="Change Status In To Approved")
+    @admin.display(description="Created At")
+    def get_created_at(self, obj):
+        return obj.created_at.strftime("%d %b %Y")
+
+    @admin.display(description="Updated At")
+    def get_updated_at(self, obj):
+        return obj.updated_at.strftime("%d %b %Y")
+
+    @admin.display(description="Preview")
+    def get_preview_link(self, obj):
+        url = f"https://www.mediusware.com/blog/details/{obj.slug}/?q=preview"
+        html_template = get_template("blog/col_preview_link.html")
+        html_content = html_template.render({"url": url})
+        return format_html(html_content)
+
+    @admin.action(description="Change Status To Approved")
     def approve_selected(self, request, queryset):
         queryset.update(status=BlogStatus.APPROVED, approved_at=timezone.now())
         self.message_user(request, f"Successfully approved {queryset.count()} blogs.")
 
-    @admin.action(description="Change Status In To Draft")
+    @admin.action(description="Change Status To Draft")
     def draft_selected(self, request, queryset):
         queryset.update(status=BlogStatus.DRAFT, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
-    @admin.action(description="Change Status In To Revision")
+    @admin.action(description="Change Status To Revision")
     def in_revision_selected(self, request, queryset):
         queryset.update(status=BlogStatus.NEED_REVISION, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
 
-    @admin.action(description="Change Status In To Review")
+    @admin.action(description="Change Status To Review")
     def submit_for_review_selected(self, request, queryset):
         queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
@@ -1031,3 +1052,14 @@ class LeadershipAdmin(admin.ModelAdmin):
     list_display = ("title",)
     inlines = [LeadershipSpeechInline]
     search_fields = ("leader__full_name",)
+
+
+@admin.register(EventCalender)
+class EventCalenderAdmin(admin.ModelAdmin):
+    list_display = ("title", "publish_date")
+    search_fields = ("title",)
+    date_hierarchy = "publish_date"
+    fields = ("title", "description", "image", "publish_date")
+
+    def has_module_permission(self, request):
+        return False
