@@ -7,13 +7,19 @@ from employee.models import Employee
 from settings.models import Bank
 
 
+class BEFTN(models.Model):
+    originating_bank_routing_number = models.CharField(max_length=100)
+    originating_bank_account_number = models.CharField(max_length=100)
+
 class BankAccount(models.Model):
     employee = models.ForeignKey(Employee,
                                  limit_choices_to={'active': True},
                                  on_delete=models.CASCADE
                                  )
     bank = models.ForeignKey(Bank, on_delete=models.RESTRICT)
+    beftn = models.ForeignKey(BEFTN,on_delete=models.RESTRICT,null=True,blank=True)
     account_number = models.CharField(max_length=100)
+    routing_no = models.CharField(max_length=100,null=True,blank=True)
     default = models.BooleanField(default=True)
     is_approved = models.BooleanField(default=False)
 
