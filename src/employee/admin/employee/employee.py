@@ -15,6 +15,7 @@ from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from django.contrib.admin import SimpleListFilter
+from employee.models.bank_account import BEFTN
 from user_auth.models import UserLogs
 from django.utils import timezone
 from employee.models import (
@@ -694,3 +695,6 @@ class UserLogsAdmin(admin.ModelAdmin):
     logout_all_users.short_description = "Logout all users"
 
  
+@admin.register(BEFTN)
+class BEFTNAdmin(admin.ModelAdmin):
+    pass

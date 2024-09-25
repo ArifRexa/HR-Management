@@ -18,6 +18,7 @@ from config.utils.pdf import PDF
 class SalarySheetAction(admin.ModelAdmin):
     actions = (
         'export_excel', 
+        'export_city_bank_beftn',
         'export_bankasia_salary_acc_dis_excel',
         'export_salary_account_dis',
         'export_salary_account_dis_pdf',
@@ -34,6 +35,40 @@ class SalarySheetAction(admin.ModelAdmin):
     def export_excel(self, request, queryset):
         return self.export_in_xl(queryset)
     
+    @admin.action(description='Export City Bank BEFTN')
+    def export_city_bank_beftn(self, request, queryset):
+        wb = Workbook()
+        work_sheet = wb.active
+        work_sheet.title = 'BEFTN Export'
+
+        work_sheet.append([
+            'Date', 'Account No', 'Routing No','Employee Name', 'BDT', 'Amount', 
+            'Originating Bank Routing No.', 'Originating Bank Account No.', 'Originating Account Name', 'Remarks'
+        ])
+
+        for salary_sheet in queryset:
+            for employee_salary in salary_sheet.employeesalary_set.all():
+                
+                bank_account = employee_salary.employee.bankaccount_set.filter(default=True, is_approved=True).last()
+                if bank_account and bank_account.beftn:
+                    beftn = bank_account.beftn
+                    work_sheet.append([
+                        salary_sheet.date.strftime("%d-%m-%Y"),
+                        bank_account.account_number,
+                        bank_account.routing_no,
+                        employee_salary.employee.full_name,
+                        'BDT',
+                        str(int(employee_salary.gross_salary)),
+                        beftn.originating_bank_routing_number,
+                        beftn.originating_bank_account_number,
+                        'Mediusware Ltd',
+                        f'Salary of {salary_sheet.date.strftime("%b, %Y")}',
+                    ])
+        
+        response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
+        response['Content-Disposition'] = 'attachment; filename=City_Bank_BEFTN.xlsx'
+        return response
+
     @admin.action(description='Export Bank Asia Salary Account Disbursements (Excel)')
     def export_bankasia_salary_acc_dis_excel(self, request, queryset):
         salary_disbursement = SalaryDisbursement.objects.filter(disbursement_type='salary_account').first()
