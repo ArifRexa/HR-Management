@@ -13,6 +13,7 @@ from django.contrib import messages
 from django.conf import settings
 from account.models import EmployeeSalary, SalarySheet, SalaryDisbursement
 from config.utils.pdf import PDF
+from employee.models.bank_account import BEFTN
 
 
 class SalarySheetAction(admin.ModelAdmin):
@@ -47,21 +48,22 @@ class SalarySheetAction(admin.ModelAdmin):
         ])
 
         for salary_sheet in queryset:
+
+            beftn = BEFTN.objects.last()
             for employee_salary in salary_sheet.employeesalary_set.all():
                 
                 bank_account = employee_salary.employee.bankaccount_set.filter(default=True, is_approved=True).last()
-                if bank_account and bank_account.beftn:
-                    beftn = bank_account.beftn
+                if bank_account:
                     work_sheet.append([
                         salary_sheet.date.strftime("%d-%m-%Y"),
                         bank_account.account_number,
-                        bank_account.routing_no,
+                        beftn.routing_no,
                         employee_salary.employee.full_name,
                         'BDT',
                         str(int(employee_salary.gross_salary)),
                         beftn.originating_bank_routing_number,
                         beftn.originating_bank_account_number,
-                        'Mediusware Ltd',
+                        beftn.originating_bank_account_name,
                         f'Salary of {salary_sheet.date.strftime("%b, %Y")}',
                     ])
         
