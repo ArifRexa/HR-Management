@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 
 from django.http import HttpRequest
 from django.urls import path
+import account
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
@@ -697,4 +698,15 @@ class UserLogsAdmin(admin.ModelAdmin):
  
 @admin.register(BEFTN)
 class BEFTNAdmin(admin.ModelAdmin):
-    pass
+
+    fieldsets = (
+        ('Sender Information', {
+            'fields': ('originating_bank_account_number', 'originating_bank_routing_number','originating_bank_account_name'),
+        }),
+        ('Receiver Information', {
+            'fields': ('routing_no',),
+        }),
+    )
+
+    list_display = ('originating_bank_account_name',)
+    
