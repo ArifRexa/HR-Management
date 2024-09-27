@@ -10,11 +10,13 @@ from datetime import datetime, timedelta
 
 from django.http import HttpRequest
 from django.urls import path
+import account
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from django.contrib.admin import SimpleListFilter
+from employee.models.bank_account import BEFTN
 from user_auth.models import UserLogs
 from django.utils import timezone
 from employee.models import (
@@ -624,7 +626,7 @@ class ActiveUserOnlyFilter(RelatedOnlyFieldListFilter):
         # Generate choices based on first_name and last_name
         choices = [(user.id, f'{user.first_name} {user.last_name}') for user in users ]
         
-        return [(None, 'All')] + choices
+        return choices
     
 class ActiveUserFilter(admin.SimpleListFilter):
     title = 'currently logged in'
@@ -694,3 +696,17 @@ class UserLogsAdmin(admin.ModelAdmin):
     logout_all_users.short_description = "Logout all users"
 
  
+@admin.register(BEFTN)
+class BEFTNAdmin(admin.ModelAdmin):
+
+    fieldsets = (
+        ('Sender Information', {
+            'fields': ('originating_bank_account_number', 'originating_bank_routing_number','originating_bank_account_name'),
+        }),
+        ('Receiver Information', {
+            'fields': ('routing_no',),
+        }),
+    )
+
+    list_display = ('originating_bank_account_name',)
+    

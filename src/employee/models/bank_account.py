@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from typing import Iterable, Optional
 from django.db import models
 from django.db.models.signals import post_save
@@ -5,6 +6,17 @@ from django.dispatch import receiver
 
 from employee.models import Employee
 from settings.models import Bank
+
+
+class BEFTN(models.Model):
+    originating_bank_routing_number = models.CharField(max_length=100)
+    originating_bank_account_number = models.CharField(max_length=100)
+    originating_bank_account_name = models.CharField(max_length=255,null=True,blank=True)
+    routing_no = models.CharField(max_length=100,null=True,blank=True)
+
+    class Meta:
+        app_label = 'account'
+        verbose_name_plural = "BEFTN"
 
 
 class BankAccount(models.Model):

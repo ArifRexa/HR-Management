@@ -1,4 +1,5 @@
 from math import floor
+import re
 from typing import Any, Optional, Sequence
 
 from django.contrib import admin
@@ -12,13 +13,19 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 from account.admin.salary.actions import SalarySheetAction
-from account.models import SalarySheet, EmployeeSalary,SalaryReport
+from account.models import Loan, SalarySheet, EmployeeSalary,SalaryReport
 from account.repository.SalarySheetRepository import SalarySheetRepository
 from employee.models.employee import LateAttendanceFine
 from decimal import Decimal
 from django.db.models import Count
+from employee.models import Employee
+
+import openpyxl
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment
 
 from employee.templatetags.employee_helper import total_employee_count
+from job_board.models import job
 
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
@@ -217,3 +224,201 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
 @admin.register(SalaryReport)
 class SalaryReportAdmin(admin.ModelAdmin):
     list_display = ('start_date', 'end_date')
+    change_form_template = "admin/salary_report.html"
+    actions = ['export_as_excel']
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        salary_report = self.get_object(request, object_id)
+        start_date = salary_report.start_date
+        end_date = salary_report.end_date
+
+        employees = Employee.objects.filter(
+            active=True, joining_date__lte=start_date
+        ).exclude(salaryhistory__isnull=True)
+
+        employee_salary_data = []
+
+        for employee in employees:
+            employee_salarys = EmployeeSalary.objects.filter(employee=employee, salary_sheet__date__range=[start_date, end_date])
+
+            total_gross_salary = 0
+            total_basic_salary = 0
+            total_house_allowance = 0
+            total_conveyance = 0
+            total_medical_allowance = 0
+            total_project_bonus = 0
+            total_overtime = 0
+            total_festival_bonus = 0
+            total_food_allowance = 0
+            total_leave_bonus = 0
+            total_tds = 0
+
+            for emp_salary in employee_salarys:
+                net_salary = emp_salary.net_salary
+                gross_salary = emp_salary.gross_salary
+
+                total_gross_salary += gross_salary
+                total_basic_salary += net_salary * 0.55
+                total_house_allowance += net_salary * 0.20
+                total_conveyance += net_salary * 0.15
+                total_medical_allowance += net_salary * 0.10
+                total_project_bonus += emp_salary.project_bonus
+                total_overtime += emp_salary.overtime
+                total_festival_bonus += emp_salary.festival_bonus
+                total_food_allowance += emp_salary.food_allowance
+                total_tds += emp_salary.loan_emi
+                total_leave_bonus += emp_salary.leave_bonus
+
+            loans = Loan.objects.filter(employee=employee, loan_type='tds', created_at__range=[start_date, end_date]).values_list('tax_calan_no', flat=True)
+            loan_list = [loan for loan in loans if loan is not None]
+            tressury_challn_no = ',<br>'.join(loan_list)
+
+            total_salary_emi = Loan.objects.filter(
+                employee=employee,
+                loan_type='salary',
+                created_at__range=[start_date, end_date]
+            ).aggregate(total_emi=Sum('emi'))['total_emi']
+
+            total_late_fine = LateAttendanceFine.objects.filter(employee=employee, date__range=[start_date, end_date]).aggregate(late_fine=Sum('total_late_attendance_fine'))['late_fine']
+
+            tin = employee.tax_info or ''
+
+            employee_salary_data.append({
+                'index': len(employee_salary_data) + 1,
+                'name': employee.full_name,
+                'designation': employee.designation.title,
+                'tin': tin,
+                'gross_salary': total_gross_salary,
+                'basic_salary': total_basic_salary,
+                'house_allowance': total_house_allowance,
+                'conveyance': total_conveyance,
+                'medical_allowance': total_medical_allowance,
+                'project_bonus': total_project_bonus,
+                'overtime': total_overtime,
+                'festival_bonus': total_festival_bonus,
+                'leave_bonus': total_leave_bonus,
+                'food_allowance': total_food_allowance,
+                'tds': total_tds,
+                'salary_loan': total_salary_emi,
+                'late_fine': total_late_fine,
+                'chalan_no': tressury_challn_no
+            })
+
+        extra_context = extra_context or {}
+        extra_context['start_date'] = start_date
+        extra_context['end_date'] = end_date
+        extra_context['employee_salary_data'] = employee_salary_data
+
+        return super().change_view(request, object_id, form_url, extra_context)
+    def export_as_excel(self, request, queryset):
+            if queryset.count() != 1:
+                self.message_user(request, "Please select exactly one Salary Report.", level='error')
+                return
+
+            salary_report = queryset.first()
+            start_date = salary_report.start_date
+            end_date = salary_report.end_date
+
+            employees = Employee.objects.filter(
+                active=True, joining_date__lte=start_date
+            ).exclude(salaryhistory__isnull=True)
+
+            employee_salary_data = []
+
+            for employee in employees:
+                employee_salarys = EmployeeSalary.objects.filter(employee=employee, salary_sheet__date__range=[start_date, end_date])
+
+                total_gross_salary = 0
+                total_basic_salary = 0
+                total_house_allowance = 0
+                total_conveyance = 0
+                total_medical_allowance = 0
+                total_project_bonus = 0
+                total_overtime = 0
+                total_festival_bonus = 0
+                total_food_allowance = 0
+                total_leave_bonus = 0
+                total_tds = 0
+
+                for emp_salary in employee_salarys:
+                    net_salary = emp_salary.net_salary
+                    gross_salary = emp_salary.gross_salary
+
+                    total_gross_salary += gross_salary
+                    total_basic_salary += net_salary * 0.55
+                    total_house_allowance += net_salary * 0.20
+                    total_conveyance += net_salary * 0.15
+                    total_medical_allowance += net_salary * 0.10
+                    total_project_bonus += emp_salary.project_bonus
+                    total_overtime += emp_salary.overtime
+                    total_festival_bonus += emp_salary.festival_bonus
+                    total_food_allowance += emp_salary.food_allowance
+                    total_tds += emp_salary.loan_emi
+                    total_leave_bonus += emp_salary.leave_bonus
+
+                loans = Loan.objects.filter(employee=employee, loan_type='tds', created_at__range=[start_date, end_date]).values_list('tax_calan_no', flat=True)
+                loan_list = [loan for loan in loans if loan is not None]
+                tressury_challn_no = ',<br>'.join(loan_list)
+
+                total_salary_emi = Loan.objects.filter(
+                    employee=employee,
+                    loan_type='salary',
+                    created_at__range=[start_date, end_date]
+                ).aggregate(total_emi=Sum('emi'))['total_emi']
+
+                total_late_fine = LateAttendanceFine.objects.filter(employee=employee, date__range=[start_date, end_date]).aggregate(late_fine=Sum('total_late_attendance_fine'))['late_fine']
+
+                tin = employee.tax_info or ''
+
+                employee_salary_data.append({
+                    'index': len(employee_salary_data) + 1,
+                    'name': employee.full_name,
+                    'designation': employee.designation.title,
+                    'tin': tin,
+                    'gross_salary': total_gross_salary,
+                    'basic_salary': total_basic_salary,
+                    'house_allowance': total_house_allowance,
+                    'conveyance': total_conveyance,
+                    'medical_allowance': total_medical_allowance,
+                    'project_bonus': total_project_bonus,
+                    'overtime': total_overtime,
+                    'festival_bonus': total_festival_bonus,
+                    'leave_bonus': total_leave_bonus,
+                    'food_allowance': total_food_allowance,
+                    'tds': total_tds,
+                    'salary_loan': total_salary_emi,
+                    'late_fine': total_late_fine,
+                    'chalan_no': tressury_challn_no
+                })
+
+            # Generate Excel
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Salary Report"
+
+            # Headers for Excel sheet
+            headers = [
+                'SL No', 'Name of Employee', 'Designation', 'TIN', 'Total Salary', 'Basic (55%)',
+                'House Allowance (20%)', 'Conveyance (15%)', 'Medical Allowance (10%)',
+                'Project Bonus', 'Overtime', 'Festival Bonus', 'Leave Bonus',
+                'Food Allowance', 'TDS', 'Salary Loan EMI', 'Late Fine', 'Treasury Challan No'
+            ]
+            ws.append(headers)
+
+            # Populate Excel rows
+            for data in employee_salary_data:
+                ws.append([
+                    data['index'], data['name'], data['designation'], data['tin'],
+                    data['gross_salary'], data['basic_salary'], data['house_allowance'],
+                    data['conveyance'], data['medical_allowance'], data['project_bonus'],
+                    data['overtime'], data['festival_bonus'], data['leave_bonus'],
+                    data['food_allowance'], data['tds'], data['salary_loan'],
+                    data['late_fine'], data['chalan_no']
+                ])
+
+            # Save workbook to HTTP response
+            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response['Content-Disposition'] = f'attachment; filename=Salary_Report_{start_date}_to_{end_date}.xlsx'
+            wb.save(response)
+            return response
+        

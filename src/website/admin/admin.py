@@ -31,15 +31,18 @@ from website.models import (
     Award,
     AwardsBanner,
     BannerImage,
+    BenefitsOfEmployment,
     BlogFAQ,
     BlogModeratorFeedback,
     BlogStatus,
     CSRBanner,
+    Career,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
+    EmployeeTestimonial,
     EngagementModelBanner,
     EventCalender,
     Gallery,
@@ -99,6 +102,34 @@ from website.models import (
 )
 
 from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
+
+
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import (
+    UserAdmin as BaseUserAdmin,
+    GroupAdmin as BaseGroupAdmin,
+)
+
+
+class UserAdmin(BaseUserAdmin):
+    class Media:
+        js = ("js/custom_permission_search.js",)
+        # css = {"all": ("css/user.css",)}
+
+
+class GroupAdmin(BaseGroupAdmin):
+    class Media:
+        js = ("js/custom_permission_search.js",)
+        css = {"all": ("css/user.css",)}
+
+
+# Unregister the existing User admin
+admin.site.unregister(User)
+admin.site.unregister(Group)
+
+# Register the customized User admin
+admin.site.register(User, UserAdmin)
+admin.site.register(Group, GroupAdmin)
 
 
 @admin.register(Award)
@@ -1033,5 +1064,24 @@ class EventCalenderAdmin(admin.ModelAdmin):
     date_hierarchy = "publish_date"
     fields = ("title", "description", "image", "publish_date")
 
+    def has_module_permission(self, request):
+        return False
+
+
+class EmployeeTestimonialInline(admin.StackedInline):
+    model = EmployeeTestimonial
+    extra = 1
+    autocomplete_fields = ("employee",)
+    
+
+class BenefitsOfEmploymentInline(admin.StackedInline):
+    model = BenefitsOfEmployment
+    extra = 1
+    
+    
+@admin.register(Career)
+class CareerAdmin(admin.ModelAdmin):
+    inlines = [EmployeeTestimonialInline, BenefitsOfEmploymentInline]
+    
     def has_module_permission(self, request):
         return False
