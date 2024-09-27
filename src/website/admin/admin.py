@@ -31,15 +31,18 @@ from website.models import (
     Award,
     AwardsBanner,
     BannerImage,
+    BenefitsOfEmployment,
     BlogFAQ,
     BlogModeratorFeedback,
     BlogStatus,
     CSRBanner,
+    Career,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
+    EmployeeTestimonial,
     EngagementModelBanner,
     EventCalender,
     Gallery,
@@ -1061,5 +1064,24 @@ class EventCalenderAdmin(admin.ModelAdmin):
     date_hierarchy = "publish_date"
     fields = ("title", "description", "image", "publish_date")
 
+    def has_module_permission(self, request):
+        return False
+
+
+class EmployeeTestimonialInline(admin.StackedInline):
+    model = EmployeeTestimonial
+    extra = 1
+    autocomplete_fields = ("employee",)
+    
+
+class BenefitsOfEmploymentInline(admin.StackedInline):
+    model = BenefitsOfEmployment
+    extra = 1
+    
+    
+@admin.register(Career)
+class CareerAdmin(admin.ModelAdmin):
+    inlines = [EmployeeTestimonialInline, BenefitsOfEmploymentInline]
+    
     def has_module_permission(self, request):
         return False

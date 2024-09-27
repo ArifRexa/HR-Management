@@ -37,8 +37,11 @@ from settings.models import Designation
 from website.models import (
     Award,
     BannerImage,
+    BenefitsOfEmployment,
     BlogFAQ,
     BlogStatus,
+    Career,
+    EmployeeTestimonial,
     Gallery,
     HomeBanner,
     IndustryWeServe,
@@ -1230,3 +1233,18 @@ class LeadershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leadership
         exclude = ["created_at", "updated_at"]
+
+
+class EmployeeTestimonialSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source="employee.full_name")
+
+    class Meta:
+        model = EmployeeTestimonial
+        exclude = ["created_at", "updated_at", "employee", "career"]
+        
+
+class BenefitsOfEmploymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BenefitsOfEmployment
+        exclude = ["created_at", "updated_at", "career"]
+        

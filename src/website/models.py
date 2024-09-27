@@ -1,4 +1,3 @@
-from typing import Iterable
 from .hire_models import *  # noqa
 from django.db import models
 
@@ -21,9 +20,6 @@ class ServiceProcess(models.Model):
 
     def __str__(self):
         return self.title
-
-
-from django.core.exceptions import ValidationError
 
 
 class Industry(models.Model):
@@ -562,3 +558,34 @@ class EventCalender(TimeStampMixin):
     class Meta:
         verbose_name = "Event Calender Automate"
         verbose_name_plural = "Event Calender Automate"
+
+
+class Career(TimeStampMixin):
+    
+    def __str__(self):
+        return f"Career {self.id}"
+    
+    
+class EmployeeTestimonial(TimeStampMixin):
+    career = models.ForeignKey(Career, on_delete=models.CASCADE, related_name="testimonials")
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="testimonials",
+        limit_choices_to={"active": True},
+    )
+    title = models.CharField(max_length=255)
+    url = models.URLField(verbose_name="Video URL")
+    thumbnail = models.ImageField(upload_to="testimonial/thumbnails/", null=True, blank=True)
+    
+    def __str__(self):
+        return f"Testimonial {self.employee.full_name}"
+    
+
+class BenefitsOfEmployment(TimeStampMixin):
+    career = models.ForeignKey(Career, on_delete=models.CASCADE, related_name="benefits")
+    title = models.CharField(max_length=255)
+    icon = models.ImageField(upload_to="benefits")
+    
+    def __str__(self):
+        return self.title

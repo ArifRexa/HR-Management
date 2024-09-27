@@ -30,12 +30,15 @@ from settings.models import Designation
 from website.models import (
     FAQ,
     Award,
+    BenefitsOfEmployment,
     Blog,
     BlogComment,
     BlogStatus,
     Brand,
+    Career,
     Category,
     EmployeePerspective,
+    EmployeeTestimonial,
     Gallery,
     Industry,
     IndustryWeServe,
@@ -55,6 +58,7 @@ from website.models import (
 from website.serializers import (
     AvailableTagSerializer,
     AwardSerializer,
+    BenefitsOfEmploymentSerializer,
     BlogCommentSerializer,
     BlogDetailsSerializer,
     BlogListSerializer,
@@ -68,6 +72,7 @@ from website.serializers import (
     EmployeeNOCSerializer,
     EmployeePerspectiveSerializer,
     EmployeeSerializer,
+    EmployeeTestimonialSerializer,
     FAQSerializer,
     GallerySerializer,
     IndustrySerializer,
@@ -785,3 +790,15 @@ class LeadershipAPIView(RetrieveAPIView):
     
     def get_object(self):
         return self.queryset.first()
+
+
+class EmployeeTestimonialListAPIView(ListAPIView):
+    queryset = EmployeeTestimonial.objects.all()
+    serializer_class = EmployeeTestimonialSerializer
+    pagination_class = None
+    
+
+class BenefitsOfEmploymentListAPIView(ListAPIView):
+    queryset = BenefitsOfEmployment.objects.all()
+    serializer_class = BenefitsOfEmploymentSerializer
+    pagination_class = None
