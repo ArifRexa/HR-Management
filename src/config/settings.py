@@ -38,6 +38,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -69,6 +70,8 @@ INSTALLED_APPS = [
     "academy",
     "storages",
     "user_auth",
+    "chat",
+    "channels"
 ]
 
 MIDDLEWARE = [
@@ -122,7 +125,8 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "config.wsgi.application"
+# WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -177,16 +181,16 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-#STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
+# STATIC_URL = f"/{os.environ.get('STATIC_URL')}/"
 
-#STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
+# STATIC_ROOT = os.path.join(BASE_DIR, os.environ.get("STATIC_URL"))
 
 # STATICFILES_DIRS = [
 #     os.path.join(BASE_DIR, 'static')
 # ]
 
-#MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-#MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+# MEDIA_URL = f"/{os.environ.get('MEDIA_URL')}/"
 
 # alert message here
 from django.contrib.messages import constants as messages
@@ -252,10 +256,10 @@ TINYMCE_DEFAULT_CONFIG = {
     "contextmenu": "copy | paste | link",
     "images_upload_url": "/upload_image",
     "default_link_target": "_blank",
-    "content_style":"""
+    "content_style": """
         @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
         """,
-    'fontsize_formats': '8pt 10pt 12pt 14pt 16pt 18pt 20pt 22pt 24pt 28pt 32pt 36pt 40pt 48pt 56pt 64pt 72pt',
+    "fontsize_formats": "8pt 10pt 12pt 14pt 16pt 18pt 20pt 22pt 24pt 28pt 32pt 36pt 40pt 48pt 56pt 64pt 72pt",
     "font_formats": "Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde;"
     "Book Antiqua=book antiqua,palatino; Baskerville=baskerville,serif; Courier New=courier new,courier;"
     "Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif;"
@@ -317,6 +321,18 @@ REST_FRAMEWORK = {
 # ]
 
 
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [
+                ("127.0.0.1", "6379"),
+            ],
+        },
+    },
+}
+
+
 # settings.py
 
 CACHES = {
@@ -343,40 +359,36 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
     AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
-    AWS_S3_REGION_NAME = os.environ.get('REGION_NAME')  # e.g., 'us-west-2'
-    AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
+    AWS_S3_REGION_NAME = os.environ.get("REGION_NAME")  # e.g., 'us-west-2'
+    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com"
     AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
 
-
-
     # Optional: Specify different locations within the bucket for static and media files
-    STATICFILES_LOCATION = 'static'
-    MEDIAFILES_LOCATION = 'media'
-
+    STATICFILES_LOCATION = "static"
+    MEDIAFILES_LOCATION = "media"
 
     from storages.backends.s3boto3 import S3Boto3Storage
+
     # Define custom storage classes for static and media files
     class StaticStorage(S3Boto3Storage):
         location = STATICFILES_LOCATION
-        default_acl = 'public-read'
+        default_acl = "public-read"
 
     class MediaStorage(S3Boto3Storage):
         # bucket_name = 'mw-hr-staging'
         location = MEDIAFILES_LOCATION
         file_overwrite = True
-        default_acl = 'public-read'
-        custom_domain = f'{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com'
-
+        default_acl = "public-read"
+        custom_domain = f"{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com"
 
     # Static files (CSS, JavaScript, images)
-    STATICFILES_STORAGE = 'config.settings.StaticStorage'
-    STATIC_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/static/'
+    STATICFILES_STORAGE = "config.settings.StaticStorage"
+    STATIC_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/static/"
 
     # Media files (uploads)
-    DEFAULT_FILE_STORAGE = 'config.settings.MediaStorage'
+    DEFAULT_FILE_STORAGE = "config.settings.MediaStorage"
     # DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-    MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/media/'
-
+    MEDIA_URL = f"https://{AWS_S3_CUSTOM_DOMAIN}/media/"
 
     # STATIC_ROOT = "static"
     # MEDIA_ROOT = "media"
@@ -385,7 +397,7 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
 
     # Initialize the S3 client
     DEFAULT_S3_CLIENT = boto3.client(
-        's3',
+        "s3",
         region_name=AWS_S3_REGION_NAME,
         endpoint_url=AWS_S3_ENDPOINT_URL,
         aws_access_key_id=AWS_ACCESS_KEY_ID,
