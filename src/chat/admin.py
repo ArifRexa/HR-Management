@@ -72,9 +72,10 @@ class ChatAdmin(admin.ModelAdmin):
     @admin.display(description="Client")
     def get_client(self, obj):
         from django.contrib.humanize.templatetags.humanize import naturaltime
-
+        if not obj.client or not obj.messages.last():  # type: ignore
+            return "-"
         time = naturaltime(obj.messages.last().timestamp if obj.messages.last() else timezone.now())
-
+        # message_str = obj.messages.last().message if obj.messages.last() else "No message"
         html_str = (
             f"{obj.client.email}<p>{obj.messages.last().message}</p><p>{time}</p>"
         )
