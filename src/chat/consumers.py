@@ -1,55 +1,70 @@
-import os
-import base64
 import logging
+import base64
 from channels.generic.websocket import (
     AsyncJsonWebsocketConsumer,
 )
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.db.models import Count, Q
 from django.core.files.base import ContentFile
-from django.contrib.contenttypes.models import ContentType
 
-from chat.models import Chat
+from chat.models import Chat, ChatStatus, Message, MessageAttachment
+
+from channels.db import database_sync_to_async
+
+logger = logging.getLogger(__name__)
+
+
+class ActivityConsumer(AsyncJsonWebsocketConsumer):
+    async def connect(self):
+        print("connected")
+        self.group_name = "chat_agent"
+        await self.channel_layer.group_add(self.group_name, self.channel_name)
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        print("disconnected")
+
+    async def receive_json(self, content):
+        print(content)
+
+    async def new_chat(self, event):
+        await self.send_json(event)
+
+    async def new_message(self, event):
+        await self.send_json(event)
 
 
 class ChatConsumer(AsyncJsonWebsocketConsumer):
-    receiver_id: int
+    @database_sync_to_async
+    def get_chat(self, chat_id):
+        return Chat.objects.get(chat_id=chat_id)
 
-    # @database_sync_to_async
-    # async def get_user(self, user_id):
-    #     return User.objects.aget(id=user_id)
+    @database_sync_to_async
+    def update_chat(self, chat: Chat, **kwargs):
+        return Chat.objects.filter(chat_id=chat.chat_id).update(**kwargs)
+
+    @database_sync_to_async
+    def add_agent(self, chat: Chat, user_id):
+        chat.status = ChatStatus.ACTIVE
+        chat.save()
+        return chat.agent.add(user_id)
+
+    @database_sync_to_async
+    def get_last_message(self, chat: Chat):
+        return chat.messages.last()
 
     async def connect(self):
         print("connected")
-        receiver_id = int(self.scope["url_route"]["kwargs"].get("receiver")) # get uuid for unique channel
-        self.receiver_id = receiver_id
-        self.room_name = receiver_id
+        self.chat_id = self.scope["url_route"]["kwargs"].get(
+            "chat_id"
+        )  # get uuid for unique channel
+        # self.receiver_id = chat_id
+        self.room_name = self.chat_id
         self.room_group_name = f"chat_{self.room_name}"
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        participants = {receiver_id, self.scope["user"].id}
-        # existing_chat = (
-        #     await Chat.objects.annotate(
-        #         count_participants=Count(
-        #             "participants",
-        #             filter=Q(participants__id__in=list(participants)),
-        #         )
-        #     )
-        #     .filter(count_participants=len(participants))
-        #     .afirst()
-        # )
-        # if existing_chat:
-        #     self.chat = existing_chat
-        # else:
-        if (
-            receiver_id
-            and self.scope["user"].id
-            and (receiver_id != self.scope["user"].id)
-        ):
-            chat = Chat(chat_id=self.receiver_id)
-            await chat.asave()
-            await chat.participants.aadd(*participants)
-            self.chat = chat
+        self.chat = await self.get_chat(chat_id=self.chat_id)
+        self.is_first = await self.get_last_message(self.chat)
+        self.agent = self.scope["user"]
+        if self.agent.id:
+            await self.add_agent(self.chat, self.agent.id)
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -59,109 +74,139 @@ class ChatConsumer(AsyncJsonWebsocketConsumer):
         )
         print("disconnected")
 
-    async def receive(self, text_data, *args, **kwargs):
-        event = await self.decode_json(text_data)
-        attachments = event.get("attachments", [])
-        message_attachments = []
-        user = self.scope["user"]
-        # user_image = (ws_media_baseurl + user.image.url) if user.image else None
-        print("event,", event)
-        if event.get("type") == "chat_message":
-            print("chat_message", event)
-            # tagged_item = event.get("tagged_item", {})
-            # message = await Message.objects.acreate(
-            #     message=event.get("message"),
-            #     sender=user,
-            #     chat=self.chat,
-            #     content_type_id=tagged_item.get("content_type"),
-            #     object_id=tagged_item.get("object_id"),
-            # )
-            # self.chat.last_message = message
-            # for attachment in attachments:
-            #     if attachment.get("name") and attachment.get("base64"):
-            #         name = attachment.get("name")
-            #         message_attachments.append(
-            #             MessageAttachment(
-            #                 message=message,
-            #                 attachment=ContentFile(
-            #                     base64.b64decode(attachment.get("base64")),
-            #                     name=name,
-            #                 ),
-            #             )
-            #         )
-            # attachments = await MessageAttachment.objects.abulk_create(
-            #     message_attachments
-            # )
-            # await self.chat.asave()
-            # if content_type := await ContentType.objects.filter(
-            #     id=tagged_item.get("content_type")
-            # ).afirst():
-            #     tagged_item = {
-            #         "app_label": content_type.app_label,
-            #         "model": content_type.model,
-            #         "object_id": message.object_id,
-            #     }
+    @database_sync_to_async
+    def add_message(self, message):
+        creator_name = None
+        if self.agent.id:
+            creator_name = self.agent.employee.full_name
+        else:
+            creator_name = self.chat.client.name
+        return Message.objects.create(
+            chat=self.chat, message=message, creator_name=creator_name
+        )
 
+    @database_sync_to_async
+    def get_message_count(self, chat: Chat):
+        return chat.messages.count()
+
+    @database_sync_to_async
+    def get_client(self, chat: Chat):
+        return chat.client
+
+    @database_sync_to_async
+    def add_attachments(self, attachments):
+        return MessageAttachment.objects.bulk_create(attachments)
+
+    async def receive_json(self, content):
+        action = content.get("type")
+        if action == "chat_message":
+            message = content.get("message")
+            attachments = content.get("attachments", [])
+            message_attachments = []
+            message_obj = await self.add_message(message)
+            for attachment in attachments:
+                if attachment.get("fileName") and attachment.get("base64"):
+                    name = attachment.get("fileName")
+                    message_attachments.append(
+                        MessageAttachment(
+                            message=message_obj,
+                            attachment=ContentFile(
+                                base64.b64decode(attachment.get("base64")),
+                                name=name,
+                            ),
+                        )
+                    )
+
+            
+            attachments_obj = await self.add_attachments(message_attachments)
+            message_count = await self.get_message_count(self.chat)
+            client = await self.get_client(self.chat)
+            if message_count <= 1:
+                await self.channel_layer.group_send(
+                    "chat_agent",
+                    {
+                        "type": "new_chat",
+                        "message": message,
+                        "agent": self.agent.employee.full_name
+                        if self.agent.id
+                        else None,
+                        "chat_id": str(self.chat.chat_id),
+                        "timestamp": message_obj.timestamp.strftime(
+                            "%b %d %Y, %I:%M %p"
+                        ),
+                        "is_first": True if self.is_first else False,
+                        "client": client.name or client.email,
+                        "status": self.chat.get_status_display(),
+                        "attachment": [item.attachment.url for item in attachments_obj if item.attachment],
+                    },
+                )
+            # New message to
+            await self.channel_layer.group_send(
+                "chat_agent",
+                {
+                    "type": "new_message",
+                    "message": message,
+                    "agent": self.agent.employee.full_name if self.agent.id else None,
+                    "chat_id": str(self.chat.chat_id),
+                    "timestamp": message_obj.timestamp.strftime("%b %d %Y, %I:%M %p"),
+                    "is_first": True if self.is_first else False,
+                    "client": self.chat.client.name or self.chat.client.email,
+                    "status": self.chat.get_status_display(),
+                    "attachment": [item.attachment.url for item in attachments_obj if item.attachment],
+                },
+            )
+            # Send message to room group
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
-                    "type": "chat.message",
-                    "message": event.get("message"),
-                    "username": "username",
+                    "type": "chat_message",
+                    "message": message,
+                    "agent": self.agent.employee.full_name if self.agent.id else None,
+                    "message_id": message_obj.id,
+                    "timestamp": message_obj.timestamp.strftime("%b %d %Y, %I:%M %p"),
+                    "is_first": True if self.is_first else False,
+                    "attachment": [item.attachment.url for item in attachments_obj if item.attachment],
+                },
+            )
+        elif action == "close":
+            await self.update_chat(chat=self.chat, status=ChatStatus.CLOSED)
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name,
+            )
+        elif action == "message_seen":
+            print("message_seen")
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "message_seen",
+                    # "sender": self.agent.employee.full_name if self.agent.id else None,
                 },
             )
 
-        elif event.get("type") == "message_seen":
-            pass
-        print("receive", text_data)
-
     async def chat_message(self, event):
-        message = event["message"]
-        username = event["username"]
-
-        # Send message to WebSocket
-        # await self.send(text_data=json.dumps({
-        #     'message': message,
-        #     'username': username
-        # }))
-        await self.send_json({"message": message, "username": username})
-
-    # async def chat_message(self, event):
-    #     message = event["message"]
-    #     sender = event["sender"]
-    #     chat_id = event["chat_id"]
-    #     message_id = event["message_id"]
-    #     await self.send_json(
-    #         {
-    #             "type": "chat_message",
-    #             "user_id": sender.get("id"),
-    #             "chat_id": chat_id,
-    #             "message_id": message_id,
-    #             "timestamp": event["timestamp"],
-    #             "message": message,
-    #             "attachments": event.get("attachments", []),
-    #             "has_attachment": bool(event.get("attachments", [])),
-    #             "tagged_item": event.get("tagged_item", None),
-    #             "sender": {
-    #                 **sender,
-    #                 "is_me": self.scope["user"].id == sender.get("id"),
-    #             },
-    #         }
-    #     )
+        await self.send_json(
+            {
+                "message": event["message"],
+                "agent": event["agent"],
+                "message_id": event["message_id"],
+                "timestamp": event["timestamp"],
+                "is_first": event["is_first"],
+                "attachment": [item for item in event["attachment"]],
+            }
+        )
 
     async def user_offline(self, event):
         await self.send_json("user offline")
 
+    @database_sync_to_async
+    def update_message(self, message, **kwargs):
+        return Message.objects.filter(id=message.id).update(**kwargs)
+
     async def message_seen(self, event):
-        sender = event["sender"]
+        await self.update_message(self.chat.messages.last(), is_seen=True)
         await self.send_json(
             {
                 "type": "message_seen",
-                # "message_id": message_id,
-                # "message": message,
-                "sender": {
-                    **sender,
-                    "is_me": self.scope["user"].id == sender.get("id"),
-                },
             }
         )
