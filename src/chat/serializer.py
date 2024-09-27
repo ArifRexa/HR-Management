@@ -18,35 +18,6 @@ class ChatUserSerializer(serializers.ModelSerializer):
         return data
 
 
-class ChildPromptSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ChatPrompt
-        fields = (
-            "id",
-            "prompt",
-        )
-        depth=0
-    
-    def __init__(self, *args, **kwargs):
-        # Pass dynamic depth through kwargs or set it based on conditions
-        dynamic_depth = kwargs.pop('depth_count', None)
-        super().__init__(*args, **kwargs)
-        
-        if dynamic_depth is not None:
-            self.Meta.depth = dynamic_depth
-
-
-# class ChatPromptSerializer(serializers.ModelSerializer):
-    
-#     class Meta:
-#         model = ChatPrompt
-#         fields = (
-#             "id",
-#             "prompt",
-#         )
-
-
-
 class ChatPromptSerializer(serializers.ModelSerializer):
     childrens = serializers.SerializerMethodField()
 
