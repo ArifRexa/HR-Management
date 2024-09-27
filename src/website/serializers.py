@@ -1240,11 +1240,11 @@ class EmployeeTestimonialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = EmployeeTestimonial
-        exclude = ["created_at", "updated_at", "employee"]
+        exclude = ["created_at", "updated_at", "employee", "career"]
         
 
 class BenefitsOfEmploymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BenefitsOfEmployment
-        exclude = ["created_at", "updated_at",]
+        exclude = ["created_at", "updated_at", "career"]
         
