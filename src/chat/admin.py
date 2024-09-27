@@ -72,12 +72,10 @@ class ChatAdmin(admin.ModelAdmin):
     @admin.display(description="Client")
     def get_client(self, obj):
         from django.contrib.humanize.templatetags.humanize import naturaltime
-        if not obj.client or not obj.messages.last():  # type: ignore
-            return "-"
         time = naturaltime(obj.messages.last().timestamp if obj.messages.last() else timezone.now())
-        # message_str = obj.messages.last().message if obj.messages.last() else "No message"
+        message_str = obj.messages.last().message if obj.messages.last() else ""
         html_str = (
-            f"{obj.client.email}<p>{obj.messages.last().message}</p><p>{time}</p>"
+            f"{obj.client.email}<p>{message_str}</p><p>{time}</p>"
         )
         return format_html(html_str)
 
@@ -87,11 +85,6 @@ class ChatAdmin(admin.ModelAdmin):
             Message.objects.filter(chat=OuterRef("pk"))
             .order_by("-id")
             .values("is_seen")[:1]
-        )
-        d = (
-            Chat.objects.annotate(last_message_seen=Subquery(last_message))
-            .filter(last_message_seen=False)
-            .values("last_message_seen")
         )
         context["unseen_message_count"] = (
             Chat.objects.annotate(last_message_seen=Subquery(last_message))
