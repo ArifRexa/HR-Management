@@ -62,7 +62,7 @@ class ChatAdmin(admin.ModelAdmin):
         obj = self.get_object(request=request, object_id=object_id)
         message = Message.objects.filter(chat=obj).order_by("timestamp")
         last_message = message.last()
-        if not last_message.is_seen:
+        if last_message and not last_message.is_seen:
             last_message.is_seen = True
             last_message.save()
         context["messages"] = message
