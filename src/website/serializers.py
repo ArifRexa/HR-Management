@@ -37,8 +37,11 @@ from settings.models import Designation
 from website.models import (
     Award,
     BannerImage,
+    BenefitsOfEmployment,
     BlogFAQ,
     BlogStatus,
+    Career,
+    EmployeeTestimonial,
     Gallery,
     HomeBanner,
     IndustryWeServe,
@@ -1127,6 +1130,10 @@ class WebsiteTitleSerializer(serializers.ModelSerializer):
     project_client_review = BaseTitleSerializer(
         source="projectclientreviewtitle", read_only=True
     )
+    employee_testimonial = BaseTitleSerializer(
+        source="employeetestimonialtitle", read_only=True
+    )
+    benefits = BaseTitleSerializer(source="benefitsofemploymenttitle", read_only=True)
 
     class Meta:
         model = WebsiteTitle
@@ -1165,6 +1172,7 @@ class PageBannerSerializer(serializers.ModelSerializer):
     contact = BaseBannerImageSerializer(source="contactbanner", read_only=True)
     all_projects = BaseBannerImageSerializer(source="allprojectsbanner", read_only=True)
     leader_ship = BaseBannerImageSerializer(source="leadershipbanner", read_only=True)
+    career = BaseBannerImageSerializer(source="careerbanner", read_only=True)
 
     class Meta:
         model = PageBanner
@@ -1230,3 +1238,18 @@ class LeadershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = Leadership
         exclude = ["created_at", "updated_at"]
+
+
+class EmployeeTestimonialSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source="employee.full_name")
+
+    class Meta:
+        model = EmployeeTestimonial
+        exclude = ["created_at", "updated_at", "employee", "career"]
+        
+
+class BenefitsOfEmploymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BenefitsOfEmployment
+        exclude = ["created_at", "updated_at", "career"]
+        

@@ -31,15 +31,21 @@ from website.models import (
     Award,
     AwardsBanner,
     BannerImage,
+    BenefitsOfEmployment,
+    BenefitsOfEmploymentTitle,
     BlogFAQ,
     BlogModeratorFeedback,
     BlogStatus,
     CSRBanner,
+    Career,
+    CareerBanner,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
+    EmployeeTestimonial,
+    EmployeeTestimonialTitle,
     EngagementModelBanner,
     EventCalender,
     Gallery,
@@ -920,6 +926,17 @@ class ProjectClientReviewTitleInline(admin.StackedInline):
     model = ProjectClientReviewTitle
     can_delete = False
     extra = 1
+    
+class EmployeeTestimonialTitleInline(admin.StackedInline):
+    model = EmployeeTestimonialTitle
+    can_delete = False
+    extra = 1
+    
+
+class BenefitsOfEmploymentTitleInline(admin.StackedInline):
+    model = BenefitsOfEmploymentTitle
+    can_delete = False
+    extra = 1
 
 
 # Register the WebsiteTitle admin with all the inlines
@@ -946,6 +963,8 @@ class WebsiteTitleAdmin(admin.ModelAdmin):
         ProjectResultsTitleInline,
         ProjectServiceSolutionInline,
         ProjectTechnologyTitleInline,
+        EmployeeTestimonialTitleInline,
+        BenefitsOfEmploymentTitleInline,
     ]
 
 
@@ -1018,6 +1037,10 @@ class ContactBannerInline(BaseInline):
 class AllProjectsBannerInline(BaseInline):
     model = AllProjectsBanner
     verbose_name = "All Projects Banner"
+    
+class CareerBannerInline(BaseInline):
+    model = CareerBanner
+    verbose_name = "Career Banner"
 
 
 @admin.register(PageBanner)
@@ -1036,6 +1059,7 @@ class PageBannerAdmin(admin.ModelAdmin):
         ContactBannerInline,
         AllProjectsBannerInline,
         LeaderShipBannerInline,
+        CareerBannerInline,
     ]
 
 
@@ -1061,5 +1085,24 @@ class EventCalenderAdmin(admin.ModelAdmin):
     date_hierarchy = "publish_date"
     fields = ("title", "description", "image", "publish_date")
 
+    def has_module_permission(self, request):
+        return False
+
+
+class EmployeeTestimonialInline(admin.StackedInline):
+    model = EmployeeTestimonial
+    extra = 1
+    autocomplete_fields = ("employee",)
+    
+
+class BenefitsOfEmploymentInline(admin.StackedInline):
+    model = BenefitsOfEmployment
+    extra = 1
+    
+    
+@admin.register(Career)
+class CareerAdmin(admin.ModelAdmin):
+    inlines = [EmployeeTestimonialInline, BenefitsOfEmploymentInline]
+    
     def has_module_permission(self, request):
         return False

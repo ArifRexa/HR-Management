@@ -5,9 +5,11 @@ from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIV
 from website.models import LifeAtMediusware
 from website.views import (
     AwardListView,
+    BenefitsOfEmploymentListAPIView,
     ClientListAPIView,
     ClientLogoListView,
     ClientReviewListAPIView,
+    EmployeeTestimonialListAPIView,
     GalleryListView,
     IndustryWeServeListAPIView,
     LeadershipAPIView,
@@ -219,6 +221,8 @@ api_v2_urls = [
     path("client-review/", ClientReviewListAPIView.as_view(), name="client_review"),
     path("blog/preview/<slug:slug>/", PreviewBlogRetrieveAPIView.as_view(), name="blog_preview"),
     path("leadership/", LeadershipAPIView.as_view(), name="leadership"),
+    path("employee-testimonial/", EmployeeTestimonialListAPIView.as_view(), name="employee_testimonial"),
+    path("benefits/", BenefitsOfEmploymentListAPIView.as_view(), name="benefits"),
 ]
 
 urlpatterns = [
