@@ -32,17 +32,20 @@ from website.models import (
     AwardsBanner,
     BannerImage,
     BenefitsOfEmployment,
+    BenefitsOfEmploymentTitle,
     BlogFAQ,
     BlogModeratorFeedback,
     BlogStatus,
     CSRBanner,
     Career,
+    CareerBanner,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
     EmployeeTestimonial,
+    EmployeeTestimonialTitle,
     EngagementModelBanner,
     EventCalender,
     Gallery,
@@ -923,6 +926,17 @@ class ProjectClientReviewTitleInline(admin.StackedInline):
     model = ProjectClientReviewTitle
     can_delete = False
     extra = 1
+    
+class EmployeeTestimonialTitleInline(admin.StackedInline):
+    model = EmployeeTestimonialTitle
+    can_delete = False
+    extra = 1
+    
+
+class BenefitsOfEmploymentTitleInline(admin.StackedInline):
+    model = BenefitsOfEmploymentTitle
+    can_delete = False
+    extra = 1
 
 
 # Register the WebsiteTitle admin with all the inlines
@@ -949,6 +963,8 @@ class WebsiteTitleAdmin(admin.ModelAdmin):
         ProjectResultsTitleInline,
         ProjectServiceSolutionInline,
         ProjectTechnologyTitleInline,
+        EmployeeTestimonialTitleInline,
+        BenefitsOfEmploymentTitleInline,
     ]
 
 
@@ -1021,6 +1037,10 @@ class ContactBannerInline(BaseInline):
 class AllProjectsBannerInline(BaseInline):
     model = AllProjectsBanner
     verbose_name = "All Projects Banner"
+    
+class CareerBannerInline(BaseInline):
+    model = CareerBanner
+    verbose_name = "Career Banner"
 
 
 @admin.register(PageBanner)
@@ -1039,6 +1059,7 @@ class PageBannerAdmin(admin.ModelAdmin):
         ContactBannerInline,
         AllProjectsBannerInline,
         LeaderShipBannerInline,
+        CareerBannerInline,
     ]
 
 
