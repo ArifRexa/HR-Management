@@ -78,3 +78,6 @@ flake8==6.1.0
 slackclient==2.9.4
 weasyprint==60.2
 user-agents==2.2.0
+# update setuptools before
+channels==3.0.1
+channels-redis==3.3.1
