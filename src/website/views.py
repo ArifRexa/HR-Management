@@ -391,7 +391,10 @@ class BlogDetailsView(RetrieveAPIView):
 
     def retrieve(self, request, *args, **kwargs):
         blog = self.get_object()
-        blog.total_view += 1
+        if blog.total_view is None:
+            blog.total_view = 1
+        else:
+            blog.total_view += 1
         blog.save()
         response = super().retrieve(request, *args, **kwargs)
         response.headers["Access-Control-Allow-Origin"] = "*"
