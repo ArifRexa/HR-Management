@@ -439,6 +439,14 @@ class ProjectClientReviewTitle(BaseModelTitle):
     pass
 
 
+class EmployeeTestimonialTitle(BaseModelTitle):
+    pass
+
+
+class BenefitsOfEmploymentTitle(BaseModelTitle):
+    pass
+
+
 class PageBanner(TimeStampMixin):
     def __str__(self):
         return str(self.id)
@@ -509,6 +517,10 @@ class LeaderShipBanner(BannerImage):
     pass
 
 
+class CareerBanner(BannerImage):
+    pass
+
+
 class Leadership(TimeStampMixin):
     title = models.CharField(max_length=255)
     sub_title = models.TextField()
@@ -561,13 +573,14 @@ class EventCalender(TimeStampMixin):
 
 
 class Career(TimeStampMixin):
-    
     def __str__(self):
         return f"Career {self.id}"
-    
-    
+
+
 class EmployeeTestimonial(TimeStampMixin):
-    career = models.ForeignKey(Career, on_delete=models.CASCADE, related_name="testimonials")
+    career = models.ForeignKey(
+        Career, on_delete=models.CASCADE, related_name="testimonials"
+    )
     employee = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
@@ -576,16 +589,20 @@ class EmployeeTestimonial(TimeStampMixin):
     )
     title = models.CharField(max_length=255)
     url = models.URLField(verbose_name="Video URL")
-    thumbnail = models.ImageField(upload_to="testimonial/thumbnails/", null=True, blank=True)
-    
+    thumbnail = models.ImageField(
+        upload_to="testimonial/thumbnails/", null=True, blank=True
+    )
+
     def __str__(self):
         return f"Testimonial {self.employee.full_name}"
-    
+
 
 class BenefitsOfEmployment(TimeStampMixin):
-    career = models.ForeignKey(Career, on_delete=models.CASCADE, related_name="benefits")
+    career = models.ForeignKey(
+        Career, on_delete=models.CASCADE, related_name="benefits"
+    )
     title = models.CharField(max_length=255)
     icon = models.ImageField(upload_to="benefits")
-    
+
     def __str__(self):
         return self.title
