@@ -63,7 +63,39 @@
     </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log("filter")
+
+        const ParentDiv = document.getElementById('content')
+        const filterDiv = document.getElementById('changelist-filter')
+        if (filterDiv) {
+        // Step 2: Create the button element
+        const button = document.createElement('button');
+        button.className = 'sticky toggle-nav-sidebar';
+        button.id = 'toggle-nav-sidebar';
+        button.setAttribute('aria-label', 'Toggle navigation');
+
+        // Step 3: Insert the button after the .changelist-filter div
+        ParentDiv.insertAdjacentElement('beforeend', button);
+
+        button.style.position = 'fixed';  // Fixed position for stable placement
+        button.style.left = '1800px';       // Adjust left position as needed
+        button.style.top = '63%';         // Center it vertically in the middle of the page
+        button.style.transform = 'translateY(-50%)'; // Shift the button upwards by 50% of its own height to center it
+        
+
+        button.addEventListener('click',function(){
+            if (filterDiv.style.display === 'none'){
+                filterDiv.style.display = 'block'
+            }
+            else{
+                filterDiv.style.display = 'none'
+            }
+            
+        })
+    }
+
+
+    toggle_button = document.getElementById('toggle-nav-sidebar').addEventListener('')
+
         // Get the filter section
         var filterSection = document.querySelector('#changelist-filter');
         const key_obj = JSON.parse(localStorage.getItem("filter_id"))
