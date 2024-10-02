@@ -29,7 +29,7 @@ def thank_you_message_to_author(blog: Blog, url):
     )
 
     email = EmailMultiAlternatives(
-        subject="🎉 Congrats! Your Blog is Approved—Enjoy a 30-Hour Bonus!"
+        subject="🎉 Congrats! Your Blog is Approved—Enjoy a 15-Hour Bonus!"
     )
     email.attach_alternative(html_content, "text/html")
     email.to = [employee.email]
