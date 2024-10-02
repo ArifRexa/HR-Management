@@ -657,16 +657,16 @@ class BlogAdmin(admin.ModelAdmin):
                     hours=30,
                     status="approved",
                 )
-                anouncement = Announcement.objects.create(
-                    start_datetime=timezone.now(),
-                    end_datetime=timezone.now()
-                    + timedelta(days=1),  # Assuming the end is the next day
-                    description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!",  # Add context to the description
-                )
+                # anouncement = Announcement.objects.create(
+                #     start_datetime=timezone.now(),
+                #     end_datetime=timezone.now()
+                #     + timedelta(days=1),  # Assuming the end is the next day
+                #     description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!",  # Add context to the description
+                # )
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
-                    hours=30,
+                    hours=15,
                 )
                 print(project_hour, employee_hour)
         else:
