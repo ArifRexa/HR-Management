@@ -654,7 +654,7 @@ class BlogAdmin(admin.ModelAdmin):
                     manager_id=30,
                     hour_type="bonus",
                     date=timezone.now().date(),
-                    hours=30,
+                    hours=15,
                     status="approved",
                 )
                 # anouncement = Announcement.objects.create(
