@@ -26,6 +26,10 @@ class DailyUpdateFilterForm(forms.Form):
     created_at__date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type':'date'}))
     created_at__date__lte = forms.DateField(label='To', widget=AdminDateWidget(attrs={'type':'date'}))
 
+class DailyExpenseFilterForm(forms.Form):
+    date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type': 'date'}))
+    date__lte = forms.DateField(label='To', widget=AdminDateWidget(attrs={'type': 'date'}))
+
 
 class NOCIntermediateForm(forms.Form):
     noc_body = forms.CharField(label="NOC Body Text", widget=forms.Textarea)
