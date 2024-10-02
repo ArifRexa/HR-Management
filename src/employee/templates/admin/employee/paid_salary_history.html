@@ -15,7 +15,8 @@
                 <th>Leave Bonus</th>
                 <th>Festival Bonus</th>
                 <th>Food Allowance</th>
-                <th>Loan</th>
+                <th>Tax Loan</th>
+                <th>Salary Loan</th>
                 <th>Late Fine</th>
                 <th>Gross Salary</th>
             </tr>
@@ -31,7 +32,8 @@
                     <td>{{ employee_salary.festival_bonus }}</td>
                     <td>{{ employee_salary.food_allowance }}</td>
                     <td>{{ employee_salary.loan_emi }}</td>
-                    <td>{{ employee_salary.total_fine|default_if_none:"0.00" }}</td>
+                    <td>{{employee_salary.salary_loan|floatformat:1|default:"0"}}</td>
+                    <td>{{ employee_salary.total_fine|floatformat:1|default:"0" }}</td>
                     <td>{{ employee_salary.gross_salary }}</td>
                 </tr>
             {% endfor %}
