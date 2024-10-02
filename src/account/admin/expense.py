@@ -14,6 +14,7 @@ from django.utils.html import format_html
 from account.models import Expense, ExpenseCategory, ExpanseAttachment, ExpenseGroup
 from config.admin.utils import simple_request_filter
 from config.utils.pdf import PDF
+from employee.admin.employee._forms import DailyExpenseFilterForm
 from employee.models import Employee
 
 from django.contrib import messages
@@ -92,8 +93,20 @@ class ExpenseAdmin(admin.ModelAdmin):
         return qs.aggregate(total=Sum('amount'))['total']
 
     def changelist_view(self, request, extra_context=None):
+
+        filter_form = DailyExpenseFilterForm(
+            initial={
+                "date__gte": request.GET.get(
+                    "date__gte", timezone.now().date() - datetime.timedelta(days=7)
+                ),
+                "date__lte": request.GET.get(
+                    "date__lte", timezone.now().date()
+                ),
+            }
+        )
         my_context = {
             'total': self.get_total_hour(request),
+            'filter_form':filter_form
         }
         return super().changelist_view(request, extra_context=my_context)
 
