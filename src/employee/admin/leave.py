@@ -96,7 +96,6 @@ class LeaveManagement(admin.ModelAdmin):
         "manager_approval",
         "status_",
         "date_range",
-        'management__feedback',
          "attachment_link", 
         
     ]
@@ -124,12 +123,12 @@ class LeaveManagement(admin.ModelAdmin):
             # Use the first attachment's URL
             url = attachments[0].attachment.url
             return format_html(
-                '<a href="{}" target="_blank" style="color: black;">&#x1F4C4;</a>',  # 📄 document icon
+                '<a href="{}" target="_blank" style="color: black;">&#x1F4C4;</a>', 
                 url
             )
         else:
             # Return an icon for no attachment with black color
-            return format_html('<span style="color: black;">&#x1F4C4;</span>')  # Document icon (no attachment)
+            return '' # Document icon (no attachment)
 
     attachment_link.short_description = "Attachments"
    
@@ -337,11 +336,22 @@ class LeaveManagement(admin.ModelAdmin):
 
     @admin.display()
     def status_(self, leave: Leave):
+        data = ''
         html_template = get_template("admin/leave/list/col_leave_day.html")
+        
+        if leave.status == 'pending':
+            data = '⏳'
+        elif leave.status == 'approved':
+            data = '✅'
+        elif leave.status == 'rejected':
+            data = '⛔'
+        else:
+            data = '🤔'
+            
         html_content = html_template.render(
             {
                 # 'use_get_display':True,
-                "data": leave.get_status_display(),
+                "data": data,
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
