@@ -29,7 +29,7 @@ class LoadAdmin(admin.ModelAdmin):
     actions = ('print_loan_agreement', 'duplicate')
     list_filter = ('loan_type','employee',)
     search_fields = ('employee__full_name',)
-    date_hierarchy = 'created_at'
+    date_hierarchy = 'effective_date'
     change_list_template = ('admin/loan.html')
 
     @admin.action(description='Print Agreement')

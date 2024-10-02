@@ -1,4 +1,5 @@
 import datetime
+from decimal import Decimal
 import functools
 import operator
 from django.db.models.functions import ExtractMonth, ExtractYear
@@ -9,6 +10,7 @@ from django.db.models import Q, Case, When, Value, Count, Max, Subquery, OuterRe
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
+from account.models import Loan
 from employee.models import Employee, Leave
 from employee.models.employee import LateAttendanceFine, Observation
 
@@ -76,25 +78,38 @@ class FormalView(admin.ModelAdmin):
             raise PermissionDenied
 
         employee = Employee.objects.get(id=employee_id)
-        employee_late_entry_fine = (
-            LateAttendanceFine.objects.filter(
-                employee=OuterRef("employee"),
-                month=OuterRef("month"),
-                year=OuterRef("year"),
-            )
-            .annotate(fine=Sum("total_late_attendance_fine"))
-            .values("fine")[:1]
-        )
+
+        #Calculate Late Attendance Fine
+        late_fine_subquery = LateAttendanceFine.objects.filter(
+                employee_id=OuterRef('employee_id'),  # Match employee
+                date__month=OuterRef('month')  # Match month of late fine and salary sheet
+                ).values('employee_id').annotate(
+                    total_fine=Sum('total_late_attendance_fine')
+                ).values('total_fine')
+        
+        #Calculate Salary Loan
+        salary_loan_subquery = Loan.objects.filter( 
+            employee_id = OuterRef('employee_id'),
+            loan_type = 'salary',
+            start_date__month = OuterRef('month'),
+            end_date__month = OuterRef('month')
+
+        ).values('employee_id').annotate(
+            total_loan = Sum('emi')
+        ).values('total_loan')
 
         employee_salaries = (
             employee.employeesalary_set.filter(employee_id__exact=employee_id)
             .annotate(
-                month=ExtractMonth("salary_sheet__date"),
-                year=ExtractYear("salary_sheet__date"),
-                total_fine=Subquery(employee_late_entry_fine),
+                month = ExtractMonth('salary_sheet__date'),
+                total_fine=Subquery(late_fine_subquery, output_field=models.DecimalField()),
+                salary_loan = Subquery(salary_loan_subquery,output_field=models.DecimalField())
             )
             .order_by("-id")
         )
+        for e in employee_salaries:
+            print(e.salary_loan)
+
         employee_festival_bonuses = employee.employeefestivalbonus_set.filter(
             employee_id__exact=employee_id
         ).order_by("-id")

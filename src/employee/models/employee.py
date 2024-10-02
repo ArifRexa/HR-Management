@@ -687,8 +687,8 @@ class Observation(TimeStampMixin, AuthorMixin):
 
 class LateAttendanceFine(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    month = models.IntegerField()
-    year = models.IntegerField()
+    month = models.IntegerField(null=True,blank=True)
+    year = models.IntegerField(null=True,blank=True)
     total_late_attendance_fine = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(default=datetime.now, null=True, blank=True)
 
