@@ -895,8 +895,8 @@ class SalarySheetRepository:
     
     def _calculate_salary_loan(self, employee: Employee, salary_date: datetime.date):
         employee_loans = employee.loan_set.filter(
-            start_date__month=salary_date.month,
-            end_date__year=salary_date.year,
+            start_date__lte=salary_date,
+            end_date__gte=salary_date,
             loan_type='salary'
             ).aggregate(Sum("emi"))
         print(employee_loans["emi__sum"],employee)

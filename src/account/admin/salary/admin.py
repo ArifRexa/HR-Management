@@ -116,8 +116,8 @@ class EmployeeSalaryInline(admin.TabularInline):
 
     def get_salary_loan(self, obj):
         salary_loan = obj.employee.loan_set.filter(
-            start_date__month=obj.salary_sheet.date.month,
-            end_date__year=obj.salary_sheet.date.year,
+            start_date__lte=obj.salary_sheet.date,
+            end_date__gte=obj.salary_sheet.date,
             loan_type="salary"
         )
         loan_amount = salary_loan.aggregate(Sum("emi"))
