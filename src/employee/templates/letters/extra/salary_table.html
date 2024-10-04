@@ -2,9 +2,11 @@
 {% load humanize_extra %}
 
 You will receive a total compensation of
-<b>BDT {{ employee.joining_salary.payable_salary | add:3000 | intcomma}} ({{ employee.joining_salary.payable_salary |  add:3000 | num_to_word }} taka)</b> in
-the following breakdown: <br> 
-<p><b>Note:</b> {{ employee.joining_salary.note }}</p>
+<b>BDT {{ payable_salary | add:3000 | intcomma}} ({{ payable_salary |  add:3000 | num_to_word }} taka)</b> in
+the following breakdown: <br> <br>
+{%if note.note%}
+<p><b>Note:</b> {{ note.note }}</p>
+{%endif%}
 <table width="100%" border="1" cellpadding="5">
     <tr>
         <td width="30%">Basic (55%)</td>
