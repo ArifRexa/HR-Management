@@ -113,10 +113,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.full_name
 
-    @property
-    def employee_salary_note(self):
-       note  =  self.salaryhistory_set.first().note
-       return note
+       
     @property
     def has_pending_appointment(self):
         return Appointment.objects.filter(
@@ -331,6 +328,8 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def joining_salary(self):
         return self.salaryhistory_set.first()
+    
+
 
     @property
     def permanent_salary(self):
