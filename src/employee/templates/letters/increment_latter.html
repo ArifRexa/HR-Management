@@ -22,7 +22,7 @@
         Dhaka.</b> we are pleased to inform you that we have decided to increase your salary & it will be effective
         from <b>{{ employee.current_salary.active_from }}</b> on the position <b>"{{ employee.designation }}"</b>.</p>
 
-    {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary %}
+    {% include 'letters/extra/salary_table.html' with payable_salary=employee.current_salary.payable_salary note=employee.current_salary %}
 
 <!--    {% if employee.manager %}-->
 <!--        <ul>-->
