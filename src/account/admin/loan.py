@@ -25,7 +25,7 @@ class LoadAttachmentInline(admin.TabularInline):
 @admin.register(Loan)
 class LoadAdmin(admin.ModelAdmin):
     list_display = ('employee', 'loan_amount', 'due', 'emi', 'tenor')
-    inlines = (LoadAttachmentInline)
+    inlines = (LoadAttachmentInline,)
     actions = ('print_loan_agreement', 'duplicate')
     list_filter = ('loan_type','employee',)
     search_fields = ('employee__full_name',)
