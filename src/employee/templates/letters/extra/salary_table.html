@@ -2,30 +2,32 @@
 {% load humanize_extra %}
 
 You will receive a total compensation of
-<b>BDT {{ employee.joining_salary.payable_salary | add:3000 | intcomma}} ({{ employee.joining_salary.payable_salary |  add:3000 | num_to_word }} taka)</b> in
-the following breakdown: <br> 
-<p><b>Note:</b> {{ employee.salary_note.note }}</p>
+<b>BDT {{ payable_salary | add:3000 | intcomma}} ({{ payable_salary |  add:3000 | num_to_word }} taka)</b> in
+the following breakdown: <br> <br>
+{%if note%}
+<p><b>Note:</b> {{ note.note }}</p>
+{%endif%}
 <table width="100%" border="1" cellpadding="5">
     <tr>
         <td width="30%">Basic (55%)</td>
-        <td>{{ employee.joining_salary.payable_salary | percentage:55 }}</td>
+        <td>{{ payable_salary | percentage:55 }}</td>
     </tr>
     <tr>
         <td>House Allowance (20%)</td>
-        <td>{{ employee.joining_salary.payable_salary | percentage:20 }}</td>
+        <td>{{ payable_salary | percentage:20 }}</td>
     </tr>
     <tr>
         <td>Conveyance (15%)</td>
-        <td>{{ employee.joining_salary.payable_salary | percentage:15 }}</td>
+        <td>{{ payable_salary | percentage:15 }}</td>
     </tr>
     <tr>
         <td>Medical Allowance (10%)</td>
-        <td>{{ employee.joining_salary.payable_salary | percentage:10 }}</td>
+        <td>{{ payable_salary | percentage:10 }}</td>
     </tr>
     <tfoot style="border-top: 1px solid black;">
         <tr>
             <th align='left'>Gross Salary:</th>
-            <td>{{ employee.joining_salary.payable_salary | intcomma }}</td>
+            <td>{{ payable_salary | intcomma }}</td>
         </tr>
         <tr>
             <th align='left'>Lunch Allowance:</th>
@@ -33,7 +35,7 @@ the following breakdown: <br>
         </tr>
         <tr>
             <th align='left'>Total compensation:</th>
-            <td>{{ employee.joining_salary.payable_salary | add:3000 | percentage:100}} BDT</td>
+            <td>{{ payable_salary | add:3000 | percentage:100}} BDT</td>
         </tr>
     </tfoot>
 </table>
