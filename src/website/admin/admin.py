@@ -390,13 +390,13 @@ class BlogAdmin(admin.ModelAdmin):
     ]
 
     search_fields = ("title",)
+    date_hierarchy = 'created_at'
     autocomplete_fields = ["category", "tag"]
     list_display = (
         "title",
         "author",
-        "get_created_at",
-        "get_updated_at",
         "status",
+        "total_view",
         "get_preview_link",
     )
     readonly_fields = ("status",)
