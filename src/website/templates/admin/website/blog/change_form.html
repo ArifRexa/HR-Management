@@ -1,16 +1,24 @@
 {% extends "admin/change_form.html" %}
 
 
-{% block content_title %}
-    {% if has_change_permission %}
-        <div class="preview sticky-title">
-            <button type="button" class="extra-button">See Before Publish</button>
-        </div>
-    {% elif not original %}
-        <div class="preview sticky-title">
-            <button type="button" class="extra-button">See Before Publish</button>
-        </div>
-    {% endif %}
+    {% block content_title %}
+        {% if has_change_permission %}
+            <div class="preview sticky-title">
+                <button style="margin-right: 15px;" type="button" class="extra-button">See Before Publish</button>
+                <a href="https://drive.google.com/file/d/1bIynETuxzoOTAmcrlVpEwqK0xySRu0MB/view" target="_blank">
+                    <button type="button" class="extra-button">Writing Guideline</button>
+                </a>
+            </div>
+        {% elif not original %}
+            <div class="preview sticky-title">
+                <button style="margin-right: 15px;" type="button" class="extra-button">See Before Publish</button>
+                <a href="https://drive.google.com/file/d/1bIynETuxzoOTAmcrlVpEwqK0xySRu0MB/view" target="_blank">
+                    <button type="button" class="extra-button">Writing Guideline</button>
+                </a>
+            </div>
+        {% endif %}
+    
+
 
         
             
