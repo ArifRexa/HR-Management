@@ -95,13 +95,20 @@ class LeaveManagement(admin.ModelAdmin):
         "total_leave_",
         "manager_approval",
         "status_",
+        "attachment_link", 
+        "get_massage",
         "date_range",
-         "attachment_link", 
+         
         
     ]
         if not request.user.has_perm("employee.view_leavefeedback"):
             if 'management__feedback' in list_display: list_display.remove('management__feedback')
         return list_display
+
+    def get_massage(self, obj):
+        return format_html('<span title="{}">📩</span>', obj.message)
+    
+    get_massage.short_description = "Message"
 
 
     def get_fields(self, request, obj=None):

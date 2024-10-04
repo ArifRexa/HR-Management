@@ -34,10 +34,11 @@
             based on your performance.
         </li>
         <li>
-            {% include 'letters/extra/salary_table.html' with payable_salary=employee.joining_salary.payable_salary %}
-        </li>
-        <li>
+            {% include 'letters/extra/salary_table.html' with payable_salary=employee.joining_salary.payable_salary note=note %}
 
+        </li>
+
+        <li>
         </li>
         <!-- <li>
             <b> You will receive an additional Tk 3000 as Food Allowance (depending on the number of working days), in

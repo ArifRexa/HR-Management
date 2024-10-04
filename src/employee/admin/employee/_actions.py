@@ -294,6 +294,8 @@ class EmployeeActions:
         extra_context: dict = {},
     ):
         for employee in queryset:
+            note = employee.salaryhistory_set.first().note
+            extra_context['note'] = note
             pdf = self.generate_pdf(
                 request,
                 queryset=(employee,),
@@ -333,7 +335,6 @@ class EmployeeActions:
                                 content=ContentFile(image_io.getvalue()),
                             )
                             enoc.save(update_fields=["noc_pdf", "noc_image"])
-
             context = {
                 "employee": employee,
                 **extra_context,
