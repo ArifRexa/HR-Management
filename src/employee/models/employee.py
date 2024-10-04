@@ -329,6 +329,10 @@ class Employee(TimeStampMixin, AuthorMixin):
     def joining_salary(self):
         return self.salaryhistory_set.first()
     
+    @property
+    def salary_note(self):
+        return self.salaryhistory_set.last()
+    
 
 
     @property
