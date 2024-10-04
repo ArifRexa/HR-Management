@@ -34,7 +34,7 @@
             based on your performance.
         </li>
         <li>
-            {% include 'letters/extra/salary_table.html' with payable_salary=employee.joining_salary.payable_salary note=note %}
+            {% include 'letters/extra/salary_table.html' with payable_salary=employee.joining_salary.payable_salary note=employee.employee_salary_note %}
 
         </li>
 

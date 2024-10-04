@@ -114,6 +114,10 @@ class Employee(TimeStampMixin, AuthorMixin):
         return self.full_name
 
     @property
+    def employee_salary_note(self):
+       note  =  self.salaryhistory_set.first().note
+       return note
+    @property
     def has_pending_appointment(self):
         return Appointment.objects.filter(
             created_by=self.user, is_completed=False
