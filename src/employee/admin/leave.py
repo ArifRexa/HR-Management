@@ -205,21 +205,35 @@ class LeaveManagement(admin.ModelAdmin):
         # Send the email after saving the leave (for both new and updated leaves)
         self.__send_leave_mail(request, obj, form, change)
 
-    def save_formset(self, request, form, formset, change):
-        # Override save_formset to capture changes in inline feedback
-        if formset.model == leave.LeaveFeedback:
-            instances = formset.save(commit=False)
-            for instance in instances:
-                if instance.feedback:  # Check if feedback is provided
-                    leave_status = instance.leave.leavemanagement_set.first().status
-                    self.send_feedback_email(instance.leave, instance.feedback,leave_status)
-                instance.save()
-            formset.save_m2m()  # Save many-to-many relationships if needed
-        else:
-            formset.save()  # Save other inline models as usual
+    def save_related(self, request, form, formsets, change):
+        # Get the Leave instance before calling super().save_related
+        leave_instance = form.instance
+
+        # Get the latest feedback for the leave instance from the database directly
+        try:
+            original_feedback_instance = leave.LeaveFeedback.objects.filter(leave=leave_instance).latest('id')
+            old_feedback = original_feedback_instance.feedback
+        except leave.LeaveFeedback.DoesNotExist:
+            old_feedback = None  # No existing feedback, probably a new Leave instance
+
+        # Call the superclass to handle the saving of formsets
+        super().save_related(request, form, formsets, change)
+
+        # Now, check if the user is not the employee themselves
+        if request.user.employee != leave_instance.employee:
+            for formset in formsets:
+                if formset.model == leave.LeaveFeedback:
+                    for inline_form in formset.cleaned_data:
+                        # Get the new feedback from the formset after it's saved
+                        new_feedback = inline_form.get('feedback') 
+                        status = form.cleaned_data.get('status')
+
+                        # Compare the original feedback with the new feedback
+                        if old_feedback != new_feedback:
+                           self.send_feedback_email(leave_instance,new_feedback,status)
+            
 
     def send_feedback_email(self, leave_instance, feedback, status):
-        
         subject = "Feedback on your leave application"
         recipient_email = leave_instance.employee.email  
         message_content = (
