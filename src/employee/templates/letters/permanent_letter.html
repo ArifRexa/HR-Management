@@ -35,7 +35,7 @@
         benefits embedded in the appointment letter dated on {{ employee.joining_date }} with Ref: Mediusware Ltd./EAL/{{ employee.joining_date | date:'Yd' }}{{ employee.id }}
     </p>
 
-    {% include 'letters/extra/salary_table.html' with payable_salary=employee.permanent_salary.payable_salary %}
+    {% include 'letters/extra/salary_table.html' with payable_salary=employee.permanent_salary.payable_salary note=employee.current_salary%}
 
     <p><b>All other terms and condition stated in the appointment letter will remain unchanged.</b></p>
     {% include 'letters/extra/footer.html' %}
