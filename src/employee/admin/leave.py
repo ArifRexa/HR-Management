@@ -95,8 +95,8 @@ class LeaveManagement(admin.ModelAdmin):
         "total_leave_",
         "manager_approval",
         "status_",
-        "attachment_link", 
-        "get_massage",
+        # "attachment_link", 
+        # "get_massage",
         "date_range",
          
         
@@ -104,11 +104,6 @@ class LeaveManagement(admin.ModelAdmin):
         if not request.user.has_perm("employee.view_leavefeedback"):
             if 'management__feedback' in list_display: list_display.remove('management__feedback')
         return list_display
-
-    def get_massage(self, obj):
-        return format_html('<span title="{}">📩</span>', obj.message)
-    
-    get_massage.short_description = "Message"
 
 
     def get_fields(self, request, obj=None):
@@ -122,22 +117,69 @@ class LeaveManagement(admin.ModelAdmin):
         #     print(fields)
         return fields
     
-    def attachment_link(self, obj):
-        # Check if there are attachments
-        attachments = obj.leaveattachment_set.all()
-        
-        if attachments:
-            # Use the first attachment's URL
-            url = attachments[0].attachment.url
-            return format_html(
-                '<a href="{}" target="_blank" style="color: black;">&#x1F4C4;</a>', 
-                url
-            )
-        else:
-            # Return an icon for no attachment with black color
-            return '' # Document icon (no attachment)
 
-    attachment_link.short_description = "Attachments"
+    @admin.display()
+    def status_(self, leave: Leave):
+
+        #Get attachment of leave
+        attachments = leave.leaveattachment_set.all()
+        if attachments:
+            attch_url = attachments[0].attachment.url
+        else:
+            attch_url = ''
+        
+
+        data = ''
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        
+        if leave.status == 'pending':
+            data = '⏳'
+        elif leave.status == 'approved':
+            data = '✅'
+        elif leave.status == 'rejected':
+            data = '⛔'
+        else:
+            data = '🤔'
+            
+        html_content = html_template.render(
+            {
+                # 'use_get_display':True,
+                "data": data,
+                "atch_url":attch_url,
+                "message":leave.message,
+                "leave_day": leave.end_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
+        return format_html(html_content)
+    
+    # def get_massage(self, obj):
+    #     return format_html('<span title="{}">📩</span>', obj.message)
+    
+    # get_massage.short_description = "Message"
+
+    
+    # def attachment_link(self, obj):
+    #     # Check if there are attachments
+    #     attachments = obj.leaveattachment_set.all()
+        
+    #     if attachments:
+    #         # Use the first attachment's URL
+    #         url = attachments[0].attachment.url
+    #         return format_html(
+    #             '<a href="{}" target="_blank" style="color: black;">&#x1F4C4;</a> </br></br>'
+    #             '<span title="{}">📩</span>',url, obj.message
+    #         )
+    #     else:
+    #         # Return an icon for no attachment with black color
+    #         return '' # Document icon (no attachment)
+
+    # attachment_link.short_description = "Attachments"
    
 
     def get_readonly_fields(self, request, obj=None):
@@ -355,34 +397,7 @@ class LeaveManagement(admin.ModelAdmin):
         )
         return format_html(html_content)
 
-    @admin.display()
-    def status_(self, leave: Leave):
-        data = ''
-        html_template = get_template("admin/leave/list/col_leave_day.html")
-        
-        if leave.status == 'pending':
-            data = '⏳'
-        elif leave.status == 'approved':
-            data = '✅'
-        elif leave.status == 'rejected':
-            data = '⛔'
-        else:
-            data = '🤔'
-            
-        html_content = html_template.render(
-            {
-                # 'use_get_display':True,
-                "data": data,
-                "leave_day": leave.end_date.strftime("%A"),
-                "has_friday": has_friday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-                "has_monday": has_monday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
-            }
-        )
-        return format_html(html_content)
+
 
     # @admin.display()
     # def start_date_(self, leave: Leave):
