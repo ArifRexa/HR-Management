@@ -2,4 +2,11 @@
        {% elif has_monday %} style="color: blue"
       {% endif %}>
     {{ data }}
-</span>
+    {%if atch_url%}
+      <a href={{atch_url}} target="_blank" style="color: black;">&#x1F4C4;</a> 
+    {%endif%}
+    {%if message%}
+    <span title="{{message}}">📩</span>
+    {%endif%}
+   
+    </span>
