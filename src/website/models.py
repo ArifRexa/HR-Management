@@ -606,3 +606,14 @@ class BenefitsOfEmployment(TimeStampMixin):
 
     def __str__(self):
         return self.title
+
+class PublicImage(models.Model):
+    title = models.CharField(max_length=255,null=True,blank=True)
+    image = models.ImageField(upload_to='public_image/')
+
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        verbose_name_plural = "Public Images"
+    
