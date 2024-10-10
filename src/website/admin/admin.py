@@ -66,6 +66,7 @@ from website.models import (
     ProjectScreenshotTitle,
     ProjectServiceSolutionTitle,
     ProjectTechnologyTitle,
+    PublicImage,
     Service,
     Blog,
     Category,
@@ -1106,3 +1107,8 @@ class CareerAdmin(admin.ModelAdmin):
     
     def has_module_permission(self, request):
         return False
+    
+@admin.register(PublicImage)
+class PublicImageAdmin(admin.ModelAdmin):
+    list_display = ["title","image"]
+
