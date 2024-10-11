@@ -168,7 +168,7 @@ def costs_by_expense_group(request, id):
     template = get_template('excel/monthly-expense-group.html')
     
     # data calculation 
-    expenses_data = monthly_journal.expenses.filter(Q(add_to_balance_sheet=True) & Q(is_approved=True) & Q(date__year=monthly_journal.date.year) & Q(date__month=monthly_journal.date.month))\
+    expenses_data = monthly_journal.expenses.filter(Q(add_to_balance_sheet=True) & Q(date__year=monthly_journal.date.year) & Q(date__month=monthly_journal.date.month))\
                                 .values('expanse_group__account_code') \
                                 .annotate(expense_amount=Sum('amount'),
                                         vds_rate=F('expanse_group__vds_rate'),
