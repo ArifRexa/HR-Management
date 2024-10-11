@@ -141,6 +141,14 @@ class Blog(AuthorMixin, TimeStampMixin):
         ]
 
 
+class Reference(models.Model):
+    blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
+    reference_blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='reference_blog')
+
+    def __str__(self):
+        return self.blog.title
+    
+
 class PostPlatform(models.TextChoices):
     LINKEDIN = "linkedin", "Linkedin"
     FACEBOOK = "facebook", "Facebook"
