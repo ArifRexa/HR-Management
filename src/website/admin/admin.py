@@ -67,6 +67,7 @@ from website.models import (
     ProjectServiceSolutionTitle,
     ProjectTechnologyTitle,
     PublicImage,
+    Reference,
     Service,
     Blog,
     Category,
@@ -270,6 +271,12 @@ class BlogFAQInline(admin.TabularInline):
         formset.request = request
         return formset
 
+class ReferenceBlogInline(admin.StackedInline):
+    model = Reference
+    fields = ['reference_blog']
+    autocomplete_fields = ['reference_blog']
+    extra = 0
+    fk_name = 'blog'
 
 class BlogModeratorFeedbackInline(admin.StackedInline):
     model = BlogModeratorFeedback
@@ -381,7 +388,7 @@ class BlogCategoryFilter(admin.SimpleListFilter):
 class BlogAdmin(admin.ModelAdmin):
     # prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (BlogContextInline, BlogFAQInline, BlogModeratorFeedbackInline)
+    inlines = (BlogContextInline, BlogFAQInline,ReferenceBlogInline, BlogModeratorFeedbackInline)
     actions = [
         "clone_selected",
         "draft_selected",
