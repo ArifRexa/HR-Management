@@ -71,7 +71,8 @@ INSTALLED_APPS = [
     "storages",
     "user_auth",
     "chat",
-    "channels"
+    "channels",
+    "reception"
 ]
 
 MIDDLEWARE = [
