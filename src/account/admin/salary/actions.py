@@ -64,7 +64,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 # Get the bank account information
                 bank_account = employee_salary.employee.bankaccount_set.filter(default=True, is_approved=True).last()
 
-                if bank_account:
+                if bank_account and employee_salary.gross_salary > 0:
                     # Append the employee salary data with total salary at the end
                     work_sheet.append([
                         salary_sheet.date.strftime("%d-%m-%Y"),  # Date
