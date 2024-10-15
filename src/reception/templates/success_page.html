@@ -45,13 +45,19 @@
         .btn-home:hover {
             background-color: #0056b3;
         }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 150px;
+        }
     </style>
+    {% load static %}
 </head>
 <body>
     <div class="thank-you-container">
+        <img style="width: 50%;" src="{% static 'stationary/mediusware-logo.jpg' %}" alt="Mediusware Logo" class="logo">
         <h1>Thank You!</h1>
         <p>Your data has been successfully saved.</p>
-        <!-- <a href="/" class="btn-home">Go to Home</a> -->
     </div>
 
     <!-- Bootstrap JS (optional for interactivity) -->
