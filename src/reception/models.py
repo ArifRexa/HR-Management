@@ -19,4 +19,11 @@ class Reception(TimeStampMixin):
     def __str__(self):
         return f'{self.name} - {self.agenda}'
     
-    
+
+class Token(models.Model):
+    unique_url = models.CharField(max_length=255, unique=True)
+    is_used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Token {self.unique_url} (Used: {self.is_used})'
