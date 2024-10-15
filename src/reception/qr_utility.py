@@ -1,7 +1,7 @@
 import qrcode
 
 # URL that users will scan (change this to your project's base URL)
-qr_url = "https://hr.mediusware.xyz/admin/scan/"
+qr_url = "https://hr.mediusware.xyz/scan/"
 
 # Create the QR code
 qr = qrcode.QRCode(
