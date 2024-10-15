@@ -38,11 +38,19 @@
         .btn-custom:hover {
             background-color: #0056b3;
         }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 150px;
+        }
     </style>
+    {% load static %}
+
 </head>
 <body>
     <div class="container">
         <div class="form-container">
+            <img style="width: 50%;" src="{% static 'stationary/mediusware-logo.jpg' %}" alt="Mediusware Logo" class="logo">
             <h1>Visitor Form</h1>
             <form method="post">
                 {% csrf_token %}
@@ -56,6 +64,7 @@
                     <select class="form-select" id="agenda" name="agenda" required>
                         <option value="interview">Interview</option>
                         <option value="meeting">Meeting</option>
+                        <option value="others">Others</option>
                     </select>
                 </div>
 
