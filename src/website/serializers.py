@@ -1,5 +1,8 @@
+import keyword
+from pyexpat import model
 from rest_framework import serializers
 
+from chat import models
 from employee.models import (
     Employee,
     EmployeeSocial,
@@ -39,6 +42,7 @@ from website.models import (
     BannerImage,
     BenefitsOfEmployment,
     BlogFAQ,
+    BlogMeatadata,
     BlogStatus,
     Career,
     EmployeeTestimonial,
@@ -60,6 +64,8 @@ from website.models import (
     BlogContext,
     BlogComment,
     FAQ,
+    ServiceKeyword,
+    ServiceMeatadata,
     ServiceProcess,
     OurAchievement,
     OurJourney,
@@ -203,6 +209,15 @@ class ServiceContentSerializer(serializers.ModelSerializer):
             "image",
         )
 
+class ServiceMetadataSerializer(serializers.ModelSerializer):
+    keywords = serializers.SerializerMethodField()
+    class Meta:
+        model = ServiceMeatadata
+        fields = ('title', 'description', 'canonical','keywords')
+
+    def get_keywords(self,obj):
+        return [keyword.name for keyword in obj.servicekeyword_set.all()]
+
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
     clients = ClientSerializer(many=True)
@@ -211,7 +226,7 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
     )
     service_process = ServiceProcessSerializer(many=True)
     service_contents = ServiceContentSerializer(many=True, source="servicecontent_set")
-
+    metadata = ServiceMetadataSerializer(many=True,source='servicemeatadata_set')
     class Meta:
         model = Service
         fields = (
@@ -226,6 +241,7 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
             "technologies",
             "service_contents",
             "clients",
+            "metadata",
         )
 
 
@@ -739,11 +755,20 @@ class BlogFAQSerializer(serializers.ModelSerializer):
         fields = ["question", "answer"]
 
 
+class BlogMetadataSerializer(serializers.ModelSerializer):
+    keywords = serializers.SerializerMethodField()
+    class Meta:
+        model = BlogMeatadata
+        fields = ('title', 'description', 'canonical','keywords')
+
+    def get_keywords(self,obj):
+        return [keyword.name for keyword in  obj.blogkeyword_set.all()]
+
 class BlogDetailsSerializer(BlogListSerializer):
     tags = TagSerializer(many=True, source="tag")
     blog_contexts = BlogContextSerializer(many=True)
     blog_faqs = BlogFAQSerializer(many=True)
-
+    metadata = BlogMetadataSerializer(many=True,source='blogmeatadata_set')
     class Meta(BlogListSerializer.Meta):
         fields = (
             "id",
@@ -760,8 +785,8 @@ class BlogDetailsSerializer(BlogListSerializer):
             "content",
             "blog_contexts",
             "blog_faqs",
+            "metadata",
         )
-
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["total_blogs"] = instance.created_by.website_blog_related.filter(

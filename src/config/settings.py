@@ -72,7 +72,8 @@ INSTALLED_APPS = [
     "user_auth",
     "chat",
     "channels",
-    "reception"
+    "reception",
+    "nested_admin",
 ]
 
 MIDDLEWARE = [

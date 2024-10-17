@@ -34,6 +34,8 @@ from website.models import (
     BenefitsOfEmployment,
     BenefitsOfEmploymentTitle,
     BlogFAQ,
+    BlogKeyword,
+    BlogMeatadata,
     BlogModeratorFeedback,
     BlogStatus,
     CSRBanner,
@@ -71,6 +73,8 @@ from website.models import (
     Service,
     Blog,
     Category,
+    ServiceKeyword,
+    ServiceMeatadata,
     Tag,
     BlogCategory,
     BlogTag,
@@ -114,7 +118,27 @@ from django.contrib.auth.admin import (
     UserAdmin as BaseUserAdmin,
     GroupAdmin as BaseGroupAdmin,
 )
+import nested_admin
 
+
+class ServiceKeywordInline(nested_admin.NestedTabularInline):
+    model = ServiceKeyword
+    extra = 1 
+
+class ServiceMetadataInline(nested_admin.NestedStackedInline): 
+    model = ServiceMeatadata
+    extra = 1
+    inlines = [ServiceKeywordInline]
+
+
+class BlogKeywordInline(nested_admin.NestedTabularInline):
+    model = BlogKeyword
+    extra = 1 
+
+class BlogMetadataInline(nested_admin.NestedStackedInline): 
+    model = BlogMeatadata
+    extra = 1
+    inlines = [BlogKeywordInline]
 
 class UserAdmin(BaseUserAdmin):
     class Media:
@@ -150,7 +174,7 @@ class GalleryAdmin(admin.ModelAdmin):
     list_display = ["image"]
 
 
-class ServiceTechnologyInline(admin.TabularInline):
+class ServiceTechnologyInline(nested_admin.NestedTabularInline):
     model = ServiceTechnology
     extra = 1
 
@@ -163,16 +187,16 @@ class ServiceProcessAdmin(admin.ModelAdmin):
         return False
 
 
-class ServiceContentAdmin(admin.StackedInline):
+class ServiceContentAdmin(nested_admin.NestedTabularInline):
     model = ServiceContent
     extra = 1
 
 
 @admin.register(Service)
-class ServiceAdmin(admin.ModelAdmin):
+class ServiceAdmin(nested_admin.NestedModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-    inlines = (ServiceTechnologyInline, ServiceContentAdmin)
+    inlines = (ServiceTechnologyInline, ServiceContentAdmin,ServiceMetadataInline)
 
     def has_module_permission(self, request):
         return False
@@ -219,7 +243,7 @@ class BlogContextForm(forms.ModelForm):
         }
 
 
-class BlogContextInline(admin.StackedInline):
+class BlogContextInline(nested_admin.NestedTabularInline):
     model = BlogContext
     extra = 1
     form = BlogContextForm
@@ -259,7 +283,7 @@ class BlogFaqFormSet(BaseInlineFormSet):
                 raise ValidationError("You must create at least 3 FAQ.")
 
 
-class BlogFAQInline(admin.TabularInline):
+class BlogFAQInline(nested_admin.NestedTabularInline):
     model = BlogFAQ
     extra = 1
     form = BlogFAQForm
@@ -271,14 +295,14 @@ class BlogFAQInline(admin.TabularInline):
         formset.request = request
         return formset
 
-class ReferenceBlogInline(admin.StackedInline):
+class ReferenceBlogInline(nested_admin.NestedTabularInline):
     model = Reference
     fields = ['reference_blog']
     autocomplete_fields = ['reference_blog']
     extra = 0
     fk_name = 'blog'
 
-class BlogModeratorFeedbackInline(admin.StackedInline):
+class BlogModeratorFeedbackInline(nested_admin.NestedTabularInline):
     model = BlogModeratorFeedback
     extra = 1
     # formset = BlogModeratorFeedbackFormSet
@@ -385,10 +409,10 @@ class BlogCategoryFilter(admin.SimpleListFilter):
 
 
 @admin.register(Blog)
-class BlogAdmin(admin.ModelAdmin):
+class BlogAdmin(nested_admin.NestedModelAdmin):
     # prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (BlogContextInline, BlogFAQInline,ReferenceBlogInline, BlogModeratorFeedbackInline)
+    inlines = (BlogContextInline, BlogFAQInline,ReferenceBlogInline, BlogModeratorFeedbackInline,BlogMetadataInline)
     actions = [
         "clone_selected",
         "draft_selected",
