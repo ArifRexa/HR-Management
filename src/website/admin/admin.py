@@ -689,12 +689,12 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     hours=15,
                     status="approved",
                 )
-                # anouncement = Announcement.objects.create(
-                #     start_datetime=timezone.now(),
-                #     end_datetime=timezone.now()
-                #     + timedelta(days=1),  # Assuming the end is the next day
-                #     description=f"{obj.created_by.employee.full_name} Earns 30-Hour Bonus for Stellar Blogging!",  # Add context to the description
-                # )
+                anouncement = Announcement.objects.create(
+                    start_datetime=timezone.now(),
+                    end_datetime=timezone.now()
+                    + timedelta(days=1),  # Assuming the end is the next day
+                    description=f"Congrats!{obj.created_by.employee.full_name} Your blog has been approved!",  # Add context to the description
+                )
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
