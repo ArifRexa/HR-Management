@@ -1,5 +1,6 @@
 from .hire_models import *  # noqa
 from django.db import models
+import uuid
 
 # Create your models here
 from tinymce.models import HTMLField
@@ -139,6 +140,17 @@ class Blog(AuthorMixin, TimeStampMixin):
             ("can_change_after_approve", "Can Change After Approve"),
             ("can_delete_after_approve", "Can Delete After Approve"),
         ]
+
+    def collect_blog_content(self):
+        """Collect all related blog content, including sections."""
+        from django.utils.html import strip_tags
+        print(f"calling collect_blog_content")
+        sections = self.blog_contexts.all()
+        full_content = ""
+        for section in sections:
+            # print(f"section: {section}")
+            full_content += f" {section.title or ''} \n {strip_tags(section.description) or ''} \n"
+        return full_content.strip()
 
 
 class PostPlatform(models.TextChoices):
@@ -617,3 +629,13 @@ class PublicImage(models.Model):
     class Meta:
         verbose_name_plural = "Public Images"
     
+
+class PlagiarismInfo(TimeStampMixin):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='plagiarism_info')
+    scan_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    export_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    plagiarism_percentage = models.FloatField(blank=True, null=True)
+    pdf_file = models.FileField(upload_to='plagiarism_reports/', blank=True, null=True)
+
+    def __str__(self):
+        return f"Plagiarism Report for Blog: {self.blog} ({self.plagiarism_percentage}%)"

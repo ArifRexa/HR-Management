@@ -1,7 +1,10 @@
+import json
+
 import django_filters
 from django.db.models import Count, F, Q
-from django.http import Http404
+from django.http import Http404, JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render
+from django.views.decorators.csrf import csrf_exempt
 from django_filters import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
@@ -805,3 +808,82 @@ class BenefitsOfEmploymentListAPIView(ListAPIView):
     queryset = BenefitsOfEmployment.objects.all()
     serializer_class = BenefitsOfEmploymentSerializer
     pagination_class = None
+
+# Plagiarism webhook receiving
+@csrf_exempt
+def plagiarism_webhook(request):
+    if request.method == 'POST':
+        try:
+            # Parse the incoming JSON data
+            data = json.loads(request.body)
+            print(f"{'-'*100}")
+            print("webhook data")
+            print(data)
+
+            # Extract relevant fields from the payload
+            scan_id = data.get('scannedDocument', {}).get('scanId')
+            status = data.get('status')
+            developer_payload = data.get('developerPayload')
+            total_words = data.get('scannedDocument', {}).get('totalWords')
+            total_excluded = data.get('scannedDocument', {}).get('totalExcluded')
+            credits_used = data.get('scannedDocument', {}).get('credits')
+            creation_time_str = data.get('scannedDocument', {}).get('creationTime')
+            alerts = data.get('alerts', [])
+            # Extract results such as plagiarism sources from the scan
+            results = data.get('results', {})
+            internet_results = results.get('internet', {})
+            database_results = results.get('database', {})
+            repositories_results = results.get('repositories', {})
+
+            # Process the results as necessary (e.g., save to database, trigger actions)
+            # For demonstration, we'll print some information
+            print(f"Scan ID: {scan_id}")
+            print(f"Status: {status}")
+            print(f"Developer Payload: {developer_payload}")
+            print(f"Total Words: {total_words}")
+            print(f"Total Excluded: {total_excluded}")
+            print(f"Credits Used: {credits_used}")
+            print(f"Internet Results: {internet_results}")
+            print(f"Database Results: {database_results}")
+            print(f"Repositories Results: {repositories_results}")
+            print(f"Alerts: {alerts}")
+
+            # Handle any status or alert-specific actions
+            if status == 0:  # Success
+                print("Plagiarism scan completed successfully.")
+                # You can perform further actions like saving to DB or notifying the user
+
+            # Return a success response to Copyleaks
+            return JsonResponse({'message': 'Webhook received successfully'}, status=200)
+
+        except Exception as e:
+            print(f"Error processing webhook: {e}")
+            return JsonResponse({'error': 'Error processing the webhook'}, status=400)
+
+    # If it's not a POST request, return a 405 Method Not Allowed response
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def export_pdf(request, scan_id, export_id):
+    if request.method == 'POST':
+        # Log the content type to determine how to handle the body
+        content_type = request.content_type
+        print(f"Content-Type: {content_type}")
+
+        # Log the raw request body for debugging
+        raw_body = request.body
+        # print("Raw request body (binary data):", raw_body)
+
+        if content_type == 'application/pdf':
+            # Handle the PDF file
+            # Here, you could save it, process it, etc.
+            print("Received a PDF file.")
+            # Optionally save the PDF file
+            with open(f'plagiarism_report_{scan_id}_{export_id}.pdf', 'wb') as f:
+                f.write(raw_body)
+            return JsonResponse({'message': 'PDF file received successfully'}, status=200)
+        else:
+            return JsonResponse({'error': 'Unsupported content type'}, status=415)
+
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)

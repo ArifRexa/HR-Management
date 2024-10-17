@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Any, Union
 from django import forms
 from django.contrib import admin
@@ -103,6 +104,7 @@ from website.models import (
     OurJourneyTitle,
     WhyWeAreBanner,
     WomenEmpowermentBanner,
+    PlagiarismInfo,
 )
 
 from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
@@ -113,6 +115,8 @@ from django.contrib.auth.admin import (
     UserAdmin as BaseUserAdmin,
     GroupAdmin as BaseGroupAdmin,
 )
+
+from website.utils.plagiarism_checker import check_plagiarism
 
 
 class UserAdmin(BaseUserAdmin):
@@ -388,6 +392,7 @@ class BlogAdmin(admin.ModelAdmin):
         "in_revision_selected",
         "submit_for_review_selected",
         "approve_selected",
+        "plagiarism_check_selected"
     ]
 
     search_fields = ("title",)
@@ -467,6 +472,16 @@ class BlogAdmin(admin.ModelAdmin):
     def submit_for_review_selected(self, request, queryset):
         queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
+
+    @admin.action(description="Submit selected blog(s) for Plagiarism Check")
+    def plagiarism_check_selected(self, request, queryset):
+        # queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
+        for query in queryset:
+            if query.status == BlogStatus.SUBMIT_FOR_REVIEW:
+                check_plagiarism(query)
+        self.message_user(request, f"Successfully queue blogs.")
+
+
 
     @admin.action(description="Clone selected blogs")
     def clone_selected(self, request, queryset):
@@ -697,6 +712,22 @@ class BlogAdmin(admin.ModelAdmin):
                             blog_url,
                         )
         super().save_related(request, form, formsets, change)
+
+    # def _response_post_save(self, request, obj):
+    #     """
+    #     Override the response after an object is changed and saved.
+    #     You can customize the redirection here.
+    #     """
+    #     # After saving all data in the database it will initiate the plagiarism checker after collect all the content if it is in review state
+    #     if obj and obj.status == BlogStatus.SUBMIT_FOR_REVIEW:
+    #         host_url = request.build_absolute_uri('/')
+    #         print(f"host_url: {host_url}")
+    #         time.sleep(10)
+    #         # Call the plagiarism checker only if the blog is being submitted for review
+    #         check_plagiarism(obj)
+    #
+    #     # Redirect to the change list view
+    #     return super()._response_post_save(request, obj)
 
 
 @admin.register(BlogComment)
@@ -1112,3 +1143,6 @@ class CareerAdmin(admin.ModelAdmin):
 class PublicImageAdmin(admin.ModelAdmin):
     list_display = ["title","image"]
 
+@admin.register(PlagiarismInfo)
+class PlagiarismInfoAdmin(admin.ModelAdmin):
+    list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]

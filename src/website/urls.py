@@ -55,7 +55,8 @@ from website.views import (
     MainEmployeeListView,
     SkillListView,
     LeadCreateAPIView,
-    SpecialProjectListView,BrandListCreateAPIView,WebsiteTitleView
+    SpecialProjectListView,BrandListCreateAPIView,WebsiteTitleView,
+    plagiarism_webhook, export_pdf
 )
 from website.views_v2.hire_views import (
     HireResourcePageDetailView,
@@ -228,6 +229,8 @@ api_v2_urls = [
 urlpatterns = [
     path("api/website/", include(api_urls + api_v2_urls)),
     path("website/", include(web_url)),
+    path("plagiarism/webhook/", plagiarism_webhook, name="plagiarism_webhook"),
+    path("export/<slug:scan_id>/<slug:export_id>/pdf-report/", export_pdf, name="pdf_export"),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
