@@ -7,6 +7,9 @@ from datetime import datetime
 class AgendaAdmin(admin.ModelAdmin):
     pass
 
+    def has_module_permission(self, request):
+        return False
+
 @admin.register(Reception)
 class ReceptionAdmin(admin.ModelAdmin):
     list_display = ('get_time','name','agenda_name' ,'get_comment', 'get_date', 'get_status')
