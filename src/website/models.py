@@ -1,3 +1,4 @@
+from website.models_v2.hire_resources import HireResourcePage
 from .hire_models import *  # noqa
 from django.db import models
 
@@ -644,6 +645,9 @@ class BlogMeatadata(BaseMetadata):
 
     def __str__(self):
         return self.title
+    
+class HireResourceMetadata(BaseMetadata):
+    hire_resource = models.ForeignKey(HireResourcePage,on_delete=models.CASCADE,null=True,blank=True)
  
 
  
@@ -660,3 +664,11 @@ class BlogKeyword(models.Model):
 
     def __str__(self):
         return self.name  
+    
+class HireResourceKeyword(models.Model):
+    hire_resource_keywords = models.ForeignKey(HireResourceMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name  
+    
