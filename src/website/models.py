@@ -12,7 +12,6 @@ from project_management.models import Client, Country, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
 
-
 class ServiceProcess(models.Model):
     img = models.ImageField()
     title = models.CharField(max_length=200)
@@ -625,3 +624,39 @@ class PublicImage(models.Model):
     class Meta:
         verbose_name_plural = "Public Images"
     
+
+class BaseMetadata(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    canonical = models.URLField()
+    
+    class Meta:
+        abstract = True
+
+class ServiceMeatadata(BaseMetadata):
+    services = models.ForeignKey(Service,on_delete=models.CASCADE,null=True,blank=True)
+
+    def __str__(self):
+        return self.title
+    
+class BlogMeatadata(BaseMetadata):
+    services = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
+
+    def __str__(self):
+        return self.title
+ 
+
+ 
+class ServiceKeyword(models.Model):
+    service_keywords = models.ForeignKey(ServiceMeatadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name    
+
+class BlogKeyword(models.Model):
+    blog_keywords = models.ForeignKey(BlogMeatadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name  
