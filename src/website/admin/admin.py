@@ -243,7 +243,7 @@ class BlogContextForm(forms.ModelForm):
         }
 
 
-class BlogContextInline(nested_admin.NestedTabularInline):
+class BlogContextInline(nested_admin.NestedStackedInline):
     model = BlogContext
     extra = 1
     form = BlogContextForm
@@ -283,7 +283,7 @@ class BlogFaqFormSet(BaseInlineFormSet):
                 raise ValidationError("You must create at least 3 FAQ.")
 
 
-class BlogFAQInline(nested_admin.NestedTabularInline):
+class BlogFAQInline(nested_admin.NestedStackedInline):
     model = BlogFAQ
     extra = 1
     form = BlogFAQForm
@@ -295,14 +295,14 @@ class BlogFAQInline(nested_admin.NestedTabularInline):
         formset.request = request
         return formset
 
-class ReferenceBlogInline(nested_admin.NestedTabularInline):
+class ReferenceBlogInline(nested_admin.NestedStackedInline):
     model = Reference
     fields = ['reference_blog']
     autocomplete_fields = ['reference_blog']
     extra = 0
     fk_name = 'blog'
 
-class BlogModeratorFeedbackInline(nested_admin.NestedTabularInline):
+class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
     model = BlogModeratorFeedback
     extra = 1
     # formset = BlogModeratorFeedbackFormSet
