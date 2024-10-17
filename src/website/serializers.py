@@ -1,3 +1,4 @@
+from pyexpat import model
 from rest_framework import serializers
 
 from employee.models import (
@@ -60,6 +61,8 @@ from website.models import (
     BlogContext,
     BlogComment,
     FAQ,
+    ServiceKeyword,
+    ServiceMeatadata,
     ServiceProcess,
     OurAchievement,
     OurJourney,
@@ -203,6 +206,15 @@ class ServiceContentSerializer(serializers.ModelSerializer):
             "image",
         )
 
+class ServiceMetadataSerializer(serializers.ModelSerializer):
+    keywords = serializers.SerializerMethodField()
+    class Meta:
+        model = ServiceMeatadata
+        fields = ('title', 'description', 'canonical','keywords')
+
+    def get_keywords(self,obj):
+        return [keyword.name for keyword in obj.servicekeyword_set.all()]
+
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
     clients = ClientSerializer(many=True)
@@ -211,7 +223,7 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
     )
     service_process = ServiceProcessSerializer(many=True)
     service_contents = ServiceContentSerializer(many=True, source="servicecontent_set")
-
+    metadata = ServiceMetadataSerializer(many=True,source='servicemeatadata_set')
     class Meta:
         model = Service
         fields = (
@@ -226,6 +238,7 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
             "technologies",
             "service_contents",
             "clients",
+            "metadata",
         )
 
 
