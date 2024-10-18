@@ -1,4 +1,5 @@
 import re
+import time
 from typing import Any, Union
 from django import forms
 from django.contrib import admin
@@ -108,6 +109,7 @@ from website.models import (
     OurJourneyTitle,
     WhyWeAreBanner,
     WomenEmpowermentBanner,
+    PlagiarismInfo,
 )
 
 from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
@@ -119,6 +121,8 @@ from django.contrib.auth.admin import (
     GroupAdmin as BaseGroupAdmin,
 )
 import nested_admin
+
+from website.utils.plagiarism_checker import check_plagiarism
 
 
 class ServiceKeywordInline(nested_admin.NestedTabularInline):
@@ -419,6 +423,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "in_revision_selected",
         "submit_for_review_selected",
         "approve_selected",
+        "plagiarism_check_selected"
     ]
 
     search_fields = ("title",)
@@ -430,6 +435,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "status",
         "total_view",
         "get_preview_link",
+        "get_plagiarism_percentage"
     )
     readonly_fields = ("status",)
     exclude = ("slug",)
@@ -498,6 +504,22 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     def submit_for_review_selected(self, request, queryset):
         queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
         self.message_user(request, f"Successfully updated {queryset.count()} blogs.")
+
+    @admin.action(description="Submit selected blog(s) for Plagiarism Check")
+    def plagiarism_check_selected(self, request, queryset):
+        if request.user.has_perm("website.can_add_plagiarism_info"):
+            host_url = request.build_absolute_uri('/')
+            check_plagiarism(queryset, host_url)
+            self.message_user(request, f"Successfully queue blogs for plagiarism check.")
+        else:
+            self.message_user(request, f"You do not have permission to submit blogs for plagiarism check.", level="ERROR")
+
+    @admin.display(description="Plagiarism(%)")
+    def get_plagiarism_percentage(self, obj):
+        plagiarism_objects = obj.plagiarism_info.order_by('-created_at')
+        html_template = get_template("blog/plagiarism_report_link.html")
+        html_content = html_template.render({"plagiarism_objects": plagiarism_objects})
+        return format_html(html_content)
 
     @admin.action(description="Clone selected blogs")
     def clone_selected(self, request, queryset):
@@ -574,6 +596,10 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             # If the user doesn't have permission, remove the 'approve_selected' action
             del actions["approve_selected"]
             del actions["in_revision_selected"]
+
+        if not request.user.has_perm("website.can_add_plagiarism_info"):
+            # If user does not have permissions to send the blog for plagiarism check
+            del actions["plagiarism_check_selected"]
 
         return actions
 
@@ -1142,3 +1168,6 @@ class CareerAdmin(admin.ModelAdmin):
 class PublicImageAdmin(admin.ModelAdmin):
     list_display = ["title","image"]
 
+@admin.register(PlagiarismInfo)
+class PlagiarismInfoAdmin(admin.ModelAdmin):
+    list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
