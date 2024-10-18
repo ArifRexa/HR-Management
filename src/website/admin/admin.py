@@ -693,8 +693,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     start_datetime=timezone.now(),
                     end_datetime=timezone.now()
                     + timedelta(days=1),  # Assuming the end is the next day
-                    description=f"Congrats!{obj.created_by.employee.full_name} Your blog has been approved!",  # Add context to the description
-                )
+                    description=f"Cheers!{obj.created_by.employee.full_name} Stellar blog approved!",)
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,

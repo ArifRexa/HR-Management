@@ -86,9 +86,10 @@ class HireResourceKeywordInline(nested_admin.NestedTabularInline):
 class HireResourceMetadataInline(nested_admin.NestedStackedInline):
     model = HireResourceMetadata
     extra = 1
+    inlines = [HireResourceKeywordInline]
 
 @admin.register(HireResourcePage)
-class HireResourcePageAdmin(admin.ModelAdmin):
+class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
     inlines = [
         CostAdmin,
         DeveloperPriceTypeAdmin,
