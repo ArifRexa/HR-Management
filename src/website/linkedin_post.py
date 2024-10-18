@@ -94,8 +94,7 @@ def automatic_blog_post_linkedin():
         .order_by("approved_at")
         .first()
     )
-    print(blog)
-    if blog:
+    if blog and blog.content is not None:
         token = PostCredential.objects.filter(platform=PostPlatform.LINKEDIN).first()
 
         access_token = token.token
