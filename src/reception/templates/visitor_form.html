@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f4f9;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .form-label {
+            font-weight: bold;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+        .btn-custom {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+        .btn-custom:hover {
+            background-color: #0056b3;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 150px;
+        }
+    </style>
+    {% load static %}
+
+</head>
+<body>
+    <div class="container">
+        <div class="form-container">
+            <img style="width: 50%;" src="https://mw-hr-staging.sgp1.digitaloceanspaces.com/media/public_image/mediusware-logo.jpg" alt="Mediusware Logo" class="logo">
+            <h1>Visitor Form</h1>
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="agenda" class="form-label">Agenda:</label>
+                    <select class="form-select" id="agenda" name="agenda" required>
+                        <option value="interview">Interview</option>
+                        <option value="meeting">Meeting</option>
+                        <option value="others">Others</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comment:</label>
+                    <textarea class="form-control" id="comment" name="comment" rows="4" placeholder="Enter your comment"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-custom btn-block w-100">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (for interactive elements, like dropdowns) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

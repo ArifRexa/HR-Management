@@ -1,3 +1,4 @@
+from website.models_v2.hire_resources import HireResourcePage
 from .hire_models import *  # noqa
 from django.db import models
 import uuid
@@ -12,7 +13,6 @@ from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Country, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
-
 
 class ServiceProcess(models.Model):
     img = models.ImageField()
@@ -150,6 +150,14 @@ class Blog(AuthorMixin, TimeStampMixin):
             # print(f"section: {section}")
             full_content += f" {section.title or ''} \n {strip_tags(section.description) or ''} \n"
         return full_content.strip()
+
+
+class Reference(models.Model):
+    blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
+    reference_blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='reference_blog')
+
+    def __str__(self):
+        return self.blog.title
 
 
 class PostPlatform(models.TextChoices):
@@ -638,3 +646,48 @@ class PlagiarismInfo(TimeStampMixin):
 
     def __str__(self):
         return f"Plagiarism Report for Blog: {self.blog} ({self.plagiarism_percentage}%)"
+class BaseMetadata(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    canonical = models.URLField()
+
+    class Meta:
+        abstract = True
+
+class ServiceMeatadata(BaseMetadata):
+    services = models.ForeignKey(Service,on_delete=models.CASCADE,null=True,blank=True)
+
+    def __str__(self):
+        return self.title
+
+class BlogMeatadata(BaseMetadata):
+    services = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
+
+    def __str__(self):
+        return self.title
+
+class HireResourceMetadata(BaseMetadata):
+    hire_resource = models.ForeignKey(HireResourcePage,on_delete=models.CASCADE,null=True,blank=True)
+
+
+
+class ServiceKeyword(models.Model):
+    service_keywords = models.ForeignKey(ServiceMeatadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class BlogKeyword(models.Model):
+    blog_keywords = models.ForeignKey(BlogMeatadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class HireResourceKeyword(models.Model):
+    hire_resource_keywords = models.ForeignKey(HireResourceMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name

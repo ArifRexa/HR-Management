@@ -18,13 +18,6 @@ class Criteria(models.Model):
     def __str__(self):
         return self.title
 
-
-
-
-
-
-
-
 class HireResourcePage(models.Model):
     is_parent = models.BooleanField(default=False)
     parents = models.ForeignKey(

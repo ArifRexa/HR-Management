@@ -34,7 +34,7 @@ from website.models_v2.hire_resources import (
     Criteria,
     CostType,
 )
-
+from website.models import HireResourceMetadata
 
 class HireResourceChildrenSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,11 +109,21 @@ class HireResourceServiceSerializer(serializers.ModelSerializer):
         fields = ["title", "short_description", "description"]
 
 
+class HireResourceMetadataSerializer(serializers.ModelSerializer):
+    keywords = serializers.SerializerMethodField()
+    class Meta:
+        model = HireResourceMetadata
+        fields = ('title','description','canonical','keywords')
+
+    def get_keywords(self,obj):
+        return [keyword.name for keyword in obj.hireresourcekeyword_set.all()]
+
+
 class HireResourcePageSerializer(serializers.ModelSerializer):
     costs = CostSerializer(many=True)
     developer_price_types = DeveloperPriceTypeSerializer(many=True)
     services = HireResourceServiceSerializer(many=True)
-
+    metadata = HireResourceMetadataSerializer(many=True,source='hireresourcemetadata_set')
     class Meta:
         model = HireResourcePage
         exclude = ["parents", "is_parent"]

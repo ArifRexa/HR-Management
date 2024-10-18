@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.http import HttpRequest
+import nested_admin
 
 from website.admin.hire_inline_admin import (
     FAQContentInlineAdmin,
@@ -28,6 +29,7 @@ from website.hire_models import (
     WhyWeAreContent,
     WorldClassTalent,
 )
+from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
     FAQQuestion,
     HireResourcePage,
@@ -46,12 +48,12 @@ class CostTypeAdmin(admin.ModelAdmin):
         return False
 
 
-class CostAdmin(admin.TabularInline):
+class CostAdmin(nested_admin.NestedTabularInline):
     model = Cost
     extra = 1
 
 
-class HiringStepAdmin(admin.TabularInline):
+class HiringStepAdmin(nested_admin.NestedTabularInline):
     model = HiringStep
     extra = 1
 
@@ -62,29 +64,39 @@ class CriteriaAdmin(admin.ModelAdmin):
         return False
 
 
-class DeveloperPriceTypeAdmin(admin.TabularInline):
+class DeveloperPriceTypeAdmin(nested_admin.NestedTabularInline):
     model = DeveloperPriceType
     extra = 1
 
 
-class FAQQuestionInlineAdmin(admin.TabularInline):
+class FAQQuestionInlineAdmin(nested_admin.NestedTabularInline):
     model = FAQQuestion
     extra = 1
 
 
-class HireResourceServiceAdmin(admin.StackedInline):
+class HireResourceServiceAdmin(nested_admin.NestedStackedInline):
     model = HireResourceService
     extra = 1
 
 
+class HireResourceKeywordInline(nested_admin.NestedTabularInline):
+    model = HireResourceKeyword
+    extra = 1
+
+class HireResourceMetadataInline(nested_admin.NestedStackedInline):
+    model = HireResourceMetadata
+    extra = 1
+    inlines = [HireResourceKeywordInline]
+
 @admin.register(HireResourcePage)
-class HireResourcePageAdmin(admin.ModelAdmin):
+class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
     inlines = [
         CostAdmin,
         DeveloperPriceTypeAdmin,
         HiringStepAdmin,
         HireResourceServiceAdmin,
         FAQQuestionInlineAdmin,
+        HireResourceMetadataInline
     ]
     fieldsets = (
         ("Page Hierarchy", {"fields": ("is_parent", "parents")}),
