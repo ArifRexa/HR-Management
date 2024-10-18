@@ -1,7 +1,10 @@
 from website.models_v2.hire_resources import HireResourcePage
 from .hire_models import *  # noqa
 from django.db import models
-
+import uuid
+import base64
+from io import BytesIO
+from weasyprint import HTML
 # Create your models here
 from tinymce.models import HTMLField
 from mptt.models import MPTTModel, TreeForeignKey
@@ -12,6 +15,7 @@ from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Country, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
+
 
 class ServiceProcess(models.Model):
     img = models.ImageField()
@@ -140,6 +144,46 @@ class Blog(AuthorMixin, TimeStampMixin):
             ("can_delete_after_approve", "Can Delete After Approve"),
         ]
 
+    def collect_blog_content(self):
+        """
+        Collect all related blog content, generate a PDF file, and return it as a base64-encoded string.
+        """
+        sections = self.blog_contexts.all()
+        full_content = ""
+
+        for section in sections:
+            # Collect title and description in HTML format
+            title_html = f"<h2>{section.title or ''}</h2>" if section.title else ""
+            description_html = f"<p>{section.description or ''}</p>" if section.description else ""
+
+            full_content += f"{title_html} \n {description_html} \n"
+
+        # Generate the HTML content for the PDF
+        html_content = f"""
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>{self.title}</title>
+        </head>
+        <body>
+            <h1>{self.title}</h1>
+            {full_content}
+        </body>
+        </html>
+        """
+
+        # Convert the HTML content to PDF using WeasyPrint
+        pdf_file = BytesIO()
+        HTML(string=html_content).write_pdf(pdf_file)
+
+        # Move to the beginning of the BytesIO buffer
+        pdf_file.seek(0)
+
+        # Encode the PDF file to base64
+        pdf_base64 = base64.b64encode(pdf_file.read()).decode('utf-8')
+
+        return pdf_base64
+
 
 class Reference(models.Model):
     blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
@@ -147,7 +191,7 @@ class Reference(models.Model):
 
     def __str__(self):
         return self.blog.title
-    
+
 
 class PostPlatform(models.TextChoices):
     LINKEDIN = "linkedin", "Linkedin"
@@ -626,11 +670,20 @@ class PublicImage(models.Model):
         verbose_name_plural = "Public Images"
     
 
+class PlagiarismInfo(TimeStampMixin):
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='plagiarism_info')
+    scan_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    export_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    plagiarism_percentage = models.FloatField(blank=True, null=True)
+    pdf_file = models.FileField(upload_to='plagiarism_reports/', blank=True, null=True)
+
+    def __str__(self):
+        return f"Plagiarism Report for Blog: {self.blog} ({self.plagiarism_percentage}%)"
 class BaseMetadata(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     canonical = models.URLField()
-    
+
     class Meta:
         abstract = True
 
@@ -639,36 +692,35 @@ class ServiceMeatadata(BaseMetadata):
 
     def __str__(self):
         return self.title
-    
+
 class BlogMeatadata(BaseMetadata):
     services = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
 
     def __str__(self):
         return self.title
-    
+
 class HireResourceMetadata(BaseMetadata):
     hire_resource = models.ForeignKey(HireResourcePage,on_delete=models.CASCADE,null=True,blank=True)
- 
 
- 
+
+
 class ServiceKeyword(models.Model):
     service_keywords = models.ForeignKey(ServiceMeatadata,on_delete=models.CASCADE,null=True,blank=True)
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name    
+        return self.name
 
 class BlogKeyword(models.Model):
     blog_keywords = models.ForeignKey(BlogMeatadata,on_delete=models.CASCADE,null=True,blank=True)
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name  
-    
+        return self.name
+
 class HireResourceKeyword(models.Model):
     hire_resource_keywords = models.ForeignKey(HireResourceMetadata,on_delete=models.CASCADE,null=True,blank=True)
     name = models.CharField(max_length=255)
 
     def __str__(self):
-        return self.name  
-    
+        return self.name
