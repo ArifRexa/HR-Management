@@ -62,9 +62,10 @@
                 <div class="mb-3">
                     <label for="agenda" class="form-label">Agenda:</label>
                     <select class="form-select" id="agenda" name="agenda" required>
-                        <option value="interview">Interview</option>
-                        <option value="meeting">Meeting</option>
-                        <option value="others">Others</option>
+                        <option value="">Select an agenda</option>
+                        {% for agenda in agendas %}
+                            <option value="{{ agenda.id }}">{{ agenda.name }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 

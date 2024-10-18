@@ -1,7 +1,7 @@
 import shortuuid  # to generate short unique IDs
 from django.shortcuts import render, redirect,get_object_or_404
 from django.urls import reverse
-from .models import Reception, Token
+from .models import Agenda, Reception, Token
 
 def generate_random_link(request):
     unique_url = shortuuid.uuid()  
@@ -19,19 +19,22 @@ def visitor_form(request, unique_url):
     if token.is_used:
         return render(request, 'error_page.html', {"message": "This link has already been used."})
     
+    agendas = Agenda.objects.all()
+
     if request.method == 'POST':
         name = request.POST.get('name')
-        agenda = request.POST.get('agenda')
+        agenda_id = request.POST.get('agenda')
         comment = request.POST.get('comment')
 
-        Reception.objects.create(name=name, agenda=agenda, comment=comment)
+        agenda = get_object_or_404(Agenda,id=agenda_id)
+        Reception.objects.create(name=name, agenda_name=agenda, comment=comment)
         
         # Mark the token as used
         token.is_used = True
         token.save()
         return redirect('success_page')
 
-    return render(request, 'visitor_form.html')
+    return render(request, 'visitor_form.html',{'agendas':agendas})
 
 def success_page(request):
     return render(request, 'success_page.html')

@@ -17,7 +17,7 @@ def send_blog_moderator_feedback_email(content, blog: Blog, url):
     email = EmailMultiAlternatives(subject="Mediusware Blog - Feedback From Moderator")
     email.attach_alternative(html_content, "text/html")
     email.to = [employee.email]
-    email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+    email.from_email = '"Mediusware-Admin" <blog@mediusware.com>'
     email.send()
 
 

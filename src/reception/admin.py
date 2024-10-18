@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import Agenda, Reception
 from django.utils.html import format_html
-from datetime import datetime
+from django.utils import timezone
 
 @admin.register(Agenda)
 class AgendaAdmin(admin.ModelAdmin):
@@ -12,32 +12,41 @@ class AgendaAdmin(admin.ModelAdmin):
 
 @admin.register(Reception)
 class ReceptionAdmin(admin.ModelAdmin):
-    list_display = ('get_time','name','agenda_name' ,'get_comment', 'get_date', 'get_status')
+    list_display = ('get_time','get_status','name','agenda_name' ,'get_short_comment', 'get_created_date')
     list_filter = ('status',)
     date_hierarchy = 'created_at'  
     actions = ['approve_status','pending_status']  
     class Media:
-        js = ("js/reception.js",)
+        js = ("js/reception.js",)  # Ensure this is correct
+        css = {
+            'all': ('css/reception.css',)  # Adjust the path as needed
+        }
 
-    def get_date(self,obj):   
-        datetime_str = datetime.strptime(str(obj.created_at), '%Y-%m-%d %H:%M:%S.%f')
-        print(datetime_str.time())
-        return datetime_str.date()
+    def get_short_comment(self, obj):
+        # Show the first 3-4 words of the comment
+        short_comment = ' '.join(obj.comment.split()[:3]) + '...' if obj.comment else ''
+        print(short_comment)
+        return format_html(
+            '<span class="comment-popup" data-full-comment="{}">{}</span>',
+            obj.comment, short_comment
+        )
+
+    get_short_comment.short_description = 'Comment'
+
+    def get_time(self, obj):
+        # Format the naive datetime directly in 12-hour format with AM/PM
+        time_formatted = obj.created_at.strftime('%I:%M%p').lower()
+        return time_formatted
     
-    get_date.short_description = 'Date'
+    get_time.short_description = 'Time'
 
-    def get_time(self,obj):
-        time_str = datetime.strptime(str(obj.created_at), '%Y-%m-%d %H:%M:%S.%f').time()
-        return time_str.strftime('%H:%M:%S')
-    get_time.short_description = 'Entry Time'
+    def get_created_date(self, obj):
+        # Format the date only (YYYY-MM-DD)
+        return obj.created_at.strftime('%Y-%m-%d')
 
-    def get_comment(self, obj):
-        if obj.comment:
-            truncated_comment = ' '.join(obj.comment.split()[:4]) + '...'
-            return format_html('<span title="{}">{}</span>', obj.comment, truncated_comment)
-        return '-'
-    
-    get_comment.short_description = 'Comment'
+    get_created_date.short_description = 'Created Date'
+    get_created_date.admin_order_field = 'created_at'
+
 
     def get_status(self, obj):
         if obj.status == 'pending':
