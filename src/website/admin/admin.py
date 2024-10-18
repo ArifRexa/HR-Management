@@ -508,9 +508,13 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     @admin.action(description="Submit selected blog(s) for Plagiarism Check")
     def plagiarism_check_selected(self, request, queryset):
         if request.user.has_perm("website.can_add_plagiarism_info"):
-            host_url = request.build_absolute_uri('/')
-            check_plagiarism(queryset, host_url)
-            self.message_user(request, f"Successfully queue blogs for plagiarism check.")
+            try:
+                host_url = request.build_absolute_uri('/')
+                check_plagiarism(queryset, host_url)
+                self.message_user(request, f"Successfully queue blogs for plagiarism check.")
+            except Exception as e:
+                print(e)
+                self.message_user(request, f"Failed to queue blogs for plagiarism check: {e}")
         else:
             self.message_user(request, f"You do not have permission to submit blogs for plagiarism check.", level="ERROR")
 

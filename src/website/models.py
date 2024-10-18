@@ -2,7 +2,9 @@ from website.models_v2.hire_resources import HireResourcePage
 from .hire_models import *  # noqa
 from django.db import models
 import uuid
-
+import base64
+from io import BytesIO
+from weasyprint import HTML
 # Create your models here
 from tinymce.models import HTMLField
 from mptt.models import MPTTModel, TreeForeignKey
@@ -13,6 +15,7 @@ from config.model.TimeStampMixin import TimeStampMixin
 from project_management.models import Client, Country, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
+
 
 class ServiceProcess(models.Model):
     img = models.ImageField()
@@ -142,14 +145,44 @@ class Blog(AuthorMixin, TimeStampMixin):
         ]
 
     def collect_blog_content(self):
-        """Collect all related blog content, including sections."""
-        from django.utils.html import strip_tags
+        """
+        Collect all related blog content, generate a PDF file, and return it as a base64-encoded string.
+        """
         sections = self.blog_contexts.all()
         full_content = ""
+
         for section in sections:
-            # print(f"section: {section}")
-            full_content += f" {section.title or ''} \n {strip_tags(section.description) or ''} \n"
-        return full_content.strip()
+            # Collect title and description in HTML format
+            title_html = f"<h2>{section.title or ''}</h2>" if section.title else ""
+            description_html = f"<p>{section.description or ''}</p>" if section.description else ""
+
+            full_content += f"{title_html} \n {description_html} \n"
+
+        # Generate the HTML content for the PDF
+        html_content = f"""
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>{self.title}</title>
+        </head>
+        <body>
+            <h1>{self.title}</h1>
+            {full_content}
+        </body>
+        </html>
+        """
+
+        # Convert the HTML content to PDF using WeasyPrint
+        pdf_file = BytesIO()
+        HTML(string=html_content).write_pdf(pdf_file)
+
+        # Move to the beginning of the BytesIO buffer
+        pdf_file.seek(0)
+
+        # Encode the PDF file to base64
+        pdf_base64 = base64.b64encode(pdf_file.read()).decode('utf-8')
+
+        return pdf_base64
 
 
 class Reference(models.Model):

@@ -102,10 +102,10 @@ class CopyleaksAPI:
         self.login()
 
         # Encode the text directly to base64
-        file_base64 = self.encode_text_to_base64(text)
+        # file_base64 = self.encode_text_to_base64(text)
 
         # Create the file submission document
-        file_submission = FileDocument(file_base64, file_name)
+        file_submission = FileDocument(text, file_name)
 
         # Set the scan properties, including sandbox mode and webhook
         webhook_url = self.callback_host + 'plagiarism/webhook/?event={{STATUS}}'
@@ -158,6 +158,6 @@ def check_plagiarism(blogs, callback_host):
 
         # print(f"Blog all section for the blog id: {blog.id}")
 
-        filename = f"blog_{plagiarism_info.scan_id}_{plagiarism_info.export_id}.txt"
+        filename = f"blog_{plagiarism_info.scan_id}_{plagiarism_info.export_id}.pdf"
         plag_object.submit_text(text=content, scan_id=plagiarism_info.scan_id, file_name=filename, sandbox=False)
         time.sleep(1)
