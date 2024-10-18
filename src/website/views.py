@@ -19,6 +19,7 @@ from rest_framework.generics import (
 from rest_framework.pagination import LimitOffsetPagination, PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core.files.base import ContentFile
 
 from employee.models import Employee, EmployeeNOC, EmployeeSkill, Skill
 from project_management.models import (
@@ -57,6 +58,7 @@ from website.models import (
     Service,
     VideoTestimonial,
     WebsiteTitle,
+    PlagiarismInfo,
 )
 from website.serializers import (
     AvailableTagSerializer,
@@ -103,6 +105,9 @@ from website.serializers import (
     TagListSerializer,
     VideoTestimonialSerializer,
     WebsiteTitleSerializer,
+)
+from website.utils.plagiarism_checker import (
+    CopyleaksAPI
 )
 
 
@@ -809,6 +814,7 @@ class BenefitsOfEmploymentListAPIView(ListAPIView):
     serializer_class = BenefitsOfEmploymentSerializer
     pagination_class = None
 
+# These are the webhook that handle copyleaks request and process the data
 # Plagiarism webhook receiving
 @csrf_exempt
 def plagiarism_webhook(request):
@@ -816,37 +822,24 @@ def plagiarism_webhook(request):
         try:
             # Parse the incoming JSON data
             data = json.loads(request.body)
-            print(f"{'-'*100}")
             print("webhook data")
-            print(data)
 
             # Extract relevant fields from the payload
             scan_id = data.get('scannedDocument', {}).get('scanId')
-            status = data.get('status')
-            developer_payload = data.get('developerPayload')
-            total_words = data.get('scannedDocument', {}).get('totalWords')
-            total_excluded = data.get('scannedDocument', {}).get('totalExcluded')
-            credits_used = data.get('scannedDocument', {}).get('credits')
-            creation_time_str = data.get('scannedDocument', {}).get('creationTime')
-            alerts = data.get('alerts', [])
-            # Extract results such as plagiarism sources from the scan
             results = data.get('results', {})
-            internet_results = results.get('internet', {})
-            database_results = results.get('database', {})
-            repositories_results = results.get('repositories', {})
+            aggregatedScore = results.get('score', {}).get('aggregatedScore')
+            plagiarism_object = PlagiarismInfo.objects.get(scan_id=scan_id)
+            if plagiarism_object:
+                plagiarism_object.plagiarism_percentage = aggregatedScore
+                host_url = request.build_absolute_uri('/')
+                copyleaks_object = CopyleaksAPI(callback_host=host_url)
+                copyleaks_object.call_for_export(scan_id=scan_id, export_id=plagiarism_object.export_id)
+                plagiarism_object.save()
 
-            # Process the results as necessary (e.g., save to database, trigger actions)
             # For demonstration, we'll print some information
             print(f"Scan ID: {scan_id}")
             print(f"Status: {status}")
-            print(f"Developer Payload: {developer_payload}")
-            print(f"Total Words: {total_words}")
-            print(f"Total Excluded: {total_excluded}")
-            print(f"Credits Used: {credits_used}")
-            print(f"Internet Results: {internet_results}")
-            print(f"Database Results: {database_results}")
-            print(f"Repositories Results: {repositories_results}")
-            print(f"Alerts: {alerts}")
+            print(f"aggregatedScore: {aggregatedScore}")
 
             # Handle any status or alert-specific actions
             if status == 0:  # Success
@@ -875,15 +868,37 @@ def export_pdf(request, scan_id, export_id):
         # print("Raw request body (binary data):", raw_body)
 
         if content_type == 'application/pdf':
-            # Handle the PDF file
-            # Here, you could save it, process it, etc.
+            # Fetch the plagiarism object based on scan_id and export_id
+            try:
+                plagiarism_object = PlagiarismInfo.objects.get(scan_id=scan_id, export_id=export_id)
+            except PlagiarismInfo.DoesNotExist:
+                return JsonResponse({'error': 'Plagiarism record not found'}, status=404)
+
+            # Save the PDF file to the model's pdf_file field
+            # Create a ContentFile from the raw body
+            pdf_file = ContentFile(raw_body, name=f'plagiarism_report_{scan_id}_{export_id}.pdf')
+
+            # Assign the file to the pdf_file field and save the model
+            plagiarism_object.pdf_file.save(f'plagiarism_report_{scan_id}_{export_id}.pdf', pdf_file)
+
             print("Received a PDF file.")
-            # Optionally save the PDF file
-            with open(f'plagiarism_report_{scan_id}_{export_id}.pdf', 'wb') as f:
-                f.write(raw_body)
-            return JsonResponse({'message': 'PDF file received successfully'}, status=200)
+            return JsonResponse({'message': 'PDF file received and saved successfully'}, status=200)
         else:
             return JsonResponse({'error': 'Unsupported content type'}, status=415)
 
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+@csrf_exempt
+def plagiarism_webhook_export(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            print("webhook data for complete export")
+            return JsonResponse({'message': 'Webhook received successfully'}, status=200)
+        except Exception as e:
+            print(f"Error processing webhook: {e}")
+            return JsonResponse({'error': 'Error processing webhook'}, status=400)
+    else:
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+

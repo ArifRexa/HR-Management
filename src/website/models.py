@@ -144,7 +144,6 @@ class Blog(AuthorMixin, TimeStampMixin):
     def collect_blog_content(self):
         """Collect all related blog content, including sections."""
         from django.utils.html import strip_tags
-        print(f"calling collect_blog_content")
         sections = self.blog_contexts.all()
         full_content = ""
         for section in sections:

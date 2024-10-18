@@ -404,6 +404,7 @@ class BlogAdmin(admin.ModelAdmin):
         "status",
         "total_view",
         "get_preview_link",
+        "get_plagiarism_percentage"
     )
     readonly_fields = ("status",)
     exclude = ("slug",)
@@ -475,13 +476,19 @@ class BlogAdmin(admin.ModelAdmin):
 
     @admin.action(description="Submit selected blog(s) for Plagiarism Check")
     def plagiarism_check_selected(self, request, queryset):
-        # queryset.update(status=BlogStatus.SUBMIT_FOR_REVIEW, approved_at=None)
-        for query in queryset:
-            if query.status == BlogStatus.SUBMIT_FOR_REVIEW:
-                check_plagiarism(query)
-        self.message_user(request, f"Successfully queue blogs.")
+        if request.user.has_perm("website.can_add_plagiarism_info"):
+            host_url = request.build_absolute_uri('/')
+            check_plagiarism(queryset, host_url)
+            self.message_user(request, f"Successfully queue blogs for plagiarism check.")
+        else:
+            self.message_user(request, f"You do not have permission to submit blogs for plagiarism check.", level="ERROR")
 
-
+    @admin.display(description="Plagiarism(%)")
+    def get_plagiarism_percentage(self, obj):
+        plagiarism_objects = obj.plagiarism_info.order_by('-created_at')
+        html_template = get_template("blog/plagiarism_report_link.html")
+        html_content = html_template.render({"plagiarism_objects": plagiarism_objects})
+        return format_html(html_content)
 
     @admin.action(description="Clone selected blogs")
     def clone_selected(self, request, queryset):
@@ -558,6 +565,10 @@ class BlogAdmin(admin.ModelAdmin):
             # If the user doesn't have permission, remove the 'approve_selected' action
             del actions["approve_selected"]
             del actions["in_revision_selected"]
+
+        if not request.user.has_perm("website.can_add_plagiarism_info"):
+            # If user does not have permissions to send the blog for plagiarism check
+            del actions["plagiarism_check_selected"]
 
         return actions
 
@@ -712,22 +723,6 @@ class BlogAdmin(admin.ModelAdmin):
                             blog_url,
                         )
         super().save_related(request, form, formsets, change)
-
-    # def _response_post_save(self, request, obj):
-    #     """
-    #     Override the response after an object is changed and saved.
-    #     You can customize the redirection here.
-    #     """
-    #     # After saving all data in the database it will initiate the plagiarism checker after collect all the content if it is in review state
-    #     if obj and obj.status == BlogStatus.SUBMIT_FOR_REVIEW:
-    #         host_url = request.build_absolute_uri('/')
-    #         print(f"host_url: {host_url}")
-    #         time.sleep(10)
-    #         # Call the plagiarism checker only if the blog is being submitted for review
-    #         check_plagiarism(obj)
-    #
-    #     # Redirect to the change list view
-    #     return super()._response_post_save(request, obj)
 
 
 @admin.register(BlogComment)
