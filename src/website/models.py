@@ -716,6 +716,17 @@ class BlogMeatadata(BaseMetadata):
 class HireResourceMetadata(BaseMetadata):
     hire_resource = models.ForeignKey(HireResourcePage,on_delete=models.CASCADE,null=True,blank=True)
 
+class IndustryMetadata(BaseMetadata):
+    service_category = models.ForeignKey("ServeCategory",on_delete=models.CASCADE,null=True,blank=True)
+
+
+class IndustryKeyword(models.Model):
+    keyword = models.ForeignKey(IndustryMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
 
 
 class ServiceKeyword(models.Model):
