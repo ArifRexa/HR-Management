@@ -185,13 +185,27 @@ class Blog(AuthorMixin, TimeStampMixin):
         return pdf_base64
 
 
-class Reference(models.Model):
+class ReferenceBlogs(models.Model):
+    blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='reference_blog')
+    reference_blog_title = models.CharField(max_length=200,null=True,blank=True)
+    reference_blog_link = models.URLField(null=True,blank=True)
+
+    def __str__(self):
+        return self.reference_blog_title
+    
+    class Meta:
+        verbose_name_plural = "Reference Blogs"
+
+
+class RelatedBlogs(models.Model):
     blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
-    reference_blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='reference_blog')
+    releted_blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='releted_blog')
 
     def __str__(self):
         return self.blog.title
-
+    
+    class Meta:
+        verbose_name_plural = "Related Blogs"
 
 class PostPlatform(models.TextChoices):
     LINKEDIN = "linkedin", "Linkedin"

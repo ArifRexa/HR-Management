@@ -70,7 +70,8 @@ from website.models import (
     ProjectServiceSolutionTitle,
     ProjectTechnologyTitle,
     PublicImage,
-    Reference,
+    ReferenceBlogs,
+    RelatedBlogs,
     Service,
     Blog,
     Category,
@@ -299,12 +300,19 @@ class BlogFAQInline(nested_admin.NestedStackedInline):
         formset.request = request
         return formset
 
-class ReferenceBlogInline(nested_admin.NestedStackedInline):
-    model = Reference
-    fields = ['reference_blog']
-    autocomplete_fields = ['reference_blog']
+class RelatedBlogInline(nested_admin.NestedStackedInline):
+    model = RelatedBlogs
+    fields = ['releted_blog']
+    autocomplete_fields = ['releted_blog']
     extra = 0
     fk_name = 'blog'
+
+
+
+class ReferenceBlogInline(nested_admin.NestedStackedInline):
+    model = ReferenceBlogs
+    fields = ['blog','reference_blog_title','reference_blog_link']
+    extra = 0
 
 class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
     model = BlogModeratorFeedback
@@ -416,7 +424,7 @@ class BlogCategoryFilter(admin.SimpleListFilter):
 class BlogAdmin(nested_admin.NestedModelAdmin):
     # prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (BlogContextInline, BlogFAQInline,ReferenceBlogInline, BlogModeratorFeedbackInline,BlogMetadataInline)
+    inlines = (BlogContextInline, BlogFAQInline,ReferenceBlogInline,RelatedBlogInline, BlogModeratorFeedbackInline,BlogMetadataInline)
     actions = [
         "clone_selected",
         "draft_selected",
@@ -723,7 +731,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     start_datetime=timezone.now(),
                     end_datetime=timezone.now()
                     + timedelta(days=1),  # Assuming the end is the next day
-                    description=f"Cheers!{obj.created_by.employee.full_name} Stellar blog approved!",)
+                    description=f"Cheers! {obj.created_by.employee.full_name} Stellar blog approved!",)
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
