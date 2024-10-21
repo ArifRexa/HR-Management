@@ -2,6 +2,8 @@ import shortuuid  # to generate short unique IDs
 from django.shortcuts import render, redirect,get_object_or_404
 from django.urls import reverse
 from .models import Agenda, Reception, Token
+from django.http import JsonResponse
+
 
 def generate_random_link(request):
     unique_url = shortuuid.uuid()  
@@ -38,3 +40,11 @@ def visitor_form(request, unique_url):
 
 def success_page(request):
     return render(request, 'success_page.html')
+
+
+def pending_reception_count(request):
+    if request.is_ajax():
+        pending_count = Reception.objects.filter(status='pending').count()
+        has_permission = request.user.is_superuser or request.user.has_perm('reception.view_reception')
+        return JsonResponse({'pending_count': pending_count,'has_perm':has_permission})
+    return JsonResponse({'error': 'Invalid request'}, status=400)

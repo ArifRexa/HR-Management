@@ -3,14 +3,16 @@
 {% load static %}
 
 {% block title %}
-    {% if cl.opts.verbose_name_plural %}
-        {{ cl.opts.verbose_name_plural|capfirst }}
-    {% else %}
-        {{ title }}
-    {% endif %}
-    {% if site_title %}
-        | {{ site_title }}
-    {% endif %}
+            {% if cl.opts.verbose_name_plural %}
+                {{ cl.opts.verbose_name_plural|capfirst }}
+            {% else %}
+                {{ title }}
+            {% endif %}
+            {% if site_title %}
+                | {{ site_title }}
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}
 
 {% block extrahead %}
@@ -60,9 +62,50 @@
         .toggle-filter-button:focus {
             outline: none;
         }
+
     </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+
+        function fetchPendingReceptionCount() {
+            // Perform an AJAX GET request to fetch the pending count
+            fetch("{% url 'pending_reception_count' %}", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' // Required for Django to recognize it as an AJAX request
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                let pendingCount = data.pending_count;
+                let has_permission = data.has_perm
+                // Select the <title> element
+                let titleElement = document.getElementsByTagName('title')[0];
+
+                // Get the current title text
+                let currentTitle = titleElement.textContent.trim();
+
+                // If pending reception count is present and greater than 0, prepend it to the title
+                if (pendingCount !== undefined && pendingCount > 0 && has_permission) {
+                    titleElement.textContent = `(${pendingCount}) ${currentTitle}`;
+                    console.log(titleElement)
+                } else {
+                    // If no pending receptions, reset to the original title
+                    titleElement.textContent = currentTitle;
+                }
+
+            })
+            .catch(error => {
+                console.error("Error fetching pending reception count:", error);
+            });
+        }
+
+        // Call the function when the page loads
+        fetchPendingReceptionCount();
+
 
 
         let link = Array.from(document.querySelectorAll('a')).find(a => a.textContent.trim() === "Weekly Project Hours");
