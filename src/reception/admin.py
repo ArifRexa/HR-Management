@@ -16,6 +16,7 @@ class ReceptionAdmin(admin.ModelAdmin):
     list_filter = ('status',)
     date_hierarchy = 'created_at'  
     actions = ['approve_status','pending_status']  
+    change_list_template = "reception.html"
     class Media:
         js = ("js/reception.js",)  # Ensure this is correct
         css = {
