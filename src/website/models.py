@@ -12,7 +12,7 @@ from mptt.models import MPTTModel, TreeForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-from project_management.models import Client, Country, Technology
+from project_management.models import Client, Country, Project, Technology
 from employee.models import Employee
 from django.core.exceptions import ValidationError
 
@@ -715,6 +715,24 @@ class BlogMeatadata(BaseMetadata):
 
 class HireResourceMetadata(BaseMetadata):
     hire_resource = models.ForeignKey(HireResourcePage,on_delete=models.CASCADE,null=True,blank=True)
+
+class IndustryMetadata(BaseMetadata):
+    service_category = models.ForeignKey("ServeCategory",on_delete=models.CASCADE,null=True,blank=True)
+
+class ProjectMetadata(BaseMetadata):
+    project = models.ForeignKey(Project,on_delete=models.CASCADE,null=True,blank=True)
+
+class ProjectKeyword(models.Model):
+    project_keyword = models.ForeignKey(ProjectMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+
+class IndustryKeyword(models.Model):
+    keyword = models.ForeignKey(IndustryMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
 
 
 
