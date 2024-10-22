@@ -1,4 +1,3 @@
-import keyword
 from pyexpat import model
 from rest_framework import serializers
 
@@ -55,6 +54,7 @@ from website.models import (
     OfficeLocation,
     PageBanner,
     PostCredential,
+    ProjectMetadata,
     ProjectServiceSolutionTitle,
     Service,
     Blog,
@@ -389,6 +389,17 @@ class ProjectContentSerializer(serializers.ModelSerializer):
         model = ProjectContent
         fields = ("title", "content", "image", "image2")
 
+class ProjectMetadataSerializer(serializers.ModelSerializer):
+    keywords = serializers.SerializerMethodField()
+    class Meta:
+        model = ProjectMetadata
+        fields = ('title', 'description', 'canonical','keywords')
+
+    def get_keywords(self,obj):
+        return [keyword.name for keyword in  obj.projectkeyword_set.all()]
+
+
+
 
 class ProjectDetailsSerializer(serializers.ModelSerializer):
     technologies = ProjectTechnologySerializer(
@@ -412,7 +423,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     services = ProjectServiceSerializer()
     service_solutions = ProjectServiceSolutionSerializer(many=True)
     country = serializers.SerializerMethodField()
-
+    metadata = ProjectMetadataSerializer(many=True,source='projectmetadata_set')
     class Meta:
         model = Project
         fields = (
@@ -443,6 +454,7 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
             # "client_feedback",
             "project_design",
             "service_solutions",
+            "metadata",
         )
 
     def get_country(self, obj):

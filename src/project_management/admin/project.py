@@ -8,6 +8,9 @@ from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
 from icecream import ic
+import nested_admin
+
+from website.models import ProjectKeyword, ProjectMetadata
 from .forms import ProjectTechnologyInlineForm, ProjectAdminForm
 from django import forms
 from django.contrib.sites.shortcuts import get_current_site
@@ -68,7 +71,7 @@ class TagAdmin(admin.ModelAdmin):
         return False
 
 
-class ProjectTechnologyInline(admin.StackedInline):
+class ProjectTechnologyInline(nested_admin.NestedStackedInline):
     model = ProjectTechnology
     form = ProjectTechnologyInlineForm
     extra = 1
@@ -76,14 +79,14 @@ class ProjectTechnologyInline(admin.StackedInline):
     
 
 
-class ProjectKeyPointInline(admin.StackedInline):
+class ProjectKeyPointInline(nested_admin.NestedStackedInline):
     model = ProjectKeyPoint
     extra = 1
     verbose_name = "Special Project Key Point"
     verbose_name_plural = "Special Project Key Points"
 
 
-class ProjectScreenshotInline(admin.StackedInline):
+class ProjectScreenshotInline(nested_admin.NestedStackedInline):
     model = ProjectScreenshot
     extra = 1
 
@@ -93,13 +96,13 @@ class ProjectDocumentAdmin(admin.StackedInline):
     extra = 0
 
 
-class ProjectContentAdmin(admin.StackedInline):
+class ProjectContentAdmin(nested_admin.NestedStackedInline):
     model = ProjectContent
     extra = 1
     fields = ("title", "content", "image")
 
 
-class ProjectKeyFeatureInline(admin.StackedInline):
+class ProjectKeyFeatureInline(nested_admin.NestedStackedInline):
     model = ProjectKeyFeature
     extra = 1
     fields = ("description", "img")
@@ -132,17 +135,27 @@ class ProjectPlatformImageInline(admin.TabularInline):
     extra = 1
 
 
-class ProjectServiceInline(admin.StackedInline):
+class ProjectServiceInline(nested_admin.NestedStackedInline):
     model = ProjectServiceSolution
     extra = 1
 
 
-class ProjectResultInline(admin.StackedInline):
+class ProjectResultInline(nested_admin.NestedStackedInline):
     model = ProjectResultStatistic
     extra = 1
 
+
+class ProjectKeywordInline(nested_admin.NestedTabularInline):
+    model = ProjectKeyword
+    extra = 1 
+
+class ProjectMetadataInline(nested_admin.NestedStackedInline): 
+    model = ProjectMetadata
+    extra = 1
+    inlines = [ProjectKeywordInline]
+
 @admin.register(Project)
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectAdmin(nested_admin.NestedModelAdmin):
     list_display = (
         "project_title_with_client",
         "web_title",
@@ -171,6 +184,7 @@ class ProjectAdmin(admin.ModelAdmin):
         ProjectScreenshotInline,
         # ProjectDocumentAdmin,
         # ProjectPlatformImageInline,
+        ProjectMetadataInline
     )
     list_filter = ("active", "show_in_website")
     list_per_page = 20
