@@ -1,8 +1,8 @@
 document.addEventListener("DOMContentLoaded",function(){
-    console.log("Running")
-    setTimeout(function(){
+    console.log("Running");
+    setTimeout(function() {
         window.location.reload();
-     }, 300000);
+    }, 180000);  
 
 
     const commentPopups = document.querySelectorAll('.comment-popup');
