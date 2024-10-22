@@ -138,7 +138,7 @@
                                 <tfoot>
                                     <tr>
                                         <th align="left">Total Deduction</th>
-                                        <th align="right">{{  employeesalary.salary_loan_total|addition:employeesalary.tax_loan_total }}</th>
+                                        <th align="right">{{  employeesalary.salary_loan_total|addition:employeesalary.tax_loan_total|addition:employeesalary.current_month_late_fee  }}</th>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -159,7 +159,7 @@
             {% if employeesalary.loan_emi %}
                 <p>Deducted on salary :
                     {{ employeesalary.net_salary|addition:employeesalary.project_bonus|addition:employeesalary.food_allowance|addition:employeesalary.festival_bonus|floatformat:2|intcomma|default:"0.00" }}
-                    {{ employeesalary.loan_emi|floatformat:2|default:"0.00" }} = <b>{{ employeesalary.gross_salary|floatformat:2|default:"0.00" }} Taka</b>
+                    {{  employeesalary.salary_loan_total|addition:employeesalary.tax_loan_total|addition:employeesalary.current_month_late_fee }} = <b>{{ employeesalary.gross_salary|floatformat:2|default:"0.00" }} Taka</b>
                 </p>
 
                 <p><b>In Word : </b>{{ employeesalary.gross_salary|num_to_word|default:"Zero" }} Taka only</p>
