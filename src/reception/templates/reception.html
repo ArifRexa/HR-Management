@@ -1,4 +1,4 @@
-{% extends "admin/base_site.html" %}
+{% extends "admin/change_list.html" %}
 
 {% load static %}
 
@@ -16,8 +16,8 @@
 {% endblock %}
 
 {% block extrahead %}
-    <link rel="icon" id="med" href="https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/favicon_v2_500x_500_.png">
-    <!-- <link rel="icon" id="med"> -->
+    <!-- <link rel="icon" id="med" href="https://mediusware.com/favicon.ico"> -->
+    <link rel="icon" id="med">
     <link rel="shortcut icon" type="image/x-icon"
           href="https://mediusware.com/wp-content/uploads/2021/04/apple-icon-120x120-1.png">
     <style>
@@ -67,6 +67,52 @@
     </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+
+
+        function fetchPendingReceptionCount() {
+            // Perform an AJAX GET request to fetch the pending count
+            fetch("{% url 'pending_reception_count' %}", {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest' // Required for Django to recognize it as an AJAX request
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                
+                let pendingCount = data.pending_count;
+                let has_permission = data.has_perm
+                // Select the <title> element
+                let titleElement = document.getElementsByTagName('title')[0];
+                
+
+                // Get the current title text
+                let currentTitle = titleElement.textContent.trim();
+
+                // If pending reception count is present and greater than 0, prepend it to the title
+                if (pendingCount !== undefined && pendingCount > 0 && has_permission) {
+                    titleElement.textContent = `(${pendingCount}) ${currentTitle}`;
+                    var fev_element = document.getElementById('med')
+                    fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/favicon_hr_with_red.png") 
+                    
+                    
+                } else {
+                    var fev_element = document.getElementById('med')
+                    fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/favicon_v2_500x_500_.png") 
+                    // If no pending receptions, reset to the original title
+                    titleElement.textContent = currentTitle;
+
+                }
+
+            })
+            .catch(error => {
+                console.error("Error fetching pending reception count:", error);
+            });
+        }
+
+        // Call the function when the page loads
+        fetchPendingReceptionCount();
 
 
 
