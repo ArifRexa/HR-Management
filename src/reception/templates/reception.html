@@ -15,11 +15,20 @@
     </div>
 {% endblock %}
 
+
+{% block content_title %}
+    <div style="width: 100%">
+        <h1> Project Hours <span style="float: right"><i id="notification-icon" class="fa fa-bell notification-icon off" onclick="toggleNotification()"></i></span></h1><br><br>
+    </div>
+{% endblock %}
+
 {% block extrahead %}
     <!-- <link rel="icon" id="med" href="https://mediusware.com/favicon.ico"> -->
     <link rel="icon" id="med">
     <link rel="shortcut icon" type="image/x-icon"
           href="https://mediusware.com/wp-content/uploads/2021/04/apple-icon-120x120-1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
     <style>
         #result_list {
             min-height: 50vh;
@@ -66,8 +75,45 @@
 
     </style>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
 
+    function toggleNotification() {
+            var icon = document.getElementById('notification-icon');
+            
+            if (icon.classList.contains('enabled')) {
+                icon.classList.remove('enabled');
+                icon.classList.add('off');
+                icon.classList.remove('fa-bell');
+                icon.classList.add('fa-bell-slash'); // Change icon to "bell off"
+                localStorage.setItem('notificationStatus', 'off'); // Save the state in localStorage
+            } else {
+                icon.classList.remove('off');
+                icon.classList.add('enabled');
+                icon.classList.remove('fa-bell-slash');
+                icon.classList.add('fa-bell'); // Revert to normal bell icon
+                localStorage.setItem('notificationStatus', 'enabled'); // Save the state in localStorage
+            }
+        }
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // Restore the notification icon state from localStorage
+        var savedStatus = localStorage.getItem('notificationStatus');
+        var icon = document.getElementById('notification-icon');
+        if (savedStatus === 'off') {
+            icon.classList.remove('enabled');
+            icon.classList.add('off');
+            icon.classList.remove('fa-bell');
+            icon.classList.add('fa-bell-slash');
+        } else {
+            icon.classList.remove('off');
+            icon.classList.add('enabled');
+            icon.classList.remove('fa-bell-slash');
+            icon.classList.add('fa-bell');
+        }
+
+        console.log("Running");
+        setTimeout(function() {
+            window.location.reload();
+        }, 180000);      
 
         function fetchPendingReceptionCount() {
             // Perform an AJAX GET request to fetch the pending count
@@ -91,11 +137,20 @@
                 let currentTitle = titleElement.textContent.trim();
 
                 // If pending reception count is present and greater than 0, prepend it to the title
+                var icon = document.getElementById('notification-icon');
+
                 if (pendingCount !== undefined && pendingCount > 0 && has_permission) {
                     titleElement.textContent = `(${pendingCount}) ${currentTitle}`;
                     var fev_element = document.getElementById('med')
                     fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/dfdfd.png") 
+                   
+                    var savedStatus = localStorage.getItem('notificationStatus');
+                    if (savedStatus == 'enabled'){
+                        var audio = new Audio('/static/audio/reception-notification.mp3');  
+                        audio.play()
+                    }
                     
+                 
                     
                 } else {
                     var fev_element = document.getElementById('med')
@@ -115,6 +170,27 @@
         fetchPendingReceptionCount();
 
 
+        const commentPopups = document.querySelectorAll('.comment-popup');
+
+        commentPopups.forEach(popup => {
+            popup.addEventListener('mouseover', function (e) {
+                const fullComment = e.target.getAttribute('data-full-comment');
+    
+                const tooltip = document.createElement('div');
+                tooltip.className = 'comment-tooltip';
+                tooltip.innerText = fullComment;
+    
+                document.body.appendChild(tooltip);
+                const rect = e.target.getBoundingClientRect();
+                tooltip.style.left = `${rect.left + window.scrollX}px`;
+                tooltip.style.top = `${rect.bottom + window.scrollY}px`;
+    
+                // Remove tooltip on mouseout
+                e.target.addEventListener('mouseout', function () {
+                    tooltip.remove();
+                }, { once: true });
+            });
+        });
 
         let link = Array.from(document.querySelectorAll('a')).find(a => a.textContent.trim() === "Weekly Project Hours");
         if (link) {
@@ -268,7 +344,7 @@
                     }
                 }
             });
-            localStorage.clear();
+            // localStorage.clear();    
             if (localStorage.getItem("filter_id")==null) {
                 
                 localStorage.setItem("filter_id", JSON.stringify(filter_id))
@@ -282,7 +358,7 @@
 {% endblock %}
 
 {% block content %}
-    {{ block.super }}
+{{ block.super }}
 {% endblock %}
 
 {% block footer %}
