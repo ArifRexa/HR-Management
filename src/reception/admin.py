@@ -13,7 +13,7 @@ class AgendaAdmin(admin.ModelAdmin):
 @admin.register(Reception)
 class ReceptionAdmin(admin.ModelAdmin):
     list_display = ('get_time','get_status','name','agenda_name' ,'get_short_comment', 'get_created_date')
-    list_filter = ('status',)
+    list_filter = ('status','agenda_name')
     date_hierarchy = 'created_at'  
     actions = ['approve_status','pending_status']  
     change_list_template = "reception.html"

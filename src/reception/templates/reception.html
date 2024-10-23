@@ -113,7 +113,7 @@
         console.log("Running");
         setTimeout(function() {
             window.location.reload();
-        }, 30000);      
+        }, 180000);      
 
         function fetchPendingReceptionCount() {
             // Perform an AJAX GET request to fetch the pending count
@@ -149,6 +149,7 @@
                         var audio = new Audio('/static/audio/reception-notification.mp3');  
                         audio.play()
                     }
+                    
                  
                     
                 } else {
