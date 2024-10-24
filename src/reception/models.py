@@ -21,7 +21,7 @@ class Reception(TimeStampMixin):
     
     name = models.CharField(max_length=255)
     comment = models.TextField(null=True,blank=True)
-    agenda_name = models.ForeignKey(Agenda,on_delete=models.CASCADE,null=True,blank=True,verbose_name='Agenda')
+    agenda_name = models.ForeignKey(Agenda,on_delete=models.SET_NULL,null=True,blank=True,verbose_name='Agenda')
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='pending',null=True,blank=True)
     approved_by = models.CharField(max_length=200,null=True,blank=True)
     def __str__(self):
