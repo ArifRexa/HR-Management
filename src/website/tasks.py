@@ -33,6 +33,6 @@ def thank_you_message_to_author(blog: Blog, url):
     )
     email.attach_alternative(html_content, "text/html")
     email.to = [employee.email]
-    email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+    email.from_email = '"Mediusware-Admin" <blog@mediusware.com>'
     email.send()
 
