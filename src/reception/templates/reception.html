@@ -145,13 +145,19 @@
                     fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/dfdfd.png") 
                    
                     var savedStatus = localStorage.getItem('notificationStatus');
-                    if (savedStatus == 'enabled'){
-                        var audio = new Audio('/static/audio/reception-notification.mp3');  
-                        audio.play()
-                    }
+                    if (savedStatus === 'enabled') {
+                    var audio = new Audio("{% static 'audio/reception-notification.mp3' %}");
+                    audio.play().then(() => {
+                        console.log('Audio playing');
+                    }).catch((error) => {
+                        console.error('Playback failed:', error);
+                    });
+                } else {
+                    console.log('Notification is disabled');
+                }
                     
                  
-                    
+        
                 } else {
                     var fev_element = document.getElementById('med')
                     fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/Logo_MW.png") 
