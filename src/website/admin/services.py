@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from website.models_v2.services import (
+    AdditionalServiceContent,
     ComparativeAnalysis,
     DevelopmentServiceProcess,
     DiscoverOurService,
@@ -17,6 +18,10 @@ class DiscoverOurServiceInline(admin.StackedInline):
 
 class DevelopmentServiceProcessInline(admin.TabularInline):
     model = DevelopmentServiceProcess
+    extra = 1
+
+class AdditionalServiceContentInline(admin.StackedInline):
+    model = AdditionalServiceContent
     extra = 1
 
 
@@ -72,6 +77,7 @@ class ServicePageAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     inlines = [
         DiscoverOurServiceInline,
+        AdditionalServiceContentInline,
         DevelopmentServiceProcessInline,
         ComparativeAnalysisInline,
         FAQQuestionInline,
