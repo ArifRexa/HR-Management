@@ -29,6 +29,7 @@ from website.models_v2.hire_resources import (
     HireResourceService,
     DeveloperPriceType,
     FAQQuestion,
+    HireResourceServiceContent,
     HiringStep,
     Cost,
     Criteria,
@@ -119,7 +120,13 @@ class HireResourceMetadataSerializer(serializers.ModelSerializer):
         return [keyword.name for keyword in obj.hireresourcekeyword_set.all()]
 
 
+class HireResourceServiceContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireResourceServiceContent
+        fields = '__all__'
+
 class HireResourcePageSerializer(serializers.ModelSerializer):
+    hire_resource_service_content = HireResourceServiceContentSerializer(many=True, source='hire_resource')
     costs = CostSerializer(many=True)
     developer_price_types = DeveloperPriceTypeSerializer(many=True)
     services = HireResourceServiceSerializer(many=True)
