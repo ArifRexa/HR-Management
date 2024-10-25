@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from website.models_v2.services import (
+    AdditionalServiceContent,
     ServicePage,
     ServiceFAQQuestion,
     DevelopmentServiceProcess,
@@ -31,6 +32,7 @@ class ServicePageSerializer(serializers.ModelSerializer):
             "description",
             "icon",
             "slug",
+            "additional_service_content",
         )
 
     def to_representation(self, instance):
@@ -72,7 +74,14 @@ class ServiceFAQQuestionSerializer(BaseServicePageSerializer):
         exclude = ("id",)
 
 
+class AdditionalServiceContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalServiceContent
+        fields = "__all__"
+
+
 class ServicePageDetailSerializer(serializers.ModelSerializer):
+    additional_service_content = AdditionalServiceContentSerializer(many=True)
     development_services_process = DevelopmentServiceProcessSerializer(many=True)
     discover_services = DiscoverOurServiceSerializer(many=True)
     comparative_analysis = ComparativeAnalysisSerializer(many=True)
