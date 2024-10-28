@@ -4,7 +4,7 @@ from django import forms
 from django.utils.html import format_html
 from django.template.loader import get_template
 from django.utils import timezone
-from django.db.models import Case, When, Q, Value, Sum
+from django.db.models import Case, When, Q, Value, Sum, Avg
 from django.db.models.functions import Coalesce
 from employee.models.employee_rating_models import EmployeeRating
 from employee.models import Employee
@@ -143,15 +143,17 @@ class EmployeeRatingFilterByScoreTitle(admin.SimpleListFilter):
 
 @admin.register(EmployeeRating)
 class EmployeeRatingAdmin(admin.ModelAdmin):
+    
     list_display = [
         "employee",
-        "rating_by",
-        "see_comment",
-        "show_score",
-        "get_last_six_months_score",
-        "month",
-        "year",
-        "created_at",
+        # "rating_by",
+        # "see_comment",
+        "current_month_average_display",
+        "last_month_average_display",
+        "third_last_month_average_display",  # Display for third last month
+        "fourth_last_month_average_display",  # Display for fourth last month
+        "fifth_last_month_average_display",  # Display for fifth last month
+        "sixth_last_month_average_display",
     ]
     fieldsets = (
         (
@@ -161,18 +163,17 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
                     "month",
                     "year",
                     "employee",
-                    "score",
-                    # "project",
-                    # "feedback_responsiveness",
-                    # "continuous_learning",
-                    # "collaboration",
-                    # "communication_effectiveness",
-                    # "leadership_potential",
-                    # "problem_solving_ability",
-                    # "innovation_and_creativity",
-                    # "adaptability_and_flexibility",
-                    # "professional_growth_and_development",
-                    # "overall_contribution_to_team_success",
+                    "rating_overall_satisfaction",
+                    "communication_effectiveness",
+                    "rating_quality_of_work",
+                    "rating_time_management",
+                    "rating_understanding_of_requirements",
+                    "overall_contribution_to_team_success",
+                    "professional_growth_and_development",
+                    "problem_solving_ability",
+                    "collaboration",
+                    "leadership_potential",
+                    "adaptability_and_flexibility",
                     "comment",
                 )
             },
@@ -183,7 +184,9 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "employee",
     ]
-    form = EmployeeRatingForm
+    # form = EmployeeRatingForm
+
+    change_form_template = "admin/employee_rating/employee_add_form.html"
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -198,26 +201,122 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
             return qs
         return qs.filter(created_by__id=request.user.id)
 
-    # def save_model(self, request, obj, form, change):
-    #     # Check if there's already a rating submitted by the same user for the same employee in the current month
-    #     current_month = timezone.now().month
-    #     current_year = timezone.now().year
-    #     existing_ratings = EmployeeRating.objects.filter(
-    #         created_by=obj.created_by,
-    #         employee=obj.employee,
-    #         created_at__month=current_month,
-    #         created_at__year=current_year
-    #     )
+    def add_view(self, request, form_url='', extra_context=None):
+        # For add_view, we don't have an object, so pass `None` to get_form
+        form = self.get_form(request, None)()
+        extra_context = extra_context or {}
+        extra_context['adminform'] = admin.helpers.AdminForm(
+            form, list(self.get_fieldsets(request)), self.get_prepopulated_fields(request)
+        )
+        return super().add_view(request, form_url, extra_context=extra_context)
 
-    #     if existing_ratings.exists():
-    #         # Show a message to the user instead of raising an error
-    #         message = ("You have already submitted a rating for this employee this month. The new rating was not saved.")
-    #         self.message_user(request, message, level=messages.WARNING)
-    #         return
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        # Get the object by its ID for change_view
+        obj = self.get_object(request, object_id)
+        form = self.get_form(request, obj)(instance=obj)
+        extra_context = extra_context or {}
+        extra_context['adminform'] = admin.helpers.AdminForm(
+            form, list(self.get_fieldsets(request, obj)), self.get_prepopulated_fields(request, obj)
+        )
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
-    #     # Call the save_model method of the parent class to save the object
-    #     return super().save_model(request, obj, form, change)
-    @admin.display(description="comments")
+    def save_model(self, request, obj, form, change):
+        # Get the current month and year
+        current_month = obj.month
+        current_year = obj.year
+        employee = obj.employee
+
+        # Check if a rating already exists for the same employee in the current month and year
+        existing_rating = EmployeeRating.objects.filter(
+            employee=employee,
+            month=current_month,
+            year=current_year
+        ).exclude(id=obj.id)  # Exclude the current object if it's an edit
+
+        if existing_rating.exists():
+            print("$"*45)
+            print(existing_rating)
+            # Show a message to the user that a rating already exists
+            self.message_user(request, "You have already submitted a rating for this employee in the current month.")
+            return  # Prevent saving the new rating
+
+        # Call the parent class's save_model method to save the object
+        super().save_model(request, obj, form, change)
+
+    @admin.display(description="Current Month Average")
+    def current_month_average_display(self, obj):
+        average = self.get_month_average(obj.employee, 0)  # Current month
+        return f"{average:.2f}" if average is not None else "No Data"
+
+    @admin.display(description="Last Month Average")
+    def last_month_average_display(self, obj):
+        average = self.get_month_average(obj.employee, 1)  # Last month
+        return f"{average:.2f}" if average is not None else "No Data"
+
+    @admin.display(description="Third Last Month Average")
+    def third_last_month_average_display(self, obj):
+        average = self.get_month_average(obj.employee, 2)  # Third last month
+        return f"{average:.2f}" if average is not None else "No Data"
+
+    @admin.display(description="Fourth Last Month Average")
+    def fourth_last_month_average_display(self, obj):
+        average = self.get_month_average(obj.employee, 3)  # Fourth last month
+        return f"{average:.2f}" if average is not None else "No Data"
+
+    @admin.display(description="Fifth Last Month Average")
+    def fifth_last_month_average_display(self, obj):
+        average = self.get_month_average(obj.employee, 4)  # Fifth last month
+        return f"{average:.2f}" if average is not None else "No Data"
+
+    @admin.display(description="Sixth Last Month Average")
+    def sixth_last_month_average_display(self, obj):
+        average = self.get_month_average(obj.employee, 5)  # Sixth last month
+        return f"{average:.2f}" if average is not None else "No Data"
+
+    def get_month_average(self, employee, months_ago):
+        now = timezone.now()
+        
+        # Calculate the first day of the month for the month we are interested in
+        month_year = now - timedelta(days=months_ago * 30)
+        first_day = month_year.replace(day=1)
+
+        # Calculate the last day of the month
+        if month_year.month == 12:  # December case
+            last_day = first_day.replace(year=first_day.year + 1, month=1, day=1) - timedelta(days=1)
+        else:
+            last_day = first_day.replace(month=first_day.month + 1, day=1) - timedelta(days=1)
+
+        # Query for ratings in the specified month
+        ratings = EmployeeRating.objects.filter(
+            employee=employee,
+            created_at__gte=first_day,
+            created_at__lte=last_day
+        )
+
+        if not ratings.exists():
+            return None  # No ratings found for that month
+
+        # Calculate average for relevant fields
+        averages = ratings.aggregate(
+            overall_satisfaction=Avg('rating_overall_satisfaction'),
+            communication_effectiveness=Avg('communication_effectiveness'),
+            quality_of_work=Avg('rating_quality_of_work'),
+            time_management=Avg('rating_time_management'),
+            understanding_of_requirements=Avg('rating_understanding_of_requirements'),
+            contribution_to_team_success=Avg('overall_contribution_to_team_success'),
+            growth_and_development=Avg('professional_growth_and_development'),
+            problem_solving=Avg('problem_solving_ability'),
+            collaboration=Avg('collaboration'),
+            leadership=Avg('leadership_potential'),
+            adaptability=Avg('adaptability_and_flexibility'),
+        )
+
+        # Calculate overall average for the month, ignoring None values
+        total_average = sum(filter(None, averages.values())) / len(averages)
+        return round(total_average, 2)  # Round to 2 decimal places
+
+
+    @admin.display(description="comment")
     def see_comment(self, obj):
         html_template = get_template("admin/employee/list/employe_rating_comments.html")
         html_content = html_template.render({"comment": obj.comment})
@@ -236,7 +335,7 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
             return "Excellent"
         else:
             return "N/A"
-        
+ 
 
     @admin.display(description="Last Six Months Score")
     def get_last_six_months_score(self, obj):
@@ -283,18 +382,18 @@ class EmployeeRatingAdmin(admin.ModelAdmin):
             return False
         return True
 
-    @admin.display(description="Rating By")
-    def rating_by(self, obj):
-        return f"{obj.created_by.employee.full_name}"
+    # @admin.display(description="Rating By")
+    # def rating_by(self, obj):
+    #     return f"{obj.created_by.employee.full_name}"
 
-    def get_form(self, request, obj, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        if obj == None:
-            field = form.base_fields["employee"]
-            field.widget.can_add_related = False
-            field.widget.can_change_related = False
-        form.request = request
-        return form
+    # def get_form(self, request, obj, **kwargs):
+    #     form = super().get_form(request, obj, **kwargs)
+    #     if obj == None:
+    #         field = form.base_fields["employee"]
+    #         field.widget.can_add_related = False
+    #         field.widget.can_change_related = False
+    #     form.request = request
+    #     return form
 
     # @admin.display(description="comments")
     # def comment(self, obj):

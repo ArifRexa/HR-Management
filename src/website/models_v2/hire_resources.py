@@ -65,6 +65,15 @@ class HireResourcePage(models.Model):
         verbose_name = "Hire Resource"
         verbose_name_plural = "Hire Resources"
 
+class HireResourceServiceContent(models.Model):
+    hire_resource = models.ForeignKey(HireResourcePage,related_name='hire_resource',null=True,blank=True,on_delete=models.CASCADE)
+    title = models.CharField(max_length=255,null=True,blank=True)
+    content = HTMLField(null=True,blank=True)
+    image = models.ImageField(upload_to="hire_resource_image",null=True,blank=True)
+
+    def __str__(self):
+        return self.title
+
 
 class HireResourceService(models.Model):
     hire_resource = models.ForeignKey(

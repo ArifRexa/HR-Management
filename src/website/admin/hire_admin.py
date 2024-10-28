@@ -34,6 +34,7 @@ from website.models_v2.hire_resources import (
     FAQQuestion,
     HireResourcePage,
     HireResourceService,
+    HireResourceServiceContent,
     HiringStep,
     Cost,
     CostType,
@@ -88,6 +89,12 @@ class HireResourceMetadataInline(nested_admin.NestedStackedInline):
     extra = 1
     inlines = [HireResourceKeywordInline]
 
+class HireResourceServiceContentInline(nested_admin.NestedStackedInline):
+    model = HireResourceServiceContent
+    extra = 1
+
+
+
 @admin.register(HireResourcePage)
 class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
     inlines = [
@@ -96,7 +103,8 @@ class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
         HiringStepAdmin,
         HireResourceServiceAdmin,
         FAQQuestionInlineAdmin,
-        HireResourceMetadataInline
+        HireResourceMetadataInline,
+        HireResourceServiceContentInline
     ]
     fieldsets = (
         ("Page Hierarchy", {"fields": ("is_parent", "parents")}),
