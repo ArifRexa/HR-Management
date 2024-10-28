@@ -82,6 +82,8 @@
         
 
         const ParentDiv = document.getElementById('content')
+        console.log("parent div", ParentDiv)
+        ParentDiv.style.position = 'relative';
         const filterDiv = document.getElementById('changelist-filter')
         if (filterDiv) {
         // Step 2: Create the button element
@@ -94,10 +96,11 @@
         ParentDiv.insertAdjacentElement('beforeend', button);
 
         button.style.position = 'fixed';  // Fixed position for stable placement
-        button.style.left = '1800px';       // Adjust left position as needed
-        button.style.top = '63%';         // Center it vertically in the middle of the page
+        button.style.left = '98%';       // Adjust left position as needed
+        button.style.top = '60vh';         // Center it vertically in the middle of the page
         button.style.transform = 'translateY(-50%)'; // Shift the button upwards by 50% of its own height to center it
-        
+        button.style.height='100vh';
+        button.style.width='25px'
 
         button.addEventListener('click',function(){
             if (filterDiv.style.display === 'none'){
