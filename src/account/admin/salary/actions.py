@@ -46,8 +46,8 @@ class SalarySheetAction(admin.ModelAdmin):
 
         # Add headers including 'Total Salary' at the end
         work_sheet.append([
-            'Date', 'Account No', 'Routing No', 'Employee Name', 'BDT', 'Amount', 
-            'Originating Bank Routing No.', 'Originating Bank Account No.', 
+            'Date', 'Account No','Employee Name', 'BDT', 'Amount', 
+            'Originating Bank Routing No.','Routing No','Originating Bank Account No.', 
             'Originating Account Name', 'Remarks', 
         ])
 
