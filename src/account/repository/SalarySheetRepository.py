@@ -28,6 +28,8 @@ from project_management.models import CodeReview
 from dateutil.relativedelta import relativedelta
 from django.db.models.functions import ExtractMonth, ExtractYear
 
+from website.models import Blog, BlogStatus
+
 
 def get_fiscal_year_dates(start_month=7):
     date = datetime.now()
@@ -657,6 +659,7 @@ class SalarySheetRepository:
         """Calculate Project Bonus
         this method will calculate project bonus if the employee is manager and the he is eligible for project bonus
         super admin will decide project hour is eligible or not for project bonus
+        Additinally if employee don't have any approved blog in current month.Then this d employee willon't receive any project bonus. 
 
         @param salary_sheet:
         @param employee:
@@ -674,31 +677,35 @@ class SalarySheetRepository:
         #     project_hours_amount = project_hours * 10
 
         #     return project_hours_amount
-
+        is_blog_approved = Blog.objects.filter(created_by__employee=employee,approved_at__month=salary_sheet.date.month,status=BlogStatus.APPROVED).exists()
         project_hours_amount = 0
-        employee_project_hours = employee.employeeprojecthour_set.filter(
-            project_hour__date__month=salary_sheet.date.month,
-            project_hour__date__year=salary_sheet.date.year,
-        ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-        project_hours_amount += employee_project_hours * 10 
-
-        if employee.manager or employee.lead:
-            # Found lead hour from EmployeeProjectHour
-            employee_hours_as_lead  = employee.employeeprojecthour_set.filter(
+        
+        if is_blog_approved:
+            employee_project_hours = employee.employeeprojecthour_set.filter(
                 project_hour__date__month=salary_sheet.date.month,
                 project_hour__date__year=salary_sheet.date.year,
-                project_hour__manager = employee
             ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-            
-            lead_project_hours = employee.projecthour_set.filter(
-                date__month=salary_sheet.date.month,
-                date__year=salary_sheet.date.year,
-                payable=True,
-            ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+            project_hours_amount += employee_project_hours * 10 
 
-            project_hours_amount += (lead_project_hours - employee_hours_as_lead) * 10
+            if employee.manager or employee.lead:
+                # Found lead hour from EmployeeProjectHour
+                employee_hours_as_lead  = employee.employeeprojecthour_set.filter(
+                    project_hour__date__month=salary_sheet.date.month,
+                    project_hour__date__year=salary_sheet.date.year,
+                    project_hour__manager = employee
+                ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+                
+                lead_project_hours = employee.projecthour_set.filter(
+                    date__month=salary_sheet.date.month,
+                    date__year=salary_sheet.date.year,
+                    payable=True,
+                ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+
+                project_hours_amount += (lead_project_hours - employee_hours_as_lead) * 10
+                return project_hours_amount
+        
             return project_hours_amount
-
+        
         return project_hours_amount
 
     def __calculate_code_quality_bonus(
