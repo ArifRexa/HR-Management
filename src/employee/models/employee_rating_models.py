@@ -16,7 +16,7 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
         YEAR_CHOICES = [(timezone.now().year, timezone.now().year)] 
     MONTH_CHOICE = [(m,calendar.month_name[m]) for m in range(1,timezone.now().month + 1)]
 
-    score = models.SmallIntegerField(help_text="Max Score Will be 25", default=0, validators=[MaxValueValidator(25)])
+    score = models.SmallIntegerField(help_text="Max Score Will be 25", default=0, validators=[MaxValueValidator(25)], blank=True, null=True)
     employee = models.ForeignKey(Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE)
     # project = models.ForeignKey(Project, limit_choices_to={"active": True}, on_delete=models.SET_NULL, null=True, blank=True)
     # feedback_responsiveness = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
@@ -32,6 +32,20 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
     comment = models.TextField(null=True, blank=True)
     month = models.IntegerField(choices=MONTH_CHOICE, default=timezone.now().month)
     year = models.IntegerField(choices=YEAR_CHOICES, default=timezone.now().year)
+
+    rating_overall_satisfaction = models.FloatField(blank=True, null=True)
+    communication_effectiveness = models.FloatField(blank=True, null=True)
+    rating_quality_of_work = models.FloatField(blank=True, null=True)
+    rating_time_management = models.FloatField(blank=True, null=True)
+    rating_understanding_of_requirements = models.FloatField(blank=True, null=True)
+    overall_contribution_to_team_success = models.FloatField(blank=True, null=True)
+    professional_growth_and_development = models.FloatField(blank=True, null=True)
+    problem_solving_ability = models.FloatField(blank=True, null=True)
+    collaboration = models.FloatField(blank=True, null=True)
+    leadership_potential = models.FloatField(blank=True, null=True)
+    adaptability_and_flexibility = models.FloatField(blank=True, null=True)
+
+
     class Meta:
         verbose_name = "Employee Rating"
         verbose_name_plural = "Employee Ratings"

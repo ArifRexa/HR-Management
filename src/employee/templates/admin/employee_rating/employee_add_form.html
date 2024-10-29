@@ -1,0 +1,106 @@
+{% extends "admin/change_form.html" %}
+
+{% block title %}
+    Employee Feedback
+{% endblock %}
+
+{% block content %}
+<p>We value your honest feedback as it helps us improve and deliver even better results in the future. Please take a few moments to share your thoughts on the project. Your insights are crucial to our growth and ensuring that we meet your expectations. Please don't hesitate to give your honest (positive/negative) opinion.</p>
+<form action="" method="post" class="custom-form">
+    {% csrf_token %}
+    
+    <!-- Start looping through the fieldsets defined in admin.py -->
+    {% for fieldset in adminform %}
+        <fieldset class="module aligned">
+            {% if fieldset.name %}
+                <legend>{{ fieldset.name }}</legend>
+            {% endif %}
+            
+            <div class="form-group">
+                <!-- Loop through each field and apply custom styling -->
+                {% for line in fieldset %}
+                    {% for field in line %}
+                        <div class="field-box" style="margin-bottom: 20px;">
+                            <label for="{{ field.id_for_label }}" class="custom-label" style="font-weight: bold;">
+                                {{ field.label_tag }}  <!-- Proper label tag -->
+                            </label>
+                            <div class="field-input">
+                                {{ field.field }} <!-- Render the input field -->
+                            </div>
+
+                            <!-- Display errors, if any -->
+                            {% if field.errors %}
+                                <div class="errors" style="color: red;">
+                                    {{ field.errors }}
+                                </div>
+                            {% endif %}
+
+                            <!-- Display help text, if any -->
+                            {% if field.help_text %}
+                                <p class="help-text" style="color: #666; font-size: 0.9em;">
+                                    {{ field.help_text }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </fieldset>
+    {% endfor %}
+    
+    <!-- Submit button -->
+    <div class="submit-row">
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </div>
+</form>
+<style>
+    * {
+        font-family: 'Barlow', sans-serif;
+    }
+    .container {
+        padding-left: 6%; /* Adjust as needed */
+        padding-right: 6%; /* Adjust as needed */
+    }
+    thead tr {
+        background-color: #f9f9f9;
+    }
+    tbody tr:nth-child(even) {
+        background-color: #f9f9f9;
+    }
+    tbody tr:nth-child(odd) {
+        background-color: #ffffff;
+    }
+    div.messages {
+        background: tomato;
+    }
+    div.messages div.alert-danger {
+        background: tomato;
+    }
+
+    .table td, .table th {
+        vertical-align: middle;
+    }
+
+    .table th {
+        text-align: left;
+    }
+
+    .popover-wrapper {
+        position: relative;
+    }
+
+    .popover-title {
+        font-weight: bold;
+    }
+
+    .popover-message {
+        display: none;
+    }
+
+    .popover-wrapper:hover .popover-message {
+        display: block;
+    }
+
+
+</style>
+{% endblock %}
