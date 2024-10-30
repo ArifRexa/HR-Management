@@ -82,7 +82,7 @@ class ReceptionAdmin(admin.ModelAdmin):
 class CEOAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_status','get_time')  
     list_filter = ('status',)  
-    actions = ['approve_status',]
+    actions = ['approve_status','pending_status']
     autocomplete_fields = ('name',)
     change_list_template = 'ceo.html'    
     def get_queryset(self, request):
@@ -122,6 +122,11 @@ class CEOAdmin(admin.ModelAdmin):
     def approve_status(self, request, queryset):
         """Bulk action to approve selected receptions."""
         queryset.update(status='approved')
+
+    @admin.action(description="Mark as pending")
+    def pending_status(self, request, queryset):
+        """Bulk action to approve selected receptions."""
+        queryset.update(status='pending')
     
     
 @admin.register(CEOStatus)
