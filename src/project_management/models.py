@@ -543,6 +543,15 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
         #     self.payable = False
+
+        if self.pk:
+            old_instance = ProjectHour.objects.get(id=self.id)
+            if old_instance.hours != self.hours:
+                ProjectHourHistry.objects.create(
+                    date=self.date,
+                    history=self,
+                    hour_history=self.hours
+                )
         super(ProjectHour, self).save(*args, **kwargs)
 
     def employee_hour(self, employee_id):
@@ -557,6 +566,22 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             ("weekly_project_hours_approve", "Can approved and give feedback from CTO"),
         ]
 
+@receiver(post_save, sender=ProjectHour)
+def create_project_hour_history(sender, instance, created, **kwargs):
+    if created:  # Only run if a new ProjectHour is created
+        ProjectHourHistry.objects.create(
+            date=instance.date,
+            history=instance,
+            hour_history=instance.hours
+        )
+
+
+class ProjectHourHistry(models.Model):
+    date = models.DateField()
+    history = models.ForeignKey(ProjectHour,on_delete=models.CASCADE,null=True,blank=True)
+    hour_history = models.FloatField(null=True,blank=True)
+
+    
 
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
