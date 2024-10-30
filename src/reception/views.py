@@ -53,6 +53,14 @@ def pending_reception_count(request):
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
 
+def pending_waiting_count(request):
+    if request.is_ajax():
+        pending_count = CEOWaitingList.objects.filter(status='pending').count()
+        has_permission = request.user.is_superuser or request.user.has_perm('reception.view_reception')
+        return JsonResponse({'pending_count': pending_count,'has_perm':has_permission})
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
 def ceo_appointment(request):
     # Query the CEO data
     ceo_data = CEOWaitingList.objects.all()
