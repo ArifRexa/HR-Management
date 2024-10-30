@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Agenda, Reception
+from .models import CEOWaitingList, Agenda, CEOStatus, Reception
 from django.utils.html import format_html
 
 @admin.register(Agenda)
@@ -75,3 +75,56 @@ class ReceptionAdmin(admin.ModelAdmin):
     def pending_status(self, request, queryset):
         """Bulk action to set selected receptions back to pending."""
         queryset.update(status='pending', approved_by=None)  # Optionally reset approved_by
+
+
+
+@admin.register(CEOWaitingList)
+class CEOAdmin(admin.ModelAdmin):
+    list_display = ('name', 'get_status','get_time')  
+    list_filter = ('status',)  
+    actions = ['approve_status',]
+    autocomplete_fields = ('name',)
+    change_list_template = 'ceo.html'    
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        return queryset.select_related('name')  
+    
+
+    def changelist_view(self, request, extra_context=None):
+        # Get the main domain
+        main_domain = request.build_absolute_uri('/').strip('/')  
+        extra_context = extra_context or {}
+        extra_context['main_domain'] = main_domain  
+        extra_context['ceo_status'] = CEOStatus.objects.all()
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def get_readonly_fields(self, request, obj=None):
+        if not request.user.is_superuser:
+            return ['status']
+        return []
+
+    def get_time(self, obj):
+        """Format the created_at time in 12-hour format."""
+        return obj.created_at.strftime('%I:%M%p').lower()
+    get_time.short_description = 'Time'
+
+    def get_status(self, obj):
+        """Format the status with color coding."""
+        if obj.status == 'pending':
+            return format_html('<span style="color: red;">{}</span>', obj.get_status_display())
+        else:
+            return format_html('<span style="color: green;">{}</span>', obj.get_status_display())
+
+    get_status.short_description = 'Status'
+
+
+    @admin.action(description="Mark as approved")
+    def approve_status(self, request, queryset):
+        """Bulk action to approve selected receptions."""
+        queryset.update(status='approved')
+    
+    
+@admin.register(CEOStatus)
+class CEOStatusAdmin(admin.ModelAdmin):
+    list_display = ('status_name',) 
+  
