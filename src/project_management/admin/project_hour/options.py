@@ -12,7 +12,7 @@ from django.utils.safestring import mark_safe
 from django.db.models import Sum
 from employee.models.employee import EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
-from project_management.models import ProjectHour
+from project_management.models import ProjectHour, ProjectHourHistry
 from employee.models import Employee
 from project_management.models import Project, Client
 
@@ -254,7 +254,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         list_display = [
             "date",
             "project",
-            "hours",
+            "display_hours",
             "manager",
             "get_resources",
             "get_status",
@@ -262,6 +262,12 @@ class ProjectHourOptions(admin.ModelAdmin):
         # if not request.user.is_superuser:
         #     list_display.remove('payable')
         return list_display
+    
+    def display_hours(self, obj):
+        hours = ProjectHourHistry.objects.filter(history__id=obj.id).values_list('hour_history', flat=True).order_by('-id')
+        return format_html('<br>'.join(str(int(hour)) for hour in hours))
+
+    display_hours.short_description = 'Hours'
 
     # @admin.display(description='Forcast', ordering='forcast')
     # def get_forcast(self, obj: ProjectHour):

@@ -1,9 +1,12 @@
 import shortuuid  # to generate short unique IDs
 from django.shortcuts import render, redirect,get_object_or_404
 from django.urls import reverse
-from .models import Agenda, Reception, Token
+from urllib3 import HTTPResponse
+from .models import Agenda, CEOCurrentStatus, CEOStatus, CEOWaitingList, Reception, Token
+from django.http import HttpResponse, JsonResponse
+import json
 from django.http import JsonResponse
-
+from django.views.decorators.csrf import csrf_exempt
 
 def generate_random_link(request):
     unique_url = shortuuid.uuid()  
@@ -48,3 +51,34 @@ def pending_reception_count(request):
         has_permission = request.user.is_superuser or request.user.has_perm('reception.view_reception')
         return JsonResponse({'pending_count': pending_count,'has_perm':has_permission})
     return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+def ceo_appointment(request):
+    # Query the CEO data
+    ceo_data = CEOWaitingList.objects.all()
+    selected_status = CEOCurrentStatus.objects.last() or ''
+
+    # Pass the data to the template
+    context = {
+        'ceo_data': ceo_data,
+        'selected_status': selected_status,
+    }
+    
+    return render(request, 'ceo_appointment.html', context)
+
+
+
+@csrf_exempt
+def update_ceo_status(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        current_status = data.get("current_status")
+        print(current_status)
+
+        if current_status:
+            # Save the selected status
+            CEOCurrentStatus.objects.all().delete()
+            CEOCurrentStatus.objects.create(current_status=current_status)
+            return JsonResponse({"success": True})
+        return JsonResponse({"success": False, "error": "Invalid status provided."})
+    return JsonResponse({"success": False, "error": "Invalid request method."})
