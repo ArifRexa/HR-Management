@@ -9,7 +9,8 @@
 
 
 {% block content %}
-<label style="font-weight: bold;" >Select CEO Status:</label>
+    {% if request.user.is_superuser%}
+    <label style="font-weight: bold;" >Select CEO Status:</label>
     <div style="display: flex; align-items: center; gap: 20px; margin: 10px 0px;" class="flex align-items-center flex-wrap">
        
         {% for status in ceo_status %}
@@ -20,6 +21,7 @@
         </div>
     {% endfor %}
     </div>
+    {%endif%}
     {{ block.super }}
 {% endblock %}
 
