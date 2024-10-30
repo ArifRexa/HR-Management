@@ -7,43 +7,45 @@
     </div>
 {% endblock %}
 
-
 {% block content %}
-    {% if request.user.is_superuser%}
-    <label style="font-weight: bold;" >Select CEO Status:</label>
+    {% if request.user.is_superuser %}
+    <label style="font-weight: bold;">Select CEO Status:</label>
     <div style="display: flex; align-items: center; gap: 20px; margin: 10px 0px;" class="flex align-items-center flex-wrap">
        
         {% for status in ceo_status %}
         <div class="form-check form-check-inline mr-3">
             <input type="radio" class="form-check-input" id="status_{{ status.id }}" name="ceo_status" 
-                   value="{{ status.status_name }}" onchange="updateStatus(this.value)">
+                   value="{{ status.status_name }}" onchange="updateStatus(this)">
             <label class="form-check-label" for="status_{{ status.id }}">{{ status.status_name }}</label>
         </div>
-    {% endfor %}
+        {% endfor %}
     </div>
-    {%endif%}
+    {% endif %}
     {{ block.super }}
 {% endblock %}
 
 {% block extrahead %}
 <link rel="icon" id="med">
 <script>
-    function updateStatus(selectedStatus) {
-        console.log("Current Status",selectedStatus)
-        const csrfToken = '{{ csrf_token }}'; 
+    // Function to update the selected status and save it in localStorage
+    function updateStatus(element) {
+        const selectedStatus = element.value;
+        localStorage.setItem('selectedCEOStatus', selectedStatus);
+
+        const csrfToken = '{{ csrf_token }}';
 
         fetch("{% url 'update_ceo_status' %}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken 
+                "X-CSRFToken": csrfToken
             },
             body: JSON.stringify({ "current_status": selectedStatus })
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // alert("Status updated successfully!");
+                // Status updated successfully
             } else {
                 alert("Failed to update status.");
             }
@@ -52,63 +54,57 @@
             console.error("Error:", error);
         });
     }
-    document.addEventListener('DOMContentLoaded', function() {
 
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set previously selected CEO status from localStorage
+        const selectedStatus = localStorage.getItem('selectedCEOStatus');
+        if (selectedStatus) {
+            const radio = document.querySelector(`input[name="ceo_status"][value="${selectedStatus}"]`);
+            if (radio) {
+                radio.checked = true;
+            }
+        }
+
+        // Refresh the page every 2 minutes
         setTimeout(function() {
             window.location.reload();
-        }, 180000);
+        }, 120000);
 
         function fetchPendingReceptionCount() {
-            // Perform an AJAX GET request to fetch the pending count
+            // AJAX GET request to fetch pending count
             fetch("{% url 'pending_waiting_count' %}", {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest' // Required for Django to recognize it as an AJAX request
+                    'X-Requested-With': 'XMLHttpRequest' // Recognized as AJAX
                 }
             })
             .then(response => response.json())
             .then(data => {
-                
-                let pendingCount = data.pending_count;
-                let has_permission = data.has_perm
-                // Select the <title> element
-                let titleElement = document.getElementsByTagName('title')[0];
-                
+                const pendingCount = data.pending_count;
+                const hasPermission = data.has_perm;
 
-                // Get the current title text
-                let currentTitle = titleElement.textContent.trim();
+                const titleElement = document.getElementsByTagName('title')[0];
+                const currentTitle = titleElement.textContent.trim();
 
-                // If pending reception count is present and greater than 0, prepend it to the title
-                var icon = document.getElementById('notification-icon');
-
-                if (pendingCount !== undefined && pendingCount > 0 && has_permission) {
+                const iconElement = document.getElementById('med');
+                if (pendingCount && pendingCount > 0 && hasPermission) {
                     titleElement.textContent = `(${pendingCount}) ${currentTitle}`;
-                    var fev_element = document.getElementById('med')
-                    fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/dfdfd.png") 
-                   
-                    var savedStatus = localStorage.getItem('notificationStatus');
+                    iconElement.setAttribute("href", "https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/dfdfd.png");
+
+                    const savedStatus = localStorage.getItem('notificationStatus');
                     if (savedStatus === 'enabled') {
-                    var audio = new Audio("{% static 'audio/reception-notification.mp3' %}");
-                    audio.play().then(() => {
-                        console.log('Audio playing');
-                    }).catch((error) => {
-                        console.error('Playback failed:', error);
-                    });
+                        const audio = new Audio("{% static 'audio/reception-notification.mp3' %}");
+                        audio.play().then(() => {
+                            console.log('Audio playing');
+                        }).catch((error) => {
+                            console.error('Audio playback failed:', error);
+                        });
+                    }
                 } else {
-                    console.log('Notification is disabled');
-                }
-                    
-                 
-        
-                } else {
-                    var fev_element = document.getElementById('med')
-                    fev_element.setAttribute("href","https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/Logo_MW.png") 
-                    // If no pending receptions, reset to the original title
+                    iconElement.setAttribute("href", "https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/Logo_MW.png");
                     titleElement.textContent = currentTitle;
-
                 }
-
             })
             .catch(error => {
                 console.error("Error fetching pending reception count:", error);
@@ -117,7 +113,6 @@
 
         // Call the function when the page loads
         fetchPendingReceptionCount();
-    })
-
+    });
 </script>
 {% endblock %}
