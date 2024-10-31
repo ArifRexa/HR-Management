@@ -563,14 +563,22 @@ def late_attendance_calculate(late_entry_time):
     current_date = datetime.now()
     current_month = current_date.month
     current_year = current_date.year
+    
     for employee in employees:
+        total_consider = EmployeeAttendance.objects.filter(
+            employee=employee,
+            date__year=current_year,
+            date__month=current_month,
+            is_consider = True
+            ).count()
+        
         # Count late entries for the current month
         total_late_entry = EmployeeAttendance.objects.filter(
             employee=employee,
             date__year=current_year,
             date__month=current_month,
             entry_time__gt=late_entry_time,
-        ).count()
+        ).count() - total_consider
         # Check if there is a late entry for today
         today_late_entry = EmployeeAttendance.objects.filter(
             employee=employee, date=current_date, entry_time__gt=late_entry
@@ -584,6 +592,7 @@ def late_attendance_calculate(late_entry_time):
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=500.00,
+                entry_time = today_late_entry or None
             )
         elif total_late_entry > 3 and today_late_entry.exists():
             # Create LateAttendanceFine entry
@@ -593,8 +602,17 @@ def late_attendance_calculate(late_entry_time):
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=80.00,
+                entry_time = today_late_entry or None
             )
-
+        elif total_late_entry < 3 and today_late_entry.exists():
+            LateAttendanceFine.objects.create(
+                employee=employee,
+                month=current_month,
+                year=current_year,
+                date=current_date,
+                total_late_attendance_fine=00.00,
+                entry_time = today_late_entry or None
+            )
             html_body = loader.render_to_string(
                 "mails/late_entry_mail.html",
                 context={
