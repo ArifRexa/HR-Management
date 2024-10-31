@@ -60,10 +60,9 @@ def pending_waiting_count(request):
         return JsonResponse({'pending_count': pending_count,'has_perm':has_permission})
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-
 def ceo_appointment(request):
     # Query the CEO data
-    ceo_data = CEOWaitingList.objects.all()
+    ceo_data = CEOWaitingList.objects.all().order_by('created_at')
     selected_status = CEOCurrentStatus.objects.last() or ''
 
     # Pass the data to the template
