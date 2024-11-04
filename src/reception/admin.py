@@ -91,7 +91,8 @@ class CEOAdmin(admin.ModelAdmin):
     
 
     def changelist_view(self, request, extra_context=None):
-        # Get the main domain
+        # Get the main  domain
+        
         main_domain = request.build_absolute_uri('/').strip('/')  
         extra_context = extra_context or {}
         extra_context['main_domain'] = main_domain  
