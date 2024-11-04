@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", function () {
     formType = formType[formType.length - 2]
     console.log(formType)
 
-    document.getElementsByClassName('form-row field-updates_json')[0].getElementsByTagName('label')[0].innerText = 'Updates:'
+    document.getElementsByClassName('form-row field-updates_json')[0].getElementsByTagName('label')[0].innerText = 'Update For Client:'
 
     // employee view
     if (document.getElementsByClassName('form-row field-updates_json')[0].getElementsByClassName('readonly')[0] != null){

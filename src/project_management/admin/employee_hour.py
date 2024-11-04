@@ -240,7 +240,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 ),
             },
         ),
-        ("Updates", {"fields": ("updates_json",)}),
+        ("Updates", {"fields": ("updates_json","management_updates")}),
         (
             "Extras",
             {
