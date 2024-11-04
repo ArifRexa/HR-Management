@@ -677,17 +677,17 @@ class SalarySheetRepository:
         #     project_hours_amount = project_hours * 10
 
         #     return project_hours_amount
-        is_blog_approved = Blog.objects.filter(created_by__employee=employee,approved_at__month=salary_sheet.date.month,status=BlogStatus.APPROVED).exists()
+        # is_blog_approved = Blog.objects.filter(created_by__employee=employee,approved_at__month=salary_sheet.date.month,status=BlogStatus.APPROVED).exists()
         project_hours_amount = 0
         
-        if is_blog_approved:
-            employee_project_hours = employee.employeeprojecthour_set.filter(
+        # if is_blog_approved:
+        employee_project_hours = employee.employeeprojecthour_set.filter(
                 project_hour__date__month=salary_sheet.date.month,
                 project_hour__date__year=salary_sheet.date.year,
             ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-            project_hours_amount += employee_project_hours * 10 
+        project_hours_amount += employee_project_hours * 10 
 
-            if employee.manager or employee.lead:
+        if employee.manager or employee.lead:
                 # Found lead hour from EmployeeProjectHour
                 employee_hours_as_lead  = employee.employeeprojecthour_set.filter(
                     project_hour__date__month=salary_sheet.date.month,
@@ -704,9 +704,9 @@ class SalarySheetRepository:
                 project_hours_amount += (lead_project_hours - employee_hours_as_lead) * 10
                 return project_hours_amount
         
-            return project_hours_amount
-        
         return project_hours_amount
+        
+        # return project_hours_amount
 
     def __calculate_code_quality_bonus(
         self, salary_sheet: SalarySheet, employee: Employee

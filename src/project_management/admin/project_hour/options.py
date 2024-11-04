@@ -265,6 +265,8 @@ class ProjectHourOptions(admin.ModelAdmin):
     
     def display_hours(self, obj):
         hours = ProjectHourHistry.objects.filter(history__id=obj.id).values_list('hour_history', flat=True).order_by('-id')
+        if not hours:
+            return obj.hours
         return format_html('<br>'.join(str(int(hour)) for hour in hours))
 
     display_hours.short_description = 'Hours'
