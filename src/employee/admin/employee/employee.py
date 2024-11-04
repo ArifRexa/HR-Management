@@ -375,14 +375,22 @@ from calendar import month_name
 
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
-    list_display = ("employee", "get_month_name", "get_year", "total_late_attendance_fine")
+    list_display = ("get_employee", "get_month_name", "get_year", "total_late_attendance_fine","entry_time")
     list_filter = ("employee",)
     date_hierarchy = "date"
+    autocomplete_fields = ('employee',)
     change_list_template = "admin/total_fine.html"
+
+    def get_employee(self,obj):
+        consider_count = LateAttendanceFine.objects.filter(date__month=obj.date.month,date__year=obj.date.year,is_consider=True).count()
+        print(consider_count,"Total Consider Count")
+        if consider_count > 0:
+            return f'{obj.employee} ({consider_count})'
+        return obj.employee
+    get_employee.short_description = 'Employee'
 
     def get_month_name(self, obj):
         return month_name[obj.date.month]
-
     get_month_name.short_description = "Month"
 
     def get_year(self, obj):
@@ -392,7 +400,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
-        fields = ["employee", "total_late_attendance_fine","date"]
+        fields = ["employee", "total_late_attendance_fine","date","is_consider"]
         return fields
 
     def get_list_filter(self, request):
@@ -400,7 +408,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         if request.user.is_superuser or request.user.has_perm(
             "can_view_all_late_attendance"
         ):
-            return "employee", "year", "month"
+            return "employee",
         return ("employee",)
 
     def get_queryset(self, request):
