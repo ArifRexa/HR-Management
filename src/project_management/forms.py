@@ -55,6 +55,11 @@ class AddDDailyProjectUpdateForm(forms.ModelForm):
     class Meta:
         model = DailyProjectUpdate
         fields = "__all__"  # Include all fields or specify the fields you want
+        widgets = {
+            "management_updates": forms.Textarea(
+                attrs={"class": "cs-form-control-text"}
+            )
+        }
 
     # Customize form fields here
     def __init__(self, *args, **kwargs):
