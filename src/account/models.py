@@ -72,12 +72,15 @@ class EmployeeSalary(TimeStampMixin):
     
     @property
     def salary_loan_total(self):
+        print(self.salary_sheet.date.month,"Salary sheet month")
+        
         loans = Loan.objects.filter(
             employee=self.employee,
-            start_date__lte=self.salary_sheet.date,
-            end_date__gte=self.salary_sheet.date,
+            start_date__month=self.salary_sheet.date.month,
+            end_date__month=self.salary_sheet.date.month,
             loan_type="salary"
         )
+        print(loans)
         return -sum(loan.emi for loan in loans)
     
     @property
