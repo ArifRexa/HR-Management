@@ -901,9 +901,10 @@ class SalarySheetRepository:
         return -emi_amount["emi__sum"] if emi_amount["emi__sum"] else 0.0
     
     def _calculate_salary_loan(self, employee: Employee, salary_date: datetime.date):
+        print("month",salary_date.month)
         employee_loans = employee.loan_set.filter(
-            start_date__lte=salary_date,
-            end_date__gte=salary_date,
+            start_date__month=salary_date.month,
+            end_date__month=salary_date.month,
             loan_type='salary'
             ).aggregate(Sum("emi"))
         print(employee_loans["emi__sum"],employee)
