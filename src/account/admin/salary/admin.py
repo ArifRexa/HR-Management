@@ -1,3 +1,5 @@
+import calendar
+from datetime import datetime
 from math import floor
 import re
 from typing import Any, Optional, Sequence
@@ -114,13 +116,28 @@ class EmployeeSalaryInline(admin.TabularInline):
         return int(fine.get('fine', 0)) if fine.get('fine') else 0
     get_late_fine.short_description = "Late Fine"
 
+    # def get_salary_loan(self, obj):
+    #     salary_loan = obj.employee.loan_set.filter(
+    #         start_date__month=obj.salary_sheet.date.month,
+    #         end_date__month=obj.salary_sheet.date.month,
+    #         loan_type="salary"
+    #     )
+    #     loan_amount = salary_loan.aggregate(Sum("emi"))
+    #     return int(loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
     def get_salary_loan(self, obj):
-        salary_loan = obj.employee.loan_set.filter(
-            start_date__month=obj.salary_sheet.date.month,
-            end_date__month=obj.salary_sheet.date.month,
-            loan_type="salary"
-        )
-        loan_amount = salary_loan.aggregate(Sum("emi"))
+        salary_date = obj.salary_sheet.date
+        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+        salary_month_end = datetime(
+            salary_date.year,
+            salary_date.month,
+            calendar.monthrange(salary_date.year, salary_date.month)[1],
+        ).date()
+
+        loan_amount = obj.employee.loan_set.filter(
+            start_date__lte=salary_month_end,
+            end_date__gte=salary_month_start,
+            loan_type="salary",
+        ).aggregate(Sum("emi"))
         return int(loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
     get_salary_loan.short_description = "Salary Loan"
 
