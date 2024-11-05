@@ -394,7 +394,7 @@ class SalarySheetRepository:
         basic_salary = 0.55 * payable_salary
 
         # if basic_salary >= 25000 or employee_salary.net_salary >= 43800:
-        if (employee.tax_eligible):
+        if employee.tax_eligible:
             if not SalarySheetTaxLoan.objects.filter(
                 salarysheet=salary_sheet, loan__employee=employee
             ):
@@ -404,19 +404,19 @@ class SalarySheetRepository:
                 monthly_tax = employee_tax_loan.calculate_tax_loan()
                 if monthly_tax > 0:
                     loan_instance = Loan.objects.create(
-                    employee=employee,
-                    witness=Employee.objects.filter(
-                        id=30
-                    ).first(),  # You might need to adjust this based on your requirements
-                    loan_amount=monthly_tax,  # Set the loan amount
-                    emi=monthly_tax,  # Set the EMI amount
-                    effective_date=timezone.now(),
-                    start_date=salary_sheet.date,
-                    end_date=salary_sheet.date,
-                    tenor=1,  # Set the tenor/period in months
-                    payment_method="salary",  # Set the payment method
-                    loan_type="tds",  # Set the loan type
-                )
+                        employee=employee,
+                        witness=Employee.objects.filter(
+                            id=30
+                        ).first(),  # You might need to adjust this based on your requirements
+                        loan_amount=monthly_tax,  # Set the loan amount
+                        emi=monthly_tax,  # Set the EMI amount
+                        effective_date=timezone.now(),
+                        start_date=salary_sheet.date,
+                        end_date=salary_sheet.date,
+                        tenor=1,  # Set the tenor/period in months
+                        payment_method="salary",  # Set the payment method
+                        loan_type="tds",  # Set the loan type
+                    )
 
                     # loan_instance.save()
                     salarysheettax = SalarySheetTaxLoan.objects.create(
@@ -434,7 +434,7 @@ class SalarySheetRepository:
         total_fine = self.__calculate_late_entry_fine(
             employee=employee, salary_date=salary_sheet.date
         )
-        salary_loans = self._calculate_salary_loan( 
+        salary_loans = self._calculate_salary_loan(
             employee=employee, salary_date=salary_sheet.date
         )
         employee_salary.gross_salary = (
@@ -659,7 +659,7 @@ class SalarySheetRepository:
         """Calculate Project Bonus
         this method will calculate project bonus if the employee is manager and the he is eligible for project bonus
         super admin will decide project hour is eligible or not for project bonus
-        Additinally if employee don't have any approved blog in current month.Then this d employee willon't receive any project bonus. 
+        Additinally if employee don't have any approved blog in current month.Then this d employee willon't receive any project bonus.
 
         @param salary_sheet:
         @param employee:
@@ -679,33 +679,33 @@ class SalarySheetRepository:
         #     return project_hours_amount
         # is_blog_approved = Blog.objects.filter(created_by__employee=employee,approved_at__month=salary_sheet.date.month,status=BlogStatus.APPROVED).exists()
         project_hours_amount = 0
-        
+
         # if is_blog_approved:
         employee_project_hours = employee.employeeprojecthour_set.filter(
-                project_hour__date__month=salary_sheet.date.month,
-                project_hour__date__year=salary_sheet.date.year,
-            ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-        project_hours_amount += employee_project_hours * 10 
+            project_hour__date__month=salary_sheet.date.month,
+            project_hour__date__year=salary_sheet.date.year,
+        ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+        project_hours_amount += employee_project_hours * 10
 
         if employee.manager or employee.lead:
-                # Found lead hour from EmployeeProjectHour
-                employee_hours_as_lead  = employee.employeeprojecthour_set.filter(
-                    project_hour__date__month=salary_sheet.date.month,
-                    project_hour__date__year=salary_sheet.date.year,
-                    project_hour__manager = employee
-                ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
-                
-                lead_project_hours = employee.projecthour_set.filter(
-                    date__month=salary_sheet.date.month,
-                    date__year=salary_sheet.date.year,
-                    payable=True,
-                ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+            # Found lead hour from EmployeeProjectHour
+            employee_hours_as_lead = employee.employeeprojecthour_set.filter(
+                project_hour__date__month=salary_sheet.date.month,
+                project_hour__date__year=salary_sheet.date.year,
+                project_hour__manager=employee,
+            ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
 
-                project_hours_amount += (lead_project_hours - employee_hours_as_lead) * 10
-                return project_hours_amount
-        
+            lead_project_hours = employee.projecthour_set.filter(
+                date__month=salary_sheet.date.month,
+                date__year=salary_sheet.date.year,
+                payable=True,
+            ).aggregate(total_hour=Coalesce(Sum("hours"), 0.0))["total_hour"]
+
+            project_hours_amount += (lead_project_hours - employee_hours_as_lead) * 10
+            return project_hours_amount
+
         return project_hours_amount
-        
+
         # return project_hours_amount
 
     def __calculate_code_quality_bonus(
@@ -880,10 +880,7 @@ class SalarySheetRepository:
         """
 
         employee_loans = employee.loan_set.filter(
-            start_date__lte=salary_date,
-            end_date__gte=salary_date,
-            loan_type='tds'
-
+            start_date__lte=salary_date, end_date__gte=salary_date, loan_type="tds"
         )
 
         # insert into loan payment table if the sum amount is not zero
@@ -899,15 +896,23 @@ class SalarySheetRepository:
         emi_amount = employee_loans.aggregate(Sum("emi"))
 
         return -emi_amount["emi__sum"] if emi_amount["emi__sum"] else 0.0
-    
+
     def _calculate_salary_loan(self, employee: Employee, salary_date: datetime.date):
+        print("month", salary_date.month)
+        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+        salary_month_end = datetime(
+            salary_date.year,
+            salary_date.month,
+            calendar.monthrange(salary_date.year, salary_date.month)[1],
+        ).date()
+
         employee_loans = employee.loan_set.filter(
-            start_date__lte=salary_date,
-            end_date__gte=salary_date,
-            loan_type='salary'
-            ).aggregate(Sum("emi"))
-        print(employee_loans["emi__sum"],employee)
-        
+            start_date__lte=salary_month_end,
+            end_date__gte=salary_month_start,
+            loan_type="salary",
+        ).aggregate(Sum("emi"))
+        print(employee_loans["emi__sum"], employee)
+
         return -employee_loans["emi__sum"] if employee_loans["emi__sum"] else 0
 
     def __calculate_provident_fund(

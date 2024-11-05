@@ -1,3 +1,5 @@
+import calendar
+from datetime import datetime
 from decimal import Decimal
 from math import floor
 from pyexpat import model
@@ -70,14 +72,37 @@ class EmployeeSalary(TimeStampMixin):
     def gross_amount(self):
         return self.gross_salary - self.festival_bonus
     
+    # @property
+    # def salary_loan_total(self):
+    #     print(self.salary_sheet.date.month,"Salary sheet month")
+        
+    #     loans = Loan.objects.filter(
+    #         employee=self.employee,
+    #         start_date__month=self.salary_sheet.date.month,
+    #         end_date__month=self.salary_sheet.date.month,
+    #         loan_type="salary"
+    #     )
+    #     print(loans)
+    #     return -sum(loan.emi for loan in loans)
+    
     @property
     def salary_loan_total(self):
+        print(self.salary_sheet.date.month,"Salary sheet month")
+        salary_date = self.salary_sheet.date
+        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+        salary_month_end = datetime(
+            salary_date.year,
+            salary_date.month,
+            calendar.monthrange(salary_date.year, salary_date.month)[1],
+        ).date()
+        
         loans = Loan.objects.filter(
             employee=self.employee,
-            start_date__lte=self.salary_sheet.date,
-            end_date__gte=self.salary_sheet.date,
+            start_date__lte=salary_month_end,
+            end_date__gte=salary_month_start,
             loan_type="salary"
         )
+        print(loans)
         return -sum(loan.emi for loan in loans)
     
     @property
