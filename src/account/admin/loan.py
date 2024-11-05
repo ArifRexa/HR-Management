@@ -85,7 +85,7 @@ class LoadAdmin(admin.ModelAdmin):
             # Update the response context data with the new extra context
             response.context_data.update(extra_context)
         except (AttributeError, KeyError):
-            pass  # If the context or queryset doesn't exist, ignore
+            pass  # If  the context or queryset doesn't exist, ignore
 
         return response
 
