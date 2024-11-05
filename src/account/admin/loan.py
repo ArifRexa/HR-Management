@@ -65,7 +65,7 @@ class LoadAdmin(admin.ModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        # Ensure extra_context is initialized as a dictionary if it's not passed
+        # Ensure  extra_context is initialized as a dictionary if it's not passed
         extra_context = extra_context or {}
 
         # Get the response from the parent class's changelist_view
