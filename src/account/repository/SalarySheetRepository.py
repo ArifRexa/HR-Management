@@ -899,15 +899,16 @@ class SalarySheetRepository:
 
     def _calculate_salary_loan(self, employee: Employee, salary_date: datetime.date):
         print("month", salary_date.month)
-        salary_month_start = datetime(salary_date.year, salary_date.month, 1)
+        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
         salary_month_end = datetime(
             salary_date.year,
             salary_date.month,
             calendar.monthrange(salary_date.year, salary_date.month)[1],
-        )
+        ).date()
+
         employee_loans = employee.loan_set.filter(
-            start_date__gte=salary_month_start,
-            end_date__lte=salary_month_end,
+            start_date__lte=salary_month_end,
+            end_date__gte=salary_month_start,
             loan_type="salary",
         ).aggregate(Sum("emi"))
         print(employee_loans["emi__sum"], employee)
