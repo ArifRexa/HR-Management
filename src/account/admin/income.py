@@ -1,5 +1,6 @@
 from django.contrib import admin, messages
 from django.db import models
+from admin_confirm.admin import AdminConfirmMixin, confirm_action
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q, Sum, F
 from django.db.models.functions import Coalesce
@@ -8,6 +9,7 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html
 from django.core.mail import EmailMessage, EmailMultiAlternatives
+import requests
 from account.models import Income
 from account.services.balance import BalanceSummery
 
@@ -30,7 +32,7 @@ class ActiveClientFilter(admin.SimpleListFilter):
         return queryset
 
 @admin.register(Income)
-class IncomeAdmin(admin.ModelAdmin):
+class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     list_display = (
         "project",
         "date",
@@ -48,7 +50,7 @@ class IncomeAdmin(admin.ModelAdmin):
         "project",
         "project__client__payment_method",
         "project__client__invoice_type",
-        ActiveClientFilter,  
+        ActiveClientFilter,
     ]
     actions = [
         "approve_selected",
@@ -63,7 +65,6 @@ class IncomeAdmin(admin.ModelAdmin):
     change_list_template = "admin/income/list.html"
 
     list_per_page = 20
-    
     def get_list_filter(self, request):
         if request.user.has_perm("project_management.view_client"):
             return super().get_list_filter(request)
@@ -182,7 +183,49 @@ class IncomeAdmin(admin.ModelAdmin):
         }
         return pdf.render_to_pdf(download=True)
 
-    @admin.action()
+    # @admin.action()
+    # def send_income_invoices_email(self, request, queryset):
+    #     queryset = queryset.order_by("date")
+    #     income_list = queryset.values_list("id", flat=True)
+    #     income_date_list = queryset.values_list("date", flat=True)
+    #     income_date_list_str = "|".join(list(map(str, income_date_list)))
+    #     id_str = "|".join(list(map(str, income_list)))
+    #     project_name = queryset.first().project.title
+    #     client = queryset.first().project.client
+    #     # project_name = "-".join(project_name.split(" "))
+    #     pdf = PDF()
+    #     pdf.file_name = f"Income-Invoice-{project_name}-{id_str}"
+    #     pdf.template_path = "compliance/new_income_invoice.html"
+    #     protocal = "https" if request.is_secure() else "http"
+    #     invoice_total = (
+    #         queryset.values("date", "hour_rate")
+    #         .annotate(project_total=F("hours") * F("hour_rate"))
+    #         .aggregate(total=Sum("project_total"))
+    #     )
+    #     pdf.context = {
+    #         "invoices": queryset,
+    #         "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
+    #         "host": f"{protocal}://{request.get_host()}",
+    #         "invoice_total": invoice_total.get("total"),
+    #     }
+
+    #     total_payment = invoice_total.get("total")
+
+    #     body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
+    #     if client.notes:
+    #         body += f"\n Notes:{client.notes}"
+
+    #     email = EmailMultiAlternatives(
+    #         subject=f"Mediusware Invoice - {project_name} - {id_str}",
+    #     )
+    #     body = (body,)
+    #     email.attach_file(pdf.create())
+    #     email.to = [client.email]
+    #     email.from_email = "mdborhan.st@gmail.com"
+    #     email.cc = [client.cc_email.split(",") if client.cc_email else []]
+    #     email.send()
+
+    @confirm_action
     def send_income_invoices_email(self, request, queryset):
         queryset = queryset.order_by("date")
         income_list = queryset.values_list("id", flat=True)
@@ -191,9 +234,9 @@ class IncomeAdmin(admin.ModelAdmin):
         id_str = "|".join(list(map(str, income_list)))
         project_name = queryset.first().project.title
         client = queryset.first().project.client
-
+        project_name = "-".join(project_name.split(" "))
         pdf = PDF()
-        pdf.file_name = f"Income Invoice-{project_name}-{id_str}"
+        pdf.file_name = f"Income-Invoice-{project_name}-{id_str}"
         pdf.template_path = "compliance/new_income_invoice.html"
         protocal = "https" if request.is_secure() else "http"
         invoice_total = (
@@ -217,9 +260,20 @@ class IncomeAdmin(admin.ModelAdmin):
         email = EmailMultiAlternatives(
             subject=f"Mediusware Invoice - {project_name} - {id_str}",
         )
+        pdf_url = pdf.create()
+        if pdf_url and pdf_url.__contains__("http"):
+            # Fetch the PDF content from the URL
+            response = requests.get(pdf_url)
+
+            # email.attach_alternative(html_content, 'text/html')
+            print("file name:", pdf_url.split("/")[-1])
+            email.attach(pdf_url.split("/")[-1], response.content, "application/pdf")
+        else:
+            email.attach_file(pdf_url)
+
         body = (body,)
-        email.attach_file(pdf.create())
+        # email.attach_file(pdf.create())
         email.to = [client.email]
         email.from_email = "coredeveloper.2013@gmail.com"
-        email.cc = (client.cc_email.split(",") if client.cc_email else [],)
+        email.cc = [client.cc_email.split(",") if client.cc_email else []]
         email.send()
