@@ -4,7 +4,7 @@ from django.utils.html import format_html
 from django.contrib import admin, messages
 from django import forms
 from django.core.exceptions import ValidationError
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils import timezone
@@ -15,9 +15,11 @@ from employee.models.employee_activity import EmployeeProject
 from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
 
+
 class LeaveAttachmentInline(admin.TabularInline):
     model = LeaveAttachment
     extra = 1
+
 
 class FeedbackInline(admin.TabularInline):
     model = leave.LeaveFeedback
@@ -29,8 +31,6 @@ class LeaveManagementInline(admin.TabularInline):
     extra = 0
     can_delete = False
     readonly_fields = ("manager", "status", "approval_time")
-
-
 
 
 class LeaveForm(forms.ModelForm):
@@ -54,20 +54,14 @@ class LeaveForm(forms.ModelForm):
         )
     )
 
-
-
     class Meta:
         model = Leave
         fields = "__all__"
-
-
 
     # def __init__(self, *args, **kwargs):
     #     super(LeaveForm, self).__init__(*args, **kwargs)
     #     if self.fields.get("message"):
     #         self.fields["message"].initial = self.placeholder
-
-    
 
 
 @admin.register(Leave)
@@ -75,11 +69,14 @@ class LeaveManagement(admin.ModelAdmin):
     actions = ("approve_selected",)
     readonly_fields = ("note", "total_leave")
     exclude = ["status_changed_at", "status_changed_by"]
-    inlines = (LeaveAttachmentInline, LeaveManagementInline, FeedbackInline, )
+    inlines = (
+        LeaveAttachmentInline,
+        LeaveManagementInline,
+        FeedbackInline,
+    )
     search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
     date_hierarchy = "start_date"
-
 
     class Media:
         js = ("js/list.js", "employee/js/leave.js")
@@ -87,22 +84,20 @@ class LeaveManagement(admin.ModelAdmin):
     def get_list_display(self, request):
         # existing_list = super(LeaveManagement, self).get_list_display(request)
         list_display = [
-        "employee",
-        "leave_info",
-        "leave_type_",
-        "total_leave_",
-        "manager_approval",
-        "status_",
-        # "attachment_link", 
-        # "get_massage",
-        "date_range",
-         
-        
-    ]
+            "employee",
+            "leave_info",
+            "leave_type_",
+            "total_leave_",
+            "manager_approval",
+            "status_",
+            # "attachment_link",
+            # "get_massage",
+            "date_range",
+        ]
         if not request.user.has_perm("employee.view_leavefeedback"):
-            if 'management__feedback' in list_display: list_display.remove('management__feedback')
+            if "management__feedback" in list_display:
+                list_display.remove("management__feedback")
         return list_display
-
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
@@ -114,37 +109,34 @@ class LeaveManagement(admin.ModelAdmin):
         #     fields.remove("display_feedback")
         #     print(fields)
         return fields
-    
 
     @admin.display()
     def status_(self, leave: Leave):
-
-        #Get attachment of leave
+        # Get attachment of leave
         attachments = leave.leaveattachment_set.all()
         if attachments:
             attch_url = attachments[0].attachment.url
         else:
-            attch_url = ''
-        
+            attch_url = ""
 
-        data = ''
+        data = ""
         html_template = get_template("admin/leave/list/col_leave_day.html")
-        
-        if leave.status == 'pending':
-            data = '⏳'
-        elif leave.status == 'approved':
-            data = '✅'
-        elif leave.status == 'rejected':
-            data = '⛔'
+
+        if leave.status == "pending":
+            data = "⏳"
+        elif leave.status == "approved":
+            data = "✅"
+        elif leave.status == "rejected":
+            data = "⛔"
         else:
-            data = '🤔'
-            
+            data = "🤔"
+
         html_content = html_template.render(
             {
                 # 'use_get_display':True,
                 "data": data,
-                "atch_url":attch_url,
-                "message":leave.message,
+                "atch_url": attch_url,
+                "message": leave.message,
                 "leave_day": leave.end_date.strftime("%A"),
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
@@ -155,17 +147,16 @@ class LeaveManagement(admin.ModelAdmin):
             }
         )
         return format_html(html_content)
-    
+
     # def get_massage(self, obj):
     #     return format_html('<span title="{}">📩</span>', obj.message)
-    
+
     # get_massage.short_description = "Message"
 
-    
     # def attachment_link(self, obj):
     #     # Check if there are attachments
     #     attachments = obj.leaveattachment_set.all()
-        
+
     #     if attachments:
     #         # Use the first attachment's URL
     #         url = attachments[0].attachment.url
@@ -178,7 +169,6 @@ class LeaveManagement(admin.ModelAdmin):
     #         return '' # Document icon (no attachment)
 
     # attachment_link.short_description = "Attachments"
-   
 
     def get_readonly_fields(self, request, obj=None):
         if obj is not None:
@@ -192,7 +182,6 @@ class LeaveManagement(admin.ModelAdmin):
                     [item.name for item in obj._meta.fields]
                 )
         return ["total_leave", "note"]
-  
 
     # def save_form(self, request, form, change):
     #     if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
@@ -208,12 +197,12 @@ class LeaveManagement(admin.ModelAdmin):
         if request.user.has_perm("employee.can_approve_leave_applications"):
             obj.status_changed_by = request.user
             obj.status_changed_at = date.today()
-        
+
         # Save the leave object first
         super().save_model(request, obj, form, change)
-        
+
         employee = form.cleaned_data.get("employee") or request.user.employee
-        
+
         # Check if this is a new leave or an update
         if not change:
             # For new leaves, assign a manager based on the employee's projects
@@ -222,13 +211,16 @@ class LeaveManagement(admin.ModelAdmin):
                 project__in=projects.project.all(), employee__active=True
             )
             from django.db.models import Q
+
             tpm = (
                 project_obj.filter(Q(employee__is_tpm=True))
                 .exclude(employee__id=employee.id)
                 .distinct()
             )
             if tpm.exists():
-                leave_manage = leave.LeaveManagement(manager=tpm.first().employee, leave=obj)
+                leave_manage = leave.LeaveManagement(
+                    manager=tpm.first().employee, leave=obj
+                )
                 leave_manage.save()
             # else:
             #     managers = (
@@ -251,7 +243,9 @@ class LeaveManagement(admin.ModelAdmin):
 
         # Get the latest feedback for the leave instance from the database directly
         try:
-            original_feedback_instance = leave.LeaveFeedback.objects.filter(leave=leave_instance).latest('id')
+            original_feedback_instance = leave.LeaveFeedback.objects.filter(
+                leave=leave_instance
+            ).latest("id")
             old_feedback = original_feedback_instance.feedback
         except leave.LeaveFeedback.DoesNotExist:
             old_feedback = None  # No existing feedback, probably a new Leave instance
@@ -265,17 +259,18 @@ class LeaveManagement(admin.ModelAdmin):
                 if formset.model == leave.LeaveFeedback:
                     for inline_form in formset.cleaned_data:
                         # Get the new feedback from the formset after it's saved
-                        new_feedback = inline_form.get('feedback') 
-                        status = form.cleaned_data.get('status')
+                        new_feedback = inline_form.get("feedback")
+                        status = form.cleaned_data.get("status")
 
                         # Compare the original feedback with the new feedback
                         if old_feedback != new_feedback:
-                           self.send_feedback_email(leave_instance,new_feedback,status)
-            
+                            self.send_feedback_email(
+                                leave_instance, new_feedback, status
+                            )
 
     def send_feedback_email(self, leave_instance, feedback, status):
         subject = "Feedback on your leave application"
-        recipient_email = leave_instance.employee.email  
+        recipient_email = leave_instance.employee.email
         message_content = (
             f"Dear {leave_instance.employee.full_name},\n\n"
             f"Feedback on your leave: {feedback}\n"
@@ -283,23 +278,22 @@ class LeaveManagement(admin.ModelAdmin):
             f"Best regards,\nHR Department"
         )
         from_email = '"Mediusware-HR" <hr@mediusware.com>'
-        email = EmailMessage(subject, message_content, from_email=from_email, to=[recipient_email])
+        email = EmailMessage(
+            subject, message_content, from_email=from_email, to=[recipient_email]
+        )
         email.send()
 
-
-    def has_add_permission(self, request):    
-        
+    def has_add_permission(self, request):
         current_datetime = datetime.datetime.now()
         current_day = current_datetime.weekday()
-            
-        if not request.user.has_perm('employee.can_add_leave_at_any_time'):
-            if current_day in [5,6]:           
+
+        if not request.user.has_perm("employee.can_add_leave_at_any_time"):
+            if current_day in [5, 6]:
                 return False
             else:
                 return True
         else:
             return True
-
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -395,7 +389,19 @@ class LeaveManagement(admin.ModelAdmin):
         )
         return format_html(html_content)
 
+    change_form_template = "admin/leave/leave_change_form.html"
 
+    def change_view(self, request, object_id, form_url="", extra_context=None):
+        leave = get_object_or_404(Leave, id=object_id)
+        all_leaves = Leave.objects.filter(employee=leave.employee).exclude(id=object_id)
+
+        extra_context = extra_context or {}
+        extra_context["all_leaves"] = all_leaves
+        extra_context["employee_name"] = leave.employee.full_name
+
+        return super().change_view(
+            request, object_id, form_url, extra_context=extra_context
+        )
 
     # @admin.display()
     # def start_date_(self, leave: Leave):
@@ -430,17 +436,26 @@ class LeaveManagement(admin.ModelAdmin):
     #         }
     #     )
     #     return format_html(html_content)
-    
+
     # @admin.display(description='Created By')
     # def creator(self, leave: Leave):
     #     return f'{leave.created_by.first_name} {leave.created_by.last_name}'.title()
-# 'Date (start/end)'
-    
-    @admin.display(description=format_html('<div style="display: block;">Date</div> <div style="display: block;"><small><u>start</u></small></div> <div style="display: block;"><small>end</small></div> '))
+    # 'Date (start/end)'
+
+    @admin.display(
+        description=format_html(
+            '<div style="display: block;">Date</div> <div style="display: block;"><small><u>start</u></small></div> <div style="display: block;"><small>end</small></div> '
+        )
+    )
     def date_range(self, leave: Leave):
-        start_date = leave.start_date.strftime('%Y-%m-%d')
-        end_date = leave.end_date.strftime('%Y-%m-%d')
-        return format_html('<div style="display: block;">{}</div><div style="display: block;">{}</div>', start_date, end_date)
+        start_date = leave.start_date.strftime("%Y-%m-%d")
+        end_date = leave.end_date.strftime("%Y-%m-%d")
+        return format_html(
+            '<div style="display: block;">{}</div><div style="display: block;">{}</div>',
+            start_date,
+            end_date,
+        )
+
 
 def has_friday_between_dates(start_date, end_date):
     # Create a timedelta of one day
@@ -456,6 +471,7 @@ def has_friday_between_dates(start_date, end_date):
         current_date += one_day  # Move to the next day
 
     return False
+
 
 def has_monday_between_dates(start_date, end_date):
     # Create a timedelta of one day
@@ -490,9 +506,7 @@ class LeaveManagementAdmin(admin.ModelAdmin):
     list_filter = ("status", "leave__leave_type", "manager", "leave__employee")
     search_fields = ("manager__full_name", "status")
     date_hierarchy = "created_at"
-    
-    
-            
+
     @admin.display(description="Employee")
     def get_employee(self, obj):
         return obj.leave.employee.full_name

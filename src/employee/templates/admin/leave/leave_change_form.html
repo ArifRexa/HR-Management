@@ -1,0 +1,40 @@
+{% extends "admin/change_form.html" %}
+{% load employee_helper %}
+
+{% block submit_buttons_bottom %}
+    <fieldset class="module">
+        <h2 style="font-size: 0.8rem; text-transform: uppercase;">Leave Histories</h2>
+        <div class="inline-group" id="all-leaves-inline">
+            <table class="table table-striped" id="all-leaves-table" style="width: 100%;">
+                <thead>
+                    <tr>
+                        <th class="original">Leave Info</th>
+                        <th class="original">Leave Type</th>
+                        <th class="original">Total Leave</th>
+                        <th class="original">Manager Approval</th>
+                        <th class="original">Status</th>
+                        <th class="original">Date start/end</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for leave in all_leaves %}
+                        <tr class="dynamic-row">
+                            <td>{{ leave | leave_details|safe }}</td>
+                            <td>{{ leave | total_leave:leave.get_leave_type_display }}</td>
+                            <td>{{ leave | total_leave:leave.total_leave }}</td>
+                            <td>{{ leave | manager_approval }}</td>
+                            <td>{{ leave | leave_status }}</td>
+                            <td>{{ leave.start_date|date:"d-m-Y" }} - {{ leave.end_date|date:"d-m-Y" }}</td>
+                            
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3">No leaves found for this employee.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
+    {{ block.super }}  {# Ensures the save and delete buttons are rendered #}
+{% endblock %}
