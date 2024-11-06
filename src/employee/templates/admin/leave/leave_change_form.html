@@ -11,7 +11,8 @@
                     <thead>
                         <tr>
                             <th class="original">Leave Info</th>
-                            <th class="original">Leave Type</th>
+                            <th class="original">Applied Leave Type</th>
+                            <th class="original">Approval Leave Type</th>
                             <th class="original">Total Leave</th>
                             <th class="original">Manager Approval</th>
                             <th class="original">Status</th>
@@ -22,6 +23,7 @@
                         {% for leave in all_leaves %}
                             <tr class="dynamic-row">
                                 <td>{{ leave | leave_details|safe }}</td>
+                                <td>{{ leave | total_leave:leave.get_applied_leave_type_display }}</td>
                                 <td>{{ leave | total_leave:leave.get_leave_type_display }}</td>
                                 <td>{{ leave | total_leave:leave.total_leave }}</td>
                                 <td>{{ leave | manager_approval }}</td>

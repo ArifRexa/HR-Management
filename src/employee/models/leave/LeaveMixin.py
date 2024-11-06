@@ -1,5 +1,5 @@
 from datetime import timedelta, date, datetime, time
-
+from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.db import models
 from django_userforeignkey.request import get_current_user
@@ -9,16 +9,19 @@ from settings.models import PublicHolidayDate
 
 
 class LeaveMixin(models.Model):
-    MEDICAL = 'medical'
-    HALF_DAY = 'half_day'
-    APPLIED_TIME_LIMIT = 15
-    APPLIED_ERROR_MSG = "You can not apply any leave application after 03:00 PM for tomorrow."
+    MEDICAL = "medical"
+    HALF_DAY = "half_day"
+    APPLIED_TIME_LIMIT = 18
+    APPLIED_ERROR_MSG = (
+        "You can not apply any leave application after 06:00 PM for tomorrow."
+    )
     LEAVE_CHOICE = (
         ("casual", "Casual Leave"),
         ("medical", "Medical Leave"),
         ("non_paid", "Non Paid Leave"),
         ("half_day", "Half Day Casual"),
         ("half_day_medical", "Half Day Medical"),
+        ("emergency_leave", "Emergency Leave"),
     )
     LEAVE_STATUS = (
         ("pending", "⏳ Pending"),
@@ -31,48 +34,67 @@ class LeaveMixin(models.Model):
     end_date = models.DateField()
     total_leave = models.FloatField()
     note = models.TextField(null=True)
-    leave_type = models.CharField(choices=LEAVE_CHOICE, max_length=20)
+    leave_type = models.CharField(
+        choices=LEAVE_CHOICE, max_length=20, verbose_name="Approved Leave Type"
+    )
+    applied_leave_type = models.CharField(
+        choices=LEAVE_CHOICE, max_length=20, null=True, blank=True
+    )
     status = models.CharField(max_length=20, choices=LEAVE_STATUS, default="pending")
     employee = models.ForeignKey(
         Employee, limit_choices_to={"active": True}, on_delete=models.CASCADE
     )
 
-
-
     def clean_fields(self, exclude=None):
-        
-    
-        leave_type = self.leave_type
+        leave_type = self.applied_leave_type
         # print(leave_type)
         # print(self.leave_attachment.all())
         # Now you can use 'leave_type_value' as needed
         # ...
 
-
         user = get_current_user()
         # TODO : need to re-format
         if self.start_date is not None and self.end_date is not None:
+            # if self.applied_leave_type == "casual":
+            #     if self.start_date == date.today():
+            #         raise ValidationError(
+            #             "You have to apply casual leave before 1 day of start date"
+            #         )
+            #     if self.start_date < date.today():
+            #         raise ValidationError(
+            #             "You can not apply any leave past date. You have to apply for emergency or non paid leave"
+            #         )
+            #     if (
+            #         (self.start_date - date.today()).days <= 1
+            #         and time(self.APPLIED_TIME_LIMIT, 0) < datetime.now().time()
+            #         and not user.has_perm("employee.can_add_leave_at_any_time")
+            #     ):
+            #         raise ValidationError({"start_date": self.APPLIED_ERROR_MSG})
+            # if self.has_emergency_leave_last_3_months():
+            #     raise ValidationError(
+            #         "You can not apply emergency leave more than 1 in last 3 months"
+            #     )
             from django.contrib.auth.models import Group
 
             difference = self.end_date - self.start_date
             print(difference >= timedelta(days=3))
-            if difference >= timedelta(days=3) and self.leave_type == 'casual':
+            if difference >= timedelta(days=3) and self.leave_type == "casual":
                 submission_time = date.today()
                 submission_difference = self.start_date - submission_time
                 print(submission_difference)
                 if submission_difference < timedelta(days=7):
                     raise ValidationError(
-                    {
-                        "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days before the leave"
-                    }
+                        {
+                            "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days before the leave"
+                        }
                     )
-           
+
             # try:
             #     group = Group.objects.get(name="HR-Operation")
             # except Group.DoesNotExist:
             #     Group.objects.create(name="HR-Operation")
-            print(self.start_date )
-            print( date.today())
+            print(self.start_date)
+            print(date.today())
             print((self.start_date - date.today()).seconds)
             print((self.start_date - date.today()).days)
             # if self.leave_type not in [self.MEDICAL, self.HALF_DAY]:
