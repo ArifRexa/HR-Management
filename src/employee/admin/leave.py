@@ -392,12 +392,24 @@ class LeaveManagement(admin.ModelAdmin):
     change_form_template = "admin/leave/leave_change_form.html"
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
-        leave = get_object_or_404(Leave, id=object_id)
-        all_leaves = Leave.objects.filter(employee=leave.employee).exclude(id=object_id)
+        leave = None
+        all_leaves = None
+        employee_name = None
+        if object_id:
+            leave = get_object_or_404(Leave, id=object_id)
+            if request.user.employee != leave.employee:
+                all_leaves = Leave.objects.filter(employee=leave.employee).exclude(
+                    id=object_id
+                )
+                employee_name = leave.employee.full_name
+            else:
+                all_leaves = Leave.objects.none()
+        else:
+            all_leaves = Leave.objects.none()
 
         extra_context = extra_context or {}
         extra_context["all_leaves"] = all_leaves
-        extra_context["employee_name"] = leave.employee.full_name
+        extra_context["employee_name"] = employee_name
 
         return super().change_view(
             request, object_id, form_url, extra_context=extra_context
