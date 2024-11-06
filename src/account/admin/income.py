@@ -9,6 +9,7 @@ from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils.html import format_html
 from django.core.mail import EmailMessage, EmailMultiAlternatives
+from django.template.loader import get_template
 import requests
 from account.models import Income
 from account.services.balance import BalanceSummery
@@ -30,6 +31,7 @@ class ActiveClientFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(project__client__id=self.value())
         return queryset
+
 
 @admin.register(Income)
 class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
@@ -65,6 +67,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_list_template = "admin/income/list.html"
 
     list_per_page = 20
+
     def get_list_filter(self, request):
         if request.user.has_perm("project_management.view_client"):
             return super().get_list_filter(request)
@@ -229,8 +232,6 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     def send_income_invoices_email(self, request, queryset):
         queryset = queryset.order_by("date")
         income_list = queryset.values_list("id", flat=True)
-        income_date_list = queryset.values_list("date", flat=True)
-        income_date_list_str = "|".join(list(map(str, income_date_list)))
         id_str = "|".join(list(map(str, income_list)))
         project_name = queryset.first().project.title
         client = queryset.first().project.client
@@ -252,28 +253,42 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         }
 
         total_payment = invoice_total.get("total")
+        email_template = get_template("mail/income_invoice_mail.html")
+        html_content = email_template.render(
+            {
+                "invoice_dates": ",".join(
+                    {
+                        date.strftime("%b %-d")
+                        for date in queryset.values_list("date", flat=True)
+                    }
+                ),
+                "client_name": client.name,
+                "total_amount": total_payment,
+                "client_notes": client.notes if client.notes else "",
+            }
+        )
 
-        body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
-        if client.notes:
-            body += f"\n Notes:{client.notes}"
+        # body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
+        # if client.notes:
+        #     body += f"\n Notes:{client.notes}"
 
         email = EmailMultiAlternatives(
-            subject=f"Mediusware Invoice - {project_name} - {id_str}",
+            subject="Mediusware: Invoice Attached & Feedback Request"
         )
         pdf_url = pdf.create()
         if pdf_url and pdf_url.__contains__("http"):
             # Fetch the PDF content from the URL
             response = requests.get(pdf_url)
 
-            # email.attach_alternative(html_content, 'text/html')
             print("file name:", pdf_url.split("/")[-1])
             email.attach(pdf_url.split("/")[-1], response.content, "application/pdf")
         else:
             email.attach_file(pdf_url)
 
-        body = (body,)
+        # body = (body,)
         # email.attach_file(pdf.create())
+        email.attach_alternative(html_content, "text/html")
         email.to = [client.email]
-        email.from_email = "coredeveloper.2013@gmail.com"
-        email.cc = [client.cc_email.split(",") if client.cc_email else []]
+        email.from_email = "invoice@mediusware.com"
+        email.cc = ["shahinur@mediusware.com", "badhan@mediusware.com"]
         email.send()
