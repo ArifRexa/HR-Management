@@ -3,6 +3,7 @@ import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
 from tabnanny import verbose
+
 # from unittest import loader
 from urllib import request
 import uuid
@@ -24,10 +25,13 @@ from settings.models import Designation, LeaveManagement, PayScale
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
 from django.utils import timezone
+
 # from project_management.models import Project
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.template.loader import get_template
+
+
 class Appointment(AuthorMixin, TimeStampMixin):
     is_completed = models.BooleanField(default=False)
     subject = models.CharField(max_length=255, blank=True, null=True)
@@ -113,7 +117,6 @@ class Employee(TimeStampMixin, AuthorMixin):
     def __str__(self):
         return self.full_name
 
-       
     @property
     def has_pending_appointment(self):
         return Appointment.objects.filter(
@@ -164,7 +167,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             .project.filter(active=True)
             .values("title")
         )
-    
+
     @property
     def employee_projects(self):
         from employee.models.employee_activity import EmployeeProject
@@ -328,12 +331,10 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def joining_salary(self):
         return self.salaryhistory_set.first()
-    
+
     @property
     def salary_note(self):
         return self.salaryhistory_set.last()
-    
-
 
     @property
     def permanent_salary(self):
@@ -350,12 +351,23 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     def leave_passed(self, leave_type: str, year=timezone.datetime.now().year):
         half_day_leaves = 0.0
+        half_day_medical = 0.0
         if leave_type == "casual":
             # Half day will be counted as half casual
             half_day_leaves = (
                 self.leave_set.filter(
                     end_date__year=year,
                     leave_type="half_day",
+                    status="approved",
+                ).aggregate(total=Coalesce(Sum("total_leave"), 0.0))["total"]
+                * 0.5
+            )
+        elif leave_type == "medical":
+            # Half day medical will be counted as half Medical
+            half_day_medical = (
+                self.leave_set.filter(
+                    end_date__year=year,
+                    leave_type="half_day_medical",
                     status="approved",
                 ).aggregate(total=Coalesce(Sum("total_leave"), 0.0))["total"]
                 * 0.5
@@ -367,7 +379,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             status="approved",
         ).aggregate(total=Coalesce(Sum("total_leave"), 0.0))["total"]
 
-        return half_day_leaves + leaves_taken
+        return half_day_leaves + leaves_taken + half_day_medical
 
     def leave_available_leaveincash(
         self, leave_type: str, year_end=timezone.now().replace(month=12, day=31).date()
@@ -430,10 +442,10 @@ class Employee(TimeStampMixin, AuthorMixin):
             integer_part = math.floor(available_leave)
             available_leave = integer_part + 0.50
             return available_leave
-        
+
     def get_last_four_weeks_totals(self):
-        
-        from project_management.models import EmployeeProjectHour 
+        from project_management.models import EmployeeProjectHour
+
         today = timezone.now().date()
 
         # Calculate the most recent Thursday
@@ -444,33 +456,49 @@ class Employee(TimeStampMixin, AuthorMixin):
         total_sum = 0.0  # Initialize total sum of hours
 
         # Calculate weekly expected hours
-        weekly_expected_hour = int(self.monthly_expected_hours / 4) if self.monthly_expected_hours else 0
+        weekly_expected_hour = (
+            int(self.monthly_expected_hours / 4) if self.monthly_expected_hours else 0
+        )
 
         # Calculate the total hours for each of the last four weeks
         for i in range(4):
-            start_of_range = most_recent_thursday - timedelta(weeks=i+1) + timedelta(days=1)  # Start of the week (Friday)
-            end_of_range = most_recent_thursday - timedelta(weeks=i)  # End of the week (Thursday)
+            start_of_range = (
+                most_recent_thursday - timedelta(weeks=i + 1) + timedelta(days=1)
+            )  # Start of the week (Friday)
+            end_of_range = most_recent_thursday - timedelta(
+                weeks=i
+            )  # End of the week (Thursday)
 
-            weekly_total = EmployeeProjectHour.objects.filter(
-                employee=self,
-                project_hour__date__range=[start_of_range, end_of_range]
-            ).exclude(project_hour__hour_type='bonus').aggregate(total_hours=Coalesce(Sum("hours"), 0.0)).get("total_hours") or 0.0
+            weekly_total = (
+                EmployeeProjectHour.objects.filter(
+                    employee=self,
+                    project_hour__date__range=[start_of_range, end_of_range],
+                )
+                .exclude(project_hour__hour_type="bonus")
+                .aggregate(total_hours=Coalesce(Sum("hours"), 0.0))
+                .get("total_hours")
+                or 0.0
+            )
 
             # Check if the weekly total is less than the weekly expected hours
-            weekly_total_display = f"<span style='color: red;'>{int(weekly_total)}</span>" if weekly_total < weekly_expected_hour else str(int(weekly_total))
+            weekly_total_display = (
+                f"<span style='color: red;'>{int(weekly_total)}</span>"
+                if weekly_total < weekly_expected_hour
+                else str(int(weekly_total))
+            )
 
             weekly_totals.append(weekly_total_display)
             total_sum += weekly_total
 
         # Join the weekly totals into a comma-separated string
         formatted_totals = ",".join(weekly_totals)
-        
+
         return formatted_totals, int(total_sum)
-    
 
     @property
     def last_two_months_fines(self):
         import calendar
+
         today = timezone.now()
         current_month = today.month
         current_year = today.year
@@ -481,21 +509,21 @@ class Employee(TimeStampMixin, AuthorMixin):
 
         # Query fine for the current month
         current_month_fine = LateAttendanceFine.objects.filter(
-            employee=self,
-            month=current_month,
-            year=current_year
+            employee=self, month=current_month, year=current_year
         ).first()
 
         # Query fine for the last month
         last_month_fine = LateAttendanceFine.objects.filter(
-            employee=self,
-            month=last_month,
-            year=last_month_year
+            employee=self, month=last_month, year=last_month_year
         ).first()
 
         # Get the fine amounts or default to 0 if no fine is found
-        current_month_fine_amount = current_month_fine.total_late_attendance_fine if current_month_fine else 0
-        last_month_fine_amount = last_month_fine.total_late_attendance_fine if last_month_fine else 0
+        current_month_fine_amount = (
+            current_month_fine.total_late_attendance_fine if current_month_fine else 0
+        )
+        last_month_fine_amount = (
+            last_month_fine.total_late_attendance_fine if last_month_fine else 0
+        )
 
         # Get the month names
         current_month_name = calendar.month_name[current_month]
@@ -503,7 +531,6 @@ class Employee(TimeStampMixin, AuthorMixin):
 
         # Return a list of formatted fines without the year
         fines_list = f"{current_month_name}: {current_month_fine_amount}\n{last_month_name}: {last_month_fine_amount}"
-        
 
         return fines_list
 
@@ -516,7 +543,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_see_salary_history", "Can able to see salary history."),
             ("can_print_salary_certificate", "Can print salary certificate"),
             ("can_print_salary_payslip", "Can print salary payslip"),
-            ("can_show_permanent_increment","Can show permanent increment")
+            ("can_show_permanent_increment", "Can show permanent increment"),
         )
         ordering = ["full_name"]
 
@@ -693,14 +720,15 @@ class Observation(TimeStampMixin, AuthorMixin):
 
 
 class LateAttendanceFine(models.Model):
-    employee = models.ForeignKey(Employee, on_delete=models.CASCADE,limit_choices_to={'active': True})
-    month = models.IntegerField(null=True,blank=True)
-    year = models.IntegerField(null=True,blank=True)
+    employee = models.ForeignKey(
+        Employee, on_delete=models.CASCADE, limit_choices_to={"active": True}
+    )
+    month = models.IntegerField(null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
     total_late_attendance_fine = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(default=datetime.now, null=True, blank=True)
     is_consider = models.BooleanField(default=False)
     entry_time = models.TimeField(null=True, blank=True)
-
 
     class Meta:
         permissions = [
@@ -711,15 +739,15 @@ class LateAttendanceFine(models.Model):
         return f"{self.employee.user.username} - {self.month}/{self.year}"
 
 
-
-
-
 class EmployeeUnderTPM(models.Model):
     employee = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
         related_name="employees_under_tpm",
-        limit_choices_to={"active": True, "is_tpm": False, },
+        limit_choices_to={
+            "active": True,
+            "is_tpm": False,
+        },
     )
     tpm = models.ForeignKey(
         Employee,
@@ -736,6 +764,7 @@ class EmployeeUnderTPM(models.Model):
         verbose_name="Project",
         null=True,
     )
+
     class Meta:
         verbose_name = "TPM"
         verbose_name_plural = "TPM"
@@ -743,70 +772,84 @@ class EmployeeUnderTPM(models.Model):
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
 
+
 class TPMComplain(models.Model):
     employee = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
         related_name="employees",
-        limit_choices_to={"active": True, "is_tpm": False, },null=True,blank=True
+        limit_choices_to={
+            "active": True,
+            "is_tpm": False,
+        },
+        null=True,
+        blank=True,
     )
     tpm = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
         limit_choices_to={"is_tpm": True, "active": True},
-        verbose_name="TPM",null=True,blank=True
+        verbose_name="TPM",
+        null=True,
+        blank=True,
     )
     project = models.ForeignKey(
         "project_management.Project",
         on_delete=models.CASCADE,
         limit_choices_to={"active": True},
         verbose_name="Project",
-        null=True,blank=True
+        null=True,
+        blank=True,
     )
     STATUS_CHOICE = (
-    ("pending", "⌛ Pending"),
-    ("approved", "✔ Approved"),
-    ("observation", "🔍 Observation"), 
+        ("pending", "⌛ Pending"),
+        ("approved", "✔ Approved"),
+        ("observation", "🔍 Observation"),
     )
-    complain_title = models.CharField(max_length=250,null=True,blank=True)
-    complain = HTMLField(null=True,blank=True)
-    feedback_title = models.CharField(max_length=250,null=True,blank=True)
-    management_feedback = HTMLField(null=True,blank=True)
-    status = models.CharField(max_length=100,choices=STATUS_CHOICE,verbose_name="Complain Status",default="pending")
+    complain_title = models.CharField(max_length=250, null=True, blank=True)
+    complain = HTMLField(null=True, blank=True)
+    feedback_title = models.CharField(max_length=250, null=True, blank=True)
+    management_feedback = HTMLField(null=True, blank=True)
+    status = models.CharField(
+        max_length=100,
+        choices=STATUS_CHOICE,
+        verbose_name="Complain Status",
+        default="pending",
+    )
 
     # def __str__(self):
     #     return f"{self.employee.full_name} under tpm: {self.tpm.full_name}"
-    
+
     class Meta:
         verbose_name_plural = "TPM's Complain"
 
-    
-    def save(self,*args,**kwargs):
+    def save(self, *args, **kwargs):
         is_new = self.pk is None
-        
+
         if not is_new:
             tpm_complain = TPMComplain.objects.get(pk=self.pk)
             if tpm_complain.management_feedback != self.management_feedback:
                 self.send_complain_email_management_tpm()
 
-        super().save(*args,**kwargs)
+        super().save(*args, **kwargs)
 
         if is_new:
             self.send_complain_email_tpm_to_management()
-
 
     def send_complain_email_tpm_to_management(self):
         # Prepare email subject and recipients
         subject = f"TPM Complain: {self.complain_title}"
         email = EmailMultiAlternatives(subject)
         email.from_email = f"{self.tpm.email}"
-        email.to =  ['"Mediusware-HR" <hr@mediusware.com>']
-        html_template = get_template('mails/complaint_email_template.html')
-        html_content = html_template.render({
-            'tpm': self.tpm,
-            'employee': self.employee,
-            'complain': format_html(self.complain)
-        })
+        email.to = ['"Mediusware-HR" <hr@mediusware.com>']
+        html_template = get_template("mails/complaint_email_template.html")
+        html_content = html_template.render(
+            {
+                "tpm": self.tpm,
+                "employee": self.employee,
+                "complain": format_html(self.complain),
+            }
+        )
 
         # Create and send email
         email.attach_alternative(html_content, "text/html")
@@ -818,13 +861,15 @@ class TPMComplain(models.Model):
         email = EmailMultiAlternatives(subject)
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.to = [self.tpm.email]
-        html_template = get_template('mails/management_feedback_template.html')
-        html_content = html_template.render({
-            'tpm': self.tpm,
-            'employee': self.employee,
-            'management_feedback': format_html(self.management_feedback)
-        })
+        html_template = get_template("mails/management_feedback_template.html")
+        html_content = html_template.render(
+            {
+                "tpm": self.tpm,
+                "employee": self.employee,
+                "management_feedback": format_html(self.management_feedback),
+            }
+        )
 
-        # Create and send email 
+        # Create and send email
         email.attach_alternative(html_content, "text/html")
         email.send()
