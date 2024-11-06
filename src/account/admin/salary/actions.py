@@ -68,19 +68,19 @@ class SalarySheetAction(admin.ModelAdmin):
                     # Append the employee salary data with total salary at the end
                     work_sheet.append([
                         salary_sheet.date.strftime("%d-%m-%Y"),  # Date
-                        bank_account.account_number,             # Account No
-                        beftn.routing_no,                        # Routing No
-                        employee_salary.employee.full_name,      # Employee Name
+                        bank_account.account_number,            # Account No
+                        employee_salary.employee.full_name,
                         'BDT',                                   # Currency
                         str(int(employee_salary.gross_salary)),  # Amount
                         beftn.originating_bank_routing_number,   # Originating Bank Routing No.
+                        beftn.routing_no,                        # Routing No
                         beftn.originating_bank_account_number,   # Originating Bank Account No.
                         beftn.originating_bank_account_name,     # Originating Account Name
                         f'Salary of {salary_sheet.date.strftime("%b, %Y")}',  # Remarks
                              
                     ])
         work_sheet.append([
-            '', '', '', '', '', f'Total={int(total_salary)}', '', '', '', ''  # Total salary row below "Amount"
+            '', '', '', '',f'Total={int(total_salary)}','', '', '', '', ''  # Total salary row below "Amount"
         ])
         # Prepare the response with the Excel file
         response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
