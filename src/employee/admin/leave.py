@@ -69,15 +69,13 @@ class LeaveForm(forms.ModelForm):
 
     
 
-    
-
 
 @admin.register(Leave)
 class LeaveManagement(admin.ModelAdmin):
     actions = ("approve_selected",)
     readonly_fields = ("note", "total_leave")
     exclude = ["status_changed_at", "status_changed_by"]
-    inlines = (LeaveAttachmentInline, LeaveManagementInline, FeedbackInline)
+    inlines = (LeaveAttachmentInline, LeaveManagementInline, FeedbackInline, )
     search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
     date_hierarchy = "start_date"
