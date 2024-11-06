@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Invoice</title>
+    <style>
+        table {
+            width: 50%;
+            border-collapse: collapse;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+        thead {
+            background-color: #f2f2f2;
+        }
+        th {
+            font-weight: bold;
+            color: #333;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <p style="font-size: 1rem;">
+        <b>Dear {{ client_name }}</b>
+    </p>
+    <p>I hope this message finds you well.</p>
+
+    <p>Attached, please find the invoice for the services rendered during the period of specific date range. We appreciate your prompt attention to this matter.</p>
+    <p>Key details are as follows: </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Weekly Closing Dates</td>
+                <td>{{invoice_dates}}</td>
+            </tr>
+            <tr>
+                <td>Invoice Amount</td>
+                <td>{{total_amount}}</td>
+            </tr>
+            <tr>
+                <td>Payment Method</td>
+                <td>{{client_notes}}</td>
+            </tr>
+    </table>
+
+
+    <p>As we continue to strive for excellence, we value your feedback on our team's performance. We hope that our services have met your expectations and contributed positively to your business. Your insights on our collaboration are invaluable and help us improve.</p>
+
+    <p>Additionally, if you have any suggestions or ideas for future projects, we would love to hear them. Your feedback ensures we can tailor our services to better meet your needs.</p>
+
+    <p>If you are satisfied with our work, we would greatly appreciate it if you could refer us to your network for any web-related services. Your recommendation would mean a lot to us and help us grow.</p>
+
+    <p>Thank you for your continued trust and partnership.</p>
+
+    <p>
+        Best Regards, <br> <br>
+
+        Tanvir Mehedi Saikat <br>
+        Chief Operating Officer <br>
+        Mediusware Limited <br>
+        House no: 24/1, 7th Floor, Ring Road, Mohammadpur, Dhaka-1207. <br>
+        Website: www.mediusware.com <br>
+        LinkedIn: https://www.linkedin.com/company/mediusware-ltd/ <br>
+    </p>
+</body>
+</html>
