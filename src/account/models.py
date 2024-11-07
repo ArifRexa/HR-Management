@@ -290,6 +290,13 @@ class Loan(TimeStampMixin, AuthorMixin):
         ]
 
 
+class SalaryEmiLoan(EmployeeSalary):
+    
+    class Meta:
+        proxy = True
+        verbose_name = "Monthly Salary EMI Loan"
+        verbose_name_plural = "Monthly Salary EMI Loans"
+
 class LoanGuarantor(TimeStampMixin, AuthorMixin):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
     full_name = models.CharField(max_length=255)
