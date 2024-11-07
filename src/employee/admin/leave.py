@@ -477,7 +477,7 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
-                "has_monday": False,
+                "has_monday": leave.applied_leave_type == "emergency_leave",
             }
         )
         return format_html(html_content)
@@ -492,9 +492,7 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
-                "has_monday": has_monday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
+                "has_monday": leave.applied_leave_type == "emergency_leave",
             }
         )
         return format_html(html_content)
