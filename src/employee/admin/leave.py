@@ -1,5 +1,6 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, time
 import datetime
+
 from django.utils.html import format_html
 from django.contrib import admin, messages
 from django import forms
@@ -58,6 +59,61 @@ class LeaveForm(forms.ModelForm):
         model = Leave
         fields = "__all__"
 
+    def has_emergency_leave_last_3_months(self, employee):
+        # Get the current date and calculate the date 3 months ago
+        current_date = timezone.now().date()
+        three_months_ago = current_date - timedelta(days=90)
+
+        # Query leaves for the given employee, checking for 'emergency_leave' in the last 3 months
+        emergency_leaves = Leave.objects.filter(
+            employee=employee,
+            applied_leave_type="emergency_leave",
+            created_at__date__gte=three_months_ago,
+            created_at__date__lte=current_date,
+        )
+
+        # Return True if there's at least 1 emergency leave in the last 3 months
+        return emergency_leaves.exists()
+
+    def clean(self):
+        user = self.request.user
+        if not user.has_perm("employee.can_approve_leave_applications"):
+            if self.data.get(
+                "applied_leave_type"
+            ) == "emergency_leave" and self.has_emergency_leave_last_3_months(
+                user.employee
+            ):
+                raise ValidationError(
+                    "You can't apply emergency leave more than 1 in last 3 months"
+                )
+            if (
+                self.data.get("start_date") is not None
+                and self.data.get("end_date") is not None
+            ):
+                start_date = datetime.datetime.strptime(
+                    self.data.get("start_date"), "%Y-%m-%d"
+                ).date()
+                if self.data.get("applied_leave_type") == "casual":
+                    if start_date == date.today():
+                        raise ValidationError(
+                            "You have to apply casual leave before 1 day of start date"
+                        )
+                    if start_date < date.today():
+                        raise ValidationError(
+                            "You can not apply any leave past date. You have to apply for emergency or non paid leave"
+                        )
+                    if (
+                        (start_date - date.today()).days == 1
+                        and time(18, 0) < datetime.datetime.now().time()
+                        and not user.has_perm("employee.can_add_leave_at_any_time")
+                    ):
+                        raise ValidationError(
+                            {
+                                "start_date": "You can not apply any leave application after 06:00 PM for tomorrow."
+                            }
+                        )
+        return super().clean()
+
     # def __init__(self, *args, **kwargs):
     #     super(LeaveForm, self).__init__(*args, **kwargs)
     #     if self.fields.get("message"):
@@ -77,6 +133,17 @@ class LeaveManagement(admin.ModelAdmin):
     search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
     date_hierarchy = "start_date"
+    fields = (
+        "start_date",
+        "end_date",
+        "applied_leave_type",
+        "leave_type",
+        "status",
+        "employee",
+        "message",
+        "total_leave",
+        "note",
+    )
 
     class Media:
         js = ("js/list.js", "employee/js/leave.js")
@@ -86,7 +153,8 @@ class LeaveManagement(admin.ModelAdmin):
         list_display = [
             "employee",
             "leave_info",
-            "leave_type_",
+            "applied_leave_type_",
+            "approved_leave_type_",
             "total_leave_",
             "manager_approval",
             "status_",
@@ -101,14 +169,25 @@ class LeaveManagement(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         fields = super(LeaveManagement, self).get_fields(request)
+        fields = list(fields)
         if not request.user.has_perm("employee.can_approve_leave_applications"):
-            admin_only = ["status", "employee"]
+            admin_only = ["status", "employee", "leave_type"]
             for filed in admin_only:
                 fields.remove(filed)
         # if not request.user.has_perm("employee.can_view_feedback"):
         #     fields.remove("display_feedback")
         #     print(fields)
         return fields
+
+    def get_form(self, request, obj=None, change=None, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        form.request = request
+        if form.base_fields.get(
+            "applied_leave_type", None
+        ) and not request.user.has_perm("employee.can_approve_leave_applications"):
+            form.base_fields["applied_leave_type"].label = "Leave Type"
+            form.base_fields["applied_leave_type"].required = True
+        return form
 
     @admin.display()
     def status_(self, leave: Leave):
@@ -181,6 +260,18 @@ class LeaveManagement(admin.ModelAdmin):
                 return self.readonly_fields + tuple(
                     [item.name for item in obj._meta.fields]
                 )
+            # else:
+            #     return self.readonly_fields
+            elif request.user.employee == obj.employee:
+                return ["total_leave", "note"]
+            elif (
+                request.user.has_perm("employee.can_approve_leave_applications")
+                and obj.status == "pending"
+                and not request.user.is_superuser
+            ):
+                return ["applied_leave_type", "total_leave", "note"]
+            else:
+                return ["total_leave", "note"]
         return ["total_leave", "note"]
 
     # def save_form(self, request, form, change):
@@ -294,6 +385,11 @@ class LeaveManagement(admin.ModelAdmin):
                 return True
         else:
             return True
+        
+    def has_change_permission(self, request, obj = None):
+        if request.user.is_superuser:
+            return True
+        return obj and obj.status == "pending"
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -354,8 +450,26 @@ class LeaveManagement(admin.ModelAdmin):
 
         return format_html(html_content)
 
-    @admin.display()
-    def leave_type_(self, leave: Leave):
+    @admin.display(description="Applied Leave Type")
+    def applied_leave_type_(self, leave: Leave):
+        html_template = get_template("admin/leave/list/col_leave_day.html")
+        html_content = html_template.render(
+            {
+                # 'use_get_display':True,
+                "data": leave.get_applied_leave_type_display(),
+                "leave_day": leave.end_date.strftime("%A"),
+                "has_friday": has_friday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+                "has_monday": has_monday_between_dates(
+                    leave.start_date, leave.end_date
+                ),
+            }
+        )
+        return format_html(html_content)
+
+    @admin.display(description="Approved Leave Type")
+    def approved_leave_type_(self, leave: Leave):
         html_template = get_template("admin/leave/list/col_leave_day.html")
         html_content = html_template.render(
             {
@@ -392,14 +506,19 @@ class LeaveManagement(admin.ModelAdmin):
     change_form_template = "admin/leave/leave_change_form.html"
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
+        current_time = datetime.datetime.now()
         leave = None
         all_leaves = None
         employee_name = None
         if object_id:
             leave = get_object_or_404(Leave, id=object_id)
             if request.user.employee != leave.employee:
-                all_leaves = Leave.objects.filter(employee=leave.employee).exclude(
-                    id=object_id
+                all_leaves = (
+                    Leave.objects.filter(
+                        employee=leave.employee, created_at__year=current_time.year
+                    )
+                    .exclude(id=object_id)
+                    .order_by("-id")
                 )
                 employee_name = leave.employee.full_name
             else:
