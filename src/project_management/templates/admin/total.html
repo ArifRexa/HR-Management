@@ -39,6 +39,8 @@
 
 {% block coltype %}{% endblock %}
 
+
+
 {% block content %}
   <div id="content-main">
     {% block object-tools %}
@@ -56,7 +58,24 @@
     {% endif %}
     <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
       <div class="changelist-form-container">
-        {% block search %}{% search_form cl %}{% endblock %}
+        {% block search %}
+          <hr>
+          <div style="padding-top: 5px;">
+              <form action="" method="get" style="padding: 2px 7px 0px;">
+                  <p style="padding-left: 0; color: #666666;">From &nbsp
+                      <span style="border-radius: 4px;">
+                          {{ filter_form.created_at__date__gte }}
+                      </span>&nbsp&nbsp&nbsp&nbsp To &nbsp
+                      <span>
+                          {{ filter_form.created_at__date__lte }}
+                      </span>
+                      <button type="submit"  style="margin-left: 5px; padding: 4px 8px; border: 1px solid #c6ccc6; border-radius: 5px; color: #333333;" >Filter</button>
+                  </p>
+              </form>
+          </div>
+        
+          {% search_form cl %}
+        {% endblock %}
         {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
 
         <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}

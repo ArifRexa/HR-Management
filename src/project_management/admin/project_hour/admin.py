@@ -19,6 +19,7 @@ from employee.models.employee import EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
+from project_management.forms import ProjectHourFilterForm
 from project_management.models import (
     Client,
     DailyProjectUpdate,
@@ -168,6 +169,15 @@ class ProjectHourAdmin(
             self.admin_site.each_context(request),
             total=self.get_total_hour(request),
             # series=self.get_data(request),
+            filter_form = ProjectHourFilterForm(initial={
+                "created_at__date__gte": request.GET.get(
+                    "created_at__date__gte",
+                    timezone.now().date() - datetime.timedelta(days=7),
+                ),
+                "created_at__date__lte": request.GET.get(
+                    "created_at__date__lte", timezone.now().date()
+                ),
+            })
         )
         return super(ProjectHourAdmin, self).changelist_view(
             request, extra_context=my_context
@@ -181,7 +191,13 @@ class ProjectHourAdmin(
         manager's will only see theirs
         @type request: object
         """
-        query_set = super(ProjectHourAdmin, self).get_queryset(request)
+        if request.GET.get("created_at__date__gte", None) is None and request.GET.get("q", None) is None:
+            two_month_ago = timezone.now() - timedelta(days=60)
+            query_set = super(ProjectHourAdmin, self).get_queryset(request).filter(
+                created_at__gte=two_month_ago
+            )
+        else:
+            query_set = super(ProjectHourAdmin, self).get_queryset(request)
         if request.user.is_superuser or request.user.has_perm(
             "project_management.show_all_hours"
         ):
