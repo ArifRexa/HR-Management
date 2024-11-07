@@ -258,9 +258,9 @@ class LeaveManagement(admin.ModelAdmin):
                 return self.readonly_fields + tuple(
                     [item.name for item in obj._meta.fields]
                 )
-            else:
-                return self.readonly_fields
-        if obj is None or request.user.is_superuser:
+            # else:
+            #     return self.readonly_fields
+        if request.user.is_superuser:
             return ["total_leave", "note"]
         return ["total_leave", "note", "applied_leave_type"]
 
