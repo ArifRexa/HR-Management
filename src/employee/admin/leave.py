@@ -262,8 +262,16 @@ class LeaveManagement(admin.ModelAdmin):
                 )
             # else:
             #     return self.readonly_fields
-            elif not request.user.is_superuser:
-                return ["total_leave", "note", "applied_leave_type"]
+            elif request.user.employee == obj.employee:
+                return ["total_leave", "note"]
+            elif (
+                request.user.has_perm("employee.can_approve_leave_applications")
+                and obj.status == "pending"
+                and not request.user.is_superuser
+            ):
+                return ["applied_leave_type", "total_leave", "note"]
+            else:
+                return ["total_leave", "note"]
         return ["total_leave", "note"]
 
     # def save_form(self, request, form, change):
