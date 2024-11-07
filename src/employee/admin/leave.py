@@ -385,6 +385,11 @@ class LeaveManagement(admin.ModelAdmin):
                 return True
         else:
             return True
+        
+    def has_change_permission(self, request, obj = None):
+        if request.user.is_superuser:
+            return True
+        return obj and obj.status == "pending"
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
