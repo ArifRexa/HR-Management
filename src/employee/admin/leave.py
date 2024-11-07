@@ -477,9 +477,7 @@ class LeaveManagement(admin.ModelAdmin):
                 "has_friday": has_friday_between_dates(
                     leave.start_date, leave.end_date
                 ),
-                "has_monday": has_monday_between_dates(
-                    leave.start_date, leave.end_date
-                ),
+                "has_monday": False,
             }
         )
         return format_html(html_content)
