@@ -121,7 +121,7 @@ def total_leave(leave: Leave, data):
             "data": data,
             "leave_day": leave.end_date.strftime("%A"),
             "has_friday": has_friday_between_dates(leave.start_date, leave.end_date),
-            "has_monday": has_monday_between_dates(leave.start_date, leave.end_date),
+            "has_monday": leave.applied_leave_type == "emergency_leave",
         }
     )
     return format_html(html_content)
