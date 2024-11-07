@@ -260,9 +260,9 @@ class LeaveManagement(admin.ModelAdmin):
                 )
             # else:
             #     return self.readonly_fields
-        if request.user.is_superuser:
-            return ["total_leave", "note"]
-        return ["total_leave", "note", "applied_leave_type"]
+            elif not request.user.is_superuser:
+                return ["total_leave", "note", "applied_leave_type"]
+        return ["total_leave", "note"]
 
     # def save_form(self, request, form, change):
     #     if request._files.get('leaveattachment_set-0-attachment') is None and request._post.get('leave_type') == 'medical':
