@@ -394,7 +394,21 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return qs.aggregate(tot=Sum("hours"))["tot"]
 
     def get_queryset(self, request):
-        query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request)
+        
+        # if condition remove if need to show all
+        if request.GET.get("created_at__date__gte", None) is None:
+            one_month_ago = timezone.now() - timedelta(days=30)
+            query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request).select_related(
+                "employee",
+                "manager",
+                "project"
+            ).filter(created_at__gte=one_month_ago)
+        else:
+            query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request).select_related(
+                "employee",
+                "manager",
+                "project"
+            )
 
         if not request.user.is_superuser and not request.user.has_perm(
             "project_management.see_all_employee_update"
