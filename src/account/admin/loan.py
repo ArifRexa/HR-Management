@@ -7,10 +7,17 @@ from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.template.response import TemplateResponse
 
-from account.models import Loan, LoanPayment, LoanGuarantor, LoanAttachment
+from account.models import (
+    Loan,
+    LoanPayment,
+    LoanGuarantor,
+    LoanAttachment,
+    SalaryEmiLoan,
+)
 from config.utils.pdf import PDF
 from django.contrib import messages
 from django.db import models
+
 
 class LoadGuarantorInline(admin.StackedInline):
     model = LoanGuarantor
@@ -24,43 +31,47 @@ class LoadAttachmentInline(admin.TabularInline):
 
 @admin.register(Loan)
 class LoadAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'loan_amount', 'due', 'emi', 'tenor')
+    list_display = ("employee", "loan_amount", "due", "emi", "tenor")
     inlines = (LoadAttachmentInline,)
-    actions = ('print_loan_agreement', 'duplicate')
-    list_filter = ('loan_type','employee',)
-    search_fields = ('employee__full_name',)
-    date_hierarchy = 'effective_date'
-    change_list_template = ('admin/loan.html')
+    actions = ("print_loan_agreement", "duplicate")
+    list_filter = (
+        "loan_type",
+        "employee",
+    )
+    search_fields = ("employee__full_name",)
+    date_hierarchy = "effective_date"
+    change_list_template = "admin/loan.html"
 
-    @admin.action(description='Print Agreement')
+    @admin.action(description="Print Agreement")
     def print_loan_agreement(self, request, queryset):
         pdf = PDF()
-        pdf.file_name = f'Loan Agreement'
-        pdf.template_path = 'agreements/loan_agreement.html'
-        pdf.context = {'loans': queryset}
+        pdf.file_name = f"Loan Agreement"
+        pdf.template_path = "agreements/loan_agreement.html"
+        pdf.context = {"loans": queryset}
         return pdf.render_to_pdf(download=True)
-    
+
     @admin.action(description="Duplicate selected items")
     def duplicate(self, request, queryset):
         for obj in queryset:
             obj.id = None
             obj.save()
 
-        self.message_user(request, 'Duplicated all selected items', messages.SUCCESS)
-         
+        self.message_user(request, "Duplicated all selected items", messages.SUCCESS)
 
-    @admin.display(description='Due amount')
+    @admin.display(description="Due amount")
     def due(self, obj: Loan):
-        due_amount = obj.loan_amount - obj.loanpayment_set.aggregate(
-            total_payment=Coalesce(Sum('payment_amount'), 0.0)
-        )['total_payment']
-        return f'{due_amount} ({obj.loanpayment_set.count()})'
-    
-    def has_module_permission(self, request):
+        due_amount = (
+            obj.loan_amount
+            - obj.loanpayment_set.aggregate(
+                total_payment=Coalesce(Sum("payment_amount"), 0.0)
+            )["total_payment"]
+        )
+        return f"{due_amount} ({obj.loanpayment_set.count()})"
 
-        if request.user.is_superuser or request.user.has_perm('account.add_loan'):
+    def has_module_permission(self, request):
+        if request.user.is_superuser or request.user.has_perm("account.add_loan"):
             return False
-        elif request.user.has_perm('account.can_view_tax_loans'):
+        elif request.user.has_perm("account.can_view_tax_loans"):
             return True
         return False
 
@@ -73,14 +84,14 @@ class LoadAdmin(admin.ModelAdmin):
 
         try:
             # Get the queryset from the ChangeList
-            cl = response.context_data['cl']
+            cl = response.context_data["cl"]
             queryset = cl.queryset
 
             # Calculate the total loan amount
-            total_loan = queryset.aggregate(total=models.Sum('emi'))['total'] or 0
+            total_loan = queryset.aggregate(total=models.Sum("emi"))["total"] or 0
 
             # Add the total loan amount to the extra context
-            extra_context['total_loan'] = total_loan
+            extra_context["total_loan"] = total_loan
 
             # Update the response context data with the new extra context
             response.context_data.update(extra_context)
@@ -90,15 +101,13 @@ class LoadAdmin(admin.ModelAdmin):
         return response
 
     def save_model(self, request, obj, form, change) -> None:
-        html_template = get_template('mail/loan_mail.html')
-        html_content = html_template.render({
-            'loan': obj
-        })
+        html_template = get_template("mail/loan_mail.html")
+        html_content = html_template.render({"loan": obj})
 
-        email = EmailMultiAlternatives(subject=f'Loan Approved  ')
-        email.attach_alternative(html_content, 'text/html')
+        email = EmailMultiAlternatives(subject=f"Loan Approved  ")
+        email.attach_alternative(html_content, "text/html")
         email.to = [obj.employee.email]
-        email.from_email = 'admin@mediusware.com'
+        email.from_email = "admin@mediusware.com"
         email.send()
         return super().save_model(request, obj, form, change)
 
@@ -107,18 +116,48 @@ class LoadAdmin(admin.ModelAdmin):
 
         if request.user.is_superuser:
             return qs
-        elif request.user.has_perm('account.add_loan'):
+        elif request.user.has_perm("account.add_loan"):
             return qs
-        elif request.user.has_perm('account.can_view_tax_loans'):
-            return qs.filter(loan_type='tds')
-        
+        elif request.user.has_perm("account.can_view_tax_loans"):
+            return qs.filter(loan_type="tds")
+
 
 @admin.register(LoanPayment)
 class LoanPaymentAdmin(admin.ModelAdmin):
-    list_display = ('payment_date', 'payment_amount', 'loan', 'note')
-    date_hierarchy = 'payment_date'
-    list_filter = ('loan',)
-    search_fields = ('loan__employee__full_name',)
+    list_display = ("payment_date", "payment_amount", "loan", "note")
+    date_hierarchy = "payment_date"
+    list_filter = ("loan",)
+    search_fields = ("loan__employee__full_name",)
 
     def has_module_permission(self, request):
+        return False
+
+
+@admin.register(SalaryEmiLoan)
+class SalaryEmiLoanAdmin(admin.ModelAdmin):
+    list_display = ("employee", "loan_emi")
+    date_hierarchy = "created_at"
+    change_list_template = "admin/salary_emi_loan.html"
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.filter(loan_emi__lt=0)
+
+    def changelist_view(self, request, extra_context=None):
+        res = super().changelist_view(request, extra_context)
+        context = extra_context or {}
+        cl = res.context_data["cl"]
+        queryset = cl.queryset
+
+        context["total_loan"] = (
+            queryset.aggregate(total=models.Sum("loan_emi"))["total"] or 0
+        )
+
+        res.context_data.update(context)
+        return res
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=...):
         return False
