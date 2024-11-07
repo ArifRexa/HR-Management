@@ -182,7 +182,9 @@ class LeaveManagement(admin.ModelAdmin):
     def get_form(self, request, obj=None, change=None, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
         form.request = request
-        if not request.user.has_perm("employee.can_approve_leave_applications"):
+        if form.base_fields.get(
+            "applied_leave_type", None
+        ) and not request.user.has_perm("employee.can_approve_leave_applications"):
             form.base_fields["applied_leave_type"].label = "Leave Type"
             form.base_fields["applied_leave_type"].required = True
         return form
