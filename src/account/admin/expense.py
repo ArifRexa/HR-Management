@@ -56,7 +56,7 @@ class ActiveCreatedByFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         clients = Employee.objects.filter(
             active=True, user__account_expense_related__isnull=False
-        )
+        ).distinct()
         return tuple((client.pk, client.full_name) for client in list(clients))
 
     def queryset(self, request, queryset):
