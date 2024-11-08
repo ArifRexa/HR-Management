@@ -17,6 +17,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 from django.contrib.admin import SimpleListFilter
 from employee.models.bank_account import BEFTN
+from project_management.models import Project
 from user_auth.models import UserLogs
 from django.utils import timezone
 from employee.models import (
@@ -40,7 +41,7 @@ from employee.models.employee import (
 from employee.models.employee_activity import EmployeeProject
 from user_auth.views import User
 from .filter import MonthFilter
-from django.utils.html import format_html,strip_tags
+from django.utils.html import format_html, strip_tags
 from employee.helper.tpm import TPMsBuilder
 from employee.helper.tpm import TPMObj
 
@@ -208,30 +209,36 @@ class EmployeeAdmin(
 
     def get_actions(self, request):
         actions = super(EmployeeAdmin, self).get_actions(request)
-        
+
         if request.user.is_superuser:
             return actions
 
         # Define permission-based allowed actions
         permission_action_map = {
-            'employee.can_print_salary_certificate': ['print_salary_certificate', 'print_salary_certificate_all_months'],
-            'employee.can_print_salary_payslip': ['print_salary_pay_slip_all_months']
+            "employee.can_print_salary_certificate": [
+                "print_salary_certificate",
+                "print_salary_certificate_all_months",
+            ],
+            "employee.can_print_salary_payslip": ["print_salary_pay_slip_all_months"],
         }
-        
+
         allowed_actions = []
 
         # Check permissions and collect allowed actions
         for perm, action_list in permission_action_map.items():
             if request.user.has_perm(perm):
                 allowed_actions.extend(action_list)
-        
+
         # If there are allowed actions, filter the actions
         if allowed_actions:
-            actions = {name: action for name, action in actions.items() if name in allowed_actions}
+            actions = {
+                name: action
+                for name, action in actions.items()
+                if name in allowed_actions
+            }
             return actions
 
         return {}
-            
 
 
 @admin.register(EmployeeLunch)
@@ -375,22 +382,32 @@ from calendar import month_name
 
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
-    list_display = ("get_employee", "get_month_name", "get_year", "total_late_attendance_fine","entry_time")
+    list_display = (
+        "get_employee",
+        "get_month_name",
+        "get_year",
+        "total_late_attendance_fine",
+        "entry_time",
+    )
     list_filter = ("employee",)
     date_hierarchy = "date"
-    autocomplete_fields = ('employee',)
+    autocomplete_fields = ("employee",)
     change_list_template = "admin/total_fine.html"
 
-    def get_employee(self,obj):
-        consider_count = LateAttendanceFine.objects.filter(date__month=obj.date.month,date__year=obj.date.year,is_consider=True).count()
-        print(consider_count,"Total Consider Count")
+    def get_employee(self, obj):
+        consider_count = LateAttendanceFine.objects.filter(
+            date__month=obj.date.month, date__year=obj.date.year, is_consider=True
+        ).count()
+        print(consider_count, "Total Consider Count")
         if consider_count > 0:
-            return f'{obj.employee} ({consider_count})'
+            return f"{obj.employee} ({consider_count})"
         return obj.employee
-    get_employee.short_description = 'Employee'
+
+    get_employee.short_description = "Employee"
 
     def get_month_name(self, obj):
         return month_name[obj.date.month]
+
     get_month_name.short_description = "Month"
 
     def get_year(self, obj):
@@ -400,7 +417,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     def get_fields(self, request, obj=None):
         # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
-        fields = ["employee", "total_late_attendance_fine","date","is_consider"]
+        fields = ["employee", "total_late_attendance_fine", "date", "is_consider"]
         return fields
 
     def get_list_filter(self, request):
@@ -408,7 +425,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         if request.user.is_superuser or request.user.has_perm(
             "can_view_all_late_attendance"
         ):
-            return "employee",
+            return ("employee",)
         return ("employee",)
 
     def get_queryset(self, request):
@@ -434,11 +451,10 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
 
 class EmployeeUnderTPMForm(forms.ModelForm):
-
     class Meta:
         model = EmployeeUnderTPM
         fields = "__all__"
-        
+
     def clean(self):
         cleaned_data = super().clean()
         employee = cleaned_data.get("employee")
@@ -486,16 +502,23 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
     change_list_template = "admin/employee/list/tpm_project.html"
 
     fieldsets = (
-        (None, {
-            'fields': ('tpm', 'employee', 'project',),
-        }),
+        (
+            None,
+            {
+                "fields": (
+                    "tpm",
+                    "employee",
+                    "project",
+                ),
+            },
+        ),
     )
 
     def custom_changelist_view(self, request, extra_context=None):
         tpm_project_data = EmployeeUnderTPM.objects.select_related(
             "employee", "project__client", "tpm"
         ).all()
-        
+
         # employees_without_tpm = EmployeeProject.objects.filter(
         #     employee__active=True,
         #     employee__project_eligibility=True
@@ -503,44 +526,44 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         #     employee_id__in=EmployeeUnderTPM.objects.values('employee_id')
         # )
         employees_without_tpm = Employee.objects.filter(
-            active=True,
-            project_eligibility=True,
-            is_tpm = False
+            active=True, project_eligibility=True, is_tpm=False
+        ).exclude(id__in=EmployeeUnderTPM.objects.values("employee_id"))
 
-        ).exclude(
-            id__in=EmployeeUnderTPM.objects.values('employee_id')
-        )
+        active_project_without_dev = Project.objects.filter(active=True, employeeproject__isnull=True)
 
         tpm_builder = TPMsBuilder()
 
         for employee in tpm_project_data:
-            tpm_obj =tpm_builder.get_or_create(employee)
+            tpm_obj = tpm_builder.get_or_create(employee)
             tpm_obj.add_project_hours()
-        other_emp_tpm = Employee(
-            full_name="Others"
-        )
+        other_emp_tpm = Employee(full_name="Others")
 
         for emp_proj in employees_without_tpm:
             for project in emp_proj.employee_projects:
                 other_tpm = EmployeeUnderTPM(
-                    tpm=other_emp_tpm,
-                    employee=emp_proj,
-                    project=project
-                )     
+                    tpm=other_emp_tpm, employee=emp_proj, project=project
+                )
                 tpm_obj = tpm_builder.get_or_create(other_tpm)
                 tpm_obj.add_project_hours()
+                
+        for project in active_project_without_dev:
+            other_tpm = EmployeeUnderTPM(
+                tpm=other_emp_tpm, employee=other_emp_tpm, project=project
+            )
+            tpm_obj = tpm_builder.get_or_create(other_tpm)
+            tpm_obj.add_project_hours()
 
         tpm_builder.update_hours_count()
-        
+
         total_expected, total_actual = tpm_builder.get_total_expected_and_got_hour_tpm()
         formatted_weekly_sums = tpm_builder.get_formatted_weekly_sums()
 
         my_context = {
             "tpm_project_data": tpm_project_data,
             "tpm_data": tpm_builder.tpm_list,
-            "total_expected":total_expected,
-            "total_actual":total_actual,
-            "formatted_weekly_sums":formatted_weekly_sums
+            "total_expected": total_expected,
+            "total_actual": total_actual,
+            "formatted_weekly_sums": formatted_weekly_sums,
         }
 
         return super().changelist_view(request, extra_context=my_context)
@@ -552,38 +575,58 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
+
 @admin.register(TPMComplain)
 class TPMComplainAdmin(admin.ModelAdmin):
-    list_filter = ('tpm','status', 'employee')
-    list_display = ('employee', 'tpm','short_complain','short_management_feedback', 'status_colored')
-    autocomplete_fields = ('employee',)
+    list_filter = ("tpm", "status", "employee")
+    list_display = (
+        "employee",
+        "tpm",
+        "short_complain",
+        "short_management_feedback",
+        "status_colored",
+    )
+    autocomplete_fields = ("employee",)
     readonly_fields = ()
 
     def get_fields(self, request, obj=None):
         # Show the 'tpm' field only if the user is a superuser
-        fields = ['employee', 'project','complain_title', 'complain','feedback_title','management_feedback', 'status']
+        fields = [
+            "employee",
+            "project",
+            "complain_title",
+            "complain",
+            "feedback_title",
+            "management_feedback",
+            "status",
+        ]
         if request.user.is_superuser:
-            fields.insert(0, 'tpm')  # Insert 'tpm' at the beginning
+            fields.insert(0, "tpm")  # Insert 'tpm' at the beginning
         return fields
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.employee.is_tpm:
-            return qs.filter(tpm=request.user.employee).select_related('employee', 'tpm')
-        return qs.select_related('employee', 'tpm')
-        
+            return qs.filter(tpm=request.user.employee).select_related(
+                "employee", "tpm"
+            )
+        return qs.select_related("employee", "tpm")
 
     def employee(self, obj):
-        return obj.employee.full_name or '-'
+        return obj.employee.full_name or "-"
 
     def tpm(self, obj):
-        return obj.tpm.full_name or '-'
+        return obj.tpm.full_name or "-"
 
     def get_readonly_fields(self, request, obj=None):
         if request.user.employee.is_tpm:
-            return self.readonly_fields + ('management_feedback','status','feedback_title')
+            return self.readonly_fields + (
+                "management_feedback",
+                "status",
+                "feedback_title",
+            )
         return self.readonly_fields
-    
+
     def status_colored(self, obj):
         if obj.status == "pending":
             color = "red"
@@ -599,7 +642,9 @@ class TPMComplainAdmin(admin.ModelAdmin):
             color,
             obj.get_status_display(),
         )
-    status_colored.short_description = 'Status'
+
+    status_colored.short_description = "Status"
+
     def short_complain(self, obj):
         return self._truncate_text_with_tooltip(strip_tags(obj.complain))
 
@@ -615,10 +660,11 @@ class TPMComplainAdmin(admin.ModelAdmin):
             return format_html(
                 '<span title="{}">{}</span>',
                 text,  # Full text for tooltip
-                truncated_text  # Shortened text for display
+                truncated_text,  # Shortened text for display
             )
-    short_complain.short_description = 'Complain'
-    short_management_feedback.short_description = 'Management Feedback'
+
+    short_complain.short_description = "Complain"
+    short_management_feedback.short_description = "Management Feedback"
 
     def save_model(self, request, obj, form, change):
         if request.user.employee.is_tpm:
@@ -629,74 +675,92 @@ class TPMComplainAdmin(admin.ModelAdmin):
 from django.contrib.sessions.models import Session
 from django.contrib.admin.filters import RelatedOnlyFieldListFilter
 from django.db.models import Q
+
+
 class ActiveUserOnlyFilter(RelatedOnlyFieldListFilter):
     def field_choices(self, field, request, model_admin):
         # Fetch users with first_name and last_name
-        users = field.related_model.objects.filter(
-            is_active=True
-        ).distinct()
+        users = field.related_model.objects.filter(is_active=True).distinct()
 
         # Generate choices based on first_name and last_name
-        choices = [(user.id, f'{user.first_name} {user.last_name}') for user in users ]
-        
+        choices = [(user.id, f"{user.first_name} {user.last_name}") for user in users]
+
         return choices
-    
+
+
 class ActiveUserFilter(admin.SimpleListFilter):
-    title = 'currently logged in'
-    parameter_name = 'currently_logged_in'
+    title = "currently logged in"
+    parameter_name = "currently_logged_in"
 
     def lookups(self, request, model_admin):
         return (
-            ('Active', 'Active'),
-            ('Inactive', 'Inactive'),
+            ("Active", "Active"),
+            ("Inactive", "Inactive"),
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'Active':
+        if self.value() == "Active":
             active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
-            active_user_ids = [session.get_decoded().get('_auth_user_id') for session in active_sessions]
+            active_user_ids = [
+                session.get_decoded().get("_auth_user_id")
+                for session in active_sessions
+            ]
             return queryset.filter(user__id__in=active_user_ids)
-        elif self.value() == 'Inactive':
+        elif self.value() == "Inactive":
             active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
-            active_user_ids = [session.get_decoded().get('_auth_user_id') for session in active_sessions]
+            active_user_ids = [
+                session.get_decoded().get("_auth_user_id")
+                for session in active_sessions
+            ]
             return queryset.exclude(user__id__in=active_user_ids)
         return queryset
 
+
 @admin.register(UserLogs)
 class UserLogsAdmin(admin.ModelAdmin):
-    list_display = ('user_info','location','device_name','operating_system','browser_name','ip_address','loging_time')
-    search_fields = ('name', 'email', 'designation')
-    list_filter = (ActiveUserFilter,'loging_time', ('user', ActiveUserOnlyFilter))
-    ordering = ('-loging_time',)
-    actions = ['logout_selected_users','logout_all_users']
-    
+    list_display = (
+        "user_info",
+        "location",
+        "device_name",
+        "operating_system",
+        "browser_name",
+        "ip_address",
+        "loging_time",
+    )
+    search_fields = ("name", "email", "designation")
+    list_filter = (ActiveUserFilter, "loging_time", ("user", ActiveUserOnlyFilter))
+    ordering = ("-loging_time",)
+    actions = ["logout_selected_users", "logout_all_users"]
+
     def user_info(self, obj):
         user = obj.user
         # Safely format the HTML with format_html and remove boldness from email and designation
         return format_html(
-            '{} {}<br>'
+            "{} {}<br>"
             '<span style="font-weight: normal;">{}</span><br>'
             '<span style="font-weight: normal;">{}</span>',
-            user.first_name, user.last_name,
+            user.first_name,
+            user.last_name,
             user.email,
-            getattr(user.employee.designation, 'title', 'Not Available')
+            getattr(user.employee.designation, "title", "Not Available"),
         )
-    user_info.short_description = 'User Info'
+
+    user_info.short_description = "User Info"
 
     @staticmethod
     def logout_user(queryset):
-         for log in queryset:
+        for log in queryset:
             # Get all sessions
             sessions = Session.objects.filter(expire_date__gte=timezone.now())
             for session in sessions:
                 data = session.get_decoded()
-                if data.get('_auth_user_id') == str(log.id):
+                if data.get("_auth_user_id") == str(log.id):
                     session.delete()  # Log out the user by deleting the session
 
     def logout_selected_users(self, request, queryset):
         self.logout_user(queryset)
         self.message_user(request, f"Selected users have been logged out.")
-    
+
     logout_selected_users.short_description = "Logout selected users"
 
     def logout_all_users(self, request, queryset):
@@ -705,21 +769,30 @@ class UserLogsAdmin(admin.ModelAdmin):
         # here i want to set custom queryset
         custom_queryset = User.objects.filter(is_active=True)
         self.logout_user(custom_queryset)
-        self.message_user(request, f"All users have been logged out.")  
+        self.message_user(request, f"All users have been logged out.")
+
     logout_all_users.short_description = "Logout all users"
 
- 
+
 @admin.register(BEFTN)
 class BEFTNAdmin(admin.ModelAdmin):
-
     fieldsets = (
-        ('Sender Information', {
-            'fields': ('originating_bank_account_number', 'originating_bank_routing_number','originating_bank_account_name'),
-        }),
-        ('Receiver Information', {
-            'fields': ('routing_no',),
-        }),
+        (
+            "Sender Information",
+            {
+                "fields": (
+                    "originating_bank_account_number",
+                    "originating_bank_routing_number",
+                    "originating_bank_account_name",
+                ),
+            },
+        ),
+        (
+            "Receiver Information",
+            {
+                "fields": ("routing_no",),
+            },
+        ),
     )
 
-    list_display = ('originating_bank_account_name',)
-    
+    list_display = ("originating_bank_account_name",)
