@@ -1,3 +1,5 @@
+import calendar
+from datetime import datetime
 from urllib import response
 from django.contrib import admin
 from django.db.models import Sum
@@ -135,13 +137,26 @@ class LoanPaymentAdmin(admin.ModelAdmin):
 
 @admin.register(SalaryEmiLoan)
 class SalaryEmiLoanAdmin(admin.ModelAdmin):
-    list_display = ("employee", "loan_emi")
+    list_display = ("employee", "emi")
     date_hierarchy = "created_at"
     change_list_template = "admin/salary_emi_loan.html"
 
     def get_queryset(self, request):
+        salary_date = datetime.now().date()
+        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+        salary_month_end = datetime(
+            salary_date.year,
+            salary_date.month,
+            calendar.monthrange(salary_date.year, salary_date.month)[1],
+        ).date()
         qs = super().get_queryset(request)
-        return qs.filter(loan_emi__lt=0)
+        qs = qs.filter(
+            start_date__lte=salary_month_end,
+            end_date__gte=salary_month_start,
+            loan_type="salary",
+            emi__gt=0,
+        )
+        return qs
 
     def changelist_view(self, request, extra_context=None):
         res = super().changelist_view(request, extra_context)
@@ -150,10 +165,17 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
         queryset = cl.queryset
 
         context["total_loan"] = (
-            queryset.aggregate(total=models.Sum("loan_emi"))["total"] or 0
+            queryset.aggregate(total=models.Sum("emi"))["total"] or 0
+        )
+        context["loans"] = (
+            self.get_queryset(request)
+            .values("employee")
+            .annotate(total_loan=Sum("emi"), name=models.F("employee__full_name"))
+            .values("name", "total_loan")
         )
 
         res.context_data.update(context)
+
         return res
 
     def has_add_permission(self, request):

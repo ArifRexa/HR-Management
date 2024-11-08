@@ -122,6 +122,18 @@ class Client(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.name
+    
+    
+class ClientAttachment(models.Model):
+    clients = models.ForeignKey(
+        Client, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    name = models.CharField(max_length=200, null=True)
+    attachment = models.FileField(upload_to="client_attachments/")
+    
+    class Meta:
+        verbose_name = "Attachment"
+        verbose_name_plural = "Attachments"
 
 
 class ClientInvoiceDate(models.Model):
