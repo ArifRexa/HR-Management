@@ -652,7 +652,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField(null=True, blank=True, default=" ")
     updates_json = models.JSONField(null=True, blank=True, verbose_name="Update For Client")
-    management_updates = models.TextField(null=True, blank=True, verbose_name="Update For Management")
+    management_updates = models.TextField(null=True, blank=True, verbose_name="Note")
 
     STATUS_CHOICE = (
         ("pending", "⌛ Pending"),
