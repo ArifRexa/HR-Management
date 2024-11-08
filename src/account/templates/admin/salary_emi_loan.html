@@ -3,7 +3,82 @@
 
 {% block content_title %}
     <div style="width: 100%">
-        <h1> Monthly Salary EMI Loan <span style="float: right">Loan {% widthratio total_loan 1 -1 %} </span></h1><br><br>
+        <h1> Monthly Salary EMI Loan <span style="float: right">Loan: {{ total_loan }} </span></h1><br><br>
     </div>
 {% endblock %}
+{% block content %}
+<div class="results">
+    <table class="custom-admin-table" id="result_list">
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Total EMI</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for result in loans %}
+            <tr>
+                <td>{{ result.name }}</td>
+                <td>{{ result.total_loan }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
 
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+         body {
+            background-color: white;
+            color: black;
+        }
+
+        .custom-admin-table {
+            background-color: #fff;
+            color: #000;
+        }
+
+        /* Dark Mode Styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: white;
+            }
+
+            .custom-admin-table {
+                background-color: #2c2c2c;
+                color: #fff;
+            }
+
+            .custom-admin-table th {
+                background-color: #2c2c2c;
+            }
+
+            .custom-admin-table tr:nth-child(even) {
+                background-color: #2c2c2c;
+            }
+
+            .custom-admin-table tr:hover {
+                background-color: #2c2c2c;
+            }
+        }
+        .custom-table-container {
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+
+        .custom-admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .custom-admin-table th, .custom-admin-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #2c2c2c;
+        }
+
+    </style>
+{% endblock %}
