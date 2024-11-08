@@ -159,7 +159,7 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
     get_salary_loan.short_description = "Salary Loan"
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).prefetch_related("employee__loan_set").select_related("employee")
         qs = qs.filter(
             employee__loan__loan_type="salary",  # Only salary loans
             employee__loan__emi__gt=0,  # EMI greater than 0
