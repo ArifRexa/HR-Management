@@ -1,13 +1,11 @@
 import calendar
 from datetime import datetime
-from urllib import response
 from django.contrib import admin
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
-from django.http import HttpRequest
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
-from django.template.response import TemplateResponse
+
 
 from account.models import (
     Loan,
@@ -162,17 +160,9 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = (
-            qs.filter(
-                employee__loan__loan_type="salary",  # Only salary loans
-                employee__loan__emi__gt=0,  # EMI greater than 0
-                # salary_sheet__date__range=(
-                #     models.F('employee__loan__start_date'),  # Start date of loan
-                #     models.F('employee__loan__end_date')  # End date of loan
-                # )
-            )
-            .annotate(emi=Sum("employee__loan__emi"), e_id=models.F("employee"))
-            .distinct()
+        qs = qs.filter(
+            employee__loan__loan_type="salary",  # Only salary loans
+            employee__loan__emi__gt=0,  # EMI greater than 0
         )
         a = []
         for obj in qs:
@@ -191,16 +181,15 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
             )
             if loan_amount.exists():
                 a.append(obj.id)
-        return qs.filter(id__in=a)
+        return qs.filter(id__in=a).distinct()
 
     def changelist_view(self, request, extra_context=None):
         res = super().changelist_view(request, extra_context)
         context = extra_context or {}
         cl = res.context_data["cl"]
         queryset = cl.queryset
-
         context["total_loan"] = (
-            queryset.aggregate(total=models.Sum("emi"))["total"] or 0
+            queryset.aggregate(total=models.Sum("employee__loan__emi"))["total"] or 0
         )
         res.context_data.update(context)
 
