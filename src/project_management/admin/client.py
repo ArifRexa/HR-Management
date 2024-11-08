@@ -6,6 +6,7 @@ from django.utils.timesince import timesince
 # from networkx import project
 from project_management.models import (
     Client,
+    ClientAttachment,
     ClientFeedbackEmail,
     ClientInvoiceDate,
     ClientReview,
@@ -74,6 +75,9 @@ class CountryAdmin(admin.ModelAdmin):
     def has_module_permission(self, request: HttpRequest) -> bool:
         return False
 
+class ClientAttachmentInline(admin.TabularInline):
+    model = ClientAttachment
+    extra = 1
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -110,7 +114,7 @@ class ClientAdmin(admin.ModelAdmin):
         "review",
     )
     list_filter = ["is_need_feedback","project__active", "review", "payment_method"]
-    inlines = (ClientInvoiceDateInline,)
+    inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
     search_fields = ["name", "web_name"]
     autocomplete_fields = ["country", "payment_method"]
 
