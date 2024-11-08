@@ -1,3 +1,5 @@
+import calendar
+from datetime import datetime
 from urllib import response
 from django.contrib import admin
 from django.db.models import Sum
@@ -135,13 +137,61 @@ class LoanPaymentAdmin(admin.ModelAdmin):
 
 @admin.register(SalaryEmiLoan)
 class SalaryEmiLoanAdmin(admin.ModelAdmin):
-    list_display = ("employee", "loan_emi")
+    list_display = ("employee", "get_salary_loan")
     date_hierarchy = "created_at"
     change_list_template = "admin/salary_emi_loan.html"
 
+    def get_salary_loan(self, obj):
+        salary_date = obj.salary_sheet.date
+        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+        salary_month_end = datetime(
+            salary_date.year,
+            salary_date.month,
+            calendar.monthrange(salary_date.year, salary_date.month)[1],
+        ).date()
+
+        loan_amount = obj.employee.loan_set.filter(
+            start_date__lte=salary_month_end,
+            end_date__gte=salary_month_start,
+            loan_type="salary",
+        )
+        loan_amount = loan_amount.aggregate(Sum("emi"))
+        return int(loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
+
+    get_salary_loan.short_description = "Salary Loan"
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.filter(loan_emi__lt=0)
+        qs = (
+            qs.filter(
+                employee__loan__loan_type="salary",  # Only salary loans
+                employee__loan__emi__gt=0,  # EMI greater than 0
+                # salary_sheet__date__range=(
+                #     models.F('employee__loan__start_date'),  # Start date of loan
+                #     models.F('employee__loan__end_date')  # End date of loan
+                # )
+            )
+            .annotate(emi=Sum("employee__loan__emi"), e_id=models.F("employee"))
+            .distinct()
+        )
+        a = []
+        for obj in qs:
+            salary_date = obj.salary_sheet.date
+            salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+            salary_month_end = datetime(
+                salary_date.year,
+                salary_date.month,
+                calendar.monthrange(salary_date.year, salary_date.month)[1],
+            ).date()
+
+            loan_amount = obj.employee.loan_set.filter(
+                start_date__lte=salary_month_end,
+                end_date__gte=salary_month_start,
+                loan_type="salary",
+            )
+            if loan_amount.exists():
+                a.append(obj.id)
+        return qs.filter(id__in=a)
 
     def changelist_view(self, request, extra_context=None):
         res = super().changelist_view(request, extra_context)
@@ -150,10 +200,10 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
         queryset = cl.queryset
 
         context["total_loan"] = (
-            queryset.aggregate(total=models.Sum("loan_emi"))["total"] or 0
+            queryset.aggregate(total=models.Sum("emi"))["total"] or 0
         )
-
         res.context_data.update(context)
+
         return res
 
     def has_add_permission(self, request):

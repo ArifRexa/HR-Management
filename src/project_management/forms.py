@@ -2,7 +2,7 @@ from django import forms
 from django.forms import BaseInlineFormSet
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
-
+from django.contrib.admin.widgets import AdminDateWidget
 from project_management.models import ClientFeedback, DailyProjectUpdate
 
 
@@ -92,3 +92,7 @@ class AddDDailyProjectUpdateForm(forms.ModelForm):
     #                 {"updates_json":"Please enter a valid URL"},
     #             )
     #     return cleaned_data
+
+class ProjectHourFilterForm(forms.Form):
+    created_at__date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type':'date'}))
+    created_at__date__lte = forms.DateField(label='To', widget=AdminDateWidget(attrs={'type':'date'}))

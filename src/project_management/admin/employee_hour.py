@@ -396,7 +396,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         
         # if condition remove if need to show all
-        if request.GET.get("created_at__date__gte", None) is None:
+        if request.GET.get("created_at__date__gte", None) is None and request.GET.get("q", None) is None:
             one_month_ago = timezone.now() - timedelta(days=30)
             query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request).select_related(
                 "employee",

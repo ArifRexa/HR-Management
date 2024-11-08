@@ -122,6 +122,18 @@ class Client(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.name
+    
+    
+class ClientAttachment(models.Model):
+    clients = models.ForeignKey(
+        Client, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    name = models.CharField(max_length=200, null=True)
+    attachment = models.FileField(upload_to="client_attachments/")
+    
+    class Meta:
+        verbose_name = "Attachment"
+        verbose_name_plural = "Attachments"
 
 
 class ClientInvoiceDate(models.Model):
@@ -640,7 +652,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     # description = models.TextField(blank=True, verbose_name='Explanation')
     update = models.TextField(null=True, blank=True, default=" ")
     updates_json = models.JSONField(null=True, blank=True, verbose_name="Update For Client")
-    management_updates = models.TextField(null=True, blank=True, verbose_name="Update For Management")
+    management_updates = models.TextField(null=True, blank=True, verbose_name="Note")
 
     STATUS_CHOICE = (
         ("pending", "⌛ Pending"),
