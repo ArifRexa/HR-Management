@@ -290,7 +290,7 @@ class Loan(TimeStampMixin, AuthorMixin):
         ]
 
 
-class SalaryEmiLoan(Loan):
+class SalaryEmiLoan(EmployeeSalary):
     
     class Meta:
         proxy = True
