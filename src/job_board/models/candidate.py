@@ -59,8 +59,15 @@ class Candidate(TimeStampMixin):
     
     
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs) 
+        super().save(*args, **kwargs)
         
+    class Meta:
+        permissions = (
+            (
+                "can_see_candidate_expected_salary",
+                "Can See Candidate Expected Salary",
+            ),
+        )
         
 
 

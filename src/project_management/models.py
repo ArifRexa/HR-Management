@@ -650,9 +650,9 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     )
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
-    update = models.TextField(null=True, blank=True, default=" ")
+    update = models.TextField(null=True, blank=True, default=" ", help_text="This will go to the client, so please ensure no unnecessary information is included")
     updates_json = models.JSONField(null=True, blank=True, verbose_name="Update For Client")
-    management_updates = models.TextField(null=True, blank=True, verbose_name="Note")
+    management_updates = models.TextField(null=True, blank=True, verbose_name="Note", help_text="You can add any additional links or notes that help the DevLead/TPM understand your daily update")
 
     STATUS_CHOICE = (
         ("pending", "⌛ Pending"),

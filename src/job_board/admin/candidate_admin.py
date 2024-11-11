@@ -53,7 +53,7 @@ class CandidateAdmin(admin.ModelAdmin):
         js = ('js/list.js',)
     
     def get_list_display(self, request):
-        if request.user.is_superuser:
+        if request.user.is_superuser or request.user.has_perm('job_board.can_see_candidate_expected_salary'):
             return ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
         else:
             return ('contact_information', 'assessment', 'note', 'review')
