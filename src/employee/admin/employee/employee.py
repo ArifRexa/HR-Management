@@ -553,12 +553,12 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             id__in=set(tpm_dev_project_ids)
         )
         
-        # for project in active_project_without_dev:
-        #     other_tpm = EmployeeUnderTPM(
-        #         tpm=other_emp_tpm, employee=other_emp_tpm, project=project
-        #     )
-        #     tpm_obj = tpm_builder.get_or_create(other_tpm)
-        #     tpm_obj.add_project_hours()
+        for project in active_project_without_dev:
+            other_tpm = EmployeeUnderTPM(
+                tpm=other_emp_tpm, employee=other_emp_tpm, project=project
+            )
+            tpm_obj = tpm_builder.get_or_create(other_tpm)
+            tpm_obj.add_project_hours()
 
         tpm_builder.update_hours_count()
 
