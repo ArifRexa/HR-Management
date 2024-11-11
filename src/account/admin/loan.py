@@ -1,11 +1,11 @@
 import calendar
-from datetime import datetime
+from datetime import date, datetime
 from django.contrib import admin
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
-
+from django.utils import timezone
 
 from account.models import (
     Loan,
@@ -140,48 +140,46 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
     change_list_template = "admin/salary_emi_loan.html"
 
     def get_salary_loan(self, obj):
-        salary_date = obj.salary_sheet.date
-        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
-        salary_month_end = datetime(
-            salary_date.year,
-            salary_date.month,
-            calendar.monthrange(salary_date.year, salary_date.month)[1],
-        ).date()
-
-        loan_amount = obj.employee.loan_set.filter(
-            start_date__lte=salary_month_end,
-            end_date__gte=salary_month_start,
-            loan_type="salary",
-        )
-        loan_amount = loan_amount.aggregate(Sum("emi"))
-        return int(loan_amount["emi__sum"]) if loan_amount["emi__sum"] else 0
+        return int(obj.salary_loan) if obj.salary_loan else 0
 
     get_salary_loan.short_description = "Salary Loan"
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request).prefetch_related("employee__loan_set").select_related("employee")
-        qs = qs.filter(
-            employee__loan__loan_type="salary",  # Only salary loans
-            employee__loan__emi__gt=0,  # EMI greater than 0
-        )
-        a = []
-        for obj in qs:
-            salary_date = obj.salary_sheet.date
-            salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
-            salary_month_end = datetime(
-                salary_date.year,
-                salary_date.month,
-                calendar.monthrange(salary_date.year, salary_date.month)[1],
-            ).date()
+        from django.db.models import Sum, OuterRef, Subquery, F, DateField
+        from django.db.models.functions import TruncMonth
+        from datetime import timedelta
+        from django.db.models.expressions import ExpressionWrapper
 
-            loan_amount = obj.employee.loan_set.filter(
-                start_date__lte=salary_month_end,
-                end_date__gte=salary_month_start,
+        qs = super().get_queryset(request).select_related("employee", "salary_sheet")
+
+        # Annotate the first day of the month for salary_sheet__date
+        qs = qs.annotate(salary_month_start=TruncMonth("salary_sheet__date"))
+
+        # Calculate the last day of the month by moving to the next month and subtracting one day
+        qs = qs.annotate(
+            salary_month_end=ExpressionWrapper(
+                F("salary_month_start") + timedelta(days=31) - timedelta(days=1),
+                output_field=DateField(),
+            )
+        )
+
+        # Define a subquery to calculate total EMI for loans within the salary month range
+        loan_emi_subquery = (
+            Loan.objects.filter(
+                employee=OuterRef("employee"),
+                start_date__lte=OuterRef("salary_month_end"),
+                end_date__gte=OuterRef("salary_month_start"),
                 loan_type="salary",
             )
-            if loan_amount.exists():
-                a.append(obj.id)
-        return qs.filter(id__in=a).distinct()
+            .values("employee")
+            .annotate(total_emi=Sum("emi"))
+            .values("total_emi")
+        )
+
+        # Annotate the SalaryEmiLoan queryset with the total loan EMI
+        qs = qs.annotate(salary_loan=Subquery(loan_emi_subquery)).filter(salary_loan__gt=0)
+
+        return qs
 
     def changelist_view(self, request, extra_context=None):
         res = super().changelist_view(request, extra_context)
@@ -189,7 +187,7 @@ class SalaryEmiLoanAdmin(admin.ModelAdmin):
         cl = res.context_data["cl"]
         queryset = cl.queryset
         context["total_loan"] = (
-            queryset.aggregate(total=models.Sum("employee__loan__emi"))["total"] or 0
+            queryset.aggregate(total=models.Sum("salary_loan"))["total"] or 0
         )
         res.context_data.update(context)
 
