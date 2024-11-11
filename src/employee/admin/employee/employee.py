@@ -529,23 +529,30 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             active=True, project_eligibility=True, is_tpm=False
         ).exclude(id__in=EmployeeUnderTPM.objects.values("employee_id"))
 
-        active_project_without_dev = Project.objects.filter(active=True, employeeproject__isnull=True)
-
         tpm_builder = TPMsBuilder()
 
         for employee in tpm_project_data:
             tpm_obj = tpm_builder.get_or_create(employee)
             tpm_obj.add_project_hours()
         other_emp_tpm = Employee(full_name="Others")
-
+        other_project_id = set()
         for emp_proj in employees_without_tpm:
             for project in emp_proj.employee_projects:
+                other_project_id.add(project.id)
                 other_tpm = EmployeeUnderTPM(
                     tpm=other_emp_tpm, employee=emp_proj, project=project
                 )
                 tpm_obj = tpm_builder.get_or_create(other_tpm)
                 tpm_obj.add_project_hours()
                 
+        tpm_dev_project_ids = list(
+            tpm_project_data.values_list("project_id", flat=True)
+        ) + list(other_project_id)
+        
+        active_project_without_dev = Project.objects.filter(active=True).exclude(
+            id__in=set(tpm_dev_project_ids)
+        )
+        
         for project in active_project_without_dev:
             other_tpm = EmployeeUnderTPM(
                 tpm=other_emp_tpm, employee=other_emp_tpm, project=project
