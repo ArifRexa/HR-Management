@@ -42,6 +42,14 @@ class ServicePageSerializer(serializers.ModelSerializer):
         ).data
         return data
 
+class ServicePageSitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePage
+        fields = (
+            "slug",
+            "updated_at",
+        )
+
 
 class BaseServicePageSerializer(serializers.ModelSerializer):
     class Meta:
