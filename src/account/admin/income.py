@@ -274,7 +274,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         month = queryset.first().date.strftime("%B")
         invoice_number = f"INV-{queryset.first().id}"
         email = EmailMultiAlternatives(
-            subject=f"Your Invoice from Mediusware [{month}/{invoice_number}] – Your Trusted B2B Outstaffing Partner"
+            subject=f"Your Invoice from Mediusware [{month}/{invoice_number}] || Your Trusted B2B Outstaffing Partner"
         )
         pdf_url = pdf.create()
         if pdf_url and pdf_url.__contains__("http"):
