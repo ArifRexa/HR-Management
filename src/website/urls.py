@@ -23,6 +23,7 @@ from website.views import (
     ServiceList,
     ServiceDetails,
     ProjectList,
+    ProjectSitemapView,
     ProjectDetails,
     EmployeeList,
     VideoTestimonialListAPIView,
@@ -32,6 +33,7 @@ from website.views import (
     CategoryListViewWithBlogCount,
     TagListView,
     BlogListView,
+    BlogSitemapView,
     BlogDetailsView,
     VerifyDocuments,
     BlogCommentAPIView,
@@ -61,12 +63,13 @@ from website.views import (
 from website.views_v2.hire_views import (
     HireResourcePageDetailView,
     HireResourcePageListView,
+    HireResourcePageSitemapView,
 )
 from website.views_v2.industries_we_serve import (
     IndustryServeDetailView,
     IndustryServeListView,
 )
-from website.views_v2.services import ServiceListView, ServicePageDetailView
+from website.views_v2.services import ServiceListView, ServicePageDetailView,ServicePageSitemapListView
 from website.views_v2.woman_empowerments_views import WomanEmpowermentView
 from website.views_v2.csr_views import CSRListAPIView
 
@@ -75,6 +78,7 @@ api_urls = [
     path("services/", ServiceList.as_view(), name="service.list"),
     path("services/<str:slug>/", ServiceDetails.as_view(), name="service.details"),
     path("service-page/", ServiceListView.as_view(), name="service.list"),
+    path("service-page/sitemap/",ServicePageSitemapListView.as_view(),name='service-page.sitemap'),
     path(
         "service-page/<str:slug>/",
         ServicePageDetailView.as_view(),
@@ -82,8 +86,9 @@ api_urls = [
     ),
     path("industries/", IndustryListView.as_view(), name="industry-list"),
     path("projects/", ProjectList.as_view(), name="project.list"),
+    path("projects/sitemap", ProjectSitemapView.as_view(), name="project.sitemap"),
     path(
-        "projects/available_tags/",
+        "projects/available_tags/", 
         AvailableTagsListView.as_view(),
         name="available.tags",
     ),
@@ -116,6 +121,7 @@ api_urls = [
     ),
     path("blogs/tags/", TagListView.as_view(), name="blog.tag.list"),
     path("blogs/", BlogListView.as_view(), name="blog.list"),
+    path("blogs/sitemap", BlogSitemapView.as_view(), name="blog.sitemap"),
     path(
         "blogs/most_popular",
         MostPopularBlogListView.as_view(),
@@ -188,6 +194,7 @@ web_url = [path("", index)]
 
 api_v2_urls = [
     path("hire-resource/", HireResourcePageListView.as_view(), name="hire_resource"),
+    path("hire-resource/sitemap", HireResourcePageSitemapView.as_view(), name="hire_resource"),
     path(
         "hire-resource/<slug:slug>/",
         HireResourcePageDetailView.as_view(),

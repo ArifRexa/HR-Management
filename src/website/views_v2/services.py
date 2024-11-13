@@ -1,12 +1,16 @@
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 
 from website.models_v2.services import ServicePage
-from website.serializers_v2.services import ServicePageDetailSerializer, ServicePageSerializer
+from website.serializers_v2.services import ServicePageDetailSerializer, ServicePageSerializer, ServicePageSitemapSerializer
 
 
 class ServiceListView(ListAPIView):
     queryset = ServicePage.objects.filter(parent__isnull=True)
     serializer_class = ServicePageSerializer
+
+class ServicePageSitemapListView(ListAPIView):
+    queryset = ServicePage.objects.filter(parent__isnull=True)
+    serializer_class = ServicePageSitemapSerializer
 
 
 class ServicePageDetailView(RetrieveAPIView):

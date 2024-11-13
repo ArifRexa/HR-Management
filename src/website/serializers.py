@@ -368,6 +368,12 @@ class ProjectSerializer(serializers.ModelSerializer):
     #     return data
 
 
+class ProjectSitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ('slug','updated_at')
+
+
 class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
@@ -723,6 +729,11 @@ class BlogContextSerializer(serializers.ModelSerializer):
         model = BlogContext
         fields = ["id", "title", "description", "image", "video"]
 
+
+class BlogSitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = ('slug','updated_at')
 
 class BlogListSerializer(serializers.ModelSerializer):
     # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
