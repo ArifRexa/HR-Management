@@ -271,9 +271,10 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         # body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
         # if client.notes:
         #     body += f"\n Notes:{client.notes}"
-
+        month = queryset.first().date.strftime("%B")
+        invoice_number = f"INV-{queryset.first().id}"
         email = EmailMultiAlternatives(
-            subject="Mediusware: Invoice Attached & Feedback Request"
+            subject=f"Your Invoice from Mediusware [{month}/{invoice_number}] || Your Trusted B2B Outstaffing Partner"
         )
         pdf_url = pdf.create()
         if pdf_url and pdf_url.__contains__("http"):
