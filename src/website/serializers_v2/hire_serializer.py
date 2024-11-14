@@ -46,6 +46,15 @@ class HireResourceChildrenSerializer(serializers.ModelSerializer):
         ]
 
 
+
+class HireResourcePageSitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireResourcePage
+        fields = [
+            "slug",
+            # "updated_at"
+        ]
+
 class HireResourcePageListSerializer(serializers.ModelSerializer):
     class Meta:
         model = HireResourcePage
