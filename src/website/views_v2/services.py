@@ -11,6 +11,7 @@ class ServiceListView(ListAPIView):
 class ServicePageSitemapListView(ListAPIView):
     queryset = ServicePage.objects.filter(parent__isnull=True)
     serializer_class = ServicePageSitemapSerializer
+    pagination_class = None
 
 
 class ServicePageDetailView(RetrieveAPIView):
