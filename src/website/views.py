@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django_filters import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
 from icecream import ic
+import querycount
 from rest_framework import filters, status
 from rest_framework.generics import (
     CreateAPIView,
@@ -67,6 +68,7 @@ from website.serializers import (
     BlogCommentSerializer,
     BlogDetailsSerializer,
     BlogListSerializer,
+    BlogSitemapSerializer,
     BrandSerializer,
     CategoryListSerializer,
     ClientLogoSerializer,
@@ -97,6 +99,7 @@ from website.serializers import (
     ProjectHighlightedSerializer,
     ProjectListSerializer,
     ProjectSerializer,
+    ProjectSitemapSerializer,
     ProjectTechnologyCountSerializer,
     ServiceDetailsSerializer,
     ServiceSerializer,
@@ -189,7 +192,11 @@ class ProjectList(ListAPIView):
         response = super().list(request, *args, **kwargs)
         response["Access-Control-Allow-Origin"] = "*"
         return response
-
+    
+class ProjectSitemapView(ListAPIView):
+    queryset = Project.objects.filter(show_in_website=True).all()
+    serializer_class = ProjectSitemapSerializer
+    pagination_class = None
 
 class ProjectVideoListAPIView(ListAPIView):
     queryset = Project.objects.filter(
@@ -330,6 +337,12 @@ class CategoryListViewWithBlogCount(APIView):
             headers={"Access-Control-Allow-Origin": "*"},
         )
 
+
+class BlogSitemapView(ListAPIView):
+    q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
+    queryset = Blog.objects.filter(q_obj).all()
+    serializer_class = BlogSitemapSerializer
+    pagination_class = None
 
 class BlogListView(ListAPIView):
     q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
