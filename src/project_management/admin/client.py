@@ -75,9 +75,11 @@ class CountryAdmin(admin.ModelAdmin):
     def has_module_permission(self, request: HttpRequest) -> bool:
         return False
 
+
 class ClientAttachmentInline(admin.TabularInline):
     model = ClientAttachment
     extra = 1
+
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -89,6 +91,7 @@ class ClientAdmin(admin.ModelAdmin):
         "linkedin_url",
         "get_client_review",
         "country",
+        "get_hourly_rate",
         "payment_method",
         "get_client_age",
     )
@@ -109,11 +112,19 @@ class ClientAdmin(admin.ModelAdmin):
         "country",
         "notes",
         "is_hour_breakdown",
+        "hourly_rate",
+        "active_from",
         "payment_method",
         "invoice_type",
         "review",
     )
-    list_filter = ["is_need_feedback","project__active", "review", "payment_method"]
+    list_filter = [
+        "is_need_feedback",
+        "project__active",
+        "review",
+        "payment_method",
+        "invoice_type",
+    ]
     inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
     search_fields = ["name", "web_name"]
     autocomplete_fields = ["country", "payment_method"]
@@ -123,6 +134,12 @@ class ClientAdmin(admin.ModelAdmin):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
+    
+    @admin.display(description="Hourly Rate")
+    def get_hourly_rate(self, obj):
+        if obj.is_active_over_six_months:
+            return format_html(f"<span style='color: red;'>{obj.hourly_rate}</span>")
+        return obj.hourly_rate
 
     @admin.display(description="Age", ordering="created_at")
     def get_client_age(self, obj):
@@ -144,10 +161,10 @@ class ClientAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
+
 @admin.register(ClientFeedbackEmail)
 class ClientFeedbackEmailAdmin(admin.ModelAdmin):
-    list_display = ('subject','feedback_type')
+    list_display = ("subject", "feedback_type")
 
     def has_module_permission(self, request):
         return False
-    

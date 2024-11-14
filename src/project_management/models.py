@@ -119,9 +119,17 @@ class Client(TimeStampMixin, AuthorMixin):
     review = models.ManyToManyField(
         ClientReview, blank=True, verbose_name="Client Review", related_name="clients"
     )
+    hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, default=0.00, blank=True)
+    active_from = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.name
+    
+    @property
+    def is_active_over_six_months(self):
+        if not self.active_from:
+            return False
+        return timezone.now().date() >= self.active_from + timedelta(days=180)
     
     
 class ClientAttachment(models.Model):
