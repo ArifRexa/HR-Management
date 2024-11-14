@@ -88,7 +88,7 @@ class ClientAdmin(admin.ModelAdmin):
         # "web_name",
         "get_project_name",
         "email",
-        "linkedin_url",
+        # "linkedin_url",
         "get_client_review",
         "country",
         "get_hourly_rate",
@@ -135,7 +135,7 @@ class ClientAdmin(admin.ModelAdmin):
 
         return format_html("<br>".join(project_name))
     
-    @admin.display(description="Hourly Rate")
+    @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
         if obj.is_active_over_six_months:
             return format_html(f"<span style='color: red;'>{obj.hourly_rate}</span>")
