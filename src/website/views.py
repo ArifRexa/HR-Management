@@ -196,7 +196,7 @@ class ProjectList(ListAPIView):
 class ProjectSitemapView(ListAPIView):
     queryset = Project.objects.filter(show_in_website=True).all()
     serializer_class = ProjectSitemapSerializer
-
+    pagination_class = None
 
 class ProjectVideoListAPIView(ListAPIView):
     queryset = Project.objects.filter(
@@ -342,6 +342,7 @@ class BlogSitemapView(ListAPIView):
     q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
     queryset = Blog.objects.filter(q_obj).all()
     serializer_class = BlogSitemapSerializer
+    pagination_class = None
 
 class BlogListView(ListAPIView):
     q_obj = Q(status=BlogStatus.APPROVED) | Q(status=BlogStatus.PUBLISHED)
