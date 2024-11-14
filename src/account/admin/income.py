@@ -291,5 +291,5 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         email.attach_alternative(html_content, "text/html")
         email.to = [client.email]
         email.from_email = "invoice@mediusware.com"
-        email.cc = ["shahinur@mediusware.com", "badhan@mediusware.com"]
+        email.cc = ["shahinur@mediusware.com", "badhan@mediusware.com", "tanvir@mediusware.com"]
         email.send()
