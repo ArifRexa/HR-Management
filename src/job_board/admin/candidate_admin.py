@@ -41,7 +41,7 @@ class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
     # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
-    list_filter = ('candidatejob__merit', 'candidatejob__job')
+    list_filter = ('candidatejob__merit', 'candidatejob__job', 'gender')
     actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter', 'job_re_apply')
     list_per_page = 50
     date_hierarchy = 'created_at'
