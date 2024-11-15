@@ -32,6 +32,7 @@ from employee.models.attachment import Attachment
 from employee.models.employee import (
     EmployeeLunch,
     EmployeeUnderTPM,
+    LessHour,
     Task,
     EmployeeNOC,
     Observation,
@@ -544,15 +545,15 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
                 )
                 tpm_obj = tpm_builder.get_or_create(other_tpm)
                 tpm_obj.add_project_hours()
-                
+
         tpm_dev_project_ids = list(
             tpm_project_data.values_list("project_id", flat=True)
         ) + list(other_project_id)
-        
+
         active_project_without_dev = Project.objects.filter(active=True).exclude(
             id__in=set(tpm_dev_project_ids)
         )
-        
+
         for project in active_project_without_dev:
             other_tpm = EmployeeUnderTPM(
                 tpm=other_emp_tpm, employee=other_emp_tpm, project=project
@@ -803,3 +804,49 @@ class BEFTNAdmin(admin.ModelAdmin):
     )
 
     list_display = ("originating_bank_account_name",)
+
+
+class LessHourForm(forms.ModelForm):
+    class Meta:
+        model = LessHour
+        fields = "__all__"
+
+    def clean(self):
+        data = super().clean()
+        date = data.get("date")
+        if timezone.now().date() < date:
+            raise forms.ValidationError("You can't select future date")
+        if date.weekday() != 4:
+            raise forms.ValidationError("Today is not Friday")
+        return data
+
+
+@admin.register(LessHour)
+class LessHourAdmin(admin.ModelAdmin):
+    list_display = ("date", "tpm", "employee")
+    date_hierarchy = "date"
+    list_filter = ("tpm","employee")
+    fields = ["employee", "tpm", "date"]
+    form = LessHourForm
+
+    def save_form(self, request, form, change):
+        obj = super().save_form(request, form, change)
+        employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
+        tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
+        obj.tpm = tpm
+        obj.save()
+        return obj
+
+    def get_fields(self, request, obj=None):
+        fields = super().get_fields(request, obj)
+        fields = list(fields)
+        if obj and (request.user.is_superuser or request.user.employee == obj.tpm):
+            fields.append("feedback")
+        return fields
+    
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.employee.is_tpm:
+            return qs.filter(tpm=request.user.employee)
+        return qs

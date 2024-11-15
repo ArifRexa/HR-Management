@@ -3,7 +3,7 @@ import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
 from tabnanny import verbose
-
+from django.utils import timezone
 # from unittest import loader
 from urllib import request
 import uuid
@@ -873,3 +873,26 @@ class TPMComplain(models.Model):
         # Create and send email
         email.attach_alternative(html_content, "text/html")
         email.send()
+
+
+class LessHour(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="less_hour_employees",
+    )
+    tpm = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"is_tpm": True, "active": True},
+        verbose_name="TPM",
+        related_name="less_hour_tpms",
+        blank=True,
+        null=True,
+    )
+    date = models.DateField(default=timezone.now, blank=True)
+    feedback = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.employee.full_name} under {self.tpm.full_name}"
