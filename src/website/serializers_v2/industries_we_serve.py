@@ -25,9 +25,17 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         model = ServeCategory
         fields = ['title', 'slug', 'title_in_detail_page', 'short_description', 'industry_field_image', 'industry_banner', 'impressive_title', 'impressive_description', 'application_areas','metadata']
 
+class ServeCategorySitemapSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategory
+        fields = ['slug',]
+
+
+
 class IndustryServeSerializer(serializers.ModelSerializer):
     serve_categories = ServeCategorySerializer(many=True, read_only=True)
 
     class Meta:
         model = IndustryServe
         fields = ['title', 'short_description', 'banner_image', 'motivation_title', 'motivation_description', 'serve_categories']
+
