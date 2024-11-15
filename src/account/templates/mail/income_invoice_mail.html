@@ -1,3 +1,4 @@
+{% load salary_sheet_util %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,7 +57,7 @@
             </tr>
             <tr>
                 <td>Payment Method</td>
-                <td>{{client_notes}}</td>
+                <td>{{client_notes|strip_last_newline|safe}}</td>
             </tr>
     </table>
 
