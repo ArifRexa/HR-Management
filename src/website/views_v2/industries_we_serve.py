@@ -17,3 +17,4 @@ class IndustryServeDetailView(generics.RetrieveAPIView):
 class IndustryServeSitemapListView(generics.ListAPIView):
     queryset = ServeCategory.objects.all()
     serializer_class = ServeCategorySitemapSerializer
+    pagination_class = None
