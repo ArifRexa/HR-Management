@@ -230,67 +230,76 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
 
     @confirm_action
     def send_income_invoices_email(self, request, queryset):
-        queryset = queryset.order_by("date")
-        income_list = queryset.values_list("id", flat=True)
-        id_str = "|".join(list(map(str, income_list)))
-        project_name = queryset.first().project.title
-        client = queryset.first().project.client
-        project_name = "-".join(project_name.split(" "))
-        pdf = PDF()
-        pdf.file_name = f"Income-Invoice-{project_name}-{id_str}"
-        pdf.template_path = "compliance/new_income_invoice.html"
-        protocal = "https" if request.is_secure() else "http"
-        invoice_total = (
-            queryset.values("date", "hour_rate")
-            .annotate(project_total=F("hours") * F("hour_rate"))
-            .aggregate(total=Sum("project_total"))
-        )
-        pdf.context = {
-            "invoices": queryset,
-            "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
-            "host": f"{protocal}://{request.get_host()}",
-            "invoice_total": invoice_total.get("total"),
-        }
-
-        total_payment = invoice_total.get("total")
-        email_template = get_template("mail/income_invoice_mail.html")
-        html_content = email_template.render(
-            {
-                "invoice_dates": ",".join(
-                    {
-                        date.strftime("%b %-d")
-                        for date in queryset.values_list("date", flat=True)
-                    }
-                ),
-                "client_name": client.name,
-                "total_amount": total_payment,
-                "client_notes": client.notes if client.notes else "",
+        try:
+            queryset = queryset.order_by("date")
+            income_list = queryset.values_list("id", flat=True)
+            id_str = "|".join(list(map(str, income_list)))
+            project_name = queryset.first().project.title
+            client = queryset.first().project.client
+            project_name = "-".join(project_name.split(" "))
+            pdf = PDF()
+            pdf.file_name = f"Income-Invoice-{project_name}-{id_str}"
+            pdf.template_path = "compliance/new_income_invoice.html"
+            protocal = "https" if request.is_secure() else "http"
+            invoice_total = (
+                queryset.values("date", "hour_rate")
+                .annotate(project_total=F("hours") * F("hour_rate"))
+                .aggregate(total=Sum("project_total"))
+            )
+            pdf.context = {
+                "invoices": queryset,
+                "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
+                "host": f"{protocal}://{request.get_host()}",
+                "invoice_total": invoice_total.get("total"),
             }
-        )
 
-        # body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
-        # if client.notes:
-        #     body += f"\n Notes:{client.notes}"
-        month = queryset.first().date.strftime("%B")
-        invoice_number = f"INV-{queryset.first().id}"
-        email = EmailMultiAlternatives(
-            subject=f"Your Invoice from Mediusware [{month}/{invoice_number}] || Your Trusted B2B Outstaffing Partner"
-        )
-        pdf_url = pdf.create()
-        if pdf_url and pdf_url.__contains__("http"):
-            # Fetch the PDF content from the URL
-            response = requests.get(pdf_url)
+            total_payment = invoice_total.get("total")
+            email_template = get_template("mail/income_invoice_mail.html")
+            html_content = email_template.render(
+                {
+                    "invoice_dates": ",".join(
+                        {
+                            date.strftime("%b %-d")
+                            for date in queryset.values_list("date", flat=True)
+                        }
+                    ),
+                    "client_name": client.name,
+                    "total_amount": total_payment,
+                    "client_notes": client.notes if client.notes else "",
+                }
+            )
 
-            print("file name:", pdf_url.split("/")[-1])
-            email.attach(pdf_url.split("/")[-1], response.content, "application/pdf")
-        else:
-            email.attach_file(pdf_url)
+            # body = f"Project Name:{project_name} \n Invoice Dates:{income_date_list_str} \n Total Payment:{total_payment}"
+            # if client.notes:
+            #     body += f"\n Notes:{client.notes}"
+            month = queryset.first().date.strftime("%B")
+            invoice_number = f"INV-{queryset.first().id}"
+            email = EmailMultiAlternatives(
+                subject=f"Your Invoice from Mediusware [{month}/{invoice_number}] || Your Trusted B2B Outstaffing Partner"
+            )
+            pdf_url = pdf.create()
+            if pdf_url and pdf_url.__contains__("http"):
+                # Fetch the PDF content from the URL
+                response = requests.get(pdf_url)
 
-        # body = (body,)
-        # email.attach_file(pdf.create())
-        email.attach_alternative(html_content, "text/html")
-        email.to = [client.email]
-        email.from_email = "shahinur@mediusware.com"
-        # email.cc = ["shahinur@mediusware.com", "badhan@mediusware.com", "tanvir@mediusware.com"]
-        email.cc = ["invoice@mediusware.com"]
-        email.send()
+                print("file name:", pdf_url.split("/")[-1])
+                email.attach(pdf_url.split("/")[-1], response.content, "application/pdf")
+            else:
+                email.attach_file(pdf_url)
+
+            # body = (body,)
+            # email.attach_file(pdf.create())
+            email.attach_alternative(html_content, "text/html")
+            email.to = [client.email]
+            email.from_email = "shahinur@mediusware.com"
+            # email.cc = ["shahinur@mediusware.com", "badhan@mediusware.com", "tanvir@mediusware.com"]
+            email.cc = ["invoice@mediusware.com"]
+            email.send()
+            self.message_user(
+                request,
+                f"Email sent to {client.name} successfully",
+                messages.SUCCESS,
+            )
+        except Exception as e:
+            print(e)
+            self.message_user(request, "Something went wrong", messages.ERROR)
