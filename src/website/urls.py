@@ -68,6 +68,7 @@ from website.views_v2.hire_views import (
 from website.views_v2.industries_we_serve import (
     IndustryServeDetailView,
     IndustryServeListView,
+    IndustryServeSitemapListView,
 )
 from website.views_v2.services import ServiceListView, ServicePageDetailView,ServicePageSitemapListView
 from website.views_v2.woman_empowerments_views import WomanEmpowermentView
@@ -205,6 +206,7 @@ api_v2_urls = [
     ),
     path("csr/", CSRListAPIView.as_view(), name="csr"),
     path("industry-serve/", IndustryServeListView.as_view(), name="industry-serve"),
+    path("industry-serve/sitemap",  IndustryServeSitemapListView.as_view(), name="industry-serve"),
     path(
         "industry-serve/<slug:slug>/",
         IndustryServeDetailView.as_view(),
