@@ -1,50 +1,41 @@
-import re
-from typing import Any
-from urllib import request
 from django.contrib import admin
-from django.db import models
+
 from django import forms
 from django.db.models import Q, Sum
-from django.forms import Textarea, ValidationError
+from django.forms import ValidationError
 from datetime import datetime, timedelta
 
-from django.http import HttpRequest
+
 from django.urls import path
-import account
+
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
-from django.contrib.admin import SimpleListFilter
+
 from employee.models.bank_account import BEFTN
 from project_management.models import Project
 from user_auth.models import UserLogs
 from django.utils import timezone
 from employee.models import (
-    SalaryHistory,
     Employee,
-    BankAccount,
-    EmployeeSkill,
     BookConferenceRoom,
 )
 from config.admin.utils import simple_request_filter
-from employee.models.attachment import Attachment
+
 from employee.models.employee import (
     EmployeeLunch,
     EmployeeUnderTPM,
     LessHour,
-    Task,
     EmployeeNOC,
     Observation,
     LateAttendanceFine,
     TPMComplain,
 )
-from employee.models.employee_activity import EmployeeProject
-from user_auth.views import User
-from .filter import MonthFilter
+from django.template.loader import get_template
+
 from django.utils.html import format_html, strip_tags
 from employee.helper.tpm import TPMsBuilder
-from employee.helper.tpm import TPMObj
 
 
 @admin.register(Employee)
@@ -823,11 +814,37 @@ class LessHourForm(forms.ModelForm):
 
 @admin.register(LessHour)
 class LessHourAdmin(admin.ModelAdmin):
-    list_display = ("date", "tpm", "employee")
+    list_display = ("date", "tpm", "employee", "get_feedback")
     date_hierarchy = "date"
-    list_filter = ("tpm","employee")
-    fields = ["employee", "tpm", "date"]
+    list_filter = ("tpm", "employee")
+    # fields = ["employee", "tpm", "date"]
+    autocomplete_fields = ("employee",)
     form = LessHourForm
+    
+    class Media:
+        css = {"all": ("css/list.css", )}
+
+    @admin.display(description="Feedback")
+    def get_feedback(self, obj):
+        # return obj.update
+        html_template = get_template(
+            "admin/employee/list/col_less_hour_feedback.html"
+        )
+
+        is_github_link_show = True
+        html_content = html_template.render(
+            {
+                "feedback": obj.feedback if obj.feedback is not None else "-",
+                "is_github_link_show": is_github_link_show,
+            }
+        )
+
+        try:
+            data = format_html(html_content)
+        except:
+            data = "-"
+
+        return data
 
     def save_form(self, request, form, change):
         obj = super().save_form(request, form, change)
@@ -840,11 +857,11 @@ class LessHourAdmin(admin.ModelAdmin):
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
         fields = list(fields)
-        if obj and (request.user.is_superuser or request.user.employee == obj.tpm):
-            fields.append("feedback")
+        if not request.user.is_superuser:
+            if obj and (request.user.is_superuser or request.user.employee == obj.tpm):
+                fields.remove("feedback")
         return fields
-    
-    
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.employee.is_tpm:
