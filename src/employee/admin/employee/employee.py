@@ -818,6 +818,7 @@ class LessHourAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     list_filter = ("tpm", "employee")
     # fields = ["employee", "tpm", "date"]
+    exclude = ("tpm",)
     autocomplete_fields = ("employee",)
     form = LessHourForm
     
