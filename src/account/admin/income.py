@@ -80,11 +80,10 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         return action
 
     def get_list_filter(self, request):
-        if request.user.has_perm("project_management.view_client"):
-            return super().get_list_filter(request)
-        self.list_filter.remove("project__client__payment_method")
-        return self.list_filter
-
+        if not request.user.has_perm("project_management.view_client"): 
+            self.list_filter.remove("project__client__payment_method")
+            return self.list_filter
+        return super().get_list_filter(request)
     @admin.action(description="Status")
     def status_col(self, obj):
         color = "red"
