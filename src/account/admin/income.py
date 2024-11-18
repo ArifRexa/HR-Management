@@ -40,12 +40,12 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         "date",
         "hours",
         "hour_rate",
-        "convert_rate",
+        # "convert_rate",
         "payment_details",
         "status_col",
     )
     date_hierarchy = "date"
-    exclude = ["is_send_clients"]
+    exclude = ["is_send_clients", "loss_hours"]
     readonly_fields = ("payment",)
     list_filter = [
         "status",
@@ -67,6 +67,17 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_list_template = "admin/income/list.html"
 
     list_per_page = 20
+
+    def get_actions(self, request):
+        action = super().get_actions(request)
+        has_permission_view_status = request.user.is_superuser or request.user.has_perm(
+            "account.can_view_income_status"
+        )
+
+        if not has_permission_view_status:
+            action.pop("pending_selected")
+            action.pop("approve_selected")
+        return action
 
     def get_list_filter(self, request):
         if request.user.has_perm("project_management.view_client"):
@@ -283,7 +294,9 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
                 response = requests.get(pdf_url)
 
                 print("file name:", pdf_url.split("/")[-1])
-                email.attach(pdf_url.split("/")[-1], response.content, "application/pdf")
+                email.attach(
+                    pdf_url.split("/")[-1], response.content, "application/pdf"
+                )
             else:
                 email.attach_file(pdf_url)
 
