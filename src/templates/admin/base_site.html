@@ -3,16 +3,14 @@
 {% load static %}
 
 {% block title %}
-            {% if cl.opts.verbose_name_plural %}
-                {{ cl.opts.verbose_name_plural|capfirst }}
-            {% else %}
-                {{ title }}
-            {% endif %}
-            {% if site_title %}
-                | {{ site_title }}
-            {% endif %}
-        </div>
-    </div>
+    {% if cl.opts.verbose_name_plural %}
+        {{ cl.opts.verbose_name_plural|capfirst }}
+    {% else %}
+        {{ title }}
+    {% endif %}
+    {% if site_title %}
+        | {{ site_title }}
+    {% endif %}
 {% endblock %}
 
 {% block extrahead %}

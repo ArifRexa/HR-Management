@@ -814,7 +814,7 @@ class LessHourForm(forms.ModelForm):
 
 @admin.register(LessHour)
 class LessHourAdmin(admin.ModelAdmin):
-    list_display = ("date", "tpm", "employee", "get_feedback")
+    list_display = ("date", "employee", "tpm", "get_feedback")
     date_hierarchy = "date"
     list_filter = ("tpm", "employee")
     # fields = ["employee", "tpm", "date"]
@@ -825,7 +825,7 @@ class LessHourAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css", )}
 
-    @admin.display(description="Feedback")
+    @admin.display(description="Feedback", ordering="feedback")
     def get_feedback(self, obj):
         # return obj.update
         html_template = get_template(
@@ -835,7 +835,7 @@ class LessHourAdmin(admin.ModelAdmin):
         is_github_link_show = True
         html_content = html_template.render(
             {
-                "feedback": obj.feedback if obj.feedback is not None else "-",
+                "feedback": obj.feedback if obj.feedback else "-",
                 "is_github_link_show": is_github_link_show,
             }
         )

@@ -1,24 +1,128 @@
-{% extends "admin/change_list.html" %}
-
-{% load i18n %}
-
-{% load tz %}
-
-{% load salary_sheet_util %}
-
-{% block content_title %}
-    <div style="display: flex; align-items: flex-start; justify-content: space-between">
-        <div style="flex: 3 1 auto">
-            <h1>Income</h1>
-        </div>
-        <div style="flex: 1 1 auto">
-            Total &emsp;&nbsp; : <b style="color: green">${{ result.total_paid_usd }}</b>
-            / {{ result.total_paid }}TK <small>({{ result.approved_hour }})</small>
-            <br>
-            Pending : <b style="color: red">${{ result.total_pending_usd }}</b> / {{ result.total_pending }} TK
-            <small>({{ result.pending_hour }})</small>
-            <br>
-            Loss Hours : <b style="color: red">{{ result.total_loss_hours }}</b>
-        </div>
+{% extends "admin/change_list.html" %} {% load i18n %} {% load tz %} {% load salary_sheet_util %} {% block content_title %}
+<style>
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+  }
+  .modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 5px;
+  }
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+  }
+  .modal-buttons {
+    margin-top: 20px;
+    text-align: right;
+  }
+  .modal-buttons button {
+    margin-left: 10px;
+    padding: 5px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .modal-buttons button.confirm {
+    background-color: #79aec8;
+    color: white;
+    border: none;
+  }
+  .modal-buttons button.cancel {
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+  }
+</style>
+<div style="display: flex; align-items: flex-start; justify-content: space-between">
+  <div style="flex: 3 1 auto">
+    <h1>Income</h1>
+  </div>
+  <div style="flex: 1 1 auto">
+    Total &emsp;&nbsp; : <b style="color: green">${{ result.total_paid_usd }}</b> / {{ result.total_paid }}TK <small>({{ result.approved_hour }})</small>
+    <br />
+    Pending : <b style="color: red">${{ result.total_pending_usd }}</b> / {{ result.total_pending }} TK
+    <small>({{ result.pending_hour }})</small>
+    <br />
+    Loss Hours : <b style="color: red">{{ result.total_loss_hours }}</b>
+  </div>
+</div>
+<div id="confirmationModal" class="modal" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalDescription">
+  <div class="modal-content">
+    <span class="close" aria-label="Close">&times;</span>
+    <h2 style="color: black" id="modalTitle">Confirm Send Income Invoices Email</h2>
+    <p style="color: black" id="modalDescription">Are you sure you want to send income invoices email for the selected items?</p>
+    <div class="modal-buttons">
+      <button id="cancelButton" class="cancel">Cancel</button>
+      <button id="confirmButton" class="confirm">Confirm</button>
     </div>
+  </div>
+</div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var modal = document.getElementById("confirmationModal");
+    var span = document.getElementsByClassName("close")[0];
+    var confirmButton = document.getElementById("confirmButton");
+    var cancelButton = document.getElementById("cancelButton");
+    var actionSelect = document.querySelector('select[name="action"]');
+    var goButton = document.querySelector('button[name="index"]');
+    var form = document.getElementById("changelist-form");
+
+    function showModal() {
+      modal.style.display = "block";
+    }
+
+    function hideModal() {
+        modal.style.display = "none";
+    }
+
+    if (goButton) {
+      goButton.addEventListener("click", function (e) {
+        if (actionSelect.value === "send_income_invoices_email") {
+          e.preventDefault();
+          showModal();
+        }
+      });
+    }
+
+    span.onclick = hideModal;
+    cancelButton.onclick = hideModal;
+
+    confirmButton.onclick = function () {
+      hideModal();
+      form.submit();
+    };
+
+    window.onclick = function (event) {
+      if (event.target == modal) {
+        hideModal();
+      }
+    };
+
+    // Accessibility: Close modal on Escape key press
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && modal.style.display === "block") {
+        hideModal();
+      }
+    });
+  });
+</script>
 {% endblock %}
