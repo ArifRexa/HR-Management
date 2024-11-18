@@ -78,7 +78,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
             action.pop("pending_selected")
             action.pop("approve_selected")
         return action
-    
+
     def get_list_display(self, request):
         display = super().get_list_display(request)
         has_status_permission = request.user.is_superuser or request.user.has_perm(
@@ -90,10 +90,16 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         return display
 
     def get_list_filter(self, request):
-        if not request.user.has_perm("project_management.view_client"): 
-            self.list_filter.remove("project__client__payment_method")
-            return self.list_filter
-        return super().get_list_filter(request)
+        filters = super().get_list_filter(request)
+        if not request.user.has_perm("project_management.view_client"):
+            filters = [f for f in filters if f != "project__client__payment_method"]
+        
+        return filters
+        # if not request.user.has_perm("project_management.view_client"):
+        #     self.list_filter.remove("project__client__payment_method")
+        #     return self.list_filter
+        # return super().get_list_filter(request)
+
     @admin.action(description="Status")
     def status_col(self, obj):
         color = "red"
