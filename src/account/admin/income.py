@@ -228,7 +228,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     #     email.cc = [client.cc_email.split(",") if client.cc_email else []]
     #     email.send()
 
-    @confirm_action
+    @admin.action()
     def send_income_invoices_email(self, request, queryset):
         try:
             queryset = queryset.order_by("date")
