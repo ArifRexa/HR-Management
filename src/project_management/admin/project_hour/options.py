@@ -267,7 +267,14 @@ class ProjectHourOptions(admin.ModelAdmin):
         hours = ProjectHourHistry.objects.filter(history__id=obj.id).values_list('hour_history', flat=True).order_by('-id')
         if not hours:
             return obj.hours
-        return format_html('<br>'.join(str(int(hour)) for hour in hours))
+        hours_list = []
+        for index, hour in enumerate(hours):
+            if index == 0:
+                hours_list.append(f"<b style='font-size: 16px;'>{hour}</b>")
+            else:
+                hours_list.append(int(hour))
+            
+        return format_html('<br>'.join(str(hour) for hour in hours_list))
 
     display_hours.short_description = 'Hours'
 
