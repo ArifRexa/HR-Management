@@ -876,9 +876,8 @@ class LessHourAdmin(admin.ModelAdmin):
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
         fields = list(fields)
-        if not request.user.is_superuser:
-            if obj and (request.user.is_superuser or request.user.employee == obj.tpm):
-                fields.remove("feedback")
+        if not obj and not request.user.is_superuser:
+            fields.remove("feedback")
         return fields
 
     def get_queryset(self, request):
