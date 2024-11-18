@@ -9,6 +9,7 @@ from django import forms
 
 # Register your models here.
 from django.db.models import Sum, Q, F
+from django.shortcuts import redirect
 from django.template.context_processors import request
 from django.utils import timezone
 from django.template.loader import get_template
@@ -165,6 +166,10 @@ class ProjectHourAdmin(
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
+        from django.utils.http import urlencode
+        # if not request.GET:
+        #     # Redirect to the filtered view
+        #     return redirect(f"{request.path}?{urlencode({'hour_type':'project'})}")
         my_context = dict(
             self.admin_site.each_context(request),
             total=self.get_total_hour(request),
@@ -198,6 +203,9 @@ class ProjectHourAdmin(
             )
         else:
             query_set = super(ProjectHourAdmin, self).get_queryset(request)
+        
+        if not request.GET:
+            return query_set.filter(hour_type="project")
         if request.user.is_superuser or request.user.has_perm(
             "project_management.show_all_hours"
         ):
