@@ -225,6 +225,15 @@ class Income(TimeStampMixin, AuthorMixin):
         hours = Decimal(self.hours)
         self.payment = hours * hour_rate_decimal * convert_rate_decimal
         super(Income, self).save(*args, **kwargs)
+        
+    class Meta:
+        permissions = (
+            (
+                "can_view_income_status",
+                "Can View Income Status",
+            ),
+            ("can_view_income_total", "Can View Income Total"),
+        )
 
 
 class ProfitShare(TimeStampMixin, AuthorMixin):
