@@ -15,7 +15,7 @@ class EmailTread(Thread):
         msg = EmailMultiAlternatives(
             self.subject, 
             self.html_content, 
-            '"Mediusware-Career" <career@mediusware.com>',
+            '"Mediusware-Career" <hr@mediusware.com>',
             self.recipient_list
         )
         msg.attach_alternative(self.html_content, "text/html")
