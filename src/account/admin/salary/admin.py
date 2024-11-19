@@ -254,7 +254,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
         ).exclude(salaryhistory__isnull=True)
 
         employee_salary_data = []
-
+        total_employee_salary = 0
         for employee in employees:
             employee_salarys = EmployeeSalary.objects.filter(employee=employee, salary_sheet__date__range=[start_date, end_date])
 
@@ -273,7 +273,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
             for emp_salary in employee_salarys:
                 net_salary = emp_salary.net_salary
                 gross_salary = emp_salary.gross_salary
-
+                total_employee_salary += gross_salary
                 total_gross_salary += gross_salary
                 total_basic_salary += net_salary * 0.55
                 total_house_allowance += net_salary * 0.20
@@ -318,12 +318,14 @@ class SalaryReportAdmin(admin.ModelAdmin):
                 'tds': total_tds,
                 'salary_loan': total_salary_emi,
                 'late_fine': total_late_fine,
-                'chalan_no': tressury_challn_no
+                'chalan_no': tressury_challn_no,
+                
             })
 
         extra_context = extra_context or {}
         extra_context['start_date'] = start_date
         extra_context['end_date'] = end_date
+        extra_context['total_employee_salary'] = total_employee_salary
         extra_context['employee_salary_data'] = employee_salary_data
 
         return super().change_view(request, object_id, form_url, extra_context)
