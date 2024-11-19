@@ -95,7 +95,7 @@ def send_score_review_coding_test_mail(candidate_assessment: CandidateAssessment
     email = EmailMultiAlternatives(subject=f'{c_full_name} Score and Review.')
     email.attach_alternative(html_content, 'text/html')
     email.to = [candidate_assessment.candidate_job.candidate.email]
-    email.from_email = 'Mediusware Ltd. <career@mediusware.com>'
+    email.from_email = 'Mediusware Ltd. <hr@mediusware.com>'
     email.send()
 
 
