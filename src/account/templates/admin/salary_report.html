@@ -5,7 +5,7 @@
 {% endblock %}
 {% block content %}
     {{ block.super }}
-    <h1 style="text-align: center; margin-top: 20px;">Report Period: <b>{{ start_date }}</b> to <b>{{ end_date }}</b></h1>
+   
     
     <style>
         table.salary-report-table {
@@ -37,7 +37,44 @@
             cursor: pointer;
         }
     </style>
-
+     <h1 style="text-align: center; margin-top: 20px;"><b>Total Salary</b></b></h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Total Salary (Yearly)</th>
+                <th>Basic (55%)</th>
+                <th>House Allowance (20%)</th>
+                <th>Conveyance (15%)</th>
+                <th>Medical Allowance (10%)</th>
+                <th>Project Bonus</th>
+                <th>Overtime</th>
+                <th>Festival Bonus</th>
+                <th>Food Allowance</th>
+                <th>Leave Bonus</th>
+                <th>TDS</th>
+                <th>Salary Loan</th>
+                <th>Late Fine</th>
+            </tr>
+            <tr>
+               
+                <td>{{ totals.gross_salary|floatformat:0 }}</td>
+                <td>{{ totals.basic_salary|floatformat:0 }}</td>
+                <td>{{ totals.house_allowance|floatformat:0 }}</td>
+                <td>{{ totals.conveyance|floatformat:0 }}</td>
+                <td>{{ totals.medical_allowance|floatformat:0 }}</td>
+                <td>{{ totals.project_bonus|floatformat:0 }}</td>
+                <td>{{ totals.overtime|floatformat:0 }}</td>
+                <td>{{ totals.festival_bonus|floatformat:0 }}</td>
+                <td>{{ totals.food_allowance|floatformat:0 }}</td>
+                <td>{{ totals.leave_bonus|floatformat:0 }}</td>
+                <td>{{ totals.tds|floatformat:0 }}</td>
+                <td>{{ totals.salary_loan|floatformat:0 }}</td>
+                <td>{{ totals.late_fine|floatformat:0 }}</td>
+            </tr>
+        </thead>
+    </table>
+    <br>
+    <h1 style="text-align: center; margin-top: 20px;">Report Period: <b>{{ start_date }}</b> to <b>{{ end_date }}</b></h1>
     <table class="table table-bordered salary-report-table">
         <thead>
             <tr>
@@ -83,10 +120,7 @@
         </tbody>
     </table>
 
-    <!-- Total Salary Row -->
-    <h3 style="text-align: center; margin-top: 20px;" id="total-salary-summary">
-        Total Employee Salary (Yearly):{{total_employee_salary|floatformat:0}}</b>
-    </h3>
+  
 <!-- 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
