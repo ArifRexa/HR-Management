@@ -554,7 +554,6 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 
 
 def late_attendance_calculate(late_entry_time):
-   
     employees = Employee.objects.filter(
         active=True, show_in_attendance_list=True
     ).exclude(salaryhistory__isnull=True)
@@ -569,8 +568,8 @@ def late_attendance_calculate(late_entry_time):
             employee=employee,
             date__year=current_year,
             date__month=current_month,
-            is_consider = True
-            ).count()
+            is_consider=True
+        ).count()
         
         # Count late entries for the current month
         total_late_entry = EmployeeAttendance.objects.filter(
@@ -586,14 +585,13 @@ def late_attendance_calculate(late_entry_time):
         )
 
         if total_late_entry > 6 and today_late_entry.exists():
-             # Create LateAttendanceFine entry
             LateAttendanceFine.objects.create(
                 employee=employee,
                 month=current_month,
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=500.00,
-                entry_time = today_late_entry or None
+                entry_time=today_late_entry.first().entry_time if today_late_entry.exists() else None
             )
             html_body = loader.render_to_string(
                 "mails/late_entry_mail.html",
@@ -610,14 +608,13 @@ def late_attendance_calculate(late_entry_time):
             email.send()
 
         elif total_late_entry > 3 and today_late_entry.exists():
-            # Create LateAttendanceFine entry
             LateAttendanceFine.objects.create(
                 employee=employee,
                 month=current_month,
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=80.00,
-                entry_time = today_late_entry or None
+                entry_time=today_late_entry.first().entry_time if today_late_entry.exists() else None
             )
             
             html_body = loader.render_to_string(
@@ -640,10 +637,10 @@ def late_attendance_calculate(late_entry_time):
                 month=current_month,
                 year=current_year,
                 date=current_date,
-                total_late_attendance_fine=00.00,
-                entry_time = today_late_entry or None
+                total_late_attendance_fine=0.00,
+                entry_time=today_late_entry.first().entry_time if today_late_entry.exists() else None
             )
-        
+   
 
 def send_birthday_email():
     employees = Employee.objects.filter(
