@@ -217,10 +217,11 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
     def total(self, obj):
         total_value = EmployeeSalary.objects.filter(salary_sheet_id=obj.id).aggregate(Sum('gross_salary'))[
             'gross_salary__sum']
-        return format_html(
-            f'<b>{intcomma(floor(total_value))}</b> <br>'
-            f'{num2words(floor(total_value)).capitalize()}'
-        )
+        if total_value:
+            return format_html(
+                f'<b>{intcomma(floor(total_value))}</b> <br>'
+                f'{num2words(floor(total_value)).capitalize()}'
+            )
 
     def total_employee(self, obj):
         return obj.employeesalary_set.count()
@@ -250,7 +251,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
         end_date = salary_report.end_date
 
         employees = Employee.objects.filter(
-            active=True, joining_date__lte=start_date
+           joining_date__lte=start_date
         ).exclude(salaryhistory__isnull=True)
 
         employee_salary_data = []
