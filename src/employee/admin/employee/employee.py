@@ -814,7 +814,7 @@ class LessHourForm(forms.ModelForm):
 
 @admin.register(LessHour)
 class LessHourAdmin(admin.ModelAdmin):
-    list_display = ("date", "employee", "tpm", "get_hour", "get_feedback")
+    list_display = ("date", "employee", "get_skill", "tpm", "get_hour", "get_feedback")
     date_hierarchy = "date"
     list_filter = ("tpm", "employee")
     # fields = ["employee", "tpm", "date"]
@@ -825,7 +825,7 @@ class LessHourAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css",)}
 
-    @admin.action(description="Hour")
+    @admin.display(description="Hour")
     def get_hour(self, obj):
         employee_expected_hours = (
             obj.employee.monthly_expected_hours / 4
@@ -845,6 +845,10 @@ class LessHourAdmin(admin.ModelAdmin):
         )
         return f"{int(employee_expected_hours)} ({int(employee_hours)})"
 
+    @admin.display(description="Skill")
+    def get_skill(self, obj):
+        return obj.employee.top_one_skill
+    
     @admin.display(description="Feedback", ordering="feedback")
     def get_feedback(self, obj):
         # return obj.update
