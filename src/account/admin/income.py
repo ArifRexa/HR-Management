@@ -122,8 +122,8 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
                 if key not in ["p", "o"]
             ]
         )
-        if not request.user.is_superuser:
-            filters["created_by__id__exact"] = request.user.employee.id
+        # if not request.user.is_superuser:
+        #     filters["created_by__id__exact"] = request.user.employee.id
         dataset = Income.objects.filter(
             *[Q(**{key: value}) for key, value in filters.items() if value]
         )

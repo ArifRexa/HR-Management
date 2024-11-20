@@ -60,12 +60,12 @@
   {% if perms.account.can_view_income_total %}
     
   <div style="flex: 1 1 auto">
-    Total &emsp;&nbsp; : <b style="color: green">${{ result.total_paid_usd }}</b> / {{ result.total_paid }}TK <small>({{ result.approved_hour }})</small>
+    Total &emsp;&nbsp; : <b style="color: green">${{ result.total_paid_usd |floatformat:2 }}</b> / {{ result.total_paid |floatformat:2 }}TK <small>({{ result.approved_hour }})</small>
     <br />
-    Pending : <b style="color: red">${{ result.total_pending_usd }}</b> / {{ result.total_pending }} TK
+    Pending : <b style="color: red">${{ result.total_pending_usd |floatformat:2 }}</b> / {{ result.total_pending |floatformat:2 }} TK
     <small>({{ result.pending_hour }})</small>
     <br />
-    <!-- Loss Hours : <b style="color: red">{{ result.total_loss_hours }}</b> -->
+    <!-- Loss Hours : <b style="color: red">{{ result.total_loss_hours |floatformat:2 }}</b> -->
   </div>
   {% endif %}
     
