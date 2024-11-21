@@ -845,7 +845,7 @@ class LessHourAdmin(admin.ModelAdmin):
         )
         return f"{int(employee_expected_hours)} ({int(employee_hours)})"
 
-    @admin.display(description="Skill")
+    @admin.display(description="Skill", ordering="employee__top_one_skill")
     def get_skill(self, obj):
         return obj.employee.top_one_skill
     
