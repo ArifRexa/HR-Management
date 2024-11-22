@@ -1,12 +1,7 @@
 import datetime
-from datetime import date
-
-from dateutil.utils import today
 from django.contrib import admin
-from django.contrib.admin import AdminSite, RelatedOnlyFieldListFilter
 from django.contrib.auth.models import User
-from django.db.models import Sum, Q, Value, QuerySet, Func, F, CharField
-from django.http.request import HttpRequest
+from django.db.models import Sum
 from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
@@ -92,7 +87,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         "approve_expense",
     )
     autocomplete_fields = ("expanse_group", "expense_category")
-    
+
     def lookup_allowed(self, lookup, value):
         if lookup in ["created_by__employee__id__exact"]:
             return True

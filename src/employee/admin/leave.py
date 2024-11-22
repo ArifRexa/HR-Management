@@ -103,7 +103,9 @@ class LeaveForm(forms.ModelForm):
                             "You can not apply any leave past date. You have to apply for emergency or non paid leave"
                         )
                     if (
-                        (start_date - date.today()).days == 1
+                        self.data.get("applied_leave_type")
+                        not in ["half_day", "half_day_medical"]
+                        and (start_date - date.today()).days == 1
                         and time(18, 0) < datetime.datetime.now().time()
                         and not user.has_perm("employee.can_add_leave_at_any_time")
                     ):
@@ -385,8 +387,8 @@ class LeaveManagement(admin.ModelAdmin):
                 return True
         else:
             return True
-        
-    def has_change_permission(self, request, obj = None):
+
+    def has_change_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
         return obj and obj.status == "pending"
