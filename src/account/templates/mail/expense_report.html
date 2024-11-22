@@ -1,0 +1,51 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% block content %}
+<style>
+    .content {
+        margin-top: 50px;
+        text-align: center;
+        padding-top: 50px;
+    }
+    .title{
+        font-size: 24px;
+        font-weight: bold;
+    }
+</style>
+    <div class="content">
+
+        <p class="title">Monthly Expense Report ({{date}})</p>
+    </div>
+    <table cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; text-align: center;">
+        <thead>
+            <tr style="background-color: #f4f4f4;">
+                <th style="border: 1px solid #ddd; padding: 8px;">Date</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Group</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Category</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Note</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Amount</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Status</th>
+                <th style="border: 1px solid #ddd; padding: 8px;">Approved By</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for expense in expenses %}
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.date }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.expanse_group.title }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.expense_category.title }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.note }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.amount }}</td>
+                <td style="border: 1px solid #ddd; padding: 8px;">
+                    {% if expense.is_approved %}
+                        <span style="color: green;">Approved</span>
+                    {% else %}
+                        <span style="color: red;">Pending</span>
+                    {% endif %}
+                </td>
+                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.approved_by }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
