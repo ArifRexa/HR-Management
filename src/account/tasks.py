@@ -1,3 +1,4 @@
+import calendar
 from dateutil.relativedelta import relativedelta
 from typing import List
 from django.utils import timezone
@@ -6,7 +7,7 @@ from provident_fund.models import Account
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
 from datetime import datetime, timedelta
-from .models import Income
+from .models import Expense, Income
 from project_management.models import ProjectHour, Client
 from config.settings import STATIC_ROOT
 from config.utils.pdf import PDF
@@ -81,7 +82,6 @@ def generate_attachment(incomes: List[Income]):
 
 
 def send_income_email_to_clients():
-
     today = datetime.today().date()
     clients = Client.objects.filter(clientinvoicedate__invoice_date=today).distinct()
 
@@ -102,6 +102,35 @@ def send_income_email_to_clients():
 
         email.attach("Income_Invoice.pdf", pdf_file.create(), "application/pdf")
         email.send()
-        
+
         # Update is_send_clients to True after sending the email
         incomes.update(is_send_clients=True)
+
+
+def generate_and_send_monthly_expense():
+    current_data = timezone.now()
+    month_start = datetime(current_data.year, current_data.month, 1).date()
+    month_end = datetime(
+        current_data.year,
+        current_data.month,
+        calendar.monthrange(current_data.year, current_data.month)[1],
+    ).date()
+    expenses = Expense.objects.filter(date__gte=month_start, date__lte=month_end)
+    pdf = PDF()
+    pdf.file_name = "Expanse_Report"
+    pdf.template_path = "mail/expense_report.html"
+    pdf.context = {
+        "expenses": expenses,
+        "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
+        "date": current_data.strftime("%d/%m/%Y"),
+    }
+    # Send email
+    email = EmailMessage(
+        subject="Monthly Expense Report",
+        body="Please find the attached Expense Report.",
+        from_email="hr@mediusware.com",
+        to=["shahinur@mediusware.com"],
+    )
+
+    email.attach_file(pdf.create(), "application/pdf")
+    email.send()
