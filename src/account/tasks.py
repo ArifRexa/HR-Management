@@ -12,7 +12,7 @@ from .models import Expense, Income
 from project_management.models import ProjectHour, Client
 from config.settings import STATIC_ROOT
 from config.utils.pdf import PDF
-from django.db.models import Q
+from django.db.models import Sum
 
 
 # Seed pf account
@@ -109,41 +109,43 @@ def send_income_email_to_clients():
 
 
 def generate_and_send_monthly_expense():
-    current_data = timezone.now()
-    month_start = datetime(current_data.year, current_data.month, 1).date()
-    month_end = datetime(
-        current_data.year,
-        current_data.month,
-        calendar.monthrange(current_data.year, current_data.month)[1],
-    ).date()
-    expenses = Expense.objects.filter(date__gte=month_start, date__lte=month_end)
+    report_send_date = datetime(2024, 12, 1)
+    report_date = report_send_date - timedelta(days=1)
+    month_start = datetime(report_date.year, report_date.month, 1).date()
+    month_end = report_date.date()
+    expenses = Expense.objects.filter(
+        date__gte=month_start, date__lte=month_end
+    ).prefetch_related("expanseattachment_set")
+    print(dir(expenses.first()))
+    str_month = report_date.strftime("%B")
     pdf = PDF()
-    pdf.file_name = "Expanse_Report"
+    pdf.file_name = f"Expanse_Report_{str_month}"
     pdf.template_path = "mail/expense_report.html"
     pdf.context = {
         "expenses": expenses,
         "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
-        "date": current_data.strftime("%d/%m/%Y"),
+        "date": report_date,
+        "total_amount": expenses.aggregate(total_amount=Sum("amount"))["total_amount"],
     }
     # Send email
     email = EmailMessage(
-        subject="Monthly Expense Report",
-        body="Please find the attached Expense Report.",
-        from_email="hr@mediusware.com",
-        to=["shahinur@mediusware.com"],
+        subject=f"Monthly Expense Report[{str_month}/{report_date.year}]",
+        body=f"Please find the attached Expense Report of {str_month}/{report_date.year}.",
+        from_email='"Mediusware HR" <mdborhan.st@gmail.com>',
+        to=["mdborhan.st@gmail.com"],
     )
-    
+
     file_path = pdf.create()
     if file_path:
-        if file_path.__contains__('http'):
+        if file_path.__contains__("http"):
             pdf_url = file_path
 
             # Fetch the PDF content from the URL
             response = requests.get(pdf_url)
 
             # email.attach_alternative(html_content, 'text/html')
-            print('file name:', file_path.split('/')[-1])
-            email.attach(file_path.split('/')[-1], response.content, "application/pdf")
+            print("file name:", file_path.split("/")[-1])
+            email.attach(file_path.split("/")[-1], response.content, "application/pdf")
         else:
             email.attach_file(file_path, "application/pdf")
     email.send()
