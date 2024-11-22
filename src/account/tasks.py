@@ -143,8 +143,6 @@ def generate_and_send_monthly_expense():
             # Fetch the PDF content from the URL
             response = requests.get(pdf_url)
 
-            # email.attach_alternative(html_content, 'text/html')
-            print("file name:", file_path.split("/")[-1])
             email.attach(file_path.split("/")[-1], response.content, "application/pdf")
         else:
             email.attach_file(file_path, "application/pdf")
