@@ -2,6 +2,7 @@ import calendar
 from dateutil.relativedelta import relativedelta
 from typing import List
 from django.utils import timezone
+import requests
 from employee.models import Employee
 from provident_fund.models import Account
 from django.core.mail import EmailMessage
@@ -131,6 +132,18 @@ def generate_and_send_monthly_expense():
         from_email="hr@mediusware.com",
         to=["shahinur@mediusware.com"],
     )
+    
+    file_path = pdf.create()
+    if file_path:
+        if file_path.__contains__('http'):
+            pdf_url = file_path
 
-    email.attach_file(pdf.create(), "application/pdf")
+            # Fetch the PDF content from the URL
+            response = requests.get(pdf_url)
+
+            # email.attach_alternative(html_content, 'text/html')
+            print('file name:', file_path.split('/')[-1])
+            email.attach(file_path.split('/')[-1], response.content, "application/pdf")
+        else:
+            email.attach_file(file_path, "application/pdf")
     email.send()
