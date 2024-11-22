@@ -131,8 +131,8 @@ def generate_and_send_monthly_expense():
     email = EmailMessage(
         subject=f"Monthly Expense Report[{str_month}/{report_date.year}]",
         body=f"Please find the attached Expense Report of {str_month}/{report_date.year}.",
-        from_email='"Mediusware HR" <mdborhan.st@gmail.com>',
-        to=["mdborhan.st@gmail.com"],
+        from_email='"Mediusware HR" <hr@mediusware.com>',
+        to=["shahinur@mediusware.com"],
     )
 
     file_path = pdf.create()
