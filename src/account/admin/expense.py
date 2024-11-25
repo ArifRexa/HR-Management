@@ -190,7 +190,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         return super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change) -> None:
-        if obj.is_approved == True:
+        if obj.is_approved:
             obj.approved_by = request.user
         else:
             obj.approved_by = None

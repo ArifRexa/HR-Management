@@ -113,10 +113,11 @@ def generate_and_send_monthly_expense():
     report_date = report_send_date - timedelta(days=1)
     month_start = datetime(report_date.year, report_date.month, 1).date()
     month_end = report_date.date()
-    expenses = Expense.objects.filter(
-        date__gte=month_start, date__lte=month_end
-    ).prefetch_related("expanseattachment_set")
-    print(dir(expenses.first()))
+    expenses = (
+        Expense.objects.filter(date__gte=month_start, date__lte=month_end)
+        .prefetch_related("expanseattachment_set")
+        .order_by("-amount")
+    )
     str_month = report_date.strftime("%B")
     pdf = PDF()
     pdf.file_name = f"Expanse_Report_{str_month}"
