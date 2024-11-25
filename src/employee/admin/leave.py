@@ -389,7 +389,7 @@ class LeaveManagement(admin.ModelAdmin):
             return True
 
     def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser:
+        if request.user.is_superuser or request.user.has_perm("employee.can_update_after_approve"):
             return True
         return obj and obj.status == "pending"
 

@@ -50,10 +50,10 @@ class Leave(TimeStampMixin, AuthorMixin, LeaveMixin):
                 "can_add_leave_at_any_time",
                 "Can able to add leave at any time",
             ),
-            # (
-            #     "can_view_display_feedback",
-            #     "Can able to See Leave feedback",
-            # ),
+            (
+                "can_update_after_approve",
+                "Can able to update after approve",
+            ),
         )
 
 
