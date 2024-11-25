@@ -7,44 +7,58 @@
         text-align: center;
         padding-top: 50px;
     }
-    .title{
+    .title {
         font-size: 24px;
         font-weight: bold;
     }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        font-size: 14px;
+        text-align: center;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+    }
+    th.note, td.note {
+        width: 70%;
+        text-align: left; /* Align text to the left for better readability */
+    }
+    th.amount, td.amount, th.memo, td.memo {
+        width: 15%;
+    }
 </style>
-    <div class="content">
-        <p><span class="title">Monthly Expense Report</span> <br>
+<div class="content">
+    <p><span class="title">Monthly Expense Report</span> <br>
         Report Month: {{ date|date:"F" }} / {{ date|date:"Y" }} <br>
         Total Amount: {{ total_amount }}</p>
-    </div>
-    <table cellspacing="0" cellpadding="5" style="width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; text-align: center;">
-        <thead>
-            <tr style="background-color: #f4f4f4;">
-                <th style="border: 1px solid #ddd; padding: 8px;">Note</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Amount</th>
-                <th style="border: 1px solid #ddd; padding: 8px;">Memo</th>
-
-            </tr>
-        </thead>
-        <tbody>
-            {% for expense in expenses %}
-            <tr>
-
-                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.note }}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">{{ expense.amount }}</td>
-                <td style="border: 1px solid #ddd; padding: 8px;">
-                    
-                    {% if expense.expanseattachment_set.first %}
-                        
-                    <a href="http://www.127.0.0.1:8000{{ expense.expanseattachment_set.first.attachment.url }}" target="_blank" rel="noopener noreferrer">Link <br>
-                    </a>
-                    {% else %}
-                        No Memo
-                    {% endif %}
-                        
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+</div>
+<table>
+    <thead>
+        <tr style="background-color: #f4f4f4;">
+            <th class="note">Note</th>
+            <th class="amount">Amount</th>
+            <th class="memo">Memo</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for expense in expenses %}
+        <tr>
+            <td class="note">{{ expense.note }}</td>
+            <td class="amount">{{ expense.amount }}</td>
+            <td class="memo">
+                {% if expense.expanseattachment_set.first %}
+                <a href="http://www.127.0.0.1:8000{{ expense.expanseattachment_set.first.attachment.url }}" target="_blank" rel="noopener noreferrer">
+                    Link <br>
+                </a>
+                {% else %}
+                No Memo
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
