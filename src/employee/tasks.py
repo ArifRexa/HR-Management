@@ -20,6 +20,7 @@ from django.db.models import (
     Q,
     Subquery,
     OuterRef,
+    Count,
 )
 from employee.models.employee import LateAttendanceFine
 from employee.models import (
@@ -46,9 +47,12 @@ from account.models import Loan
 
 def set_default_exit_time(default_time):
     import datetime
+
     NOW = datetime.datetime.now()
     DEFAULT_EXIT_HOUR = int(default_time)  # 24-hour time == 12:00 AM (midnight)
-    DEFAULT_EXIT_TIME = NOW.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0, microsecond=0)
+    DEFAULT_EXIT_TIME = NOW.replace(
+        hour=DEFAULT_EXIT_HOUR, minute=0, second=0, microsecond=0
+    )
 
     employee_onlines = EmployeeOnline.objects.filter(active=True)
     for emp_online in employee_onlines:
@@ -67,13 +71,14 @@ def set_default_exit_time(default_time):
                 activities[-1].is_updated_by_bot = True
                 activities[-1].save()
 
+
 def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email = EmailMultiAlternatives()
     email.subject = f"{subject} of {employee.full_name}"
     email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
     email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
-    if pdf.__contains__('http'):
+    if pdf.__contains__("http"):
         # URL of the PDF file
         pdf_url = pdf
 
@@ -81,23 +86,25 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
         response = requests.get(pdf_url)
 
         # email.attach_alternative(html_content, 'text/html')
-        print('file name:', pdf.split('/')[-1])
-        email.attach(pdf.split('/')[-1], response.content, "application/pdf")
+        print("file name:", pdf.split("/")[-1])
+        email.attach(pdf.split("/")[-1], response.content, "application/pdf")
     else:
         email.attach_file(pdf)
     if letter_type == "EAL":
         hr_policy = HRPolicy.objects.last()
         file_path = hr_policy.policy_file.url
         if file_path:
-            if file_path.__contains__('http'):
+            if file_path.__contains__("http"):
                 pdf_url = file_path
 
                 # Fetch the PDF content from the URL
                 response = requests.get(pdf_url)
 
                 # email.attach_alternative(html_content, 'text/html')
-                print('file name:', file_path.split('/')[-1])
-                email.attach(file_path.split('/')[-1], response.content, "application/pdf")
+                print("file name:", file_path.split("/")[-1])
+                email.attach(
+                    file_path.split("/")[-1], response.content, "application/pdf"
+                )
             else:
                 email.attach_file(file_path)
     email.send()
@@ -562,22 +569,25 @@ def late_attendance_calculate(late_entry_time):
     current_date = datetime.now()
     current_month = current_date.month
     current_year = current_date.year
-    
+
     for employee in employees:
         total_consider = LateAttendanceFine.objects.filter(
             employee=employee,
             date__year=current_year,
             date__month=current_month,
-            is_consider=True
+            is_consider=True,
         ).count()
-        
+
         # Count late entries for the current month
-        total_late_entry = EmployeeAttendance.objects.filter(
-            employee=employee,
-            date__year=current_year,
-            date__month=current_month,
-            entry_time__gt=late_entry_time,
-        ).count() - total_consider
+        total_late_entry = (
+            EmployeeAttendance.objects.filter(
+                employee=employee,
+                date__year=current_year,
+                date__month=current_month,
+                entry_time__gt=late_entry_time,
+            ).count()
+            - total_consider
+        )
 
         # Check if there is a late entry for today
         today_late_entry = EmployeeAttendance.objects.filter(
@@ -591,7 +601,9 @@ def late_attendance_calculate(late_entry_time):
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=500.00,
-                entry_time=today_late_entry.first().entry_time if today_late_entry.exists() else None
+                entry_time=today_late_entry.first().entry_time
+                if today_late_entry.exists()
+                else None,
             )
             html_body = loader.render_to_string(
                 "mails/late_entry_mail.html",
@@ -614,9 +626,11 @@ def late_attendance_calculate(late_entry_time):
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=80.00,
-                entry_time=today_late_entry.first().entry_time if today_late_entry.exists() else None
+                entry_time=today_late_entry.first().entry_time
+                if today_late_entry.exists()
+                else None,
             )
-            
+
             html_body = loader.render_to_string(
                 "mails/late_entry_mail.html",
                 context={
@@ -638,9 +652,11 @@ def late_attendance_calculate(late_entry_time):
                 year=current_year,
                 date=current_date,
                 total_late_attendance_fine=0.00,
-                entry_time=today_late_entry.first().entry_time if today_late_entry.exists() else None
+                entry_time=today_late_entry.first().entry_time
+                if today_late_entry.exists()
+                else None,
             )
-   
+
 
 def send_birthday_email():
     employees = Employee.objects.filter(
@@ -650,7 +666,9 @@ def send_birthday_email():
     for employee in employees:
         html_body = loader.render_to_string(
             "mails/employee_birthday_mail.html",
-            context={"employee": employee,},
+            context={
+                "employee": employee,
+            },
         )
 
         email = EmailMultiAlternatives()
@@ -659,3 +677,106 @@ def send_birthday_email():
         email.to = [employee.email]
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.send()
+
+
+from django.db.models import F, Q, Value, Count, DateTimeField, Max
+from django.db.models.functions import Coalesce
+from datetime import datetime, time
+
+def new_late_attendance_calculate(late_entry_time):
+    late_entry = time(hour=11, minute=31)
+    current_date = datetime.now()
+    current_month = current_date.month
+    current_year = current_date.year
+
+    # Annotate late entry time for today using aggregate
+    employees = Employee.objects.filter(
+        active=True, 
+        show_in_attendance_list=True
+    ).exclude(
+        salaryhistory__isnull=True
+    ).annotate(
+        total_consider=Count(
+            'lateattendancefine',
+            filter=Q(
+                lateattendancefine__date__year=current_year,
+                lateattendancefine__date__month=current_month,
+                lateattendancefine__is_consider=True,
+            )
+        ),
+        total_late_entry=Count(
+            'employeeattendance',
+            filter=Q(
+                employeeattendance__date__year=current_year,
+                employeeattendance__date__month=current_month,
+                employeeattendance__entry_time__gt=late_entry_time,
+            )
+        ) - F('total_consider'),
+        today_late_entry_time=Coalesce(
+            Max(
+                'employeeattendance__entry_time',
+                filter=Q(
+                    employeeattendance__date=current_date,
+                    employeeattendance__entry_time__gt=late_entry,
+                )
+            ),
+            Value(None),
+            output_field=DateTimeField()
+        ),
+        has_today_fine=Count(
+            'lateattendancefine',
+            filter=Q(lateattendancefine__date=current_date),
+        )
+    )
+
+    # Filter employees
+    late_employees = employees.filter(
+        today_late_entry_time__isnull=False,
+        has_today_fine=0
+    )
+
+    # Prepare fines and emails
+    fines = []
+    emails = []
+
+    for employee in late_employees:
+        fine_amount = 0.00
+        if employee.total_late_entry > 6:
+            fine_amount = 500.00
+        elif employee.total_late_entry > 3:
+            fine_amount = 80.00
+
+        fines.append(
+            LateAttendanceFine(
+                employee=employee,
+                month=current_month,
+                year=current_year,
+                date=current_date,
+                total_late_attendance_fine=fine_amount,
+                entry_time=employee.today_late_entry_time,
+                is_consider=False
+            )
+        )
+
+        if fine_amount > 0:
+            html_body = loader.render_to_string(
+                "mails/late_entry_mail.html",
+                context={
+                    "employee": employee,
+                    "entry_time": employee.today_late_entry_time,
+                },
+            )
+            email = EmailMultiAlternatives()
+            email.subject = f"Attention Required: Late Entry Logged {current_date}"
+            email.attach_alternative(html_body, "text/html")
+            email.to = [employee.email]
+            email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+            emails.append(email)
+
+    # Bulk create fines
+    LateAttendanceFine.objects.bulk_create(fines)
+
+    # Send emails
+    for email in emails:
+        email.send()
+
