@@ -4,6 +4,7 @@ from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
 from tabnanny import verbose
 from django.utils import timezone
+
 # from unittest import loader
 from urllib import request
 import uuid
@@ -725,9 +726,14 @@ class LateAttendanceFine(models.Model):
     )
     month = models.IntegerField(null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
-    total_late_attendance_fine = models.DecimalField(max_digits=10, decimal_places=2)
+    total_late_attendance_fine = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Late Attendance Fine",
+        default=0.00,
+    )
     date = models.DateField(default=datetime.now, null=True, blank=True)
-    is_consider = models.BooleanField(default=False)
+    is_consider = models.BooleanField(default=True)
     entry_time = models.TimeField(null=True, blank=True)
 
     class Meta:

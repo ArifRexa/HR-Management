@@ -14,6 +14,7 @@ from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 
 from employee.models.bank_account import BEFTN
+from employee.tasks import new_late_attendance_calculate
 from project_management.models import EmployeeProjectHour, Project
 from user_auth.models import UserLogs
 from django.utils import timezone
@@ -381,21 +382,21 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         "total_late_attendance_fine",
         "entry_time",
     )
-    list_filter = ("employee",)
+    list_filter = ("employee", "is_consider")
     date_hierarchy = "date"
     autocomplete_fields = ("employee",)
     change_list_template = "admin/total_fine.html"
 
+    @admin.display(description="Employee", ordering="employee__full_name")
     def get_employee(self, obj):
         consider_count = LateAttendanceFine.objects.filter(
             date__month=obj.date.month, date__year=obj.date.year, is_consider=True
         ).count()
-        print(consider_count, "Total Consider Count")
         if consider_count > 0:
             return f"{obj.employee} ({consider_count})"
         return obj.employee
 
-    get_employee.short_description = "Employee"
+    # get_employee.short_description = "Employee"
 
     def get_month_name(self, obj):
         return month_name[obj.date.month]
@@ -412,13 +413,13 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         fields = ["employee", "total_late_attendance_fine", "date", "is_consider"]
         return fields
 
-    def get_list_filter(self, request):
-        # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
-        if request.user.is_superuser or request.user.has_perm(
-            "can_view_all_late_attendance"
-        ):
-            return ("employee",)
-        return ("employee",)
+    # def get_list_filter(self, request):
+    #     # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
+    #     if request.user.is_superuser or request.user.has_perm(
+    #         "can_view_all_late_attendance"
+    #     ):
+    #         return ("employee",)
+    #     return ("employee",)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -848,7 +849,7 @@ class LessHourAdmin(admin.ModelAdmin):
     @admin.display(description="Skill", ordering="employee__top_one_skill")
     def get_skill(self, obj):
         return obj.employee.top_one_skill
-    
+
     @admin.display(description="Feedback", ordering="feedback")
     def get_feedback(self, obj):
         # return obj.update
