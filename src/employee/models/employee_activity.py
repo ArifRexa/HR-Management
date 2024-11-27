@@ -63,6 +63,7 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
         verbose_name_plural = "Employee Attendances"
         permissions = (
             ("can_see_full_month_attendance", "Can see full month attendance"),
+            ("can_download_attendance_report", "Can download attendance report"),
         )
 
 
