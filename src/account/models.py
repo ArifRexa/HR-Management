@@ -205,6 +205,10 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
 
 class Income(TimeStampMixin, AuthorMixin):
     STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+    EMAIL_SEND_STATUS = (
+        ('yes', 'Yes'),
+        ('no', 'No')
+    )
     project = models.ForeignKey(
         Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
     )
@@ -218,6 +222,7 @@ class Income(TimeStampMixin, AuthorMixin):
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
     add_to_balance_sheet = models.BooleanField(default=False)
     is_send_clients = models.BooleanField(default=False)
+    is_send_invoice_email = models.CharField(default='no', choices=EMAIL_SEND_STATUS, max_length=5)
 
     def save(self, *args, **kwargs):
         hour_rate_decimal = Decimal(self.hour_rate)
