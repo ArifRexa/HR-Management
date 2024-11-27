@@ -594,6 +594,14 @@ def late_attendance_calculate(late_entry_time):
             employee=employee, date=current_date, entry_time__gt=late_entry
         )
 
+        if LateAttendanceFine.objects.filter(
+            employee=employee,
+            month=current_month,
+            year=current_year,
+            date=current_date,
+        ).exists():
+            continue
+
         if total_late_entry > 6 and today_late_entry.exists():
             LateAttendanceFine.objects.create(
                 employee=employee,
@@ -683,6 +691,7 @@ from django.db.models import F, Q, Value, Count, DateTimeField, Max
 from django.db.models.functions import Coalesce
 from datetime import datetime, time
 
+
 def new_late_attendance_calculate(late_entry_time):
     late_entry = time(hour=11, minute=31)
     current_date = datetime.now()
@@ -690,49 +699,48 @@ def new_late_attendance_calculate(late_entry_time):
     current_year = current_date.year
 
     # Annotate late entry time for today using aggregate
-    employees = Employee.objects.filter(
-        active=True, 
-        show_in_attendance_list=True
-    ).exclude(
-        salaryhistory__isnull=True
-    ).annotate(
-        total_consider=Count(
-            'lateattendancefine',
-            filter=Q(
-                lateattendancefine__date__year=current_year,
-                lateattendancefine__date__month=current_month,
-                lateattendancefine__is_consider=True,
-            )
-        ),
-        total_late_entry=Count(
-            'employeeattendance',
-            filter=Q(
-                employeeattendance__date__year=current_year,
-                employeeattendance__date__month=current_month,
-                employeeattendance__entry_time__gt=late_entry_time,
-            )
-        ) - F('total_consider'),
-        today_late_entry_time=Coalesce(
-            Max(
-                'employeeattendance__entry_time',
+    employees = (
+        Employee.objects.filter(active=True, show_in_attendance_list=True)
+        .exclude(salaryhistory__isnull=True)
+        .annotate(
+            total_consider=Count(
+                "lateattendancefine",
                 filter=Q(
-                    employeeattendance__date=current_date,
-                    employeeattendance__entry_time__gt=late_entry,
-                )
+                    lateattendancefine__date__year=current_year,
+                    lateattendancefine__date__month=current_month,
+                    lateattendancefine__is_consider=True,
+                ),
             ),
-            Value(None),
-            output_field=DateTimeField()
-        ),
-        has_today_fine=Count(
-            'lateattendancefine',
-            filter=Q(lateattendancefine__date=current_date),
+            total_late_entry=Count(
+                "employeeattendance",
+                filter=Q(
+                    employeeattendance__date__year=current_year,
+                    employeeattendance__date__month=current_month,
+                    employeeattendance__entry_time__gt=late_entry_time,
+                ),
+            )
+            - F("total_consider"),
+            today_late_entry_time=Coalesce(
+                Max(
+                    "employeeattendance__entry_time",
+                    filter=Q(
+                        employeeattendance__date=current_date,
+                        employeeattendance__entry_time__gt=late_entry,
+                    ),
+                ),
+                Value(None),
+                output_field=DateTimeField(),
+            ),
+            has_today_fine=Count(
+                "lateattendancefine",
+                filter=Q(lateattendancefine__date=current_date),
+            ),
         )
     )
 
     # Filter employees
     late_employees = employees.filter(
-        today_late_entry_time__isnull=False,
-        has_today_fine=0
+        today_late_entry_time__isnull=False, has_today_fine=0
     )
 
     # Prepare fines and emails
@@ -754,7 +762,7 @@ def new_late_attendance_calculate(late_entry_time):
                 date=current_date,
                 total_late_attendance_fine=fine_amount,
                 entry_time=employee.today_late_entry_time,
-                is_consider=False
+                is_consider=False,
             )
         )
 
@@ -775,8 +783,8 @@ def new_late_attendance_calculate(late_entry_time):
 
     # Bulk create fines
     LateAttendanceFine.objects.bulk_create(fines)
-
+    print(fines)
+    print("Fines created.")
     # Send emails
     for email in emails:
         email.send()
-

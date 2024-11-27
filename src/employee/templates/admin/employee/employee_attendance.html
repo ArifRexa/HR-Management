@@ -64,12 +64,14 @@
 
 <div class="container-fluid">
     <div class="row">
+        
         <div class="col-md-10">
             <div class="text-center">
                 <h2 class="h2 fs-1 text-center">Employee Attendance</h2> <img src="{% static 'employee/hr_attendance_explaination.png' %}" >
                 {% comment %} <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div> {% endcomment %}
             </div>
         </div>
+        
         {% if online_status_form %}
         <div class="col">
             <div class="pb-4 text-center">
@@ -78,6 +80,30 @@
         </div>
         {% endif %}
     </div>
+    
+    {% if request.user.is_superuser or perms.employee.can_download_attendance_report %}
+        
+        <div class="row justify-content-end">
+            <div class="col-md-2">
+                
+                <form action="{% url 'admin:generate_monthly_attendance_report_xlsx' %}" method="post" style="display: flex; align-items: center; justify-content: end; gap: 4px;">
+                    
+                        <div class="" style="display: flex; gap: 4px; align-items: center;">
+                        <label for="from_date">From: </label>
+                        <input type="date" class="form-control" id="from_date" name="from_date">
+                        </div>
+                        <div class="" style="display: flex; gap: 4px; align-items: center;">
+                        <label for="to_date">To: </label>
+                        <input type="date" class="form-control" id="to_date" name="to_date">
+                        </div>
+                        <button type="submit" class="btn btn-primary mb-2">Generate</button>
+                
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+    {% endif %}
+        
 
     <div class="pb-3">
         <div class="d-flex justify-content-between">
