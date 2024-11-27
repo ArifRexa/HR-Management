@@ -32,6 +32,20 @@ class ActiveClientFilter(admin.SimpleListFilter):
             return queryset.filter(project__client__id=self.value())
         return queryset
 
+class IncomeFilterBySendInvoiceEmail(admin.SimpleListFilter):
+    title = "Send Email"
+    parameter_name = "is_send_invoice_email"
+
+    def lookups(self, request, model_admin):
+        return (
+            ("yes", "Yes"),
+            ("no", "No"),
+        )
+    
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(is_send_invoice_email=self.value())
+        return queryset
 
 @admin.register(Income)
 class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
@@ -42,6 +56,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         "hour_rate",
         # "convert_rate",
         "payment_details",
+        "get_send_email_status",
         "status_col",
     )
     date_hierarchy = "date"
@@ -49,6 +64,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     readonly_fields = ("payment",)
     list_filter = [
         "status",
+        IncomeFilterBySendInvoiceEmail,
         "project",
         "project__client__payment_method",
         "project__client__invoice_type",
@@ -67,6 +83,13 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_list_template = "admin/income/list.html"
 
     list_per_page = 20
+    
+    @admin.display(description="Email")
+    def get_send_email_status(self, obj):
+        color = "red"
+        if obj.is_send_invoice_email == "yes":
+            color = "green"
+        return format_html(f'<b style="color: {color}">{obj.get_is_send_invoice_email_display()}</b>')
 
     def get_actions(self, request):
         action = super().get_actions(request)
@@ -328,6 +351,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
                 f"Email sent to {client.name} successfully",
                 messages.SUCCESS,
             )
+            queryset.update(is_send_invoice_email="yes")
         except Exception as e:
             print(e)
             self.message_user(request, "Something went wrong", messages.ERROR)
