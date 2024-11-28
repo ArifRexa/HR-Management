@@ -376,6 +376,7 @@ from calendar import month_name
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = (
+        "date",
         "get_employee",
         "get_month_name",
         "get_year",
@@ -447,6 +448,11 @@ class EmployeeUnderTPMForm(forms.ModelForm):
     class Meta:
         model = EmployeeUnderTPM
         fields = "__all__"
+        # widgets = {
+        #     "employee": forms.Select(
+        #         attrs={"class": "form-control", "required": False}
+        #     ),
+        # }
 
     def clean(self):
         cleaned_data = super().clean()

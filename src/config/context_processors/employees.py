@@ -1,8 +1,6 @@
-from urllib import request
+
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Count, BooleanField, Case, When, Value, Min, Q, Prefetch
-from django.http import HttpResponseRedirect
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.db.models import Sum
@@ -25,12 +23,12 @@ from employee.models import (
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
-from employee.models.employee import Employee, BookConferenceRoom
+from employee.models.employee import BookConferenceRoom
 from employee.models import FavouriteMenu
 from employee.forms.employee_project import BookConferenceRoomForm
 from project_management.models import Project,DailyProjectUpdate
 from employee.models.employee import LateAttendanceFine
-from settings.models import Announcement
+from settings.models import Announcement, Notice
 
 from datetime import datetime
 
@@ -216,6 +214,9 @@ def employee_need_help_form(request):
     else:
         return {"employee_need_help_form": None}
 
+
+def all_notices(request):
+    return {"notices": Notice.objects.all().order_by("-rank", "-created_at")}
 
 def get_announcement(request):
     data = []
