@@ -376,6 +376,7 @@ from calendar import month_name
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = (
+        "date",
         "get_employee",
         "get_month_name",
         "get_year",
