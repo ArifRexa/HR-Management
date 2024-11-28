@@ -123,6 +123,7 @@ TEMPLATES = [
                 "config.context_processors.employees.approval_info_leave_daily_update",
                 "config.context_processors.employees.last_four_week_project_hour",
                 "config.context_processors.employees.can_show_permanent_increment",
+                "config.context_processors.employees.all_notices",
             ],
         },
     },

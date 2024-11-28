@@ -23,6 +23,7 @@ from employee.models import Employee
 from project_management.models import Client
 from .models import (
     Designation,
+    Notice,
     PayScale,
     PublicHoliday,
     PublicHolidayDate,
@@ -360,3 +361,9 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
                     )
 
         return redirect("admin:settings_employeefoodallowance_changelist")
+
+
+@admin.register(Notice)
+class NoticeAdmin(admin.ModelAdmin):
+    list_display = ("title", "start_date", "end_date")
+    date_hierarchy = "created_at"

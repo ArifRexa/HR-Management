@@ -110,6 +110,21 @@ class Announcement(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.description
+    
+    
+class Notice(TimeStampMixin, AuthorMixin):
+    start_date = models.DateField(default=timezone.now)
+    end_date = models.DateField(default=timezone.now)
+
+    rank = models.SmallIntegerField(default=0)
+
+    title = models.CharField(max_length=255)
+
+    file = models.FileField(upload_to='notices/')
+
+
+    def __str__(self):
+        return self.title
 
 
 # class FoodAllowanceExclusion(TimeStampMixin, AuthorMixin):

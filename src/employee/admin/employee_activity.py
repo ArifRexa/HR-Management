@@ -631,14 +631,16 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         for employee, all_data in date_datas.items():
             first_row = row_num
             for date, data in all_data.items():
+                break_time = f"{data.get('break_time_hour', 0)}h: {data.get('break_time_minute', 0)}m"
+                inside_time = f"{data.get('inside_time_hour', 0)}h: {data.get('inside_time_minute', 0)}m"
                 attendance_sheet.append(
                     [
                         employee.full_name if row_num == first_row else "",
                         date.strftime("%d/%m/%Y"),
                         data.get("entry_time", None),
                         data.get("exit_time", None),
-                        data.get("break_time_minute", 0),
-                        data.get("inside_time_hour", 0),
+                        data.get("break_time", 0),
+                        data.get("inside_time", 0),
                         data.get("total_time", 0),
                     ]
                 )

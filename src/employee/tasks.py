@@ -593,77 +593,78 @@ def late_attendance_calculate(late_entry_time):
         today_late_entry = EmployeeAttendance.objects.filter(
             employee=employee, date=current_date, entry_time__gt=late_entry
         )
-
-        if LateAttendanceFine.objects.filter(
+        #TODO: month and year remove
+        if not LateAttendanceFine.objects.filter(
             employee=employee,
-            month=current_month,
-            year=current_year,
+            # month=current_month,
+            # year=current_year,
             date=current_date,
         ).exists():
-            continue
+            if total_late_entry > 6 and today_late_entry.exists():
+                LateAttendanceFine.objects.create(
+                    employee=employee,
+                    month=current_month,
+                    year=current_year,
+                    date=current_date,
+                    is_consider=False,
+                    total_late_attendance_fine=500.00,
+                    entry_time=today_late_entry.first().entry_time
+                    if today_late_entry.exists()
+                    else None,
+                )
+                html_body = loader.render_to_string(
+                    "mails/late_entry_mail.html",
+                    context={
+                        "employee": employee,
+                        "entry_time": today_late_entry.first().entry_time,
+                    },
+                )
+                email = EmailMultiAlternatives()
+                email.subject = f"Attention Required: Late Entry Logged {current_date}"
+                email.attach_alternative(html_body, "text/html")
+                email.to = [employee.email]
+                email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+                email.send()
 
-        if total_late_entry > 6 and today_late_entry.exists():
-            LateAttendanceFine.objects.create(
-                employee=employee,
-                month=current_month,
-                year=current_year,
-                date=current_date,
-                total_late_attendance_fine=500.00,
-                entry_time=today_late_entry.first().entry_time
-                if today_late_entry.exists()
-                else None,
-            )
-            html_body = loader.render_to_string(
-                "mails/late_entry_mail.html",
-                context={
-                    "employee": employee,
-                    "entry_time": today_late_entry.first().entry_time,
-                },
-            )
-            email = EmailMultiAlternatives()
-            email.subject = f"Attention Required: Late Entry Logged {current_date}"
-            email.attach_alternative(html_body, "text/html")
-            email.to = [employee.email]
-            email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
-            email.send()
+            elif total_late_entry > 3 and today_late_entry.exists():
+                LateAttendanceFine.objects.create(
+                    employee=employee,
+                    month=current_month,
+                    year=current_year,
+                    date=current_date,
+                    is_consider=False,
+                    total_late_attendance_fine=80.00,
+                    entry_time=today_late_entry.first().entry_time
+                    if today_late_entry.exists()
+                    else None,
+                )
 
-        elif total_late_entry > 3 and today_late_entry.exists():
-            LateAttendanceFine.objects.create(
-                employee=employee,
-                month=current_month,
-                year=current_year,
-                date=current_date,
-                total_late_attendance_fine=80.00,
-                entry_time=today_late_entry.first().entry_time
-                if today_late_entry.exists()
-                else None,
-            )
+                html_body = loader.render_to_string(
+                    "mails/late_entry_mail.html",
+                    context={
+                        "employee": employee,
+                        "entry_time": today_late_entry.first().entry_time,
+                    },
+                )
+                email = EmailMultiAlternatives()
+                email.subject = f"Attention Required: Late Entry Logged {current_date}"
+                email.attach_alternative(html_body, "text/html")
+                email.to = [employee.email]
+                email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+                email.send()
 
-            html_body = loader.render_to_string(
-                "mails/late_entry_mail.html",
-                context={
-                    "employee": employee,
-                    "entry_time": today_late_entry.first().entry_time,
-                },
-            )
-            email = EmailMultiAlternatives()
-            email.subject = f"Attention Required: Late Entry Logged {current_date}"
-            email.attach_alternative(html_body, "text/html")
-            email.to = [employee.email]
-            email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
-            email.send()
-
-        elif total_late_entry <= 3 and today_late_entry.exists():
-            LateAttendanceFine.objects.create(
-                employee=employee,
-                month=current_month,
-                year=current_year,
-                date=current_date,
-                total_late_attendance_fine=0.00,
-                entry_time=today_late_entry.first().entry_time
-                if today_late_entry.exists()
-                else None,
-            )
+            elif total_late_entry <= 3 and today_late_entry.exists():
+                LateAttendanceFine.objects.create(
+                    employee=employee,
+                    month=current_month,
+                    year=current_year,
+                    date=current_date,
+                    is_consider=False,
+                    total_late_attendance_fine=0.00,
+                    entry_time=today_late_entry.first().entry_time
+                    if today_late_entry.exists()
+                    else None,
+                )
 
 
 def send_birthday_email():
