@@ -448,6 +448,11 @@ class EmployeeUnderTPMForm(forms.ModelForm):
     class Meta:
         model = EmployeeUnderTPM
         fields = "__all__"
+        # widgets = {
+        #     "employee": forms.Select(
+        #         attrs={"class": "form-control", "required": False}
+        #     ),
+        # }
 
     def clean(self):
         cleaned_data = super().clean()

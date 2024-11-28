@@ -754,6 +754,8 @@ class EmployeeUnderTPM(models.Model):
             "active": True,
             "is_tpm": False,
         },
+        null=True,
+        blank=True,
     )
     tpm = models.ForeignKey(
         Employee,
@@ -762,7 +764,7 @@ class EmployeeUnderTPM(models.Model):
         related_name="employees_overseen",
         verbose_name="TPM",
         null=True,
-        blank=True,
+        
     )
     project = models.ForeignKey(
         "project_management.Project",
