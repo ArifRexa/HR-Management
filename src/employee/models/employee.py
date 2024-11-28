@@ -761,6 +761,8 @@ class EmployeeUnderTPM(models.Model):
         limit_choices_to={"is_tpm": True, "active": True},
         related_name="employees_overseen",
         verbose_name="TPM",
+        null=True,
+        blank=True,
     )
     project = models.ForeignKey(
         "project_management.Project",
@@ -769,6 +771,7 @@ class EmployeeUnderTPM(models.Model):
         related_name="employees_under_tpm",
         verbose_name="Project",
         null=True,
+        blank=True,
     )
 
     class Meta:
