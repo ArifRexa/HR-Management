@@ -295,21 +295,25 @@
                     </div>
                     {% include "admin/form/book_conference_room.html" %}
                 
-                    <div class="col-md-12 mb-4">
-                        <div class="card-header text-uppercase notice-board-header">Notice Board</div>
-                        <div class="notice-board">
-                            <ul class="list-group list-group-flush">
-                                {% for notice in notices %}
-                                <li class="list-group-item">
-                                    <a href="{{ notice.file.url }}" target="_blank" rel="noopener noreferrer" 
-                                    style="color: rgb(78, 133, 78); text-decoration: underline;">
-                                        {{ notice.title }} 
-                                    </a>
-                                </li>
-                                {% endfor %}
-                            </ul>
+                    
+                    {% if notices %}
+                        <div class="col-md-12 mb-4">
+                            <div class="card-header text-uppercase notice-board-header">Notice Board</div>
+                            <div class="notice-board">
+                                <ul class="list-group list-group-flush">
+                                    {% for notice in notices %}
+                                    <li class="list-group-item">
+                                        <a href="{{ notice.file.url }}" target="_blank" rel="noopener noreferrer" 
+                                        style="color: rgb(78, 133, 78); text-decoration: underline;">
+                                            {{ notice.title }} 
+                                        </a>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
+                        
                   
                 {% if request.user.is_superuser or can_show_permanent_increment%}
 
