@@ -32,6 +32,7 @@ class ActiveClientFilter(admin.SimpleListFilter):
             return queryset.filter(project__client__id=self.value())
         return queryset
 
+
 class IncomeFilterBySendInvoiceEmail(admin.SimpleListFilter):
     title = "Send Email"
     parameter_name = "is_send_invoice_email"
@@ -41,11 +42,12 @@ class IncomeFilterBySendInvoiceEmail(admin.SimpleListFilter):
             ("yes", "Yes"),
             ("no", "No"),
         )
-    
+
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(is_send_invoice_email=self.value())
         return queryset
+
 
 @admin.register(Income)
 class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
@@ -60,7 +62,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         "status_col",
     )
     date_hierarchy = "date"
-    exclude = ["is_send_clients", "loss_hours"]
+    exclude = ["is_send_clients", "loss_hours", "is_send_invoice_email"]
     readonly_fields = ("payment",)
     list_filter = [
         "status",
@@ -83,13 +85,15 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     change_list_template = "admin/income/list.html"
 
     list_per_page = 20
-    
+
     @admin.display(description="Email")
     def get_send_email_status(self, obj):
         color = "red"
         if obj.is_send_invoice_email == "yes":
             color = "green"
-        return format_html(f'<b style="color: {color}">{obj.get_is_send_invoice_email_display()}</b>')
+        return format_html(
+            f'<b style="color: {color}">{obj.get_is_send_invoice_email_display()}</b>'
+        )
 
     def get_actions(self, request):
         action = super().get_actions(request)
@@ -116,7 +120,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         filters = super().get_list_filter(request)
         if not request.user.has_perm("project_management.view_client"):
             filters = [f for f in filters if f != "project__client__payment_method"]
-        
+
         return filters
         # if not request.user.has_perm("project_management.view_client"):
         #     self.list_filter.remove("project__client__payment_method")
@@ -182,7 +186,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
 
     @admin.action()
     def approve_selected(self, request, queryset):
-        queryset.update(status="approved")
+        queryset.update(status="approved", is_send_invoice_email="yes")
         # self.message_user(request, f'Status has been updated to approved for {len(queryset)} items', messages.SUCCESS)
 
     @admin.action()
@@ -304,14 +308,15 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
 
             total_payment = invoice_total.get("total")
             email_template = get_template("mail/income_invoice_mail.html")
+            invoice_dates = ",".join(
+                {
+                    date.strftime("%b %-d")
+                    for date in queryset.values_list("date", flat=True)
+                }
+            )
             html_content = email_template.render(
                 {
-                    "invoice_dates": ",".join(
-                        {
-                            date.strftime("%b %-d")
-                            for date in queryset.values_list("date", flat=True)
-                        }
-                    ),
+                    "invoice_dates": invoice_dates,
                     "client_name": client.name,
                     "total_amount": total_payment,
                     "client_notes": client.notes if client.notes else "",
@@ -340,11 +345,14 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
 
             # body = (body,)
             # email.attach_file(pdf.create())
+            client_cc_email = (
+                client.invoice_cc_email.split(",") if client.invoice_cc_email else []
+            )
             email.attach_alternative(html_content, "text/html")
             email.to = [client.email]
-            email.from_email = "shahinur@mediusware.com"
+            email.from_email = "mdborhan.st@gmail.com"
             # email.cc = ["shahinur@mediusware.com", "badhan@mediusware.com", "tanvir@mediusware.com"]
-            email.cc = ["invoice@mediusware.com"]
+            email.cc = ["mdborhan.st@gmail.com"] + client_cc_email
             email.send()
             self.message_user(
                 request,

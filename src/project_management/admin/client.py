@@ -99,6 +99,7 @@ class ClientAdmin(admin.ModelAdmin):
         "name",
         # "web_name",
         "email",
+        "invoice_cc_email",
         "designation",
         "company_name",
         "logo",
@@ -106,8 +107,8 @@ class ClientAdmin(admin.ModelAdmin):
         "client_feedback",
         "image",
         "linkedin_url",
-        "bill_from",
-        "cc_email",
+        # "bill_from",
+        # "cc_email",
         "address",
         "country",
         "notes",
@@ -134,7 +135,7 @@ class ClientAdmin(admin.ModelAdmin):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
-    
+
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
         if obj.is_active_over_six_months:
