@@ -1,4 +1,3 @@
-
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import Count, BooleanField, Case, When, Value, Min, Q, Prefetch
 from django.utils import timezone
@@ -19,14 +18,14 @@ from employee.models import (
     EmployeeNeedHelp,
     NeedHelpPosition,
     Employee,
-    LeaveManagement
+    LeaveManagement,
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from employee.models.employee import BookConferenceRoom
 from employee.models import FavouriteMenu
 from employee.forms.employee_project import BookConferenceRoomForm
-from project_management.models import Project,DailyProjectUpdate
+from project_management.models import Project, DailyProjectUpdate
 from employee.models.employee import LateAttendanceFine
 from settings.models import Announcement, Notice
 
@@ -142,37 +141,30 @@ def formal_summery(request):
     }
 
 
-
 def total_attendance_fine(request):
-        if not request.user.is_authenticated:
-            return ''
-        obj = request.user.employee
-        current_date = datetime.now()
-        current_month = current_date.month
-        last_month = current_date.month - 1
-        current_year = current_date.year
-        current_late_fine = LateAttendanceFine.objects.filter(
-            employee=obj, month=current_month, year=current_year
-        ).aggregate(fine=Sum("total_late_attendance_fine"))
-        last_late_fine = LateAttendanceFine.objects.filter(
-            employee=obj, month=last_month, year=current_year
-        ).aggregate(fine=Sum("total_late_attendance_fine"))
-        current_fine = (
-            current_late_fine.get("fine", 0.00)
-            if current_late_fine.get("fine")
-            else 0.00
-        )
-        last_fine = (
-            last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
-        )
-        
-        last_month_date = current_date + timedelta(days=-30)
-        html = f'{current_fine} ( {current_date.strftime("%b")} )  </br>{last_fine} ( {last_month_date.strftime("%b")} ) '
-        is_super = request.user.is_superuser
-        return {
-            'is_super':is_super,
-          'late_attendance_fine':format_html(html)
-        }
+    if not request.user.is_authenticated:
+        return ""
+    obj = request.user.employee
+    current_date = datetime.now()
+    current_month = current_date.month
+    last_month = current_date.month - 1
+    current_year = current_date.year
+    current_late_fine = LateAttendanceFine.objects.filter(
+        employee=obj, month=current_month, year=current_year
+    ).aggregate(fine=Sum("total_late_attendance_fine"))
+    last_late_fine = LateAttendanceFine.objects.filter(
+        employee=obj, month=last_month, year=current_year
+    ).aggregate(fine=Sum("total_late_attendance_fine"))
+    current_fine = (
+        current_late_fine.get("fine", 0.00) if current_late_fine.get("fine") else 0.00
+    )
+    last_fine = last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
+
+    last_month_date = current_date + timedelta(days=-30)
+    html = f'{current_fine} ( {current_date.strftime("%b")} )  </br>{last_fine} ( {last_month_date.strftime("%b")} ) '
+    is_super = request.user.is_superuser
+    return {"is_super": is_super, "late_attendance_fine": format_html(html)}
+
 
 def employee_status_form(request):
     if (
@@ -216,7 +208,12 @@ def employee_need_help_form(request):
 
 
 def all_notices(request):
-    return {"notices": Notice.objects.all().order_by("-rank", "-created_at")}
+    return {
+        "notices": Notice.objects.filter(
+            start_date__lte=timezone.now(), end_date__gte=timezone.now()
+        ).order_by("-rank", "-created_at")
+    }
+
 
 def get_announcement(request):
     data = []
@@ -281,12 +278,16 @@ def get_announcement(request):
         )
     )
     if leaves_today.exists():
-        approved_leaves = Leave.objects.filter(status='Approved')
+        approved_leaves = Leave.objects.filter(status="Approved")
         count = approved_leaves.count()
         for i in range(0, count):
             today_date = datetime.now().date()
             if today_date == approved_leaves[i].start_date:
-                data.extend([f"{approved_leaves[i].employee.full_name} is on {approved_leaves[i].leave_type} leave today."])
+                data.extend(
+                    [
+                        f"{approved_leaves[i].employee.full_name} is on {approved_leaves[i].leave_type} leave today."
+                    ]
+                )
 
     # Get Home Offices
     home_offices_today = (
@@ -366,24 +367,34 @@ def favourite_menu_list(request):
         return data
     return []
 
+
 from project_management.models import Project
+
+
 def project_lists(request):
     if request.user.is_authenticated:
         data = {}
-        data['active_projects'] = Project.objects.filter(active=True)
+        data["active_projects"] = Project.objects.filter(active=True)
         return data
     return []
 
+
 def conference_room_bookings(request):
     today = datetime.today().date()
-    return {'conference_room_bookings': BookConferenceRoom.objects.filter(created_at__date=today).order_by('start_time')}
+    return {
+        "conference_room_bookings": BookConferenceRoom.objects.filter(
+            created_at__date=today
+        ).order_by("start_time")
+    }
     # return {'conference_room_bookings': BookConferenceRoom.objects.all()}
+
 
 def conference_room_bookings_form(request):
     form = BookConferenceRoomForm
-    
+
     # Return the form in a dictionary
-    return {'my_form': form}
+    return {"my_form": form}
+
 
 def employee_context_processor(request):
     if request.user.is_authenticated:
@@ -391,30 +402,28 @@ def employee_context_processor(request):
             employee = Employee.objects.get(user=request.user)
         except Employee.DoesNotExist:
             employee = None
-        
+
         if employee:
             is_manager = employee.manager
             is_lead = employee.lead
             is_sqa = employee.sqa
-            
+
         else:
             is_manager = False
             is_lead = False
             is_sqa = False
-            
+
     else:
         employee = None
         is_manager = False
         is_lead = False
         is_sqa = False
-        
-    
+
     return {
-        'employee': employee,
-        'is_manager': is_manager,
-        'is_lead': is_lead,
-        'is_sqa': is_sqa,
-        
+        "employee": employee,
+        "is_manager": is_manager,
+        "is_lead": is_lead,
+        "is_sqa": is_sqa,
     }
 
 
@@ -422,57 +431,69 @@ def employee_project_list(request):
     if request.user.is_authenticated:
         try:
             employee = Employee.objects.get(user=request.user)
-            project_queryset = employee.employee_project_list.values_list('title', flat=True)
+            project_queryset = employee.employee_project_list.values_list(
+                "title", flat=True
+            )
             project_list = list(project_queryset)
         except Employee.DoesNotExist:
             project_list = None
     else:
         project_list = None
-    
-    return {'employee_project_list': project_list}
+
+    return {"employee_project_list": project_list}
 
 
 def approval_info_leave_daily_update(request):
     if not request.user.is_authenticated:
-        return ''  # Return empty response if user is not authenticated
-    
-    pending_leave = LeaveManagement.objects.filter(status='pending', manager=request.user.employee).count()
-    daily_update_pending = DailyProjectUpdate.objects.filter(status='pending', manager=request.user.employee).count()
-    
+        return ""  # Return empty response if user is not authenticated
+
+    pending_leave = LeaveManagement.objects.filter(
+        status="pending", manager=request.user.employee
+    ).count()
+    daily_update_pending = DailyProjectUpdate.objects.filter(
+        status="pending", manager=request.user.employee
+    ).count()
+
     # Determine if counts are greater than 0 to apply style
-    leave_color = 'red' if pending_leave > 0 else 'green'
-    update_color = 'red' if daily_update_pending > 0 else 'green'
-    
+    leave_color = "red" if pending_leave > 0 else "green"
+    update_color = "red" if daily_update_pending > 0 else "green"
+
     # Create HTML string with conditional styles
-    leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
+    leave_html = (
+        f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
+    )
     update_html = f'<span style="color: {update_color};"> Daily Update: {daily_update_pending}</span>'
-    html = f'   {leave_html}<br/>   {update_html}'
-    
+    html = f"   {leave_html}<br/>   {update_html}"
 
     # Query to check if the user is manager, lead, or TPM
     is_manager_lead_tpm = Employee.objects.filter(
-        Q(user=request.user, manager=True) |
-        Q(user=request.user, lead=True) |
-        Q(user=request.user, is_tpm=True)
+        Q(user=request.user, manager=True)
+        | Q(user=request.user, lead=True)
+        | Q(user=request.user, is_tpm=True)
     ).exists()
-    
-    return {'approval_info_leave_daily_update': format_html(html),'is_manager_lead_tpm':is_manager_lead_tpm}
+
+    return {
+        "approval_info_leave_daily_update": format_html(html),
+        "is_manager_lead_tpm": is_manager_lead_tpm,
+    }
 
 
 def last_four_week_project_hour(request):
     if not request.user.is_authenticated:
-        return '' 
-    
+        return ""
+
     employee = request.user.employee
     monthly_expected_hours = int(employee.monthly_expected_hours or 0)
     weekly_expected_hours = int(monthly_expected_hours / 4)
-    
+
     return {
-            'weekly_expected_hours':weekly_expected_hours,
-            'monthly_expected_hours':monthly_expected_hours
-        }
+        "weekly_expected_hours": weekly_expected_hours,
+        "monthly_expected_hours": monthly_expected_hours,
+    }
+
+
 def can_show_permanent_increment(reqeust):
     can_show = False
     if reqeust.user.has_perm("employee.can_show_permanent_increment"):
         can_show = True
-    return {'can_show_permanent_increment':can_show}
+    return {"can_show_permanent_increment": can_show}
