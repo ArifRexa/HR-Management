@@ -442,6 +442,13 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         return super(self.__class__, self).changelist_view(
             request, extra_context=extra_context
         )
+        
+    def save_model(self, request, obj, form, change):
+        if not obj.year:
+            obj.year = obj.date.year
+        if not obj.month:
+            obj.month = obj.date.month
+        obj.save()
 
 
 class EmployeeUnderTPMForm(forms.ModelForm):
