@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from django.http import HttpRequest
 from django.utils.html import format_html
@@ -81,6 +82,45 @@ class ClientAttachmentInline(admin.TabularInline):
     extra = 1
 
 
+class ClientForm(forms.ModelForm):
+    class Meta:
+        model = Client
+        fields = (
+            "name",
+            # "web_name",
+            "email",
+            "invoice_cc_email",
+            "designation",
+            "company_name",
+            "logo",
+            "is_need_feedback",
+            "client_feedback",
+            "image",
+            "linkedin_url",
+            # "bill_from",
+            # "cc_email",
+            "address",
+            "country",
+            "notes",
+            "is_hour_breakdown",
+            "hourly_rate",
+            "active_from",
+            "payment_method",
+            "invoice_type",
+            "review",
+        )
+
+        widgets = {
+            "invoice_cc_email": forms.Textarea(
+                attrs={
+                    "cols": 100,
+                    "rows": 5,
+                    "placeholder": "client1@gmail.com,client2@gmail.com",
+                }
+            ),
+        }
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -129,6 +169,7 @@ class ClientAdmin(admin.ModelAdmin):
     inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
     search_fields = ["name", "web_name"]
     autocomplete_fields = ["country", "payment_method"]
+    form = ClientForm
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):

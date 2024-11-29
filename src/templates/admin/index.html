@@ -125,6 +125,15 @@
     border-bottom: 1px solid #ddd;
     font-size: 0.9rem;
 }
+.blinking-text {
+      animation: blink 1s infinite;
+    }
+
+@keyframes blink {
+    0% { color: red; }
+    50% { color: transparent; }
+    100% { color: red; }
+}
 </style>
 {% endblock %}
 
@@ -303,8 +312,8 @@
                                 <ul class="list-group list-group-flush">
                                     {% for notice in notices %}
                                     <li class="list-group-item">
-                                        <a href="{{ notice.file.url }}" target="_blank" rel="noopener noreferrer" 
-                                        style="color: rgb(78, 133, 78); text-decoration: underline;">
+                                        <a class="blinking-text" href="{{ notice.file.url }}" target="_blank" rel="noopener noreferrer" 
+                                        style="color: rgb(78, 133, 78); font-size: 1.1rem;">
                                             {{ notice.title }} 
                                         </a>
                                     </li>
