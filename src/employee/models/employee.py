@@ -764,7 +764,6 @@ class EmployeeUnderTPM(models.Model):
         related_name="employees_overseen",
         verbose_name="TPM",
         null=True,
-        
     )
     project = models.ForeignKey(
         "project_management.Project",
@@ -781,6 +780,8 @@ class EmployeeUnderTPM(models.Model):
         verbose_name_plural = "TPM"
 
     def __str__(self):
+        if not self.employee:
+            return self.tpm.full_name
         return f"{self.employee.full_name} under {self.tpm.full_name}"
 
 
