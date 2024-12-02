@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import math
+from re import sub
 import requests
 from dateutil.relativedelta import relativedelta, FR
 
@@ -789,3 +790,35 @@ def new_late_attendance_calculate(late_entry_time):
     # Send emails
     for email in emails:
         email.send()
+        
+        
+
+def send_resignation_application_email(obj):
+    body = f"""
+        Dear HR Team,
+
+        This is to inform you that {obj.employee.full_name}, currently working as {obj.employee.designation}, has submitted their resignation on {obj.date}.
+
+        Please Review the resignation application on HR Portal.
+
+        Best regards,
+        {obj.employee.full_name}
+        
+        """
+    email = EmailMessage(
+        subject=f"Resignation Application From {obj.employee.full_name}",
+        body=body,
+        from_email=obj.employee.email,
+        to=["mdborhan.st@gmail.com"],
+    )
+    email.send()
+    
+    
+
+def send_resignation_feedback_email(subject, body, from_email, to_email):
+    email = EmailMultiAlternatives()
+    email.subject = subject
+    email.attach_alternative(body, "text/html")
+    email.to = to_email
+    email.from_email = from_email
+    email.send()
