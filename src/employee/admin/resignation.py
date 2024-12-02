@@ -20,7 +20,7 @@ class ResignationFeedbackInline(admin.TabularInline):
 
     @admin.display(description="Created By")
     def feedback_created_by(self, obj):
-        return obj.created_by if obj else "-"
+        return obj.created_by if obj.created_by else "-"
 
     # def has_delete_permission(self, request, obj=None):
     #     if not obj:
