@@ -809,7 +809,7 @@ def send_resignation_application_email(obj):
         subject=f"Resignation Application From {obj.employee.full_name}",
         body=body,
         from_email=obj.employee.email,
-        to=["mdborhan.st@gmail.com"],
+        to=["hr@mediusware.com"],
     )
     email.send()
     
