@@ -299,14 +299,14 @@ class Project(TimeStampMixin, AuthorMixin):
     def clean(self):
         super().clean()
 
-        if self.hourly_rate is not None and self.activate_from is None:
-            raise ValidationError(
-                "If hourly rate is provided, activate from is mandatory."
-            )
-        if self.activate_from is not None and self.hourly_rate is None:
-            raise ValidationError(
-                "If activate from is provided, hourly rate is mandatory."
-            )
+        # if self.hourly_rate is not None and self.activate_from is None:
+        #     raise ValidationError(
+        #         "If hourly rate is provided, activate from is mandatory."
+        #     )
+        # if self.activate_from is not None and self.hourly_rate is None:
+        #     raise ValidationError(
+        #         "If activate from is provided, hourly rate is mandatory."
+        #     )
 
     def __str__(self):
         client_name = self.client.name if self.client else "No Client"
