@@ -88,8 +88,7 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
                     feedback = inline_form.cleaned_data.get("message")
                     if request.user.employee != resignation.employee:
                         subject = "Feedback on Your Resignation From Mediusware Ltd."
-                        # recipient_email = [resignation.employee.email]
-                        recipient_email = ["mdborhan.st@gmail.com"]
+                        recipient_email = [resignation.employee.email]
                         from_email = '"Mediusware-HR" <hr@mediusware.com>'
                         
                         body = loader.render_to_string(
@@ -103,8 +102,7 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
                         )
                     else:
                         subject = f"Feedback For Resignation From {resignation.employee.full_name}"
-                        # recipient_email = ['<hr@mediusware.com>']
-                        recipient_email = ["mdborhan.st@gmail.com"]
+                        recipient_email = ['<hr@mediusware.com>']
                         from_email = resignation.employee.email
                         body = loader.render_to_string(
                             "mails/resignation_feedback.html",
