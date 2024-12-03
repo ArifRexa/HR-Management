@@ -7,6 +7,8 @@ from employee.models import Resignation
 from employee.models.resignation import ResignationFeedback
 from django.template import loader
 
+from employee.tasks import send_resignation_application_email, send_resignation_feedback_email
+
 
 class ResignationFeedbackInline(admin.TabularInline):
     model = ResignationFeedback
@@ -68,10 +70,11 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
         is_resignation_creating = not obj.pk
         super().save_model(request, obj, form, change)
         if is_resignation_creating:
-            async_task(
-                "employee.tasks.send_resignation_application_email",
-                obj,
-            )
+            send_resignation_application_email(obj)
+            # async_task(
+            #     "employee.tasks.send_resignation_application_email",
+            #     obj,
+            # )
 
     def has_module_permission(self, request):
         return False
@@ -113,11 +116,12 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
                                 "contact_email": resignation.employee.email,
                             },
                         )
-                    async_task(
-                        "employee.tasks.send_resignation_feedback_email",
-                        subject,
-                        body,
-                        from_email,
-                        recipient_email,
-                    )
+                    send_resignation_feedback_email(subject, body, from_email, recipient_email)
+                    # async_task(
+                    #     "employee.tasks.send_resignation_feedback_email",
+                    #     subject,
+                    #     body,
+                    #     from_email,
+                    #     recipient_email,
+                    # )
         return super().save_related(request, form, formsets, change)
