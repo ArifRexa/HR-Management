@@ -69,12 +69,23 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
             obj.employee = request.user.employee
         is_resignation_creating = not obj.pk
         super().save_model(request, obj, form, change)
-        if is_resignation_creating:
+        if is_resignation_creating and obj.status == "pending":
             send_resignation_application_email(obj)
             # async_task(
             #     "employee.tasks.send_resignation_application_email",
             #     obj,
             # )
+        elif not is_resignation_creating and obj.status == "approved":
+            subject = "Approval of Your Resignation"
+            body = loader.render_to_string(
+                "mails/resignation_approved.html",
+                context={
+                    "employee_name": obj.employee.full_name,
+                },
+            )
+            from_email = '"Mediusware-HR" <hr@mediusware.com>'
+            recipient_email = [obj.employee.email]
+            send_resignation_feedback_email(subject, body, from_email, recipient_email)
 
     def has_module_permission(self, request):
         return False
@@ -90,38 +101,53 @@ class ResignationAdmin(RecentEdit, admin.ModelAdmin):
                     resignation = inline_form.cleaned_data.get("resignation")
                     feedback = inline_form.cleaned_data.get("message")
                     if request.user.employee != resignation.employee:
-                        subject = "Feedback on Your Resignation From Mediusware Ltd."
+                        # subject = "Acknowledgment of Your Resignation and Feedback"
                         recipient_email = [resignation.employee.email]
                         from_email = '"Mediusware-HR" <hr@mediusware.com>'
-                        
-                        body = loader.render_to_string(
-                            "mails/resignation_feedback.html",
-                            context={
-                                "greet_name": resignation.employee.full_name,
-                                "feedback": feedback,
-                                "best_regards": "MD Shahjahan Kabir",
-                                "contact_email": "hr@mediusware.com",
-                            },
-                        )
+                        if resignation.pk and resignation.status == "pending":
+                            subject = "Acknowledgment of Your Resignation and Feedback"
+                            body = loader.render_to_string(
+                                "mails/resignation_acknowledgment.html",
+                                context={
+                                    "employee_name": resignation.employee.full_name,
+                                    "feedback": feedback,
+                                    "best_regards": "MD Shahjahan Kabir",
+                                    "contact_email": "hr@mediusware.com",
+                                },
+                            )
+                        elif resignation.pk and resignation.status == "rejected":
+                            subject = "Your Resignation Has Been Rejected"
+                            body = loader.render_to_string(
+                                "mails/resignation_rejection.html",
+                                context={
+                                    "employee_name": resignation.employee.full_name,
+                                    "feedback": feedback,
+                                    "best_regards": "MD Shahjahan Kabir",
+                                    "contact_email": "hr@mediusware.com",
+                                },
+                            )
+                        elif resignation.pk and resignation.status == "approved":
+                            subject = "Approval of Your Resignation"
+                            body = loader.render_to_string(
+                                "mails/resignation_approved.html",
+                                context={
+                                    "employee_name": resignation.employee.full_name,
+                                    "feedback": feedback,
+                                    "best_regards": "MD Shahjahan Kabir",
+                                    "contact_email": "hr@mediusware.com",
+                                },
+                            )
                     else:
                         subject = f"Feedback For Resignation From {resignation.employee.full_name}"
                         recipient_email = ['<hr@mediusware.com>']
                         from_email = resignation.employee.email
                         body = loader.render_to_string(
-                            "mails/resignation_feedback.html",
+                            "mails/resignation_employee_feedback.html",
                             context={
-                                "greet_name": resignation.employee.full_name,
+                                "employee_name": resignation.employee.full_name,
                                 "feedback": feedback,
-                                "best_regards": resignation.employee.full_name,
-                                "contact_email": resignation.employee.email,
                             },
                         )
                     send_resignation_feedback_email(subject, body, from_email, recipient_email)
-                    # async_task(
-                    #     "employee.tasks.send_resignation_feedback_email",
-                    #     subject,
-                    #     body,
-                    #     from_email,
-                    #     recipient_email,
-                    # )
+
         return super().save_related(request, form, formsets, change)
