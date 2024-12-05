@@ -26,15 +26,24 @@ from asset_management.models import (
 class AssetHeadAdmin(admin.ModelAdmin):
     list_display = ("title",)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(AssetItem)
 class AssetItemAdmin(admin.ModelAdmin):
     list_display = ("title",)
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(Addition)
 class AdditionAdmin(admin.ModelAdmin):
     list_display = ("title",)
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Asset)
@@ -109,7 +118,8 @@ class AssetAdmin(admin.ModelAdmin):
                     qs = Asset.objects.filter(
                         Q(title__icontains=search_term)
                         | Q(code__icontains=search_term)
-                        |Q(is_available=True) | Q(id__in=assined_assets),
+                        | Q(is_available=True)
+                        | Q(id__in=assined_assets),
                     )
         return qs, use_distinct
 
