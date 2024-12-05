@@ -75,8 +75,9 @@ INSTALLED_APPS = [
     "channels",
     "reception",
     "nested_admin",
+    "smart_selects",
 ]
-
+USE_DJANGO_JQUERY = True
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",

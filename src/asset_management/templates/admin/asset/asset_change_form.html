@@ -1,0 +1,40 @@
+{% extends "admin/change_form.html" %}
+{% load employee_helper %}
+
+{% block submit_buttons_bottom %}
+    {{ block.super }}  {# Ensures the save and delete buttons are rendered #}
+    {% if assign_history %}
+        <fieldset class="module">
+            <h2 style="font-size: 0.8rem; text-transform: uppercase;">Asset Assign Histories</h2>
+            <div class="inline-group" id="all-leaves-inline">
+                <table class="table table-striped" id="all-leaves-table" style="width: 100%;">
+                    <thead>
+                        <tr>
+                            <th class="original">Employee</th>
+                            <th class="original">Asset</th>
+                            <th class="original">Start Date</th>
+                            <th class="original">End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in assign_history %}
+                            <tr class="dynamic-row">
+                                <td>{{ history.employee.full_name }}</td>
+                                <td>{{ history.asset.title }}</td>
+                                <td>{{ history.created_at|date:"d-m-Y" }}</td>
+                                <td>{{ history.end_date|date:"d-m-Y" }}</td>
+                                
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3">No leaves found for this employee.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </fieldset>
+    {% endif %}
+        
+    
+{% endblock %}

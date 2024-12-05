@@ -136,7 +136,7 @@ class LoanPaymentAdmin(admin.ModelAdmin):
 @admin.register(SalaryEmiLoan)
 class SalaryEmiLoanAdmin(admin.ModelAdmin):
     list_display = ("employee", "get_salary_loan")
-    date_hierarchy = "created_at"
+    date_hierarchy = "salary_sheet__date"
     change_list_template = "admin/salary_emi_loan.html"
 
     def get_salary_loan(self, obj):

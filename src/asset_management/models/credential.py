@@ -22,7 +22,7 @@ class Credential(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     category = models.ForeignKey(CredentialCategory, on_delete=models.RESTRICT)
     description = HTMLField()
-    privileges = models.ManyToManyField(User, blank=True)
+    privileges = models.ManyToManyField(User, blank=True, related_name="credentials")
     status = models.CharField(max_length=15, choices = STATUS_CHOICES, default='Active',)
 
     class Meta:
