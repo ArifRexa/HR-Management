@@ -1,67 +1,149 @@
-from uuid import uuid4
-
+from datetime import timedelta
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, pre_delete
+from django.utils import timezone
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 
 from employee.models import Employee
+from smart_selects.db_fields import ChainedForeignKey
 
 
-class AssetCategory(AuthorMixin, TimeStampMixin):
+class AssetHead(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    status = models.BooleanField(default=True)
+    depreciation = models.IntegerField(default=0, help_text="In %")
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Head"
+        verbose_name_plural = "Heads"
+
+
+class Addition(AuthorMixin, TimeStampMixin):
+    title = models.CharField(max_length=255)
+    amount = models.FloatField(default=0.00)
+    date = models.DateField(help_text="Date of purchase")
+
+    def __str__(self):
+        return self.title
+
+
+class AssetItem(AuthorMixin, TimeStampMixin):
+    head = models.ForeignKey(AssetHead, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
 
     def __str__(self):
         return self.title
 
 
 class Asset(AuthorMixin, TimeStampMixin):
+    date = models.DateField(help_text="Date of purchase", null=True)
     title = models.CharField(max_length=255)
-    category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE)
+    rate = models.FloatField(default=0.00)
+    addition = models.ManyToManyField(Addition, related_name="asset_additions", null=True, blank=True)
+    # category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE)
+    head = models.ForeignKey(AssetHead, on_delete=models.CASCADE, null=True, blank=True)
 
     code = models.SlugField(max_length=50, unique=True)
-    description = models.TextField(default='')
-    
+    description = models.TextField(default="", blank=True)
+
     is_available = models.BooleanField(default=True)
+    # item = models.ForeignKey(
+    #     AssetItem, on_delete=models.SET_NULL, null=True, blank=True
+    # )
+    item = ChainedForeignKey(
+        AssetItem,
+        chained_field="head",
+        chained_model_field="head",
+        show_all=False,
+        auto_choose=True,
+        null=True,
+        blank=True,
+    )
 
     is_active = models.BooleanField(default=True)
-    need_repair = models.BooleanField(default=False)
+    # need_repair = models.BooleanField(default=False)
 
-    last_assigned = models.DateTimeField(null=True, blank=True)
+    # last_assigned = models.DateTimeField(null=True, blank=True)
 
-    note = models.TextField(null=True, blank=True)
+    # note = models.TextField(null=True, blank=True)
+
+    @property
+    def total_amount(self):
+        addition_total = 0.00
+        for add in self.addition.all():
+            addition_total += add.amount
+        return addition_total + self.rate
 
     def __str__(self):
         return f"{self.title} | {self.code}"
 
 
-
 class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
-    employee = models.ForeignKey(Employee, models.CASCADE, limit_choices_to={"active": True})
-    asset = models.ForeignKey(Asset, models.CASCADE)
+    employee = models.ForeignKey(
+        Employee,
+        models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="assigned_assets",
+    )
+    asset = models.ForeignKey(
+        Asset, on_delete=models.CASCADE, related_name="assigned_employees"
+    )
+    end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.employee.full_name} - {self.asset.title}"
 
 
-@receiver(pre_save, sender=EmployeeAssignedAsset)
-def assset_assign(sender, instance, update_fields=None, **kwargs):
-    old_instance = sender.objects.filter(id=instance.id).first()
+# class AssetAssignedHistory(AuthorMixin, TimeStampMixin):
+#     employee = models.ForeignKey(
+#         Employee,
+#         models.CASCADE,
+#         limit_choices_to={"active": True},
+#         related_name="assigned_assets",
+#     )
+#     asset = models.ForeignKey(
+#         Asset, on_delete=models.CASCADE, related_name="assigned_employees"
+#     )
+#     start_date = models.DateField(default=timezone.now)
+#     end_date = models.DateField(null=True, blank=True)
 
-    # TODO: Handle asset assign date here
-    
+#     def __str__(self):
+#         return f"{self.employee.full_name} - {self.asset.title}"
+
+
+@receiver(pre_save, sender=EmployeeAssignedAsset)
+def asset_assign(sender, instance, **kwargs):
+    # Avoid recursive signal calls
+    if getattr(instance, '_signal_handled', False):
+        return
+
+    # Retrieve the most recent instance for the same employee
+    old_instance = sender.objects.filter(employee=instance.employee).order_by("-id").first()
+
     if old_instance:
+        # Update the end_date for the old assignment
+        old_instance.end_date = timezone.now() - timedelta(days=1)
+        # Temporarily disable signal handling for this save
+        old_instance._signal_handled = True
+        old_instance.save()
+
+        # Mark the old asset as available
         old_asset = old_instance.asset
         old_asset.is_available = True
         old_asset.save()
-    
+
+    # Mark the new asset as not available
     new_asset = instance.asset
     new_asset.is_available = False
     new_asset.save()
+
+    # Set the flag on the instance to avoid re-triggering
+    instance._signal_handled = True
 
 
 @receiver(pre_delete, sender=EmployeeAssignedAsset)
