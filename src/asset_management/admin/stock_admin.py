@@ -1,9 +1,7 @@
 from django.contrib import admin
-from django.db.models import Sum
-from django.db.models.functions import Coalesce
+
 
 from asset_management.models import Unit, Product, Stock
-from config.admin.utils import simple_request_filter
 
 
 @admin.register(Unit)
@@ -14,23 +12,23 @@ class UnitAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    search_fields = ('title', 'unit__title')
-    list_display = ('title', 'current_stock')
+    search_fields = ("title", "unit__title")
+    list_display = ("title", "current_stock")
 
     @admin.display()
     def current_stock(self, obj):
-        return f'{obj.current_stock} {obj.unit}'
-    
+        return f"{obj.current_stock} {obj.unit}"
+
     def has_module_permission(self, request):
         return False
 
 
 @admin.register(Stock)
 class StockAdmin(admin.ModelAdmin):
-    search_fields = ('note', 'product__title', 'employee__full_name')
-    list_display = ('date', 'employee', 'product', 'get_quantity', 'note', 'type')
-    list_filter = ('type', 'product')
-    date_hierarchy = 'date'
+    search_fields = ("note", "product__title", "employee__full_name")
+    list_display = ("date", "employee", "product", "get_quantity", "note", "type")
+    list_filter = ("type", "product")
+    date_hierarchy = "date"
 
     # change_list_template = 'admin/stock/list.html'
     #
@@ -42,9 +40,9 @@ class StockAdmin(admin.ModelAdmin):
     #     }
     #     return super(StockAdmin, self).changelist_view(request, extra_context=my_context)
 
-    @admin.display(description='Quantity')
+    @admin.display(description="Quantity")
     def get_quantity(self, obj):
-        return f'{obj.quantity} {obj.product.unit}'
-    
+        return f"{obj.quantity} {obj.product.unit}"
+
     def has_module_permission(self, request):
         return False

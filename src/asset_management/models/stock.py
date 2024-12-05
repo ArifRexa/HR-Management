@@ -35,7 +35,7 @@ class Stock(AuthorMixin, TimeStampMixin):
         ('out', 'Stock Out')
     )
     employee = models.ForeignKey(Employee, on_delete=models.RESTRICT, limit_choices_to={'active': True}, null=True,
-                                 blank=True)
+                                 blank=True, related_name='stocks')
     product = models.ForeignKey(Product, on_delete=models.RESTRICT)
     quantity = models.FloatField()
     date = models.DateField(default=timezone.now)

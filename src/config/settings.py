@@ -76,7 +76,7 @@ INSTALLED_APPS = [
     "reception",
     "nested_admin",
 ]
-
+USE_DJANGO_JQUERY = True
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
