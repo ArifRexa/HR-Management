@@ -147,7 +147,7 @@ class ClientAdmin(admin.ModelAdmin):
         "client_feedback",
         "image",
         "linkedin_url",
-        # "bill_from",
+        "bill_from",
         # "cc_email",
         "address",
         "country",
