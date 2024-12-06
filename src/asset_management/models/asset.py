@@ -23,13 +23,7 @@ class AssetHead(AuthorMixin, TimeStampMixin):
         verbose_name_plural = "Heads"
 
 
-class Addition(AuthorMixin, TimeStampMixin):
-    title = models.CharField(max_length=255)
-    amount = models.FloatField(default=0.00)
-    date = models.DateField(help_text="Date of purchase")
 
-    def __str__(self):
-        return self.title
 
 
 class AssetItem(AuthorMixin, TimeStampMixin):
@@ -38,15 +32,31 @@ class AssetItem(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return self.title
+    
+
+class Vendor(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+
+class Brand(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
 
 
 class Asset(AuthorMixin, TimeStampMixin):
     date = models.DateField(help_text="Date of purchase", null=True)
-    title = models.CharField(max_length=255)
-    rate = models.FloatField(default=0.00)
-    addition = models.ManyToManyField(Addition, related_name="asset_additions", null=True, blank=True)
+    # title = models.CharField(max_length=255, null=True)
+    rate = models.FloatField(default=0.00, verbose_name="Purchase Price")
+    # addition = models.ManyToManyField(Addition, related_name="asset_additions", null=True, blank=True)
     # category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE)
-    head = models.ForeignKey(AssetHead, on_delete=models.CASCADE, null=True, blank=True)
+    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True)
+    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
+    head = models.ForeignKey(AssetHead, on_delete=models.CASCADE, null=True)
 
     code = models.SlugField(max_length=50, unique=True)
     description = models.TextField(default="", blank=True)
@@ -62,7 +72,7 @@ class Asset(AuthorMixin, TimeStampMixin):
         show_all=False,
         auto_choose=True,
         null=True,
-        blank=True,
+        verbose_name="Category",
     )
 
     is_active = models.BooleanField(default=True)
@@ -80,8 +90,17 @@ class Asset(AuthorMixin, TimeStampMixin):
         return addition_total + self.rate
 
     def __str__(self):
-        return f"{self.title} | {self.code}"
+        return f"{self.item.title} | {self.code}"
 
+
+class Addition(AuthorMixin, TimeStampMixin):
+    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="addition", null=True, blank=True)
+    title = models.CharField(max_length=255)
+    amount = models.FloatField(default=0.00)
+    date = models.DateField(help_text="Date of purchase")
+
+    def __str__(self):
+        return self.title
 
 class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
     employee = models.ForeignKey(

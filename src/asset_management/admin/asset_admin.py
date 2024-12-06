@@ -13,6 +13,8 @@ from asset_management.models import (
     AssetHead,
     Addition,
     AssetItem,
+    Vendor,
+    Brand,
 )
 
 
@@ -21,10 +23,22 @@ from asset_management.models import (
 #     def has_module_permission(self, request):
 #         return False
 
+@admin.register(Vendor)
+class VendorAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    def has_module_permission(self, request):
+        return False
+    
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
+    def has_module_permission(self, request):
+        return False
 
 @admin.register(AssetHead)
 class AssetHeadAdmin(admin.ModelAdmin):
     list_display = ("title",)
+    search_fields = ("title",)
 
     def has_module_permission(self, request):
         return False
@@ -33,53 +47,61 @@ class AssetHeadAdmin(admin.ModelAdmin):
 @admin.register(AssetItem)
 class AssetItemAdmin(admin.ModelAdmin):
     list_display = ("title",)
+    search_fields = ("title",)
 
     def has_module_permission(self, request):
         return False
 
 
-@admin.register(Addition)
-class AdditionAdmin(admin.ModelAdmin):
-    list_display = ("title",)
-    
-    def has_module_permission(self, request):
-        return False
+
+class AdditionInline(admin.TabularInline):
+    model = Addition
+    extra = 1
 
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
     list_display = (
-        "title",
+        "get_item_title",
         "code",
         # "category",
         "description",
         "is_active",
         "is_available",
     )
+    autocomplete_fields = ("vendor", "brand")
     search_fields = (
         "title",
         "code",
         "description",
     )
     fields = (
-        "title",
-        "code",
-        "description",
-        "date",
-        "rate",
-        "addition",
         "head",
         "item",
+        "vendor",
+        "brand",
+        # "title",
+        "code",
+        "date",
+        "rate",
+        "description",
         "is_available",
         "is_active",
     )
+    inlines = [AdditionInline]
     # exclude = ("head",)
     list_filter = (
         "head",
+        "vendor",
+        "brand",
         "is_active",
         "is_available",
     )
     change_form_template = "admin/asset/asset_change_form.html"
+    
+    @admin.display(description="Title")
+    def get_item_title(self, obj):
+        return obj.item.title
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
