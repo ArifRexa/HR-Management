@@ -1,0 +1,81 @@
+{% extends "admin/change_list.html" %}
+
+{% load static %}
+
+
+{% block extrahead %}
+    <!-- <link rel="icon" id="med" href="https://mediusware.com/favicon.ico"> -->
+    <link rel="icon" id="med" href="{% if has_pending_request %} https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/dfdfd.png {% endif %}">
+    <link rel="shortcut icon" type="image/x-icon"
+          href="https://mediusware.com/wp-content/uploads/2021/04/apple-icon-120x120-1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        #result_list {
+            min-height: 50vh;
+        }
+
+        select {
+            overflow: overlay;
+        }
+
+        ul.messagelist li.alert-danger {
+            color: white !important;
+            background: red !important;
+        }
+
+        .blinking-text {
+            animation: blink 1.5s infinite alternate;
+        }
+
+        @keyframes blink {
+            from { color: red; }
+            to { color: #41a6fa; }
+        }
+
+        /* Container for h3 and button */
+        .filter-header {
+            display: flex;
+            justify-content: space-between; /* Align h3 and button on opposite ends */
+            align-items: center;
+        }
+
+        /* Style for the toggle buttons beside h3 */
+        .toggle-filter-button {
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 18px;
+            margin-left: 10px;
+            outline: none;
+        }
+
+        .toggle-filter-button:focus {
+            outline: none;
+        }
+
+    </style>
+
+    <script>
+        // Select the <title> element
+        let titleElement = document.getElementsByTagName('title')[0];
+        let pendingCount = '{{ pending_count }}';
+
+            // Get the current title text
+        let currentTitle = titleElement.textContent.trim();
+        if (pendingCount !== undefined && pendingCount > 0){
+            titleElement.textContent = `(${pendingCount}) ${currentTitle}`;
+        }
+        // Set a timeout to execute after one hour (3600 seconds)
+    setTimeout(() => {
+        window.location.reload();
+        // You can call any function or execute any code here
+    }, 3600 * 1000); // 3600 seconds * 1000 milliseconds
+
+    </script>
+
+{% endblock %}
+
+
+
+
