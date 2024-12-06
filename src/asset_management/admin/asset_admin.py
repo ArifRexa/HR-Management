@@ -101,7 +101,7 @@ class AssetAdmin(admin.ModelAdmin):
     
     @admin.display(description="Title")
     def get_item_title(self, obj):
-        return obj.item.title
+        return obj.item.title if obj.item else "-"
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
