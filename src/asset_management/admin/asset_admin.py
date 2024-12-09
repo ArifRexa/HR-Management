@@ -1,5 +1,5 @@
 from urllib.parse import urlparse
-
+from django.template.loader import get_template
 from django.contrib import admin
 from django.db.models import Q
 from django.utils.html import format_html
@@ -16,6 +16,12 @@ from asset_management.models import (
     Vendor,
     Brand,
 )
+from asset_management.models.asset import (
+    AssetRequest,
+    AssetRequestNote,
+    AssetRequestStatus,
+    PriorityChoices,
+)
 
 
 # @admin.register(AssetCategory)
@@ -23,17 +29,22 @@ from asset_management.models import (
 #     def has_module_permission(self, request):
 #         return False
 
+
 @admin.register(Vendor)
 class VendorAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+
     def has_module_permission(self, request):
         return False
-    
+
+
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+
     def has_module_permission(self, request):
         return False
+
 
 @admin.register(AssetHead)
 class AssetHeadAdmin(admin.ModelAdmin):
@@ -51,7 +62,6 @@ class AssetItemAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
-
 
 
 class AdditionInline(admin.TabularInline):
@@ -98,7 +108,7 @@ class AssetAdmin(admin.ModelAdmin):
         "is_available",
     )
     change_form_template = "admin/asset/asset_change_form.html"
-    
+
     @admin.display(description="Title")
     def get_item_title(self, obj):
         return obj.item.title if obj.item else "-"
@@ -265,3 +275,78 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         qs = qs.filter(active=True)
         return qs
+
+
+class AssetRequestNoteInline(admin.TabularInline):
+    model = AssetRequestNote
+    extra = 1
+
+
+@admin.register(AssetRequest)
+class AssetRequestAdmin(admin.ModelAdmin):
+    inlines = (AssetRequestNoteInline,)
+    list_display = (
+        "category",
+        "quantity",
+        "get_notes",
+        "get_priority",
+        "requested_by",
+        "get_status",
+    )
+    list_filter = ("category", "priority", "status")
+    autocomplete_fields = ("category",)
+    change_list_template = "admin/asset/asset_request.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+        extra_context["has_pending_request"] = (
+            self.get_queryset(request)
+            .filter(status=AssetRequestStatus.PENDING)
+            .exists()
+        )
+        extra_context["pending_count"] = (
+            self.get_queryset(request).filter(status=AssetRequestStatus.PENDING).count()
+        )
+        return super().changelist_view(request, extra_context)
+
+    class Media:
+        css = {"all": ("css/list.css",)}
+
+    @admin.display(description="Priority")
+    def get_priority(self, obj):
+        color = "green"
+        if obj.priority == PriorityChoices.High:
+            color = "red"
+        elif obj.priority == PriorityChoices.MEDIUM:
+            color = "blue"
+        return format_html(
+            f'<b style="color: {color}">{obj.get_priority_display()}</b>'
+        )
+
+    @admin.display(description="Status")
+    def get_status(self, obj):
+        color = "green"
+        if obj.status == AssetRequestStatus.PENDING:
+            color = "red"
+        elif obj.status == AssetRequestStatus.IN_PROGRESS:
+            color = "blue"
+        return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
+
+    @admin.display(description="Requested By")
+    def requested_by(self, obj):
+        return obj.created_by.employee.full_name
+
+    @admin.display(description="Notes")
+    def get_notes(self, obj):
+        if not obj.asset_request_notes.exists():
+            return "-"
+        html_template = get_template("admin/asset/col_note.html")
+
+        html_content = html_template.render(
+            {
+                "note": obj.asset_request_notes.first(),
+                "notes": obj.asset_request_notes.all(),
+            }
+        )
+
+        return format_html(html_content)

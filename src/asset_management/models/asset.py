@@ -23,23 +23,20 @@ class AssetHead(AuthorMixin, TimeStampMixin):
         verbose_name_plural = "Heads"
 
 
-
-
-
 class AssetItem(AuthorMixin, TimeStampMixin):
     head = models.ForeignKey(AssetHead, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
 
     def __str__(self):
         return self.title
-    
+
 
 class Vendor(AuthorMixin, TimeStampMixin):
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
-    
+
 
 class Brand(AuthorMixin, TimeStampMixin):
     name = models.CharField(max_length=255)
@@ -94,13 +91,16 @@ class Asset(AuthorMixin, TimeStampMixin):
 
 
 class Addition(AuthorMixin, TimeStampMixin):
-    asset = models.ForeignKey(Asset, on_delete=models.CASCADE, related_name="addition", null=True, blank=True)
+    asset = models.ForeignKey(
+        Asset, on_delete=models.CASCADE, related_name="addition", null=True, blank=True
+    )
     title = models.CharField(max_length=255)
     amount = models.FloatField(default=0.00)
     date = models.DateField(help_text="Date of purchase")
 
     def __str__(self):
         return self.title
+
 
 class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
     employee = models.ForeignKey(
@@ -138,11 +138,13 @@ class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
 @receiver(pre_save, sender=EmployeeAssignedAsset)
 def asset_assign(sender, instance, **kwargs):
     # Avoid recursive signal calls
-    if getattr(instance, '_signal_handled', False):
+    if getattr(instance, "_signal_handled", False):
         return
 
     # Retrieve the most recent instance for the same employee
-    old_instance = sender.objects.filter(employee=instance.employee).order_by("-id").first()
+    old_instance = (
+        sender.objects.filter(employee=instance.employee).order_by("-id").first()
+    )
 
     if old_instance:
         # Update the end_date for the old assignment
@@ -181,3 +183,37 @@ class EmployeeAsset(Employee):
 
 class SubAsset(AuthorMixin, TimeStampMixin):
     pass
+
+
+class PriorityChoices(models.TextChoices):
+    LOW = "low", "Low"
+    MEDIUM = "medium", "Medium"
+    High = "high", "High"
+
+
+class AssetRequestStatus(models.TextChoices):
+    PENDING = "pending", "Pending"
+    DONE = "done", "Done"
+    IN_PROGRESS = "in_progress", "In Progress"
+
+
+class AssetRequest(AuthorMixin, TimeStampMixin):
+    category = models.ForeignKey(
+        AssetItem, on_delete=models.CASCADE, related_name="asset_requests"
+    )
+    quantity = models.IntegerField(default=1)
+    priority = models.CharField(
+        max_length=10, choices=PriorityChoices.choices, default=PriorityChoices.LOW
+    )
+    status = models.CharField(
+        max_length=15,
+        choices=AssetRequestStatus.choices,
+        default=AssetRequestStatus.PENDING,
+    )
+
+
+class AssetRequestNote(AuthorMixin, TimeStampMixin):
+    request = models.ForeignKey(
+        AssetRequest, on_delete=models.CASCADE, related_name="asset_request_notes"
+    )
+    note = models.TextField(null=True, blank=True)
