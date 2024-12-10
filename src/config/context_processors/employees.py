@@ -22,7 +22,7 @@ from employee.models import (
 )
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
-from employee.models.employee import BookConferenceRoom
+from employee.models.employee import BookConferenceRoom, Inbox
 from employee.models import FavouriteMenu
 from employee.forms.employee_project import BookConferenceRoomForm
 from project_management.models import Project, DailyProjectUpdate
@@ -205,6 +205,16 @@ def employee_need_help_form(request):
         }
     else:
         return {"employee_need_help_form": None}
+
+
+def unread_inbox(request):
+    if not request.user.is_authenticated:
+        return {}
+    if not request.user.has_perm("employee.can_see_all_employee_inbox"):
+        qs = Inbox.objects.filter(employee=request.user.employee, is_read=False).count()
+        return {"unread_inbox_count": qs}
+    return {}
+        
 
 
 def all_notices(request):

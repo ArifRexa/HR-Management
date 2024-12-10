@@ -125,6 +125,7 @@ TEMPLATES = [
                 "config.context_processors.employees.last_four_week_project_hour",
                 "config.context_processors.employees.can_show_permanent_increment",
                 "config.context_processors.employees.all_notices",
+                "config.context_processors.employees.unread_inbox",
             ],
         },
     },
