@@ -93,7 +93,7 @@ class EmployeeInline(admin.ModelAdmin):
         if (
             not request.user.is_superuser
             and obj
-            and (request.user != obj.user or not request.user.employee.operation)
+            and (request.user != obj.user and not request.user.employee.operation)
             and self.has_module_permission
         ):
             for inline_obj in inlines.copy():
