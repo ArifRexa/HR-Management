@@ -1,0 +1,45 @@
+
+{% extends 'admin/change_list.html' %}
+{% load admin_urls %}
+
+{% block content %}
+<style>
+    .notification {
+    position: relative;
+    left: -195px;
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    padding: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+</style>
+{{ block.super }}
+    
+<!-- <h1 style="font-size: 10rem;">Custom Template</h1> -->
+<script>
+    window.onload = function() {
+        console.log('window loaded');
+        const sideBar = document.getElementById('nav-sidebar');
+        const row = sideBar.getElementsByClassName('model-inbox')[0];
+        // row.style.position = "relative";
+        console.log(row);
+        // get element by attribute
+        const ele = row.getElementsByTagName("a")[0];
+        const unread_count = "{{unread_inbox_count}}";
+        if (unread_count > 0) {
+            const e = document.createElement("span")
+            e.classList.add("notification")
+            row.appendChild(e).innerHTML = `<span style="position: relative; top: 0; right: 0;">${unread_count}</span>`;
+        }
+    
+    }
+
+</script>
+{% endblock content %}
+    

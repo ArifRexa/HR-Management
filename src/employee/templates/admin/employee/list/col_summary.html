@@ -1,0 +1,16 @@
+{% load replace_newline daily_groupby %}
+<div class="popover-wrapper">
+
+    <div class="popover-title">
+        {{summary.summary |truncatewords:10}}
+    </div>
+    <div class="popover-message">
+
+        {% for note_item in summaries %}
+            <span style="text-decoration: underline;">{{note_item.created_by.employee.full_name}}</span> <br>
+            {{note_item.summary}} <br> <br>
+            
+        {% endfor %}
+    </div>
+
+</div>

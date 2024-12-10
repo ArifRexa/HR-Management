@@ -45,6 +45,17 @@ class Brand(AuthorMixin, TimeStampMixin):
         return self.name
 
 
+class AssetVariant(AuthorMixin, TimeStampMixin):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = "Variant"
+        verbose_name_plural = "Variants"
+
+
 class Asset(AuthorMixin, TimeStampMixin):
     date = models.DateField(help_text="Date of purchase", null=True)
     # title = models.CharField(max_length=255, null=True)
@@ -54,7 +65,7 @@ class Asset(AuthorMixin, TimeStampMixin):
     vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True)
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
     head = models.ForeignKey(AssetHead, on_delete=models.CASCADE, null=True)
-
+    variant = models.ForeignKey(AssetVariant, on_delete=models.SET_NULL, null=True, blank=True)
     code = models.SlugField(max_length=50, unique=True)
     description = models.TextField(default="", blank=True)
 
