@@ -546,6 +546,8 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_print_salary_certificate", "Can print salary certificate"),
             ("can_print_salary_payslip", "Can print salary payslip"),
             ("can_show_permanent_increment", "Can show permanent increment"),
+            ("can_send_mail_to_employee", "Can send mail to employee"),
+            ("can_print_employee_info", "Can print employee info"),
         )
         ordering = ["full_name"]
 

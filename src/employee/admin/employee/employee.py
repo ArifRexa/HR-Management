@@ -215,6 +215,25 @@ class EmployeeAdmin(
                 "print_salary_certificate_all_months",
             ],
             "employee.can_print_salary_payslip": ["print_salary_pay_slip_all_months"],
+            "employee.can_send_mail_to_employee": [
+                "mail_appointment_letter",
+                "mail_permanent_letter",
+                "mail_increment_letter",
+                "mail_noc_letter",
+            ],
+            "employee.can_print_employee_info": [
+                "generate_noc_letter",
+                "print_appointment_letter",
+                "print_permanent_letter",
+                "print_increment_letter",
+                "print_noc_letter",
+                "print_resignation_letter",
+                "print_tax_salary_certificate",
+                "print_bank_forwarding_letter",
+                "print_promotion_letter",
+                "print_experience_letter",
+                "download_employee_info",
+            ],
         }
 
         allowed_actions = []
@@ -911,7 +930,7 @@ class MeetingSummaryInline(admin.TabularInline):
     model = MeetingSummary
     extra = 1
     readonly_fields = ("created_by",)
-    
+
 
 class InboxReadStatusFilter(admin.SimpleListFilter):
     title = "Read Status"
@@ -932,15 +951,20 @@ class InboxReadStatusFilter(admin.SimpleListFilter):
 
 @admin.register(Inbox)
 class InboxAdmin(admin.ModelAdmin):
-    list_display = ("get_date", "employee", "get_summary", "get_discuss_with", "get_read_status")
-    list_filter = ("employee",InboxReadStatusFilter)
+    list_display = (
+        "get_date",
+        "employee",
+        "get_summary",
+        "get_discuss_with",
+        "get_read_status",
+    )
+    list_filter = ("employee", InboxReadStatusFilter)
     # search_fields = ("sender__full_name", "receiver__full_name")
     autocomplete_fields = ("employee",)
     inlines = (MeetingSummaryInline,)
     change_list_template = "admin/employee/change_list.html"
     change_form_template = "admin/employee/change_view.html"
     exclude = ("is_read",)
-    
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -949,7 +973,7 @@ class InboxAdmin(admin.ModelAdmin):
     @admin.display(description="Date")
     def get_date(self, obj):
         return obj.created_at.strftime("%Y-%m-%d")
-    
+
     @admin.display(description="Read Status")
     def get_read_status(self, obj):
         return "Read" if obj.is_read else "Unread"
@@ -966,13 +990,13 @@ class InboxAdmin(admin.ModelAdmin):
     @admin.display(description="Discuss with")
     def get_discuss_with(self, obj):
         return obj.created_by.employee.full_name
-    
+
     def get_queryset(self, request):
         if not request.user.has_perm("employee.can_see_all_employee_inbox"):
             return super().get_queryset(request).filter(employee=request.user.employee)
         return super().get_queryset(request)
 
-    def change_view(self, request, object_id, form_url='', extra_context=None):
+    def change_view(self, request, object_id, form_url="", extra_context=None):
         if request.method == "GET":
             obj = self.get_object(request, object_id)
             obj.is_read = True
