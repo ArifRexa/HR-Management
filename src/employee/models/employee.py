@@ -2,6 +2,7 @@ from ast import mod
 import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
+from re import sub
 from tabnanny import verbose
 from django.utils import timezone
 
@@ -908,3 +909,31 @@ class LessHour(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return f"{self.employee.full_name} under {self.tpm.full_name}"
+
+
+class Inbox(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="inbox_employees",
+    )
+    subject = models.CharField(max_length=255, verbose_name="Meeting Subject")
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Meeting With {self.employee.full_name}"
+    
+    class Meta:
+        permissions = [
+            ("can_see_all_employee_inbox", "Can able to see all employee inbox"),
+        ]
+    
+    
+class MeetingSummary(TimeStampMixin, AuthorMixin):
+    inbox = models.ForeignKey(
+        Inbox,
+        on_delete=models.CASCADE,
+        related_name="meeting_summary_inbox",
+    )
+    summary = models.TextField(null=True, blank=True)

@@ -20,6 +20,7 @@ from asset_management.models.asset import (
     AssetRequest,
     AssetRequestNote,
     AssetRequestStatus,
+    AssetVariant,
     PriorityChoices,
 )
 
@@ -68,6 +69,13 @@ class AdditionInline(admin.TabularInline):
     model = Addition
     extra = 1
 
+@admin.register(AssetVariant)
+class AssetVariantAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+    
+    def has_module_permission(self, request):
+        return False
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
@@ -79,7 +87,7 @@ class AssetAdmin(admin.ModelAdmin):
         "is_active",
         "is_available",
     )
-    autocomplete_fields = ("vendor", "brand")
+    autocomplete_fields = ("vendor", "brand", "variant")
     search_fields = (
         "title",
         "code",
@@ -90,7 +98,7 @@ class AssetAdmin(admin.ModelAdmin):
         "item",
         "vendor",
         "brand",
-        # "title",
+        "variant",
         "code",
         "date",
         "rate",
@@ -104,6 +112,7 @@ class AssetAdmin(admin.ModelAdmin):
         "head",
         "vendor",
         "brand",
+        "variant",
         "is_active",
         "is_available",
     )
