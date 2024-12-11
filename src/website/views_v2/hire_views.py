@@ -16,7 +16,7 @@ class HireResourcePageListView(ListAPIView):
     pagination_class = None
 
 class HireResourcePageSitemapView(ListAPIView):
-    queryset = HireResourcePage.objects.filter(parents__isnull=True)
+    queryset = HireResourcePage.objects.filter(parents__isnull=False)
     serializer_class = HireResourcePageSitemapSerializer
     pagination_class = None
     
