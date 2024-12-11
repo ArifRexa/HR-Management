@@ -321,7 +321,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css",)}
 
-    @admin.display(description="Priority")
+    @admin.display(description="Priority", ordering="priority")
     def get_priority(self, obj):
         color = "green"
         if obj.priority == PriorityChoices.High:
@@ -332,7 +332,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
             f'<b style="color: {color}">{obj.get_priority_display()}</b>'
         )
 
-    @admin.display(description="Status")
+    @admin.display(description="Status", ordering="status")
     def get_status(self, obj):
         color = "green"
         if obj.status == AssetRequestStatus.PENDING:
@@ -341,7 +341,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
             color = "blue"
         return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
-    @admin.display(description="Requested By")
+    @admin.display(description="Requested By", ordering="created_by__employee__full_name")
     def requested_by(self, obj):
         return obj.created_by.employee.full_name
 
