@@ -25,7 +25,7 @@ class SalaryHistoryInline(admin.TabularInline):
 
     def get_fields(self, request, obj=None):
         fields = super(SalaryHistoryInline, self).get_fields(request, obj)
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.employee.operation:
             fields.remove("note")
         return fields
 
