@@ -42,13 +42,22 @@ class ServicePageSerializer(serializers.ModelSerializer):
         ).data
         return data
 
+
 class ServicePageSitemapSerializer(serializers.ModelSerializer):
+    child_slug = serializers.CharField(source="slug")
+
     class Meta:
         model = ServicePage
         fields = (
-            "slug",
+            "child_slug",
             "updated_at",
         )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["parent_slug"] = instance.parent.slug
+        data["slug"] = f"{instance.parent.slug}/{instance.slug}"
+        return data
 
 
 class BaseServicePageSerializer(serializers.ModelSerializer):

@@ -48,12 +48,19 @@ class HireResourceChildrenSerializer(serializers.ModelSerializer):
 
 
 class HireResourcePageSitemapSerializer(serializers.ModelSerializer):
+    child_slug = serializers.CharField(source="slug")
     class Meta:
         model = HireResourcePage
         fields = [
-            "slug",
+            "child_slug",
             # "updated_at"
         ]
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["parent_slug"] = instance.parents.slug
+        data["slug"] = f"{instance.parents.slug}/{instance.slug}"
+        return data
 
 class HireResourcePageListSerializer(serializers.ModelSerializer):
     class Meta:
