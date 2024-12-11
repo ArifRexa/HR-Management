@@ -9,7 +9,7 @@ class ServiceListView(ListAPIView):
     serializer_class = ServicePageSerializer
 
 class ServicePageSitemapListView(ListAPIView):
-    queryset = ServicePage.objects.filter(parent__isnull=True)
+    queryset = ServicePage.objects.filter(parent__isnull=False)
     serializer_class = ServicePageSitemapSerializer
     pagination_class = None
 
