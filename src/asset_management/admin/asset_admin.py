@@ -69,13 +69,15 @@ class AdditionInline(admin.TabularInline):
     model = Addition
     extra = 1
 
+
 @admin.register(AssetVariant)
 class AssetVariantAdmin(admin.ModelAdmin):
     list_display = ("name",)
     search_fields = ("name",)
-    
+
     def has_module_permission(self, request):
         return False
+
 
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
@@ -305,6 +307,11 @@ class AssetRequestAdmin(admin.ModelAdmin):
     list_filter = ("category", "priority", "status")
     autocomplete_fields = ("category",)
     change_list_template = "admin/asset/asset_request.html"
+    actions = [
+        "update_status_done",
+        "update_status_pending",
+        "update_status_in_progress",
+    ]
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -341,7 +348,21 @@ class AssetRequestAdmin(admin.ModelAdmin):
             color = "blue"
         return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
-    @admin.display(description="Requested By", ordering="created_by__employee__full_name")
+    @admin.action(description="Update Status To Done")
+    def update_status_done(self, request, queryset):
+        queryset.update(status=AssetRequestStatus.DONE)
+
+    @admin.action(description="Update Status To Pending")
+    def update_status_pending(self, request, queryset):
+        queryset.update(status=AssetRequestStatus.PENDING)
+
+    @admin.action(description="Update Status To In Progress")
+    def update_status_in_progress(self, request, queryset):
+        queryset.update(status=AssetRequestStatus.IN_PROGRESS)
+
+    @admin.display(
+        description="Requested By", ordering="created_by__employee__full_name"
+    )
     def requested_by(self, obj):
         return obj.created_by.employee.full_name
 
