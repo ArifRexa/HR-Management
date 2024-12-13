@@ -71,11 +71,11 @@ class EmployeeSalary(TimeStampMixin):
     @property
     def gross_amount(self):
         return self.gross_salary - self.festival_bonus
-    
+
     # @property
     # def salary_loan_total(self):
     #     print(self.salary_sheet.date.month,"Salary sheet month")
-        
+
     #     loans = Loan.objects.filter(
     #         employee=self.employee,
     #         start_date__month=self.salary_sheet.date.month,
@@ -84,10 +84,10 @@ class EmployeeSalary(TimeStampMixin):
     #     )
     #     print(loans)
     #     return -sum(loan.emi for loan in loans)
-    
+
     @property
     def salary_loan_total(self):
-        print(self.salary_sheet.date.month,"Salary sheet month")
+        print(self.salary_sheet.date.month, "Salary sheet month")
         salary_date = self.salary_sheet.date
         salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
         salary_month_end = datetime(
@@ -95,19 +95,26 @@ class EmployeeSalary(TimeStampMixin):
             salary_date.month,
             calendar.monthrange(salary_date.year, salary_date.month)[1],
         ).date()
-        
+
         loans = Loan.objects.filter(
             employee=self.employee,
             start_date__lte=salary_month_end,
             end_date__gte=salary_month_start,
-            loan_type="salary"
+            loan_type="salary",
         )
         print(loans)
         return -sum(loan.emi for loan in loans)
-    
+
     @property
     def current_month_late_fee(self):
-        late_fee = LateAttendanceFine.objects.filter(employee=self.employee,month=self.salary_sheet.date.month,year=self.salary_sheet.date.year).aggregate(total_fine=Sum('total_late_attendance_fine'))['total_fine'] or 0
+        late_fee = (
+            LateAttendanceFine.objects.filter(
+                employee=self.employee,
+                month=self.salary_sheet.date.month,
+                year=self.salary_sheet.date.year,
+            ).aggregate(total_fine=Sum("total_late_attendance_fine"))["total_fine"]
+            or 0
+        )
         return -late_fee
 
     @property
@@ -116,10 +123,9 @@ class EmployeeSalary(TimeStampMixin):
             employee=self.employee,
             start_date__lte=self.salary_sheet.date,
             end_date__gte=self.salary_sheet.date,
-            loan_type="tds"
+            loan_type="tds",
         )
         return -sum(loan.emi for loan in loans)
-
 
 
 class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
@@ -195,6 +201,7 @@ class Expense(TimeStampMixin, AuthorMixin):
                 "Can Approve Expense",
             ),
             ("can_view_all_expenses", "Can View All Expenses"),
+            ("can_add_balance_sheet", "Can Add Balance Sheet"),
         )
 
 
@@ -205,10 +212,7 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
 
 class Income(TimeStampMixin, AuthorMixin):
     STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
-    EMAIL_SEND_STATUS = (
-        ('yes', 'Yes'),
-        ('no', 'No')
-    )
+    EMAIL_SEND_STATUS = (("yes", "Yes"), ("no", "No"))
     project = models.ForeignKey(
         Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
     )
@@ -222,7 +226,9 @@ class Income(TimeStampMixin, AuthorMixin):
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
     add_to_balance_sheet = models.BooleanField(default=False)
     is_send_clients = models.BooleanField(default=False)
-    is_send_invoice_email = models.CharField(default='no', choices=EMAIL_SEND_STATUS, max_length=5)
+    is_send_invoice_email = models.CharField(
+        default="no", choices=EMAIL_SEND_STATUS, max_length=5
+    )
 
     def save(self, *args, **kwargs):
         hour_rate_decimal = Decimal(self.hour_rate)
@@ -230,7 +236,7 @@ class Income(TimeStampMixin, AuthorMixin):
         hours = Decimal(self.hours)
         self.payment = hours * hour_rate_decimal * convert_rate_decimal
         super(Income, self).save(*args, **kwargs)
-        
+
     class Meta:
         permissions = (
             (
@@ -293,11 +299,11 @@ class Loan(TimeStampMixin, AuthorMixin):
     tenor = models.IntegerField(help_text="Period month")
     payment_method = models.CharField(max_length=50, choices=PAYMENT_METHOD)
     loan_type = models.CharField(max_length=50, choices=LOAN_TYPE)
-    tax_calan_no = models.CharField(max_length=100,null=True,blank=True)
+    tax_calan_no = models.CharField(max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.employee}-{self.loan_amount}"
-    
+
     class Meta:
         permissions = [
             ("can_view_tax_loans", "Can view tax loans"),
@@ -305,11 +311,11 @@ class Loan(TimeStampMixin, AuthorMixin):
 
 
 class SalaryEmiLoan(EmployeeSalary):
-    
     class Meta:
         proxy = True
         verbose_name = "Monthly Salary EMI Loan"
         verbose_name_plural = "Monthly Salary EMI Loans"
+
 
 class LoanGuarantor(TimeStampMixin, AuthorMixin):
     loan = models.ForeignKey(Loan, on_delete=models.CASCADE)
@@ -491,10 +497,11 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 from math import floor
 
+
 class SalaryReport(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
-    
+
     # def save(self, *args, **kwargs):
     #     super().save(*args, **kwargs)  # Call the original save method
     #     self.generate_salary_report()

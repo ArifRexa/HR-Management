@@ -85,8 +85,19 @@ class ExpenseAdmin(admin.ModelAdmin):
     actions = (
         "print_voucher",
         "approve_expense",
+        "add_to_balance_sheet",
+        "remove_from_balance_sheet",
     )
     autocomplete_fields = ("expanse_group", "expense_category")
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not request.user.is_superuser and not request.user.has_perm(
+            "account.can_add_balance_sheet"
+        ):
+            actions.pop("add_to_balance_sheet")
+            actions.pop("remove_from_balance_sheet")
+        return actions
 
     def lookup_allowed(self, lookup, value):
         if lookup in ["created_by__employee__id__exact"]:
@@ -151,6 +162,15 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     # TODO : Export to excel
     # TODO : Credit feature
+
+    @admin.action()
+    def add_to_balance_sheet(self, request, queryset):
+        queryset.update(add_to_balance_sheet=True)
+
+    @admin.action()
+    def remove_from_balance_sheet(self, request, queryset):
+        queryset.update(add_to_balance_sheet=False)
+
     @admin.action()
     def print_voucher(self, request, queryset):
         pdf = PDF()
