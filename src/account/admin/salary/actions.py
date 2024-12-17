@@ -55,17 +55,18 @@ class SalarySheetAction(admin.ModelAdmin):
             beftn = BEFTN.objects.last()
 
             # Calculate total salary for the salary sheet
-            total_salary = salary_sheet.employeesalary_set.filter(
-                employee__bankaccount__default=True,
-                employee__bankaccount__is_approved=True
-            ).aggregate(Sum('gross_salary'))['gross_salary__sum']
-            
+            # total_salary = salary_sheet.employeesalary_set.filter(
+            #     employee__bankaccount__default=True,
+            #     employee__bankaccount__is_approved=True
+            # ).aggregate(Sum('gross_salary'))['gross_salary__sum']
+            total_salary = 0
             for employee_salary in salary_sheet.employeesalary_set.all():
                 # Get the bank account information
                 bank_account = employee_salary.employee.bankaccount_set.filter(default=True, is_approved=True).last()
 
                 if bank_account and employee_salary.gross_salary > 0:
                     # Append the employee salary data with total salary at the end
+                    total_salary += int(employee_salary.gross_salary)
                     work_sheet.append([
                         salary_sheet.date.strftime("%d-%m-%Y"),  # Date
                         bank_account.account_number,            # Account No

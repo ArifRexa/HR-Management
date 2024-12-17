@@ -302,6 +302,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "get_notes",
         "get_priority",
         "requested_by",
+        "requested_date",
         "get_status",
     )
     list_filter = ("category", "priority", "status")
@@ -327,6 +328,11 @@ class AssetRequestAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css",)}
+        
+    
+    @admin.display(description="Requested Date", ordering="created_at")
+    def requested_date(self, obj):
+        return obj.created_at.strftime("%Y-%m-%d")
 
     @admin.display(description="Priority", ordering="priority")
     def get_priority(self, obj):
