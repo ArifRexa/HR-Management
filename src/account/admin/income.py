@@ -14,6 +14,7 @@ import requests
 from account.models import Income
 from account.services.balance import BalanceSummery
 
+import config.settings
 from config.settings import STATIC_ROOT
 from config.utils.pdf import PDF
 from project_management.models import Client
@@ -292,7 +293,11 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
             project_name = "-".join(project_name.split(" "))
             pdf = PDF()
             pdf.file_name = f"Income-Invoice-{project_name}-{id_str}"
-            pdf.template_path = "compliance/new_income_invoice.html"
+            if not client.bill_from:
+                pdf_template = "compliance/new_income_invoice.html"
+            else:
+                pdf_template = "compliance/invoice_without_watermark.html"
+            pdf.template_path = pdf_template
             protocal = "https" if request.is_secure() else "http"
             invoice_total = (
                 queryset.values("date", "hour_rate")
