@@ -223,9 +223,14 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         income_list = queryset.values_list("id", flat=True)
         id_str = "_".join(list(map(str, income_list)))
         project_name = queryset.first().project.title
+        client = queryset.first().project.client
         pdf = PDF()
         pdf.file_name = f"Income Invoice-{project_name}-{id_str}"
-        pdf.template_path = "compliance/new_income_invoice.html"
+        if not client.bill_from:
+            pdf_template = "compliance/new_income_invoice.html"
+        else:
+            pdf_template = "compliance/invoice_without_watermark.html"
+        pdf.template_path = pdf_template
         protocal = "https" if request.is_secure() else "http"
         invoice_total = (
             queryset.values("date", "hour_rate")
