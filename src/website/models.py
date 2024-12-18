@@ -5,6 +5,7 @@ import uuid
 import base64
 from io import BytesIO
 from weasyprint import HTML
+
 # Create your models here
 from tinymce.models import HTMLField
 from mptt.models import MPTTModel, TreeForeignKey
@@ -97,10 +98,14 @@ class BlogStatus(models.TextChoices):
     APPROVED = "approved", "Approved"
     PUBLISHED = "published", "Published"
 
+class BlogSlugField(models.SlugField):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.max_length = 255
 
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    slug = BlogSlugField(unique=True)
     image = models.ImageField(upload_to="blog_images/", verbose_name="Banner Image")
     # video = models.FileField(upload_to="blog_video", blank=True, null=True)
     youtube_link = models.URLField(
@@ -154,7 +159,9 @@ class Blog(AuthorMixin, TimeStampMixin):
         for section in sections:
             # Collect title and description in HTML format
             title_html = f"<h2>{section.title or ''}</h2>" if section.title else ""
-            description_html = f"<p>{section.description or ''}</p>" if section.description else ""
+            description_html = (
+                f"<p>{section.description or ''}</p>" if section.description else ""
+            )
 
             full_content += f"{title_html} \n {description_html} \n"
 
@@ -180,32 +187,57 @@ class Blog(AuthorMixin, TimeStampMixin):
         pdf_file.seek(0)
 
         # Encode the PDF file to base64
-        pdf_base64 = base64.b64encode(pdf_file.read()).decode('utf-8')
+        pdf_base64 = base64.b64encode(pdf_file.read()).decode("utf-8")
 
         return pdf_base64
 
 
+class BlogSEOEssential(TimeStampMixin, AuthorMixin):
+    title = models.CharField(max_length=255, verbose_name="Meta Title")
+    description = models.TextField(verbose_name="Meta Description")
+    keywords = models.TextField(verbose_name="Meta Keywords")
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, null=True, blank=True)
+    
+    
+    class Meta:
+        verbose_name = "SEO Essential"
+        verbose_name_plural = "SEO Essentials"
+
+
 class ReferenceBlogs(models.Model):
-    blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='reference_blog')
-    reference_blog_title = models.CharField(max_length=200,null=True,blank=True)
-    reference_blog_link = models.URLField(null=True,blank=True)
+    blog = models.ForeignKey(
+        Blog,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="reference_blog",
+    )
+    reference_blog_title = models.CharField(max_length=200, null=True, blank=True)
+    reference_blog_link = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return self.reference_blog_title
-    
+
     class Meta:
         verbose_name_plural = "Reference Blogs"
 
 
 class RelatedBlogs(models.Model):
-    blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
-    releted_blog = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True,related_name='releted_blog')
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, null=True, blank=True)
+    releted_blog = models.ForeignKey(
+        Blog,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="releted_blog",
+    )
 
     def __str__(self):
         return self.blog.title
-    
+
     class Meta:
         verbose_name_plural = "Related Blogs"
+
 
 class PostPlatform(models.TextChoices):
     LINKEDIN = "linkedin", "Linkedin"
@@ -673,26 +705,33 @@ class BenefitsOfEmployment(TimeStampMixin):
     def __str__(self):
         return self.title
 
+
 class PublicImage(models.Model):
-    title = models.CharField(max_length=255,null=True,blank=True)
-    image = models.ImageField(upload_to='public_image/')
+    title = models.CharField(max_length=255, null=True, blank=True)
+    image = models.ImageField(upload_to="public_image/")
 
     def __str__(self):
         return self.title
-    
+
     class Meta:
         verbose_name_plural = "Public Images"
-    
+
 
 class PlagiarismInfo(TimeStampMixin):
-    blog = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name='plagiarism_info')
+    blog = models.ForeignKey(
+        Blog, on_delete=models.CASCADE, related_name="plagiarism_info"
+    )
     scan_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     export_id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     plagiarism_percentage = models.FloatField(blank=True, null=True)
-    pdf_file = models.FileField(upload_to='plagiarism_reports/', blank=True, null=True)
+    pdf_file = models.FileField(upload_to="plagiarism_reports/", blank=True, null=True)
 
     def __str__(self):
-        return f"Plagiarism Report for Blog: {self.blog} ({self.plagiarism_percentage}%)"
+        return (
+            f"Plagiarism Report for Blog: {self.blog} ({self.plagiarism_percentage}%)"
+        )
+
+
 class BaseMetadata(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
@@ -701,57 +740,82 @@ class BaseMetadata(models.Model):
     class Meta:
         abstract = True
 
+
 class ServiceMeatadata(BaseMetadata):
-    services = models.ForeignKey(Service,on_delete=models.CASCADE,null=True,blank=True)
+    services = models.ForeignKey(
+        Service, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     def __str__(self):
         return self.title
+
 
 class BlogMeatadata(BaseMetadata):
-    services = models.ForeignKey(Blog,on_delete=models.CASCADE,null=True,blank=True)
+    services = models.ForeignKey(Blog, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.title
 
+
 class HireResourceMetadata(BaseMetadata):
-    hire_resource = models.ForeignKey(HireResourcePage,on_delete=models.CASCADE,null=True,blank=True)
+    hire_resource = models.ForeignKey(
+        HireResourcePage, on_delete=models.CASCADE, null=True, blank=True
+    )
+
 
 class IndustryMetadata(BaseMetadata):
-    service_category = models.ForeignKey("ServeCategory",on_delete=models.CASCADE,null=True,blank=True)
+    service_category = models.ForeignKey(
+        "ServeCategory", on_delete=models.CASCADE, null=True, blank=True
+    )
+
 
 class ProjectMetadata(BaseMetadata):
-    project = models.ForeignKey(Project,on_delete=models.CASCADE,null=True,blank=True)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, null=True, blank=True
+    )
+
 
 class ProjectKeyword(models.Model):
-    project_keyword = models.ForeignKey(ProjectMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    project_keyword = models.ForeignKey(
+        ProjectMetadata, on_delete=models.CASCADE, null=True, blank=True
+    )
     name = models.CharField(max_length=255)
 
 
 class IndustryKeyword(models.Model):
-    keyword = models.ForeignKey(IndustryMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    keyword = models.ForeignKey(
+        IndustryMetadata, on_delete=models.CASCADE, null=True, blank=True
+    )
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
-
 
 
 class ServiceKeyword(models.Model):
-    service_keywords = models.ForeignKey(ServiceMeatadata,on_delete=models.CASCADE,null=True,blank=True)
+    service_keywords = models.ForeignKey(
+        ServiceMeatadata, on_delete=models.CASCADE, null=True, blank=True
+    )
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
+
 
 class BlogKeyword(models.Model):
-    blog_keywords = models.ForeignKey(BlogMeatadata,on_delete=models.CASCADE,null=True,blank=True)
+    blog_keywords = models.ForeignKey(
+        BlogMeatadata, on_delete=models.CASCADE, null=True, blank=True
+    )
     name = models.CharField(max_length=255)
 
     def __str__(self):
         return self.name
 
+
 class HireResourceKeyword(models.Model):
-    hire_resource_keywords = models.ForeignKey(HireResourceMetadata,on_delete=models.CASCADE,null=True,blank=True)
+    hire_resource_keywords = models.ForeignKey(
+        HireResourceMetadata, on_delete=models.CASCADE, null=True, blank=True
+    )
     name = models.CharField(max_length=255)
 
     def __str__(self):
