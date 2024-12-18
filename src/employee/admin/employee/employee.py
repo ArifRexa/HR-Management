@@ -552,11 +552,12 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         # ).exclude(
         #     employee_id__in=EmployeeUnderTPM.objects.values('employee_id')
         # )
+        employee_id_with_tpm = tpm_project_data.filter(employee__isnull=False).values_list("employee_id", flat=True)
         employees_without_tpm = Employee.objects.filter(
             active=True,
             project_eligibility=True,
             is_tpm=False,
-        ).exclude(id__in=EmployeeUnderTPM.objects.values_list("employee_id", flat=True))
+        ).exclude(id__in=employee_id_with_tpm)
 
         tpm_builder = TPMsBuilder()
 
