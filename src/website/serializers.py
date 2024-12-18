@@ -1,7 +1,7 @@
-from pyexpat import model
+# from pyexpat import model
 from rest_framework import serializers
 
-from chat import models
+# from chat import models
 from employee.models import (
     Employee,
     EmployeeSocial,
@@ -9,9 +9,7 @@ from employee.models import (
     EmployeeNOC,
     Skill,
     EmployeeSkill,
-    EmployeeExpertTech,
 )
-from project_management.admin import client_feedback
 from project_management.models import (
     Project,
     Client,
@@ -22,28 +20,21 @@ from project_management.models import (
     ProjectContent,
     ProjectScreenshot,
     Tag,
-    ProjectOverview,
-    ProjectStatement,
-    ProjectChallenges,
-    ProjectSolution,
     ProjectKeyFeature,
     ClientFeedback,
     ProjectResults,
     OurTechnology,
     ProjectPlatform,
-    ProjectIndustry,
-    ProjectService,
     ProjectKeyPoint,
 )
 from settings.models import Designation
 from website.models import (
     Award,
-    BannerImage,
     BenefitsOfEmployment,
     BlogFAQ,
     BlogMeatadata,
+    BlogSEOEssential,
     BlogStatus,
-    Career,
     EmployeeTestimonial,
     Gallery,
     HomeBanner,
@@ -64,7 +55,6 @@ from website.models import (
     BlogContext,
     BlogComment,
     FAQ,
-    ServiceKeyword,
     ServiceMeatadata,
     ServiceProcess,
     OurAchievement,
@@ -92,7 +82,6 @@ from website.models import (
     FAQHomeTitle,
     OurJourneyTitle,
 )
-from website.models_v2.industries_we_serve import IndustryServe
 from website.models_v2.services import ServicePage
 
 
@@ -209,13 +198,15 @@ class ServiceContentSerializer(serializers.ModelSerializer):
             "image",
         )
 
+
 class ServiceMetadataSerializer(serializers.ModelSerializer):
     keywords = serializers.SerializerMethodField()
+
     class Meta:
         model = ServiceMeatadata
-        fields = ('title', 'description', 'canonical','keywords')
+        fields = ("title", "description", "canonical", "keywords")
 
-    def get_keywords(self,obj):
+    def get_keywords(self, obj):
         return [keyword.name for keyword in obj.servicekeyword_set.all()]
 
 
@@ -226,7 +217,8 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
     )
     service_process = ServiceProcessSerializer(many=True)
     service_contents = ServiceContentSerializer(many=True, source="servicecontent_set")
-    metadata = ServiceMetadataSerializer(many=True,source='servicemeatadata_set')
+    metadata = ServiceMetadataSerializer(many=True, source="servicemeatadata_set")
+
     class Meta:
         model = Service
         fields = (
@@ -371,7 +363,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ProjectSitemapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ('slug','updated_at')
+        fields = ("slug", "updated_at")
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -395,16 +387,16 @@ class ProjectContentSerializer(serializers.ModelSerializer):
         model = ProjectContent
         fields = ("title", "content", "image", "image2")
 
+
 class ProjectMetadataSerializer(serializers.ModelSerializer):
     keywords = serializers.SerializerMethodField()
+
     class Meta:
         model = ProjectMetadata
-        fields = ('title', 'description', 'canonical','keywords')
+        fields = ("title", "description", "canonical", "keywords")
 
-    def get_keywords(self,obj):
-        return [keyword.name for keyword in  obj.projectkeyword_set.all()]
-
-
+    def get_keywords(self, obj):
+        return [keyword.name for keyword in obj.projectkeyword_set.all()]
 
 
 class ProjectDetailsSerializer(serializers.ModelSerializer):
@@ -429,7 +421,8 @@ class ProjectDetailsSerializer(serializers.ModelSerializer):
     services = ProjectServiceSerializer()
     service_solutions = ProjectServiceSolutionSerializer(many=True)
     country = serializers.SerializerMethodField()
-    metadata = ProjectMetadataSerializer(many=True,source='projectmetadata_set')
+    metadata = ProjectMetadataSerializer(many=True, source="projectmetadata_set")
+
     class Meta:
         model = Project
         fields = (
@@ -733,7 +726,8 @@ class BlogContextSerializer(serializers.ModelSerializer):
 class BlogSitemapSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
-        fields = ('slug','updated_at')
+        fields = ("slug", "updated_at")
+
 
 class BlogListSerializer(serializers.ModelSerializer):
     # categories = BlogCategoriesSerializer(many=True, source='blogcategory_set')
@@ -780,18 +774,27 @@ class BlogFAQSerializer(serializers.ModelSerializer):
 
 class BlogMetadataSerializer(serializers.ModelSerializer):
     keywords = serializers.SerializerMethodField()
+
     class Meta:
         model = BlogMeatadata
-        fields = ('title', 'description', 'canonical','keywords')
+        fields = ("title", "description", "canonical", "keywords")
 
-    def get_keywords(self,obj):
-        return [keyword.name for keyword in  obj.blogkeyword_set.all()]
+    def get_keywords(self, obj):
+        return [keyword.name for keyword in obj.blogkeyword_set.all()]
+
+
+class BlogSEOEssentialSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogSEOEssential
+        fields = ("title", "description", "keywords")
+
 
 class BlogDetailsSerializer(BlogListSerializer):
     tags = TagSerializer(many=True, source="tag")
     blog_contexts = BlogContextSerializer(many=True)
     blog_faqs = BlogFAQSerializer(many=True)
-    metadata = BlogMetadataSerializer(many=True,source='blogmeatadata_set')
+    metadata = BlogMetadataSerializer(many=True, source="blogmeatadata_set")
+
     class Meta(BlogListSerializer.Meta):
         fields = (
             "id",
@@ -810,6 +813,7 @@ class BlogDetailsSerializer(BlogListSerializer):
             "blog_faqs",
             "metadata",
         )
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["total_blogs"] = instance.created_by.website_blog_related.filter(
@@ -817,6 +821,9 @@ class BlogDetailsSerializer(BlogListSerializer):
         ).count()
         data["total_comments"] = instance.comments.count()
         data["table_of_contents"] = instance.blog_contexts.all().values("id", "title")
+        data["seo_essential"] = BlogSEOEssentialSerializer(
+            BlogSEOEssential.objects.filter(blog=instance), many=True
+        ).data
         return data
 
 
@@ -1264,10 +1271,11 @@ class ClientReviewSerializer(serializers.ModelSerializer):
         if obj.country is None:
             return None
         return obj.country.name
-    
+
 
 class LeaderSerializer(serializers.ModelSerializer):
     designation = serializers.CharField(source="designation.title")
+
     class Meta:
         model = Employee
         fields = ("full_name", "designation")
@@ -1275,6 +1283,7 @@ class LeaderSerializer(serializers.ModelSerializer):
 
 class LeadershipSpeechSerializer(serializers.ModelSerializer):
     leader = LeaderSerializer(read_only=True)
+
     class Meta:
         model = LeadershipSpeech
         exclude = ["leadership", "created_at", "updated_at"]
@@ -1294,10 +1303,9 @@ class EmployeeTestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmployeeTestimonial
         exclude = ["created_at", "updated_at", "employee", "career"]
-        
+
 
 class BenefitsOfEmploymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BenefitsOfEmployment
         exclude = ["created_at", "updated_at", "career"]
-        

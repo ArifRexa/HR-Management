@@ -38,6 +38,7 @@ from website.models import (
     BlogKeyword,
     BlogMeatadata,
     BlogModeratorFeedback,
+    BlogSEOEssential,
     BlogStatus,
     CSRBanner,
     Career,
@@ -128,9 +129,10 @@ from website.utils.plagiarism_checker import check_plagiarism
 
 class ServiceKeywordInline(nested_admin.NestedTabularInline):
     model = ServiceKeyword
-    extra = 1 
+    extra = 1
 
-class ServiceMetadataInline(nested_admin.NestedStackedInline): 
+
+class ServiceMetadataInline(nested_admin.NestedStackedInline):
     model = ServiceMeatadata
     extra = 1
     inlines = [ServiceKeywordInline]
@@ -138,12 +140,14 @@ class ServiceMetadataInline(nested_admin.NestedStackedInline):
 
 class BlogKeywordInline(nested_admin.NestedTabularInline):
     model = BlogKeyword
-    extra = 1 
+    extra = 1
 
-class BlogMetadataInline(nested_admin.NestedStackedInline): 
+
+class BlogMetadataInline(nested_admin.NestedStackedInline):
     model = BlogMeatadata
     extra = 1
     inlines = [BlogKeywordInline]
+
 
 class UserAdmin(BaseUserAdmin):
     class Media:
@@ -201,7 +205,7 @@ class ServiceContentAdmin(nested_admin.NestedTabularInline):
 class ServiceAdmin(nested_admin.NestedModelAdmin):
     list_display = ("title", "slug", "order", "active")
     search_fields = ("title",)
-    inlines = (ServiceTechnologyInline, ServiceContentAdmin,ServiceMetadataInline)
+    inlines = (ServiceTechnologyInline, ServiceContentAdmin, ServiceMetadataInline)
 
     def has_module_permission(self, request):
         return False
@@ -300,19 +304,20 @@ class BlogFAQInline(nested_admin.NestedStackedInline):
         formset.request = request
         return formset
 
+
 class RelatedBlogInline(nested_admin.NestedStackedInline):
     model = RelatedBlogs
-    fields = ['releted_blog']
-    autocomplete_fields = ['releted_blog']
+    fields = ["releted_blog"]
+    autocomplete_fields = ["releted_blog"]
     extra = 0
-    fk_name = 'blog'
-
+    fk_name = "blog"
 
 
 class ReferenceBlogInline(nested_admin.NestedStackedInline):
     model = ReferenceBlogs
-    fields = ['blog','reference_blog_title','reference_blog_link']
+    fields = ["blog", "reference_blog_title", "reference_blog_link"]
     extra = 0
+
 
 class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
     model = BlogModeratorFeedback
@@ -330,6 +335,9 @@ class BlogForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "title": forms.Textarea(
+                attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+            ),
+            "slug": forms.Textarea(
                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
             ),
             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
@@ -420,22 +428,54 @@ class BlogCategoryFilter(admin.SimpleListFilter):
         return queryset
 
 
+class BlogSEOEssentialForm(forms.ModelForm):
+    class Meta:
+        model = BlogSEOEssential
+        fields = "__all__"
+
+        widgets = {
+            "keywords": forms.Textarea(
+                attrs={
+                    "placeholder": "Enter keywords inside square brackets separated by commas e.g [Keyword1, Keyword2]",
+                    "rows": 10,
+                    "cols": 40,
+                    "class": "vLargeTextField"
+                    # "style": "width: 95%;resize:none;",
+                }
+            )
+        }
+
+
+class BlogSEOEssentialInline(nested_admin.NestedStackedInline):
+    model = BlogSEOEssential
+    extra = 1
+    # form = BlogSEOEssentialForm
+
+
 @admin.register(Blog)
 class BlogAdmin(nested_admin.NestedModelAdmin):
-    # prepopulated_fields = {"slug": ("title",)}
+    prepopulated_fields = {"slug": ("title",)}
 
-    inlines = (BlogContextInline, BlogFAQInline,ReferenceBlogInline,RelatedBlogInline, BlogModeratorFeedbackInline,BlogMetadataInline)
+    inlines = (
+        BlogContextInline,
+        BlogSEOEssentialInline,
+        BlogFAQInline,
+        ReferenceBlogInline,
+        RelatedBlogInline,
+        BlogModeratorFeedbackInline,
+        BlogMetadataInline,
+    )
     actions = [
         "clone_selected",
         "draft_selected",
         "in_revision_selected",
         "submit_for_review_selected",
         "approve_selected",
-        "plagiarism_check_selected"
+        "plagiarism_check_selected",
     ]
 
     search_fields = ("title",)
-    date_hierarchy = 'created_at'
+    date_hierarchy = "created_at"
     autocomplete_fields = ["category", "tag"]
     list_display = (
         "title",
@@ -443,12 +483,13 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "status",
         "total_view",
         "get_preview_link",
-        "get_plagiarism_percentage"
+        "get_plagiarism_percentage",
     )
     readonly_fields = ("status",)
-    exclude = ("slug",)
+    # exclude = ("slug",)
     fields = (
         "title",
+        "slug",
         "image",
         # "video",
         "youtube_link",
@@ -517,18 +558,26 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     def plagiarism_check_selected(self, request, queryset):
         if request.user.has_perm("website.can_add_plagiarism_info"):
             try:
-                host_url = request.build_absolute_uri('/')
+                host_url = request.build_absolute_uri("/")
                 check_plagiarism(queryset, host_url)
-                self.message_user(request, f"Successfully queue blogs for plagiarism check.")
+                self.message_user(
+                    request, f"Successfully queue blogs for plagiarism check."
+                )
             except Exception as e:
                 print(e)
-                self.message_user(request, f"Failed to queue blogs for plagiarism check: {e}")
+                self.message_user(
+                    request, f"Failed to queue blogs for plagiarism check: {e}"
+                )
         else:
-            self.message_user(request, f"You do not have permission to submit blogs for plagiarism check.", level="ERROR")
+            self.message_user(
+                request,
+                f"You do not have permission to submit blogs for plagiarism check.",
+                level="ERROR",
+            )
 
     @admin.display(description="Plagiarism(%)")
     def get_plagiarism_percentage(self, obj):
-        plagiarism_objects = obj.plagiarism_info.order_by('-created_at')
+        plagiarism_objects = obj.plagiarism_info.order_by("-created_at")
         html_template = get_template("blog/plagiarism_report_link.html")
         html_content = html_template.render({"plagiarism_objects": plagiarism_objects})
         return format_html(html_content)
@@ -731,7 +780,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     start_datetime=timezone.now(),
                     end_datetime=timezone.now()
                     + timedelta(days=1),  # Assuming the end is the next day
-                    description=f"Cheers! {obj.created_by.employee.full_name} Stellar blog approved!",)
+                    description=f"Cheers! {obj.created_by.employee.full_name} Stellar blog approved!",
+                )
                 employee_hour = EmployeeProjectHour.objects.create(
                     project_hour=project_hour,
                     employee=obj.created_by.employee,
@@ -995,12 +1045,13 @@ class ProjectClientReviewTitleInline(admin.StackedInline):
     model = ProjectClientReviewTitle
     can_delete = False
     extra = 1
-    
+
+
 class EmployeeTestimonialTitleInline(admin.StackedInline):
     model = EmployeeTestimonialTitle
     can_delete = False
     extra = 1
-    
+
 
 class BenefitsOfEmploymentTitleInline(admin.StackedInline):
     model = BenefitsOfEmploymentTitle
@@ -1106,7 +1157,8 @@ class ContactBannerInline(BaseInline):
 class AllProjectsBannerInline(BaseInline):
     model = AllProjectsBanner
     verbose_name = "All Projects Banner"
-    
+
+
 class CareerBannerInline(BaseInline):
     model = CareerBanner
     verbose_name = "Career Banner"
@@ -1162,23 +1214,25 @@ class EmployeeTestimonialInline(admin.StackedInline):
     model = EmployeeTestimonial
     extra = 1
     autocomplete_fields = ("employee",)
-    
+
 
 class BenefitsOfEmploymentInline(admin.StackedInline):
     model = BenefitsOfEmployment
     extra = 1
-    
-    
+
+
 @admin.register(Career)
 class CareerAdmin(admin.ModelAdmin):
     inlines = [EmployeeTestimonialInline, BenefitsOfEmploymentInline]
-    
+
     def has_module_permission(self, request):
         return False
-    
+
+
 @admin.register(PublicImage)
 class PublicImageAdmin(admin.ModelAdmin):
-    list_display = ["title","image"]
+    list_display = ["title", "image"]
+
 
 @admin.register(PlagiarismInfo)
 class PlagiarismInfoAdmin(admin.ModelAdmin):
