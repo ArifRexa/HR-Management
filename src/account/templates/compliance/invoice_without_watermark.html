@@ -1,0 +1,243 @@
+{% load salary_sheet_util %}
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Invoices</title>
+        {% load static %}
+        <style>
+            * {
+                font-size: 13px;
+            }
+    
+            @page {
+                size: a4 portrait;
+                @frame content_frame {
+                left: 40pt;
+                width: 512pt;
+                top: 70pt;
+                height: 590pt;
+            }
+    
+            @frame footer_frame {
+                /* Another static Frame */
+            -pdf-frame-content:footer_content;
+            left: 50pt; width: 512pt; top: 680pt; height: 120pt;
+            }
+    
+            @frame logo {
+            -pdf-frame-content:logo;
+            left: 40px;
+            top: 20px;
+            width: 150px;
+            height: 60px;
+            }
+            }
+    
+            .page-break {
+                page-break-after: always;
+            }
+        </style>
+        <style>
+        .list-table {
+            font-family: Arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .list-table th {
+            background-color: #333;
+            color: white;
+            border: 1px solid #dddddd;
+            padding: 8px;
+        }
+
+        .list-table td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .company-info {
+            display: flex;
+            align-items: center;
+        }
+
+        /* .invoice-container {
+            page-break-after: always;
+        } */
+    </style>
+    </head>
+<body>
+
+
+    
+    
+    {% with invoice_date=None total=1 %}
+        
+    
+        
+    {% for invoice in invoices %}
+    
+    
+            
+        <div class="
+        {% if invoice.data == invoice_date %}
+            invoice-container 
+        {% endif %}">
+        
+            {% if forloop.counter == 1 %}
+                <table>
+                    <thead>
+                    <tr>
+                        <td colspan="3"><br></td>
+                    </tr>
+                    {% if invoice.project.client.bill_from %}
+                    <tr>
+                        <td>
+                            {{ invoice.project.client.bill_from |strip_last_newline|safe}}
+                        </td>
+                        <td></td>
+                        <td><b># INV-{{ invoice.id }}</b></td>
+                        
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td><h2>Balance Due: ${{invoice_total}}</h2></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td><b>Mediusware Ltd.</b></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Company ID: No. C-165786/2020</td>
+                        <td></td>
+                        <td><b># INV-{{ invoice.id }}</b></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            24/1, Floor 7th & 8th<br>
+                            Ring Road, Mohammadpur<br> 
+                            Dhaka 1207<br> Bangladesh<br>
+                        </td>
+                        <td></td>
+                        <td><h2>Balance Due: ${{invoice_total}}</h2></td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td>
+                            <br>
+                            Bill to<br>
+                            <b>{{invoice.project.client.name}}</b><br>
+                            <span>{{invoice.project.client.address|strip_last_newline|safe}}<span><br>
+                            <span>{{invoice.project.client.country}}</span>
+                        
+                        </td>
+                        <td></td>
+                        <td>
+                            <br><br>
+                            Invoice Date: {% now "N j, Y" %}<br>
+                            Terms: Due on Receipt<br>
+                            Due Date: {% now "N j, Y" %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"></td>
+                    </tr>
+                    </thead>
+                </table>
+            {% endif %}
+            <table class="list-table">
+                {% if forloop.counter == 1 %}
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th colspan="2">Date</th>
+                    <th colspan="3">item & description</th>
+                    {% if invoice.project.client.is_hour_breakdown %}
+                    <th>Breakdown</th>
+                    {% endif %}
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+                </thead>
+                {% endif %}
+                <tbody>
+                <tr style="text-align: right;">
+                    <td>{{ forloop.counter }}</td>
+                    
+                    <td colspan="2">{{ invoice.date }}</td>
+                        
+                    <td colspan="3">
+                        
+                        {% comment %}
+                            
+                        
+                            
+                        <!-- {% if invoice.project.custom_item_description %}
+                            {{ invoice.project.custom_item_description|strip_last_newline|safe }}
+                        {% else %}
+                            {{ invoice.project.title }}: {{ invoice.date }}
+                        {% endif %} -->
+                        {% endcomment %}
+                        
+                        {% if invoice.note %}
+                        {{ invoice.note |strip_last_newline|safe }}
+                        {% else %}
+                        {{ invoice.project.title }}
+                        {% endif %}
+                        
+                    </td>
+                    {% if invoice.project.client.is_hour_breakdown %}
+                    
+                    <td style="align-items: center;">
+                    <b>
+                        <a 
+                            href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
+                            style="cursor: pointer; text-decoration: underline; font-size: 16px;"
+                            target="_blank">
+                                Link
+                        </a>
+                    </b>
+                </td>
+                {% endif %}
+                    <td>{{ invoice.hours|floatformat:2 }}</td>
+                    <td>{{ invoice.hour_rate }}</td>
+                    <td>${% widthratio invoice.hours 1 invoice.hour_rate %}</td>
+                </tr>
+                </tbody>
+            </table>
+            {% if forloop.counter == invoices|length %}
+                
+                <table style="margin-top: 20px;">
+                    <tr>
+                        <td>
+                            {{ invoice.project.client.notes|strip_last_newline|safe }}
+                        </td>
+                        <td></td>
+                        <td>
+                            <br><br>
+                            <b style="margin-bottom: 20px;">Total: ${{invoice_total}}</b> <br><br>
+                            <b style="margin-top: 20px;"> Balance Due: ${{invoice_total}}</b>
+                        </td>
+                    </tr>
+                </table>
+            {% endif %}
+        </div>
+        
+    {% endfor %}
+    {% endwith %}
+</body>
+</html>
