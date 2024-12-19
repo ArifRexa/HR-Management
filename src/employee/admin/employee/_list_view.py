@@ -54,16 +54,12 @@ class EmployeeAdminListView:
     @admin.display(description="Documents")
     def get_attachment(self, obj):
         attachments = obj.attachment_set.all()
-        # html_template = get_template('admin/employee/list/attachment.html')
-        # html_content = html_template.render({
-        #     'obj': obj.attachment_set.all()
-        # })
         html_content = [
             f'<a href="{attachment.file.url}" target="_blank" style="gap: 10px;">{attachment.file_name}</a>'
             for attachment in attachments
         ]
-        h = "".join(html_content)
-        h = "<div style='display: flex; gap: 10px; flex-wrap: wrap;'>" + h + "</div>"
+        h = "<br>".join(html_content)
+        # h = "<div style='display: flex; gap: 10px; flex-wrap: wrap;'>" + h + "</div>"
         return format_html(h)
 
     def tour_allowance(self, obj):
