@@ -64,7 +64,7 @@ class EmployeeAdminListView:
         ]
         h = "".join(html_content)
         h = "<div style='display: flex; gap: 10px; flex-wrap: wrap;'>" + h + "</div>"
-        return format_html(h)  # format_html(html_content)
+        return format_html(h)
 
     def tour_allowance(self, obj):
         html_template = get_template("admin/employee/list/tour_allowance.html")
