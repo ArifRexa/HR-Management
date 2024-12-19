@@ -15,9 +15,16 @@ def user_directory_path(instance, filename):
     return f'hr/employee/{username}/{filename}'
 
 
+class DocumentName(models.Model):
+    name = models.CharField(max_length=155, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class Attachment(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    file_name = models.CharField(null=True, blank=True, max_length=155)
+    # file_name = models.CharField(null=True, blank=True, max_length=155)
+    file_name = models.ForeignKey(DocumentName, on_delete=models.SET_NULL, null=True, to_field='name')
     file = models.FileField(
         help_text='*.pdf, *.doc, *.png, *.jpeg',
         upload_to=user_directory_path,

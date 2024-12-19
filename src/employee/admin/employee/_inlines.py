@@ -11,6 +11,7 @@ from employee.models import (
     EmployeeContent,
     EmployeeNOC,
 )
+from employee.models.attachment import DocumentName
 
 
 class SalaryHistoryInline(admin.TabularInline):
@@ -29,10 +30,18 @@ class SalaryHistoryInline(admin.TabularInline):
             fields.remove("note")
         return fields
 
+@admin.register(DocumentName)
+class DocumentNameAdmin(admin.ModelAdmin):
+    search_fields = ["name"]
+    def has_module_permission(self, request):
+        return False
+    
+    
 
 class AttachmentInline(admin.TabularInline):
     model = Attachment
     extra = 0
+    autocomplete_fields = ["file_name"]
 
 
 class BankAccountInline(admin.TabularInline):
