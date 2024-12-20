@@ -13,6 +13,9 @@ admin.site.unregister(User)
 class UserAdmin(BaseUserAdmin):
     search_fields = ('username', 'first_name', 'last_name')
     list_display = ('username', 'full_name', 'email', 'get_fund', 'is_staff', 'is_active')
+    
+    class Media:
+        js = ("js/custom_permission_search.js",)
 
     @admin.display()
     def full_name(self, obj):

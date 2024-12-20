@@ -82,6 +82,7 @@ class Client(TimeStampMixin, AuthorMixin):
     web_name = models.CharField(
         max_length=200, verbose_name="Web Name", null=True, blank=True
     )
+    active = models.BooleanField(default=True)
     designation = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(max_length=80, null=True, blank=True)
     invoice_cc_email = models.TextField(null=True, blank=True, help_text="Comma-separated email addresses for CC")

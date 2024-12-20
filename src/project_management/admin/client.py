@@ -129,15 +129,16 @@ class ClientAdmin(admin.ModelAdmin):
         "get_project_name",
         "email",
         # "linkedin_url",
-        "get_client_review",
+        # "get_client_review",
         "country",
         "get_hourly_rate",
         "payment_method",
+        "invoice_type",
         "get_client_age",
     )
     fields = (
         "name",
-        # "web_name",
+        "active",
         "email",
         "invoice_cc_email",
         "designation",
@@ -202,6 +203,11 @@ class ClientAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+    
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if not obj.active:
+            obj.project_set.update(active=False)
 
 
 @admin.register(ClientFeedbackEmail)
