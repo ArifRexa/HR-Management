@@ -2,7 +2,6 @@ import calendar
 from datetime import datetime
 from decimal import Decimal
 from math import floor
-from pyexpat import model
 
 from django.db import transaction
 
@@ -11,7 +10,7 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
-from django.db.models.signals import post_save
+
 from django.db.models import Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
@@ -20,12 +19,12 @@ from django_userforeignkey.models.fields import UserForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-import employee
-from employee.models import Employee, salary_history
 
-from employee.models.employee import LateAttendanceFine
+
+
+from employee.models.employee import Employee, LateAttendanceFine
 from project_management.models import Project, Client
-from django.core.exceptions import ValidationError
+
 from django.core.validators import MinValueValidator
 from django.urls import reverse
 
@@ -291,6 +290,7 @@ class Loan(TimeStampMixin, AuthorMixin):
         related_name="witness",
         limit_choices_to={"active": True},
     )
+    description = models.TextField(null=True, blank=True)
     loan_amount = models.FloatField(help_text="Load amount")
     emi = models.FloatField(help_text="Installment amount", verbose_name="EMI")
     effective_date = models.DateField(default=timezone.now)
