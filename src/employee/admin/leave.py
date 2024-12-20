@@ -400,7 +400,7 @@ class LeaveManagement(admin.ModelAdmin):
         return qs.filter(employee_id=request.user.employee)
 
     def get_list_filter(self, request):
-        list_filter = ["status", "leave_type", "employee", "start_date"]
+        list_filter = ["status", "applied_leave_type", "leave_type", "employee", "start_date"]
         if not request.user.has_perm("employee.can_approve_leave_applications"):
             list_filter.remove("employee")
         return list_filter
@@ -452,7 +452,7 @@ class LeaveManagement(admin.ModelAdmin):
 
         return format_html(html_content)
 
-    @admin.display(description="Applied Leave Type")
+    @admin.display(description="Applied Leave Type", ordering="applied_leave_type")
     def applied_leave_type_(self, leave: Leave):
         html_template = get_template("admin/leave/list/col_leave_day.html")
         html_content = html_template.render(
@@ -468,7 +468,7 @@ class LeaveManagement(admin.ModelAdmin):
         )
         return format_html(html_content)
 
-    @admin.display(description="Approved Leave Type")
+    @admin.display(description="Approved Leave Type", ordering="leave_type")
     def approved_leave_type_(self, leave: Leave):
         html_template = get_template("admin/leave/list/col_leave_day.html")
         html_content = html_template.render(
