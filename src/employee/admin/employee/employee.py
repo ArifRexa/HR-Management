@@ -154,8 +154,8 @@ class EmployeeAdmin(
             "employee.can_see_salary_history"
         ):
             list_display.remove("salary_history")
-        if not request.user.has_perm("employee.can_access_average_rating"):
-            list_display.remove("employee_rating")
+        # if not request.user.has_perm("employee.can_access_average_rating"):
+        #     list_display.remove("employee_rating")
         return list_display
 
     def total_late_attendance_fine(self, obj):
@@ -199,8 +199,23 @@ class EmployeeAdmin(
                 super(EmployeeAdmin, self)
                 .get_queryset(request)
                 .filter(user__id=request.user.id)
+                .select_related(
+                    "user",
+                    "designation",
+                    "leave_management",
+                    "pay_scale",
+                )
             )
-        return super(EmployeeAdmin, self).get_queryset(request)
+        return (
+            super(EmployeeAdmin, self)
+            .get_queryset(request)
+            .select_related(
+                "user",
+                "designation",
+                "leave_management",
+                "pay_scale",
+            )
+        )
 
     def get_actions(self, request):
         actions = super(EmployeeAdmin, self).get_actions(request)
@@ -552,7 +567,9 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         # ).exclude(
         #     employee_id__in=EmployeeUnderTPM.objects.values('employee_id')
         # )
-        employee_id_with_tpm = tpm_project_data.filter(employee__isnull=False).values_list("employee_id", flat=True)
+        employee_id_with_tpm = tpm_project_data.filter(
+            employee__isnull=False
+        ).values_list("employee_id", flat=True)
         employees_without_tpm = Employee.objects.filter(
             active=True,
             project_eligibility=True,
