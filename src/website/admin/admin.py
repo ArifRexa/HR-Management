@@ -149,10 +149,10 @@ class BlogMetadataInline(nested_admin.NestedStackedInline):
     inlines = [BlogKeywordInline]
 
 
-class UserAdmin(BaseUserAdmin):
-    class Media:
-        js = ("js/custom_permission_search.js",)
-        # css = {"all": ("css/user.css",)}
+# class UserAdmin(BaseUserAdmin):
+#     class Media:
+#         js = ("js/custom_permission_search.js",)
+# css = {"all": ("css/user.css",)}
 
 
 class GroupAdmin(BaseGroupAdmin):
@@ -162,11 +162,11 @@ class GroupAdmin(BaseGroupAdmin):
 
 
 # Unregister the existing User admin
-admin.site.unregister(User)
+# admin.site.unregister(User)
 admin.site.unregister(Group)
 
 # Register the customized User admin
-admin.site.register(User, UserAdmin)
+# admin.site.register(User, UserAdmin)
 admin.site.register(Group, GroupAdmin)
 
 
@@ -439,7 +439,7 @@ class BlogSEOEssentialForm(forms.ModelForm):
                     "placeholder": "Enter keywords inside square brackets separated by commas e.g [Keyword1, Keyword2]",
                     "rows": 10,
                     "cols": 40,
-                    "class": "vLargeTextField"
+                    "class": "vLargeTextField",
                     # "style": "width: 95%;resize:none;",
                 }
             )
