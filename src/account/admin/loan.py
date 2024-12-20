@@ -104,10 +104,11 @@ class LoadAdmin(admin.ModelAdmin):
         html_template = get_template("mail/loan_mail.html")
         html_content = html_template.render({"loan": obj})
 
-        email = EmailMultiAlternatives(subject=f"Loan Approved  ")
+        email = EmailMultiAlternatives(subject="Loan Approved")
         email.attach_alternative(html_content, "text/html")
         email.to = [obj.employee.email]
-        email.from_email = "admin@mediusware.com"
+        email.from_email = "hr@mediusware.com"
+        email.cc = ["admin@mediusware.com"]
         email.send()
         return super().save_model(request, obj, form, change)
 
