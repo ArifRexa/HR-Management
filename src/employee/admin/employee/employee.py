@@ -13,6 +13,7 @@ from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
 
+from employee.admin.employee.filter import TopSkillFilter
 from employee.models.bank_account import BEFTN
 from employee.tasks import new_late_attendance_calculate
 from project_management.models import EmployeeProjectHour, Project
@@ -57,10 +58,21 @@ class EmployeeAdmin(
     ]
     list_per_page = 20
     ordering = ["-active"]
-    list_filter = ["active", "gender", "permanent_date", "project_eligibility"]
+    list_filter = [
+        "active",
+        "gender",
+        "permanent_date",
+        "project_eligibility",
+        TopSkillFilter,
+    ]
     autocomplete_fields = ["user", "designation"]
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
+    
+    def lookup_allowed(self, lookup, value):
+        if lookup in ["employeeskill__skill__title__exact"]:
+            return True
+        return super().lookup_allowed(lookup, value)
 
     def save_model(self, request, obj, form, change):
         print(obj.__dict__)
