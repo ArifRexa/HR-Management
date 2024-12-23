@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.http import HttpRequest
 from django.utils.html import format_html
 from django.utils.timesince import timesince
-
+from django.contrib import messages as message
 # from networkx import project
 from project_management.models import (
     Client,
@@ -162,7 +162,7 @@ class ClientAdmin(admin.ModelAdmin):
     )
     list_filter = [
         "is_need_feedback",
-        "project__active",
+        "active",
         "review",
         "payment_method",
         "invoice_type",
@@ -171,6 +171,7 @@ class ClientAdmin(admin.ModelAdmin):
     search_fields = ["name", "web_name"]
     autocomplete_fields = ["country", "payment_method"]
     form = ClientForm
+    actions = ["mark_as_in_active"]
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
@@ -194,6 +195,14 @@ class ClientAdmin(admin.ModelAdmin):
         self.list_filter.remove("payment_method")
         return self.list_filter
 
+    @admin.action(description="Mark as In-active")
+    def mark_as_in_active(self, request, queryset):
+        try:
+            queryset.update(active=False)
+            self.message_user(request, "Selected clients are marked as active.", message.SUCCESS)
+        except Exception as e:
+            self.message_user(request, "Selected clients are not marked as active.", message.ERROR)
+        
     # get_project_name.short_description = "Project Name"
     @admin.display(description="Client Review")
     def get_client_review(self, obj):
@@ -203,7 +212,7 @@ class ClientAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
-    
+
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if not obj.active:
