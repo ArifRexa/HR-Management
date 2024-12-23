@@ -120,7 +120,7 @@ def leave_mail(leave: Leave):
     message_body = f"{leave.message} \n {leave.note} \n Status : {leave.status}"
     if leave.status == "pending":
         email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
-        email.to = ['"Mediusware-HR" <hr@mediusware.com>', "shuyaib@mediusware.com"]
+        email.to = ['"Mediusware-HR" <hr@mediusware.com>']
         email.cc = manager_email
     else:
         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
