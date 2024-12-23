@@ -68,6 +68,11 @@ class EmployeeAdmin(
     autocomplete_fields = ["user", "designation"]
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
+    
+    def lookup_allowed(self, lookup, value):
+        if lookup in ["employeeskill__skill__title__exact"]:
+            return True
+        return super().lookup_allowed(lookup, value)
 
     def save_model(self, request, obj, form, change):
         print(obj.__dict__)

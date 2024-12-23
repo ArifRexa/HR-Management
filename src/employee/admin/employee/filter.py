@@ -32,17 +32,19 @@ class MonthFilter(SimpleListFilter):
 
 class TopSkillFilter(SimpleListFilter):
     title = _("Skill")
-    parameter_name = "employeeskill__id__exact"
+    parameter_name = "employeeskill__skill__title__exact"
 
     def lookups(self, request, model_admin):
         skills = (
             EmployeeSkill.objects.filter(percentage__gte=60)
-            .values("id", "skill__title")
+            .values("skill__title")
             .distinct()
         )
-        return [(skill.get("id"), skill.get("skill__title")) for skill in skills]
+        return [
+            (skill.get("skill__title"), skill.get("skill__title")) for skill in skills
+        ]
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(employeeskill__id__exact=self.value())
+            return queryset.filter(employeeskill__skill__title__exact=self.value())
         return queryset
