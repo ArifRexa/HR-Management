@@ -77,6 +77,11 @@ class Country(TimeStampMixin):
         return self.name
 
 
+class ClientStatus(models.IntegerChoices):
+    FOLLOW_UP = 1, "Follow Up"
+    MEETING = 2, "Meeting"
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     web_name = models.CharField(
@@ -85,7 +90,9 @@ class Client(TimeStampMixin, AuthorMixin):
     active = models.BooleanField(default=True)
     designation = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(max_length=80, null=True, blank=True)
-    invoice_cc_email = models.TextField(null=True, blank=True, help_text="Comma-separated email addresses for CC")
+    invoice_cc_email = models.TextField(
+        null=True, blank=True, help_text="Comma-separated email addresses for CC"
+    )
     bill_from = models.TextField(null=True, blank=True)
     # cc_email = models.TextField(
     #     null=True, blank=True, help_text="Comma-separated email addresses for CC"
@@ -95,7 +102,7 @@ class Client(TimeStampMixin, AuthorMixin):
         Country, on_delete=models.SET_NULL, null=True, blank=True
     )
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
-    is_need_feedback = models.BooleanField(default=False,verbose_name="Need Feedback")
+    is_need_feedback = models.BooleanField(default=False, verbose_name="Need Feedback")
     # show_in_web = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
     client_feedback = HTMLField(null=True, blank=True)
@@ -121,24 +128,41 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, null=True)
     active_from = models.DateField(null=True, blank=True)
+    status = models.PositiveSmallIntegerField(
+        choices=ClientStatus.choices,
+        null=True,
+        blank=True,
+    )
+    follow_up_date = models.DateField(null=True, blank=True)
+    meeting_date = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.name
-    
+
     @property
     def is_active_over_six_months(self):
         if not self.active_from:
             return False
         return timezone.now().date() >= self.active_from + timedelta(days=180)
-    
-    
+
+
+class ClientExperience(Client):
+    class Meta:
+        proxy = True
+        verbose_name = "CX"
+        verbose_name_plural = "CX"
+
+    def __str__(self):
+        return self.name
+
+
 class ClientAttachment(models.Model):
     clients = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
     name = models.CharField(max_length=200, null=True)
     attachment = models.FileField(upload_to="client_attachments/")
-    
+
     class Meta:
         verbose_name = "Attachment"
         verbose_name_plural = "Attachments"
@@ -234,21 +258,34 @@ class Project(TimeStampMixin, AuthorMixin):
         max_length=255, null=True, blank=True, verbose_name="Client Web Name"
     )
     client_image = models.ImageField(
-        upload_to="client_images", null=True, blank=True, verbose_name="Client Web Image"
+        upload_to="client_images",
+        null=True,
+        blank=True,
+        verbose_name="Client Web Image",
     )
     client_review = models.TextField(null=True, blank=True)
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
     industries = models.ForeignKey(
-        "website.IndustryWeServe", related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
+        "website.IndustryWeServe",
+        related_name="projects",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
     )
     services = models.ForeignKey(
-        ServicePage, related_name="projects", blank=True, null=True, on_delete=models.SET_NULL
+        ServicePage,
+        related_name="projects",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
     )
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
-    country = models.ForeignKey(Country, on_delete=models.SET_NULL, null=True, blank=True)
+    country = models.ForeignKey(
+        Country, on_delete=models.SET_NULL, null=True, blank=True
+    )
     active = models.BooleanField(default=True)
     is_special = models.BooleanField(default=False)
     in_active_at = models.DateField(null=True, blank=True)
@@ -256,8 +293,12 @@ class Project(TimeStampMixin, AuthorMixin):
         max_digits=10, decimal_places=2, null=True, blank=True
     )
     activate_from = models.DateField(null=True, blank=True)
-    featured_image = models.ImageField(null=True, blank=True, verbose_name="Banner Image")
-    display_image = models.ImageField(null=True, blank=True, upload_to="project/display_image")
+    featured_image = models.ImageField(
+        null=True, blank=True, verbose_name="Banner Image"
+    )
+    display_image = models.ImageField(
+        null=True, blank=True, upload_to="project/display_image"
+    )
     project_logo = models.ImageField(upload_to="project_logo", null=True, blank=True)
     special_image = models.ImageField(upload_to="special_image", null=True, blank=True)
     thumbnail = models.ImageField(upload_to="project_thumbnails", null=True, blank=True)
@@ -270,7 +311,7 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     is_highlighted = models.BooleanField(verbose_name="Is Highlighted?", default=False)
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
-    
+
     # project_results = models.OneToOneField(
     #     ProjectResults,
     #     on_delete=models.CASCADE,
@@ -278,11 +319,11 @@ class Project(TimeStampMixin, AuthorMixin):
     #     blank=True,
     #     related_name="project",
     # )
-    
+
     # location_image = models.ImageField(null=True, blank=True)
     # service_we_provide_image = models.ImageField(null=True, blank=True)
     # industry_image = models.ImageField(null=True, blank=True)
-    
+
     def save(self, *args, **kwargs):
         if self.slug is None:
             self.slug = slugify(self.title[:51])
@@ -391,21 +432,26 @@ class Project(TimeStampMixin, AuthorMixin):
 
 
 class ProjectResultStatistic(TimeStampMixin):
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="project_results", null=True)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name="project_results", null=True
+    )
     title = models.CharField(max_length=255)
     result = models.CharField(max_length=20)
-    
+
     def __str__(self):
         return self.title
-    
+
     class Meta:
         verbose_name = "Project Result"
         verbose_name_plural = "Project Results"
 
+
 class PlatformImage(TimeStampMixin):
     image = models.ImageField(null=True, blank=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True)
-    
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, null=True, blank=True
+    )
+
 
 class ProjectServiceSolution(TimeStampMixin):
     project = models.ForeignKey(
@@ -417,6 +463,7 @@ class ProjectServiceSolution(TimeStampMixin):
     title = models.CharField(max_length=255)
     short_description = models.TextField()
     description = HTMLField()
+
 
 class ProjectDocument(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
@@ -444,12 +491,12 @@ class ProjectTechnology(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title
-    
+
+
 class ProjectKeyPoint(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    icon = models.ImageField(null=True,blank=True)
-    title = models.CharField(max_length=200,null=True,blank=True)
-    
+    icon = models.ImageField(null=True, blank=True)
+    title = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -480,7 +527,9 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=300, null=True, blank=True)
     description = HTMLField()
-    img = models.ImageField(verbose_name="Image", upload_to="projects/key_features/", null=True, blank=True)
+    img = models.ImageField(
+        verbose_name="Image", upload_to="projects/key_features/", null=True, blank=True
+    )
     img2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
 
     def __str__(self):
@@ -545,7 +594,12 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     # client_exp_feedback = models.URLField(
     #     blank=True, null=True, verbose_name="Client Experience Feedback"
     # )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending", verbose_name="TPM Approval Status")
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICE,
+        default="pending",
+        verbose_name="TPM Approval Status",
+    )
 
     def __str__(self):
         return f"{self.project} | {self.manager}"
@@ -568,9 +622,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             old_instance = ProjectHour.objects.get(id=self.id)
             if old_instance.hours != self.hours:
                 ProjectHourHistry.objects.create(
-                    date=self.date,
-                    history=self,
-                    hour_history=self.hours
+                    date=self.date, history=self, hour_history=self.hours
                 )
         super(ProjectHour, self).save(*args, **kwargs)
 
@@ -586,22 +638,22 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             ("weekly_project_hours_approve", "Can approved and give feedback from CTO"),
         ]
 
+
 @receiver(post_save, sender=ProjectHour)
 def create_project_hour_history(sender, instance, created, **kwargs):
     if created:  # Only run if a new ProjectHour is created
         ProjectHourHistry.objects.create(
-            date=instance.date,
-            history=instance,
-            hour_history=instance.hours
+            date=instance.date, history=instance, hour_history=instance.hours
         )
 
 
 class ProjectHourHistry(models.Model):
     date = models.DateField()
-    history = models.ForeignKey(ProjectHour,on_delete=models.CASCADE,null=True,blank=True)
-    hour_history = models.FloatField(null=True,blank=True)
+    history = models.ForeignKey(
+        ProjectHour, on_delete=models.CASCADE, null=True, blank=True
+    )
+    hour_history = models.FloatField(null=True, blank=True)
 
-    
 
 class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
     project_hour = models.ForeignKey(ProjectHour, on_delete=models.CASCADE)
@@ -658,9 +710,21 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
     )
     hours = models.FloatField(default=0.0)
     # description = models.TextField(blank=True, verbose_name='Explanation')
-    update = models.TextField(null=True, blank=True, default=" ", help_text="This will go to the client, so please ensure no unnecessary information is included")
-    updates_json = models.JSONField(null=True, blank=True, verbose_name="Update For Client")
-    management_updates = models.TextField(null=True, blank=True, verbose_name="Note", help_text="You can add any additional links or notes that help the DevLead/TPM understand your daily update")
+    update = models.TextField(
+        null=True,
+        blank=True,
+        default=" ",
+        help_text="This will go to the client, so please ensure no unnecessary information is included",
+    )
+    updates_json = models.JSONField(
+        null=True, blank=True, verbose_name="Update For Client"
+    )
+    management_updates = models.TextField(
+        null=True,
+        blank=True,
+        verbose_name="Note",
+        help_text="You can add any additional links or notes that help the DevLead/TPM understand your daily update",
+    )
 
     STATUS_CHOICE = (
         ("pending", "⌛ Pending"),
@@ -683,7 +747,10 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
                 "can_approve_or_edit_daily_update_at_any_time",
                 "Can approve or update daily project update at any time",
             ),
-            ("can_submit_previous_daily_project_update","Can Submit Previous Daily Project Update")
+            (
+                "can_submit_previous_daily_project_update",
+                "Can Submit Previous Daily Project Update",
+            ),
         ]
         verbose_name = "Daily Project Update"
         verbose_name_plural = "Daily Project Updates"
@@ -944,13 +1011,20 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
     def has_red_rating(self):
         red_line = 3.5
         return (
-            self.rating_communication is not None and self.rating_communication <= red_line
-            or self.rating_overall_satisfaction is not None and self.rating_overall_satisfaction <= red_line
-            or self.rating_quality_of_work is not None and self.rating_quality_of_work <= red_line
-            or self.rating_time_management is not None and self.rating_time_management <= red_line
-            or self.rating_value_for_money is not None and self.rating_value_for_money <= red_line
-            or self.rating_understanding_of_requirements is not None and self.rating_understanding_of_requirements <= red_line
-            or self.rating_recommendations is not None and self.rating_recommendations <= red_line
+            self.rating_communication is not None
+            and self.rating_communication <= red_line
+            or self.rating_overall_satisfaction is not None
+            and self.rating_overall_satisfaction <= red_line
+            or self.rating_quality_of_work is not None
+            and self.rating_quality_of_work <= red_line
+            or self.rating_time_management is not None
+            and self.rating_time_management <= red_line
+            or self.rating_value_for_money is not None
+            and self.rating_value_for_money <= red_line
+            or self.rating_understanding_of_requirements is not None
+            and self.rating_understanding_of_requirements <= red_line
+            or self.rating_recommendations is not None
+            and self.rating_recommendations <= red_line
         )
 
     class Meta:
@@ -1002,6 +1076,7 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
         return ClientFeedback.objects.filter(
             feedback_month__in=[current_month, last_month, two_months_ago]
         )
+
 
 class CodeReview(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(
@@ -1162,11 +1237,11 @@ def create_observation(sender, instance, created, **kwargs):
 
 class ClientFeedbackEmail(models.Model):
     Feedback_Type_Choices = [
-        ('initial','Initial Feedback'),
-        ('reminder','Reminder Feedback')
+        ("initial", "Initial Feedback"),
+        ("reminder", "Reminder Feedback"),
     ]
-    subject = models.CharField(max_length=255,null=True,blank=True)
+    subject = models.CharField(max_length=255, null=True, blank=True)
     body = HTMLField()
-    feedback_type = models.CharField(max_length=50,choices=Feedback_Type_Choices,default='initial')
-
-    
+    feedback_type = models.CharField(
+        max_length=50, choices=Feedback_Type_Choices, default="initial"
+    )
