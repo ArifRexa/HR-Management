@@ -3,7 +3,7 @@ from django.template.loader import get_template
 from django.contrib import admin
 from django.db.models import Q
 from django.utils.html import format_html
-
+from django.utils import timezone
 
 from asset_management.models import (
     Asset,
@@ -313,6 +313,12 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "update_status_pending",
         "update_status_in_progress",
     ]
+    
+    def save_model(self, request, obj, form, change):
+        if change:
+            if obj.status == AssetRequestStatus.DONE:
+                obj.approved_at = timezone.now()
+        return super().save_model(request, obj, form, change)
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -330,9 +336,12 @@ class AssetRequestAdmin(admin.ModelAdmin):
         css = {"all": ("css/list.css",)}
         
     
-    @admin.display(description="Requested Date", ordering="created_at")
+    @admin.display(description="Due Days", ordering="created_at")
     def requested_date(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d")
+        if obj.approved_at:
+            due_days = obj.approved_at - obj.created_at.date()
+            return due_days.days
+        return (timezone.now().date() - obj.created_at.date()).days
 
     @admin.display(description="Priority", ordering="priority")
     def get_priority(self, obj):
