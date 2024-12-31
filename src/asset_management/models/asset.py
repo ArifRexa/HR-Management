@@ -221,6 +221,7 @@ class AssetRequest(AuthorMixin, TimeStampMixin):
         choices=AssetRequestStatus.choices,
         default=AssetRequestStatus.PENDING,
     )
+    approved_at = models.DateField(null=True, editable=False)
 
 
 class AssetRequestNote(AuthorMixin, TimeStampMixin):
