@@ -29,22 +29,17 @@ def _get_date_range_by_week(week=0, days=7):
         0 (current week)
         -1 (last week)
         -2 (2nd last week)
+    days: int
+        The number of days in the range (default is 7 for a full week).
     """
     now = datetime.now()
-    start_day_of_year = datetime(
-        year=now.year,
-        month=1,
-        day=1,
-    )
-    week_day_of_year_start = start_day_of_year.weekday()
-    target_week = (now + timedelta(weeks=week)).isocalendar()[1]
-
-    start_day = (
-        start_day_of_year
-        + timedelta(weeks=target_week - 1, days=-week_day_of_year_start)
-    ).date()
-    end_date = start_day + timedelta(days=days - 1)
-    return (start_day, end_date)
+    # Calculate the current week's start (Monday)
+    current_week_start = now - timedelta(days=now.weekday())  # Monday of the current week
+    # Calculate the target week's start by adding `week` offset
+    target_week_start = current_week_start + timedelta(weeks=week)
+    # Define the end date for the range
+    end_date = target_week_start + timedelta(days=days - 1)
+    return target_week_start.date(), end_date.date()
 
 
 @dataclass
