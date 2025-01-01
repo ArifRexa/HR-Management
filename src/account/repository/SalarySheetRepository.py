@@ -604,12 +604,12 @@ class SalarySheetRepository:
             one_day_salary = (
                 self.__employee_current_salary.payable_salary / total_month_day[1]
             )
-            payable_medical_leave = employee.leave_available_leaveincash(
-                "medical_leave", salary_sheet.date
-            ) - employee.leave_passed("medical", salary_sheet.date.year)
-            payable_medical_leave_amount = (
-                (payable_medical_leave * employee.pay_scale.leave_in_cash_medical) / 100
-            ) * one_day_salary
+            # payable_medical_leave = employee.leave_available_leaveincash(
+            #     "medical_leave", salary_sheet.date
+            # ) - employee.leave_passed("medical", salary_sheet.date.year)
+            # payable_medical_leave_amount = (
+            #     (payable_medical_leave * employee.pay_scale.leave_in_cash_medical) / 100
+            # ) * one_day_salary
 
             payable_casual_leave = employee.leave_available_leaveincash(
                 "casual_leave", salary_sheet.date
@@ -618,7 +618,8 @@ class SalarySheetRepository:
                 (payable_casual_leave * employee.pay_scale.leave_in_cash_casual) / 100
             ) * one_day_salary
 
-            leave_in_cash = payable_medical_leave_amount + payable_casual_leave_amount
+            # leave_in_cash = payable_medical_leave_amount + payable_casual_leave_amount
+            leave_in_cash = payable_casual_leave_amount
 
             # INLINE DEBUG
             # print("="*30)
