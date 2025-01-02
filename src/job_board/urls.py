@@ -51,6 +51,12 @@ api_urls = [
     path('booked-time-slots-via-job-id/<int:job_id>/<date:my_date>/', VivaConfigPerDayViewSet.as_view(),
          name='booked_time_slots_by_date'),
     path('create-job-viva-time-slot/', JobVivaTimeSlotCreateAPIView.as_view(), name='create_job_viva_time_slot'),
+    path('candidate/<int:candidate_id>/shortlist/', authentication.UpdateShortlistView.as_view(),
+         name='update_shortlist'),
+    path('candidate/<int:candidate_id>/call/', authentication.UpdateCallView.as_view(), name='update_call'),
+    path('candidate/<int:candidate_id>/schedule/', authentication.UpdateScheduleView.as_view(), name='update_schedule'),
+    path('candidate/<int:candidate_id>/feedback/', authentication.UpdateFeedbackView.as_view(), name='update_feedback'),
+    path('candidate/<int:candidate_id>/status/', authentication.UpdateStatusView.as_view(), name='update_status'),
 ]
 
 urlpatterns = [

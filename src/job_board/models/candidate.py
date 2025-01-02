@@ -40,6 +40,12 @@ class Candidate(TimeStampMixin):
         ("female", "Female"),
         ("other", "Other"),
     )
+    APPLICATIONS_STATUS_CHOICES = (
+        ('waiting', 'Waiting List'),
+        ('rejected', 'Rejected'),
+        ('offered', 'Offered'),
+        ('hired', 'Hired'),
+    )
     full_name = models.CharField(max_length=150)
     email = models.EmailField(max_length=40, unique=True)
     email_otp = models.CharField(max_length=10, null=True, blank=True)
@@ -50,6 +56,15 @@ class Candidate(TimeStampMixin):
     cv = models.FileField(upload_to=candidate_email_path, validators=[validate_file_extension])
     status = models.CharField(max_length=10, choices=STATUS_CHOICE, default='active')
     gender = models.CharField(max_length=10, choices=GENDER_CHOICE, null=True, blank=False)
+    is_shortlisted = models.BooleanField(default=False)
+    is_called = models.BooleanField(default=False)
+    schedule_datetime = models.DateTimeField(null=True, blank=True)
+    feedback = models.TextField(null=True, blank=True)
+    application_status = models.CharField(
+        max_length=20,
+        choices=APPLICATIONS_STATUS_CHOICES,
+        default='waiting'
+    )
 
     def __str__(self):
         return self.full_name

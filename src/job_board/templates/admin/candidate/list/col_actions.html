@@ -1,0 +1,99 @@
+<!--?<!  templates/admin/candidate/list/col_actions.html -->
+
+<!--?<div class="candidate-actions" data-candidate-id="{{ id }}">-->
+<!--?    <div class="action-item">-->
+<!--?        <input type="checkbox"-->
+<!--?               class="shortlist-checkbox"-->
+<!--?               {% if candidate.is_shortlisted %}checked{% endif %}-->
+<!--?               onchange="updateShortlist({{ id }}, this.checked)">-->
+<!--?        <label>Shortlisted</label>-->
+<!--?    </div>-->
+
+<!--?    <div class="action-item">-->
+<!--?        <input type="checkbox"-->
+<!--?               class="call-checkbox"-->
+<!--?               {% if candidate.is_called %}checked{% endif %}-->
+<!--?               onchange="updateCall({{ id }}, this.checked)">-->
+<!--?        <label>Called</label>-->
+<!--?    </div>-->
+
+<!--?    <div class="action-item">-->
+<!--?        <label>Schedule</label>-->
+<!--?        <input type="text"-->
+<!--?               class="schedule-datetime"-->
+<!--?               value="{{ candidate.schedule_datetime|date:'Y-m-d H:i' }}"-->
+<!--?               onchange="updateSchedule({{ id }}, this.value)">-->
+<!--?    </div>-->
+
+<!--?    <div class="action-item">-->
+<!--?        <label>Feedback</label>-->
+<!--?        <textarea class="feedback-text"-->
+<!--?                  onchange="updateFeedback({{ id }}, this.value)">{{ candidate.feedback }}</textarea>-->
+<!--?    </div>-->
+
+<!--?    <div class="action-item">-->
+<!--?        <select class="status-select" onchange="updateStatus({{ id }}, this.value)">-->
+<!--?            <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>-->
+<!--?            <option value="rejected" {% if candidate.application_status == 'rejected' %}selected{% endif %}>Rejected</option>-->
+<!--?            <option value="offered" {% if candidate.application_status == 'offered' %}selected{% endif %}>Offered</option>-->
+<!--?            <option value="hired" {% if candidate.application_status == 'hired' %}selected{% endif %}>Hired</option>-->
+<!--?        </select>-->
+<!--?    </div>-->
+<!--?</div>-->
+<!-- templates/admin/candidate/list/col_actions.html -->
+
+{% load static %}
+{% csrf_token %}
+
+<div class="candidate-actions" data-candidate-id="{{ id }}">
+    <div class="action-item">
+        <input type="checkbox"
+               class="shortlist-checkbox"
+               {% if candidate.is_shortlisted %}checked{% endif %}
+               onchange="updateShortlist({{ candidate.id }}, this.checked)">
+        <label>Shortlisted</label>
+    </div>
+
+    <div class="action-item">
+        <input type="checkbox"
+               class="call-checkbox"
+               {% if candidate.is_called %}checked{% endif %}
+               onchange="updateCall({{ candidate.id }}, this.checked)">
+        <label>Called</label>
+    </div>
+
+<!--?    <div class="action-item">-->
+<!--?        <label>Schedule</label>-->
+<!--?        <input type="text"-->
+<!--?               class="schedule-datetime"-->
+<!--?               value="{{ candidate.schedule_datetime|date:'Y-m-d H:i' }}"-->
+<!--?               onchange="updateSchedule({{ candidate.id }}, this.value)">-->
+<!--?    </div>-->
+    <div class="action-item schedule-container">
+        <label class="schedule-label">Schedule Interview</label>
+        <div class="schedule-input-wrapper">
+            <input type="text"
+                   class="schedule-datetime"
+                   placeholder="Select date and time"
+                   value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
+                   onchange="updateSchedule({{ candidate.id }}, this.value)">
+            <i class="calendar-icon"></i>
+        </div>
+    </div>
+
+    <div class="action-item">
+        <label>Feedback</label>
+        <textarea class="feedback-text"
+                  onblur="updateFeedback({{ candidate.id }}, this.value)">{{ candidate.feedback }}</textarea>
+    </div>
+
+    <div class="action-item">
+        <label>Status</label>
+        <select class="status-select" onchange="updateStatus({{ candidate.id }}, this.value)">
+            <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>
+            <option value="rejected" {% if candidate.application_status == 'rejected' %}selected{% endif %}>Rejected</option>
+            <option value="offered" {% if candidate.application_status == 'offered' %}selected{% endif %}>Offered</option>
+            <option value="hired" {% if candidate.application_status == 'hired' %}selected{% endif %}>Hired</option>
+        </select>
+    </div>
+</div>
