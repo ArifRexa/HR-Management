@@ -59,11 +59,13 @@ class CandidateAdmin(admin.ModelAdmin):
             'js/candidate_actions.js',
         )
 
+
     # def changelist_view(self, request, extra_context=None):
     #     extra_context = extra_context or {}
     #     extra_context['csrf_token'] = get_token(request)
     #     return super().changelist_view(request, extra_context=extra_context)
-    
+
+
     def get_list_display(self, request):
         if request.user.is_superuser or request.user.has_perm('job_board.can_see_candidate_expected_salary'):
             return ('contact_information', 'candidate_actions', 'assessment', 'note', 'review', 'expected_salary')
