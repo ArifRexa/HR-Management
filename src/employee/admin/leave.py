@@ -77,6 +77,12 @@ class LeaveForm(forms.ModelForm):
 
     def clean(self):
         user = self.request.user
+        start_date = datetime.datetime.strptime(
+            self.data.get("start_date"), "%Y-%m-%d"
+        ).date()
+        end_date = datetime.datetime.strptime(
+            self.data.get("end_date"), "%Y-%m-%d"
+        ).date()
         if not user.has_perm("employee.can_approve_leave_applications"):
             if self.data.get(
                 "applied_leave_type"
@@ -90,9 +96,7 @@ class LeaveForm(forms.ModelForm):
                 self.data.get("start_date") is not None
                 and self.data.get("end_date") is not None
             ):
-                start_date = datetime.datetime.strptime(
-                    self.data.get("start_date"), "%Y-%m-%d"
-                ).date()
+
                 if self.data.get("applied_leave_type") == "casual":
                     if start_date == date.today():
                         raise ValidationError(
@@ -114,6 +118,22 @@ class LeaveForm(forms.ModelForm):
                                 "start_date": "You can not apply any leave application after 06:00 PM for tomorrow."
                             }
                         )
+            difference = end_date - start_date
+            print(difference >= timedelta(days=3))
+            if (
+                not user.has_perm("employee.can_add_leave_at_any_time")
+                and difference >= timedelta(days=3)
+                and self.data.get("applied_leave_type") == "casual"
+            ):
+                submission_time = date.today()
+                submission_difference = start_date - submission_time
+                print(submission_difference)
+                if submission_difference < timedelta(days=7):
+                    raise ValidationError(
+                        {
+                            "start_date": "For consecutive 3 or more days of casual leave, you have to apply at least 7 days before the leave"
+                        }
+                    )
         return super().clean()
 
     # def __init__(self, *args, **kwargs):
@@ -389,7 +409,9 @@ class LeaveManagement(admin.ModelAdmin):
             return True
 
     def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser or request.user.has_perm("employee.can_update_after_approve"):
+        if request.user.is_superuser or request.user.has_perm(
+            "employee.can_update_after_approve"
+        ):
             return True
         return obj and obj.status == "pending"
 
@@ -400,7 +422,13 @@ class LeaveManagement(admin.ModelAdmin):
         return qs.filter(employee_id=request.user.employee)
 
     def get_list_filter(self, request):
-        list_filter = ["status", "applied_leave_type", "leave_type", "employee", "start_date"]
+        list_filter = [
+            "status",
+            "applied_leave_type",
+            "leave_type",
+            "employee",
+            "start_date",
+        ]
         if not request.user.has_perm("employee.can_approve_leave_applications"):
             list_filter.remove("employee")
         return list_filter
