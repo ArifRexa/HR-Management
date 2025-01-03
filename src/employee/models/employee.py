@@ -438,7 +438,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             available_leave = (month_of_permanent * get_leave_by_type) / 12
 
         decimal_number = available_leave - int(available_leave)
-        if decimal_number < 0.50:
+        if decimal_number < 0.40:
             return float("{:.2f}".format(round(available_leave)))
         else:
             integer_part = math.floor(available_leave)
