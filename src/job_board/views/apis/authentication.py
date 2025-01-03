@@ -15,7 +15,7 @@ from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
 from job_board.models.candidate import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
-from job_board.tasks import send_interview_email
+from job_board.tasks import send_interview_email, send_cancellation_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -138,6 +138,8 @@ class UpdateScheduleView(APIView):
         print(candidate.schedule_datetime)
         if candidate.schedule_datetime:
             send_interview_email(candidate.id, candidate.schedule_datetime)
+        else:
+            send_cancellation_email(candidate.id)
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
 class UpdateFeedbackView(APIView):

@@ -174,6 +174,11 @@ async function updateSchedule(candidateId, value) {
 
 async function cancelSchedule(candidateId) {
     const inputField = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-datetime`);
+    // Check if the input field is already empty
+    if (!inputField.value) {
+        console.log("Schedule is already cleared. Skipping API call.");
+        return;  // Exit the function without making an API call
+    }
     inputField.value = '';  // Clear the input field
 
     // Clear the timeout to prevent the delayed API call
