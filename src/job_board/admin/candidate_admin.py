@@ -70,9 +70,9 @@ class CandidateAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         if request.user.is_superuser or request.user.has_perm('job_board.can_see_candidate_expected_salary'):
-            return ('contact_information', 'candidate_actions', 'review', 'assessment', 'note', 'expected_salary')
+            return ('contact_information', 'assessment', 'candidate_actions', 'review', 'note', 'expected_salary')
         else:
-            return ('contact_information', 'candidate_actions', 'review', 'assessment', 'note')
+            return ('contact_information', 'assessment', 'candidate_actions', 'review', 'note')
 
     @admin.display(description='Actions')
     def candidate_actions(self, obj):
