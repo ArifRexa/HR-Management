@@ -5,7 +5,7 @@
 <div class="candidate-actions" data-candidate-id="{{ id }}">
     <div class="action-item">
         <input type="checkbox"
-               class="shortlist-checkbox"
+               class="shortlist-checkbox" style="margin-right: 8px;"
                {% if candidate.is_shortlisted %}checked{% endif %}
                onchange="updateShortlist({{ candidate.id }}, this.checked)">
         <label>Shortlisted</label>
@@ -13,7 +13,7 @@
 
     <div class="action-item">
         <input type="checkbox"
-               class="call-checkbox"
+               class="call-checkbox" style="margin-right: 8px;"
                {% if candidate.is_called %}checked{% endif %}
                onchange="updateCall({{ candidate.id }}, this.checked)">
         <label>Called</label>
@@ -30,7 +30,7 @@
 <!--?        <label class="schedule-label">Schedule Interview</label>-->
         <div class="schedule-input-wrapper">
             <input type="text"
-                   class="schedule-datetime"
+                   class="schedule-datetime" style="margin-right: 5px;"
                    placeholder="Schedule Interview"
                    value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
                    onchange="updateSchedule({{ candidate.id }}, this.value)">
@@ -51,7 +51,7 @@
 <!--?    </div>-->
 
     <div class="action-item">
-        <label>Status</label>
+        <label style="margin-right: 8px;">Status</label>
         <select class="status-select" onchange="updateStatus({{ candidate.id }}, this.value)">
             <option value="none" {% if candidate.application_status == 'none' %}selected{% endif %}>None</option>
             <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>
