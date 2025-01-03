@@ -4,6 +4,10 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from job_board.models import Candidate
+from rest_framework.permissions import IsAdminUser
 
 from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
@@ -84,3 +88,56 @@ class ChangeCandidatePassword(APIView):
             serializer.update(instance=request.user, validated_data=serializer.validated_data)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateShortlistView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, candidate_id):
+        print(f"Received request for candidate {candidate_id}")  # Debug print
+        print(f"Request data: {request.data}")  # Debug print
+        try:
+            candidate = get_object_or_404(Candidate, id=candidate_id)
+            candidate.is_shortlisted = request.data.get('is_shortlisted')
+            candidate.save()
+            return Response({'status': 'success'}, status=status.HTTP_200_OK)
+        except Exception as e:
+            print(f"Error: {str(e)}")  # Debug print
+            return Response({'status': 'error', 'message': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateCallView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, candidate_id):
+        candidate = get_object_or_404(Candidate, id=candidate_id)
+        candidate.is_called = request.data.get('is_called')
+        candidate.save()
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+class UpdateScheduleView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, candidate_id):
+        candidate = get_object_or_404(Candidate, id=candidate_id)
+        candidate.schedule_datetime = request.data.get('schedule_datetime')
+        candidate.save()
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+class UpdateFeedbackView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, candidate_id):
+        candidate = get_object_or_404(Candidate, id=candidate_id)
+        candidate.feedback = request.data.get('feedback')
+        candidate.save()
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+class UpdateStatusView(APIView):
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, candidate_id):
+        candidate = get_object_or_404(Candidate, id=candidate_id)
+        candidate.application_status = request.data.get('application_status')
+        candidate.save()
+        return Response({'status': 'success'}, status=status.HTTP_200_OK)

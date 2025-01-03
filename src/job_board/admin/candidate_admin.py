@@ -8,6 +8,7 @@ from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
 from django.db.models import Sum, QuerySet, Q
+from django.middleware.csrf import get_token
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.urls import path
@@ -41,22 +42,45 @@ class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
     # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
-    list_filter = ('candidatejob__merit', 'candidatejob__job', 'gender')
+    list_filter = ('candidatejob__merit', 'candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', 'schedule_datetime')
     actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter', 'job_re_apply')
     list_per_page = 50
     date_hierarchy = 'created_at'
 
     class Media:
         css = {
-            'all': ('css/list.css',)
+            'all': (
+                'css/list.css',
+                'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+            )
         }
-        js = ('js/list.js',)
-    
+        js = (
+            'https://cdn.jsdelivr.net/npm/flatpickr',
+            'js/candidate_actions.js',
+        )
+
+
+    # def changelist_view(self, request, extra_context=None):
+    #     extra_context = extra_context or {}
+    #     extra_context['csrf_token'] = get_token(request)
+    #     return super().changelist_view(request, extra_context=extra_context)
+
+
     def get_list_display(self, request):
         if request.user.is_superuser or request.user.has_perm('job_board.can_see_candidate_expected_salary'):
-            return ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
+            return ('contact_information', 'candidate_actions', 'assessment', 'note', 'review', 'expected_salary')
         else:
-            return ('contact_information', 'assessment', 'note', 'review')
+            return ('contact_information', 'candidate_actions', 'assessment', 'note', 'review')
+
+    @admin.display(description='Actions')
+    def candidate_actions(self, obj):
+        template = 'admin/candidate/list/col_actions.html'
+        context = {
+            'candidate': obj,
+            'id': obj.id,
+        }
+        return format_html(render_to_string(template, context))
+
 
     @admin.display(ordering='candidatejob__expected_salary')
     def expected_salary(self, obj: Candidate):
