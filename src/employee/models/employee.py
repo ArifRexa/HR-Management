@@ -402,6 +402,15 @@ class Employee(TimeStampMixin, AuthorMixin):
                 available_leave = (month_of_permanent * get_leave_by_type) / 12
             else:
                 available_leave = get_leave_by_type
+                
+            #FIXME: Temporary fix for leave calculation
+            decimal_number = available_leave - int(available_leave)
+            if decimal_number < 0.40:
+                return float("{:.2f}".format(round(available_leave)))
+            else:
+                integer_part = math.floor(available_leave)
+                available_leave = integer_part + 0.50
+                return available_leave
 
         return round(available_leave)
 
