@@ -41,6 +41,7 @@ class Candidate(TimeStampMixin):
         ("other", "Other"),
     )
     APPLICATIONS_STATUS_CHOICES = (
+        ('none', 'None'),
         ('waiting', 'Waiting List'),
         ('rejected', 'Rejected'),
         ('offered', 'Offered'),
@@ -63,7 +64,7 @@ class Candidate(TimeStampMixin):
     application_status = models.CharField(
         max_length=20,
         choices=APPLICATIONS_STATUS_CHOICES,
-        default='waiting'
+        default='none'
     )
 
     def __str__(self):

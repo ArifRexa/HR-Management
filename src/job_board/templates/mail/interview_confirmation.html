@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interview Confirmation</title>
+</head>
+<body>
+    <p>Dear {{ candidate.full_name }},</p>
+    <p>We are pleased to inform you that you have been shortlisted for an interview with us at Mediusware Ltd for the position of {{ candidate.candidatejob_set.last.job }}.</p>
+    <p>Your interview is scheduled for <strong>{{ interview_datetime }}</strong>.</p>
+    <p>Please ensure to be available at the scheduled time. We look forward to speaking with you!</p>
+    <p>Regards, <br>
+        Mediusware Ltd, <br>
+        +8801601712931 <br>
+        hr@mediusware.com <br>
+        Address: Floor 7th, 24/1 & 24/2, Taj Mahal Road, Shiya Masjid mor, Ring Road, & 8th, Dhaka 1207
+        Facebook: <a href="https://www.facebook.com/mediusware" target="_blank">https://www.facebook.com/mediusware</a>
+        <br>
+        LinkedIn: <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">https://www.linkedin.com/company/mediusware-ltd/</a>
+    </p>
+</body>
+</html>

@@ -8,12 +8,14 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from job_board.models import Candidate
 from rest_framework.permissions import IsAdminUser
-
+from datetime import datetime
+from django.utils.timezone import make_aware
 from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
 from job_board.models.candidate import Candidate
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
+from job_board.tasks import send_interview_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -118,10 +120,24 @@ class UpdateCallView(APIView):
 class UpdateScheduleView(APIView):
     permission_classes = [IsAdminUser]
 
+    # def post(self, request, candidate_id):
+    #     candidate = get_object_or_404(Candidate, id=candidate_id)
+    #     candidate.schedule_datetime = request.data.get('schedule_datetime')
+    #     candidate.save()
+    #     return Response({'status': 'success'}, status=status.HTTP_200_OK)
     def post(self, request, candidate_id):
         candidate = get_object_or_404(Candidate, id=candidate_id)
-        candidate.schedule_datetime = request.data.get('schedule_datetime')
+        schedule_datetime = request.data.get('schedule_datetime')
+
+        if schedule_datetime:  # Update with new value
+            candidate.schedule_datetime = schedule_datetime
+        else:  # Reset to null if cancel is triggered
+            candidate.schedule_datetime = None
+
         candidate.save()
+        print(candidate.schedule_datetime)
+        if candidate.schedule_datetime:
+            send_interview_email(candidate.id, candidate.schedule_datetime)
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
 class UpdateFeedbackView(APIView):
