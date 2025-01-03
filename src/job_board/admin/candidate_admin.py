@@ -42,7 +42,7 @@ class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
     # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
-    list_filter = ('candidatejob__merit', 'candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', 'schedule_datetime')
+    list_filter = ('candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', 'schedule_datetime')
     actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter', 'job_re_apply')
     list_per_page = 50
     date_hierarchy = 'created_at'
@@ -52,10 +52,12 @@ class CandidateAdmin(admin.ModelAdmin):
             'all': (
                 'css/list.css',
                 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css',
+                'https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.css',
             )
         }
         js = (
             'https://cdn.jsdelivr.net/npm/flatpickr',
+            'https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.js',
             'js/candidate_actions.js',
         )
 

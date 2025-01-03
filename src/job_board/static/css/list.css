@@ -168,3 +168,16 @@
     width: 64%;
 }
 
+.cancel-schedule-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    /*margin-left: 10px;*/
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.cancel-schedule-btn:hover {
+    background-color: #d32f2f;
+}
