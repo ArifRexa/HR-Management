@@ -17,7 +17,6 @@ from job_board.models.candidate import Candidate
 from django.template import loader
 
 
-
 def candidates_have_to_reapply(): 
     candidates_without_jobs = Candidate.objects.filter(candidatejob__isnull=True)[:30]  
     if candidates_without_jobs.exists():  
@@ -160,3 +159,28 @@ def send_chunked_emails(chunk, candidate_email_instance_id, attachment_paths):
         async_task(
             "job_board.tasks.send_candidate_email", email, candidate_email_instance, attachment_paths
         )
+
+
+
+
+
+def send_interview_email(candidate_id, interview_datetime):
+    # Fetch the candidate
+    candidate = Candidate.objects.get(id=candidate_id)
+
+    # Create the email content
+    subject = f"Congratulations! You've been shortlisted for an interview"
+    html_template = get_template('mail/interview_confirmation.html')
+    html_content = html_template.render({
+        'candidate': candidate,
+        'interview_datetime': interview_datetime,
+        'position': candidate.candidatejob_set.last().job
+    })
+
+    # Prepare the email
+    email = EmailMultiAlternatives(subject=subject)
+    email.attach_alternative(html_content, 'text/html')
+    email.to = [candidate.email]
+    email.from_email = 'Mediusware-HR <hr@mediusware.com>'
+    # Send the email
+    email.send()

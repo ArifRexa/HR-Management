@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof flatpickr !== 'undefined') {
         flatpickr(".schedule-datetime", {
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
+            dateFormat: "Y-m-d h:i",
             minDate: "today",
             time_24hr: false,
             minuteIncrement: 15,
@@ -126,15 +126,73 @@ async function updateCall(candidateId, value) {
     );
 }
 
+// async function updateSchedule(candidateId, value) {
+//     await makeRequest(
+//         `/api/candidate/${candidateId}/schedule/`,  // Remove 'action' from URL
+//         {
+//             schedule_datetime: value,
+//             candidateId: candidateId
+//         }
+//     );
+// }
+let scheduleTimeout = null;  // Store the timeout globally
+
 async function updateSchedule(candidateId, value) {
+    const scheduleContainer = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-input-wrapper`);
+    const cancelButton = scheduleContainer.querySelector('.cancel-schedule-btn');
+
+    // Clear any existing timeout to prevent duplicate API calls
+    if (scheduleTimeout) {
+        clearTimeout(scheduleTimeout);
+    }
+
+    // Set a timeout to delay the API call by 10 seconds
+    scheduleTimeout = setTimeout(async () => {
+        const response = await makeRequest(
+            `/api/candidate/${candidateId}/schedule/`,
+            {
+                schedule_datetime: value,
+                candidateId: candidateId
+            }
+        );
+
+        // If the schedule is successfully updated, add the cancel button if not present
+        if (response.status === 'success') {
+            if (!cancelButton) {
+                const newCancelButton = document.createElement('button');
+                newCancelButton.textContent = 'Cancel';
+                newCancelButton.type = 'button';
+                newCancelButton.className = 'cancel-schedule-btn';
+                newCancelButton.onclick = function () {
+                    cancelSchedule(candidateId);
+                };
+                scheduleContainer.appendChild(newCancelButton);
+            }
+        }
+    }, 10000);  // Delay of 10 seconds
+}
+
+async function cancelSchedule(candidateId) {
+    const inputField = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-datetime`);
+    inputField.value = '';  // Clear the input field
+
+    // Clear the timeout to prevent the delayed API call
+    if (scheduleTimeout) {
+        clearTimeout(scheduleTimeout);
+        scheduleTimeout = null;  // Reset timeout reference
+    }
+
+    // Optionally send request to backend to clear the schedule immediately
     await makeRequest(
-        `/api/candidate/${candidateId}/schedule/`,  // Remove 'action' from URL
+        `/api/candidate/${candidateId}/schedule/`,  // API endpoint
         {
-            schedule_datetime: value,
+            schedule_datetime: null,  // Reset the schedule in the database
             candidateId: candidateId
         }
     );
 }
+
+
 
 async function updateFeedback(candidateId, value) {
     await makeRequest(
