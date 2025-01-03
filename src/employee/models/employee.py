@@ -405,7 +405,7 @@ class Employee(TimeStampMixin, AuthorMixin):
                 
             #FIXME: Temporary fix for leave calculation
             decimal_number = available_leave - int(available_leave)
-            if decimal_number < 0.40:
+            if decimal_number < 0.50:
                 return float("{:.2f}".format(round(available_leave)))
             else:
                 integer_part = math.floor(available_leave)
