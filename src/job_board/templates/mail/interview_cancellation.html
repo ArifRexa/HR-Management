@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Interview Confirmation</title>
+    <meta charset="UTF-8">
+    <title>Interview Canceled</title>
 </head>
 <body>
-    <p>Dear {{ candidate.full_name }},</p>
-    <p>We are pleased to inform you that you have been shortlisted for an interview with us at Mediusware Ltd for the position of {{ candidate.candidatejob_set.last.job }}.</p>
-    <p>Your interview is scheduled for <strong>{{ interview_datetime }}</strong>.</p>
-    <p>Please ensure to be available at the scheduled time. We look forward to speaking with you!</p>
+    <h1>Dear {{ candidate.full_name }},</h1>
+    <p>We regret to inform you that your interview for the <strong>{{ position.title }}</strong> position has been canceled.</p>
+    <p>If you have any questions or need further information, please feel free to reach out to our HR department.</p>
+    <p>Thank you for your understanding.</p>
+    <br>
     <p>Regards, <br>
         Mediusware Ltd, <br>
         +8801601712931 <br>

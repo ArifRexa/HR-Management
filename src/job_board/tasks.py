@@ -181,6 +181,25 @@ def send_interview_email(candidate_id, interview_datetime):
     email = EmailMultiAlternatives(subject=subject)
     email.attach_alternative(html_content, 'text/html')
     email.to = [candidate.email]
-    email.from_email = 'Mediusware-HR <hr@mediusware.com>'
+    # email.from_email = 'Mediusware-HR <hr@mediusware.com>'
+    email.from_email = 'Mediusware-HR <checkmed202@gmail.com>'
     # Send the email
+    email.send()
+
+
+def send_cancellation_email(candidate_id):
+    candidate = Candidate.objects.get(id=candidate_id)
+
+    subject = "Interview Schedule Canceled"
+    html_template = get_template('mail/interview_cancellation.html')
+    html_content = html_template.render({
+        'candidate': candidate,
+        'position': candidate.candidatejob_set.last().job
+    })
+
+    email = EmailMultiAlternatives(subject=subject)
+    email.attach_alternative(html_content, 'text/html')
+    email.to = [candidate.email]
+    # email.from_email = 'Mediusware-HR <hr@mediusware.com>'
+    email.from_email = 'Mediusware-HR <checkmed202@gmail.com>'
     email.send()
