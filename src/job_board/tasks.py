@@ -181,8 +181,7 @@ def send_interview_email(candidate_id, interview_datetime):
     email = EmailMultiAlternatives(subject=subject)
     email.attach_alternative(html_content, 'text/html')
     email.to = [candidate.email]
-    # email.from_email = 'Mediusware-HR <hr@mediusware.com>'
-    email.from_email = 'Mediusware-HR <checkmed202@gmail.com>'
+    email.from_email = 'Mediusware-HR <hr@mediusware.com>'
     # Send the email
     email.send()
 
@@ -200,6 +199,5 @@ def send_cancellation_email(candidate_id):
     email = EmailMultiAlternatives(subject=subject)
     email.attach_alternative(html_content, 'text/html')
     email.to = [candidate.email]
-    # email.from_email = 'Mediusware-HR <hr@mediusware.com>'
-    email.from_email = 'Mediusware-HR <checkmed202@gmail.com>'
+    email.from_email = 'Mediusware-HR <hr@mediusware.com>'
     email.send()
