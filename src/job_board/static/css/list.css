@@ -61,6 +61,7 @@
 
 .candidate-actions {
     position: relative;
+    width: 100%;
 }
 
 .action-status {

@@ -44,6 +44,7 @@ class Candidate(TimeStampMixin):
         ('none', 'None'),
         ('waiting', 'Waiting List'),
         ('rejected', 'Rejected'),
+        ('trial', 'Trial'),
         ('offered', 'Offered'),
         ('hired', 'Hired'),
     )

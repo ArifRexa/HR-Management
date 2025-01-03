@@ -27,11 +27,11 @@
 <!--?               onchange="updateSchedule({{ candidate.id }}, this.value)">-->
 <!--?    </div>-->
     <div class="action-item schedule-container">
-        <label class="schedule-label">Schedule Interview</label>
+<!--?        <label class="schedule-label">Schedule Interview</label>-->
         <div class="schedule-input-wrapper">
             <input type="text"
                    class="schedule-datetime"
-                   placeholder="Select date and time"
+                   placeholder="Schedule Interview"
                    value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
                    onchange="updateSchedule({{ candidate.id }}, this.value)">
             <i class="calendar-icon"></i>
@@ -43,11 +43,11 @@
         </div>
     </div>
 
-    <div class="action-item">
-        <label>Feedback</label>
-        <textarea class="feedback-text"
-                  onblur="updateFeedback({{ candidate.id }}, this.value)">{{ candidate.feedback }}</textarea>
-    </div>
+<!--?    <div class="action-item">-->
+<!--?        <label>Feedback</label>-->
+<!--?        <textarea class="feedback-text"-->
+<!--?                  onblur="updateFeedback({{ candidate.id }}, this.value)">{{ candidate.feedback }}</textarea>-->
+<!--?    </div>-->
 
     <div class="action-item">
         <label>Status</label>
@@ -55,6 +55,7 @@
             <option value="none" {% if candidate.application_status == 'none' %}selected{% endif %}>None</option>
             <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>
             <option value="rejected" {% if candidate.application_status == 'rejected' %}selected{% endif %}>Rejected</option>
+            <option value="trial" {% if candidate.application_status == 'trial' %}selected{% endif %}>Trial</option>
             <option value="offered" {% if candidate.application_status == 'offered' %}selected{% endif %}>Offered</option>
             <option value="hired" {% if candidate.application_status == 'hired' %}selected{% endif %}>Hired</option>
         </select>
