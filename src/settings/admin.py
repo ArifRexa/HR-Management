@@ -11,6 +11,7 @@ from django.utils import timezone
 from django_q.tasks import async_task, schedule
 from django_q.models import Schedule
 from datetime import datetime
+
 # Register your models here.
 from django.template.defaultfilters import (
     truncatechars_html,
@@ -40,7 +41,9 @@ from django_q import models as q_models
 from django_q import admin as q_admin
 from datetime import timedelta
 from django.db.models import Q
-from employee.models import EmployeeAttendance,LeaveManagement
+from employee.models import EmployeeAttendance
+from settings.models import LeaveManagement
+
 
 @admin.register(PayScale)
 class PayScaleAdmin(admin.ModelAdmin):
@@ -48,10 +51,10 @@ class PayScaleAdmin(admin.ModelAdmin):
         return False
 
 
-# @admin.register(LeaveManagement)
-# class LeaveManagementAdmin(admin.ModelAdmin):
-#     def has_module_permission(self, request):
-#         return False
+@admin.register(LeaveManagement)
+class LeaveManagementAdmin(admin.ModelAdmin):
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Designation)
@@ -205,20 +208,18 @@ class AnnouncementAdmin(admin.ModelAdmin):
             messages.success(request, "Email sent successfully.")
 
 
-class EmailAnnouncementAttatchmentInline(admin.TabularInline):  # or admin.StackedInline for a different layout
+class EmailAnnouncementAttatchmentInline(
+    admin.TabularInline
+):  # or admin.StackedInline for a different layout
     model = EmailAnnouncementAttatchment
-    extra = 0  
+    extra = 0
 
 
 @admin.register(EmailAnnouncement)
 class EmailAnnouncementAdmin(admin.ModelAdmin):
-    list_display = (
-        'subject',
-    )
-    
-    actions = (
-        'send_mail_employee',"send_mail_client"
-    )
+    list_display = ("subject",)
+
+    actions = ("send_mail_employee", "send_mail_client")
 
     inlines = (EmailAnnouncementAttatchmentInline,)
 
@@ -228,44 +229,52 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
         hour = 0
         cc_email = request.user.employee.email
         for announcement in queryset:
-           
-                employee_email_list = list(
-                    Employee.objects.filter(active=True).values_list("email", flat=True)
-                )
-                for i in range(0, len(employee_email_list), chunk_size):
-                    chunk_emails = employee_email_list[i:i+chunk_size]
 
-                    schedule('settings.tasks.send_chunk_email',
-                            chunk_emails,
-                            announcement.id,
-                            name=f"Email announcement schedule - {timezone.now().microsecond}",
-                            schedule_type=Schedule.ONCE,
-                            next_run=timezone.now() + timedelta(hours=hour),cc_email=cc_email)
-                    
-                    hour += 1
+            employee_email_list = list(
+                Employee.objects.filter(active=True).values_list("email", flat=True)
+            )
+            for i in range(0, len(employee_email_list), chunk_size):
+                chunk_emails = employee_email_list[i : i + chunk_size]
+
+                schedule(
+                    "settings.tasks.send_chunk_email",
+                    chunk_emails,
+                    announcement.id,
+                    name=f"Email announcement schedule - {timezone.now().microsecond}",
+                    schedule_type=Schedule.ONCE,
+                    next_run=timezone.now() + timedelta(hours=hour),
+                    cc_email=cc_email,
+                )
+
+                hour += 1
         if queryset:
             messages.success(request, "Email sent successfully.")
-            
+
     @admin.action(description="Send Email To All Clients")
     def send_mail_client(modeladmin, request, queryset):
         chunk_size = 50
         hour = 0
         cc_email = request.user.employee.email
         for announcement in queryset:
-                client_email_list = list(
-                    Client.objects.filter(project__active=True).distinct().values_list("email", flat=True)
-                )
-                for i in range(0, len(client_email_list), chunk_size):
-                    chunk_emails = client_email_list[i:i+chunk_size]
+            client_email_list = list(
+                Client.objects.filter(project__active=True)
+                .distinct()
+                .values_list("email", flat=True)
+            )
+            for i in range(0, len(client_email_list), chunk_size):
+                chunk_emails = client_email_list[i : i + chunk_size]
 
-                    schedule('settings.tasks.send_chunk_email',
-                            chunk_emails,
-                            announcement.id,
-                            name=f"Email announcement schedule - {timezone.now().microsecond}",
-                            schedule_type=Schedule.ONCE,
-                            next_run=timezone.now() + timedelta(hours=hour), cc_email=cc_email)
-                    
-                    hour += 1
+                schedule(
+                    "settings.tasks.send_chunk_email",
+                    chunk_emails,
+                    announcement.id,
+                    name=f"Email announcement schedule - {timezone.now().microsecond}",
+                    schedule_type=Schedule.ONCE,
+                    next_run=timezone.now() + timedelta(hours=hour),
+                    cc_email=cc_email,
+                )
+
+                hour += 1
         if queryset:
             messages.success(request, "Email sent successfully.")
 
@@ -276,14 +285,13 @@ class FoodAllowanceForm(forms.Form):
             attrs={
                 "type": "date",
             },
-        ),  
+        ),
     )
-   
 
 
 @admin.register(EmployeeFoodAllowance)
 class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
-    list_display = ("employee","amount","date")
+    list_display = ("employee", "amount", "date")
     date_hierarchy = "date"
     change_list_template = "settings/employee_lunch.html"
 
@@ -312,15 +320,15 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
                 # Get all active employees eligible for lunch allowance
                 employees = Employee.objects.filter(active=True, lunch_allowance=True)
 
-
                 year = date.year
                 month = date.month
 
                 # Calculate the first and last date of the month
                 first_day_of_month = datetime(year, month, 1).date()
-                last_day_of_month = datetime(year, month+1, 1).date() - timedelta(days=1)
-                
-                
+                last_day_of_month = datetime(year, month + 1, 1).date() - timedelta(
+                    days=1
+                )
+
                 print(first_day_of_month)
                 print(last_day_of_month)
 
@@ -329,7 +337,7 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
                     attendance_count = EmployeeAttendance.objects.filter(
                         employee=employee,
                         date__range=[first_day_of_month, last_day_of_month],
-                    ).count()               
+                    ).count()
 
                     # Calculate the number of leave days for the employee on the given date
                     # leave_count = LeaveManagement.objects.filter(
@@ -339,18 +347,16 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
                     #     status="approved"
                     # ).count()
 
-                   
-
                     # Calculate the actual days attended (considering leave)
                     # print(employee,attendance_count,leave_count)
                     # actual_days_attended = attendance_count - leave_count
-                    
+
                     # Calculate the adjusted allowance for the employee
                     # if actual_days_attended < amount:
                     #     adjusted_amount = actual_days_attended
                     # else:
                     #     adjusted_amount = amount
- 
+
                     # Update or create Food Allowance entry
                     EmployeeFoodAllowance.objects.update_or_create(
                         employee=employee,
