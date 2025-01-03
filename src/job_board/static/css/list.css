@@ -114,6 +114,7 @@
     color: #333;
     background-color: #fff;
     transition: all 0.3s ease;
+    width: 75%;
 }
 
 .schedule-datetime:focus {
