@@ -155,14 +155,49 @@ class CandidateAdmin(admin.ModelAdmin):
             })
             return html_content
 
+    # @admin.display()
+    # def review(self, obj: Candidate):
+    #     review = ''
+    #     candidate_job = obj.candidatejob_set.last()
+    #     if candidate_job is not None:
+    #         for candidate_assessment in candidate_job.candidate_assessment.all():
+    #             review += f'{candidate_assessment.note.replace("{","_").replace("}", "_") if candidate_assessment.note is not None else ""} <br>'
+    #     return format_html(review)
+    # @admin.display()
+    # def review(self, obj: Candidate):
+    #     feedbacks = obj.feedbacks.all()  # Get related feedbacks
+    #     if not feedbacks:
+    #         return "No Feedback"
+    #
+    #     review_summary = ""
+    #     for feedback in feedbacks:
+    #         truncated_comment = feedback.comment[:15]  # Show the first 30 characters
+    #         review_summary += format_html(
+    #             f'<div title="{feedback.user.username}: {feedback.comment}">'
+    #             f'{truncated_comment}...</div>'
+    #         )
+    #
+    #     return format_html(review_summary)
+    from django.utils.html import format_html
+
     @admin.display()
     def review(self, obj: Candidate):
-        review = ''
-        candidate_job = obj.candidatejob_set.last()
-        if candidate_job is not None:
-            for candidate_assessment in candidate_job.candidate_assessment.all():
-                review += f'{candidate_assessment.note.replace("{","_").replace("}", "_") if candidate_assessment.note is not None else ""} <br>'
-        return format_html(review)
+        feedbacks = obj.feedbacks.all()
+        if not feedbacks:
+            return "No Feedback"
+
+        # Render feedback list
+        feedback_list = "".join(
+            f"<p><strong>{feedback.user.username}:</strong> {feedback.comment}</p>"
+            for feedback in feedbacks
+        )
+
+        return format_html(
+            f'<div class="feedback-wrapper">'
+            f'    <span class="feedback-hover">View Feedback</span>'
+            f'    <div class="feedback-popup">{feedback_list}</div>'
+            f'</div>'
+        )
 
     @admin.display()
     def note(self, obj: Candidate):
