@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from django import forms
 from django.contrib.auth import hashers
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
@@ -86,6 +87,20 @@ class Candidate(TimeStampMixin):
             ),
         )
         
+class Feedback(models.Model):
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='feedbacks')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.comment[:30]}"
+
+
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.user:
+            self.user = kwargs.pop('user', None)
+        super().save(*args, **kwargs)
 
 
 class CandidateJob(TimeStampMixin):

@@ -110,11 +110,11 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
     background-color: #fff;
     transition: all 0.3s ease;
-    width: 75%;
+    width: 50%;
 }
 
 .schedule-datetime:focus {
@@ -167,7 +167,7 @@
 }
 
 .status-select{
-    width: 64%;
+    width: 73%;
 }
 
 .cancel-schedule-btn {
