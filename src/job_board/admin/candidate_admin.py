@@ -3,6 +3,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import management
 from distutils.util import strtobool
+from django.utils.dateformat import DateFormat
 
 from django import forms
 from django.contrib import admin, messages
@@ -50,8 +51,13 @@ class ScheduleDateFilter(admin.SimpleListFilter):
         ).order_by('schedule_datetime__date')
 
         # Return list of schedule dates with counts
+        # return [
+        #     (str(entry['schedule_datetime__date']), f"{entry['schedule_datetime__date']} ({entry['candidate_count']})")
+        #     for entry in queryset
+        # ]
         return [
-            (str(entry['schedule_datetime__date']), f"{entry['schedule_datetime__date']} ({entry['candidate_count']})")
+            (str(entry['schedule_datetime__date']),
+             DateFormat(entry['schedule_datetime__date']).format('d M y') + f" ({entry['candidate_count']})")
             for entry in queryset
         ]
 
