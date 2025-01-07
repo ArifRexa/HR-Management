@@ -28,17 +28,18 @@
     <div class="action-item schedule-container">
 <!--?        <label class="schedule-label">Schedule Interview</label>-->
         <div class="schedule-input-wrapper">
+            <button type="button" class="cancel-schedule-btn"
+                                        onclick="cancelSchedule({{ candidate.id }})">
+                                    X
+            </button>
             <input type="text"
-                   class="schedule-datetime" style="margin-right: 5px;"
+                   class="schedule-datetime" style="margin-left: 5px;"
                    placeholder="Schedule Interview"
                    value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
                    onchange="updateSchedule({{ candidate.id }}, this.value)">
             <i class="calendar-icon"></i>
 
-            <button type="button" class="cancel-schedule-btn"
-                            onclick="cancelSchedule({{ candidate.id }})">
-                        X
-            </button>
+
         </div>
     </div>
 
@@ -50,7 +51,7 @@
 <!--?    </div>-->
 
     <div class="action-item">
-        <label style="margin-right: 8px;">Status</label>
+<!--?        <label style="margin-right: 8px;">Status</label>-->
         <select class="status-select" onchange="updateStatus({{ candidate.id }}, this.value)">
             <option value="none" {% if candidate.application_status == 'none' %}selected{% endif %}>None</option>
             <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>
