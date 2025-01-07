@@ -28,18 +28,16 @@
     <div class="action-item schedule-container">
 <!--?        <label class="schedule-label">Schedule Interview</label>-->
         <div class="schedule-input-wrapper">
-            <button type="button" class="cancel-schedule-btn"
-                                        onclick="cancelSchedule({{ candidate.id }})">
-                                    X
-            </button>
             <input type="text"
-                   class="schedule-datetime" style="margin-left: 5px;"
+                   class="schedule-datetime" style="margin-right: 5px;"
                    placeholder="Schedule Interview"
                    value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
                    onchange="updateSchedule({{ candidate.id }}, this.value)">
             <i class="calendar-icon"></i>
-
-
+            <button type="button" class="cancel-schedule-btn"
+                                                    onclick="cancelSchedule({{ candidate.id }})">
+                                                X
+            </button>
         </div>
     </div>
 

@@ -40,6 +40,25 @@ class CandidateForm(forms.ModelForm):
         fields = "__all__"
 
 
+class HasFeedbackFilter(SimpleListFilter):
+    title = _('Feedback')
+    parameter_name = 'feedback'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('yes', _('Yes')),
+            ('no', _('No')),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            # Filter candidates who have feedback
+            return queryset.filter(feedbacks__isnull=False).distinct()
+        elif self.value() == 'no':
+            # Filter candidates who do not have feedback
+            return queryset.filter(feedbacks__isnull=True).distinct()
+        return queryset
+
 class ScheduleDateFilter(admin.SimpleListFilter):
     title = _('Schedule Date')
     parameter_name = 'schedule_date'
@@ -89,7 +108,7 @@ class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
     # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
-    list_filter = ('candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', ScheduleDateFilter)
+    list_filter = ('candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', HasFeedbackFilter, ScheduleDateFilter)
     actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter', 'job_re_apply')
     list_per_page = 50
     date_hierarchy = 'created_at'
@@ -186,22 +205,51 @@ class CandidateAdmin(admin.ModelAdmin):
     #     return format_html(review_summary)
     from django.utils.html import format_html
 
+    # @admin.display()
+    # def review(self, obj: Candidate):
+    #     feedbacks = obj.feedbacks.all()
+    #     if not feedbacks:
+    #         return ""
+    #
+    #     # Render feedback list
+    #     feedback_list = "".join(
+    #         f"<p><strong>{feedback.user}:</strong> {feedback.comment}</p>"
+    #         for feedback in feedbacks
+    #     )
+    #
+    #     return format_html(
+    #         f'<div class="feedback-wrapper">'
+    #         f'    <span class="feedback-hover">View</span>'
+    #         f'    <div class="feedback-popup">{feedback_list}</div>'
+    #         f'</div>'
+    #     )
     @admin.display()
     def review(self, obj: Candidate):
         feedbacks = obj.feedbacks.all()
         if not feedbacks:
-            return "No Feedback"
+            return ""
 
-        # Render feedback list
-        feedback_list = "".join(
-            f"<p><strong>{feedback.user.username}:</strong> {feedback.comment}</p>"
-            for feedback in feedbacks
-        )
+        # Create truncated feedback
+        truncated_feedback_list = ""
+        full_feedback_list = ""
 
+        for feedback in feedbacks:
+            # Truncate feedback text to 50 characters, add '...'
+            truncated_comment = (feedback.comment[:30] + '...') if len(feedback.comment) > 50 else feedback.comment
+            truncated_feedback_list += f"<p><strong>{feedback.user}:</strong> {truncated_comment}</p>"
+
+            # Full feedback (for hover), preserving line breaks
+            # Use string concatenation to handle the line breaks
+            full_feedback_list += "<p><strong>{}<br>---------------------</strong><br>{}</p>".format(
+                feedback.user,
+                feedback.comment.replace("\n", "<br>")
+            )
+
+        # Render truncated feedback in the list, but show full feedback on hover
         return format_html(
             f'<div class="feedback-wrapper">'
-            f'    <span class="feedback-hover">View Feedback</span>'
-            f'    <div class="feedback-popup">{feedback_list}</div>'
+            f'    <span class="feedback-hover">{truncated_feedback_list}</span>'
+            f'    <div class="feedback-popup">{full_feedback_list}</div>'
             f'</div>'
         )
 
