@@ -53,6 +53,7 @@
         <select class="status-select" onchange="updateStatus({{ candidate.id }}, this.value)">
             <option value="none" {% if candidate.application_status == 'none' %}selected{% endif %}>None</option>
             <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>
+            <option value="rescheduled" {% if candidate.application_status == 'rescheduled' %}selected{% endif %}>Rescheduled</option>
             <option value="rejected" {% if candidate.application_status == 'rejected' %}selected{% endif %}>Rejected</option>
             <option value="trial" {% if candidate.application_status == 'trial' %}selected{% endif %}>Trial</option>
             <option value="offered" {% if candidate.application_status == 'offered' %}selected{% endif %}>Offered</option>
