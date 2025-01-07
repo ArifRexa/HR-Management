@@ -26,7 +26,7 @@ from config.utils.pdf import PDF
 from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
-    CandidateAssessmentReview, JobPreferenceRequest, Feedback
+    CandidateAssessmentReview, JobPreferenceRequest, Feedback, CandidateApplicationSummary
 from django.utils.translation import gettext_lazy as _
 
 from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
@@ -223,7 +223,7 @@ class CandidateAdmin(admin.ModelAdmin):
     #         f'    <div class="feedback-popup">{feedback_list}</div>'
     #         f'</div>'
     #     )
-    @admin.display()
+    # @admin.display()
     def review(self, obj: Candidate):
         feedbacks = obj.feedbacks.all()
         if not feedbacks:
@@ -338,6 +338,40 @@ class CandidateJobAdmin(admin.ModelAdmin):
     
     def has_module_permission(self, request):
         return False
+
+#
+# class CandidateApplicationSummaryAdmin(admin.ModelAdmin):
+#     list_display = ('job', 'year', 'month', 'application_count')
+#     list_filter = ('job', 'year')
+#     actions = ['export_emails_summary', 'generate_summary_data']
+#
+#     # Action to export emails
+#     def export_emails_summary(self, request, queryset):
+#         selected_summary = queryset.values_list('job', 'year', 'month')
+#
+#         emails = CandidateJob.objects.filter(
+#             job__in=[item[0] for item in selected_summary],
+#             created_at__year__in=[item[1] for item in selected_summary],
+#             created_at__month__in=[item[2] for item in selected_summary]
+#         ).values_list('candidate__email', flat=True)
+#
+#         email_list = ", ".join(emails)
+#         self.message_user(request, f"Emails: {email_list}")
+#
+#     export_emails_summary.short_description = "Export Candidate Emails for Selected Records"
+#
+#     # Action to generate summary data
+#     def generate_summary_data(self, request, queryset):
+#         CandidateApplicationSummary.generate_summary()
+#         self.message_user(request, "Application summary generated for the last 4 years.")
+#
+#     generate_summary_data.short_description = "Generate Application Summary Data"
+#
+#
+# admin.site.register(CandidateApplicationSummary, CandidateApplicationSummaryAdmin)
+#
+#
+
 
 
 class CandidateHasUrlFilter(SimpleListFilter):
