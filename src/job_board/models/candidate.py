@@ -43,8 +43,8 @@ class Candidate(TimeStampMixin):
     )
     APPLICATIONS_STATUS_CHOICES = (
         ('none', 'None'),
-        ('waiting', 'Waiting List'),
         ('rescheduled', 'Rescheduled'),
+        ('waiting', 'Waiting List'),
         ('rejected', 'Rejected'),
         ('trial', 'Trial'),
         ('offered', 'Offered'),
