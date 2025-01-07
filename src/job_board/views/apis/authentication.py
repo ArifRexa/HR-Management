@@ -12,7 +12,8 @@ from datetime import datetime
 from django.utils.timezone import make_aware
 from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
-from job_board.models.candidate import Candidate
+from job_board.models.candidate import Candidate, CandidateJob
+from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
 from job_board.tasks import send_interview_email, send_cancellation_email
@@ -98,6 +99,17 @@ class UpdateShortlistView(APIView):
     def post(self, request, candidate_id):
         print(f"Received request for candidate {candidate_id}")  # Debug print
         print(f"Request data: {request.data}")  # Debug print
+        all_jobs = Job.objects.all()
+        print("*"*100)
+        for job in all_jobs:
+            print(job)
+        # print(all_jobs)
+        print("-"*10)
+        candidate_all = CandidateJob.objects.all()
+        for candidate in candidate_all:
+            print(candidate)
+            print(candidate.candidate.email)
+        print(candidate_all)
         try:
             candidate = get_object_or_404(Candidate, id=candidate_id)
             candidate.is_shortlisted = request.data.get('is_shortlisted')

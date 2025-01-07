@@ -1,8 +1,8 @@
 import os
 import random
 import uuid
-from datetime import timedelta
-
+from datetime import timedelta, datetime
+from django.db.models import Count
 from django import forms
 from django.contrib.auth import hashers
 from django.contrib.auth.models import User
@@ -123,6 +123,43 @@ class CandidateJob(TimeStampMixin):
 
     def __str__(self):
         return f'{self.candidate.full_name} | {self.job.title}'
+
+
+
+class CandidateApplicationSummary(models.Model):
+    job = models.ForeignKey('Job', on_delete=models.CASCADE)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    application_count = models.IntegerField()
+
+    @classmethod
+    def generate_summary(cls):
+        current_year = datetime.now().year
+        last_4_years = [current_year - i for i in range(4)]
+
+        summary_data = (
+            CandidateJob.objects
+            .filter(created_at__year__in=last_4_years)
+            .values('job', 'created_at__year', 'created_at__month')
+            .annotate(application_count=Count('id'))
+        )
+
+        cls.objects.all().delete()  # Clear previous data
+
+        for data in summary_data:
+            cls.objects.create(
+                job_id=data['job'],
+                year=data['created_at__year'],
+                month=data['created_at__month'],
+                application_count=data['application_count']
+            )
+
+    def __str__(self):
+        return f"{self.job.title} - {self.year}/{self.month}"
+
+
+
+
 
 
 class ResetPassword(TimeStampMixin):
