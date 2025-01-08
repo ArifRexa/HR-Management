@@ -3,13 +3,15 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from django.core import management
 from distutils.util import strtobool
+
+from django.db.models.fields import IntegerField
 from django.utils.dateformat import DateFormat
 
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
-from django.db.models import Sum, QuerySet, Q, Count
+from django.db.models import Sum, QuerySet, Q, Count, CharField, Value, OuterRef, Subquery
 from django.middleware.csrf import get_token
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
@@ -169,7 +171,30 @@ class CandidateAdmin(admin.ModelAdmin):
             f'<a href="{obj.cv.url}" target="blank">Resume</a>'
         )
 
-    @admin.display()
+    # @admin.display(ordering='created_at')
+    # def assessment(self, obj: Candidate):
+    #     candidate_job = obj.candidatejob_set.last()
+    #     if candidate_job is not None:
+    #         html_template = get_template('admin/candidate/list/col_assessment.html')
+    #         html_content = html_template.render({
+    #             'candidate_job': candidate_job,
+    #             'candidate_assessments': candidate_job.candidate_assessment.all()
+    #         })
+    #         return html_content
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+
+        # Subquery to fetch the score of the latest candidate assessment
+        assessment_subquery = CandidateAssessment.objects.filter(
+            candidate_job=OuterRef('candidatejob__id')
+        ).order_by('-created_at').values('score')[:1]
+
+        return queryset.annotate(
+            assessment_sort_field=Subquery(assessment_subquery, output_field=IntegerField())
+        )
+
+    @admin.display(ordering='assessment_sort_field')
     def assessment(self, obj: Candidate):
         candidate_job = obj.candidatejob_set.last()
         if candidate_job is not None:
@@ -179,6 +204,10 @@ class CandidateAdmin(admin.ModelAdmin):
                 'candidate_assessments': candidate_job.candidate_assessment.all()
             })
             return html_content
+
+
+
+
 
     # @admin.display()
     # def review(self, obj: Candidate):
