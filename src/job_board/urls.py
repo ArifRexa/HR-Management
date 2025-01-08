@@ -4,6 +4,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from job_board.views.apis import (job, authentication, assessment, VivaConfigViewSet,
                                   JobVivaTimeSlotCreateAPIView, VivaConfigPerDayViewSet)
+# from job_board.views.apis.authentication import ApplicationSummaryView, get_months, get_emails
 from job_board.views.webpages.views import WebsiteView, MailView
 from datetime import datetime
 

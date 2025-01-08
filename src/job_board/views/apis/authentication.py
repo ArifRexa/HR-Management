@@ -1,4 +1,5 @@
 from django.contrib.auth import hashers
+from django.db.models.aggregates import Sum
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
@@ -12,7 +13,7 @@ from datetime import datetime
 from django.utils.timezone import make_aware
 from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
-from job_board.models.candidate import Candidate, CandidateJob
+from job_board.models.candidate import Candidate, CandidateJob, CandidateApplicationSummary
 from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
