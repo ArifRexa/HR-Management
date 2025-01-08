@@ -6,6 +6,7 @@ from django.core import management
 from distutils.util import strtobool
 
 from django.db.models.fields import IntegerField
+from django.shortcuts import redirect
 from django.utils.dateformat import DateFormat
 
 from django import forms
@@ -373,38 +374,44 @@ class CandidateJobAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
 
-#
-# class CandidateApplicationSummaryAdmin(admin.ModelAdmin):
-#     list_display = ('job', 'year', 'month', 'application_count')
-#     list_filter = ('job', 'year')
-#     actions = ['export_emails_summary', 'generate_summary_data']
-#
-#     # Action to export emails
-#     def export_emails_summary(self, request, queryset):
-#         selected_summary = queryset.values_list('job', 'year', 'month')
-#
-#         emails = CandidateJob.objects.filter(
-#             job__in=[item[0] for item in selected_summary],
-#             created_at__year__in=[item[1] for item in selected_summary],
-#             created_at__month__in=[item[2] for item in selected_summary]
-#         ).values_list('candidate__email', flat=True)
-#
-#         email_list = ", ".join(emails)
-#         self.message_user(request, f"Emails: {email_list}")
-#
-#     export_emails_summary.short_description = "Export Candidate Emails for Selected Records"
-#
-#     # Action to generate summary data
-#     def generate_summary_data(self, request, queryset):
-#         CandidateApplicationSummary.generate_summary()
-#         self.message_user(request, "Application summary generated for the last 4 years.")
-#
-#     generate_summary_data.short_description = "Generate Application Summary Data"
-#
-#
-# admin.site.register(CandidateApplicationSummary, CandidateApplicationSummaryAdmin)
-#
-#
+
+
+@admin.register(CandidateApplicationSummary)
+class CandidateApplicationSummaryAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/application_summary.html'  # Custom template for the change list
+    list_display = ('job', 'year', 'month', 'application_count')
+    list_filter = ('job', 'year', 'month')
+    actions = ['generate_summary']
+
+    # Define custom URLs
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('summary/', self.admin_site.admin_view(self.application_summary_view), name='application_summary'),
+        ]
+        return custom_urls + urls
+
+    # Automatically redirect to application_summary
+    def changelist_view(self, request, extra_context=None):
+        return redirect('admin:application_summary')
+
+    def application_summary_view(self, request):
+        context = {
+            **self.admin_site.each_context(request),
+            'title': 'Application Summary',
+            'jobs': Job.objects.all(),
+            'years': range(datetime.now().year, datetime.now().year - 4, -1),
+        }
+        return TemplateResponse(request, 'admin/application_summary.html', context)
+
+    # Action to generate the summary
+    def generate_summary(self, request, queryset):
+        CandidateApplicationSummary.generate_summary()
+        self.message_user(request, "Application summary has been generated.")
+
+    generate_summary.short_description = "Generate application summary"
+
+
 
 
 
