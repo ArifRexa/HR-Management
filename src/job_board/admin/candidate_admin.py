@@ -1,4 +1,5 @@
-from datetime import timedelta
+from calendar import month_name
+from datetime import timedelta, datetime
 
 from django.contrib.auth.models import User
 from django.core import management
@@ -33,6 +34,10 @@ from django.utils.translation import gettext_lazy as _
 
 from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 from icecream import ic
+
+from job_board.models.job import Job
+# from job_board.views.apis.authentication import ApplicationSummaryView
+
 
 class CandidateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), strip=False, required=False)
@@ -171,30 +176,7 @@ class CandidateAdmin(admin.ModelAdmin):
             f'<a href="{obj.cv.url}" target="blank">Resume</a>'
         )
 
-    # @admin.display(ordering='created_at')
-    # def assessment(self, obj: Candidate):
-    #     candidate_job = obj.candidatejob_set.last()
-    #     if candidate_job is not None:
-    #         html_template = get_template('admin/candidate/list/col_assessment.html')
-    #         html_content = html_template.render({
-    #             'candidate_job': candidate_job,
-    #             'candidate_assessments': candidate_job.candidate_assessment.all()
-    #         })
-    #         return html_content
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-
-        # Subquery to fetch the score of the latest candidate assessment
-        assessment_subquery = CandidateAssessment.objects.filter(
-            candidate_job=OuterRef('candidatejob__id')
-        ).order_by('-created_at').values('score')[:1]
-
-        return queryset.annotate(
-            assessment_sort_field=Subquery(assessment_subquery, output_field=IntegerField())
-        )
-
-    @admin.display(ordering='assessment_sort_field')
+    @admin.display(ordering='created_at')
     def assessment(self, obj: Candidate):
         candidate_job = obj.candidatejob_set.last()
         if candidate_job is not None:
@@ -204,6 +186,29 @@ class CandidateAdmin(admin.ModelAdmin):
                 'candidate_assessments': candidate_job.candidate_assessment.all()
             })
             return html_content
+
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #
+    #     # Subquery to fetch the score of the latest candidate assessment
+    #     assessment_subquery = CandidateAssessment.objects.filter(
+    #         candidate_job=OuterRef('candidatejob__id')
+    #     ).order_by('-created_at').values('score')[:1]
+    #
+    #     return queryset.annotate(
+    #         assessment_sort_field=Subquery(assessment_subquery, output_field=IntegerField())
+    #     )
+    #
+    # @admin.display(ordering='assessment_sort_field')
+    # def assessment(self, obj: Candidate):
+    #     candidate_job = obj.candidatejob_set.last()
+    #     if candidate_job is not None:
+    #         html_template = get_template('admin/candidate/list/col_assessment.html')
+    #         html_content = html_template.render({
+    #             'candidate_job': candidate_job,
+    #             'candidate_assessments': candidate_job.candidate_assessment.all()
+    #         })
+    #         return html_content
 
 
 
