@@ -1,0 +1,130 @@
+{% extends "admin/base_site.html" %}
+<!--?{% load i18n admin_urls static admin_list %}-->
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .summary-form {
+        padding: 20px;
+        margin: 20px;
+        /*background: #fff;*/
+        /*border: 1px solid #ccc;*/
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .checkbox-item {
+        margin-right: 15px;
+    }
+
+    /*#emailResults {*/
+    /*    margin-top: 20px;*/
+    /*    padding: 10px;*/
+    /*    background: #f9f9f9;*/
+    /*}*/
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="summary-form">
+    <form id="summaryForm" method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="job">Select Job:</label>
+            <select name="job" id="job" required>
+                <option value="">---------</option>
+                {% for job in jobs %}
+                <option value="{{ job.id }}">{{ job.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Select Years:</label>
+            <div class="checkbox-group" id="yearCheckboxes">
+                {% for year in years %}
+                <div class="checkbox-item">
+                    <input type="checkbox" name="years" value="{{ year }}" id="year{{ year }}">
+                    <label for="year{{ year }}">{{ year }}</label>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-group" id="monthContainer" style="display: none;">
+            <label>Select Months:</label>
+            <div class="checkbox-group" id="monthCheckboxes"></div>
+        </div>
+
+        <div class="submit-row">
+            <input type="submit" value="Get Emails" class="default">
+        </div>
+    </form>
+
+    <div id="emailResults"></div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('summaryForm');
+        const yearCheckboxes = document.querySelectorAll('input[name="years"]');
+        const monthContainer = document.getElementById('monthContainer');
+        const monthCheckboxes = document.getElementById('monthCheckboxes');
+        const jobSelect = document.getElementById('job');
+
+        async function updateMonths() {
+            const selectedYears = Array.from(yearCheckboxes)
+                    .filter(cb => cb.checked)
+                    .map(cb => cb.value);
+
+            if (selectedYears.length > 0 && jobSelect.value) {
+                const response = await fetch(`get-months/?job=${jobSelect.value}&years=${selectedYears.join(',')}`);
+                const data = await response.json();
+
+                monthContainer.style.display = 'block';
+                monthCheckboxes.innerHTML = data.months.map(month => `
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="months" value="${month.month}" id="month${month.month}">
+                            <label for="month${month.month}">${month.name} (${month.count})</label>
+                        </div>
+                    `).join('');
+            } else {
+                monthContainer.style.display = 'none';
+            }
+        }
+
+        jobSelect.addEventListener('change', updateMonths);
+        yearCheckboxes.forEach(cb => cb.addEventListener('change', updateMonths));
+
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const response = await fetch('get-emails/', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            });
+
+            const data = await response.json();
+            document.getElementById('emailResults').innerHTML = `
+                    <h3>Results:</h3>
+                    <p>Total Candidates: ${data.total_candidates}</p>
+                    <p>Emails:</p>
+                    <textarea readonly style="width: 100%; height: 100px;">${data.emails.join(', ')}</textarea>
+                `;
+        });
+    });
+</script>
+{% endblock %}

@@ -128,35 +128,42 @@ class CandidateJob(TimeStampMixin):
 
 
 class CandidateApplicationSummary(models.Model):
-    job = models.ForeignKey('Job', on_delete=models.CASCADE)
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
     year = models.IntegerField()
     month = models.IntegerField()
     application_count = models.IntegerField()
 
     @classmethod
     def generate_summary(cls):
+        # Clear existing data
+        cls.objects.all().delete()
+
+        # Get current year
         current_year = datetime.now().year
-        last_4_years = [current_year - i for i in range(4)]
+        years_range = range(current_year, current_year - 4, -1)
 
-        summary_data = (
-            CandidateJob.objects
-            .filter(created_at__year__in=last_4_years)
-            .values('job', 'created_at__year', 'created_at__month')
-            .annotate(application_count=Count('id'))
-        )
-
-        cls.objects.all().delete()  # Clear previous data
-
-        for data in summary_data:
-            cls.objects.create(
-                job_id=data['job'],
-                year=data['created_at__year'],
-                month=data['created_at__month'],
-                application_count=data['application_count']
+        # Generate summary for each job and year/month combination
+        for job in Job.objects.all():
+            applications = CandidateJob.objects.filter(
+                job=job,
+                created_at__year__in=years_range
+            ).values(
+                'created_at__year',
+                'created_at__month'
+            ).annotate(
+                count=Count('id')
             )
 
-    def __str__(self):
-        return f"{self.job.title} - {self.year}/{self.month}"
+            for app in applications:
+                cls.objects.create(
+                    job=job,
+                    year=app['created_at__year'],
+                    month=app['created_at__month'],
+                    application_count=app['count']
+                )
+
+    class Meta:
+        verbose_name_plural = "Candidate Application Summaries"
 
 
 
