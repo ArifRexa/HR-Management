@@ -1,5 +1,6 @@
 from django.contrib.auth import hashers
-from django.db.models.aggregates import Sum
+from django.db.models.aggregates import Sum, Count
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
@@ -172,3 +173,132 @@ class UpdateStatusView(APIView):
         candidate.application_status = request.data.get('application_status')
         candidate.save()
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+
+from django.http import JsonResponse
+from django.views.generic import TemplateView
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils.decorators import method_decorator
+from datetime import datetime
+from calendar import month_name
+
+# # @method_decorator(staff_member_required, name='dispatch')
+# class ApplicationSummaryView(TemplateView):
+#     template_name = 'admin/application_summary.html'
+#
+#
+#     def get_context_data(self, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        current_year = datetime.now().year
+#        context['years'] = range(current_year, current_year - 4, -1)
+#        context['jobs'] = Job.objects.all()
+#        print("this is context", context)
+#        return context
+#
+#
+#
+#
+#     # @staff_member_required
+#     def get_months(request):
+#         job_id = request.GET.get('job')
+#         years = request.GET.get('years').split(',')
+#
+#         # Log the received parameters for debugging
+#         print(f"Job ID: {job_id}, Years: {years}")
+#
+#         months_data = CandidateJob.objects.filter(
+#             job_id=job_id,
+#             created_at__year__in=years
+#         ).values('created_at__month').annotate(
+#             count=Count('id')
+#         ).order_by('created_at__month')
+#
+#         months = [
+#             {
+#                 'month': month['created_at__month'],
+#                 'name': month_name[month['created_at__month']],
+#                 'count': month['count']
+#             }
+#             for month in months_data
+#         ]
+#         return JsonResponse({'months': months})
+#
+#
+#     # @staff_member_required
+#     def get_emails(request):
+#         if request.method == 'POST':
+#             job_id = request.POST.get('job')
+#             years = request.POST.getlist('years')
+#             months = request.POST.getlist('months')
+#
+#             candidates = CandidateJob.objects.filter(
+#                 job_id=job_id,
+#                 created_at__year__in=years,
+#                 created_at__month__in=months
+#             ).select_related('candidate')
+#
+#             emails = [cj.candidate.email for cj in candidates]
+#
+#             return JsonResponse({
+#                 'total_candidates': len(emails),
+#                 'emails': emails
+#             })
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class ApplicationSummaryView(TemplateView):
+    template_name = 'admin/application_summary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_year = datetime.now().year
+        context['years'] = range(current_year, current_year - 4, -1)
+        context['jobs'] = Job.objects.all()
+        return context
+
+    @staticmethod
+    @staff_member_required
+    def get_months(request):
+        job_id = request.GET.get('job')
+        years = request.GET.get('years').split(',')
+
+        months_data = CandidateJob.objects.filter(
+            job_id=job_id,
+            created_at__year__in=years
+        ).values('created_at__month').annotate(
+            count=Count('id')
+        ).order_by('created_at__month')
+
+        months = [
+            {
+                'month': month['created_at__month'],
+                'name': month_name[month['created_at__month']],
+                'count': month['count']
+            }
+            for month in months_data
+        ]
+        return JsonResponse({'months': months})
+
+    @staticmethod
+    @staff_member_required
+    @csrf_exempt
+    def get_emails(request):
+        if request.method == 'POST':
+            job_id = request.POST.get('job')
+            years = request.POST.getlist('years')
+            months = request.POST.getlist('months')
+
+            candidates = CandidateJob.objects.filter(
+                job_id=job_id,
+                created_at__year__in=years,
+                created_at__month__in=months
+            ).select_related('candidate')
+
+            emails = [cj.candidate.email for cj in candidates]
+
+            return JsonResponse({
+                'total_candidates': len(emails),
+                'emails': emails
+            })
+
+        return JsonResponse({'error': 'Invalid request method'})
