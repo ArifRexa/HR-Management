@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Waiting List Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .content {
+            margin-bottom: 30px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Application Status Update</h2>
+    </div>
+
+    <div class="content">
+        <p>Dear {{ candidate.full_name }},</p>
+
+        <p>Thank you for your interest in the {{ position.title }} position at Mediusware.</p>
+
+        <p>We have reviewed your application and would like to inform you that you have been placed on our waiting list.
+            Your profile matches our requirements, but we currently have a high volume of qualified candidates.</p>
+
+        <p>We will keep your application active and contact you if a suitable position becomes available. Your
+            application will remain in our database for future opportunities.</p>
+
+        <p>We appreciate your patience and understanding.</p>
+    </div>
+
+    <div class="footer">
+        <p>Best regards,<br>
+            HR Team<br>
+            Mediusware</p>
+    </div>
+</div>
+</body>
+</html>
