@@ -1,186 +1,351 @@
+<!--?<!DOCTYPE html>-->
+<!--?<html>-->
+<!--?<head>-->
+<!--?    <meta charset="UTF-8">-->
+<!--?    <title>Career Opportunity at Mediusware</title>-->
+<!--?    <style>-->
+<!--?        body {-->
+<!--?            font-family: 'Arial', sans-serif;-->
+<!--?            line-height: 1.6;-->
+<!--?            color: #333333;-->
+<!--?            margin: 0 auto;-->
+<!--?            padding: 20px;-->
+<!--?            background-color: #e6e4e4;-->
+<!--?        }-->
+<!--?        .email-container {-->
+<!--?            display: block;-->
+<!--?            margin: auto;-->
+<!--?            background-color: #ffffff;-->
+<!--?            border-radius: 8px;-->
+<!--?            border: 1px solid #dfdfdf;-->
+<!--?            box-shadow: 0 2px 10px rgba(0,0,0,0.1);-->
+<!--?            overflow: hidden;-->
+<!--?            max-width: 600px;-->
+<!--?        }-->
+<!--?        .header {-->
+<!--?            background-color: #372d9f;-->
+<!--?            padding: 30px 20px;-->
+<!--?            text-align: center;-->
+<!--?        }-->
+<!--?        .header h1 {-->
+<!--?            color: #ffffff;-->
+<!--?            margin: 0;-->
+<!--?            font-size: 28px;-->
+<!--?            font-weight: 600;-->
+<!--?        }-->
+<!--?        .logo {-->
+<!--?            max-width: 180px;-->
+<!--?            height: auto;-->
+<!--?            margin-bottom: 20px;-->
+<!--?        }-->
+<!--?        .main-content {-->
+<!--?            padding: 35px;-->
+<!--?            background-color: #ffffff;-->
+<!--?        }-->
+<!--?        .job-title {-->
+<!--?            background-color: #f8f9fa;-->
+<!--?            border-left: 4px solid #372d9f;-->
+<!--?            padding: 15px;-->
+<!--?            margin: 25px 0;-->
+<!--?            text-align: left;-->
+<!--?            color: #372d9f;-->
+<!--?            font-size: 20px;-->
+<!--?        }-->
+<!--?        .benefits-box {-->
+<!--?            background-color: #f8f9fa;-->
+<!--?            border-radius: 6px;-->
+<!--?            padding: 20px;-->
+<!--?            margin: 20px 0;-->
+<!--?        }-->
+<!--?        .benefits-list {-->
+<!--?            list-style-type: none;-->
+<!--?            padding: 0;-->
+<!--?            margin: 0;-->
+<!--?        }-->
+<!--?        .benefits-list li {-->
+<!--?            padding: 8px 0 8px 25px;-->
+<!--?            position: relative;-->
+<!--?        }-->
+<!--?        .benefits-list li:before {-->
+<!--?            content: "✓";-->
+<!--?            color: #372d9f;-->
+<!--?            position: absolute;-->
+<!--?            left: 0;-->
+<!--?        }-->
+<!--?        .apply-button {-->
+<!--?            display: inline-block;-->
+<!--?            background-color: #372d9f;-->
+<!--?            color: white !important;-->
+<!--?            padding: 15px 40px;-->
+<!--?            text-decoration: none;-->
+<!--?            border-radius: 25px;-->
+<!--?            margin: 25px 0;-->
+<!--?            font-weight: bold;-->
+<!--?            text-align: center;-->
+<!--?            transition: all 0.3s ease;-->
+<!--?            box-shadow: 0 2px 5px rgba(55,45,159,0.2);-->
+<!--?        }-->
+<!--?        .apply-button:hover {-->
+<!--?            background-color: #2a2277;-->
+<!--?            transform: translateY(-2px);-->
+<!--?            box-shadow: 0 4px 8px rgba(55,45,159,0.3);-->
+<!--?        }-->
+<!--?        .footer {-->
+<!--?            background-color: #f8f9fa;-->
+<!--?            padding: 25px;-->
+<!--?            border-top: 1px solid #eee;-->
+<!--?            font-size: 14px;-->
+<!--?            color: #666666;-->
+<!--?        }-->
+<!--?        .social-links {-->
+<!--?            margin-top: 20px;-->
+<!--?            padding-top: 20px;-->
+<!--?            border-top: 1px solid #eee;-->
+<!--?        }-->
+<!--?        .social-links a {-->
+<!--?            display: inline-block;-->
+<!--?            color: #372d9f;-->
+<!--?            text-decoration: none;-->
+<!--?            margin-right: 15px;-->
+<!--?            padding: 5px 10px;-->
+<!--?            border-radius: 4px;-->
+<!--?            background-color: #fff;-->
+<!--?            transition: all 0.3s ease;-->
+<!--?        }-->
+<!--?        .social-links a:hover {-->
+<!--?            background-color: #372d9f;-->
+<!--?            color: #ffffff;-->
+<!--?        }-->
+<!--?        .highlight {-->
+<!--?            color: #372d9f;-->
+<!--?            font-weight: 600;-->
+<!--?        }-->
+<!--?        .contact-info {-->
+<!--?            margin: 15px 0;-->
+<!--?            padding-left: 10px;-->
+<!--?            border-left: 3px solid #372d9f;-->
+<!--?        }-->
+<!--?    </style>-->
+<!--?</head>-->
+<!--?<body>-->
+<!--?    <div class="email-container">-->
+<!--?        <div class="header">-->
+<!--?            <h1>Join Our Growing Team</h1>-->
+<!--?        </div>-->
+
+<!--?        <div class="main-content">-->
+<!--?            <p>Dear {{ candidate_name }},</p>-->
+
+<!--?            <p>I hope this email finds you well. We've noticed your impressive professional background and believe you could be a valuable addition to our team at <span class="highlight">Mediusware Ltd</span>.</p>-->
+
+<!--?            <div class="job-title">-->
+<!--?                <strong>Position:</strong> {{ job_title }}-->
+<!--?            </div>-->
+
+<!--?{% for position in opening_positions %}-->
+<!--?    <li>{{ position }}</li>-->
+<!--?    {% endfor %}-->
+
+<!--?            <p>We're looking for passionate individuals who want to be part of something extraordinary. Your expertise could help shape the future of technology solutions.</p>-->
+
+<!--?            <center>-->
+<!--?                <a href="https://job.mediusware.com/" class="apply-button" target="_blank">-->
+<!--?                    EXPLORE THIS OPPORTUNITY-->
+<!--?                </a>-->
+<!--?            </center>-->
+
+<!--?            <p style="font-style: italic; color: #666;">Feel free to share this opportunity with qualified professionals in your network.</p>-->
+<!--?        </div>-->
+
+<!--?        <div class="footer">-->
+<!--?            <p><strong>Best Regards,</strong><br>-->
+<!--?            HR Team<br>-->
+<!--?            Mediusware Ltd</p>-->
+
+<!--?            <div class="contact-info">-->
+<!--?                <p>-->
+<!--?                    <strong>Contact Us:</strong><br>-->
+<!--?                    📱 +8801601712931<br>-->
+<!--?                    📧 hr@mediusware.com-->
+<!--?                </p>-->
+
+<!--?                <p>-->
+<!--?                    <strong>Visit Us:</strong><br>-->
+<!--?                    Floor 7th, 24/1 & 24/2, Taj Mahal Road,<br>-->
+<!--?                    Shiya Masjid mor, Ring Road, Mohammadpur<br>-->
+<!--?                    Dhaka 1207, Bangladesh-->
+<!--?                </p>-->
+<!--?            </div>-->
+
+<!--?            <div class="social-links">-->
+<!--?                <strong>Connect With Us:</strong><br>-->
+<!--?                <a href="http://job.mediusware.com" target="_blank">🌐 Website</a>-->
+<!--?                <a href="https://www.facebook.com/mediusware" target="_blank">📱 Facebook</a>-->
+<!--?                <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">💼 LinkedIn</a>-->
+<!--?            </div>-->
+<!--?        </div>-->
+<!--?    </div>-->
+<!--?</body>-->
+<!--?</html>-->
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Career Opportunity at Mediusware</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Alert: Exciting Career Opportunities at Mediusware</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            color: #333333;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #e6e4e4;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
         }
         .email-container {
-            display: block;
-            margin: auto;
+            max-width: 650px;
+            margin: 30px auto;
             background-color: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #dfdfdf;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
             overflow: hidden;
-            max-width: 600px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
         }
         .header {
-            background-color: #372d9f;
-            padding: 30px 20px;
+            background: linear-gradient(90deg, #372d9f, #594bd8);
+            color: #ffffff;
+            padding: 20px;
             text-align: center;
         }
         .header h1 {
-            color: #ffffff;
             margin: 0;
-            font-size: 28px;
-            font-weight: 600;
+            font-size: 26px;
+            letter-spacing: 0.5px;
         }
-        .logo {
-            max-width: 180px;
-            height: auto;
-            margin-bottom: 20px;
+        .content {
+            padding: 25px;
+            line-height: 1.8;
+            color: #4a4a4a;
         }
-        .main-content {
-            padding: 35px;
-            background-color: #ffffff;
+        .content p {
+            margin: 10px 0;
         }
-        .job-title {
-            background-color: #f8f9fa;
-            border-left: 4px solid #372d9f;
-            padding: 15px;
-            margin: 25px 0;
-            text-align: left;
-            color: #372d9f;
-            font-size: 20px;
-        }
-        .benefits-box {
-            background-color: #f8f9fa;
-            border-radius: 6px;
-            padding: 20px;
+        .job-list {
             margin: 20px 0;
-        }
-        .benefits-list {
-            list-style-type: none;
             padding: 0;
-            margin: 0;
+            list-style: none;
         }
-        .benefits-list li {
-            padding: 8px 0 8px 25px;
-            position: relative;
-        }
-        .benefits-list li:before {
-            content: "✓";
-            color: #372d9f;
-            position: absolute;
-            left: 0;
-        }
-        .apply-button {
-            display: inline-block;
-            background-color: #372d9f;
-            color: white !important;
-            padding: 15px 40px;
-            text-decoration: none;
-            border-radius: 25px;
-            margin: 25px 0;
+        .job-list li {
+            padding: 10px;
+            margin-bottom: 12px;
+            border-radius: 5px;
+            border-left: 5px solid #372d9f;
+            background-color: #f7f9fc;
             font-weight: bold;
-            text-align: center;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(55,45,159,0.2);
+            color: #333333;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .apply-button:hover {
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #372d9f;
+            margin: 20px 0 10px;
+            text-align: left;
+        }
+
+
+        .cta-button {
+            display: inline-block;
+            text-align: center;
+            background-color: #372d9f;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            margin: 25px auto;
+            font-weight: bold;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(55, 45, 159, 0.3);
+        }
+        .cta-button:hover {
             background-color: #2a2277;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(55,45,159,0.3);
+            box-shadow: 0 6px 12px rgba(55, 45, 159, 0.4);
         }
         .footer {
-            background-color: #f8f9fa;
-            padding: 25px;
-            border-top: 1px solid #eee;
+            background-color: #f9f9f9;
+            color: #777777;
+            padding: 20px;
+            text-align: center;
             font-size: 14px;
-            color: #666666;
-        }
-        .social-links {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #eeeeee;
         }
         .social-links a {
-            display: inline-block;
+            margin: 0 10px;
             color: #372d9f;
             text-decoration: none;
-            margin-right: 15px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            background-color: #fff;
-            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 14px;
         }
         .social-links a:hover {
-            background-color: #372d9f;
-            color: #ffffff;
+            text-decoration: underline;
         }
         .highlight {
             color: #372d9f;
-            font-weight: 600;
+            font-weight: bold;
         }
-        .contact-info {
-            margin: 15px 0;
-            padding-left: 10px;
-            border-left: 3px solid #372d9f;
+        @media screen and (max-width: 768px) {
+            .email-container {
+                width: 90%;
+            }
+            .cta-button {
+                width: 80%;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="email-container">
         <div class="header">
-            <h1>Join Our Growing Team</h1>
+            <h1>Exciting Career Opportunities at Mediusware</h1>
         </div>
-
-        <div class="main-content">
+        <div class="content">
             <p>Dear {{ candidate_name }},</p>
+            <p>I hope this email finds you well!</p>
+            <p>You had previously applied at Mediusware Ltd. While we couldn’t move forward at that time, we’re excited to share our current job openings:</p>
+            <ul class="job-list">
+                {% for position in opening_positions %}
+                <li>
+                    <a href="https://job.mediusware.com/job/{{ position.slug }}"
+                       style="color: #372d9f; text-decoration: none; font-weight: bold;">
+                        {{ position.title }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
 
-            <p>I hope this email finds you well. We've noticed your impressive professional background and believe you could be a valuable addition to our team at <span class="highlight">Mediusware Ltd</span>.</p>
-
-            <div class="job-title">
-                <strong>Position:</strong> {{ job_title }}
-            </div>
-
-            <p>We're looking for passionate individuals who want to be part of something extraordinary. Your expertise could help shape the future of technology solutions.</p>
-
+            <div class="section-title">Excited to Join Us?</div>
+            <p>If your skills align with these roles, apply today and take the next step in your career!</p>
             <center>
-                <a href="https://job.mediusware.com/" class="apply-button" target="_blank">
-                    EXPLORE THIS OPPORTUNITY
-                </a>
+                <a href="https://job.mediusware.com/" class="cta-button" style="color: white">Apply Now</a>
             </center>
-
-            <p style="font-style: italic; color: #666;">Feel free to share this opportunity with qualified professionals in your network.</p>
+            <div class="section-title">Know someone perfect?</div>
+            <p>Spread the word—refer them or share the job link!</p>
+            <p>Thank you for your time and support!</p>
         </div>
-
         <div class="footer">
-            <p><strong>Best Regards,</strong><br>
-            HR Team<br>
-            Mediusware Ltd</p>
-
-            <div class="contact-info">
-                <p>
-                    <strong>Contact Us:</strong><br>
-                    📱 +8801601712931<br>
-                    📧 hr@mediusware.com
-                </p>
-
-                <p>
-                    <strong>Visit Us:</strong><br>
-                    Floor 7th, 24/1 & 24/2, Taj Mahal Road,<br>
-                    Shiya Masjid mor, Ring Road, Mohammadpur<br>
-                    Dhaka 1207, Bangladesh
-                </p>
-            </div>
-
+            <p><strong>Contact Us:</strong> 📱 +8801601712931 | 📧 hr@mediusware.com</p>
+            <p>Visit Us: Floor 7th, 24/1 & 24/2, Taj Mahal Road, Shiya Masjid mor, Ring Road, Mohammadpur, Dhaka 1207, Bangladesh</p>
             <div class="social-links">
-                <strong>Connect With Us:</strong><br>
-                <a href="http://job.mediusware.com" target="_blank">🌐 Website</a>
-                <a href="https://www.facebook.com/mediusware" target="_blank">📱 Facebook</a>
-                <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">💼 LinkedIn</a>
+                <a href="http://job.mediusware.com" target="_blank">Website</a>
+                <a href="https://www.facebook.com/mediusware" target="_blank">Facebook</a>
+                <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">LinkedIn</a>
             </div>
         </div>
     </div>
 </body>
 </html>
-

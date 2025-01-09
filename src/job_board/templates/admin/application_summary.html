@@ -136,6 +136,65 @@
         cursor: not-allowed;
     }
 
+.info, .success, .error {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.info {
+    background-color: #e3f2fd;
+    color: #0d47a1;
+    border: 1px solid #bbdefb;
+}
+
+.success {
+    background-color: #e8f5e9;
+    color: #1b5e20;
+    border: 1px solid #c8e6c9;
+}
+
+.error {
+    background-color: #ffebee;
+    color: #b71c1c;
+    border: 1px solid #ffcdd2;
+}
+
+.details {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(0,0,0,0.1);
+    font-size: 13px;
+}
+
+#emailStatus {
+    margin-top: 15px;
+}
+
+.button {
+    background-color: #372d9f;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.button:hover {
+    background-color: #1f246e;
+    transform: translateY(-2px);
+}
+
+.button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
 </style>
 {% endblock %}
 
@@ -153,6 +212,31 @@
 <!--?                {% endfor %}-->
 <!--?            </select>-->
 <!--?        </div>-->
+<div class="form-group">
+    <label for="opening_positions">Choose Opening Positions:</label>
+    <div class="selector">
+        <div class="selector-available">
+            <h2>Available Positions</h2>
+            <select multiple="multiple" class="filtered" id="available_positions">
+                {% for job in jobs %}
+                    <option value="{{ job.id }}" data-slug="{{ job.slug }}">{{ job.title }}</option>
+                {% endfor %}
+            </select>
+            <a href="#" id="add_all_positions" class="selector-chooseall">Choose all</a>
+        </div>
+        <ul class="selector-chooser">
+            <li><a href="#" id="add_position" class="selector-add">→</a></li>
+            <li><a href="#" id="remove_position" class="selector-remove">←</a></li>
+        </ul>
+        <div class="selector-chosen">
+            <h2>Chosen Positions</h2>
+            <select multiple="multiple" class="filtered" id="selected_positions" name="opening_positions">
+            </select>
+            <a href="#" id="remove_all_positions" class="selector-clearall">Remove all</a>
+        </div>
+    </div>
+</div>
+
         <div class="form-group">
             <label for="jobs">Select Jobs:</label>
             <div class="selector">
@@ -216,6 +300,55 @@
         const monthCheckboxes = document.getElementById('monthCheckboxes');
         const candidateCount = document.getElementById('candidateCount');
         const emailActions = document.getElementById('emailActions');
+        const availablePositions = document.getElementById('available_positions');
+        const selectedPositions = document.getElementById('selected_positions');
+
+
+        // Position selector functionality
+        function movePositions(from, to) {
+            const selectedOptions = Array.from(from.selectedOptions);
+            selectedOptions.forEach(option => {
+                to.appendChild(option);
+            });
+        }
+
+        document.getElementById('add_position').addEventListener('click', (e) => {
+            e.preventDefault();
+            movePositions(availablePositions, selectedPositions);
+        });
+
+        document.getElementById('remove_position').addEventListener('click', (e) => {
+            e.preventDefault();
+            movePositions(selectedPositions, availablePositions);
+        });
+
+        document.getElementById('add_all_positions').addEventListener('click', (e) => {
+            e.preventDefault();
+            Array.from(availablePositions.options).forEach(option => {
+                selectedPositions.appendChild(option);
+            });
+        });
+
+        document.getElementById('remove_all_positions').addEventListener('click', (e) => {
+            e.preventDefault();
+            Array.from(selectedPositions.options).forEach(option => {
+                availablePositions.appendChild(option);
+            });
+        });
+
+        // Double-click handlers for position selection
+        availablePositions.addEventListener('dblclick', (e) => {
+            if (e.target.tagName === 'OPTION') {
+                selectedPositions.appendChild(e.target);
+            }
+        });
+
+        selectedPositions.addEventListener('dblclick', (e) => {
+            if (e.target.tagName === 'OPTION') {
+                availablePositions.appendChild(e.target);
+            }
+        });
+
 
         // Job selector functionality
         function moveOptions(from, to) {
@@ -340,46 +473,88 @@
         }
 
         // Send emails button handler
-        document.getElementById('sendEmailsBtn').addEventListener('click', async function () {
-            if (!window.selectedEmails || Object.keys(window.selectedEmails).length === 0) {
-                alert('No emails selected!');
-                return;
-            }
+document.getElementById('sendEmailsBtn').addEventListener('click', async function () {
+    if (!window.selectedEmails || Object.keys(window.selectedEmails).length === 0) {
+        alert('No emails selected!');
+        return;
+    }
 
-            const totalCandidates = Object.values(window.selectedEmails)
-                    .reduce((sum, candidates) => sum + candidates.length, 0);
+    // Check if any opening positions are selected
+    const selectedPositionIds = Array.from(selectedPositions.options).map(option => ({
+        id: option.value,
+        title: option.text,
+        slug: option.dataset.slug
+    }));
 
-            if (!confirm(`Are you sure you want to send emails to ${totalCandidates} candidates?`)) {
-                return;
-            }
+    if (selectedPositionIds.length === 0) {
+        alert('Please select at least one opening position!');
+        return;
+    }
 
-            const statusDiv = document.getElementById('emailStatus');
-            statusDiv.innerHTML = 'Sending emails...';
+    const totalCandidates = Object.values(window.selectedEmails)
+        .reduce((sum, candidates) => sum + candidates.length, 0);
 
-            try {
-                const response = await fetch('{% url "send_bulk_emails" %}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    },
-                    body: JSON.stringify({
-                        jobwise_emails: window.selectedEmails
-                    })
-                });
+    if (!confirm(`Are you sure you want to send emails to ${totalCandidates} candidates?`)) {
+        return;
+    }
 
-                const responseData = await response.json();
+    const statusDiv = document.getElementById('emailStatus');
+    statusDiv.innerHTML = '<div class="info">Sending emails...</div>';
 
-                if (responseData.status === 'success') {
-                    statusDiv.innerHTML = `<div class="success">${responseData.message}</div>`;
-                } else {
-                    statusDiv.innerHTML = `<div class="error">Error: ${responseData.message}</div>`;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                statusDiv.innerHTML = `<div class="error">Error sending emails: ${error.message}</div>`;
-            }
+    try {
+        const response = await fetch('{% url "send_bulk_emails" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                jobwise_emails: window.selectedEmails,
+                opening_positions: selectedPositionIds
+            })
         });
+
+        const responseData = await response.json();
+
+        if (responseData.status === 'success') {
+            statusDiv.innerHTML = `
+                <div class="success">
+                    ${responseData.message}
+                    <div class="details">
+                        Total emails sent: ${totalCandidates}<br>
+                        Opening positions: ${selectedPositionIds.map(p => p.title).join(', ')}
+                    </div>
+                </div>`;
+
+            // Optional: Clear selections after successful sending
+            Array.from(selectedPositions.options).forEach(option => {
+                availablePositions.appendChild(option);
+            });
+            Array.from(selectedJobs.options).forEach(option => {
+                availableJobs.appendChild(option);
+            });
+            document.querySelectorAll('input[name="months"]:checked').forEach(cb => {
+                cb.checked = false;
+            });
+            candidateCount.style.display = 'none';
+            emailActions.style.display = 'none';
+
+        } else {
+            statusDiv.innerHTML = `
+                <div class="error">
+                    Error: ${responseData.message}
+                </div>`;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        statusDiv.innerHTML = `
+            <div class="error">
+                Error sending emails: ${error.message}<br>
+                Please try again or contact support if the problem persists.
+            </div>`;
+    }
+});
+
 
         // Add event listeners for year checkboxes and month changes
         yearCheckboxes.forEach(cb => cb.addEventListener('change', updateMonths));
