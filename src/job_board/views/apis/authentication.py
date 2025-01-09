@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import hashers
 from django.db.models.aggregates import Sum, Count
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +20,7 @@ from job_board.models.candidate import Candidate, CandidateJob, CandidateApplica
 from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
-from job_board.tasks import send_interview_email, send_cancellation_email
+from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -257,13 +259,12 @@ class ApplicationSummaryView(TemplateView):
         return context
 
     @staticmethod
-    @staff_member_required
     def get_months(request):
-        job_id = request.GET.get('job')
-        years = request.GET.get('years').split(',')
+        jobs = request.GET.get('jobs', '').split(',')
+        years = request.GET.get('years', '').split(',')
 
         months_data = CandidateJob.objects.filter(
-            job_id=job_id,
+            job_id__in=jobs,
             created_at__year__in=years
         ).values('created_at__month').annotate(
             count=Count('id')
@@ -281,24 +282,56 @@ class ApplicationSummaryView(TemplateView):
 
     @staticmethod
     @staff_member_required
-    @csrf_exempt
     def get_emails(request):
         if request.method == 'POST':
-            job_id = request.POST.get('job')
+            jobs = request.POST.getlist('jobs')
             years = request.POST.getlist('years')
             months = request.POST.getlist('months')
 
-            candidates = CandidateJob.objects.filter(
-                job_id=job_id,
-                created_at__year__in=years,
-                created_at__month__in=months
-            ).select_related('candidate')
+            jobwise_candidates = {}
+            total_candidates = 0
 
-            emails = [cj.candidate.email for cj in candidates]
+            for job_id in jobs:
+                try:
+                    job = Job.objects.get(id=job_id)
+                    candidates = CandidateJob.objects.filter(
+                        job_id=job_id,
+                        created_at__year__in=years,
+                        created_at__month__in=months
+                    ).select_related('candidate')
+
+                    jobwise_candidates[job.title] = [cj.candidate.email for cj in candidates]
+                    total_candidates += len(candidates)
+                except Job.DoesNotExist:
+                    continue
 
             return JsonResponse({
-                'total_candidates': len(emails),
-                'emails': emails
+                'total_candidates': total_candidates,
+                'jobwise_candidates': jobwise_candidates
             })
 
-        return JsonResponse({'error': 'Invalid request method'})
+    @staticmethod
+    @staff_member_required
+    def send_emails(request):
+        if request.method == 'POST':
+            try:
+                data = json.loads(request.body)
+                jobwise_emails = data.get('jobwise_emails', {})
+
+                for job_title, emails in jobwise_emails.items():
+                    send_bulk_application_summary_email(emails, job_title)
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Emails sent successfully to all candidates'
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=500)
+
+
+
+
+

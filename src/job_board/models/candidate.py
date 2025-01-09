@@ -163,7 +163,8 @@ class CandidateApplicationSummary(models.Model):
                 )
 
     class Meta:
-        verbose_name_plural = "Candidate Application Summaries"
+        verbose_name = "Re-opportunity to Candidate"
+        verbose_name_plural = "Re-opportunity to Candidates"
 
 
 
