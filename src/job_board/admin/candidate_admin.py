@@ -398,7 +398,7 @@ class CandidateApplicationSummaryAdmin(admin.ModelAdmin):
     def application_summary_view(self, request):
         context = {
             **self.admin_site.each_context(request),
-            'title': 'Application Summary',
+            'title': 'Hiring Opportunities to Previous Candidates',
             'jobs': Job.objects.all(),
             'years': range(datetime.now().year, datetime.now().year - 4, -1),
         }
