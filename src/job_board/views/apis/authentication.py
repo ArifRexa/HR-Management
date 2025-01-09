@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth import hashers
 from django.db.models.aggregates import Sum, Count
 from django.views.decorators.csrf import csrf_exempt
@@ -18,7 +20,7 @@ from job_board.models.candidate import Candidate, CandidateJob, CandidateApplica
 from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
-from job_board.tasks import send_interview_email, send_cancellation_email
+from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -302,3 +304,43 @@ class ApplicationSummaryView(TemplateView):
             })
 
         return JsonResponse({'error': 'Invalid request method'})
+
+    @staticmethod
+    @staff_member_required
+    @csrf_exempt  # Add this if needed
+    def send_emails(request):
+        if request.method == 'POST':
+            try:
+                data = json.loads(request.body.decode('utf-8'))
+                emails = data.get('emails', [])
+                job_id = data.get('job_id')  # Get job_id from request
+
+                # Get job title
+                try:
+                    job = Job.objects.get(id=job_id)
+                    job_title = job.title
+                except Job.DoesNotExist:
+                    job_title = "Various Positions"
+
+                if not emails:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': 'No emails provided'
+                    }, status=400)
+
+                send_bulk_application_summary_email(emails, job_title)
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Emails sent successfully to {len(emails)} recipients'
+                })
+            except Exception as e:
+                print(f"Error sending emails: {str(e)}")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=500)
+        return JsonResponse({'error': 'Invalid request method'}, status=400)
+
+
+
+

@@ -28,34 +28,34 @@
         padding: 10px;
         /*background: #f9f9f9;*/
     }
-.default {
-    background-color: #372d9f; /* Green background */
-    border: none;               /* Remove default border */
-    color: white;               /* White text */
-    padding: 10px 10px;         /* Padding for size */
-    text-align: center;         /* Center text */
-    text-decoration: none;      /* Remove underline */
-    display: inline-block;      /* Inline block for flexibility */
-    font-size: 16px;            /* Set font size */
-    border-radius: 5px;         /* Rounded corners */
-    cursor: pointer;            /* Pointer on hover */
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
+    .default {
+        background-color: #372d9f; /* Green background */
+        border: none;               /* Remove default border */
+        color: white;               /* White text */
+        padding: 10px 10px;         /* Padding for size */
+        text-align: center;         /* Center text */
+        text-decoration: none;      /* Remove underline */
+        display: inline-block;      /* Inline block for flexibility */
+        font-size: 16px;            /* Set font size */
+        border-radius: 5px;         /* Rounded corners */
+        cursor: pointer;            /* Pointer on hover */
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
 
-.default:hover {
-    background-color: #1f246e;  /* Darker green on hover */
-    transform: translateY(-2px); /* Slight raise effect */
-}
+    .default:hover {
+        background-color: #1f246e;  /* Darker green on hover */
+        transform: translateY(-2px); /* Slight raise effect */
+    }
 
-.default:active {
-    background-color: #3e8e41;  /* Even darker green on click */
-    transform: translateY(1px);  /* Button depress effect */
-}
+    .default:active {
+        background-color: #3e8e41;  /* Even darker green on click */
+        transform: translateY(1px);  /* Button depress effect */
+    }
 
-.default:disabled {
-    background-color: #cccccc;  /* Greyed out for disabled */
-    cursor: not-allowed;
-}
+    .default:disabled {
+        background-color: #cccccc;  /* Greyed out for disabled */
+        cursor: not-allowed;
+    }
 
 </style>
 {% endblock %}
@@ -91,13 +91,14 @@
             <label>Select Months:</label>
             <div class="checkbox-group" id="monthCheckboxes"></div>
         </div>
-
-        <div class="form-group">
-            <button type="submit" class="default">Get Emails</button>
-        </div>
     </form>
 
-    <div id="emailResults"></div>
+    <div id="candidateCount" style="display: none;" class="candidate-count"></div>
+    <div id="emailActions" style="display: none; margin-top: 20px;">
+        <button id="sendEmailsBtn" class="button">Send Emails to Selected Candidates</button>
+        <div id="emailStatus"></div>
+    </div>
+
 </div>
 
 <script>
@@ -107,6 +108,8 @@
         const monthContainer = document.getElementById('monthContainer');
         const monthCheckboxes = document.getElementById('monthCheckboxes');
         const jobSelect = document.getElementById('job');
+        const candidateCount = document.getElementById('candidateCount');
+        const emailActions = document.getElementById('emailActions');
 
         async function updateMonths() {
             const selectedYears = Array.from(yearCheckboxes)
@@ -120,44 +123,100 @@
 
                     monthContainer.style.display = 'block';
                     monthCheckboxes.innerHTML = data.months.map(month => `
-                    <div class="checkbox-item">
-                        <input type="checkbox" name="months" value="${month.month}" id="month${month.month}">
-                        <label for="month${month.month}">${month.name} (${month.count})</label>
-                    </div>
-                `).join('');
+                        <div class="checkbox-item">
+                            <input type="checkbox" name="months" value="${month.month}" id="month${month.month}" onchange="checkSelectedMonths()">
+                            <label for="month${month.month}">${month.name} (${month.count})</label>
+                        </div>
+                    `).join('');
                 } catch (error) {
                     console.error('Error fetching months:', error);
                 }
             } else {
                 monthContainer.style.display = 'none';
+                candidateCount.style.display = 'none';
+                emailActions.style.display = 'none';
             }
         }
 
+        // Function to check selected months and update display
+        async function checkSelectedMonths() {
+            const selectedMonths = Array.from(document.querySelectorAll('input[name="months"]:checked'))
+                    .map(cb => cb.value);
+
+            if (selectedMonths.length > 0) {
+                const formData = new FormData(form);
+                try {
+                    const response = await fetch('{% url "get_emails" %}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    });
+
+                    const data = await response.json();
+                    candidateCount.innerHTML = `Total Candidates Selected: ${data.total_candidates}`;
+                    candidateCount.style.display = 'block';
+                    emailActions.style.display = 'block';
+                    window.selectedEmails = data.emails;
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            } else {
+                candidateCount.style.display = 'none';
+                emailActions.style.display = 'none';
+            }
+        }
+
+        // Add event listeners
         jobSelect.addEventListener('change', updateMonths);
         yearCheckboxes.forEach(cb => cb.addEventListener('change', updateMonths));
+        document.addEventListener('change', function (e) {
+            if (e.target.matches('input[name="months"]')) {
+                checkSelectedMonths();
+            }
+        });
 
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // Send emails button handler
+        document.getElementById('sendEmailsBtn').addEventListener('click', async function () {
+            if (!window.selectedEmails || window.selectedEmails.length === 0) {
+                alert('No emails selected!');
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to send emails to ${window.selectedEmails.length} recipients?`)) {
+                return;
+            }
+
+            const statusDiv = document.getElementById('emailStatus');
+            statusDiv.innerHTML = 'Sending emails...';
 
             try {
-                const formData = new FormData(form);
-                const response = await fetch('{% url "get_emails" %}', {
+                const jobId = document.getElementById('job').value;
+                const data = {
+                    emails: window.selectedEmails,
+                    job_id: jobId
+                };
+
+                const response = await fetch('{% url "send_bulk_emails" %}', {
                     method: 'POST',
-                    body: formData,
                     headers: {
+                        'Content-Type': 'application/json',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }
+                    },
+                    body: JSON.stringify(data)
                 });
 
-                const data = await response.json();
-                document.getElementById('emailResults').innerHTML = `
-                <h3>Results:</h3>
-                <p>Total Candidates: ${data.total_candidates}</p>
-                <p>Emails:</p>
-                <textarea readonly style="width: 100%; height: 100px;">${data.emails.join(', ')}</textarea>
-            `;
+                const responseData = await response.json();
+
+                if (responseData.status === 'success') {
+                    statusDiv.innerHTML = `<div class="success">${responseData.message}</div>`;
+                } else {
+                    statusDiv.innerHTML = `<div class="error">Error: ${responseData.message}</div>`;
+                }
             } catch (error) {
-                console.error('Error submitting form:', error);
+                console.error('Error:', error);
+                statusDiv.innerHTML = `<div class="error">Error sending emails: ${error.message}</div>`;
             }
         });
     });
