@@ -225,7 +225,8 @@ def send_cancellation_email(candidate_id):
 
 def send_bulk_application_summary_email(email_list, job_title, opening_positions):
     # print(f"Opening positions: {opening_positions}")  # Debug print
-    subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
+    # subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
+    subject = f"Exciting Career Opportunity at Mediusware"
     html_template = get_template('mail/reopportunity_mail.html')
 
     for email in email_list:
