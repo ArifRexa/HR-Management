@@ -4,6 +4,85 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
+    /* Add these styles to your existing CSS */
+    .selector {
+        width: 100%;
+        display: flex;
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .selector select {
+        width: 100%;
+        height: 200px !important;
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .selector-available, .selector-chosen {
+        width: 45%;
+    }
+
+    .selector h2 {
+        font-size: 16px;
+        margin: 0 0 10px 0;
+        padding: 5px;
+        /*background: #f8f9fa;*/
+        border-bottom: 1px solid #ddd;
+    }
+    .selector-chooser>li{
+        list-style-type: none;
+    }
+    .selector-chooser {
+        list-style: none;  /* Removes bullet points */
+        padding: 0;        /* Removes default padding */
+        margin: auto 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .selector-chooser li {
+        margin: 0;         /* Removes any margin */
+        padding: 0;        /* Removes any padding */
+    }
+
+    .selector-add, .selector-remove {
+        display: block;
+        width: 22px;
+        height: 22px;
+        background-color: #372d9f;
+        color: white;
+        text-align: center;
+        line-height: 22px;
+        border-radius: 4px;        /* Changed from 50% to 4px for less rounded corners */
+        text-decoration: none;
+        font-weight: bold;         /* Make arrows bold */
+        font-size: 16px;          /* Adjust size of arrows */
+    }
+
+    .selector-add:hover, .selector-remove:hover {
+        background-color: #1f246e;
+        text-decoration: none;    /* Ensures no underline on hover */
+    }
+
+
+    .selector-chooseall, .selector-clearall {
+        display: block;
+        text-align: left;
+        color: #372d9f;
+        text-decoration: none;
+        padding: 5px;
+        margin-top: 5px;
+        font-size: 13px;
+    }
+
+    .selector-chooseall:hover, .selector-clearall:hover {
+        text-decoration: underline;
+    }
+
+
     .summary-form {
         padding: 20px;
         margin: 20px;
@@ -65,15 +144,41 @@
     <form id="summaryForm" method="post">
         {% csrf_token %}
 
+<!--?        <div class="form-group">-->
+<!--?            <label for="job">Select Job:</label>-->
+<!--?            <select name="job" id="job" required>-->
+<!--?                <option value="">---------</option>-->
+<!--?                {% for job in jobs %}-->
+<!--?                <option value="{{ job.id }}">{{ job.title }}</option>-->
+<!--?                {% endfor %}-->
+<!--?            </select>-->
+<!--?        </div>-->
         <div class="form-group">
-            <label for="job">Select Job:</label>
-            <select name="job" id="job" required>
-                <option value="">---------</option>
-                {% for job in jobs %}
-                <option value="{{ job.id }}">{{ job.title }}</option>
-                {% endfor %}
-            </select>
+            <label for="jobs">Select Jobs:</label>
+            <div class="selector">
+                <div class="selector-available">
+                    <h2>Available Jobs</h2>
+                    <select multiple="multiple" class="filtered" id="available_jobs">
+                        {% for job in jobs %}
+                            <option value="{{ job.id }}">{{ job.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <a href="#" id="add_all_jobs" class="selector-chooseall">Choose all</a>
+                </div>
+                <ul class="selector-chooser">
+                    <li><a href="#" id="add_job" class="selector-add">→</a></li>
+                    <li><a href="#" id="remove_job" class="selector-remove">←</a></li>
+                </ul>
+                <div class="selector-chosen">
+                    <h2>Chosen Jobs</h2>
+                    <select multiple="multiple" class="filtered" id="selected_jobs" name="jobs">
+                    </select>
+                    <a href="#" id="remove_all_jobs" class="selector-clearall">Remove all</a>
+                </div>
+            </div>
         </div>
+
+
 
         <div class="form-group">
             <label>Select Years:</label>
@@ -104,30 +209,73 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const form = document.getElementById('summaryForm');
+        const availableJobs = document.getElementById('available_jobs');
+        const selectedJobs = document.getElementById('selected_jobs');
         const yearCheckboxes = document.querySelectorAll('input[name="years"]');
         const monthContainer = document.getElementById('monthContainer');
         const monthCheckboxes = document.getElementById('monthCheckboxes');
-        const jobSelect = document.getElementById('job');
         const candidateCount = document.getElementById('candidateCount');
         const emailActions = document.getElementById('emailActions');
 
+        // Job selector functionality
+        function moveOptions(from, to) {
+            const selectedOptions = Array.from(from.selectedOptions);
+            selectedOptions.forEach(option => {
+                to.appendChild(option);
+            });
+            updateMonths();
+        }
+
+        document.getElementById('add_job').addEventListener('click', (e) => {
+            e.preventDefault();
+            moveOptions(availableJobs, selectedJobs);
+        });
+
+        document.getElementById('remove_job').addEventListener('click', (e) => {
+            e.preventDefault();
+            moveOptions(selectedJobs, availableJobs);
+        });
+
+        document.getElementById('add_all_jobs').addEventListener('click', (e) => {
+            e.preventDefault();
+            Array.from(availableJobs.options).forEach(option => {
+                selectedJobs.appendChild(option);
+            });
+            updateMonths();
+        });
+
+        document.getElementById('remove_all_jobs').addEventListener('click', (e) => {
+            e.preventDefault();
+            Array.from(selectedJobs.options).forEach(option => {
+                availableJobs.appendChild(option);
+            });
+            updateMonths();
+        });
         async function updateMonths() {
+            const selectedJobIds = Array.from(selectedJobs.options).map(option => option.value);
             const selectedYears = Array.from(yearCheckboxes)
                     .filter(cb => cb.checked)
                     .map(cb => cb.value);
 
-            if (selectedYears.length > 0 && jobSelect.value) {
+            if (selectedYears.length > 0 && selectedJobIds.length > 0) {
                 try {
-                    const response = await fetch(`{% url 'get_months' %}?job=${jobSelect.value}&years=${selectedYears.join(',')}`);
+                    const response = await fetch(`{% url 'get_months' %}?jobs=${selectedJobIds.join(',')}&years=${selectedYears.join(',')}`);
                     const data = await response.json();
 
                     monthContainer.style.display = 'block';
+                    // Remove the inline onchange event
                     monthCheckboxes.innerHTML = data.months.map(month => `
                         <div class="checkbox-item">
-                            <input type="checkbox" name="months" value="${month.month}" id="month${month.month}" onchange="checkSelectedMonths()">
+                            <input type="checkbox" name="months" value="${month.month}" id="month${month.month}">
                             <label for="month${month.month}">${month.name} (${month.count})</label>
                         </div>
                     `).join('');
+
+                    // Add event listeners after creating the checkboxes
+                    document.querySelectorAll('input[name="months"]').forEach(checkbox => {
+                        checkbox.addEventListener('change', checkSelectedMonths);
+                    });
+
                 } catch (error) {
                     console.error('Error fetching months:', error);
                 }
@@ -138,13 +286,20 @@
             }
         }
 
-        // Function to check selected months and update display
+
+
         async function checkSelectedMonths() {
+            const selectedJobIds = Array.from(selectedJobs.options).map(option => option.value);
             const selectedMonths = Array.from(document.querySelectorAll('input[name="months"]:checked'))
                     .map(cb => cb.value);
 
-            if (selectedMonths.length > 0) {
+            if (selectedMonths.length > 0 && selectedJobIds.length > 0) {
                 const formData = new FormData(form);
+                // Add selected jobs to formData
+                selectedJobIds.forEach(jobId => {
+                    formData.append('jobs[]', jobId);
+                });
+
                 try {
                     const response = await fetch('{% url "get_emails" %}', {
                         method: 'POST',
@@ -155,10 +310,26 @@
                     });
 
                     const data = await response.json();
-                    candidateCount.innerHTML = `Total Candidates Selected: ${data.total_candidates}`;
+
+                    // Display summary for each job
+                    let summaryHTML = '<div class="job-summary">';
+                    Object.entries(data.jobwise_candidates).forEach(([jobTitle, candidates]) => {
+                        summaryHTML += `
+                            <div class="job-summary-item">
+                                <strong>${jobTitle}:</strong> ${candidates.length} candidates
+                            </div>
+                        `;
+                    });
+                    summaryHTML += `
+                        <div class="job-summary-item" style="font-weight: bold;">
+                            Total Candidates: ${data.total_candidates}
+                        </div>
+                    </div>`;
+
+                    candidateCount.innerHTML = summaryHTML;
                     candidateCount.style.display = 'block';
                     emailActions.style.display = 'block';
-                    window.selectedEmails = data.emails;
+                    window.selectedEmails = data.jobwise_candidates;
                 } catch (error) {
                     console.error('Error:', error);
                 }
@@ -168,23 +339,17 @@
             }
         }
 
-        // Add event listeners
-        jobSelect.addEventListener('change', updateMonths);
-        yearCheckboxes.forEach(cb => cb.addEventListener('change', updateMonths));
-        document.addEventListener('change', function (e) {
-            if (e.target.matches('input[name="months"]')) {
-                checkSelectedMonths();
-            }
-        });
-
         // Send emails button handler
         document.getElementById('sendEmailsBtn').addEventListener('click', async function () {
-            if (!window.selectedEmails || window.selectedEmails.length === 0) {
+            if (!window.selectedEmails || Object.keys(window.selectedEmails).length === 0) {
                 alert('No emails selected!');
                 return;
             }
 
-            if (!confirm(`Are you sure you want to send emails to ${window.selectedEmails.length} recipients?`)) {
+            const totalCandidates = Object.values(window.selectedEmails)
+                    .reduce((sum, candidates) => sum + candidates.length, 0);
+
+            if (!confirm(`Are you sure you want to send emails to ${totalCandidates} candidates?`)) {
                 return;
             }
 
@@ -192,19 +357,15 @@
             statusDiv.innerHTML = 'Sending emails...';
 
             try {
-                const jobId = document.getElementById('job').value;
-                const data = {
-                    emails: window.selectedEmails,
-                    job_id: jobId
-                };
-
                 const response = await fetch('{% url "send_bulk_emails" %}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify({
+                        jobwise_emails: window.selectedEmails
+                    })
                 });
 
                 const responseData = await response.json();
@@ -219,6 +380,38 @@
                 statusDiv.innerHTML = `<div class="error">Error sending emails: ${error.message}</div>`;
             }
         });
+
+        // Add event listeners for year checkboxes and month changes
+        yearCheckboxes.forEach(cb => cb.addEventListener('change', updateMonths));
+        document.addEventListener('change', function (e) {
+            if (e.target.matches('input[name="months"]')) {
+                checkSelectedMonths();
+            }
+        });
+
+        // Double-click handlers for job selection
+        availableJobs.addEventListener('dblclick', (e) => {
+            if (e.target.tagName === 'OPTION') {
+                selectedJobs.appendChild(e.target);
+                updateMonths();
+            }
+        });
+
+        selectedJobs.addEventListener('dblclick', (e) => {
+            if (e.target.tagName === 'OPTION') {
+                availableJobs.appendChild(e.target);
+                updateMonths();
+            }
+        });
+
+        // Make sure selected jobs are included in form submission
+        form.addEventListener('submit', (e) => {
+            Array.from(selectedJobs.options).forEach(option => {
+                option.selected = true;
+            });
+        });
     });
+
+
 </script>
 {% endblock %}

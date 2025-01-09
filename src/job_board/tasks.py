@@ -223,31 +223,30 @@ def send_cancellation_email(candidate_id):
 #         email_message.from_email = 'Mediusware-HR <checkmed2025154@gmail.com>'
 #         email_message.send()
 
-def send_bulk_application_summary_email(email_list, job_title):  # Add job_title parameter
-    print(email_list)
-    subject = f"Exciting Career Opportunity - {job_title} at Mediusware"  # Modified subject
+def send_bulk_application_summary_email(email_list, job_title):
+    subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
     html_template = get_template('mail/reopportunity_mail.html')
 
-    # Send emails in batches to avoid timeout
     for email in email_list:
-        # Get candidate name from database if possible
         try:
             candidate = Candidate.objects.get(email=email)
             candidate_name = candidate.full_name
         except Candidate.DoesNotExist:
-            candidate_name = "Candidate"  # Default fallback
+            candidate_name = "Candidate"
 
-        print(email)
-        print("ase")
         html_content = html_template.render({
-            'email': email,
             'candidate_name': candidate_name,
             'job_title': job_title,
+            'email': email,
         })
 
-        email_message = EmailMultiAlternatives(subject=subject)
+        email_message = EmailMultiAlternatives(
+            subject=subject,
+            body='',
+            from_email='Mediusware-HR <hr@mediusware.com>',
+            to=[email]
+        )
         email_message.attach_alternative(html_content, 'text/html')
-        email_message.to = [email]
-        email_message.from_email = 'Mediusware-HR <checkmed2025154@gmail.com>'
         email_message.send()
+
 
