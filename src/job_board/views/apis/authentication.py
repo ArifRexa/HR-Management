@@ -317,9 +317,19 @@ class ApplicationSummaryView(TemplateView):
             try:
                 data = json.loads(request.body)
                 jobwise_emails = data.get('jobwise_emails', {})
+                opening_positions = data.get('opening_positions', [])
+
+                # Convert opening positions to list of dictionaries with title and slug
+                opening_positions_data = [
+                    {
+                        'title': pos['title'],
+                        'slug': pos['slug']  # Include the slug
+                    }
+                    for pos in opening_positions
+                ]
 
                 for job_title, emails in jobwise_emails.items():
-                    send_bulk_application_summary_email(emails, job_title)
+                    send_bulk_application_summary_email(emails, job_title, opening_positions_data)
 
                 return JsonResponse({
                     'status': 'success',
@@ -330,6 +340,8 @@ class ApplicationSummaryView(TemplateView):
                     'status': 'error',
                     'message': str(e)
                 }, status=500)
+
+
 
 
 

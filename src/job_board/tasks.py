@@ -223,7 +223,8 @@ def send_cancellation_email(candidate_id):
 #         email_message.from_email = 'Mediusware-HR <checkmed2025154@gmail.com>'
 #         email_message.send()
 
-def send_bulk_application_summary_email(email_list, job_title):
+def send_bulk_application_summary_email(email_list, job_title, opening_positions):
+    # print(f"Opening positions: {opening_positions}")  # Debug print
     subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
     html_template = get_template('mail/reopportunity_mail.html')
 
@@ -237,6 +238,7 @@ def send_bulk_application_summary_email(email_list, job_title):
         html_content = html_template.render({
             'candidate_name': candidate_name,
             'job_title': job_title,
+            'opening_positions': opening_positions,  # This now includes both title and slug
             'email': email,
         })
 
@@ -248,5 +250,7 @@ def send_bulk_application_summary_email(email_list, job_title):
         )
         email_message.attach_alternative(html_content, 'text/html')
         email_message.send()
+
+
 
 
