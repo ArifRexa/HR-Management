@@ -186,6 +186,7 @@ def send_interview_email(candidate_id, interview_datetime):
     email.send()
 
 
+
 def send_cancellation_email(candidate_id):
     candidate = Candidate.objects.get(id=candidate_id)
 
