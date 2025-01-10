@@ -606,11 +606,11 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     report_file = models.FileField(
         upload_to="project_hours/",
         null=True,
-        blank=True,
         validators=[
             FileExtensionValidator(allowed_extensions=["pdf"]),
         ],
         verbose_name="Weekly Update (PDF)",
+        help_text="Must Be You have to Give Update File"
     )
 
     def __str__(self):
