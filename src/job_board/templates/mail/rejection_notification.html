@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview Cancellation Notice - Mediusware Ltd.</title>
+    <title>Application Status Update - Mediusware</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -45,6 +45,14 @@
             margin: 10px 0;
         }
 
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #372d9f;
+            margin: 20px 0 10px;
+            text-align: left;
+        }
+
         .highlight-box {
             background-color: #f7f9fc;
             border-left: 5px solid #372d9f;
@@ -54,28 +62,22 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .section-title {
-            font-size: 18px;
+        .cta-button {
+            display: inline-block;
+            text-align: center;
+            background-color: #372d9f;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            margin: 25px auto;
             font-weight: bold;
-            color: #372d9f;
-            margin: 20px 0 10px;
-            text-align: left;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(55, 45, 159, 0.3);
         }
 
-        .note-box {
-            background-color: #fff3e0;
-            border-left: 5px solid #ff9800;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 5px;
-        }
 
-        .contact-info {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
 
         .footer {
             background-color: #f9f9f9;
@@ -84,10 +86,6 @@
             text-align: center;
             font-size: 14px;
             border-top: 1px solid #eeeeee;
-        }
-
-        .social-links {
-            margin-top: 15px;
         }
 
         .social-links a {
@@ -102,16 +100,9 @@
             text-decoration: underline;
         }
 
-        .signature {
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
-        }
-
         @media screen and (max-width: 768px) {
             .email-container {
                 width: 90%;
-                margin: 15px auto;
             }
         }
     </style>
@@ -119,48 +110,48 @@
 <body>
 <div class="email-container">
     <div class="header">
-        <h1>Interview Cancellation Notice</h1>
+        <h1>Application Status Update</h1>
     </div>
     <div class="content">
         <p>Dear {{ candidate.full_name }},</p>
 
+        <p>Thank you for your interest in the position of <strong>{{ position.title }}</strong> at Mediusware Ltd. and
+            for taking the time to participate in our recruitment process.</p>
+
         <div class="highlight-box">
-            <p>This is to inform you that your interview for the position of <strong>{{ position.title }}</strong> at
-                Mediusware Ltd. has been cancelled.</p>
+            <p>After careful consideration of your application and the requirements of the role, we regret to inform you
+                that we will not be moving forward with your candidacy at this time.</p>
         </div>
 
-        <div class="section-title">What's Next?</div>
+        <div class="section-title">Why This Decision?</div>
+        <p>This decision does not necessarily reflect on your qualifications or abilities. We received many strong
+            applications, and the selection process was highly competitive.</p>
+
+        <div class="section-title">Future Opportunities</div>
+        <p>We encourage you to:</p>
         <ul>
-            <li>Keep an eye on your email for further updates</li>
-            <li>Feel free to reach out if you have any questions</li>
+            <li>Keep an eye on our career page for future opportunities</li>
+            <li>Consider applying for other positions that match your skills and experience</li>
+            <li>Continue developing your skills in your area of expertise</li>
         </ul>
 
-        <div class="note-box">
-            <p style="margin: 0;">💡 <strong>Note:</strong> We appreciate your understanding and apologize for any
-                inconvenience this may have caused.</p>
-        </div>
+<!--?        <center>-->
+<!--?            <a href="https://job.mediusware.com/" class="cta-button" style="color: white">View Current Openings</a>-->
+<!--?        </center>-->
 
-        <div class="contact-info">
-            <div class="section-title">Need Assistance?</div>
-            <p>If you have any questions or concerns, please don't hesitate to contact our HR team:</p>
-            <ul style="list-style-type: none; padding-left: 0;">
-                <li>📱 Phone: +8801601712931</li>
-                <li>📧 Email: hr@mediusware.com</li>
-            </ul>
-        </div>
+        <p>We appreciate your interest in Mediusware Ltd. and wish you the very best in your professional endeavors.</p>
 
-        <div class="signature">
-            <p>Best regards,<br>
-                HR Team<br>
-                Mediusware Ltd.</p>
-        </div>
+        <p>Best regards,<br>
+            HR Team<br>
+            Mediusware Ltd.</p>
     </div>
     <div class="footer">
+        <p><strong>Contact Us:</strong> 📱 +8801601712931 | 📧 hr@mediusware.com</p>
         <p>Visit Us: Floor 7th, 24/1 & 24/2, Taj Mahal Road, Shiya Masjid mor, Ring Road, Mohammadpur, Dhaka 1207,
             Bangladesh</p>
         <div class="social-links">
-            <a href="http://job.mediusware.com" target="_blank">Website</a> |
-            <a href="https://www.facebook.com/mediusware" target="_blank">Facebook</a> |
+            <a href="http://job.mediusware.com" target="_blank">Website</a>
+            <a href="https://www.facebook.com/mediusware" target="_blank">Facebook</a>
             <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">LinkedIn</a>
         </div>
     </div>
