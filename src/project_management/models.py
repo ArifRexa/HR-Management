@@ -610,6 +610,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         validators=[
             FileExtensionValidator(allowed_extensions=["pdf"]),
         ],
+        verbose_name="Weekly Update (PDF)",
     )
 
     def __str__(self):
