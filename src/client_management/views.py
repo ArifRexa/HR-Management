@@ -153,15 +153,27 @@ def get_weekly_project_report(request, project_hash):
     from_date, to_date = request.GET.get("fromdate"), request.GET.get("todate")
     ic(from_date, to_date)
     project_obj = Project.objects.filter(identifier=project_hash).first()
-    
-    project_hour = ProjectHour.objects.filter(project=project_obj).order_by("-date").only(
-        'date', 'hours', 'report_file'
-    )
-    paginator = Paginator(project_hour, 10)
+
+    project_hour = ProjectHour.objects.filter(project=project_obj)
+    if to_date and not from_date:
+        project_hour = project_hour.filter(
+            created_at__date__lte=to_date,
+        )
+
+    elif from_date and not to_date:
+        project_hour = project_hour.filter(created_at__date__gte=from_date)
+    elif from_date and to_date:
+        project_hour = project_hour.filter(
+            created_at__date__lte=to_date, created_at__date__gte=from_date
+        )
+    report_obj = project_hour.order_by("-date").only("date", "hours", "report_file")
+    paginator = Paginator(report_obj, 10)
     page_obj = paginator.get_page(request.GET.get("page"))
     context = {
-        'weekly_reports': page_obj,
-        "total_hour": project_hour.aggregate(total_hour=Sum("hours")).get("total_hour", 0),
-        "project": project_obj
+        "weekly_reports": page_obj,
+        "total_hour": project_hour.aggregate(total_hour=Sum("hours")).get(
+            "total_hour", 0
+        ),
+        "project": project_obj,
     }
-    return render(request, 'client_management/project_weekly_report.html', context)
+    return render(request, "client_management/project_weekly_report.html", context)
