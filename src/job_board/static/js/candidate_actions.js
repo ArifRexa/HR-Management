@@ -169,32 +169,57 @@ async function updateSchedule(candidateId, value) {
                 scheduleContainer.appendChild(newCancelButton);
             }
         }
-    }, 10000);  // Delay of 10 seconds
+    }, 10);  // Delay of 10 seconds
 }
 
+
 async function cancelSchedule(candidateId) {
-    const inputField = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-datetime`);
-    // Check if the input field is already empty
-    if (!inputField.value) {
-        console.log("Schedule is already cleared. Skipping API call.");
-        return;  // Exit the function without making an API call
-    }
-    inputField.value = '';  // Clear the input field
-
-    // Clear the timeout to prevent the delayed API call
-    if (scheduleTimeout) {
-        clearTimeout(scheduleTimeout);
-        scheduleTimeout = null;  // Reset timeout reference
-    }
-
-    // Optionally send request to backend to clear the schedule immediately
-    await makeRequest(
-        `/api/candidate/${candidateId}/schedule/`,  // API endpoint
-        {
-            schedule_datetime: null,  // Reset the schedule in the database
-            candidateId: candidateId
+    try {
+        const inputField = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-datetime`);
+        // Check if the input field is already empty
+        if (!inputField.value) {
+            console.log("Schedule is already cleared. Skipping API call.");
+            return;  // Exit the function without making an API call
         }
-    );
+
+        // Show confirmation dialog
+        if (confirm('Are you sure you want to cancel this interview? An email notification will be sent to the candidate.')) {
+            inputField.value = '';  // Clear the input field
+
+            // Clear the timeout to prevent the delayed API call
+            if (scheduleTimeout) {
+                clearTimeout(scheduleTimeout);
+                scheduleTimeout = null;  // Reset timeout reference
+            }
+
+            // Send request to backend to clear the schedule and send cancellation email
+            const response = await makeRequest(
+                `/api/candidate/${candidateId}/schedule/`,
+                {
+                    schedule_datetime: null,  // Reset the schedule in the database
+                    candidateId: candidateId,
+                    send_cancellation_email: true  // New flag to indicate email should be sent
+                }
+            );
+
+            if (response.status === 'success') {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message success-message';
+                messageDiv.textContent = 'Interview cancelled and notification sent';
+                const scheduleContainer = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-input-wrapper`);
+                scheduleContainer.appendChild(messageDiv);
+                setTimeout(() => messageDiv.remove(), 3000);
+            }
+        }
+    } catch (error) {
+        console.error('Error cancelling schedule:', error);
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message error-message';
+        messageDiv.textContent = 'Failed to cancel interview';
+        const scheduleContainer = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-input-wrapper`);
+        scheduleContainer.appendChild(messageDiv);
+        setTimeout(() => messageDiv.remove(), 3000);
+    }
 }
 
 
@@ -209,15 +234,24 @@ async function updateFeedback(candidateId, value) {
     );
 }
 
+
+
 async function updateStatus(candidateId, value) {
-    // await makeRequest(
-    //     `/api/candidate/${candidateId}/status/`,  // Remove 'action' from URL
-    //     {
-    //         application_status: value,
-    //         candidateId: candidateId
-    //     }
-    // );
     try {
+        // If status is being changed to scheduled or rescheduled
+        if (value === 'scheduled' || value === 'rescheduled') {
+            const actionItem = document.querySelector(`[data-candidate-id="${candidateId}"]`);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message info-message';
+            messageDiv.textContent = 'Email notification will be sent in 10 seconds...';
+            actionItem.appendChild(messageDiv);
+
+            // Remove the message after 10 seconds
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 10000);
+        }
+
         const response = await makeRequest(
             `/api/candidate/${candidateId}/status/`,
             {
@@ -227,19 +261,37 @@ async function updateStatus(candidateId, value) {
         );
 
         // Show success message
-        if (value === 'waiting') {
-            const actionItem = document.querySelector(`[data-candidate-id="${candidateId}"]`);
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'message success-message';
-            messageDiv.textContent = 'Status updated and notification email sent';
-            actionItem.appendChild(messageDiv);
+        const actionItem = document.querySelector(`[data-candidate-id="${candidateId}"]`);
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message success-message';
 
-            setTimeout(() => {
-                messageDiv.remove();
-            }, 3000);
+        let messageText = '';
+        switch(value) {
+            case 'waiting':
+                messageText = 'Status updated and waiting list notification sent';
+                break;
+            case 'rejected':
+                messageText = 'Status updated and rejection notification sent';
+                break;
+            case 'scheduled':
+                messageText = 'Status updated and interview notification sent';
+                break;
+            case 'rescheduled':
+                messageText = 'Status updated and reschedule notification sent';
+                break;
+            default:
+                messageText = 'Status updated successfully';
         }
+
+        messageDiv.textContent = messageText;
+        actionItem.appendChild(messageDiv);
+
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
     } catch (error) {
         console.error('Error updating status:', error);
+        // Error handling code...
     }
 }
 
