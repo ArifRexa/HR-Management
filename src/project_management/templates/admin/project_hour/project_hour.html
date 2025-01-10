@@ -5,9 +5,27 @@
 <script src="{% url 'admin:jsi18n' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {{ media }}
+<style>
+    /* Style buttons */
+.btn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 12px 16px; /* Some padding */
+  font-size: 16px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+}
+</style>
 {% endblock %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
 
 {% block coltype %}colM{% endblock %}
 
@@ -53,16 +71,18 @@
     </p>
     {{ adminform.form.non_field_errors }}
 {% endif %}
-
 {% block field_sets %}
 {% for fieldset in adminform %}
-  {% include "admin/includes/fieldset.html" %}
+{% include "admin/includes/fieldset.html" %}
 {% endfor %}
 {% endblock %}
 
 {% block after_field_sets %}{% endblock %}
 
 {% block inline_field_sets %}
+<div style="text-align: right; margin-bottom: 6px;">
+    <button type="button" id="copy-btn" class="btn">Copy Update <i class="fa fa-copy"></i></button>
+</div>
 {% for inline_admin_formset in inline_admin_formsets %}
     {% include inline_admin_formset.opts.template %}
 {% endfor %}
@@ -180,6 +200,27 @@
         console.log("change action")
         getThisWeekHour();
     }
+    function copyUpdateContent(){
+        const formset = document.getElementsByTagName("fieldset")[1]
+
+        const allTr = formset.getElementsByTagName('tr')
+
+        let allRow;
+        for (let index = 0; index < allTr.length; index++) {
+            const element = allTr[index];
+            console.log(element.classList.contains('dynamic-employeeprojecthour_set'))
+            if (element.classList.contains('dynamic-employeeprojecthour_set')){
+                const u = element.getElementsByClassName("field-update")[0]
+                allRow += u.getElementsByTagName('textarea')[0].value +"\n\n"
+
+            }
+            
+        }
+        navigator.clipboard.writeText(allRow)
+    }
+    const copyBtn = document.getElementById('copy-btn')
+    copyBtn.addEventListener('click', copyUpdateContent)
+    
 </script>
 
 {% endblock %}
