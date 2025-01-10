@@ -169,4 +169,12 @@ function update_total_hour(e){
     total_hour.value = total
 }
 
+
+const currentFile = document.getElementsByClassName("file-upload")[0]
+console.log("current file", currentFile)
+if(currentFile){
+
+    currentFile.getElementsByTagName('a')[0].target = "_blank"
+}
+
 }
