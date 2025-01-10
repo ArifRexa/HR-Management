@@ -224,6 +224,31 @@ def send_waiting_list_email(candidate_id):
     email.send()
 
 
+
+def send_rejection_email(candidate_id):
+    try:
+        candidate = Candidate.objects.get(id=candidate_id)
+
+        subject = "Update Regarding Your Application - Mediusware Ltd."
+        html_template = get_template('mail/rejection_notification.html')
+        html_content = html_template.render({
+            'candidate': candidate,
+            'position': candidate.candidatejob_set.last().job
+        })
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            from_email='Mediusware-HR <hr@mediusware.com>',
+            to=[candidate.email]
+        )
+        email.attach_alternative(html_content, 'text/html')
+        email.send()
+        return True
+    except Exception as e:
+        print(f"Error sending rejection email: {str(e)}")
+        return False
+
+
 # def send_bulk_application_summary_email(email_list):
 #     print(email_list)
 #     subject = "We are looking for you"

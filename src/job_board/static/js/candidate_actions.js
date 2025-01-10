@@ -227,11 +227,19 @@ async function updateStatus(candidateId, value) {
         );
 
         // Show success message
-        if (value === 'waiting') {
+        if (value === 'waiting' || value === 'rejected') {
             const actionItem = document.querySelector(`[data-candidate-id="${candidateId}"]`);
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message success-message';
-            messageDiv.textContent = 'Status updated and notification email sent';
+
+            let messageText = '';
+            if (value === 'waiting') {
+                messageText = 'Status updated and waiting list notification sent';
+            } else if (value === 'rejected') {
+                messageText = 'Status updated and rejection notification sent';
+            }
+
+            messageDiv.textContent = messageText;
             actionItem.appendChild(messageDiv);
 
             setTimeout(() => {

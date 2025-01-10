@@ -21,7 +21,7 @@ from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
 from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email, \
-    send_waiting_list_email
+    send_waiting_list_email, send_rejection_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -184,6 +184,8 @@ class UpdateStatusView(APIView):
         if new_status == 'waiting':
             # Send email directly
             email_sent = send_waiting_list_email(candidate.id)
+        elif new_status == 'rejected':
+            email_sent = send_rejection_email(candidate.id)
 
         candidate.application_status = new_status
         candidate.save()
