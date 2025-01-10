@@ -34,11 +34,10 @@ class EmployeeHourInlineForm(forms.ModelForm):
     date = forms.DateTimeField(required=False)
     update_id = forms.IntegerField(required=False, widget=forms.HiddenInput())
     update = forms.CharField(required=False, widget=forms.Textarea())
-    
 
     class Meta:
         model = EmployeeProjectHour
-        fields = ("date","hours", "employee")
+        fields = ("date", "hours", "employee")
 
     def save(self, commit):
         update_id = self.cleaned_data.get("update_id")
@@ -55,7 +54,7 @@ class EmployeeHourAdmin(admin.TabularInline):
     extra = 1
     autocomplete_fields = ("employee",)
     form = EmployeeHourInlineForm
-    
+
     def get_readonly_fields(self, request, obj=None):
         three_day_earlier = timezone.now() - timedelta(days=2)
 
@@ -121,7 +120,10 @@ class ProjectHourAdmin(
     ordering = ("-pk",)
     add_form_template = "admin/project_hour/project_hour.html"
     fieldsets = (
-        ("Standard info", {"fields": ("hour_type", "project", "date", "hours")}),
+        (
+            "Standard info",
+            {"fields": ("hour_type", "project", "date", "hours", "report_file")},
+        ),
         (
             "Administration Process",
             {"fields": ("tpm", "status")},
@@ -167,6 +169,7 @@ class ProjectHourAdmin(
     # return total hour count
     def changelist_view(self, request, extra_context=None):
         from django.utils.http import urlencode
+
         # if not request.GET:
         #     # Redirect to the filtered view
         #     return redirect(f"{request.path}?{urlencode({'hour_type':'project'})}")
@@ -174,15 +177,17 @@ class ProjectHourAdmin(
             self.admin_site.each_context(request),
             total=self.get_total_hour(request),
             # series=self.get_data(request),
-            filter_form = ProjectHourFilterForm(initial={
-                "created_at__date__gte": request.GET.get(
-                    "created_at__date__gte",
-                    timezone.now().date() - datetime.timedelta(days=7),
-                ),
-                "created_at__date__lte": request.GET.get(
-                    "created_at__date__lte", timezone.now().date()
-                ),
-            })
+            filter_form=ProjectHourFilterForm(
+                initial={
+                    "created_at__date__gte": request.GET.get(
+                        "created_at__date__gte",
+                        timezone.now().date() - datetime.timedelta(days=7),
+                    ),
+                    "created_at__date__lte": request.GET.get(
+                        "created_at__date__lte", timezone.now().date()
+                    ),
+                }
+            ),
         )
         return super(ProjectHourAdmin, self).changelist_view(
             request, extra_context=my_context
@@ -196,14 +201,19 @@ class ProjectHourAdmin(
         manager's will only see theirs
         @type request: object
         """
-        if request.GET.get("created_at__date__gte", None) is None and request.GET.get("q", None) is None:
+        if (
+            request.GET.get("created_at__date__gte", None) is None
+            and request.GET.get("q", None) is None
+        ):
             two_month_ago = timezone.now() - timedelta(days=60)
-            query_set = super(ProjectHourAdmin, self).get_queryset(request).filter(
-                created_at__gte=two_month_ago
+            query_set = (
+                super(ProjectHourAdmin, self)
+                .get_queryset(request)
+                .filter(created_at__gte=two_month_ago)
             )
         else:
             query_set = super(ProjectHourAdmin, self).get_queryset(request)
-        
+
         if not request.GET:
             return query_set.filter(hour_type="project")
         if request.user.is_superuser or request.user.has_perm(
