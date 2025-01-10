@@ -210,12 +210,36 @@ async function updateFeedback(candidateId, value) {
 }
 
 async function updateStatus(candidateId, value) {
-    await makeRequest(
-        `/api/candidate/${candidateId}/status/`,  // Remove 'action' from URL
-        {
-            application_status: value,
-            candidateId: candidateId
+    // await makeRequest(
+    //     `/api/candidate/${candidateId}/status/`,  // Remove 'action' from URL
+    //     {
+    //         application_status: value,
+    //         candidateId: candidateId
+    //     }
+    // );
+    try {
+        const response = await makeRequest(
+            `/api/candidate/${candidateId}/status/`,
+            {
+                application_status: value,
+                candidateId: candidateId
+            }
+        );
+
+        // Show success message
+        if (value === 'waiting') {
+            const actionItem = document.querySelector(`[data-candidate-id="${candidateId}"]`);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message success-message';
+            messageDiv.textContent = 'Status updated and notification email sent';
+            actionItem.appendChild(messageDiv);
+
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 3000);
         }
-    );
+    } catch (error) {
+        console.error('Error updating status:', error);
+    }
 }
 
