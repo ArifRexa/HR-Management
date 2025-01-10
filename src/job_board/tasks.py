@@ -203,6 +203,27 @@ def send_cancellation_email(candidate_id):
     email.send()
 
 
+# tasks.py
+
+def send_waiting_list_email(candidate_id):
+    candidate = Candidate.objects.get(id=candidate_id)
+
+    subject = "You've Been Added to Our Waiting List"
+    html_template = get_template('mail/waiting_list_notification.html')
+    html_content = html_template.render({
+        'candidate': candidate,
+        'position': candidate.candidatejob_set.last().job
+    })
+
+    email = EmailMultiAlternatives(
+        subject=subject,
+        from_email='Mediusware-HR <hr@mediusware.com>',
+        to=[candidate.email]
+    )
+    email.attach_alternative(html_content, 'text/html')
+    email.send()
+
+
 # def send_bulk_application_summary_email(email_list):
 #     print(email_list)
 #     subject = "We are looking for you"
