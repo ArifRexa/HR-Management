@@ -4,6 +4,8 @@ from rest_framework.urlpatterns import format_suffix_patterns
 
 from job_board.views.apis import (job, authentication, assessment, VivaConfigViewSet,
                                   JobVivaTimeSlotCreateAPIView, VivaConfigPerDayViewSet)
+from job_board.views.apis.authentication import ApplicationSummaryView
+# from job_board.views.apis.authentication import ApplicationSummaryView, get_months, get_emails
 from job_board.views.webpages.views import WebsiteView, MailView
 from datetime import datetime
 
@@ -57,6 +59,11 @@ api_urls = [
     path('candidate/<int:candidate_id>/schedule/', authentication.UpdateScheduleView.as_view(), name='update_schedule'),
     path('candidate/<int:candidate_id>/feedback/', authentication.UpdateFeedbackView.as_view(), name='update_feedback'),
     path('candidate/<int:candidate_id>/status/', authentication.UpdateStatusView.as_view(), name='update_status'),
+    path('application-summary/', ApplicationSummaryView.as_view(), name='application_summary'),
+    path('application-summary/get-months/', ApplicationSummaryView.get_months, name='get_months'),
+    path('application-summary/get-emails/', ApplicationSummaryView.get_emails, name='get_emails'),
+    path('application-summary/send-emails/', ApplicationSummaryView.send_emails, name='send_bulk_emails'),
+
 ]
 
 urlpatterns = [

@@ -1,13 +1,19 @@
-from datetime import timedelta
+from calendar import month_name
+from datetime import timedelta, datetime
 
+from django.contrib.auth.models import User
 from django.core import management
 from distutils.util import strtobool
+
+from django.db.models.fields import IntegerField
+from django.shortcuts import redirect
+from django.utils.dateformat import DateFormat
 
 from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
-from django.db.models import Sum, QuerySet, Q
+from django.db.models import Sum, QuerySet, Q, Count, CharField, Value, OuterRef, Subquery
 from django.middleware.csrf import get_token
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
@@ -24,10 +30,15 @@ from config.utils.pdf import PDF
 from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
 from job_board.models.candidate import Candidate, CandidateJob, ResetPassword, CandidateAssessment, \
-    CandidateAssessmentReview,JobPreferenceRequest
+    CandidateAssessmentReview, JobPreferenceRequest, Feedback, CandidateApplicationSummary
+from django.utils.translation import gettext_lazy as _
 
 from job_board.models.candidate_email import CandidateEmail,CandidateEmailAttatchment
 from icecream import ic
+
+from job_board.models.job import Job
+# from job_board.views.apis.authentication import ApplicationSummaryView
+
 
 class CandidateForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), strip=False, required=False)
@@ -37,15 +48,80 @@ class CandidateForm(forms.ModelForm):
         fields = "__all__"
 
 
+class HasFeedbackFilter(SimpleListFilter):
+    title = _('Feedback')
+    parameter_name = 'feedback'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('yes', _('Yes')),
+            ('no', _('No')),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'yes':
+            # Filter candidates who have feedback
+            return queryset.filter(feedbacks__isnull=False).distinct()
+        elif self.value() == 'no':
+            # Filter candidates who do not have feedback
+            return queryset.filter(feedbacks__isnull=True).distinct()
+        return queryset
+
+class ScheduleDateFilter(admin.SimpleListFilter):
+    title = _('Schedule Date')
+    parameter_name = 'schedule_date'
+
+    def lookups(self, request, model_admin):
+        # Get distinct dates and count candidates for each schedule date
+        queryset = Candidate.objects.exclude(schedule_datetime__date=None).values('schedule_datetime__date').annotate(
+            candidate_count=Count('schedule_datetime')
+        ).order_by('schedule_datetime__date')
+
+        # Return list of schedule dates with counts
+        # return [
+        #     (str(entry['schedule_datetime__date']), f"{entry['schedule_datetime__date']} ({entry['candidate_count']})")
+        #     for entry in queryset
+        # ]
+        return [
+            (str(entry['schedule_datetime__date']),
+             DateFormat(entry['schedule_datetime__date']).format('d M y') + f" ({entry['candidate_count']})")
+            for entry in queryset
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            # Filter by the selected date
+            return queryset.filter(schedule_datetime__date=self.value())
+        return queryset
+class FeedbackInline(admin.TabularInline):
+    model = Feedback
+    extra = 1
+    fields = ('comment', 'created_at')  # Remove 'user' from fields
+    readonly_fields = ('created_at',)
+
+    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
+        if db_field.name == 'user':
+            kwargs['initial'] = request.user
+            kwargs['queryset'] = User.objects.filter(is_staff=True)  # Limit to staff users
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('user')
+
+    def has_delete_permission(self, request, obj=None):
+        return True  # Allow deletion in the inline
 @admin.register(Candidate)
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = 'admin/candidate/custom_candidate_form.html'
     search_fields = ('full_name', 'email', 'phone')
     # list_display = ('contact_information', 'assessment', 'note', 'review', 'expected_salary')
-    list_filter = ('candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', 'schedule_datetime')
+    list_filter = ('candidatejob__job', 'gender', 'is_shortlisted', 'is_called', 'application_status', HasFeedbackFilter, ScheduleDateFilter)
     actions = ('send_default_sms', 'send_offer_letter', 'download_offer_letter', 'job_re_apply')
     list_per_page = 50
     date_hierarchy = 'created_at'
+    inlines = [FeedbackInline]
+    exclude = ('feedback',)
 
     class Media:
         css = {
@@ -70,9 +146,9 @@ class CandidateAdmin(admin.ModelAdmin):
 
     def get_list_display(self, request):
         if request.user.is_superuser or request.user.has_perm('job_board.can_see_candidate_expected_salary'):
-            return ('contact_information', 'candidate_actions', 'assessment', 'note', 'review', 'expected_salary')
+            return ('contact_information', 'assessment', 'candidate_actions', 'review', 'note', 'expected_salary')
         else:
-            return ('contact_information', 'candidate_actions', 'assessment', 'note', 'review')
+            return ('contact_information', 'assessment', 'candidate_actions', 'review', 'note')
 
     @admin.display(description='Actions')
     def candidate_actions(self, obj):
@@ -101,7 +177,7 @@ class CandidateAdmin(admin.ModelAdmin):
             f'<a href="{obj.cv.url}" target="blank">Resume</a>'
         )
 
-    @admin.display()
+    @admin.display(ordering='created_at')
     def assessment(self, obj: Candidate):
         candidate_job = obj.candidatejob_set.last()
         if candidate_job is not None:
@@ -112,14 +188,105 @@ class CandidateAdmin(admin.ModelAdmin):
             })
             return html_content
 
-    @admin.display()
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #
+    #     # Subquery to fetch the score of the latest candidate assessment
+    #     assessment_subquery = CandidateAssessment.objects.filter(
+    #         candidate_job=OuterRef('candidatejob__id')
+    #     ).order_by('-created_at').values('score')[:1]
+    #
+    #     return queryset.annotate(
+    #         assessment_sort_field=Subquery(assessment_subquery, output_field=IntegerField())
+    #     )
+    #
+    # @admin.display(ordering='assessment_sort_field')
+    # def assessment(self, obj: Candidate):
+    #     candidate_job = obj.candidatejob_set.last()
+    #     if candidate_job is not None:
+    #         html_template = get_template('admin/candidate/list/col_assessment.html')
+    #         html_content = html_template.render({
+    #             'candidate_job': candidate_job,
+    #             'candidate_assessments': candidate_job.candidate_assessment.all()
+    #         })
+    #         return html_content
+
+
+
+
+
+    # @admin.display()
+    # def review(self, obj: Candidate):
+    #     review = ''
+    #     candidate_job = obj.candidatejob_set.last()
+    #     if candidate_job is not None:
+    #         for candidate_assessment in candidate_job.candidate_assessment.all():
+    #             review += f'{candidate_assessment.note.replace("{","_").replace("}", "_") if candidate_assessment.note is not None else ""} <br>'
+    #     return format_html(review)
+    # @admin.display()
+    # def review(self, obj: Candidate):
+    #     feedbacks = obj.feedbacks.all()  # Get related feedbacks
+    #     if not feedbacks:
+    #         return "No Feedback"
+    #
+    #     review_summary = ""
+    #     for feedback in feedbacks:
+    #         truncated_comment = feedback.comment[:15]  # Show the first 30 characters
+    #         review_summary += format_html(
+    #             f'<div title="{feedback.user.username}: {feedback.comment}">'
+    #             f'{truncated_comment}...</div>'
+    #         )
+    #
+    #     return format_html(review_summary)
+    from django.utils.html import format_html
+
+    # @admin.display()
+    # def review(self, obj: Candidate):
+    #     feedbacks = obj.feedbacks.all()
+    #     if not feedbacks:
+    #         return ""
+    #
+    #     # Render feedback list
+    #     feedback_list = "".join(
+    #         f"<p><strong>{feedback.user}:</strong> {feedback.comment}</p>"
+    #         for feedback in feedbacks
+    #     )
+    #
+    #     return format_html(
+    #         f'<div class="feedback-wrapper">'
+    #         f'    <span class="feedback-hover">View</span>'
+    #         f'    <div class="feedback-popup">{feedback_list}</div>'
+    #         f'</div>'
+    #     )
+    # @admin.display()
     def review(self, obj: Candidate):
-        review = ''
-        candidate_job = obj.candidatejob_set.last()
-        if candidate_job is not None:
-            for candidate_assessment in candidate_job.candidate_assessment.all():
-                review += f'{candidate_assessment.note.replace("{","_").replace("}", "_") if candidate_assessment.note is not None else ""} <br>'
-        return format_html(review)
+        feedbacks = obj.feedbacks.all()
+        if not feedbacks:
+            return ""
+
+        # Create truncated feedback
+        truncated_feedback_list = ""
+        full_feedback_list = ""
+
+        for feedback in feedbacks:
+            # Truncate feedback text to 50 characters, add '...'
+            truncated_comment = (feedback.comment[:30] + '...') if len(feedback.comment) > 50 else feedback.comment
+            truncated_feedback_list += f"<p><strong>{feedback.user}:</strong> {truncated_comment}</p>"
+
+            # Full feedback (for hover), preserving line breaks
+            # Use string concatenation to handle the line breaks
+            full_feedback_list += "<p><strong>{}<br>---------------------</strong><br>{}</p>".format(
+                feedback.user,
+                feedback.comment.replace("\n", "<br>")
+            )
+
+        # Render truncated feedback in the list, but show full feedback on hover
+        return format_html(
+            f'<div class="feedback-wrapper">'
+            f'    <span class="feedback-hover">{truncated_feedback_list}</span>'
+            f'    <div class="feedback-popup">{full_feedback_list}</div>'
+            f'</div>'
+        )
 
     @admin.display()
     def note(self, obj: Candidate):
@@ -164,6 +331,20 @@ class CandidateAdmin(admin.ModelAdmin):
             obj.password = hashers.make_password(request.POST['password'], settings.CANDIDATE_PASSWORD_HASH)
             super(CandidateAdmin, self).save_model(request, obj, form, change)
 
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+
+        # Delete instances marked for deletion
+        for obj in formset.deleted_objects:
+            obj.delete()
+
+        # Save or update remaining instances
+        for instance in instances:
+            if not instance.user_id:
+                instance.user = request.user
+            instance.save()
+
+        formset.save_m2m()
 
 
 @admin.register(CandidateJob)
@@ -192,6 +373,46 @@ class CandidateJobAdmin(admin.ModelAdmin):
     
     def has_module_permission(self, request):
         return False
+
+
+
+@admin.register(CandidateApplicationSummary)
+class CandidateApplicationSummaryAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/application_summary.html'  # Custom template for the change list
+    list_display = ('job', 'year', 'month', 'application_count')
+    list_filter = ('job', 'year', 'month')
+    actions = ['generate_summary']
+
+    # Define custom URLs
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('summary/', self.admin_site.admin_view(self.application_summary_view), name='application_summary'),
+        ]
+        return custom_urls + urls
+
+    # Automatically redirect to application_summary
+    def changelist_view(self, request, extra_context=None):
+        return redirect('admin:application_summary')
+
+    def application_summary_view(self, request):
+        context = {
+            **self.admin_site.each_context(request),
+            'title': 'Hiring Opportunities to Previous Candidates',
+            'jobs': Job.objects.all(),
+            'years': range(datetime.now().year, datetime.now().year - 4, -1),
+        }
+        return TemplateResponse(request, 'admin/application_summary.html', context)
+
+    # Action to generate the summary
+    def generate_summary(self, request, queryset):
+        CandidateApplicationSummary.generate_summary()
+        self.message_user(request, "Application summary has been generated.")
+
+    generate_summary.short_description = "Generate application summary"
+
+
+
 
 
 class CandidateHasUrlFilter(SimpleListFilter):

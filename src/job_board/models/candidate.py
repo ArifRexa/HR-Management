@@ -1,10 +1,11 @@
 import os
 import random
 import uuid
-from datetime import timedelta
-
+from datetime import timedelta, datetime
+from django.db.models import Count
 from django import forms
 from django.contrib.auth import hashers
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import post_save
@@ -42,8 +43,10 @@ class Candidate(TimeStampMixin):
     )
     APPLICATIONS_STATUS_CHOICES = (
         ('none', 'None'),
+        ('rescheduled', 'Rescheduled'),
         ('waiting', 'Waiting List'),
         ('rejected', 'Rejected'),
+        ('trial', 'Trial'),
         ('offered', 'Offered'),
         ('hired', 'Hired'),
     )
@@ -85,6 +88,20 @@ class Candidate(TimeStampMixin):
             ),
         )
         
+class Feedback(models.Model):
+    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE, related_name='feedbacks')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.comment[:30]}"
+
+
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.user:
+            self.user = kwargs.pop('user', None)
+        super().save(*args, **kwargs)
 
 
 class CandidateJob(TimeStampMixin):
@@ -107,6 +124,51 @@ class CandidateJob(TimeStampMixin):
 
     def __str__(self):
         return f'{self.candidate.full_name} | {self.job.title}'
+
+
+
+class CandidateApplicationSummary(models.Model):
+    job = models.ForeignKey(Job, on_delete=models.CASCADE)
+    year = models.IntegerField()
+    month = models.IntegerField()
+    application_count = models.IntegerField()
+
+    @classmethod
+    def generate_summary(cls):
+        # Clear existing data
+        cls.objects.all().delete()
+
+        # Get current year
+        current_year = datetime.now().year
+        years_range = range(current_year, current_year - 4, -1)
+
+        # Generate summary for each job and year/month combination
+        for job in Job.objects.all():
+            applications = CandidateJob.objects.filter(
+                job=job,
+                created_at__year__in=years_range
+            ).values(
+                'created_at__year',
+                'created_at__month'
+            ).annotate(
+                count=Count('id')
+            )
+
+            for app in applications:
+                cls.objects.create(
+                    job=job,
+                    year=app['created_at__year'],
+                    month=app['created_at__month'],
+                    application_count=app['count']
+                )
+
+    class Meta:
+        verbose_name = "Re-opportunity to Candidate"
+        verbose_name_plural = "Re-opportunity to Candidates"
+
+
+
+
 
 
 class ResetPassword(TimeStampMixin):

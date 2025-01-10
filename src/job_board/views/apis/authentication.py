@@ -1,4 +1,8 @@
+import json
+
 from django.contrib.auth import hashers
+from django.db.models.aggregates import Sum, Count
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import CreateModelMixin
@@ -12,10 +16,11 @@ from datetime import datetime
 from django.utils.timezone import make_aware
 from config import settings
 from job_board.auth.CandidateAuth import CandidateAuth, CredentialsSerializer
-from job_board.models.candidate import Candidate
+from job_board.models.candidate import Candidate, CandidateJob, CandidateApplicationSummary
+from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
-from job_board.tasks import send_interview_email
+from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -98,6 +103,17 @@ class UpdateShortlistView(APIView):
     def post(self, request, candidate_id):
         print(f"Received request for candidate {candidate_id}")  # Debug print
         print(f"Request data: {request.data}")  # Debug print
+        all_jobs = Job.objects.all()
+        print("*"*100)
+        for job in all_jobs:
+            print(job)
+        # print(all_jobs)
+        print("-"*10)
+        candidate_all = CandidateJob.objects.all()
+        for candidate in candidate_all:
+            print(candidate)
+            print(candidate.candidate.email)
+        print(candidate_all)
         try:
             candidate = get_object_or_404(Candidate, id=candidate_id)
             candidate.is_shortlisted = request.data.get('is_shortlisted')
@@ -138,6 +154,8 @@ class UpdateScheduleView(APIView):
         print(candidate.schedule_datetime)
         if candidate.schedule_datetime:
             send_interview_email(candidate.id, candidate.schedule_datetime)
+        else:
+            send_cancellation_email(candidate.id)
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
 class UpdateFeedbackView(APIView):
@@ -157,3 +175,175 @@ class UpdateStatusView(APIView):
         candidate.application_status = request.data.get('application_status')
         candidate.save()
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+
+from django.http import JsonResponse
+from django.views.generic import TemplateView
+from django.contrib.admin.views.decorators import staff_member_required
+from django.utils.decorators import method_decorator
+from datetime import datetime
+from calendar import month_name
+
+# # @method_decorator(staff_member_required, name='dispatch')
+# class ApplicationSummaryView(TemplateView):
+#     template_name = 'admin/application_summary.html'
+#
+#
+#     def get_context_data(self, **kwargs):
+#        context = super().get_context_data(**kwargs)
+#        current_year = datetime.now().year
+#        context['years'] = range(current_year, current_year - 4, -1)
+#        context['jobs'] = Job.objects.all()
+#        print("this is context", context)
+#        return context
+#
+#
+#
+#
+#     # @staff_member_required
+#     def get_months(request):
+#         job_id = request.GET.get('job')
+#         years = request.GET.get('years').split(',')
+#
+#         # Log the received parameters for debugging
+#         print(f"Job ID: {job_id}, Years: {years}")
+#
+#         months_data = CandidateJob.objects.filter(
+#             job_id=job_id,
+#             created_at__year__in=years
+#         ).values('created_at__month').annotate(
+#             count=Count('id')
+#         ).order_by('created_at__month')
+#
+#         months = [
+#             {
+#                 'month': month['created_at__month'],
+#                 'name': month_name[month['created_at__month']],
+#                 'count': month['count']
+#             }
+#             for month in months_data
+#         ]
+#         return JsonResponse({'months': months})
+#
+#
+#     # @staff_member_required
+#     def get_emails(request):
+#         if request.method == 'POST':
+#             job_id = request.POST.get('job')
+#             years = request.POST.getlist('years')
+#             months = request.POST.getlist('months')
+#
+#             candidates = CandidateJob.objects.filter(
+#                 job_id=job_id,
+#                 created_at__year__in=years,
+#                 created_at__month__in=months
+#             ).select_related('candidate')
+#
+#             emails = [cj.candidate.email for cj in candidates]
+#
+#             return JsonResponse({
+#                 'total_candidates': len(emails),
+#                 'emails': emails
+#             })
+
+
+@method_decorator(staff_member_required, name='dispatch')
+class ApplicationSummaryView(TemplateView):
+    template_name = 'admin/application_summary.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        current_year = datetime.now().year
+        context['years'] = range(current_year, current_year - 4, -1)
+        context['jobs'] = Job.objects.all()
+        return context
+
+    @staticmethod
+    def get_months(request):
+        jobs = request.GET.get('jobs', '').split(',')
+        years = request.GET.get('years', '').split(',')
+
+        months_data = CandidateJob.objects.filter(
+            job_id__in=jobs,
+            created_at__year__in=years
+        ).values('created_at__month').annotate(
+            count=Count('id')
+        ).order_by('created_at__month')
+
+        months = [
+            {
+                'month': month['created_at__month'],
+                'name': month_name[month['created_at__month']],
+                'count': month['count']
+            }
+            for month in months_data
+        ]
+        return JsonResponse({'months': months})
+
+    @staticmethod
+    @staff_member_required
+    def get_emails(request):
+        if request.method == 'POST':
+            jobs = request.POST.getlist('jobs')
+            years = request.POST.getlist('years')
+            months = request.POST.getlist('months')
+
+            jobwise_candidates = {}
+            total_candidates = 0
+
+            for job_id in jobs:
+                try:
+                    job = Job.objects.get(id=job_id)
+                    candidates = CandidateJob.objects.filter(
+                        job_id=job_id,
+                        created_at__year__in=years,
+                        created_at__month__in=months
+                    ).select_related('candidate')
+
+                    jobwise_candidates[job.title] = [cj.candidate.email for cj in candidates]
+                    total_candidates += len(candidates)
+                except Job.DoesNotExist:
+                    continue
+
+            return JsonResponse({
+                'total_candidates': total_candidates,
+                'jobwise_candidates': jobwise_candidates
+            })
+
+    @staticmethod
+    @staff_member_required
+    def send_emails(request):
+        if request.method == 'POST':
+            try:
+                data = json.loads(request.body)
+                jobwise_emails = data.get('jobwise_emails', {})
+                opening_positions = data.get('opening_positions', [])
+
+                # Convert opening positions to list of dictionaries with title and slug
+                opening_positions_data = [
+                    {
+                        'title': pos['title'],
+                        'slug': pos['slug']  # Include the slug
+                    }
+                    for pos in opening_positions
+                ]
+
+                for job_title, emails in jobwise_emails.items():
+                    send_bulk_application_summary_email(emails, job_title, opening_positions_data)
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Emails sent successfully to all candidates'
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=500)
+
+
+
+
+
+
+

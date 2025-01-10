@@ -1,11 +1,10 @@
 
 {% load static %}
 {% csrf_token %}
-
-<div class="candidate-actions" data-candidate-id="{{ id }}">
+<div class="candidate-actions" data-candidate-id="{{ id }}" style="width: 220px">
     <div class="action-item">
         <input type="checkbox"
-               class="shortlist-checkbox"
+               class="shortlist-checkbox" style="margin-right: 8px;"
                {% if candidate.is_shortlisted %}checked{% endif %}
                onchange="updateShortlist({{ candidate.id }}, this.checked)">
         <label>Shortlisted</label>
@@ -13,7 +12,7 @@
 
     <div class="action-item">
         <input type="checkbox"
-               class="call-checkbox"
+               class="call-checkbox" style="margin-right: 8px;"
                {% if candidate.is_called %}checked{% endif %}
                onchange="updateCall({{ candidate.id }}, this.checked)">
         <label>Called</label>
@@ -27,34 +26,36 @@
 <!--?               onchange="updateSchedule({{ candidate.id }}, this.value)">-->
 <!--?    </div>-->
     <div class="action-item schedule-container">
-        <label class="schedule-label">Schedule Interview</label>
+<!--?        <label class="schedule-label">Schedule Interview</label>-->
         <div class="schedule-input-wrapper">
             <input type="text"
-                   class="schedule-datetime"
-                   placeholder="Select date and time"
+                   class="schedule-datetime" style="margin-right: 5px;"
+                   placeholder="Schedule Interview"
                    value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
                    onchange="updateSchedule({{ candidate.id }}, this.value)">
             <i class="calendar-icon"></i>
-
             <button type="button" class="cancel-schedule-btn"
-                            onclick="cancelSchedule({{ candidate.id }})">
-                        X
+                                                    onclick="cancelSchedule({{ candidate.id }})">
+                                                X
             </button>
         </div>
     </div>
 
-    <div class="action-item">
-        <label>Feedback</label>
-        <textarea class="feedback-text"
-                  onblur="updateFeedback({{ candidate.id }}, this.value)">{{ candidate.feedback }}</textarea>
-    </div>
+
+<!--?    <div class="action-item">-->
+<!--?        <label>Feedback</label>-->
+<!--?        <textarea class="feedback-text"-->
+<!--?                  onblur="updateFeedback({{ candidate.id }}, this.value)">{{ candidate.feedback }}</textarea>-->
+<!--?    </div>-->
 
     <div class="action-item">
-        <label>Status</label>
+<!--?        <label style="margin-right: 8px;">Status</label>-->
         <select class="status-select" onchange="updateStatus({{ candidate.id }}, this.value)">
             <option value="none" {% if candidate.application_status == 'none' %}selected{% endif %}>None</option>
+            <option value="rescheduled" {% if candidate.application_status == 'rescheduled' %}selected{% endif %}>Rescheduled</option>
             <option value="waiting" {% if candidate.application_status == 'waiting' %}selected{% endif %}>Waiting List</option>
             <option value="rejected" {% if candidate.application_status == 'rejected' %}selected{% endif %}>Rejected</option>
+            <option value="trial" {% if candidate.application_status == 'trial' %}selected{% endif %}>Trial</option>
             <option value="offered" {% if candidate.application_status == 'offered' %}selected{% endif %}>Offered</option>
             <option value="hired" {% if candidate.application_status == 'hired' %}selected{% endif %}>Hired</option>
         </select>

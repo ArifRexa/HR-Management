@@ -61,6 +61,7 @@
 
 .candidate-actions {
     position: relative;
+    width: 100%;
 }
 
 .action-status {
@@ -109,10 +110,11 @@
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
     color: #333;
     background-color: #fff;
     transition: all 0.3s ease;
+    width: 50%;
 }
 
 .schedule-datetime:focus {
@@ -153,7 +155,7 @@
     transform: translateY(-50%);
     width: 16px;
     height: 16px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%23FFFFFF' d='M152 64H296V24C296 10.75 306.7 0 320 0C333.3 0 344 10.75 344 24V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H104V24C104 10.75 114.7 0 128 0C141.3 0 152 10.75 152 24V64zM48 448C48 456.8 55.16 464 64 464H384C392.8 464 400 456.8 400 448V192H48V448z'/%3E%3C/svg%3E");
+    /*background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%23FFFFFF' d='M152 64H296V24C296 10.75 306.7 0 320 0C333.3 0 344 10.75 344 24V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H104V24C104 10.75 114.7 0 128 0C141.3 0 152 10.75 152 24V64zM48 448C48 456.8 55.16 464 64 464H384C392.8 464 400 456.8 400 448V192H48V448z'/%3E%3C/svg%3E");*/
     background-repeat: no-repeat;
     background-position: center;
     pointer-events: none;
@@ -165,7 +167,7 @@
 }
 
 .status-select{
-    width: 64%;
+    width: 73%;
 }
 
 .cancel-schedule-btn {
@@ -181,3 +183,52 @@
 .cancel-schedule-btn:hover {
     background-color: #d32f2f;
 }
+.feedback-wrapper {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.feedback-popup {
+    visibility: hidden; /* Hide the popup initially */
+    opacity: 0; /* Start with opacity 0 */
+    position: absolute;
+    top: 25px;
+    left: 0;
+    width: 350px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    color: #0f0f0f;
+    transform: translateY(-10px); /* Start slightly above */
+    transition: opacity 0.6s ease, transform 0.6s ease, visibility 0s ease 0.6s; /* Smooth transition */
+}
+
+/* Show on hover for desktop */
+.feedback-hover:hover + .feedback-popup,
+.feedback-popup:hover {
+    visibility: visible; /* Make it visible */
+    opacity: 1; /* Fade in */
+    transform: translateY(0); /* Slide down to normal position */
+    transition: opacity 0.6s ease, transform 0.6s ease; /* Smooth transition */
+}
+
+/* Show on click for mobile devices */
+@media (max-width: 768px) {
+    .feedback-popup {
+        visibility: hidden; /* Hide by default on mobile */
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    .feedback-wrapper.active .feedback-popup {
+        visibility: visible; /* Make it visible when clicked */
+        opacity: 1; /* Fade in */
+        transform: translateY(0); /* Slide down */
+        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s ease 0s; /* Smooth transition */
+    }
+}
+

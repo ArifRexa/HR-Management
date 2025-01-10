@@ -184,3 +184,74 @@ def send_interview_email(candidate_id, interview_datetime):
     email.from_email = 'Mediusware-HR <hr@mediusware.com>'
     # Send the email
     email.send()
+
+
+def send_cancellation_email(candidate_id):
+    candidate = Candidate.objects.get(id=candidate_id)
+
+    subject = "Interview Schedule Canceled"
+    html_template = get_template('mail/interview_cancellation.html')
+    html_content = html_template.render({
+        'candidate': candidate,
+        'position': candidate.candidatejob_set.last().job
+    })
+
+    email = EmailMultiAlternatives(subject=subject)
+    email.attach_alternative(html_content, 'text/html')
+    email.to = [candidate.email]
+    email.from_email = 'Mediusware-HR <hr@mediusware.com>'
+    email.send()
+
+
+# def send_bulk_application_summary_email(email_list):
+#     print(email_list)
+#     subject = "We are looking for you"
+#     html_template = get_template('mail/reopportunity_mail.html')
+#
+#     # Send emails in batches to avoid timeout
+#     for email in email_list:
+#         print(email)
+#         print("ase")
+#         html_content = html_template.render({
+#             'email': email,
+#         })
+#
+#         email_message = EmailMultiAlternatives(subject=subject)
+#         email_message.attach_alternative(html_content, 'text/html')
+#         email_message.to = [email]
+#         # email_message.from_email = 'Mediusware-HR <hr@mediusware.com>'
+#         email_message.from_email = 'Mediusware-HR <checkmed2025154@gmail.com>'
+#         email_message.send()
+
+def send_bulk_application_summary_email(email_list, job_title, opening_positions):
+    # print(f"Opening positions: {opening_positions}")  # Debug print
+    # subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
+    subject = f"Exciting Career Opportunity at Mediusware"
+    html_template = get_template('mail/reopportunity_mail.html')
+
+    for email in email_list:
+        try:
+            candidate = Candidate.objects.get(email=email)
+            candidate_name = candidate.full_name
+        except Candidate.DoesNotExist:
+            candidate_name = "Candidate"
+
+        html_content = html_template.render({
+            'candidate_name': candidate_name,
+            'job_title': job_title,
+            'opening_positions': opening_positions,  # This now includes both title and slug
+            'email': email,
+        })
+
+        email_message = EmailMultiAlternatives(
+            subject=subject,
+            body='',
+            from_email='Mediusware-HR <hr@mediusware.com>',
+            to=[email]
+        )
+        email_message.attach_alternative(html_content, 'text/html')
+        email_message.send()
+
+
+
+

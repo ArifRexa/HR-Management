@@ -1,6 +1,6 @@
 <style>
     .column-assessment {
-        width: 25%;
+        width: 10%;
     }
 
     .assessment-list {
@@ -20,28 +20,28 @@
 {% load humanize %}
 <ol class="assessment-list">
     {{ candidate_job.job }}
-    <br>
-    <br>
-    {% for candidate_assessment in candidate_assessments %}
+<!--?    <br>-->
+<!--?    <br>-->
+<!--?    {% for candidate_assessment in candidate_assessments %}-->
 
-        <li class="{% if candidate_assessment.result == "pass" %} text-success{% elif candidate_assessment.result == 'fail' %} text-danger {% endif %}">
+<!--?        <li class="{% if candidate_assessment.result == "pass" %} text-success{% elif candidate_assessment.result == 'fail' %} text-danger {% endif %}">-->
 
-            <div class="popover-wrapper">
-                <div class="popover-title">
-                    {{ candidate_assessment.score }}/ {{ candidate_assessment.assessment.score }}
-                    : {{ candidate_assessment.assessment }}
+<!--?            <div class="popover-wrapper">-->
+<!--?                <div class="popover-title">-->
+<!--?                    {{ candidate_assessment.score }}/ {{ candidate_assessment.assessment.score }}-->
+<!--?                    : {{ candidate_assessment.assessment }}-->
 
-                </div>
-                <div class="popover-message">
-                    {{ candidate_assessment.candidate_feedback | linebreaks }}
-                    {% for review in candidate_assessment.candidateassessmentreview_set.all %}
-                        <b>- {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>
-                            <sub>&nbsp;&nbsp;{{ review.created_at | naturaltime }}</sub> </b>  <br>
-                        {{ review.note | linebreaks }} <br>
-                    {% endfor %}
+<!--?                </div>-->
+<!--?                <div class="popover-message">-->
+<!--?                    {{ candidate_assessment.candidate_feedback | linebreaks }}-->
+<!--?                    {% for review in candidate_assessment.candidateassessmentreview_set.all %}-->
+<!--?                        <b>- {{ review.created_by.first_name }} {{ review.created_by.last_name }} <br>-->
+<!--?                            <sub>&nbsp;&nbsp;{{ review.created_at | naturaltime }}</sub> </b>  <br>-->
+<!--?                        {{ review.note | linebreaks }} <br>-->
+<!--?                    {% endfor %}-->
 
-                </div>
-            </div>
-        </li>
-    {% endfor %}
+<!--?                </div>-->
+<!--?            </div>-->
+<!--?        </li>-->
+<!--?    {% endfor %}-->
 </ol>
