@@ -21,7 +21,7 @@ from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
 from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email, \
-    send_waiting_list_email, send_rejection_email
+    send_waiting_list_email, send_rejection_email, send_reschedule_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -102,19 +102,15 @@ class UpdateShortlistView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request, candidate_id):
-        print(f"Received request for candidate {candidate_id}")  # Debug print
-        print(f"Request data: {request.data}")  # Debug print
+
         all_jobs = Job.objects.all()
-        print("*"*100)
+
         for job in all_jobs:
             print(job)
         # print(all_jobs)
-        print("-"*10)
+
         candidate_all = CandidateJob.objects.all()
-        for candidate in candidate_all:
-            print(candidate)
-            print(candidate.candidate.email)
-        print(candidate_all)
+
         try:
             candidate = get_object_or_404(Candidate, id=candidate_id)
             candidate.is_shortlisted = request.data.get('is_shortlisted')
@@ -137,11 +133,6 @@ class UpdateCallView(APIView):
 class UpdateScheduleView(APIView):
     permission_classes = [IsAdminUser]
 
-    # def post(self, request, candidate_id):
-    #     candidate = get_object_or_404(Candidate, id=candidate_id)
-    #     candidate.schedule_datetime = request.data.get('schedule_datetime')
-    #     candidate.save()
-    #     return Response({'status': 'success'}, status=status.HTTP_200_OK)
     def post(self, request, candidate_id):
         candidate = get_object_or_404(Candidate, id=candidate_id)
         schedule_datetime = request.data.get('schedule_datetime')
@@ -150,14 +141,14 @@ class UpdateScheduleView(APIView):
             candidate.schedule_datetime = schedule_datetime
         else:  # Reset to null if cancel is triggered
             candidate.schedule_datetime = None
+            send_cancellation_email(candidate.id)
 
         candidate.save()
-        print(candidate.schedule_datetime)
-        if candidate.schedule_datetime:
-            send_interview_email(candidate.id, candidate.schedule_datetime)
-        else:
-            send_cancellation_email(candidate.id)
+
+        # Don't send any emails here - emails will be sent when status changes to 'scheduled'
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+
 
 class UpdateFeedbackView(APIView):
     permission_classes = [IsAdminUser]
@@ -179,13 +170,36 @@ class UpdateStatusView(APIView):
     def post(self, request, candidate_id):
         candidate = get_object_or_404(Candidate, id=candidate_id)
         new_status = request.data.get('application_status')
+        email_sent = None
 
-        # Check if status is being changed to 'waiting'
+        # Handle different status changes
         if new_status == 'waiting':
-            # Send email directly
             email_sent = send_waiting_list_email(candidate.id)
         elif new_status == 'rejected':
             email_sent = send_rejection_email(candidate.id)
+        elif new_status == 'scheduled':
+            # Save the status immediately
+            candidate.application_status = new_status
+            candidate.save()
+
+            # Only send email if schedule_datetime exists
+            if candidate.schedule_datetime:
+                send_interview_email(candidate.id, candidate.schedule_datetime)
+                email_sent = True
+        elif new_status == 'rescheduled':
+            # Save the status immediately
+            candidate.application_status = new_status
+            candidate.save()
+
+            # Schedule the email to be sent after 10 seconds
+            # This allows time for schedule_datetime to be updated
+            # time.sleep(10)  # Wait for 10 seconds
+            email_sent = send_reschedule_email(candidate.id)
+            return Response({
+                'status': 'success',
+                'message': 'Status updated and email scheduled',
+                'email_sent': email_sent
+            }, status=status.HTTP_200_OK)
 
         candidate.application_status = new_status
         candidate.save()
@@ -193,7 +207,7 @@ class UpdateStatusView(APIView):
         return Response({
             'status': 'success',
             'message': 'Status updated successfully',
-            'email_sent': email_sent if new_status == 'waiting' else None
+            'email_sent': email_sent
         }, status=status.HTTP_200_OK)
 
 
@@ -204,67 +218,6 @@ from django.utils.decorators import method_decorator
 from datetime import datetime
 from calendar import month_name
 
-# # @method_decorator(staff_member_required, name='dispatch')
-# class ApplicationSummaryView(TemplateView):
-#     template_name = 'admin/application_summary.html'
-#
-#
-#     def get_context_data(self, **kwargs):
-#        context = super().get_context_data(**kwargs)
-#        current_year = datetime.now().year
-#        context['years'] = range(current_year, current_year - 4, -1)
-#        context['jobs'] = Job.objects.all()
-#        print("this is context", context)
-#        return context
-#
-#
-#
-#
-#     # @staff_member_required
-#     def get_months(request):
-#         job_id = request.GET.get('job')
-#         years = request.GET.get('years').split(',')
-#
-#         # Log the received parameters for debugging
-#         print(f"Job ID: {job_id}, Years: {years}")
-#
-#         months_data = CandidateJob.objects.filter(
-#             job_id=job_id,
-#             created_at__year__in=years
-#         ).values('created_at__month').annotate(
-#             count=Count('id')
-#         ).order_by('created_at__month')
-#
-#         months = [
-#             {
-#                 'month': month['created_at__month'],
-#                 'name': month_name[month['created_at__month']],
-#                 'count': month['count']
-#             }
-#             for month in months_data
-#         ]
-#         return JsonResponse({'months': months})
-#
-#
-#     # @staff_member_required
-#     def get_emails(request):
-#         if request.method == 'POST':
-#             job_id = request.POST.get('job')
-#             years = request.POST.getlist('years')
-#             months = request.POST.getlist('months')
-#
-#             candidates = CandidateJob.objects.filter(
-#                 job_id=job_id,
-#                 created_at__year__in=years,
-#                 created_at__month__in=months
-#             ).select_related('candidate')
-#
-#             emails = [cj.candidate.email for cj in candidates]
-#
-#             return JsonResponse({
-#                 'total_candidates': len(emails),
-#                 'emails': emails
-#             })
 
 
 @method_decorator(staff_member_required, name='dispatch')
