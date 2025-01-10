@@ -2,8 +2,9 @@ from icecream import ic
 
 from django.core.paginator import Paginator
 from django.shortcuts import render
+from django.db.models import Sum
 
-from project_management.models import Project, DailyProjectUpdate
+from project_management.models import Project, DailyProjectUpdate, ProjectHour
 
 
 # Create your views here.
@@ -146,3 +147,21 @@ def get_project_updates(request, project_hash):
         }
 
         return render(request, "client_management/project_details.html", out_dict)
+
+
+def get_weekly_project_report(request, project_hash):
+    from_date, to_date = request.GET.get("fromdate"), request.GET.get("todate")
+    ic(from_date, to_date)
+    project_obj = Project.objects.filter(identifier=project_hash).first()
+    
+    project_hour = ProjectHour.objects.filter(project=project_obj).order_by("-date").only(
+        'date', 'hours', 'report_file'
+    )
+    paginator = Paginator(project_hour, 10)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    context = {
+        'weekly_reports': page_obj,
+        "total_hour": project_hour.aggregate(total_hour=Sum("hours")).get("total_hour", 0),
+        "project": project_obj
+    }
+    return render(request, 'client_management/project_weekly_report.html', context)

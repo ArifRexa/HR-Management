@@ -1,0 +1,166 @@
+{% load replace_newline %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ project.title }} | Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+          integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+          <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYdft2mNjVShBftLdPG8FJ0V7irTLQ8Uo0qcPxh4Plq7G5tGm0rU+1SPhVotteLpBERwTkw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<style>
+    table, td, th {
+        border: 1px solid rgb(222, 226, 230);
+    }
+
+    td {
+        vertical-align: middle;
+    }
+
+    .form-control:focus {
+        box-shadow: none
+    }
+
+    .page-link:focus {
+        box-shadow: none;
+    }
+
+    .source-img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+    }
+
+    @media (max-width: 575px) {
+        label.col-form-label {
+            width: 46px;
+        }
+    }
+</style>
+
+<body>
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center my-4 pb-3 border-bottom">
+                <h3>{{ project.title }}</h3>
+                <h5>Total Hours: <span>{{ total_hour | floatformat:2 }}</span></h5>
+            </div>
+        </div>
+
+        <!--FILTER SECTION-->
+        <div class="col-12">
+            <form method="get">
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="d-flex flex-column flex-sm-row flex-wrap gap-3 justify-content-end">
+                            <div class="d-flex gap-2">
+                                <label for="inputFrom" class="col-form-label">From</label>
+                                {% if request.GET.fromdate %}
+                                    <input type="date" class="form-control" id="inputFrom" name="fromdate"
+                                           value="{{ request.GET.fromdate }}">
+                                {% else %}
+                                    <input type="date" class="form-control" id="inputFrom" name="fromdate">
+                                {% endif %}
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <label for="inputTo" class="col-form-label">To</label>
+                                {% if request.GET.todate %}
+                                    <input type="date" class="form-control" id="inputTo" name="todate"
+                                           value="{{ request.GET.todate }}">
+                                {% else %}
+                                    <input type="date" class="form-control" id="inputTo" name="todate">
+                                {% endif %}
+                            </div>
+                            <button class="btn btn-primary">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                     stroke-linejoin="round" class="feather feather-filter">
+                                    <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                                </svg>
+                                <span class="d-sm-none">Filter</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABLE -->
+        <div class="col-12">
+            <div class="table-responsive">
+                <table class="table table-hover table-border" id="project-details">
+                    <tr class="table-secondary">
+                        <th class="text-center" style="width: 120px;">Date</th>
+                        <th class="text-center" style="width: 80px;">Hours</th>
+                        <th class="text-center" style="width: 80px;">PDF </th>
+                    </tr>
+
+                    {% for report in weekly_reports %}
+                        <tr>
+                            <td>{{report.date}}</td>
+                            <td style="text-align: center;">{{report.hours}}</td>
+                            <td style="text-align: center;">
+                                {% if report.report_file %}
+                                <a href="{{report.report_file.url}}" target="_blank" rel="noopener noreferrer">
+                                    <i class="fa-regular fa-file-pdf" style="color: red;"></i>
+                                </a>
+                                {% else %}
+                                <a href="" target="_blank" rel="noopener noreferrer" style="cursor: not-allowed;">
+                                    <i class="fa-regular fa-file-pdf" style="color: red;"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+        <!-- TABLE ends -->
+
+        <!--  PAGINATION SECTION -->
+        <div class="col-12">
+            <nav aria-label="Page navigation justify-content-end">
+                <ul class="pagination mt-2 mt-md-0">
+                    {% if weekly_reports.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if request.GET.fromdate %}&fromdate={{ request.GET.fromdate }}{% endif %}{% if request.GET.todate %}&todate={{ request.GET.todate }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+
+                        <li class="page-item"><a class="page-link" href="?page={{ weekly_reports.previous_page_number }}{% if request.GET.fromdate %}&fromdate={{ request.GET.fromdate }}{% endif %}{% if request.GET.todate %}&todate={{ request.GET.todate }}{% endif %}"> &#8249; </a></li>
+                    {% endif %}
+
+                    <li class="page-item">
+                        <div class="page-link text-dark">Page <span>{{ weekly_reports.number }}</span> of <span>{{ weekly_reports.paginator.num_pages }}</span></div>
+                    </li>
+
+                    {% if weekly_reports.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ weekly_reports.next_page_number }}{% if request.GET.fromdate %}&fromdate={{ request.GET.fromdate }}{% endif %}{% if request.GET.todate %}&todate={{ request.GET.todate }}{% endif %}"> &#8250; </a></li>
+
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ weekly_reports.paginator.num_pages }}{% if request.GET.fromdate %}&fromdate={{ request.GET.fromdate }}{% endif %}{% if request.GET.todate %}&todate={{ request.GET.todate }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</body>
+</html>
