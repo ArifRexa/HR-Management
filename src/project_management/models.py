@@ -536,6 +536,9 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
         return self.title or str(self.pk)
 
 
+from django.core.validators import FileExtensionValidator
+
+
 class ProjectHour(TimeStampMixin, AuthorMixin):
     FORCAST_SELECTOR = (
         ("increase", "✔ Increase"),
@@ -599,6 +602,14 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         choices=STATUS_CHOICE,
         default="pending",
         verbose_name="TPM Approval Status",
+    )
+    report_file = models.FileField(
+        upload_to="project_hours/",
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(allowed_extensions=["pdf"]),
+        ],
     )
 
     def __str__(self):
