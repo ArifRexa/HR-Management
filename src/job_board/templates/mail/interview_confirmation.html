@@ -1,21 +1,138 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Interview Confirmation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interview Confirmation - Mediusware Ltd.</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-container {
+            max-width: 650px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #372d9f, #594bd8);
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            padding: 25px;
+            line-height: 1.8;
+            color: #4a4a4a;
+        }
+
+        .content p {
+            margin: 10px 0;
+        }
+
+        .highlight-box {
+            background-color: #f7f9fc;
+            border-left: 5px solid #372d9f;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #372d9f;
+            margin: 20px 0 10px;
+            text-align: left;
+        }
+
+        .footer {
+            background-color: #f9f9f9;
+            color: #777777;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .social-links a {
+            margin: 0 10px;
+            color: #372d9f;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .social-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media screen and (max-width: 768px) {
+            .email-container {
+                width: 90%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <p>Dear {{ candidate.full_name }},</p>
-    <p>We are pleased to inform you that you have been shortlisted for an interview with us at Mediusware Ltd for the position of {{ candidate.candidatejob_set.last.job }}.</p>
-    <p>Your interview is scheduled for <strong>{{ interview_datetime }}</strong>.</p>
-    <p>Please ensure to be available at the scheduled time. We look forward to speaking with you!</p>
-    <p>Regards, <br>
-        Mediusware Ltd, <br>
-        +8801601712931 <br>
-        hr@mediusware.com <br>
-        Address: Floor 7th, 24/1 & 24/2, Taj Mahal Road, Shiya Masjid mor, Ring Road, & 8th, Dhaka 1207 <br>
-        Facebook: <a href="https://www.facebook.com/mediusware" target="_blank">https://www.facebook.com/mediusware</a>
-        <br>
-        LinkedIn: <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">https://www.linkedin.com/company/mediusware-ltd/</a>
-    </p>
+<div class="email-container">
+    <div class="header">
+        <h1>Interview Confirmation</h1>
+    </div>
+    <div class="content">
+        <p>Dear {{ candidate.full_name }},</p>
+
+        <p>We are pleased to inform you that you have been shortlisted for an interview with us at Mediusware Ltd for
+            the position of <strong>{{ candidate.candidatejob_set.last.job }}</strong>.</p>
+
+        <div class="highlight-box">
+            <p style="text-align: center; font-size: 18px; margin: 0;">Your interview is scheduled for:</p>
+            <p style="text-align: center; font-size: 20px; font-weight: bold; color: #372d9f; margin: 10px 0;">
+                {{ interview_datetime|date:"l, F j, Y" }}<br>
+                {{ interview_datetime|date:"g:i " }}PM
+            </p>
+        </div>
+
+        <div class="section-title">Important Notes</div>
+        <ul>
+            <li>Please ensure to be available at the scheduled time</li>
+            <li>Keep your phone accessible for any updates</li>
+            <li>Have a stable internet connection ready</li>
+            <li>Prepare any relevant documents or portfolio</li>
+        </ul>
+
+        <p>We look forward to speaking with you!</p>
+
+        <p>Best regards,<br>
+            HR Team<br>
+            Mediusware Ltd.</p>
+    </div>
+    <div class="footer">
+        <p><strong>Contact Us:</strong> 📱 +8801601712931 | 📧 hr@mediusware.com</p>
+        <p>Visit Us: Floor 7th, 24/1 & 24/2, Taj Mahal Road, Shiya Masjid mor, Ring Road, Mohammadpur, Dhaka 1207,
+            Bangladesh</p>
+        <div class="social-links">
+            <a href="http://job.mediusware.com" target="_blank">Website</a>
+            <a href="https://www.facebook.com/mediusware" target="_blank">Facebook</a>
+            <a href="https://www.linkedin.com/company/mediusware-ltd/" target="_blank">LinkedIn</a>
+        </div>
+    </div>
+</div>
 </body>
 </html>
