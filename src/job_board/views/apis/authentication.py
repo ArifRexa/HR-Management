@@ -20,7 +20,8 @@ from job_board.models.candidate import Candidate, CandidateJob, CandidateApplica
 from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
-from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email
+from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email, \
+    send_waiting_list_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -170,11 +171,28 @@ class UpdateFeedbackView(APIView):
 class UpdateStatusView(APIView):
     permission_classes = [IsAdminUser]
 
+    # def post(self, request, candidate_id):
+    #     candidate = get_object_or_404(Candidate, id=candidate_id)
+    #     candidate.application_status = request.data.get('application_status')
+    #     candidate.save()
+    #     return Response({'status': 'success'}, status=status.HTTP_200_OK)
     def post(self, request, candidate_id):
         candidate = get_object_or_404(Candidate, id=candidate_id)
-        candidate.application_status = request.data.get('application_status')
+        new_status = request.data.get('application_status')
+
+        # Check if status is being changed to 'waiting'
+        if new_status == 'waiting':
+            # Send email directly
+            email_sent = send_waiting_list_email(candidate.id)
+
+        candidate.application_status = new_status
         candidate.save()
-        return Response({'status': 'success'}, status=status.HTTP_200_OK)
+
+        return Response({
+            'status': 'success',
+            'message': 'Status updated successfully',
+            'email_sent': email_sent if new_status == 'waiting' else None
+        }, status=status.HTTP_200_OK)
 
 
 from django.http import JsonResponse
