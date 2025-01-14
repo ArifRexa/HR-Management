@@ -73,7 +73,7 @@ class CandidateJobView(APIView):
         @return Job | Http404:
         """
         try:
-            return Job.objects.get(slug__exact=slug)
+            return Job.objects.get(slug__exact=slug, active=True)
         except Job.DoesNotExist:
             raise Http404
 
