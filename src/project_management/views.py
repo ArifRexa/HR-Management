@@ -1,12 +1,14 @@
 from django.http import JsonResponse
-from datetime import datetime, timedelta
+from datetime import timedelta
 from weasyprint import HTML
 from django.template.loader import get_template
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.utils import timezone
-
+from django.http import HttpResponse
+from html2docx import html2docx
 from django.db.models import Q, F, Aggregate, CharField
-
+from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.oxml import OxmlElement
 
 from project_management.models import DailyProjectUpdate, Project, ProjectHour
 from project_management.utils.auto_client_weekly_report import ClientWeeklyUpdate
@@ -112,19 +114,61 @@ def slack_callback(request):
     return JsonResponse({"code": code, "state": state})
 
 
+
+
+
+def generate_weekly_update_word(response, data: dict):
+    # Create a new Word document
+    project = data.get("project")
+    start_date = data.get("start_date")
+    end_date = data.get("end_date")
+    document = Document()
+
+    # Add title
+    title = document.add_paragraph()
+    title_run = title.add_run(f"Weekly Development Update: {project.title}")
+    title_run.bold = True
+    title_run.font.size = Pt(16)
+    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Add date
+    date_paragraph = document.add_paragraph(f"Date: {start_date} – {end_date}")
+    date_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    # Add a line break
+    document.add_paragraph("")
+    tasks = data.get("reports")
+    for item in tasks.get("tasks"):
+        # Section 1: Update User Model
+        section1_title = document.add_paragraph()
+        section1_title_run = section1_title.add_run(f"{item['feature']}")
+        section1_title_run.bold = True
+        section1_title_run.font.size = Pt(12)
+
+        section1_content = document.add_paragraph()
+        for task in item["subtasks"]:
+            section1_content.add_run(f"• {task}\n")
+
+        # Add a line break
+        document.add_paragraph("")
+    document.save(response)
+
+
 def generate_client_weekly_report(request, project_id, hour_date):
     project_hour_id = request.GET.get("project_hour_id")
+    doc_type = request.GET.get("doc_type")
     manager_id = request.user.employee.id
     if project_hour_id:
         manager_id = ProjectHour.objects.get(id=project_hour_id).manager_id
 
     q_obj = Q(
         project=project_id,
-        manager=manager_id,
         status="approved",
         created_at__date__lte=hour_date,
         created_at__date__gte=hour_date - timedelta(days=6),
     )
+    if not request.user.is_superuser:
+        q_obj = q_obj | Q(manager=manager_id)
     employee = (
         DailyProjectUpdate.objects.filter(
             q_obj,
@@ -157,11 +201,19 @@ def generate_client_weekly_report(request, project_id, hour_date):
         "end_date": hour_date - timedelta(days=6),
     }
     html_content = template.render(context)
+    if doc_type == "docx".lower():
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
 
-    # Generate PDF
-    html = HTML(string=html_content)
-    pdf_file = html.write_pdf()
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    # filename = str(timezone.now())
-    # response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
-    return response
+
+        generate_weekly_update_word(response, context)
+        return response
+
+    else:
+
+        # Generate PDF
+        html = HTML(string=html_content)
+        pdf_file = html.write_pdf()
+        return HttpResponse(pdf_file, content_type="application/pdf")
+
