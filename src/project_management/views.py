@@ -1,12 +1,15 @@
-from django.shortcuts import render
 from django.http import JsonResponse
 from datetime import datetime, timedelta
+from weasyprint import HTML
+from django.template.loader import get_template
+from django.http import HttpResponse, HttpResponseBadRequest
+from django.utils import timezone
 
-from employee.models import Employee
-from django.db.models import Sum, Q, F, Aggregate, CharField
-from django.db.models.functions import Coalesce
+from django.db.models import Q, F, Aggregate, CharField
 
-from project_management.models import DailyProjectUpdate, ProjectHour
+
+from project_management.models import DailyProjectUpdate, Project, ProjectHour
+from project_management.utils.auto_client_weekly_report import ClientWeeklyUpdate
 
 
 class GroupConcat(Aggregate):
@@ -78,9 +81,17 @@ def get_this_week_hour(request, project_id, hour_date):
             full_name=F("employee__full_name"),
         )
         .exclude(hours=0.0)
-        .values("id","created_at","employee_id", "full_name", "hours", "update", "updates_json")
+        .values(
+            "id",
+            "created_at",
+            "employee_id",
+            "full_name",
+            "hours",
+            "update",
+            "updates_json",
+        )
     )
-    
+
     totalHours = sum(hour["hours"] for hour in employee)
 
     employeeList = filter(lambda emp: emp["employee_id"], employee)
@@ -99,3 +110,57 @@ def slack_callback(request):
     state = request.GET.get("state")
 
     return JsonResponse({"code": code, "state": state})
+
+
+def generate_client_weekly_report(request, project_id, hour_date):
+    project_hour_id = request.GET.get("project_hour_id")
+    manager_id = request.user.employee.id
+    if project_hour_id:
+        manager_id = ProjectHour.objects.get(id=project_hour_id).manager_id
+
+    q_obj = Q(
+        project=project_id,
+        manager=manager_id,
+        status="approved",
+        created_at__date__lte=hour_date,
+        created_at__date__gte=hour_date - timedelta(days=6),
+    )
+    employee = (
+        DailyProjectUpdate.objects.filter(
+            q_obj,
+            employee__active=True,
+            employee__project_eligibility=True,
+        )
+        .annotate(
+            full_name=F("employee__full_name"),
+        )
+        .exclude(hours=0.0)
+        .values(
+            "id",
+            "update",
+            "updates_json",
+        )
+    )
+    update = "\n\n".join([i["updates_json"][0][0] for i in employee])
+    open_ai_res = ClientWeeklyUpdate(update)
+    data = open_ai_res.chat()
+    if not data:
+        return JsonResponse(
+            {"status": 500, "state": "AI can't generate report from given data"}
+        )
+    template_name = "admin/client_weekly_report.html"
+    template = get_template(template_name)
+    context = {
+        "reports": data,
+        "project": Project.objects.get(id=project_id),
+        "start_date": hour_date,
+        "end_date": hour_date - timedelta(days=6),
+    }
+    html_content = template.render(context)
+
+    html = HTML(string=html_content)
+    pdf_file = html.write_pdf()
+    response = HttpResponse(pdf_file, content_type="application/pdf")
+    filename = str(timezone.now())
+    response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
+    return response
