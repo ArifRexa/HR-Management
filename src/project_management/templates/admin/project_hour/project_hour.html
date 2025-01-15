@@ -5,9 +5,27 @@
 <script src="{% url 'admin:jsi18n' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 {{ media }}
+<style>
+    /* Style buttons */
+.btn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 12px 16px; /* Some padding */
+  font-size: 16px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+}
+</style>
 {% endblock %}
 
-{% block extrastyle %}{{ block.super }}<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">{% endblock %}
 
 {% block coltype %}colM{% endblock %}
 
@@ -27,11 +45,16 @@
 
 
 {% block content %}<div id="content-main">
-    <div class="row">
-        <div class="col">
-            <p style="color:red;">Select project and date then click generate button. </p>
+    
+    {% if not 'change' in request.path%}
+        
+        <div class="row">
+            <div class="col">
+                <p style="color:red;">Select project and date then click generate button. </p>
+            </div>
         </div>
-    </div>
+    {% endif %}
+        
     
 {% block object-tools %}
 {% if change %}{% if not is_popup %}
@@ -53,16 +76,18 @@
     </p>
     {{ adminform.form.non_field_errors }}
 {% endif %}
-
 {% block field_sets %}
 {% for fieldset in adminform %}
-  {% include "admin/includes/fieldset.html" %}
+{% include "admin/includes/fieldset.html" %}
 {% endfor %}
 {% endblock %}
 
 {% block after_field_sets %}{% endblock %}
 
 {% block inline_field_sets %}
+<div style="text-align: right; margin-bottom: 6px;">
+    <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF()" class="btn">Generate PDF <i class="fa fa-copy"></i></button>
+</div>
 {% for inline_admin_formset in inline_admin_formsets %}
     {% include inline_admin_formset.opts.template %}
 {% endfor %}
@@ -72,9 +97,11 @@
 {% block after_related_objects %}{% endblock %}
 
 {% block submit_buttons_bottom %}
-<div class="submit-row">
-    <input onclick="getThisWeekHour()" id="generate-btn" value="Generate" class="default" style="height: auto;" readonly>
-</div>
+{% if not 'change' in request.path%}
+    <div class="submit-row">
+        <input onclick="getThisWeekHour()" id="generate-btn" value="Generate" class="default" style="height: auto;" readonly>
+    </div>
+{% endif %}
 {% submit_row %}
 {% endblock %}
 
@@ -180,6 +207,35 @@
         console.log("change action")
         getThisWeekHour();
     }
+    function copyUpdateContent(){
+        const formset = document.getElementsByTagName("fieldset")[1]
+
+        const allTr = formset.getElementsByTagName('tr')
+
+        let allRow;
+        for (let index = 0; index < allTr.length; index++) {
+            const element = allTr[index];
+            console.log(element.classList.contains('dynamic-employeeprojecthour_set'))
+            if (element.classList.contains('dynamic-employeeprojecthour_set')){
+                const u = element.getElementsByClassName("field-update")[0]
+                allRow += u.getElementsByTagName('textarea')[0].value +"\n\n"
+
+            }
+            
+        }
+        navigator.clipboard.writeText(allRow)
+    }
+    const copyBtn = document.getElementById('copy-btn')
+    copyBtn.addEventListener('click', copyUpdateContent)
+
+    function generateWeeklyReportPDF(){
+        project = document.querySelector('#id_project');
+        hour_date = document.querySelector("#id_date");
+        const host = window.location.host;
+        const url = `http://${host}/projects/project-weekly-report/${project.value}/${hour_date.value}/`;
+        window.open(url, '_blank');
+    }
+    
 </script>
 
 {% endblock %}
