@@ -87,3 +87,6 @@ copyleaks==4.2.0
 shortuuid==1.0.9
 django-nested-admin==3.3.3
 django-smart-selects==1.7.2
+langchain
+langchain-community
+langchain-openai
