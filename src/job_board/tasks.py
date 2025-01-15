@@ -1,6 +1,7 @@
 from django.core import management
 from django.core.mail import EmailMultiAlternatives
 from django.db.models import Value, Count
+from django.http.response import Http404
 from django.template.loader import get_template
 from django.utils import timezone
 from django_q.tasks import async_task
@@ -304,25 +305,64 @@ def send_reschedule_email(candidate_id):
 #         email_message.from_email = 'Mediusware-HR <checkmed2025154@gmail.com>'
 #         email_message.send()
 
-def send_bulk_application_summary_email(email_list, job_title, opening_positions):
-    # print(f"Opening positions: {opening_positions}")  # Debug print
-    # subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
-    subject = f"Exciting Career Opportunity at Mediusware"
-    html_template = get_template('mail/reopportunity_mail.html')
+# def send_bulk_application_summary_email(email_list, job_title, opening_positions):
+#     # print(f"Opening positions: {opening_positions}")  # Debug print
+#     # subject = f"Exciting Career Opportunity - {job_title} at Mediusware"
+#     subject = f"Exciting Career Opportunity at Mediusware"
+#     html_template = get_template('mail/reopportunity_mail.html')
+#
+#     for email in email_list:
+#         try:
+#             candidate = Candidate.objects.get(email=email)
+#             candidate_name = candidate.full_name
+#         except Candidate.DoesNotExist:
+#             candidate_name = "Candidate"
+#
+#         html_content = html_template.render({
+#             'candidate_name': candidate_name,
+#             'job_title': job_title,
+#             'opening_positions': opening_positions,  # This now includes both title and slug
+#             'email': email,
+#         })
+#
+#         email_message = EmailMultiAlternatives(
+#             subject=subject,
+#             body='',
+#             from_email='Mediusware-HR <hr@mediusware.com>',
+#             to=[email]
+#         )
+#         email_message.attach_alternative(html_content, 'text/html')
+#         email_message.send()
 
-    for email in email_list:
+
+def send_single_bulk_email(email, job_title, opening_positions):
+    """
+    Function to send individual email and track success/failure
+    Args:
+        email: recipient email address
+        job_title: job title
+        opening_positions: list of open positions
+    Returns:
+        dict: Status of email sending
+    """
+    try:
+        # Get candidate name
         try:
             candidate = Candidate.objects.get(email=email)
             candidate_name = candidate.full_name
         except Candidate.DoesNotExist:
             candidate_name = "Candidate"
 
+        # Prepare and send email
+        subject = f"Exciting Career Opportunity at Mediusware"
+        html_template = get_template('mail/reopportunity_mail.html')
         html_content = html_template.render({
             'candidate_name': candidate_name,
             'job_title': job_title,
-            'opening_positions': opening_positions,  # This now includes both title and slug
+            'opening_positions': opening_positions,
             'email': email,
         })
+        # raise Http404("Product does not exist")
 
         email_message = EmailMultiAlternatives(
             subject=subject,
@@ -333,6 +373,88 @@ def send_bulk_application_summary_email(email_list, job_title, opening_positions
         email_message.attach_alternative(html_content, 'text/html')
         email_message.send()
 
+        return {
+            'status': 'success',
+            'email': email,
+            'message': f'Email sent successfully to {email}'
+        }
+
+    except Exception as e:
+        error_msg = f"Failed to send email to {email}: {str(e)}"
+        print(f"Error: {error_msg}")  # For logging
+        raise Exception(error_msg)
 
 
+def email_task_hook(task):
+    """
+    Hook function to process task results
+    Args:
+        task: Django Q task object
+    """
+    from django_q.models import Success, Failure
 
+    task_data = {
+        'name': 'Bulk Application Email',
+        'func': 'send_single_bulk_email',
+        'started': task.started,
+        'stopped': task.stopped,
+        'group': 'Bulk Application Emails'
+    }
+
+    if task.success:
+        # Log successful email
+        Success.objects.create(
+            **task_data,
+            result=task.result
+        )
+        print(f"Successfully sent email: {task.result.get('email', 'Unknown')}")
+    else:
+        # Log failed email
+        Failure.objects.create(
+            **task_data,
+            result=str(task.result)
+        )
+        print(f"Failed to send email: {str(task.result)}")
+
+
+def send_bulk_application_summary_email(email_list, job_title, opening_positions):
+    """
+    Main function that schedules bulk emails using Django Q
+    Args:
+        email_list: list of recipient email addresses
+        job_title: job title
+        opening_positions: list of open positions
+    """
+    for email in email_list:
+        # Schedule each email as a separate task
+        async_task(
+            'job_board.tasks.send_single_bulk_email',  # Adjust the path according to your project structure
+            email,
+            job_title,
+            opening_positions,
+            group='Bulk Application Emails',
+            hook='job_board.tasks.email_task_hook'
+        )
+
+
+# Optional: Add a function to check email status
+def check_email_status():
+    """
+    Function to check the status of bulk emails
+    Returns:
+        dict: Summary of successful and failed emails
+    """
+    from django_q.models import Success, Failure
+
+    successes = Success.objects.filter(group='Bulk Application Emails')
+    failures = Failure.objects.filter(group='Bulk Application Emails')
+
+    successful_emails = [s.result.get('email') for s in successes if isinstance(s.result, dict)]
+    failed_emails = [f.result for f in failures]
+
+    return {
+        'successful_count': len(successful_emails),
+        'failed_count': len(failed_emails),
+        'successful_emails': successful_emails,
+        'failed_emails': failed_emails
+    }
