@@ -204,8 +204,7 @@ def generate_client_weekly_report(request, project_id, hour_date):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-
-
+        response['Content-Disposition'] = 'attachment; filename="weekly_update.docx"'
         generate_weekly_update_word(response, context)
         return response
 
