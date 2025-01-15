@@ -3,7 +3,6 @@ from datetime import timedelta
 from weasyprint import HTML
 from django.template.loader import get_template
 from django.http import HttpResponse
-from html2docx import html2docx
 from django.db.models import Q, F, Aggregate, CharField
 from docx import Document
 from docx.shared import Pt
