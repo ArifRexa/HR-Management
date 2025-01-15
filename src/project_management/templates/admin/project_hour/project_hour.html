@@ -86,7 +86,8 @@
 
 {% block inline_field_sets %}
 <div style="text-align: right; margin-bottom: 6px;">
-    <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF()" class="btn">Generate PDF <i class="fa fa-copy"></i></button>
+    <!-- <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('docx')" class="btn">Generate Word</button> -->
+    <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('pdf')" class="btn">Generate PDF</button>
 </div>
 {% for inline_admin_formset in inline_admin_formsets %}
     {% include inline_admin_formset.opts.template %}
@@ -228,12 +229,12 @@
     const copyBtn = document.getElementById('copy-btn')
     copyBtn.addEventListener('click', copyUpdateContent)
 
-    function generateWeeklyReportPDF(){
+    function generateWeeklyReportPDF(type){
         project = document.querySelector('#id_project');
         hour_date = document.querySelector("#id_date");
         const host = window.location.host;
-        const url = `http://${host}/projects/project-weekly-report/${project.value}/${hour_date.value}/`;
-        window.open(url, '_blank');
+        const url = `http://${host}/projects/project-weekly-report/${project.value}/${hour_date.value}/?doc_type=${type}`;
+        window.open(url);
     }
     
 </script>
