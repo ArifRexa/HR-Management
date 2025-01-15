@@ -158,9 +158,10 @@ def generate_client_weekly_report(request, project_id, hour_date):
     }
     html_content = template.render(context)
 
+    # Generate PDF
     html = HTML(string=html_content)
     pdf_file = html.write_pdf()
     response = HttpResponse(pdf_file, content_type="application/pdf")
-    filename = str(timezone.now())
-    response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
+    # filename = str(timezone.now())
+    # response["Content-Disposition"] = f'attachment; filename="{filename}.pdf"'
     return response
