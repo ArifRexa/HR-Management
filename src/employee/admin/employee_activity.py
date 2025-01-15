@@ -150,48 +150,48 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         last_x_date = (now - datetime.timedelta(10)).date()
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
-        # Filter employees based on user permissions
-        if request.user.is_superuser or request.user.has_perm('employee.view_all_attendance'):
-            emps = Employee.objects.filter(
-                active=True,
-                show_in_attendance_list=True,
-            ).order_by("full_name")
-        else:
-            # Only show the current user's employee record
-            emps = Employee.objects.filter(
-                active=True,
-                show_in_attendance_list=True,
-                user=request.user
-            ).order_by("full_name")
-
-        emps = emps.annotate(
-            last_month_attendance=Count(
-                "employeeattendance",
-                filter=Q(
-                    employeeattendance__date__year=last_month.year,
-                    employeeattendance__date__month=last_month.month,
-                ),
-            )
-        )
-
-
-
-        # emps = (
-        #     Employee.objects.filter(
+        # # Filter employees based on user permissions
+        # if request.user.is_superuser or request.user.has_perm('employee.view_all_attendance'):
+        #     emps = Employee.objects.filter(
         #         active=True,
         #         show_in_attendance_list=True,
-        #     )
-        #     .order_by("full_name")
-        #     .annotate(
-        #         last_month_attendance=Count(
-        #             "employeeattendance",
-        #             filter=Q(
-        #                 employeeattendance__date__year=last_month.year,
-        #                 employeeattendance__date__month=last_month.month,
-        #             ),
-        #         )
+        #     ).order_by("full_name")
+        # else:
+        #     # Only show the current user's employee record
+        #     emps = Employee.objects.filter(
+        #         active=True,
+        #         show_in_attendance_list=True,
+        #         user=request.user
+        #     ).order_by("full_name")
+        #
+        # emps = emps.annotate(
+        #     last_month_attendance=Count(
+        #         "employeeattendance",
+        #         filter=Q(
+        #             employeeattendance__date__year=last_month.year,
+        #             employeeattendance__date__month=last_month.month,
+        #         ),
         #     )
         # )
+
+
+
+        emps = (
+            Employee.objects.filter(
+                active=True,
+                show_in_attendance_list=True,
+            )
+            .order_by("full_name")
+            .annotate(
+                last_month_attendance=Count(
+                    "employeeattendance",
+                    filter=Q(
+                        employeeattendance__date__year=last_month.year,
+                        employeeattendance__date__month=last_month.month,
+                    ),
+                )
+            )
+        )
 
         emps = sorted(emps, key=lambda item: (item.is_online))
         user_data = None
