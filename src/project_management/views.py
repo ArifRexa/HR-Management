@@ -145,7 +145,9 @@ def generate_client_weekly_report(request, project_id, hour_date):
     open_ai_res = ClientWeeklyUpdate(update)
     data = open_ai_res.chat()
     if not data:
-        return JsonResponse({"status": 500, "state": "AI can't generate report from given data"})
+        return JsonResponse(
+            {"status": 500, "state": "AI can't generate report from given data"}
+        )
     template_name = "admin/client_weekly_report.html"
     template = get_template(template_name)
     context = {
@@ -156,7 +158,6 @@ def generate_client_weekly_report(request, project_id, hour_date):
     }
     html_content = template.render(context)
 
-    # Generate PDF
     html = HTML(string=html_content)
     pdf_file = html.write_pdf()
     response = HttpResponse(pdf_file, content_type="application/pdf")
