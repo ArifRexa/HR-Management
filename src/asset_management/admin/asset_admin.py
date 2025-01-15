@@ -88,12 +88,14 @@ class AssetAdmin(admin.ModelAdmin):
         "description",
         "is_active",
         "is_available",
+        "status"
     )
     autocomplete_fields = ("vendor", "brand", "variant")
     search_fields = (
         "title",
         "code",
         "description",
+        "status"
     )
     fields = (
         "head",
@@ -107,10 +109,12 @@ class AssetAdmin(admin.ModelAdmin):
         "description",
         "is_available",
         "is_active",
+        "status"
     )
     inlines = [AdditionInline]
     # exclude = ("head",)
     list_filter = (
+        "status",
         "head",
         "vendor",
         "brand",

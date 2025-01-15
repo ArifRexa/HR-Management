@@ -57,6 +57,10 @@ class AssetVariant(AuthorMixin, TimeStampMixin):
 
 
 class Asset(AuthorMixin, TimeStampMixin):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved')
+    ]
     date = models.DateField(help_text="Date of purchase", null=True)
     # title = models.CharField(max_length=255, null=True)
     rate = models.FloatField(default=0.00, verbose_name="Purchase Price")
@@ -84,6 +88,12 @@ class Asset(AuthorMixin, TimeStampMixin):
     )
 
     is_active = models.BooleanField(default=True)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='pending',
+        db_index=True  # Add this if you'll be querying by status frequently
+    )
     # need_repair = models.BooleanField(default=False)
 
     # last_assigned = models.DateTimeField(null=True, blank=True)
@@ -99,6 +109,15 @@ class Asset(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return f"{self.item.title} | {self.code}"
+
+    class Meta:
+        verbose_name = "Asset"
+        verbose_name_plural = "Assets"
+        permissions = [
+            ("can_view_asset_status", "Can view asset status"),
+            ("can_change_asset_status", "Can change asset status"),
+            ("can_view_asset_history", "Can view asset history"),
+        ]
 
 
 class Addition(AuthorMixin, TimeStampMixin):
