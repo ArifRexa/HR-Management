@@ -58,8 +58,8 @@ class AssetVariant(AuthorMixin, TimeStampMixin):
 
 class Asset(AuthorMixin, TimeStampMixin):
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('approved', 'Approved')
+        ('pending', '⌛ Pending'),
+        ('approved', '✔ Approved')
     ]
     date = models.DateField(help_text="Date of purchase", null=True)
     # title = models.CharField(max_length=255, null=True)
