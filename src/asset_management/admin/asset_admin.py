@@ -1,4 +1,7 @@
+from pyexpat.errors import messages
 from urllib.parse import urlparse
+
+from django.core.exceptions import PermissionDenied
 from django.template.loader import get_template
 from django.contrib import admin
 from django.db.models import Q
@@ -169,6 +172,86 @@ class AssetAdmin(admin.ModelAdmin):
                         | Q(id__in=assined_assets),
                     )
         return qs, use_distinct
+
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = list(super().get_readonly_fields(request, obj))
+
+        # If user doesn't have permission to change status, make it read-only
+        if not request.user.has_perm('asset_management.can_change_asset_status'):
+            readonly_fields.append('status')
+
+        return readonly_fields
+
+    def save_model(self, request, obj, form, change):
+        # Check if status field was changed
+        if change and 'status' in form.changed_data:
+            # Verify permission before allowing status change
+            if not request.user.has_perm('asset_management.can_change_asset_status'):
+                raise PermissionDenied("You don't have permission to change asset status.")
+
+        super().save_model(request, obj, form, change)
+
+    def has_change_permission(self, request, obj=None):
+        # Basic change permission
+        has_perm = super().has_change_permission(request, obj)
+
+        if not has_perm:
+            return False
+
+        # If trying to change status, check for specific permission
+        if obj and 'status' in request.POST:
+            return request.user.has_perm('asset_management.can_change_asset_status')
+
+        return True
+
+    actions = ['make_pending', 'make_approved']
+
+    def has_can_change_asset_status_permission(self, request):
+        """
+        Permission method for status change actions
+        """
+        return request.user.has_perm('asset_management.can_change_asset_status')
+
+    @admin.action(
+        description='Mark selected assets as Pending',
+        permissions=['can_change_asset_status']  # Requires this permission
+    )
+    def make_pending(self, request, queryset):
+        if not request.user.has_perm('asset_management.can_change_asset_status'):
+            self.message_user(request, "You don't have permission to change asset status.")
+            return
+
+        try:
+            updated = queryset.update(status='pending')
+            self.message_user(request, f'Successfully marked {updated} assets as Pending.')
+        except Exception as e:
+            self.message_user(request, f'Error changing status: {str(e)}')
+
+    @admin.action(
+        description='Mark selected assets as Approved',
+        permissions=['can_change_asset_status']  # Requires this permission
+    )
+    def make_approved(self, request, queryset):
+        if not request.user.has_perm('asset_management.can_change_asset_status'):
+            self.message_user(request, "You don't have permission to change asset status.")
+            return
+
+        try:
+            updated = queryset.update(status='approved')
+            self.message_user(request, f'Successfully marked {updated} assets as Approved.')
+        except Exception as e:
+            self.message_user(request, f'Error changing status: {str(e)}')
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if not self.has_can_change_asset_status_permission(request):
+            if 'make_pending' in actions:
+                del actions['make_pending']
+            if 'make_approved' in actions:
+                del actions['make_approved']
+        return actions
+
+
 
 
 # @admin.register(EmployeeAssignedAsset)
