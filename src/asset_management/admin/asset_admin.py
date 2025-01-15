@@ -114,13 +114,13 @@ class AssetAdmin(admin.ModelAdmin):
     inlines = [AdditionInline]
     # exclude = ("head",)
     list_filter = (
+        "status",
         "head",
         "vendor",
         "brand",
         "variant",
         "is_active",
         "is_available",
-        "status"
     )
     change_form_template = "admin/asset/asset_change_form.html"
 
