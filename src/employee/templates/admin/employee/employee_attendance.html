@@ -145,6 +145,7 @@
             </thead>
             <tbody>
                 {% for employee, date_data in date_datas.items %}
+                {% if request.user.is_superuser or perms.employee.can_see_full_month_attendance or employee.user == request.user %}
                 <tr class="table__row">
                     <td class="align-middle" style = "text-align:center">
                         {% if employee.is_online %}
@@ -283,7 +284,7 @@
                     <td class="text-center align-middle fs-5" title="{{ employee.full_name }}">
                         {{ employee.last_month_attendance }}
                     </td>
-                    
+                    {% endif%}
                 {% endfor %}
                 </tr>
             </tbody>
