@@ -600,8 +600,13 @@ class SalaryReportAdmin(admin.ModelAdmin):
         start_date = salary_report.start_date
         end_date = salary_report.end_date
 
+        # employees = Employee.objects.filter(
+        #     active=True, joining_date__lte=start_date
+        # ).exclude(salaryhistory__isnull=True)
+
+
         employees = Employee.objects.filter(
-            active=True, joining_date__lte=start_date
+            joining_date__lte=start_date
         ).exclude(salaryhistory__isnull=True)
 
         employee_salary_data = []
