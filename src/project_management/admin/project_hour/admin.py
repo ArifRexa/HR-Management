@@ -119,7 +119,7 @@ class ProjectHourAdmin(
     list_per_page = 50
     ordering = ("-pk",)
     add_form_template = "admin/project_hour/project_hour.html"
-    change_form_template = "admin/project_hour/project_hour.html"
+    change_form_template = "admin/project_hour/change_form.html"
     fieldsets = (
         (
             "Standard info",
