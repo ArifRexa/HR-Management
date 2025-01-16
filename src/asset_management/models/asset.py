@@ -108,7 +108,10 @@ class Asset(AuthorMixin, TimeStampMixin):
         return addition_total + self.rate
 
     def __str__(self):
-        return f"{self.item.title} | {self.code}"
+        title = '-'
+        if self.item:
+            title = self.item.title
+        return f"{title} | {self.code}"
 
     class Meta:
         verbose_name = "Asset"
