@@ -145,7 +145,8 @@ class EmployeeAssignedAsset(AuthorMixin, TimeStampMixin):
     end_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.employee.full_name} - {self.asset.title}"
+        # return f"{self.employee.full_name} - {self.asset.title}"
+        return f"{self.employee.full_name} - {self.asset}"
 
 
 # class AssetAssignedHistory(AuthorMixin, TimeStampMixin):

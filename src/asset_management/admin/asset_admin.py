@@ -91,11 +91,11 @@ class AssetAdmin(admin.ModelAdmin):
         "description",
         "is_active",
         "is_available",
-        "status"
+        "colored_status"
     )
     autocomplete_fields = ("vendor", "brand", "variant")
     search_fields = (
-        "title",
+        # "title",
         "code",
         "description",
         "status"
@@ -251,6 +251,20 @@ class AssetAdmin(admin.ModelAdmin):
                 del actions['make_approved']
         return actions
 
+    # @admin.display(description='Status')
+    def colored_status(self, obj):
+        colors = {
+            'pending': '#FF0000',  # Orange
+            'approved': '#28a745'  # Green
+        }
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            colors.get(obj.status, 'black'),
+            obj.get_status_display()
+        )
+
+
+
 
 
 
@@ -363,7 +377,7 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
         assigned_assets = obj.assigned_assets.all()
         assets_str = "<br>".join(
             [
-                f"{assignedasset.asset.title} | {assignedasset.asset.code}"
+                f"{assignedasset.asset} | {assignedasset.asset.code}"
                 for assignedasset in assigned_assets
             ]
         )
