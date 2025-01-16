@@ -1,0 +1,45 @@
+{% extends 'admin/change_form.html' %}
+
+
+{% block extrahead %}{{ block.super }}
+<script src="{% url 'admin:jsi18n' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+{{ media }}
+<style>
+    /* Style buttons */
+.btn {
+  background-color: DodgerBlue; /* Blue background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 12px 16px; /* Some padding */
+  font-size: 16px; /* Set a font size */
+  cursor: pointer; /* Mouse pointer on hover */
+}
+
+/* Darker background on mouse-over */
+.btn:hover {
+  background-color: RoyalBlue;
+}
+</style>
+{% endblock %}
+
+{% block inline_field_sets %}
+<div style="text-align: right; margin-bottom: 6px;">
+    <!-- <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('docx')" class="btn">Generate Word</button> -->
+    <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('pdf')" class="btn">Generate PDF</button>
+</div>
+{% for inline_admin_formset in inline_admin_formsets %}
+    {% include inline_admin_formset.opts.template %}
+{% endfor %}
+<script>
+    function generateWeeklyReportPDF(type){
+        project = document.querySelector('#id_project');
+        hour_date = document.querySelector("#id_date");
+        const host = window.location.host;
+        const url = `http://${host}/projects/project-weekly-report/${project.value}/${hour_date.value}/?doc_type=${type}`;
+        window.open(url);
+    }
+    
+
+</script>
+{% endblock %}
