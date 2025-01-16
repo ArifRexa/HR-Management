@@ -113,9 +113,6 @@ def slack_callback(request):
     return JsonResponse({"code": code, "state": state})
 
 
-
-
-
 def generate_weekly_update_word(response, data: dict):
     # Create a new Word document
     project = data.get("project")
@@ -185,12 +182,10 @@ def generate_client_weekly_report(request, project_id, hour_date):
         )
     )
     update = "\n\n".join([i["updates_json"][0][0] for i in employee])
+    if not update:
+        return JsonResponse({"status": 404, "state": "No Update Found"})
     open_ai_res = ClientWeeklyUpdate(update)
     data = open_ai_res.chat()
-    if not data:
-        return JsonResponse(
-            {"status": 500, "state": "AI can't generate report from given data"}
-        )
     template_name = "admin/client_weekly_report.html"
     template = get_template(template_name)
     context = {
@@ -204,7 +199,7 @@ def generate_client_weekly_report(request, project_id, hour_date):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-        response['Content-Disposition'] = 'attachment; filename="weekly_update.docx"'
+        response["Content-Disposition"] = 'attachment; filename="weekly_update.docx"'
         generate_weekly_update_word(response, context)
         return response
 
@@ -214,4 +209,3 @@ def generate_client_weekly_report(request, project_id, hour_date):
         html = HTML(string=html_content)
         pdf_file = html.write_pdf()
         return HttpResponse(pdf_file, content_type="application/pdf")
-
