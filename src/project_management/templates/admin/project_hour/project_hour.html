@@ -86,8 +86,8 @@
 
 {% block inline_field_sets %}
 <div style="text-align: right; margin-bottom: 6px;">
-    <!-- <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('docx')" class="btn">Generate Word</button> -->
     <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('pdf')" class="btn">Generate PDF</button>
+    <button type="button" id="copy-btn" onclick="copyUpdateContent()" class="btn">Copy Update</button>
 </div>
 {% for inline_admin_formset in inline_admin_formsets %}
     {% include inline_admin_formset.opts.template %}
