@@ -40,6 +40,27 @@
         window.open(url);
     }
     
+    function copyUpdateContent(){
+        const formset = document.getElementsByTagName("fieldset")[1]
+
+        const allTr = formset.getElementsByTagName('tr')
+
+        let allRow;
+        for (let index = 0; index < allTr.length; index++) {
+            const element = allTr[index];
+            console.log(element.classList.contains('dynamic-employeeprojecthour_set'))
+            if (element.classList.contains('dynamic-employeeprojecthour_set')){
+                const u = element.getElementsByClassName("field-update")[0]
+                allRow += u.getElementsByTagName('textarea')[0].value +"\n\n"
+
+            }
+            
+        }
+        navigator.clipboard.writeText(allRow)
+    }
+    const copyBtn = document.getElementById('copy-btn')
+    copyBtn.addEventListener('click', copyUpdateContent)
+
 
 </script>
 {% endblock %}
