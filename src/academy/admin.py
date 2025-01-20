@@ -208,9 +208,34 @@ class TrainingProgramAdmin(admin.ModelAdmin):
         StudentReviewInline,
         TrainingFAQInline,
     ]
-    list_display = ("title", "course_fee", "video")  # Adjust fields as needed
+    list_display = ("title", "course_fee", "video", "status")  # Adjust fields as needed
     search_fields = ("title", "description")  # Adjust fields as needed
-    list_filter = ("course_fee",)  # Adjust
+    list_filter = ("course_fee", "program_active_status")
+
+    # Custom method for "status"
+    def status(self, obj):
+        return obj.program_active_status
+
+    status.short_description = "Status"  # Set the display name in the admin
+
+    # Custom actions
+    actions = ["make_active", "make_deactive", "make_pending"]
+
+    def make_active(self, request, queryset):
+        queryset.update(program_active_status='active')
+        self.message_user(request, "Selected programs have been marked as Active.")
+
+    def make_deactive(self, request, queryset):
+        queryset.update(program_active_status='deactive')
+        self.message_user(request, "Selected programs have been marked as Deactive.")
+
+    def make_pending(self, request, queryset):
+        queryset.update(program_active_status='pending')
+        self.message_user(request, "Selected programs have been marked as Pending.")
+
+    make_active.short_description = "Mark selected programs as Active"
+    make_deactive.short_description = "Mark selected programs as Deactive"
+    make_pending.short_description = "Mark selected programs as Pending"
 
 
 @admin.register(Instructor)

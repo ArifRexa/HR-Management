@@ -229,6 +229,7 @@ class TrainingListSerializer(serializers.ModelSerializer):
             "description",
             "image",
             "training_technology",
+            "program_active_status",
             
         ]
 
