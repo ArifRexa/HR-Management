@@ -249,6 +249,17 @@ class TrainingProgram(TimeStampMixin):
 
     training_faq_subtitle = models.CharField(max_length=255,null=True,blank=True)
 
+    PROGRAM_ACTIVE_STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('deactivate', 'Deactivate'),
+        ('pending', 'Pending'),
+    ]
+    program_active_status = models.CharField(
+        max_length=10,
+        choices=PROGRAM_ACTIVE_STATUS_CHOICES,
+        default='pending'
+    )
+
     def save(self) -> None:
         if not self.slug:
             self.slug = slugify(self.title)
