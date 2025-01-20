@@ -51,7 +51,7 @@ class FAQListView(ListAPIView):
 
 class TrainingListAPIView(ListAPIView):
     serializer_class = TrainingListSerializer
-    queryset = TrainingProgram.objects.all()
+    queryset = TrainingProgram.objects.filter(program_active_status='Active')
     filter_backends = [
         filters.SearchFilter,
     ]
