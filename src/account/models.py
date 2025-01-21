@@ -210,7 +210,7 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
 
 
 class Income(TimeStampMixin, AuthorMixin):
-    STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
+    STATUS_CHOICE = (("pending", "⌛ Pending"), ("hold", "✋ Hold"), ("approved", "✔ Approved"))
     EMAIL_SEND_STATUS = (("yes", "Yes"), ("no", "No"))
     project = models.ForeignKey(
         Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
