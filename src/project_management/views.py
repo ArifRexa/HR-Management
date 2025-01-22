@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from datetime import timedelta
+from datetime import datetime, timedelta
 from weasyprint import HTML
 from django.template.loader import get_template
 from django.http import HttpResponse
@@ -124,29 +124,36 @@ def generate_weekly_update_word(response, data: dict):
     title = document.add_paragraph()
     title_run = title.add_run(f"Weekly Development Update: {project.title}")
     title_run.bold = True
-    title_run.font.size = Pt(16)
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title_run.font.size = Pt(14)
+    # title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Add date
-    date_paragraph = document.add_paragraph(f"Date: {start_date} – {end_date}")
-    date_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    date_paragraph = document.add_paragraph(f"Date: {end_date} – {start_date}")
+    # date_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
     # Add a line break
-    document.add_paragraph("")
+    # document.add_paragraph("")
+
+    # Iterate through tasks and subtasks
     tasks = data.get("reports")
     for item in tasks.get("tasks"):
-        # Section 1: Update User Model
-        section1_title = document.add_paragraph()
-        section1_title_run = section1_title.add_run(f"{item['feature']}")
-        section1_title_run.bold = True
-        section1_title_run.font.size = Pt(12)
+        # Add section title
+        section_title = document.add_paragraph(f"• {item['feature']}")
+        # section_title_run = section_title.add_run(f"• {item['feature']}")
+        # section_title_run.bold = True
+        # section_title_run.font.size = Pt(12)
 
-        section1_content = document.add_paragraph()
+        # Add subtasks as bullet points
         for task in item["subtasks"]:
-            section1_content.add_run(f"• {task}\n")
+            bullet_point = document.add_paragraph()
+            bullet_point.add_run(f"• {task}").font.size = Pt(
+                11
+            )  # Add bullet point and task text
 
-        # Add a line break
-        document.add_paragraph("")
+        # Add a line break after each section
+        # document.add_paragraph("")
+
+    # Save the document
     document.save(response)
 
 
@@ -186,6 +193,7 @@ def generate_client_weekly_report(request, project_id, hour_date):
         return JsonResponse({"status": 404, "state": "No Update Found"})
     open_ai_res = ClientWeeklyUpdate(update)
     data = open_ai_res.chat()
+    print(data)
     template_name = "admin/client_weekly_report.html"
     template = get_template(template_name)
     context = {
@@ -209,3 +217,39 @@ def generate_client_weekly_report(request, project_id, hour_date):
         html = HTML(string=html_content)
         pdf_file = html.write_pdf()
         return HttpResponse(pdf_file, content_type="application/pdf")
+
+
+
+def generate_pdf(request, *args, **kwargs):
+    data = request.POST
+    open_ai_res = ClientWeeklyUpdate(data["update"])
+    response = open_ai_res.chat()
+    print(response)
+    hour_date_str = request.POST.get("hour_date")
+
+    # Convert the string to a datetime object
+    # Assuming the date format is 'YYYY-MM-DD'
+    hour_date = datetime.strptime(hour_date_str, "%Y-%m-%d")
+    template_name = "admin/client_weekly_report.html"
+    template = get_template(template_name)
+    context = {
+        "reports": response,
+        "project": Project.objects.get(id=data.get("project_id")),
+        "start_date": hour_date,
+        "end_date": hour_date - timedelta(days=6),
+    }
+    html_content = template.render(context)
+    # if doc_type == "docx".lower():
+    #     response = HttpResponse(
+    #         content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    #     )
+    #     response["Content-Disposition"] = 'attachment; filename="weekly_update.docx"'
+    #     generate_weekly_update_word(response, context)
+    #     return response
+
+    # else:
+
+    #     # Generate PDF
+    html = HTML(string=html_content)
+    pdf_file = html.write_pdf()
+    return HttpResponse(pdf_file, content_type="application/pdf")

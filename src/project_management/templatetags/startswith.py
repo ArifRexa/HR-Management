@@ -27,3 +27,9 @@ def create_id(value):
         id = sanitized[0]
     # print(id)
     return id
+
+@register.filter(name="remove_dash")
+def remove_dash(value):
+    if not value.startswith("-"):
+        return value
+    return value[2:]

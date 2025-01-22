@@ -63,18 +63,16 @@ class ClientWeeklyUpdate:
         self.open_ai_model = "gpt-4o-mini"
         self.open_ai_embedding_model = "text-embedding-3-large"
         self.prompt = """
-            You are a project management assistant. Your task is to process the following daily report and format it into a highly detailed and structured weekly development update in JSON format.
+            You are a project management assistant. Your task is to process the following daily report and format it and structured weekly development update in JSON format.
 
             **Instructions:**
             1. First divide given report into features.
             2. Organize the report by Feature.
             3. For each Feature, list related tasks using bullet points.
             4. For each task accomplished, provide a detailed description of what was done.
-            5. Include a "Links for Review" section with relevant links and descriptions. If no links are provided, keep this section completely empty mentioning "- No links provided.".
-            6. Add a "Looking Ahead" section to outline future tasks with detailed descriptions.
-            7. Use a professional tone and ensure the output is concise yet highly detailed.
-            8. Use hyphens (-) for bullet points instead of Unicode characters.
-            9. Return the output in JSON format.
+            5. Add a "Looking Ahead" section to outline future tasks with detailed descriptions.
+            6. Use a professional tone and ensure the output is concise yet highly detailed.
+            7. Return the output in JSON format.
 
             **Daily Report:**
             {daily_report}
@@ -95,20 +93,7 @@ class ClientWeeklyUpdate:
                         ]
                     }}
                 ],
-                "links_for_review": [
-                    {{
-                        "description": "<Description of the functionality or page>",
-                        "link": "<Link>"
-                    }}
-                ],
-                "looking_ahead": [
-                    {{
-                        "description": "<Detailed description of the planned task>"
-                    }}
-                ]
             }}
-
-            Please format the daily report accordingly, ensuring the output is as detailed as possible.
         """
         self.update = update
         self.llm = ChatOpenAI(
