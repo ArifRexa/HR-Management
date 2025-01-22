@@ -33,14 +33,18 @@
 {% endfor %}
 <script>
     function generateWeeklyReportPDF(type){
+        const path = window.location.pathname;
+        const path_list = path.split("/").filter(n=>n);
+        const project_hour_id = path_list[path_list.length-2];
         project = document.querySelector('#id_project');
         hour_date = document.querySelector("#id_date");
         const host = window.location.host;
-        const url = `http://${host}/projects/project-weekly-report/${project.value}/${hour_date.value}/?doc_type=${type}`;
+        const url = `http://${host}/projects/project-weekly-report/${project.value}/${hour_date.value}/?doc_type=${type}&project_hour_id=${project_hour_id}`;
         window.open(url);
     }
     
     function copyUpdateContent(){
+        
         const index = "{% if request.user.employee.is_tpm %} 2 {% else %} 1 {% endif %}"
         console.log("index,",index)
         const formset = document.getElementsByTagName("fieldset")[parseInt(index)]
