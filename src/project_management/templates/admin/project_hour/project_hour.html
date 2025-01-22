@@ -86,8 +86,8 @@
 
 {% block inline_field_sets %}
 <div style="text-align: right; margin-bottom: 6px;">
-    <button type="button" id="copy-btn" onclick="generateWeeklyReportPDF('pdf')" class="btn">Generate PDF</button>
-    <button type="button" id="copy-btn" onclick="copyUpdateContent()" class="btn">Copy Update</button>
+    <button type="button" onclick="generateWeeklyReportPDF('pdf')" class="btn">Generate PDF</button>
+    <button type="button" onclick="copyUpdateContent()" class="btn">Copy Update</button>
 </div>
 {% for inline_admin_formset in inline_admin_formsets %}
     {% include inline_admin_formset.opts.template %}
@@ -209,8 +209,10 @@
         getThisWeekHour();
     }
     function copyUpdateContent(){
-        const formset = document.getElementsByTagName("fieldset")[1]
-
+        const index = "{% if request.user.employee.is_tpm %} 2 {% else %} 1 {% endif %}"
+        console.log("index,",index)
+        const formset = document.getElementsByTagName("fieldset")[parseInt(index)]
+        console.log(formset)
         const allTr = formset.getElementsByTagName('tr')
 
         let allRow = "";
@@ -225,9 +227,10 @@
             
         }
         navigator.clipboard.writeText(allRow)
+        console.log(allRow)
     }
-    const copyBtn = document.getElementById('copy-btn')
-    copyBtn.addEventListener('click', copyUpdateContent)
+    // const copyBtn = document.getElementById('copy-btn')
+    // copyBtn.addEventListener('click', copyUpdateContent)
 
     function generateWeeklyReportPDF(type){
         project = document.querySelector('#id_project');
