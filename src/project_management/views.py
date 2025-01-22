@@ -158,7 +158,7 @@ def generate_client_weekly_report(request, project_id, hour_date):
         manager_id = ProjectHour.objects.get(id=project_hour_id).manager_id
 
     q_obj = Q(
-        project=project_id,
+        project_id=project_id,
         status="approved",
         created_at__date__lte=hour_date,
         created_at__date__gte=hour_date - timedelta(days=6),
