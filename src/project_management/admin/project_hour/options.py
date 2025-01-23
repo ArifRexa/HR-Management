@@ -299,7 +299,7 @@ class ProjectHourOptions(admin.ModelAdmin):
 
         for elem, hour in emp_list.items():
             if elem.sqa and hour > 10:
-                html += f"<p style='color:red;'>{i}.{elem.full_name} ({hour})</p>"
+                html += f"<p>{i}.{elem.full_name} ({hour})</p>"
                 i += 1
                 continue
             html += f"<p>{i}.{elem.full_name} ({hour})</p>"
