@@ -1,5 +1,4 @@
 import datetime
-import json
 from datetime import timedelta
 
 from django.contrib import admin
@@ -8,21 +7,18 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 # Register your models here.
-from django.db.models import Sum, Q, F
-from django.shortcuts import redirect
-from django.template.context_processors import request
+from django.db.models import Sum, F
+
+# from django.template.context_processors import request
 from django.utils import timezone
-from django.template.loader import get_template
-from django.utils.html import format_html
-from config.admin import ExportCsvMixin, RecentEdit
+
+from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
 from employee.models.employee import EmployeeUnderTPM
-from employee.models.employee_activity import EmployeeProject
 from project_management.admin.project_hour.actions import ProjectHourAction
 from project_management.admin.project_hour.options import ProjectHourOptions
 from project_management.forms import ProjectHourFilterForm
 from project_management.models import (
-    Client,
     DailyProjectUpdate,
     Project,
     ProjectHour,
@@ -169,7 +165,6 @@ class ProjectHourAdmin(
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
-        from django.utils.http import urlencode
 
         # if not request.GET:
         #     # Redirect to the filtered view
