@@ -48,6 +48,7 @@ from project_management.models import (
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+
     def has_module_permission(self, request):
         return False
 
@@ -76,7 +77,6 @@ class ProjectTechnologyInline(nested_admin.NestedStackedInline):
     form = ProjectTechnologyInlineForm
     extra = 1
     autocomplete_fields = ["technologies"]
-    
 
 
 class ProjectKeyPointInline(nested_admin.NestedStackedInline):
@@ -147,12 +147,14 @@ class ProjectResultInline(nested_admin.NestedStackedInline):
 
 class ProjectKeywordInline(nested_admin.NestedTabularInline):
     model = ProjectKeyword
-    extra = 1 
+    extra = 1
 
-class ProjectMetadataInline(nested_admin.NestedStackedInline): 
+
+class ProjectMetadataInline(nested_admin.NestedStackedInline):
     model = ProjectMetadata
     extra = 1
     inlines = [ProjectKeywordInline]
+
 
 @admin.register(Project)
 class ProjectAdmin(nested_admin.NestedModelAdmin):
@@ -184,7 +186,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin):
         ProjectScreenshotInline,
         # ProjectDocumentAdmin,
         # ProjectPlatformImageInline,
-        ProjectMetadataInline
+        ProjectMetadataInline,
     )
     list_filter = ("active", "show_in_website")
     list_per_page = 20
@@ -231,18 +233,20 @@ class ProjectAdmin(nested_admin.NestedModelAdmin):
     #         return ['on_boarded_by']
     #     return []
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        if request.user.is_superuser:
-            form.base_fields["hourly_rate"] = forms.DecimalField(
-                max_digits=10, decimal_places=2, required=False
-            )
-        return form
+    # def get_form(self, request, obj=None, **kwargs):
+    #     form = super().get_form(request, obj, **kwargs)
+    #     if request.user.is_superuser:
+    #         form.base_fields["hourly_rate"] = forms.DecimalField(
+    #             max_digits=10, decimal_places=2, required=False
+    #         )
+    #     return form
 
     def get_fields(self, request, obj):
         fields = super().get_fields(request, obj)
         remove_fields = list(fields)
-        if not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm(
+            "project_management.can_see_hourly_rate"
+        ):
             remove_fields.remove("hourly_rate")
         return tuple(remove_fields)
 
