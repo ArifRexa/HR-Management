@@ -65,9 +65,7 @@ def create_income_from_last_week_projects():
                 income, created = Income.objects.get_or_create(
                     project=project,
                     hours=project_hour.hours,
-                    hour_rate=project.hourly_rate
-                    if project.hourly_rate is not None
-                    else 0.00,
+                    hour_rate=project.hourly_rate if project.hourly_rate else project.client.hourly_rate or 0.00,
                     convert_rate=90.0,
                     date=project_hour.date,
                     status="pending",

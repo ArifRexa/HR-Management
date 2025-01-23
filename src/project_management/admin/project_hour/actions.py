@@ -75,7 +75,11 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
         for project_hour in queryset:
             project = project_hour.project
             convert_rate = Decimal(90.0)
-            hourly_rate = project.client.hourly_rate or 0
+            if project.hourly_rate and project.hourly_rate > 0:
+                hourly_rate = project.hourly_rate
+            else:
+                
+                hourly_rate = project.client.hourly_rate if project.client else 0.00
             hours = project_hour.hours or 0
             payment = Decimal(hours) * Decimal(hourly_rate) * convert_rate
             income_object.append(
