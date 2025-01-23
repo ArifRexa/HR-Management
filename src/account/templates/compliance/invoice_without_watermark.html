@@ -113,7 +113,7 @@
                     <tr>
                         <td></td>
                         <td></td>
-                        <td><h2>Balance Due: ${{invoice_total}}</h2></td>
+                        <td><h2>Balance Due: ${{invoice_total|floatformat:0}}</h2></td>
                     </tr>
                     {% else %}
                     <tr>
@@ -132,7 +132,7 @@
                             Dhaka 1207<br> Bangladesh<br>
                         </td>
                         <td></td>
-                        <td><h2>Balance Due: ${{invoice_total}}</h2></td>
+                        <td><h2>Balance Due: ${{invoice_total|floatformat:0}}</h2></td>
                     </tr>
                     {% endif %}
                     <tr>
@@ -229,8 +229,8 @@
                         <td></td>
                         <td>
                             <br><br>
-                            <b style="margin-bottom: 20px;">Total: ${{invoice_total}}</b> <br><br>
-                            <b style="margin-top: 20px;"> Balance Due: ${{invoice_total}}</b>
+                            <b style="margin-bottom: 20px;">Total: ${{invoice_total|floatformat:0}}</b> <br><br>
+                            <b style="margin-top: 20px;"> Balance Due: ${{invoice_total|floatformat:0}}</b>
                         </td>
                     </tr>
                 </table>
