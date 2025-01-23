@@ -60,21 +60,19 @@ prompt_template = """
 class ClientWeeklyUpdate:
     def __init__(self, update):
         self.openai_api_key = os.environ.get("OPENAI_API_KEY")
-        self.open_ai_model = "gpt-4o-2024-08-06"
+        self.open_ai_model = "gpt-4o-mini"
         self.open_ai_embedding_model = "text-embedding-3-large"
         self.prompt = """
-            You are a project management assistant. Your task is to process the following daily report and format it into a highly detailed and structured weekly development update in JSON format.
+            You are a project management assistant. Your task is to process the following daily report and format it and structured weekly development update in JSON format.
 
             **Instructions:**
             1. First divide given report into features.
             2. Organize the report by Feature.
             3. For each Feature, list related tasks using bullet points.
             4. For each task accomplished, provide a detailed description of what was done.
-            5. Include a "Links for Review" section with relevant links and descriptions. If no links are provided, keep this section completely empty mentioning "- No links provided.".
-            6. Add a "Looking Ahead" section to outline future tasks with detailed descriptions.
-            7. Use a professional tone and ensure the output is concise yet highly detailed.
-            8. Use hyphens (-) for bullet points instead of Unicode characters.
-            9. Return the output in JSON format.
+            5. Add a "Looking Ahead" section to outline future tasks with detailed descriptions.
+            6. Use a professional tone and ensure the output is concise yet highly detailed.
+            7. Return the output in JSON format.
 
             **Daily Report:**
             {daily_report}
@@ -95,24 +93,13 @@ class ClientWeeklyUpdate:
                         ]
                     }}
                 ],
-                "links_for_review": [
-                    {{
-                        "description": "<Description of the functionality or page>",
-                        "link": "<Link>"
-                    }}
-                ],
-                "looking_ahead": [
-                    {{
-                        "description": "<Detailed description of the planned task>"
-                    }}
-                ]
             }}
-
-            Please format the daily report accordingly, ensuring the output is as detailed as possible.
         """
         self.update = update
         self.llm = ChatOpenAI(
-            model="gpt-4", temperature=0, openai_api_key=os.getenv("OPENAI_API_KEY")
+            model=self.open_ai_model,
+            temperature=0,
+            openai_api_key=os.getenv("OPENAI_API_KEY"),
         )
         self.prompt_template = PromptTemplate(
             input_variables=["daily_report"], template=prompt_template
@@ -121,10 +108,39 @@ class ClientWeeklyUpdate:
     def create_chain(self):
         return RunnablePassthrough() | self.prompt_template | self.llm
 
+    def calculate_gpt_cost(self, prompt_tokens, completion_tokens):
+        """
+        Calculates the cost of a GPT-4 request based on token usage.
+
+        Args:
+            prompt_tokens (int): Number of tokens used in the prompt.
+            completion_tokens (int): Number of tokens used in the completion.
+
+        Returns:
+            float: The cost of the GPT-4 request in USD.
+        """
+        # GPT-4 pricing as of October 2023
+        input_cost_per_token = 0.00015 / 1000  # $0.03 per 1,000 tokens for input
+        output_cost_per_token = 0.00060 / 1000  # $0.06 per 1,000 tokens for output
+        total_cost = (prompt_tokens * input_cost_per_token) + (
+            completion_tokens * output_cost_per_token
+        )
+        return total_cost
+
     def chat(self):
         try:
             chain = self.create_chain()
             res = chain.invoke({"daily_report": self.update})
-            return json.loads(res.content)
+            task = res.content
+            start = task.find("```json\n")
+            end = task.find("\n```")
+            if start == -1 or end == -1:
+                return json.loads(task)
+            else:
+                task = task.replace("```json\n", "").replace("\n```", "")
+
+            cost = self.calculate_gpt_cost(len(self.update.split()), len(task))
+            print(f"Cost: {cost}")
+            return json.loads(task)
         except json.JSONDecodeError:
             return None
