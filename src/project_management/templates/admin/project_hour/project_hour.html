@@ -86,7 +86,7 @@
 
 {% block inline_field_sets %}
 <div style="text-align: right; margin-bottom: 6px;">
-    <button type="button" onclick="generateWeeklyReportPDF('pdf')" class="btn">Generate PDF</button>
+    <button type="button" onclick="getPdfData()" id="pdf-btn" class="btn">Generate PDF</button>
     <button type="button" onclick="copyUpdateContent()" class="btn">Copy Update</button>
 </div>
 {% for inline_admin_formset in inline_admin_formsets %}
@@ -241,5 +241,76 @@
     }
     
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+
+
+<script>
+
+    function getPdfData(){
+        const pdfBtn = document.getElementById('pdf-btn')
+        pdfBtn.innerHTML = "Generating PDF..."
+        const project = document.querySelector('#id_project');
+        const hour_date = document.querySelector("#id_date");
+        const index = "{% if request.user.employee.is_tpm %} 2 {% else %} 1 {% endif %}"
+        console.log("index,",index)
+        const formset = document.getElementsByTagName("fieldset")[parseInt(index)]
+
+        const allTr = formset.getElementsByTagName('tr')
+
+        const baseUrl = window.location.origin;
+
+        let allRow = "";
+        for (let index = 0; index < allTr.length; index++) {
+            const element = allTr[index];
+            console.log(element.classList.contains('dynamic-employeeprojecthour_set'))
+            if (element.classList.contains('dynamic-employeeprojecthour_set')){
+                const u = element.getElementsByClassName("field-update")[0]
+                allRow += u.getElementsByTagName('textarea')[0].value +"\n\n"
+
+            }
+            
+        }
+            // Data to be sent in the POST request
+        var data = {
+            'update': allRow,
+            "project_id": project.value,
+            "hour_date": hour_date.value,
+            'csrfmiddlewaretoken': '{{ csrf_token }}'  // Include CSRF token for security
+        };
+        if(allRow.trim() === ""){
+            alert("No update Found. First Generate the update then try again.")
+            return
+        }
+
+        // AJAX POST request
+        $.ajax({
+            url:  `${baseUrl}/projects/project-weekly-report/`,  // Replace with your Django view URL
+            type: 'POST',
+            data: data,
+            xhrFields: {
+            responseType: 'blob' // Important for handling binary data
+        },
+            success: function(data) {
+                const url = window.URL.createObjectURL(data);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'example.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                pdfBtn.innerHTML = "Generate PDF"
+            },
+            error: function(xhr, status, error) {
+                pdfBtn.innerHTML = "Generate PDF"
+                console.error('Error:', error);
+                alert('An error occurred while submitting data.');
+            }
+        });
+        }   
+
+
+
+</script>
 {% endblock %}
