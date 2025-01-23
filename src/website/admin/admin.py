@@ -763,7 +763,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                 obj.approved_at = timezone.now()
                 obj.save()
                 async_task(
-                    "website.tasks.thank_you_message_to_author",
+                    # "website.tasks.thank_you_message_to_author",
                     obj,
                     publish_blog_url,
                 )
@@ -782,12 +782,12 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     + timedelta(days=1),  # Assuming the end is the next day
                     description=f"Cheers! {obj.created_by.employee.full_name} Stellar blog approved!",
                 )
-                employee_hour = EmployeeProjectHour.objects.create(
-                    project_hour=project_hour,
-                    employee=obj.created_by.employee,
-                    hours=15,
-                )
-                print(project_hour, employee_hour)
+                # employee_hour = EmployeeProjectHour.objects.create(
+                #     project_hour=project_hour,
+                #     employee=obj.created_by.employee,
+                #     hours=15,
+                # )
+                # print(project_hour, employee_hour)
         else:
             obj.approved_at = None
             obj.save()
