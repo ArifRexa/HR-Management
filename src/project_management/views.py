@@ -238,8 +238,8 @@ def generate_pdf(request, *args, **kwargs):
     context = {
         "reports": response,
         "project": Project.objects.get(id=data.get("project_id")),
-        "start_date": start_date,
-        "end_date": end_data.strftime("%d %B, %Y"),
+        "start_date": end_data.strftime("%d %B, %Y"),
+        "end_date": start_date,
     }
     html_content = template.render(context)
     # if doc_type == "docx".lower():
