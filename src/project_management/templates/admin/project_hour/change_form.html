@@ -4,7 +4,7 @@
 {% block extrahead %}{{ block.super }}
 <script src="{% url 'admin:jsi18n' %}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js" integrity="sha512-STof4xm1wgkfm7heWqFJVn58Hm3EtS31XFaagaa8VMReCXAkQnJZ+jEy8PCC/iT18dFy95WcExNHFTqLyp72eQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-{{ media }}
+
 <style>
     /* Style buttons */
 .btn {
@@ -28,9 +28,7 @@
 <!--?    <button type="button" id="pdf-btn" onclick="getPdfData()" class="btn">Generate PDF</button>-->
     <button type="button" id="copy-btn" onclick="copyUpdateContent()" class="btn">Copy Update</button>
 </div>
-{% for inline_admin_formset in inline_admin_formsets %}
-    {% include inline_admin_formset.opts.template %}
-{% endfor %}
+{{ block.super}}
 <script>
     function generateWeeklyReportPDF(type){
         const path = window.location.pathname;
@@ -79,6 +77,8 @@
     function getPdfData(){
         const pdfBtn = document.getElementById('pdf-btn')
         pdfBtn.innerHTML = "Generating PDF..."
+        pdfBtn.disabled = true
+        pdfBtn.style.cursor = "not-allowed"
         const project = document.querySelector('#id_project');
         const hour_date = document.querySelector("#id_date");
         const index = "{% if request.user.employee.is_tpm %} 2 {% else %} 1 {% endif %}"
@@ -130,9 +130,13 @@
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
                 pdfBtn.innerHTML = "Generate PDF"
+                pdfBtn.disabled = false
+                pdfBtn.style.cursor = "pointer"
             },
             error: function(xhr, status, error) {
                 pdfBtn.innerHTML = "Generate PDF"
+                pdfBtn.disabled = false
+                pdfBtn.style.cursor = "pointer"
                 console.error('Error:', error);
                 alert('An error occurred while submitting data.');
             }

@@ -250,6 +250,8 @@
     function getPdfData(){
         const pdfBtn = document.getElementById('pdf-btn')
         pdfBtn.innerHTML = "Generating PDF..."
+        pdfBtn.disabled = true
+        pdfBtn.style.cursor = "not-allowed"
         const project = document.querySelector('#id_project');
         const hour_date = document.querySelector("#id_date");
         const index = "{% if request.user.employee.is_tpm %} 2 {% else %} 1 {% endif %}"
@@ -301,9 +303,13 @@
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
                 pdfBtn.innerHTML = "Generate PDF"
+                pdfBtn.disabled = false
+                pdfBtn.style.cursor = "pointer"
             },
             error: function(xhr, status, error) {
                 pdfBtn.innerHTML = "Generate PDF"
+                pdfBtn.disabled = false
+                pdfBtn.style.cursor = "pointer"
                 console.error('Error:', error);
                 alert('An error occurred while submitting data.');
             }

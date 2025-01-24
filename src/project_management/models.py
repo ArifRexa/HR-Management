@@ -470,6 +470,10 @@ class Project(TimeStampMixin, AuthorMixin):
                 "can_see_all_project_field",
                 "Can See All Project Field",
             ),
+            (
+                "can_see_hourly_rate",
+                "Can See Hourly Rate",
+            ),
         ]
 
     def clean(self):

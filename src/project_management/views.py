@@ -1,3 +1,4 @@
+from tracemalloc import start
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 from weasyprint import HTML
@@ -230,13 +231,15 @@ def generate_pdf(request, *args, **kwargs):
     # Convert the string to a datetime object
     # Assuming the date format is 'YYYY-MM-DD'
     hour_date = datetime.strptime(hour_date_str, "%Y-%m-%d")
+    start_date = hour_date.strftime("%d %B, %Y")
+    end_data = hour_date - timedelta(days=5)
     template_name = "admin/client_weekly_report.html"
     template = get_template(template_name)
     context = {
         "reports": response,
         "project": Project.objects.get(id=data.get("project_id")),
-        "start_date": hour_date,
-        "end_date": hour_date - timedelta(days=6),
+        "start_date": end_data.strftime("%d %B, %Y"),
+        "end_date": start_date,
     }
     html_content = template.render(context)
     # if doc_type == "docx".lower():
