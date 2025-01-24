@@ -63,8 +63,8 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         "status_col",
     )
     date_hierarchy = "date"
-    exclude = ["is_send_clients", "loss_hours", "is_send_invoice_email"]
-    readonly_fields = ("payment",)
+    exclude = ["is_send_clients", "loss_hours", "is_send_invoice_email", "payment", "convert_rate"]
+    # readonly_fields = ("payment",)
     list_filter = [
         "status",
         IncomeFilterBySendInvoiceEmail,
@@ -76,6 +76,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     actions = [
         "approve_selected",
         "pending_selected",
+        "hold_selected",
         "print_income_invoices",
         "send_income_invoices_email",
     ]
@@ -135,10 +136,23 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
             color = "green"
         return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
 
+    # @admin.display()
+    # def payment_details(self, obj):
+    #     return format_html(
+    #         f"<b style='color: green; font-size: 16px'>$ {obj.payment / obj.convert_rate}</b> / "
+    #         f"{obj.payment} TK"
+    #     )
+
     @admin.display()
     def payment_details(self, obj):
+        # Get the client's currency icon
+        currency_icon = obj.project.client.currency.icon if obj.project.client.currency else '$'
+
+        # print("**************************************************")
+        # print(obj.project.client.currency)
+
         return format_html(
-            f"<b style='color: green; font-size: 16px'>$ {obj.payment / obj.convert_rate}</b> / "
+            f"<b style='color: green; font-size: 16px'>{currency_icon} {obj.payment / obj.convert_rate}</b> / "
             f"{obj.payment} TK"
         )
 
@@ -218,6 +232,12 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         raise PermissionDenied
 
     @admin.action()
+    def hold_selected(self, request, queryset):
+        queryset.update(status="hold")
+        self.message_user(request, f'Status has been updated to hold for {len(queryset)} items', messages.SUCCESS)
+
+
+    @admin.action()
     def print_income_invoices(self, request, queryset):
         queryset = queryset.order_by("date")
         income_list = queryset.values_list("id", flat=True)
@@ -241,6 +261,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
             "invoices": queryset,
             "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
             "host": f"{protocal}://{request.get_host()}",
+            "currency_icon": client.currency.icon if client.currency else '$',
             "invoice_total": invoice_total.get("total"),
         }
         return pdf.render_to_pdf(download=True)
