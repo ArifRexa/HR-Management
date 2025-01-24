@@ -18,7 +18,7 @@ from project_management.models import (
     PaymentMethod,
     Project,
     Technology,
-    InvoiceType,
+    InvoiceType, CurrencyType,
 )
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Case, When, DateField
@@ -125,6 +125,25 @@ class ClientForm(forms.ModelForm):
         }
 
 
+@admin.register(CurrencyType)
+class CurrencyTypeAdmin(admin.ModelAdmin):
+    list_display = ('currency_name', 'currency_code', 'icon', 'is_active', 'is_default', 'exchange_rate')
+    list_filter = ('is_active', 'is_default')
+    search_fields = ('currency_name', 'currency_code')
+    # readonly_fields = ('exchange_rate',)
+
+    # def get_readonly_fields(self, request, obj=None):
+    #     if obj and obj.is_default:
+    #         return 'currency_name', 'currency_code', 'icon', 'is_default'
+    #     return super().get_readonly_fields(request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        # Prevent deletion of default currency
+        if obj and obj.is_default:
+            return False
+        return super().has_delete_permission(request, obj)
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -132,9 +151,11 @@ class ClientAdmin(admin.ModelAdmin):
         # "web_name",
         "get_project_name",
         "email",
+        # 'hourly_rate_display',  # Add this
         # "linkedin_url",
         # "get_client_review",
         "country",
+        # "currency",
         "get_hourly_rate",
         "payment_method",
         "invoice_type",
@@ -158,6 +179,7 @@ class ClientAdmin(admin.ModelAdmin):
         "country",
         "notes",
         "is_hour_breakdown",
+        "currency",
         "hourly_rate",
         "active_from",
         "payment_method",
@@ -170,9 +192,10 @@ class ClientAdmin(admin.ModelAdmin):
         "review",
         "payment_method",
         "invoice_type",
+        "currency",
     ]
     inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
-    search_fields = ["name", "web_name"]
+    search_fields = ["name", "web_name", "currency__currency_name", "currency__currency_code", "currency__icon"]
     autocomplete_fields = ["country", "payment_method"]
     form = ClientForm
     actions = ["mark_as_in_active"]
@@ -185,9 +208,24 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
+        if obj.hourly_rate is None:
+            return '-'
+
+        # Get currency icon
+        currency_icon = obj.currency.icon if obj.currency else ''
+
+        # Create the display string with icon
+        rate_display = f"{currency_icon} {obj.hourly_rate}"
+
         if obj.is_active_over_six_months:
-            return format_html(f"<span style='color: red;'>{obj.hourly_rate}</span>")
-        return obj.hourly_rate
+            return format_html(
+                '<span style="color: red; white-space:nowrap;">{}</span>',
+                rate_display
+            )
+        return format_html(
+            '<span style="white-space:nowrap;">{}</span>',
+            rate_display
+        )
 
     @admin.display(description="Age", ordering="created_at")
     def get_client_age(self, obj):
