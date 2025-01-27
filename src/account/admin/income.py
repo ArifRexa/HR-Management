@@ -334,6 +334,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
                 "invoices": queryset,
                 "seal": f"{STATIC_ROOT}/stationary/sign_md.png",
                 "host": f"{protocal}://{request.get_host()}",
+                "currency_icon": client.currency.icon if client.currency else '$',
                 "invoice_total": invoice_total.get("total"),
             }
 
@@ -347,6 +348,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
             )
             html_content = email_template.render(
                 {
+                    "currency_icon": client.currency.icon if client.currency else '$',
                     "invoice_dates": invoice_dates,
                     "client_name": client.name,
                     "total_amount": total_payment,
