@@ -82,6 +82,134 @@ class ClientStatus(models.IntegerChoices):
     MEETING = 2, "Meeting"
 
 
+class CurrencyType(TimeStampMixin):
+    currency_name = models.CharField(max_length=200, help_text="Example: US Dollar, Euro, etc.", blank=True, null=True)
+    currency_code = models.CharField(max_length=10, help_text="Example: USD, EUR, etc.", blank=True, null=True)
+    icon = models.CharField(max_length=10, help_text="Currency symbol like $, €, £", blank=False, null=False)
+    is_active = models.BooleanField(default=True, help_text="Set as active currency")
+    is_default = models.BooleanField(default=False, help_text="Set as default currency")
+    exchange_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        null=True,
+        blank=True,
+        help_text="Exchange rate relative to base currency"
+    )
+
+    # def save_model(self, request, obj, form, change):
+    #     try:
+    #         super().save_model(request, obj, form, change)
+    #         if obj.is_default:
+    #             return 1
+    #             # self.messages(request, f"{obj.currency_name} has been set as the default currency.")
+    #     except Exception as e:
+    #         self.message_user(request, str(e))
+
+    def save(self, *args, **kwargs):
+        is_new_default = False
+        if self.pk:
+            old_instance = CurrencyType.objects.get(pk=self.pk)
+            is_new_default = not old_instance.is_default and self.is_default
+
+        # If this currency is being set as default
+        if self.is_default:
+            # Set all other currencies' is_default to False
+            CurrencyType.objects.all().update(is_default=False)
+
+        # If there are no currencies yet, make this one default
+        if not self.pk and not CurrencyType.objects.exists():
+            self.is_default = True
+            is_new_default = True
+
+        super().save(*args, **kwargs)
+
+        # If no default currency exists after save, make this one default
+        if not CurrencyType.objects.filter(is_default=True).exists():
+            self.is_default = True
+            super().save(*args, **kwargs)
+            is_new_default = True
+
+        # Update all clients if this became the new default
+        if is_new_default:
+            self.update_clients_currency()
+
+    def update_clients_currency(self):
+        """Update all clients to use this currency if it's the default"""
+        if self.is_default:
+            from .models import Client  # Import here to avoid circular import
+            Client.objects.filter(currency__isnull=True).update(currency=self)
+            # Or to update ALL clients:
+            # Client.objects.all().update(currency=self)
+
+    # def save(self, *args, **kwargs):
+    #     # If this currency is being set as default
+    #     if self.is_default:
+    #         # Set all other currencies' is_default to False
+    #         CurrencyType.objects.all().update(is_default=False)
+    #
+    #     # If there are no currencies yet, make this one default
+    #     if not self.pk and not CurrencyType.objects.exists():
+    #         self.is_default = True
+    #
+    #     super().save(*args, **kwargs)
+    #
+    #     # If no default currency exists after save, make this one default
+    #     if not CurrencyType.objects.filter(is_default=True).exists():
+    #         self.is_default = True
+    #         super().save(*args, **kwargs)
+
+    # def save(self, *args, **kwargs):
+    #     # If this is the first currency being created, make it default
+    #     if not self.pk and not CurrencyType.objects.exists():
+    #         self.is_default = True
+    #         self.currency_name = "US Dollar"
+    #         self.currency_code = "USD"
+    #         self.icon = "$"
+    #
+    #     # If this currency is being set as default, unset other defaults
+    #     if self.is_default:
+    #         CurrencyType.objects.filter(is_default=True).update(is_default=False)
+    #
+    #     super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.is_default:
+            raise ValueError("Cannot delete the default currency")
+        super().delete(*args, **kwargs)
+
+    # @classmethod
+    # def get_default_currency(cls):
+    #     # First try to get the default currency
+    #     default_currency = cls.objects.filter(is_default=True).first()
+    #     if default_currency:
+    #         return default_currency
+    #
+    #     # If no default currency exists, get or create USD
+    #     return cls.objects.get_or_create(
+    #         currency_code="USD",
+    #         defaults={
+    #             'currency_name': "US Dollar",
+    #             'icon': "$",
+    #             'is_default': True,
+    #             'is_active': True,
+    #         }
+    #     )[0]
+
+    @classmethod
+    def get_default_currency_id(cls):
+        currency = cls.objects.filter(is_default=True).first()
+        if currency:
+            return currency.id
+        return None
+
+    def __str__(self):
+        return f"{self.icon} {self.currency_name} ({self.currency_code})"
+
+    class Meta:
+        verbose_name = "Currency Type"
+        verbose_name_plural = "Currency Types"
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     web_name = models.CharField(
@@ -125,6 +253,12 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     review = models.ManyToManyField(
         ClientReview, blank=True, verbose_name="Client Review", related_name="clients"
+    )
+    currency = models.ForeignKey(
+        CurrencyType,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='clients'
     )
     hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, null=True)
     active_from = models.DateField(null=True, blank=True)
