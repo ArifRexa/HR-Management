@@ -526,7 +526,7 @@ class SalarySheetRepository:
         @param employee:
         @return negative number:
         """
-        if employee.resignation_date and salary_sheet.date.month == 12:
+        if employee.resignation_date:
             one_day_salary = self.__employee_current_salary.payable_salary / 30
             medical_non_paid_amount = 0
             casual_non_paid_amount = 0
@@ -965,6 +965,10 @@ class SalarySheetRepository:
         if not employee.lunch_allowance:
             return 0.0
 
+        resigned = employee.resignation_set.filter(
+            status="approved", date__lte=salary_date
+        ).first()
+
         total_non_paid_leave = employee.leave_set.filter(
             start_date__month=salary_date.month,
             start_date__year=salary_date.year,
@@ -997,7 +1001,16 @@ class SalarySheetRepository:
                 days_count += total_non_paid_leave
             total_pay = days_count * 100
             return min(total_pay, 3000)
-
+        elif resigned:
+            # Calculate the first day of the salary month
+            first_day_of_month = timezone.datetime(
+                salary_date.year, salary_date.month, 1
+            )
+            days_count = (resigned.date - first_day_of_month.date()).days + 1
+            if total_non_paid_leave:
+                days_count -= total_non_paid_leave
+            total_pay = days_count * 100
+            return min(total_pay, 3000)
         else:
             if not total_non_paid_leave:
                 return 3000

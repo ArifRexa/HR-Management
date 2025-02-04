@@ -416,7 +416,7 @@ class LeaveManagement(admin.ModelAdmin):
         return obj and obj.status == "pending"
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).select_related("employee")
         if request.user.has_perm("employee.can_approve_leave_applications"):
             return qs
         return qs.filter(employee_id=request.user.employee)
@@ -537,9 +537,10 @@ class LeaveManagement(admin.ModelAdmin):
         if object_id:
             leave = get_object_or_404(Leave, id=object_id)
             if request.user.employee != leave.employee:
+                one_year_ago = current_time - datetime.timedelta(days=365)
                 all_leaves = (
                     Leave.objects.filter(
-                        employee=leave.employee, created_at__year=current_time.year
+                        employee=leave.employee, created_at__gte=one_year_ago
                     )
                     .exclude(id=object_id)
                     .order_by("-id")
