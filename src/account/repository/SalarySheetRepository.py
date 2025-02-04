@@ -1002,14 +1002,13 @@ class SalarySheetRepository:
             total_pay = days_count * 100
             return min(total_pay, 3000)
         elif resigned:
-            # Calculate the last day of the month
-            last_day_of_month = timezone.datetime(
+            # Calculate the first day of the salary month
+            first_day_of_month = timezone.datetime(
                 salary_date.year, salary_date.month, 1
-            ) + timedelta(days=32)
-            last_day_of_month = last_day_of_month.replace(day=1) - timedelta(days=1)
-            days_count = (last_day_of_month.date() - resigned.date).days + 1
+            )
+            days_count = (resigned.date - first_day_of_month.date()).days + 1
             if total_non_paid_leave:
-                days_count += total_non_paid_leave
+                days_count -= total_non_paid_leave
             total_pay = days_count * 100
             return min(total_pay, 3000)
         else:
