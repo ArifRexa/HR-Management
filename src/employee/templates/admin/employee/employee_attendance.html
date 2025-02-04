@@ -155,11 +155,11 @@
                         {% endif %}
                         <b>{{ employee.full_name }}</b>
                         <br><br>
-                        {% if date_data.avg_hours %}
-                            <span class="{% if date_data.avg_hours < 7.30 %}text-danger{% else %}text-primary{% endif %}">Avg in: {{ date_data.avg_hours }} h</span><br>
-                        {% endif %}
+<!--?                        {% if date_data.avg_hours %}-->
+<!--?                            <span class="{% if date_data.avg_hours < 7.30 %}text-danger{% else %}text-primary{% endif %}">Avg in: {{ date_data.avg_hours }} h</span><br>-->
+<!--?                        {% endif %}-->
 
-                        <span>{{ employee|get_item:date_data }}</span>
+                        <span class="fw-bold">Avg in: {{ employee|get_item:date_data }}</span>
                         <strong>{{ employee.last_four_month_project_hours }}</strong>
                     </td>
                     {% for date, data in date_data.items %}
