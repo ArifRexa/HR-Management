@@ -158,7 +158,8 @@
                         {% if date_data.avg_hours %}
                             <span class="{% if date_data.avg_hours < 7.30 %}text-danger{% else %}text-primary{% endif %}">Avg in: {{ date_data.avg_hours }} h</span><br>
                         {% endif %}
-                        <!--?<span>{{ employee.last_two_months_fines|linebreaksbr }}</span>-->
+
+                        <span>{{ employee|get_item:date_data }}</span>
                         <strong>{{ employee.last_four_month_project_hours }}</strong>
                     </td>
                     {% for date, data in date_data.items %}

@@ -239,7 +239,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             temp[date]["accepted_hour"] = (
                                 temp[date].get("accepted_hour", 0) + edh.hours
                             )
-
+                avg_total = 0
                 for attendance in attendances:
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
