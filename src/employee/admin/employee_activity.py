@@ -1,5 +1,7 @@
 import datetime, calendar, math
+from decimal import Decimal
 from functools import update_wrapper
+from typing import Dict
 
 from django.contrib import admin, messages
 from django.http import HttpResponse, JsonResponse
@@ -366,6 +368,25 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 o = "entry"
 
             date_datas = dict(date_datas_sorted)
+            print("*"*100)
+            print(last_x_dates)
+
+        employee_avg_hours_dict = {}
+        for emp, dates_data in date_datas.items():
+            total_inside_hours = Decimal('0.0')
+            days_with_data = 0
+
+            for date, data in dates_data.items():
+                if isinstance(data, dict) and 'inside_time_hour' in data:
+                    hours = Decimal(str(data['inside_time_hour']))
+                    minutes = Decimal(str(data.get('inside_time_minute', 0))) / Decimal('60')
+                    total_inside_hours += hours + minutes
+                    days_with_data += 1
+
+            if days_with_data > 0:
+                avg_hours = (total_inside_hours / Decimal(str(days_with_data))).quantize(Decimal('0.01'))
+                # Store the average directly in date_datas
+                date_datas[emp]['avg_hours'] = avg_hours
         context = dict(
             self.admin_site.each_context(request),
             dates=last_x_dates,
