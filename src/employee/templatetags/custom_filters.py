@@ -66,4 +66,4 @@ def get_item(dictionary, datas):
 
     decimal_time = total_hours + (remaining_minutes / 60)  # Convert to float
 
-    return decimal_time, f"{total_hours}h : {remaining_minutes}m ({i})", used_dates
+    return decimal_time, f"{total_hours}h : {remaining_minutes}m ({i})"
