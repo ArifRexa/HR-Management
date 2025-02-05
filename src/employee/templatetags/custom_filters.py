@@ -11,10 +11,11 @@ def get_item(dictionary, datas):
     for date, data in datas.items():
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
         total_minutes += minutes
-        i += 1
-
-    total_hours = total_minutes // 60  # Convert minutes to hours
-    remaining_minutes = total_minutes % 60  # Get remaining minutes
+        if minutes > 0 :
+            i += 1
+    per_day_minutes = total_minutes/i
+    total_hours = per_day_minutes // 60  # Convert minutes to hours
+    remaining_minutes = per_day_minutes % 60  # Get remaining minutes
 
     return f"{total_hours}h : {remaining_minutes}m ({i})"
 
