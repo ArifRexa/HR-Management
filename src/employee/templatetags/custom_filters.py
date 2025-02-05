@@ -13,7 +13,7 @@ def get_item(dictionary, datas):
         total_minutes += minutes
         if minutes > 0 :
             i += 1
-    per_day_minutes = total_minutes/i
+    per_day_minutes = int(total_minutes/i)
     total_hours = per_day_minutes // 60  # Convert minutes to hours
     remaining_minutes = per_day_minutes % 60  # Get remaining minutes
 
