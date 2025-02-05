@@ -36,7 +36,6 @@ def get_item(dictionary, datas):
 
     if i == 0:  # Prevent division by zero
         return 0, "0h : 0m (0)"
-    i = i-1
     per_day_minutes = int(total_minutes / i)
     total_hours = per_day_minutes // 60
     remaining_minutes = per_day_minutes % 60
