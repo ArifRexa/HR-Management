@@ -1,7 +1,7 @@
 from django import template
 from datetime import datetime
 
-register = template.Library()
+# register = template.Library()
 
 
 # @register.filter(name='get_item')
@@ -41,12 +41,20 @@ register = template.Library()
 def get_item(dictionary, datas):
     total_minutes = 0
     i = 0
-    today = datetime.today().strftime('%b. %-d, %Y')  # Format today's date to match your format (Linux/macOS)
+
+    # Correctly format today's date to match the dataset format ("Feb. 5, 2025")
+    today = datetime.today().strftime('%b. %-d, %Y')  # Linux/macOS
+    try:
+        today = datetime.today().strftime('%b. %#d, %Y')  # Windows (if available)
+    except ValueError:
+        pass  # Ignore if not running on Windows
+
     used_dates = []  # List to store the dates used in calculation
 
     for date, data in datas.items():
         if date == today:  # Skip today's date
             continue
+
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
         total_minutes += minutes
         if minutes > 0:
