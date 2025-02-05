@@ -162,11 +162,17 @@
 <!--?                        <span class="fw-bold">Avg in: {{ employee|get_item:date_data }}</span>-->
                         {% with employee|get_item:date_data as result %}
                         {% if result %}
-                        {% if result.0 >= 7.5 %}
+                        {% if result.0 >= 8 %}
                         <span class="fw-bold text-success">Avg in: {{ result.1 }}</span>
                         {% else %}
                         <span class="fw-bold text-danger">Avg in: {{ result.1 }}</span>
                         {% endif %}
+                        <br>
+                                <small>Dates used:
+                                    {% for date in result.2 %}
+                                        {{ date }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </small>
                         {% endif %}
                         {% endwith %}
 
