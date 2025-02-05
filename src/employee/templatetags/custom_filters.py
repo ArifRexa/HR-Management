@@ -32,11 +32,16 @@ register = template.Library()
 
 
 
+from django import template
+from datetime import datetime
+
+register = template.Library()
+
 @register.filter(name='get_item')
 def get_item(dictionary, datas):
     total_minutes = 0
     i = 0
-    today = datetime.today().strftime('%Y-%m-%d')  # Get today's date as a string
+    today = datetime.today().strftime('%b. %-d, %Y')  # Format today's date to match your format (Linux/macOS)
     used_dates = []  # List to store the dates used in calculation
 
     for date, data in datas.items():
