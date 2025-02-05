@@ -1,4 +1,5 @@
 from django import template
+from datetime import datetime
 
 register = template.Library()
 
@@ -23,8 +24,11 @@ register = template.Library()
 def get_item(dictionary, datas):
     total_minutes = 0
     i = 0
+    today = datetime.today().strftime('%Y-%m-%d')  # Get today's date as a string
 
     for date, data in datas.items():
+        if date == today:  # Skip today's date
+            continue
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
         total_minutes += minutes
         if minutes > 0:
@@ -32,8 +36,7 @@ def get_item(dictionary, datas):
 
     if i == 0:  # Prevent division by zero
         return 0, "0h : 0m (0)"
-
-    per_day_minutes = int(total_minutes / (i-1))
+    per_day_minutes = int(total_minutes / i)
     total_hours = per_day_minutes // 60
     remaining_minutes = per_day_minutes % 60
 
