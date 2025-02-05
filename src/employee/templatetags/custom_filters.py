@@ -3,6 +3,22 @@ from django import template
 register = template.Library()
 
 
+# @register.filter(name='get_item')
+# def get_item(dictionary, datas):
+#     total_minutes = 0
+#     i = 0
+#
+#     for date, data in datas.items():
+#         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
+#         total_minutes += minutes
+#         if minutes > 0 :
+#             i += 1
+#     per_day_minutes = int(total_minutes/i)
+#     total_hours = per_day_minutes // 60  # Convert minutes to hours
+#     remaining_minutes = per_day_minutes % 60  # Get remaining minutes
+#
+#     return f"{total_hours}h : {remaining_minutes}m ({i})"
+
 @register.filter(name='get_item')
 def get_item(dictionary, datas):
     total_minutes = 0
@@ -11,40 +27,17 @@ def get_item(dictionary, datas):
     for date, data in datas.items():
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
         total_minutes += minutes
-        if minutes > 0 :
+        if minutes > 0:
             i += 1
-    per_day_minutes = int(total_minutes/i)
+
+    if i == 0:  # Prevent division by zero
+        return "0h : 0m"
+
+    per_day_minutes = int(total_minutes / i)
     total_hours = per_day_minutes // 60  # Convert minutes to hours
     remaining_minutes = per_day_minutes % 60  # Get remaining minutes
 
+    # Convert total time into decimal format (e.g., 7.5 for 7h 30m)
+    # decimal_time = total_hours + (remaining_minutes / 60)
+
     return f"{total_hours}h : {remaining_minutes}m ({i})"
-
-
-# @register.filter(name='get_item')
-# def get_item(dictionary, datas):
-#     total_minutes = 0
-#     total_hours = 0
-#     i = 0
-#
-#     for date, data in datas.items():
-#         hours = int(data.get("inside_time_hour", 0))  # Get hours, default to 0
-#         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
-#
-#         total_hours += hours
-#         total_minutes += minutes
-#         i += 1
-#
-#     #     total_minutes += (hours * 60) + minutes  # Convert hours to minutes and sum up
-#     #
-#     # total_hours = total_minutes // 60  # Get total hours
-#     # remaining_minutes = total_minutes % 60  # Get remaining minutes
-#
-#     # return f"{total_hours}h : {remaining_minutes}m"
-#     return f"{total_hours}h : {total_minutes}m ({i})"
-# def get_item(dictionary, datas):
-#     total_avg_inside = 0
-#
-#     for date, data in datas.items():
-#         total_min = int(data.get("inside_time_minute")) if data.get("inside_time_minute") else 0
-#         total_avg_inside += int(data.get("inside_time_hour")) if data.get("inside_time_hour") else 0
-#     return total_avg_inside
