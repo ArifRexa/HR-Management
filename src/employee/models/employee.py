@@ -918,8 +918,9 @@ class LessHour(TimeStampMixin, AuthorMixin):
     date = models.DateField(default=timezone.now, blank=True)
     feedback = models.TextField(null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.employee.full_name} under {self.tpm.full_name}"
+    # def __str__(self):
+    #     # return f"{self.employee.full_name} under {self.tpm.full_name}"
+    #     return f"{self.employee.full_name} under {self.tpm.full_name}"
 
 
 class Inbox(TimeStampMixin, AuthorMixin):
