@@ -43,16 +43,12 @@ def get_item(dictionary, datas):
     i = 0
 
     # Correctly format today's date to match the dataset format ("Feb. 5, 2025")
-    today = datetime.today().strftime('%b. %-d, %Y')  # Linux/macOS
-    try:
-        today = datetime.today().strftime('%b. %#d, %Y')  # Windows (if available)
-    except ValueError:
-        pass  # Ignore if not running on Windows
+    today = datetime.today().date()  # Linux/macOS
 
     used_dates = []  # List to store the dates used in calculation
 
     for date, data in datas.items():
-        if date == today:  # Skip today's date
+        if datetime.strptime(date, '%b %d, %Y') == today:  # Skip today's date
             continue
 
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
