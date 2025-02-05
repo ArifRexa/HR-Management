@@ -48,7 +48,7 @@ def get_item(dictionary, datas):
     used_dates = []  # List to store the dates used in calculation
 
     for date, data in datas.items():
-        if datetime.strptime(date, '%b %d, %Y') == today:  # Skip today's date
+        if date == today:  # Skip today's date
             continue
 
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
