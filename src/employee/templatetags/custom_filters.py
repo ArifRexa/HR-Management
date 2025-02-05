@@ -1,25 +1,69 @@
 from django import template
+from datetime import datetime
+
+# register = template.Library()
+
+
+# @register.filter(name='get_item')
+# def get_item(dictionary, datas):
+#     total_minutes = 0
+#     i = 0
+#     today = datetime.today().strftime('%Y-%m-%d')  # Get today's date as a string
+#
+#     for date, data in datas.items():
+#         if date == today:  # Skip today's date
+#             continue
+#         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
+#         total_minutes += minutes
+#         if minutes > 0:
+#             i += 1
+#
+#     if i == 0:  # Prevent division by zero
+#         return 0, "0h : 0m (0)"
+#
+#     i = i-1
+#     per_day_minutes = int(total_minutes / i)
+#     total_hours = per_day_minutes // 60
+#     remaining_minutes = per_day_minutes % 60
+#
+#     decimal_time = total_hours + (remaining_minutes / 60)  # Convert to float
+#
+#     return decimal_time, f"{total_hours}h : {remaining_minutes}m ({i})"
+
+
+
+from django import template
+from datetime import datetime
 
 register = template.Library()
 
 @register.filter(name='get_item')
 def get_item(dictionary, datas):
     total_minutes = 0
+    i = 0
+
+    # Correctly format today's date to match the dataset format ("Feb. 5, 2025")
+    today = datetime.today().date()  # Linux/macOS
+
+    used_dates = []  # List to store the dates used in calculation
 
     for date, data in datas.items():
-        hours = int(data.get("inside_time_hour", 0))  # Get hours, default to 0
+        if date == today:  # Skip today's date
+            continue
+
         minutes = int(data.get("inside_time_minute", 0))  # Get minutes, default to 0
+        total_minutes += minutes
+        if minutes > 0:
+            i += 1
+            used_dates.append(date)  # Store the date
 
-        total_minutes += (hours * 60) + minutes  # Convert hours to minutes and sum up
+    if i == 0:  # Prevent division by zero
+        return 0, "0h : 0m (0)", []
 
-    total_hours = total_minutes // 60  # Get total hours
-    remaining_minutes = total_minutes % 60  # Get remaining minutes
+    per_day_minutes = int(total_minutes / i)
+    total_hours = per_day_minutes // 60
+    remaining_minutes = per_day_minutes % 60
 
-    return f"{total_hours}h : {remaining_minutes}m"
-# def get_item(dictionary, datas):
-#     total_avg_inside = 0
-#
-#     for date, data in datas.items():
-#         total_min = int(data.get("inside_time_minute")) if data.get("inside_time_minute") else 0
-#         total_avg_inside += int(data.get("inside_time_hour")) if data.get("inside_time_hour") else 0
-#     return total_avg_inside
+    decimal_time = total_hours + (remaining_minutes / 60)  # Convert to float
+
+    return decimal_time, f"{total_hours}h : {remaining_minutes}m ({i})"

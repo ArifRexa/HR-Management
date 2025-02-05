@@ -140,7 +140,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         now = timezone.now()
         DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
-        day_range = 10
+        day_range = 30
         if request.user.has_perm("employee.can_see_full_month_attendance"):
             day_range = 30
 

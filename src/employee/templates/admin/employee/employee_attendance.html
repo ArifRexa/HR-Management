@@ -159,7 +159,23 @@
 <!--?                            <span class="{% if date_data.avg_hours < 7.30 %}text-danger{% else %}text-primary{% endif %}">Avg in: {{ date_data.avg_hours }} h</span><br>-->
 <!--?                        {% endif %}-->
 
-                        <span class="fw-bold">Avg in: {{ employee|get_item:date_data }}</span>
+<!--?                        <span class="fw-bold">Avg in: {{ employee|get_item:date_data }}</span>-->
+                        {% with employee|get_item:date_data as result %}
+                        {% if result %}
+                        {% if result.0 >= 8 %}
+                        <span class="fw-bold text-success">Avg in: {{ result.1 }}</span>
+                        {% else %}
+                        <span class="fw-bold text-danger">Avg in: {{ result.1 }}</span>
+                        {% endif %}
+<!--?                        <br>-->
+<!--?                                <small>Dates used:-->
+<!--?                                    {% for date in result.2 %}-->
+<!--?                                        {{ date }}{% if not forloop.last %}, {% endif %}-->
+<!--?                                    {% endfor %}-->
+<!--?                                </small>-->
+                        {% endif %}
+                        {% endwith %}
+
                         <strong>{{ employee.last_four_month_project_hours }}</strong>
                     </td>
                     {% for date, data in date_data.items %}
