@@ -222,6 +222,7 @@ class Income(TimeStampMixin, AuthorMixin):
     payment = models.FloatField()
     date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True)
+    pdf_url = models.URLField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
     add_to_balance_sheet = models.BooleanField(default=False)
     is_send_clients = models.BooleanField(default=False)
