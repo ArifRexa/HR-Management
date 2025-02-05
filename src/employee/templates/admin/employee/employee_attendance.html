@@ -160,17 +160,15 @@
 <!--?                        {% endif %}-->
 
 <!--?                        <span class="fw-bold">Avg in: {{ employee|get_item:date_data }}</span>-->
-                            {% with employee|get_item:date_data as result %}
-                                {% if result %}
-                                    {% with result|split:"|" as parts %}
-                                        {% if parts.1|floatformat:2 >= 7.5 %}
-                                            <span class="fw-bold text-success">Avg in: {{ parts.0 }}</span>
-                                        {% else %}
-                                            <span class="fw-bold text-danger">Avg in: {{ parts.0 }}</span>
-                                        {% endif %}
-                                    {% endwith %}
-                                {% endif %}
-                            {% endwith %}
+                        {% with employee|get_item:date_data as result %}
+                        {% if result %}
+                        {% if result.0 >= 7.5 %}
+                        <span class="fw-bold text-success">Avg in: {{ result.1 }}</span>
+                        {% else %}
+                        <span class="fw-bold text-danger">Avg in: {{ result.1 }}</span>
+                        {% endif %}
+                        {% endif %}
+                        {% endwith %}
 
                         <strong>{{ employee.last_four_month_project_hours }}</strong>
                     </td>
