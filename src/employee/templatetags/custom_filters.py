@@ -31,13 +31,12 @@ def get_item(dictionary, datas):
             i += 1
 
     if i == 0:  # Prevent division by zero
-        return "0h : 0m"
+        return 0, "0h : 0m (0)"
 
     per_day_minutes = int(total_minutes / i)
-    total_hours = per_day_minutes // 60  # Convert minutes to hours
-    remaining_minutes = per_day_minutes % 60  # Get remaining minutes
+    total_hours = per_day_minutes // 60
+    remaining_minutes = per_day_minutes % 60
 
-    # Convert total time into decimal format (e.g., 7.5 for 7h 30m)
-    # decimal_time = total_hours + (remaining_minutes / 60)
+    decimal_time = total_hours + (remaining_minutes / 60)  # Convert to float
 
-    return f"{total_hours}h : {remaining_minutes}m ({i})"
+    return decimal_time, f"{total_hours}h : {remaining_minutes}m ({i})"
