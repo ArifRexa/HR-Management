@@ -82,6 +82,14 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
                 hourly_rate = project.client.hourly_rate if project.client else 0.00
             hours = project_hour.hours or 0
             payment = Decimal(hours) * Decimal(hourly_rate) * convert_rate
+            pdf_url = None
+            if project_hour.report_file:
+
+                if project_hour.report_file.url.__contains__("http"):
+                    pdf_url = project_hour.report_file.url
+                else:
+                    pdf_url = request.build_absolute_uri(project_hour.report_file.url)
+
             income_object.append(
                 Income(
                     project=project,
@@ -91,6 +99,7 @@ class ProjectHourAction(ExtraUrl, admin.ModelAdmin):
                     date=project_hour.date,
                     status="pending",
                     payment=payment,
+                    pdf_url=pdf_url,
                 )
             )
         Income.objects.bulk_create(income_object)

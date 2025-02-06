@@ -200,19 +200,19 @@
                         {% endif %}
                         
                     </td>
-                    {% if invoice.project.client.is_hour_breakdown %}
+<!--?                    {% if invoice.project.client.is_hour_breakdown %}-->
                     
                     <td style="align-items: center;">
                     <b>
                         <a 
-                            href="{{host}}{% url 'project-update-for-client' invoice.project.identifier %}?todate={{ invoice.date|date:'Y-m-d' }}&fromdate={{ invoice.date|last_week|date:'Y-m-d' }}" 
+                            href="{{invoice.pdf_url}}"
                             style="cursor: pointer; text-decoration: underline; font-size: 16px;"
                             target="_blank">
                                 Link
                         </a>
                     </b>
                 </td>
-                {% endif %}
+<!--?                {% endif %}-->
                     <td>{{ invoice.hours|floatformat:2 }}</td>
                     <td>{{ invoice.hour_rate }}</td>
                     <td>{{currency_icon}}{% widthratio invoice.hours 1 invoice.hour_rate %}</td>

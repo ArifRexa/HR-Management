@@ -63,7 +63,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
         "status_col",
     )
     date_hierarchy = "date"
-    exclude = ["is_send_clients", "loss_hours", "is_send_invoice_email", "payment", "convert_rate"]
+    exclude = ["is_send_clients", "loss_hours", "is_send_invoice_email", "payment", "convert_rate", "pdf_url"]
     # readonly_fields = ("payment",)
     list_filter = [
         "status",
