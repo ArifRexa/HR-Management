@@ -68,7 +68,7 @@ class EmployeeAdmin(
     autocomplete_fields = ["user", "designation"]
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
-    
+
     def lookup_allowed(self, lookup, value):
         if lookup in ["employeeskill__skill__title__exact"]:
             return True
@@ -885,7 +885,7 @@ class LessHourAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     list_filter = ("tpm", "employee")
     # fields = ["employee", "tpm", "date"]
-    exclude = ("tpm",)
+    # exclude = ("tpm",)
     autocomplete_fields = ("employee",)
     form = LessHourForm
 
@@ -936,19 +936,34 @@ class LessHourAdmin(admin.ModelAdmin):
 
         return data
 
-    def save_form(self, request, form, change):
-        obj = super().save_form(request, form, change)
-        employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
-        tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
-        obj.tpm = tpm
-        obj.save()
-        return obj
+    # def save_form(self, request, form, change):
+    #     obj = super().save_form(request, form, change)
+    #     employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
+    #     tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
+    #     obj.tpm = tpm
+    #     obj.save()
+    #     return obj
 
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
         fields = list(fields)
         if not obj and not request.user.is_superuser:
             fields.remove("feedback")
+
+        if (
+            not obj
+            and not request.user.employee.operation
+            and not request.user.is_superuser
+        ):
+            fields.remove("hr_feedback")
+        return fields
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        fields = list(fields)
+        if obj and not request.user.employee.operation and not request.user.is_superuser:
+            fields.append("hr_feedback")
+
         return fields
 
     def get_queryset(self, request):

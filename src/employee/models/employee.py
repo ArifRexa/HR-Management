@@ -916,7 +916,8 @@ class LessHour(TimeStampMixin, AuthorMixin):
         null=True,
     )
     date = models.DateField(default=timezone.now, blank=True)
-    feedback = models.TextField(null=True, blank=True)
+    feedback = models.TextField(null=True, blank=True, verbose_name="TPM Feedback")
+    hr_feedback = models.TextField(null=True, blank=True, verbose_name="HR Feedback")
 
     # def __str__(self):
     #     # return f"{self.employee.full_name} under {self.tpm.full_name}"
