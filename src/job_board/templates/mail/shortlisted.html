@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Status Update - Mediusware</title>
+    <title>Interview Invitation – Mediusware Ltd</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -45,14 +45,6 @@
             margin: 10px 0;
         }
 
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #372d9f;
-            margin: 20px 0 10px;
-            text-align: left;
-        }
-
         .highlight-box {
             background-color: #f7f9fc;
             border-left: 5px solid #372d9f;
@@ -62,22 +54,13 @@
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .cta-button {
-            display: inline-block;
-            text-align: center;
-            background-color: #372d9f;
-            color: #ffffff;
-            text-decoration: none;
-            padding: 15px 30px;
-            border-radius: 30px;
-            font-size: 16px;
-            margin: 25px auto;
+        .section-title {
+            font-size: 18px;
             font-weight: bold;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 8px rgba(55, 45, 159, 0.3);
+            color: #372d9f;
+            margin: 20px 0 10px;
+            text-align: left;
         }
-
-
 
         .footer {
             background-color: #f9f9f9;
@@ -110,36 +93,26 @@
 <body>
 <div class="email-container">
     <div class="header">
-        <h1>Application Status Update</h1>
+        <h1>Your Are Shortlisted</h1>
     </div>
     <div class="content">
         <p>Dear {{ candidate.full_name }},</p>
 
-        <p>Thank you for your interest in the position of <strong>{{ position.title }}</strong> at Mediusware Ltd. and
-            for taking the time to participate in our recruitment process.</p>
+        <p>
+            Thank you for your interest in Mediusware Ltd. We are pleased to inform you that your CV has been shortlisted for an interview. 
+        </p>
 
         <div class="highlight-box">
-            <p>After careful consideration of your application and the requirements of the role, we regret to inform you
-                that we will not be moving forward with your candidacy at this time.</p>
+            <p style="text-align: center; font-size: 18px; margin: 0;">Next Step:</p>
+            <ul>
+                <li><strong>Hr Contact: </strong>Our HR team will call you within the next 3 days to schedule your interview. </li>
+                <li><strong>Available Slots: </strong>Interviews are held Monday through Friday, between 12 PM and 6 PM. </li>
+                <li><strong>Preparation: </strong>Please consider a few potential dates and times within this window in advance. </li>
+            </ul>
         </div>
 
-        <div class="section-title">Why This Decision?</div>
-        <p>This decision does not necessarily reflect on your qualifications or abilities. We received many strong
-            applications, and the selection process was highly competitive.</p>
 
-        <div class="section-title">Future Opportunities</div>
-        <p>We encourage you to:</p>
-        <ul>
-            <li>Keep an eye on our career page for future opportunities</li>
-            <li>Consider applying for other positions that match your skills and experience</li>
-            <li>Continue developing your skills in your area of expertise</li>
-        </ul>
-
-<!--?        <center>-->
-<!--?            <a href="https://job.mediusware.com/" class="cta-button" style="color: white">View Current Openings</a>-->
-<!--?        </center>-->
-
-        <p>We appreciate your interest in Mediusware Ltd. and wish you the very best in your professional endeavors.</p>
+        <p>We look forward to discussing your application soon.</p>
 
         <p>Best regards,<br>
             HR Team<br>
