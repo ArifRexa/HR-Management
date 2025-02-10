@@ -885,7 +885,7 @@ class LessHourAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     list_filter = ("tpm", "employee")
     # fields = ["employee", "tpm", "date"]
-    # exclude = ("tpm",)
+    exclude = ("tpm",)
     autocomplete_fields = ("employee",)
     form = LessHourForm
 
@@ -936,13 +936,13 @@ class LessHourAdmin(admin.ModelAdmin):
 
         return data
 
-    # def save_form(self, request, form, change):
-    #     obj = super().save_form(request, form, change)
-    #     employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
-    #     tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
-    #     obj.tpm = tpm
-    #     obj.save()
-    #     return obj
+    def save_form(self, request, form, change):
+        obj = super().save_form(request, form, change)
+        employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
+        tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
+        obj.tpm = tpm
+        obj.save()
+        return obj
 
     def get_fields(self, request, obj=None):
         fields = super().get_fields(request, obj)
