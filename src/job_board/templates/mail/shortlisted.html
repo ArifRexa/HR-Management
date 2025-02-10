@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interview Confirmation - Mediusware Ltd.</title>
+    <title>Interview Invitation – Mediusware Ltd</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -93,31 +93,26 @@
 <body>
 <div class="email-container">
     <div class="header">
-        <h1>Interview Confirmation</h1>
+        <h1>Your Are Shortlisted</h1>
     </div>
     <div class="content">
         <p>Dear {{ candidate.full_name }},</p>
 
-        <p>We are pleased to inform you that you have been Selected for an interview with us at Mediusware Ltd for
-            the position of <strong>{{ candidate.candidatejob_set.last.job }}</strong>.</p>
+        <p>
+            Thank you for your interest in Mediusware Ltd. We are pleased to inform you that your CV has been shortlisted for an interview. 
+        </p>
 
         <div class="highlight-box">
-            <p style="text-align: center; font-size: 18px; margin: 0;">Your interview is scheduled for:</p>
-            <p style="text-align: center; font-size: 20px; font-weight: bold; color: #372d9f; margin: 10px 0;">
-                {{ interview_datetime|date:"l, F j, Y" }}<br>
-                {{ interview_datetime|date:"g:i " }}PM
-            </p>
+            <p style="text-align: center; font-size: 18px; margin: 0;">Next Step:</p>
+            <ul>
+                <li><strong>Hr Contact: </strong>Our HR team will call you within the next 3 days to schedule your interview. </li>
+                <li><strong>Available Slots: </strong>Interviews are held Monday through Friday, between 12 PM and 6 PM. </li>
+                <li><strong>Preparation: </strong>Please consider a few potential dates and times within this window in advance. </li>
+            </ul>
         </div>
 
-        <!-- <div class="section-title">Important Notes</div>
-        <ul>
-            <li>Please ensure to be available at the scheduled time</li>
-            <li>Keep your phone accessible for any updates</li>
-            <li>Have a stable internet connection ready</li>
-            <li>Prepare any relevant documents or portfolio</li>
-        </ul> -->
 
-        <p>We look forward to speaking with you!</p>
+        <p>We look forward to discussing your application soon.</p>
 
         <p>Best regards,<br>
             HR Team<br>
