@@ -950,10 +950,8 @@ class LessHourAdmin(admin.ModelAdmin):
         if not obj and not request.user.is_superuser:
             fields.remove("feedback")
 
-        if (
-            not obj
-            and not request.user.employee.operation
-            and not request.user.is_superuser
+        if not request.user.is_superuser and not request.user.has_perm(
+            "employee.can_see_hr_feedback_field"
         ):
             fields.remove("hr_feedback")
         return fields
@@ -961,7 +959,9 @@ class LessHourAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         fields = super().get_readonly_fields(request, obj)
         fields = list(fields)
-        if obj and not request.user.employee.operation and not request.user.is_superuser:
+        if not request.user.is_superuser and not request.user.has_perm(
+            "employee.can_see_hr_feedback_field"
+        ):
             fields.append("hr_feedback")
 
         return fields

@@ -26,7 +26,7 @@ class SalaryHistoryInline(admin.TabularInline):
 
     def get_fields(self, request, obj=None):
         fields = super(SalaryHistoryInline, self).get_fields(request, obj)
-        if not request.user.is_superuser and not request.user.employee.operation:
+        if not request.user.is_superuser and not request.user.has_perm("employee.can_see_note_field"):
             fields.remove("note")
         return fields
 
