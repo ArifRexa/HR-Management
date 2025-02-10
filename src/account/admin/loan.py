@@ -129,6 +129,7 @@ class LoanPaymentAdmin(admin.ModelAdmin):
     date_hierarchy = "payment_date"
     list_filter = ("loan",)
     search_fields = ("loan__employee__full_name",)
+    autocomplete_fields = ("loan", )
 
     def has_module_permission(self, request):
         return False
