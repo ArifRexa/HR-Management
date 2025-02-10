@@ -170,12 +170,32 @@ def send_interview_email(candidate_id, interview_datetime):
     candidate = Candidate.objects.get(id=candidate_id)
 
     # Create the email content
-    subject = f"Congratulations! You've been shortlisted for an interview"
+    subject = "Congratulations! You've been Selected for an interview"
     html_template = get_template('mail/interview_confirmation.html')
     html_content = html_template.render({
         'candidate': candidate,
         'interview_datetime': interview_datetime,
         'position': candidate.candidatejob_set.last().job
+    })
+
+    # Prepare the email
+    email = EmailMultiAlternatives(subject=subject)
+    email.attach_alternative(html_content, 'text/html')
+    email.to = [candidate.email]
+    email.from_email = 'Mediusware-HR <hr@mediusware.com>'
+    # Send the email
+    email.send()
+    
+
+def send_shortlisted_email(candidate_id):
+    # Fetch the candidate
+    candidate = Candidate.objects.get(id=candidate_id)
+
+    # Create the email content
+    subject = "Congratulations! You've been Shortlisted for an interview"
+    html_template = get_template('mail/shortlisted.html')
+    html_content = html_template.render({
+        'candidate': candidate
     })
 
     # Prepare the email

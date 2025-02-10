@@ -21,7 +21,7 @@ from job_board.models.job import Job
 from job_board.serializers.candidate_serializer import CandidateSerializer, CandidateUpdateSerializer
 from job_board.serializers.password_reset import SendOTPSerializer, ResetPasswordSerializer, ChangePasswordSerializer
 from job_board.tasks import send_interview_email, send_cancellation_email, send_bulk_application_summary_email, \
-    send_waiting_list_email, send_rejection_email, send_reschedule_email
+    send_waiting_list_email, send_rejection_email, send_reschedule_email, send_shortlisted_email
 
 
 class Registration(CreateModelMixin, GenericAPIView):
@@ -102,19 +102,12 @@ class UpdateShortlistView(APIView):
     permission_classes = [IsAdminUser]
 
     def post(self, request, candidate_id):
-
-        all_jobs = Job.objects.all()
-
-        for job in all_jobs:
-            print(job)
-        # print(all_jobs)
-
-        candidate_all = CandidateJob.objects.all()
-
         try:
             candidate = get_object_or_404(Candidate, id=candidate_id)
             candidate.is_shortlisted = request.data.get('is_shortlisted')
             candidate.save()
+            if candidate.is_shortlisted:
+                send_shortlisted_email(candidate_id=candidate_id)
             return Response({'status': 'success'}, status=status.HTTP_200_OK)
         except Exception as e:
             print(f"Error: {str(e)}")  # Debug print
