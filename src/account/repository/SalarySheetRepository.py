@@ -2,7 +2,7 @@ import calendar
 from decimal import Decimal
 import math
 from datetime import datetime, timedelta
-from collections import defaultdict
+
 
 from django.db.models import Sum, Count, DecimalField, Value
 from django.db.models.functions import Coalesce
@@ -13,22 +13,17 @@ from account.models import (
     InvestmentAllowance,
     SalarySheet,
     EmployeeSalary,
-    LoanPayment,
     Loan,
     SalarySheetTaxLoan,
     VehicleRebate,
 )
-from employee.models import Employee, SalaryHistory, Leave, Overtime, EmployeeAttendance
+from employee.models import Employee, SalaryHistory
 from employee.models.employee import LateAttendanceFine
-from project_management.models import EmployeeProjectHour, ProjectHour
-from settings.models import PublicHolidayDate, EmployeeFoodAllowance
-from django.db.models import Count, Sum, Avg
+from settings.models import EmployeeFoodAllowance
+from django.db.models import Avg
 from employee.models.config import Config
 from project_management.models import CodeReview
 from dateutil.relativedelta import relativedelta
-from django.db.models.functions import ExtractMonth, ExtractYear
-
-from website.models import Blog, BlogStatus
 
 
 def get_fiscal_year_dates(start_month=7):
@@ -881,7 +876,8 @@ class SalarySheetRepository:
         """
 
         employee_loans = employee.loan_set.filter(
-            start_date__lte=salary_date, end_date__gte=salary_date, loan_type="tds"
+            start_date__lte=salary_date,
+            end_date__gte=salary_date,
         )
 
         # insert into loan payment table if the sum amount is not zero

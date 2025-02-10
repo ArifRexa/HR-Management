@@ -68,7 +68,7 @@ class EmployeeAdmin(
     autocomplete_fields = ["user", "designation"]
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
-    
+
     def lookup_allowed(self, lookup, value):
         if lookup in ["employeeskill__skill__title__exact"]:
             return True
@@ -949,6 +949,21 @@ class LessHourAdmin(admin.ModelAdmin):
         fields = list(fields)
         if not obj and not request.user.is_superuser:
             fields.remove("feedback")
+
+        if not request.user.is_superuser and not request.user.has_perm(
+            "employee.can_see_hr_feedback_field"
+        ):
+            fields.remove("hr_feedback")
+        return fields
+
+    def get_readonly_fields(self, request, obj=None):
+        fields = super().get_readonly_fields(request, obj)
+        fields = list(fields)
+        if not request.user.is_superuser and not request.user.has_perm(
+            "employee.can_see_hr_feedback_field"
+        ):
+            fields.append("hr_feedback")
+
         return fields
 
     def get_queryset(self, request):

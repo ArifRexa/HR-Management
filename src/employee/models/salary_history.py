@@ -23,4 +23,5 @@ class SalaryHistory(TimeStampMixin, AuthorMixin):
     def active_from_human(self):
         return timesince(self.active_from)
 
-
+    class Meta:
+        permissions = (("can_see_note_field", "Can see note field"),)
