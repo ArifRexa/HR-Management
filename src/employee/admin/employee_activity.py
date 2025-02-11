@@ -281,7 +281,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     and (
                                         (
                                             start_time_timeobj.hour == 11
-                                            and start_time_timeobj.minute > 30
+                                            and start_time_timeobj.minute > 10
                                         )
                                         or start_time_timeobj.hour >= 12
                                     )
@@ -290,7 +290,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     and (
                                         (
                                             start_time_timeobj.hour >= 11
-                                            and start_time_timeobj.minute > 30
+                                            and start_time_timeobj.minute > 10
                                         )
                                         or start_time_timeobj.hour >= 12
                                     )
