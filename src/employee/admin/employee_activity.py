@@ -275,13 +275,16 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             inside_time_s = sToTime(inside_time)
                             employee_is_lead = emp.lead or emp.manager
                             start_time_timeobj = start_time.time()
-                            if start_time:
+                            is_late = False
+                            late_time_change_date = datetime.datetime("2025-02-11").date() # it may change if late time change
+                            today = datetime.datetime.today().date()
+                            if today >= late_time_change_date and start_time:
                                 is_late = (
                                     employee_is_lead
                                     and (
                                         (
                                             start_time_timeobj.hour == 11
-                                            and start_time_timeobj.minute > 10
+                                            and start_time_timeobj.minute > 30
                                         )
                                         or start_time_timeobj.hour >= 12
                                     )
@@ -290,7 +293,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     and (
                                         (
                                             start_time_timeobj.hour >= 11
-                                            and start_time_timeobj.minute > 10
+                                            and start_time_timeobj.minute > 30
                                         )
                                         or start_time_timeobj.hour >= 12
                                     )
