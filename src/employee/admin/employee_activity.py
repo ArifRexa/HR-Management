@@ -276,8 +276,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             employee_is_lead = emp.lead or emp.manager
                             start_time_timeobj = start_time.time()
                             is_late = False
-                            late_time_change_date = late_time_change_date = datetime.datetime.strptime("2025-02-11", "%Y-%m-%d").date() # it may change if late time change
-                            today = datetime.datetime.today().date()
+                            late_time_change_date = datetime.datetime.strptime("2025-02-11", "%Y-%m-%d").date() # it may change if late time change
+                            today = attendance.date
                             if today >= late_time_change_date and start_time:
                                 is_late = (
                                     employee_is_lead
