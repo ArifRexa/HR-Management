@@ -13,7 +13,7 @@ import config.settings
 class PDF:
     __FILE_PATH = config.settings.MEDIA_ROOT
     __FILE_EXTENSION = ".pdf"
-    _letter_head = f"{config.settings.STATIC_ROOT}/stationary/letter_head_updated.jpeg"
+    _letter_head = f"{config.settings.STATIC_ROOT}/stationary/letter_head_updated.jpg"
     _font = f"{config.settings.STATIC_ROOT}/stationary/bangla/Siyamrupali.ttf"
 
     def __init__(
