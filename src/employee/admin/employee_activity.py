@@ -278,26 +278,47 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             is_late = False
                             late_time_change_date = datetime.datetime.strptime("2025-02-11", "%Y-%m-%d").date() # it may change if late time change
                             today = attendance.date
-                            if today >= late_time_change_date and start_time:
-                                is_late = (
-                                    employee_is_lead
-                                    and (
-                                        (
-                                            start_time_timeobj.hour == 11
-                                            and start_time_timeobj.minute > 10
+                            if start_time:
+                                if today >= late_time_change_date:
+                                    is_late = (
+                                        employee_is_lead
+                                        and (
+                                            (
+                                                start_time_timeobj.hour == 11
+                                                and start_time_timeobj.minute > 10
+                                            )
+                                            or start_time_timeobj.hour >= 12
                                         )
-                                        or start_time_timeobj.hour >= 12
-                                    )
-                                ) or (
-                                    not employee_is_lead
-                                    and (
-                                        (
-                                            start_time_timeobj.hour >= 11
-                                            and start_time_timeobj.minute > 10
+                                    ) or (
+                                        not employee_is_lead
+                                        and (
+                                            (
+                                                start_time_timeobj.hour >= 11
+                                                and start_time_timeobj.minute > 10
+                                            )
+                                            or start_time_timeobj.hour >= 12
                                         )
-                                        or start_time_timeobj.hour >= 12
                                     )
-                                )
+                                else:
+                                    is_late = (
+                                        employee_is_lead
+                                        and (
+                                            (
+                                                start_time_timeobj.hour == 11
+                                                and start_time_timeobj.minute > 30
+                                            )
+                                            or start_time_timeobj.hour >= 12
+                                        )
+                                    ) or (
+                                        not employee_is_lead
+                                        and (
+                                            (
+                                                start_time_timeobj.hour >= 11
+                                                and start_time_timeobj.minute > 30
+                                            )
+                                            or start_time_timeobj.hour >= 12
+                                        )
+                                    )
                             temp[date].update(
                                 {
                                     "entry_time": start_time.time()
