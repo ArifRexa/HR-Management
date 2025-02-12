@@ -14,7 +14,7 @@
           {{ meeting.is_added }}
   
           <tr class="text-uppercase fw-bold {% if meeting.project.title in employee_project_list %}blinking-text{% endif %}" style="color: #41a6fa;">
-            <td class="" >{{ meeting.created_by }}</td>
+            <td class="" >{{ meeting.created_by.employee.full_name }}</td>
             <td class="">{{ meeting.project.title }}</td>
             <td class="">{{ meeting.start_time|time:'h:i A' }}</td>
             {% if  meeting.created_by == request.user %}
