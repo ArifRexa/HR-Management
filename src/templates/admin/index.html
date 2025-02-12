@@ -12,6 +12,13 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 <!-- CSS only -->
 <style>
+    #loading-spinner {
+    display: block;
+}
+.htmx-request #loading-spinner{
+    display: block;
+}
+
     .list-group-item.active {
         background: var(--primary) !important;
         border: none;
@@ -280,7 +287,7 @@
                         
                         {% if is_manager or is_lead or is_sqa %}
                         <!-- Button trigger modal -->
-                        <button hx-get="{% url 'meeting_form' %}" hx-target="#form-container" hx-swap="innerHtml" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#meetingModal">
+                        <button hx-indicator="#loading-spinner" hx-get="{% url 'meeting_form' %}" hx-target="#form-container" hx-swap="innerHtml" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#meetingModal">
                             +
                         </button>
                         {% endif %}
@@ -295,6 +302,11 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body w-60 h-100" id="form-container">
+                                        <!-- Loading Indicator (Hidden by Default) -->
+                                        <div id="loading-spinner" class="text-center my-2">
+                                            <div class="spinner-border text-primary"></div>
+                                            <p>loading...</p>
+                                        </div>
                                         
                                     </div>
                                 </div>
@@ -704,4 +716,21 @@
         }
     </script>
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+
+    <script>
+        document.body.addEventListener("htmx:request", function(event) {
+            console.log("htmx request start")
+            let spinner = document.getElementById("loading-spinner");
+            if (spinner) {
+                spinner.style.display = "block";
+            }
+        });
+    
+        document.body.addEventListener("htmx:afterRequest", function(event) {
+            let spinner = document.getElementById("loading-spinner");
+            if (spinner) {
+                spinner.style.display = "none";
+            }
+        });
+    </script>
     {% endblock %}
