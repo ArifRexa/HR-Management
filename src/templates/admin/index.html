@@ -276,6 +276,32 @@
         <div class="col-md-8">
             <div class="row">
                 <div class="col-md-6 mb-4">
+                    <h4 class="text-dark fw-bold d-lg-inline me-3 mb-4 ">Up Coming Meeting</h1>
+                        
+                        {% if is_manager or is_lead or is_sqa %}
+                        <!-- Button trigger modal -->
+                        <button hx-get="{% url 'meeting_form' %}" hx-target="#form-container" hx-swap="innerHtml" type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#meetingModal">
+                            +
+                        </button>
+                        {% endif %}
+                        <!-- {{employee_project_list}} -->
+                        
+                        <!-- Modal -->
+                        <div class="modal fade" id="meetingModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title fs-5 text-dark" id="exampleModalLabel">Create Meeting Time</h1>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body w-60 h-100" id="form-container">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% include "admin/form/client_meeting_time.html" %}
+                        <br>
                     
                     <h4 class="text-dark fw-bold d-lg-inline me-3 mb-4 ">Book Conference Room</h1>
                         
@@ -677,4 +703,5 @@
         
         }
     </script>
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
     {% endblock %}

@@ -39,7 +39,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
 INSTALLED_APPS = [
     "daphne",
-    'admin_confirm',
+    "admin_confirm",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -126,6 +126,7 @@ TEMPLATES = [
                 "config.context_processors.employees.can_show_permanent_increment",
                 "config.context_processors.employees.all_notices",
                 "config.context_processors.employees.unread_inbox",
+                "client_management.context_processors.get_all_meetings",
             ],
         },
     },
