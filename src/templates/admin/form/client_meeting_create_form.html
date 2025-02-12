@@ -1,10 +1,10 @@
-<form method="post" action="{% url 'meeting_create' %}">
+<form method="POST" action="{{ action.url }}">
     {% csrf_token %}
     {{ meeting_form.as_p }}
 
     
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Create</button>
+        <button type="submit" class="btn btn-primary">{{action.name|title}}</button>
     </div>
 </form>

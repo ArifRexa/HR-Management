@@ -1,3 +1,4 @@
+from datetime import datetime
 from icecream import ic
 
 from client_management.models import ClientMeeting
@@ -13,5 +14,6 @@ def get_github_icons(request):
 
 
 def get_all_meetings(request):
-    meetings = ClientMeeting.objects.all()
+    today = datetime.today().date()
+    meetings = ClientMeeting.objects.filter(start_time__date=today)
     return {"client_meetings": meetings}

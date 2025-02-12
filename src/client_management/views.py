@@ -1,6 +1,6 @@
 from django.urls import reverse_lazy
 from icecream import ic
-
+from django.contrib import messages
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render
 from django.db.models import Sum
@@ -182,9 +182,11 @@ def get_weekly_project_report(request, project_hash):
 
 
 def get_client_meeting_form(request):
-    action = reverse_lazy("meeting_form")
+    action_url = reverse_lazy("meeting_create")
     return render(
-        request, "admin/form/client_meeting_create_form.html", { "meeting_form": ClientMeetingForm(), "action": action }
+        request,
+        "admin/form/client_meeting_create_form.html",
+        {"meeting_form": ClientMeetingForm(), "action": {"name": "Create", "url": action_url}},
     )
 
 
@@ -192,15 +194,43 @@ def update_client_meeting_form(request, pk):
     obj = ClientMeeting.objects.filter(id=pk)
     if obj.exists():
         form = ClientMeetingForm(instance=obj.first())
-    action = reverse_lazy("meeting_form")
+    action_url = reverse_lazy("meeting_update", kwargs={"pk": obj.first().id})
     return render(
-        request, "admin/form/client_meeting_create_form.html", { "meeting_form": form, "action": action }
+        request,
+        "admin/form/client_meeting_create_form.html",
+        {"meeting_form": form, "action": {"name": "update", "url": action_url}},
     )
+
 
 def create_client_meeting(request):
     form = ClientMeetingForm(request.POST)
     if form.is_valid():
         form.save()
-        return redirect("/admin")
+        messages.success(request, "Meeting Create successfully")
+
     else:
-        return render(request, "admin/form/client_meeting_create_form.html", { "meeting_form": form })
+        messages.error(request, "Something went wrong")
+    return redirect("/admin")
+
+
+def update_client_meeting(request, pk):
+    obj = ClientMeeting.objects.filter(id=pk)
+    if obj.exists():
+        form = ClientMeetingForm(instance=obj.first(), data=request.POST)
+    if form.is_valid():
+        form.save()
+        messages.success(request, "Meeting Update successfully")
+
+    else:
+        messages.error(request, "Something went wrong")
+    return redirect("/admin")
+
+
+def delete_meeting(request, pk):
+    obj = ClientMeeting.objects.filter(id=pk)
+    if obj.exists():
+        obj.delete()
+        messages.success(request, "Meeting deleted successfully")
+    else:
+        messages.error(request, "Meeting not found")
+    return redirect("/admin")
