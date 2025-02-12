@@ -1,9 +1,11 @@
+from django.urls import reverse_lazy
 from icecream import ic
 
 from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.db.models import Sum
-
+from client_management.forms import ClientMeetingForm
+from client_management.models import ClientMeeting
 from project_management.models import Project, DailyProjectUpdate, ProjectHour
 
 
@@ -177,3 +179,28 @@ def get_weekly_project_report(request, project_hash):
         "project": project_obj,
     }
     return render(request, "client_management/project_weekly_report.html", context)
+
+
+def get_client_meeting_form(request):
+    action = reverse_lazy("meeting_form")
+    return render(
+        request, "admin/form/client_meeting_create_form.html", { "meeting_form": ClientMeetingForm(), "action": action }
+    )
+
+
+def update_client_meeting_form(request, pk):
+    obj = ClientMeeting.objects.filter(id=pk)
+    if obj.exists():
+        form = ClientMeetingForm(instance=obj.first())
+    action = reverse_lazy("meeting_form")
+    return render(
+        request, "admin/form/client_meeting_create_form.html", { "meeting_form": form, "action": action }
+    )
+
+def create_client_meeting(request):
+    form = ClientMeetingForm(request.POST)
+    if form.is_valid():
+        form.save()
+        return redirect("/admin")
+    else:
+        return render(request, "admin/form/client_meeting_create_form.html", { "meeting_form": form })
