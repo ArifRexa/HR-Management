@@ -19,9 +19,13 @@ from .hr_policy import (
     HRPolicySectionAdmin,
     HRPolicyAdmin,
     HRContractPolicies,
+    
 )
 
 from .needhelp_position import (
     # EmployeeNeedHelpAdmin,
     NeedHelpPosition,
+    EmployeeAttendanceThree
 )
+
+from .test_admin import EmployeeAttendanceOneAdmin
