@@ -92,6 +92,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     manager = models.BooleanField(default=False)
     lead = models.BooleanField(default=False)
     sqa = models.BooleanField(default=False)
+    exception_la = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     show_in_web = models.BooleanField(default=True)
     operation = models.BooleanField(default=False)
