@@ -563,7 +563,7 @@ from django.db.models.functions import ExtractMonth, ExtractYear
 
 def late_attendance_calculate(late_entry_time):
     employees = Employee.objects.filter(
-        active=True, show_in_attendance_list=True
+        active=True, show_in_attendance_list=True, exception_la=False
     ).exclude(salaryhistory__isnull=True)
     late_entry = time(hour=11, minute=11)
 
