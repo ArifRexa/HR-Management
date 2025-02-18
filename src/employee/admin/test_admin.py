@@ -167,16 +167,8 @@ class EmployeeAttendanceOneAdmin(admin.ModelAdmin):
                                 "entry_time": start_time.time() if start_time else "-",
                                 "exit_time": end_time.time() if end_time else "-",
                                 "is_updated_by_bot": activities[-1].is_updated_by_bot,
-                                "break_time": break_time,
-                                "break_time_hour": math.floor(
-                                    (break_time / (60 * 60)) % 24
-                                ),
-                                "break_time_minute": math.floor(break_time / 60),
-                                "inside_time": inside_time,
-                                "inside_time_hour": math.floor(
-                                    (inside_time / (60 * 60)) % 24
-                                ),
-                                "inside_time_minute": math.floor(inside_time / 60),
+                                "break_time": sToTime(break_time),
+                                "inside_time": sToTime(inside_time),
                                 "total_time": sToTime(inside_time + break_time),
                                 "total_time_hour": math.floor(
                                     (inside_time + break_time) / (60 * 60) % 24
