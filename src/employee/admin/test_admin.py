@@ -66,130 +66,127 @@ class EmployeeAttendanceOneAdmin(admin.ModelAdmin):
             return redirect("/")
 
         now = timezone.now()
-        DEFAULT_EXIT_HOUR = 20  # 8 PM
-        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
-        day_range = 30 if request.user.has_perm("employee.can_see_full_month_attendance") else 10
-
+        last_x_days = (
+            30
+            if request.user.has_perm("employee.can_see_full_month_attendance")
+            else 10
+        )
         last_x_dates = [
             (now - datetime.timedelta(days=i)).date()
-            for i in range(day_range)
-            if (now - datetime.timedelta(days=i)).date().strftime("%a") not in ["Sat", "Sun"]
+            for i in range(last_x_days)
+            if (now - datetime.timedelta(days=i)).strftime("%a") not in ["Sat", "Sun"]
         ]
-        last_x_date = (now - datetime.timedelta(days=10)).date()
+        last_x_date = last_x_dates[-1]
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
-        # Prefetch related data to optimize queries
-        employees = Employee.objects.filter(active=True, show_in_attendance_list=True).order_by("full_name")
-        employees = employees.annotate(
-            last_month_attendance=Count(
-                "employeeattendance",
-                filter=Q(
-                    employeeattendance__date__year=last_month.year,
-                    employeeattendance__date__month=last_month.month,
+        # Fetch employees with related attendance and project updates
+        employees = (
+            Employee.objects.filter(active=True, show_in_attendance_list=True)
+            .annotate(
+                last_month_attendance=Count(
+                    "employeeattendance",
+                    filter=Q(
+                        employeeattendance__date__year=last_month.year,
+                        employeeattendance__date__month=last_month.month,
+                    ),
+                )
+            )
+            .prefetch_related(
+                Prefetch(
+                    "employeeattendance_set",
+                    queryset=EmployeeAttendance.objects.filter(date__gte=last_x_date),
+                ),
+                Prefetch(
+                    "dailyprojectupdate_employee",
+                    queryset=DailyProjectUpdate.objects.filter(
+                        created_at__date__gte=last_x_date, status="approved"
+                    ),
                 ),
             )
-        ).prefetch_related(
-            Prefetch("employeeattendance_set", queryset=EmployeeAttendance.objects.filter(date__gte=last_x_date)),
-            Prefetch(
-                "dailyprojectupdate_employee",
-                queryset=DailyProjectUpdate.objects.filter(created_at__date__gte=last_x_date, status="approved"),
-            ),
         )
+        employees = sorted(employees, key=lambda e: not e.is_online)
 
-        # Sort employees by online status
-        employees = sorted(employees, key=lambda e: e.is_online, reverse=True)
+        # Move logged-in user to the top
+        employees = sorted(employees, key=lambda e: e.user != request.user)
 
-        # Move logged-in user to the top of the list
-        user_data = next((emp for emp in employees if emp.user == request.user), None)
-        if user_data:
-            employees.remove(user_data)
-            employees.insert(0, user_data)
-
-        date_datas = {}
+        date_datas = {
+            emp: {date: {"accepted_hour": 0} for date in last_x_dates}
+            for emp in employees
+        }
         manager_hours = {}
 
         def check_if_late(start_time, is_lead):
-            """Helper function to determine if an employee is late"""
             if not start_time:
                 return False
-
-            today = start_time.date()
             late_change_date = datetime.date(2025, 2, 11)
-
-            # Late criteria
             hour, minute = start_time.hour, start_time.minute
-            if today >= late_change_date:
-                return (is_lead and (hour > 11 or (hour == 11 and minute > 10))) or \
-                       (not is_lead and (hour > 11 or (hour == 11 and minute > 10)))
-            return (is_lead and (hour > 11 or (hour == 11 and minute > 30))) or \
-                   (not is_lead and (hour > 11 or (hour == 11 and minute > 30)))
+            late_limit = (11, 10) if start_time.date() >= late_change_date else (11, 30)
+            return (hour > late_limit[0]) or (
+                hour == late_limit[0] and minute > late_limit[1]
+            )
 
         for emp in employees:
-            emp_attendances = {att.date: att for att in emp.employeeattendance_set.all()}
-            emp_hours = {upd.created_at.date(): upd for upd in emp.dailyprojectupdate_employee.all()}
-
-            date_datas[emp] = {}
+            emp_attendances = {
+                att.date: att for att in emp.employeeattendance_set.all()
+            }
+            emp_hours = {
+                upd.created_at.date(): upd
+                for upd in emp.dailyprojectupdate_employee.all()
+            }
 
             for date in last_x_dates:
-                # Default data
-                date_datas[emp][date] = {"accepted_hour": 0}
-
-                # Attendance data
                 att = emp_attendances.get(date)
                 if att:
                     activities = list(att.employeeactivity_set.all())
                     if activities:
-                        start_time = activities[0].start_time
-                        end_time = activities[-1].end_time or timezone.now()
-                        is_bot_updated = activities[-1].is_updated_by_bot
-
-                        # Calculate break time
+                        start_time, end_time = (
+                            activities[0].start_time,
+                            activities[-1].end_time or timezone.now(),
+                        )
                         break_time = sum(
-                            (activities[i + 1].start_time - activities[i].end_time).total_seconds()
+                            (
+                                activities[i + 1].start_time - activities[i].end_time
+                            ).total_seconds()
                             for i in range(len(activities) - 1)
                             if activities[i].end_time and activities[i + 1].start_time
                         )
-
                         inside_time = sum(
-                            (act.end_time - act.start_time).total_seconds() if act.end_time else 0
+                            (
+                                (act.end_time - act.start_time).total_seconds()
+                                if act.end_time
+                                else 0
+                            )
                             for act in activities
                         )
-
                         is_lead = emp.lead or emp.manager
-                        is_late = check_if_late(start_time, is_lead)
+                        date_datas[emp][date].update(
+                            {
+                                "entry_time": start_time.time() if start_time else "-",
+                                "exit_time": end_time.time() if end_time else "-",
+                                "is_updated_by_bot": activities[-1].is_updated_by_bot,
+                                "break_time": break_time,
+                                "inside_time": inside_time,
+                                "total_time": inside_time + break_time,
+                                "is_late": check_if_late(start_time, is_lead),
+                                "employee_is_lead": is_lead,
+                            }
+                        )
 
-                        # Store attendance data
-                        date_datas[emp][date].update({
-                            "entry_time": start_time.time() if start_time else "-",
-                            "exit_time": end_time.time() if end_time else "-",
-                            "is_updated_by_bot": is_bot_updated,
-                            "break_time": break_time,
-                            "break_time_hour": break_time // 3600,
-                            "break_time_minute": break_time // 60,
-                            "inside_time": inside_time,
-                            "inside_time_hour": inside_time // 3600,
-                            "inside_time_minute": inside_time // 60,
-                            "total_time": inside_time + break_time,
-                            "total_time_hour": (inside_time + break_time) // 3600,
-                            "is_late": is_late,
-                            "employee_is_lead": is_lead,
-                        })
-
-                # Daily approved hours
                 if date in emp_hours:
                     update = emp_hours[date]
                     if update.manager != update.employee:
-                        manager_id = update.manager.id
-                        manager_hours.setdefault(manager_id, {}).setdefault(date, 0)
-                        manager_hours[manager_id][date] += update.hours
-
+                        manager_hours.setdefault(update.manager.id, {}).setdefault(
+                            date, 0
+                        )
+                        manager_hours[update.manager.id][date] += update.hours
                     date_datas[emp][date]["accepted_hour"] = update.hours
 
-        # Apply manager hours
         for emp in employees:
             if emp.id in manager_hours:
                 for date in last_x_dates:
-                    date_datas[emp][date]["manager_hour"] = manager_hours[emp.id].get(date, 0)
+                    date_datas[emp][date]["manager_hour"] = manager_hours[emp.id].get(
+                        date, 0
+                    )
 
         context = {
             **self.admin_site.each_context(request),
@@ -199,7 +196,9 @@ class EmployeeAttendanceOneAdmin(admin.ModelAdmin):
             "online_status_form": request.user.employee.id not in management_ids,
         }
 
-        return TemplateResponse(request, "admin/employee/employee_attendance.html", context)
+        return TemplateResponse(
+            request, "admin/employee/employee_attendance.html", context
+        )
 
     def waqt_select(self, request, *args, **kwargs) -> redirect:
         if not request.user.is_authenticated:
