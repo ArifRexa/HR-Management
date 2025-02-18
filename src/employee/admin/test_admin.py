@@ -80,31 +80,32 @@ class EmployeeAttendanceOneAdmin(admin.ModelAdmin):
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
         # Fetch employees with related attendance and project updates
-        employees = (
-            Employee.objects.filter(active=True, show_in_attendance_list=True)
-            .annotate(
-                last_month_attendance=Count(
-                    "employeeattendance",
-                    filter=Q(
-                        employeeattendance__date__year=last_month.year,
-                        employeeattendance__date__month=last_month.month,
-                    ),
-                )
-            )
-            .prefetch_related(
-                Prefetch(
-                    "employeeattendance_set",
-                    queryset=EmployeeAttendance.objects.filter(date__gte=last_x_date),
-                ),
-                Prefetch(
-                    "dailyprojectupdate_employee",
-                    queryset=DailyProjectUpdate.objects.filter(
-                        created_at__date__gte=last_x_date, status="approved"
-                    ),
+        employees = Employee.objects.filter(active=True, show_in_attendance_list=True)
+        employees = employees.annotate(
+            last_month_attendance=Count(
+                "employeeattendance",
+                filter=Q(
+                    employeeattendance__date__year=last_month.year,
+                    employeeattendance__date__month=last_month.month,
                 ),
             )
+        ).prefetch_related(
+            Prefetch(
+                "employeeattendance_set",
+                queryset=EmployeeAttendance.objects.filter(date__gte=last_x_date),
+            ),
+            Prefetch(
+                "dailyprojectupdate_employee",
+                queryset=DailyProjectUpdate.objects.filter(
+                    created_at__date__gte=last_x_date, status="approved"
+                ),
+            ),
         )
-        employees = sorted(employees, key=lambda e: not e.is_online)
+
+        # Sort employees in Python based on is_online property
+        employees = sorted(
+            employees, key=lambda e: not e.is_online
+        )  # Moves online employees to the top
 
         # Move logged-in user to the top
         employees = sorted(employees, key=lambda e: e.user != request.user)
@@ -159,16 +160,29 @@ class EmployeeAttendanceOneAdmin(admin.ModelAdmin):
                             for act in activities
                         )
                         is_lead = emp.lead or emp.manager
+                        is_late = check_if_late(start_time, is_lead)
+
                         date_datas[emp][date].update(
                             {
                                 "entry_time": start_time.time() if start_time else "-",
                                 "exit_time": end_time.time() if end_time else "-",
                                 "is_updated_by_bot": activities[-1].is_updated_by_bot,
                                 "break_time": break_time,
+                                "break_time_hour": math.floor(
+                                    (break_time / (60 * 60)) % 24
+                                ),
+                                "break_time_minute": math.floor(break_time / 60),
                                 "inside_time": inside_time,
-                                "total_time": inside_time + break_time,
-                                "is_late": check_if_late(start_time, is_lead),
+                                "inside_time_hour": math.floor(
+                                    (inside_time / (60 * 60)) % 24
+                                ),
+                                "inside_time_minute": math.floor(inside_time / 60),
+                                "total_time": sToTime(inside_time + break_time),
+                                "total_time_hour": math.floor(
+                                    (inside_time + break_time) / (60 * 60) % 24
+                                ),
                                 "employee_is_lead": is_lead,
+                                "is_late": is_late,
                             }
                         )
 
