@@ -150,7 +150,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             for i in range(day_range)
             if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
         ]
-        last_x_date = (now - datetime.timedelta(10)).date()
+        last_x_date: datetime._Date = (now - datetime.timedelta(day_range)).date()
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
         # # Filter employees based on user permissions
