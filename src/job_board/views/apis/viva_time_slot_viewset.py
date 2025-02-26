@@ -26,7 +26,7 @@ from job_board.auth.CandidateAuth import CandidateAuth
 
 class VivaConfigViewSet(generics.ListAPIView):
     authentication_classes = [CandidateAuth]
-    serializer_class_config = VivaConfigSerializer
+    serializer_class = VivaConfigSerializer
     serializer_class_timeslot = JobVivaTimeSlotSerializer
     # pagination_class = CustomHighestFivePagination
 
@@ -49,7 +49,7 @@ class VivaConfigViewSet(generics.ListAPIView):
         config_queryset, timeslot_queryset = self.get_queryset()
 
         config_page = self.paginate_queryset(config_queryset)
-        config_serializer = self.serializer_class_config(config_queryset, many=True)
+        config_serializer = self.serializer_class(config_queryset, many=True)
 
         timeslot_page = self.paginate_queryset(timeslot_queryset)
         timeslot_serializer = self.serializer_class_timeslot(timeslot_queryset, many=True)
@@ -95,7 +95,7 @@ class VivaConfigViewSet(generics.ListAPIView):
 
 class VivaConfigViewSet(generics.ListAPIView):
     authentication_classes = [CandidateAuth]
-    serializer_class_config = VivaConfigSerializer
+    serializer_class = VivaConfigSerializer
     serializer_class_timeslot = JobVivaTimeSlotSerializer
 
     # pagination_class = CustomHighestFivePagination
@@ -118,7 +118,7 @@ class VivaConfigViewSet(generics.ListAPIView):
         config_queryset, timeslot_queryset = self.get_queryset()
 
         config_page = self.paginate_queryset(config_queryset)
-        config_serializer = self.serializer_class_config(config_queryset, many=True)
+        config_serializer = self.serializer_class(config_queryset, many=True)
 
         timeslot_page = self.paginate_queryset(timeslot_queryset)
         timeslot_serializer = self.serializer_class_timeslot(timeslot_queryset, many=True)
@@ -149,7 +149,7 @@ class VivaConfigViewSet(generics.ListAPIView):
 
 class VivaConfigPerDayViewSet(generics.ListAPIView):
     authentication_classes = [CandidateAuth]
-    serializer_class_config = VivaConfigSerializer
+    serializer_class = VivaConfigSerializer
     serializer_class_timeslot = JobPostByStartTimeSerializer
 
     # pagination_class = CustomHighestFivePagination
@@ -173,7 +173,7 @@ class VivaConfigPerDayViewSet(generics.ListAPIView):
         config_queryset, timeslot_queryset = self.get_queryset()
 
         config_page = self.paginate_queryset(config_queryset)
-        config_serializer = self.serializer_class_config(config_queryset, many=True)
+        config_serializer = self.serializer_class(config_queryset, many=True)
 
         timeslot_page = self.paginate_queryset(timeslot_queryset)
         timeslot_serializer = self.serializer_class_timeslot(timeslot_queryset, many=True)

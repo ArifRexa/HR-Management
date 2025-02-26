@@ -65,7 +65,7 @@ INSTALLED_APPS = [
     "website",
     "provident_fund",
     # Custom App
-    # 'silk',
+    'silk',
     # "debug_toolbar",
     "client_management",
     "mptt",
@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "reception",
     "nested_admin",
     "smart_selects",
+    "api",
 ]
 USE_DJANGO_JQUERY = True
 MIDDLEWARE = [
@@ -93,7 +94,7 @@ MIDDLEWARE = [
     "django_userforeignkey.middleware.UserForeignKeyMiddleware",
     "django.middleware.common.CommonMiddleware",
     "employee.middleware.CheckUserHasEmployee",
-    # 'silk.middleware.SilkyMiddleware',
+    'silk.middleware.SilkyMiddleware',
     # 'weasyprint.middleware.WeasyPrintMiddleware',
     # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
