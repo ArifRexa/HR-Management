@@ -129,12 +129,13 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("", lambda request: redirect("/admin")),
-    # path('ghorardim/', include('silk.urls', namespace='silk')),
+    path('api-report/', include('silk.urls', namespace='silk')),
     path("clients/", include("client_management.urls")),
     path("api/academy/", include("academy.urls")),
     path("chat/", include("chat.urls")),
     path("",include("reception.urls")),
     path('chaining/', include('smart_selects.urls')),
+    path("external-api/", include("api.urls"))
 ]
 # if settings.DEBUG:
 #     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]

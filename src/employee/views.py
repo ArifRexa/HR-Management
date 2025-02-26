@@ -279,7 +279,7 @@ class TodoSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class EntryPassSerializer(serializers.ModelSerializer):
+class EntryPassSerializer(serializers.Serializer):
     mechine_code = serializers.CharField()
     entry_pass_id = serializers.CharField()
     intent = serializers.CharField()
