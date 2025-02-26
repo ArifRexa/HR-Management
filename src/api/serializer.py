@@ -29,7 +29,7 @@ class DailyProjectUpdateCreateSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
         self.request = self.context.get("request", None)
         self.read_only_fields = ["employee", "status", "created_at", "note"]
-        self._get_readonly_fields(self.request, self.instance)
+        # self._get_readonly_fields(self.request, self.instance)
 
     def _get_readonly_fields(self, request, obj=None):
         if not request or not request.user:
