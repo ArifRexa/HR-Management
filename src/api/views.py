@@ -32,9 +32,9 @@ class FasterPageNumberPagination(CursorPagination):
 class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
     queryset = (
         DailyProjectUpdate.objects.select_related(
-            "employee", "manager", "project", "project__client"
+            "employee", "manager", "project"
         )
-        .prefetch_related("history", "dailyprojectupdateattachment_set")
+        .prefetch_related("history", "dailyprojectupdateattachment_set", "employee__leave_set", "project__client")
         .all()
     )
     serializer_class = DailyProjectUpdateCreateSerializer
