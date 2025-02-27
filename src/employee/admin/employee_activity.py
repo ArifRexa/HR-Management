@@ -135,6 +135,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     autocomplete_fields = ("employee",)
 
     def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
+        if not request.user.has_perm("employee.view_employeeattendance"):
+            return super().changelist_view(request, *args, **kwargs)
+        
         if not request.user.is_authenticated:
             return redirect("/")
 
@@ -176,8 +179,6 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         #         ),
         #     )
         # )
-
-
 
         emps = (
             Employee.objects.filter(
@@ -277,7 +278,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                             employee_is_lead = emp.lead or emp.manager
                             start_time_timeobj = start_time.time()
                             is_late = False
-                            late_time_change_date = datetime.datetime.strptime("2025-02-11", "%Y-%m-%d").date() # it may change if late time change
+                            late_time_change_date = datetime.datetime.strptime(
+                                "2025-02-11", "%Y-%m-%d"
+                            ).date()  # it may change if late time change
                             today = attendance.date
                             if start_time:
                                 if today >= late_time_change_date:
@@ -322,9 +325,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     )
                             temp[date].update(
                                 {
-                                    "entry_time": start_time.time()
-                                    if start_time
-                                    else "-",
+                                    "entry_time": (
+                                        start_time.time() if start_time else "-"
+                                    ),
                                     "exit_time": end_time.time() if end_time else "-",
                                     "is_updated_by_bot": is_updated_by_bot,
                                     "break_time": break_time_s,
@@ -393,7 +396,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 o = "entry"
 
             date_datas = dict(date_datas_sorted)
-            print("*"*100)
+            print("*" * 100)
             print(last_x_dates)
 
         employee_avg_hours_dict = {}
@@ -607,9 +610,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 )
                             temp[date].update(
                                 {
-                                    "entry_time": start_time.time()
-                                    if start_time
-                                    else "-",
+                                    "entry_time": (
+                                        start_time.time() if start_time else "-"
+                                    ),
                                     "exit_time": end_time.time() if end_time else "-",
                                     "is_updated_by_bot": is_updated_by_bot,
                                     "break_time": break_time_s,
@@ -868,9 +871,6 @@ class EmployeeSkillAdmin(admin.ModelAdmin):
     employee_name.short_description = "Employee Name"
 
 
-
-
-
 @admin.register(EmployeeAttendanceTwo)
 class EmployeeAttendanceTwoAdmin(admin.ModelAdmin):
     list_display = ("date", "employee", "entry_time", "exit_time")
@@ -921,8 +921,6 @@ class EmployeeAttendanceTwoAdmin(admin.ModelAdmin):
         #         ),
         #     )
         # )
-
-
 
         emps = (
             Employee.objects.filter(
@@ -1022,7 +1020,9 @@ class EmployeeAttendanceTwoAdmin(admin.ModelAdmin):
                             employee_is_lead = emp.lead or emp.manager
                             start_time_timeobj = start_time.time()
                             is_late = False
-                            late_time_change_date = datetime.datetime.strptime("2025-02-11", "%Y-%m-%d").date() # it may change if late time change
+                            late_time_change_date = datetime.datetime.strptime(
+                                "2025-02-11", "%Y-%m-%d"
+                            ).date()  # it may change if late time change
                             today = attendance.date
                             if start_time:
                                 if today >= late_time_change_date:
@@ -1067,9 +1067,9 @@ class EmployeeAttendanceTwoAdmin(admin.ModelAdmin):
                                     )
                             temp[date].update(
                                 {
-                                    "entry_time": start_time.time()
-                                    if start_time
-                                    else "-",
+                                    "entry_time": (
+                                        start_time.time() if start_time else "-"
+                                    ),
                                     "exit_time": end_time.time() if end_time else "-",
                                     "is_updated_by_bot": is_updated_by_bot,
                                     "break_time": break_time_s,
@@ -1138,7 +1138,7 @@ class EmployeeAttendanceTwoAdmin(admin.ModelAdmin):
                 o = "entry"
 
             date_datas = dict(date_datas_sorted)
-            print("*"*100)
+            print("*" * 100)
             print(last_x_dates)
 
         employee_avg_hours_dict = {}
@@ -1352,9 +1352,9 @@ class EmployeeAttendanceTwoAdmin(admin.ModelAdmin):
                                 )
                             temp[date].update(
                                 {
-                                    "entry_time": start_time.time()
-                                    if start_time
-                                    else "-",
+                                    "entry_time": (
+                                        start_time.time() if start_time else "-"
+                                    ),
                                     "exit_time": end_time.time() if end_time else "-",
                                     "is_updated_by_bot": is_updated_by_bot,
                                     "break_time": break_time_s,
