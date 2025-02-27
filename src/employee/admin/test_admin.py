@@ -137,7 +137,7 @@ class EmployeeAttendanceOneAdmin(admin.ModelAdmin):
                 #         active=True
                 #     )
                 # )
-            )
+            ).all()
             .order_by("full_name")
         )
         e = emps.first()
