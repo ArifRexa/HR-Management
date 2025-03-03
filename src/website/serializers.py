@@ -548,6 +548,8 @@ class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ("slug", "full_name", "designation", "manager", "image", "socials")
+        ref_name = "website_employee"
+
 
     def get_image_url(self, employee):
         request = self.context.get("request")
@@ -896,6 +898,7 @@ class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
         fields = ("question", "answer")
+        ref_name = "website_faq"
 
 
 class OurClientsFeedbackSerializer(serializers.ModelSerializer):
