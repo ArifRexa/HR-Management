@@ -8,33 +8,23 @@ from api.serializer import (
 )
 from project_management.models import DailyProjectUpdate
 from rest_framework.response import Response
-from django.db.models import Count, Sum
-from django.db.models.functions import TruncDate
-from django.http import FileResponse
+from django.db.models import Sum
+
+from django.http import FileResponse, HttpResponse
 from io import BytesIO
-
-
-from django.core.paginator import Paginator
-from django.utils.functional import cached_property
-from rest_framework.pagination import LimitOffsetPagination, CursorPagination
-
-class FasterDjangoPaginator(Paginator):
-    @cached_property
-    def count(self):
-        # only select 'id' for counting, much cheaper
-        return self.object_list.values('id').count()
-
-
-class FasterPageNumberPagination(CursorPagination):
-    ordering = "-created_by"
+from openpyxl.styles import Font, PatternFill, Alignment
+import openpyxl
 
 
 class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
     queryset = (
-        DailyProjectUpdate.objects.select_related(
-            "employee", "manager", "project"
+        DailyProjectUpdate.objects.select_related("employee", "manager", "project")
+        .prefetch_related(
+            "history",
+            "dailyprojectupdateattachment_set",
+            "employee__leave_set",
+            "project__client",
         )
-        .prefetch_related("history", "dailyprojectupdateattachment_set", "employee__leave_set", "project__client")
         .all()
     )
     serializer_class = DailyProjectUpdateCreateSerializer
@@ -51,7 +41,7 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action == "status_update":
             return StatusUpdateSerializer
-        if self.action == "export_update":
+        if self.action in ["export_update", "export_excel", "export_excel_merged"]:
             return BulkDailyUpdateSerializer
         return super().get_serializer_class()
 
@@ -70,7 +60,8 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(
             self.get_queryset()
             .filter(id__in=data["update_ids"])
-            .select_related("employee", "project").prefetch_related("history", "dailyprojectupdateattachment_set")
+            .select_related("employee", "project")
+            .prefetch_related("history", "dailyprojectupdateattachment_set")
         )
         updates = list(queryset)
         for update in updates:
@@ -78,7 +69,7 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
         DailyProjectUpdate.objects.bulk_update(updates, ["status"])
         return Response(DailyProjectUpdateCreateSerializer(queryset, many=True).data)
 
-    @decorators.action(detail=False, methods=["POST"], url_path="export-updates")
+    @decorators.action(detail=False, methods=["POST"], url_path="export-text")
     def export_update(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -141,4 +132,220 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
             f'attachment; filename="{queryset[0]["project__title"].replace(" ", "_")}_'
             f'{queryset[0]["created_at"].strftime("%d-%m-%Y")}.txt"'
         )
+        return response
+
+    @decorators.action(detail=False, methods=["POST"], url_path="export-excel")
+    def export_excel(self, request):
+        serialize = self.get_serializer(data=request.data)
+        serialize.is_valid(raise_exception=True)
+        product_ids = serialize.validated_data.get("update_ids", [])
+
+        queryset = self.get_queryset().filter(id__in=product_ids)
+        project_name = queryset[0].project.title.replace(" ", "_")
+        start_date = request.GET.get("created_at__date__gte", "not_selected")
+        end_date = request.GET.get("created_at__date__lte", "not_selected")
+        date_range = (
+            f"{start_date}_to_{end_date}"
+            if start_date != "not_selected" and end_date != "not_selected"
+            else "selective"
+        )
+
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{project_name}__{date_range}__exported.xlsx"'
+        )
+
+        # Create a new workbook and add a worksheet
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.column_dimensions["A"].width = 13
+        sheet.column_dimensions["B"].width = 98
+        sheet.column_dimensions["C"].width = 13
+        sheet.column_dimensions["D"].width = 13
+        sheet.column_dimensions["E"].width = 20
+
+        # Add headers to sheet
+        sheet.append(["  Date  ", "  Updates  ", "  Task Hours  ", "  Day Hours  "])
+
+        start_ref = 1
+        total_hours = 0
+        for index, obj in enumerate(queryset, start=2):
+            if (
+                obj.updates_json is None
+                or obj.updates_json.__len__() == 0
+                or obj.status != "approved"
+            ):
+                continue
+            total_hours += obj.hours
+            for index_update, update in enumerate(obj.updates_json):
+                sheet.append(
+                    [
+                        obj.created_at.strftime("%d-%m-%Y"),
+                        update[0],
+                        update[1],
+                        obj.hours,
+                    ]
+                )
+
+            start_merge = 1 + start_ref
+            end_merge = start_merge + index_update
+            start_ref = end_merge
+            date_cells = f"A{start_merge}:A{end_merge}"
+            day_hour_cells = f"D{start_merge}:D{end_merge}"
+            sheet.merge_cells(date_cells)
+            sheet.merge_cells(day_hour_cells)
+
+        sheet.append(["", "", "Total: ", f"{total_hours} Hours"])
+
+        # Add styles
+        for cell in sheet.iter_rows(min_row=1, max_row=1):
+            for index, cell in enumerate(cell):
+                cell.font = Font(name="Arial", size=12, bold=True, color="ffffff")
+                cell.fill = PatternFill(
+                    start_color="6aa84f", end_color="6aa84f", fill_type="solid"
+                )
+                cell.alignment = Alignment(
+                    horizontal="center", vertical="center", indent=0
+                )
+
+        for cell in sheet.iter_rows(min_row=2):
+            for index, cell in enumerate(cell):
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                if index == 1:
+                    cell.alignment = Alignment(horizontal="left", vertical="top")
+
+        for cell in sheet.iter_rows(min_row=sheet.max_row):
+            for index, cell in enumerate(cell):
+                if index == 3 or index == 2:
+                    cell.font = Font(name="Arial", size=12, bold=True, color="ffffff")
+                    cell.fill = PatternFill(
+                        start_color="6aa84f", end_color="6aa84f", fill_type="solid"
+                    )
+                    cell.alignment = Alignment(
+                        horizontal="center", vertical="center", indent=0
+                    )
+
+        # Save the workbook to the response
+        wb.save(response)
+
+        return response
+
+    @decorators.action(detail=False, methods=["POST"], url_path="export-merged-excel")
+    def export_excel_merged(self, request):
+        serialize = self.get_serializer(data=request.data)
+        serialize.is_valid(raise_exception=True)
+        product_ids = serialize.validated_data.get("update_ids", [])
+        queryset = self.get_queryset().filter(id__in=product_ids)
+        merged_set = []
+
+        for obj in queryset:
+            if merged_set.__len__() > 0:
+                if merged_set[-1].get("created_at").date() == obj.created_at.date():
+                    tmp_obj = {
+                        "created_at": obj.created_at,
+                        "updates_json": merged_set[-1].get("updates_json")
+                        + obj.updates_json,
+                        "hours": obj.hours + merged_set[-1].get("hours"),
+                        "status": obj.status,
+                    }
+                    merged_set[-1] = tmp_obj
+                else:
+                    tmp_obj = {
+                        "created_at": obj.created_at,
+                        "updates_json": obj.updates_json,
+                        "hours": obj.hours,
+                        "status": obj.status,
+                    }
+                    merged_set.append(tmp_obj)
+            else:
+                tmp_obj = {
+                    "created_at": obj.created_at,
+                    "updates_json": obj.updates_json,
+                    "hours": obj.hours,
+                    "status": obj.status,
+                }
+                merged_set.append(tmp_obj)
+
+        project_name = queryset[0].project.title.replace(" ", "_")
+        start_date = request.GET.get("created_at__date__gte", "not_selected")
+        end_date = request.GET.get("created_at__date__lte", "not_selected")
+        date_range = (
+            f"{start_date}_to_{end_date}"
+            if start_date != "not_selected" and end_date != "not_selected"
+            else "selective"
+        )
+
+        response = HttpResponse(content_type="application/ms-excel")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{project_name}__{date_range}__exported.xlsx"'
+        )
+
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.column_dimensions["A"].width = 13
+        sheet.column_dimensions["B"].width = 98
+        sheet.column_dimensions["C"].width = 13
+        sheet.column_dimensions["D"].width = 13
+        sheet.column_dimensions["E"].width = 20
+        sheet.append(["  Date  ", "  Updates  ", "  Task Hours  ", "  Day Hours  "])
+
+        start_ref = 1
+        total_hours = 0
+        for index, obj in enumerate(merged_set, start=2):
+            if (
+                obj.get("updates_json") is None
+                or obj.get("updates_json").__len__() == 0
+                or obj.get("status") != "approved"
+            ):
+                continue
+            total_hours += obj.get("hours")
+            for index_update, update in enumerate(obj.get("updates_json")):
+                sheet.append(
+                    [
+                        obj.get("created_at").strftime("%d-%m-%Y"),
+                        update[0],
+                        update[1],
+                        obj.get("hours"),
+                    ]
+                )
+
+            start_merge = 1 + start_ref
+            end_merge = start_merge + index_update
+            start_ref = end_merge
+            date_cells = f"A{start_merge}:A{end_merge}"
+            day_hour_cells = f"D{start_merge}:D{end_merge}"
+            sheet.merge_cells(date_cells)
+            sheet.merge_cells(day_hour_cells)
+
+        sheet.append(["", "", "Total: ", f"{total_hours} Hours"])
+
+        # Add styles
+        for cell in sheet.iter_rows(min_row=1, max_row=1):
+            for index, cell in enumerate(cell):
+                cell.font = Font(name="Arial", size=12, bold=True, color="ffffff")
+                cell.fill = PatternFill(
+                    start_color="6aa84f", end_color="6aa84f", fill_type="solid"
+                )
+                cell.alignment = Alignment(
+                    horizontal="center", vertical="center", indent=0
+                )
+
+        for cell in sheet.iter_rows(min_row=2):
+            for index, cell in enumerate(cell):
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+                if index == 1:
+                    cell.alignment = Alignment(horizontal="left", vertical="top")
+
+        for cell in sheet.iter_rows(min_row=sheet.max_row):
+            for index, cell in enumerate(cell):
+                if index == 3 or index == 2:
+                    cell.font = Font(name="Arial", size=12, bold=True, color="ffffff")
+                    cell.fill = PatternFill(
+                        start_color="6aa84f", end_color="6aa84f", fill_type="solid"
+                    )
+                    cell.alignment = Alignment(
+                        horizontal="center", vertical="center", indent=0
+                    )
+
+        wb.save(response)
         return response
