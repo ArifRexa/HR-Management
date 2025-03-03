@@ -1,7 +1,9 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from employee.models.employee import Employee
 from project_management.models import DailyProjectUpdate, DailyProjectUpdateAttachment
+from django.contrib.auth.models import User
 
 
 class DailyProjectUpdateAttachmentSerializer(serializers.ModelSerializer):
@@ -135,3 +137,29 @@ class StatusUpdateSerializer(BulkDailyUpdateSerializer):
     class Meta:
         model = DailyProjectUpdate
         fields = ("status", "update_ids")
+
+
+#######################
+# user management
+#######################
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("username", "email")
+
+
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
+
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = Employee
+        fields = "__all__"
+        extra_kwargs = {
+            "user": {"read_only": True},
+        }
+        ref_name = "api_employee"

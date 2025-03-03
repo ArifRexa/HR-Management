@@ -27,16 +27,20 @@ class FAQSerializer(serializers.ModelSerializer):
     class Meta:
         model = FAQ
         fields = ("question", "answer")
+        ref_name = "academy_faq"
+
 
 class OurAchievementSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurAchievement
         fields = ("title", "number", "icon")
+        ref_name = "academy_our_achievement"
 
 class MarketingSliderSerializer(serializers.ModelSerializer):
     class Meta:
         model = MarketingSlider
         fields = "__all__"
+        ref_name = "academy_marketing_slider"
 
 
 class TrainingStructureModuleSerializer(serializers.ModelSerializer):
@@ -45,6 +49,9 @@ class TrainingStructureModuleSerializer(serializers.ModelSerializer):
         fields = [
             "description",
         ]
+        ref_name = "academy_training_structure_module"
+
+
 
 
 class TrainingStructureSerializer(serializers.ModelSerializer):
@@ -285,3 +292,4 @@ class PageBannerSerializer(serializers.ModelSerializer):
     class Meta:
         model = PageBanner
         exclude = ['id', 'created_at', 'updated_at']
+        ref_name = "academy_page_banner"
