@@ -61,7 +61,7 @@ schema_view = swagger_get_schema_view(
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
-    url=os.environ.get("SWAGGER_API_ENDPOINT", "localhost:8000/api"),
+    url=os.environ.get("SWAGGER_URL", "http://127.0.0.1:8000/api"),
 )
 # urlpatterns = [
 #     path(
