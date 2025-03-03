@@ -2,7 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from employee.models.employee import Employee
-from project_management.models import DailyProjectUpdate, DailyProjectUpdateAttachment
+from project_management.models import DailyProjectUpdate, DailyProjectUpdateAttachment, ProjectHour
 from django.contrib.auth.models import User
 
 
@@ -163,3 +163,11 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "user": {"read_only": True},
         }
         ref_name = "api_employee"
+
+
+class WeeklyProjectUpdate(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ProjectHour
+        fields = "__all__"
+        ref_name = "api_weekly_project_update"

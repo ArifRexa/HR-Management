@@ -66,7 +66,7 @@ INSTALLED_APPS = [
     "website",
     "provident_fund",
     # Custom App
-    #'silk',
+    "silk",
     # "debug_toolbar",
     "client_management",
     "mptt",
@@ -97,7 +97,7 @@ MIDDLEWARE = [
     "django_userforeignkey.middleware.UserForeignKeyMiddleware",
     "django.middleware.common.CommonMiddleware",
     "employee.middleware.CheckUserHasEmployee",
-    # 'silk.middleware.SilkyMiddleware',
+    "silk.middleware.SilkyMiddleware",
     # 'weasyprint.middleware.WeasyPrintMiddleware',
     # "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
@@ -329,8 +329,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 # CRON_CLASSES = [
@@ -476,9 +476,14 @@ SWAGGER_SETTINGS = {
             "name": "Authorization",
             "in": "header",
         },
+        "basic": {
+            "type": "basic",
+        },
     },
+    "USE_SESSION_AUTH": True,
     "PUBLIC": True,
     "LOGIN_URL": "rest_framework:login",
     "LOGOUT_URL": "rest_framework:logout",
     "url": os.environ.get("SWAGGER_URL", "http://localhost:8000"),
+    "REFETCH_SCHEMA_WITH_AUTH": True,
 }

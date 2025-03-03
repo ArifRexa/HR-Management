@@ -1,7 +1,10 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework import viewsets, permissions, parsers, decorators, status
 from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import DailyProjectUpdateFilter
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from api.filters import DailyProjectUpdateFilter, ProjectHourFilter
 from api.serializer import (
     BulkDailyUpdateSerializer,
     DailyProjectUpdateCreateSerializer,
@@ -9,9 +12,10 @@ from api.serializer import (
     StatusUpdateSerializer,
     UserLoginSerializer,
     UserSerializer,
+    WeeklyProjectUpdate,
 )
 from employee.models.employee import Employee
-from project_management.models import DailyProjectUpdate
+from project_management.models import DailyProjectUpdate, ProjectHour
 from rest_framework.response import Response
 from django.db.models import Sum
 
@@ -371,7 +375,7 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["login"]:
             return [permissions.AllowAny()]
-        return super().get_permissions()
+        return [permissions.IsAuthenticated()]
 
     def get_serializer_class(self):
         if self.action == "login":
@@ -401,7 +405,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.select_related("user").prefetch_related(
+    queryset = Employee.objects.select_related(
+        "user", "user__profile", "user__userlogs"
+    ).prefetch_related(
         "leave_set",
         "dailyprojectupdate_employee",
         "dailyprojectupdate_manager",
@@ -409,3 +415,44 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     serializer_class = EmployeeSerializer
     permission_classes = [permissions.IsAuthenticated]
     authentication_classes = [JWTAuthentication]
+
+
+class WeeklyProjectUpdateViewSet(viewsets.ModelViewSet):
+    queryset = ProjectHour.objects.select_related(
+        "project", "manager", "tpm"
+    ).prefetch_related("employeeprojecthour_set")
+    serializer_class = WeeklyProjectUpdate
+    permission_classes = [permissions.IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProjectHourFilter
+    http_method_names = ["get", "post", "put", "patch", "delete"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        employee = self.request.user.employee
+        if employee.manager:
+            qs = qs.filter(manager=employee)
+        elif employee.is_tpm:
+            qs = qs.filter(tpm=employee)
+        return qs
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "created_at__date__gte",
+                openapi.IN_QUERY,
+                description="Start date",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                "created_at__date__lte",
+                openapi.IN_QUERY,
+                description="End date",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
