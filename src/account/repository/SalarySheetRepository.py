@@ -878,6 +878,7 @@ class SalarySheetRepository:
         employee_loans = employee.loan_set.filter(
             start_date__lte=salary_date,
             end_date__gte=salary_date,
+            loan_type="tds"
         )
 
         # insert into loan payment table if the sum amount is not zero

@@ -15,25 +15,24 @@ Including another URLconf
 """
 
 import os
+
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_view
 from django.shortcuts import redirect
-from django.urls import path, include
-from django.conf.urls.static import static
-from django.conf import settings
+from django.urls import include, path
 from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_get_schema_view
+from rest_framework import permissions
 from rest_framework.schemas import get_schema_view
-from employee import views as emp_views
 
 import employee.views
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
-from settings.views import tinymce_image_upload, upload_image
 from employee.models.employee import BookConferenceRoom
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view as swagger_get_schema_view
-from drf_yasg import openapi
-
+from settings.views import tinymce_image_upload
 
 admin.site.site_header = settings.APP_SITE_HEADER
 admin.site.site_title = settings.APP_SITE_TITLE
@@ -75,7 +74,14 @@ schema_view = swagger_get_schema_view(
 #     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 # ]
 
+api_urlpatterns = [
+    path("employee/", include("apps.employeeapp.urls")),
+    path("authentication/", include("apps.authentication.urls")),
+    path("project/", include("apps.projectapp.urls")),
+]
+
 urlpatterns = [
+    path("api/", include(api_urlpatterns)),
     path(
         "swagger/",
         schema_view.with_ui("swagger", cache_timeout=0),
@@ -171,9 +177,6 @@ urlpatterns = [
     path("chat/", include("chat.urls")),
     path("", include("reception.urls")),
     path("chaining/", include("smart_selects.urls")),
-    path("employee/", include("api.employeeapp.urls")),
-    path("authentication/", include("api.authentication.urls")),
-    path("project/", include("api.projectapp.urls")),
 ]
 # if settings.DEBUG:
 #     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]

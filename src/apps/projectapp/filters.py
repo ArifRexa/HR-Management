@@ -1,20 +1,15 @@
-from django_filters import rest_framework as filters
-
+from apps.mixin.filters import BaseFilterSet
 from project_management.models import DailyProjectUpdate, ProjectHour
 
 
-class DailyProjectUpdateFilter(filters.FilterSet):
-    created_at = filters.DateRangeFilter(
-        field_name="created_at", lookup_expr="date__range"
-    )
+class DailyProjectUpdateFilter(BaseFilterSet):
 
     class Meta:
         model = DailyProjectUpdate
         fields = ["status", "project", "employee", "manager", "created_at"]
 
 
-class ProjectHourFilter(filters.FilterSet):
-    created_at = filters.DateFromToRangeFilter()
+class ProjectHourFilter(BaseFilterSet):
 
     class Meta:
         model = ProjectHour

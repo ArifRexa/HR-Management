@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from api.mixin.views import BaseModelViewSet
+from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee
 
 from .serializers import EmployeeSerializer
