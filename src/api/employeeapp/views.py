@@ -1,12 +1,12 @@
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework import permissions
 
-from rest_framework import viewsets, permissions
-from .serializers import EmployeeSerializer
-
+from api.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee
 
+from .serializers import EmployeeSerializer
 
-class EmployeeViewSet(viewsets.ModelViewSet):
+
+class EmployeeViewSet(BaseModelViewSet):
     queryset = Employee.objects.select_related(
         "user", "user__profile", "user__userlogs"
     ).prefetch_related(
@@ -16,4 +16,3 @@ class EmployeeViewSet(viewsets.ModelViewSet):
     )
     serializer_class = EmployeeSerializer
     permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
