@@ -13,26 +13,33 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+import os
+
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views as auth_view
 from django.shortcuts import redirect
-from django.urls import path, include
-from django.conf.urls.static import static
-from django.conf import settings
+from django.urls import include, path
 from django.views.generic import TemplateView
 from django.views.i18n import JavaScriptCatalog
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view as swagger_get_schema_view
+from rest_framework import permissions
 from rest_framework.schemas import get_schema_view
-from employee import views as emp_views
 
 import employee.views
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
-from settings.views import tinymce_image_upload, upload_image
 from employee.models.employee import BookConferenceRoom
+from settings.views import tinymce_image_upload
+
 admin.site.site_header = settings.APP_SITE_HEADER
 admin.site.site_title = settings.APP_SITE_TITLE
 admin.site.index_title = settings.APP_INDEX_TITLE
 
 employee_formal_summery = EmployeeNearbySummery()
+
 
 extra_context = dict(
     leaves=employee_formal_summery.employee_leave_nearby,
@@ -40,10 +47,46 @@ extra_context = dict(
     increments=employee_formal_summery.increments,
     permanents=employee_formal_summery.permanents,
     anniversaries=employee_formal_summery.anniversaries,
-    conference_room_bookings=BookConferenceRoom.objects.all()
+    conference_room_bookings=BookConferenceRoom.objects.all(),
 )
+schema_view = swagger_get_schema_view(
+    openapi.Info(
+        title="HR API Doc",
+        default_version="v1",
+        description="HR Api description",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@snippets.local"),
+        license=openapi.License(name="BSD License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+    url=os.environ.get("SWAGGER_URL", "http://127.0.0.1:8000/api"),
+)
+# urlpatterns = [
+#     path(
+#         "swagger<format>/", schema_view.without_ui(cache_timeout=0), name="schema-json"
+#     ),
+#     path(
+#         "swagger/",
+#         schema_view.with_ui("swagger", cache_timeout=0),
+#         name="schema-swagger-ui",
+#     ),
+#     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+# ]
+
+api_urlpatterns = [
+    path("employee/", include("apps.employeeapp.urls")),
+    path("authentication/", include("apps.authentication.urls")),
+    path("project/", include("apps.projectapp.urls")),
+]
 
 urlpatterns = [
+    path("api/", include(api_urlpatterns)),
+    path(
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
     path("", include("job_board.urls")),
     path("", include("website.urls")),
     path("", include("user_auth.urls")),
@@ -51,7 +94,7 @@ urlpatterns = [
     path("api-auth/", include("rest_framework.urls")),
     path("settings/", include("settings.urls")),
     path("jsi18n/", JavaScriptCatalog.as_view(), name="js-catalog"),
-    path('admin/account/', include('account.urls')),
+    path("admin/account/", include("account.urls")),
     path("", include("employee.urls")),
     path("admin/", admin.site.urls),
     path(
@@ -132,11 +175,11 @@ urlpatterns = [
     path("clients/", include("client_management.urls")),
     path("api/academy/", include("academy.urls")),
     path("chat/", include("chat.urls")),
-    path("",include("reception.urls")),
-    path('chaining/', include('smart_selects.urls')),
-    path("external-api/", include("api.urls"))
+    path("", include("reception.urls")),
+    path("chaining/", include("smart_selects.urls")),
 ]
 # if settings.DEBUG:
 #     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 # urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+# urlpatterns += [path('silk', include('silk.urls', namespace='silk'))]

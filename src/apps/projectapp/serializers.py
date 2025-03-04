@@ -1,7 +1,12 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from project_management.models import DailyProjectUpdate, DailyProjectUpdateAttachment
+from employee.models.employee import EmployeeUnderTPM
+from project_management.models import (
+    DailyProjectUpdate,
+    DailyProjectUpdateAttachment,
+    ProjectHour,
+)
 
 
 class DailyProjectUpdateAttachmentSerializer(serializers.ModelSerializer):
@@ -135,3 +140,22 @@ class StatusUpdateSerializer(BulkDailyUpdateSerializer):
     class Meta:
         model = DailyProjectUpdate
         fields = ("status", "update_ids")
+
+
+class WeeklyProjectUpdate(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProjectHour
+        fields = "__all__"
+        ref_name = "api_weekly_project_update"
+        
+    def create(self, validated_data):
+        request = self.context.get("request", None)
+        validated_data["manager"] = request.user.employee
+        obj = super().create(validated_data)
+        tpm_project = EmployeeUnderTPM.objects.select_related("employee", "tpm").filter(project=obj.project)
+        if tpm_project.exists():
+            obj.tpm = tpm_project.first().tpm
+        else:
+            obj.status = "approved"
+        obj.save()

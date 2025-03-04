@@ -1,22 +1,25 @@
-from rest_framework import viewsets, permissions, parsers, decorators, status
-from django_filters.rest_framework import DjangoFilterBackend
-from api.filters import DailyProjectUpdateFilter
-from api.serializer import (
+from io import BytesIO
+
+import openpyxl
+from django.db.models import Sum
+from django.http import FileResponse, HttpResponse
+from openpyxl.styles import Alignment, Font, PatternFill
+from rest_framework import decorators, parsers, permissions, status
+from rest_framework.response import Response
+
+from apps.mixin.views import BaseModelViewSet
+from project_management.models import DailyProjectUpdate, ProjectHour
+
+from .filters import DailyProjectUpdateFilter, ProjectHourFilter
+from .serializers import (
     BulkDailyUpdateSerializer,
     DailyProjectUpdateCreateSerializer,
     StatusUpdateSerializer,
+    WeeklyProjectUpdate,
 )
-from project_management.models import DailyProjectUpdate
-from rest_framework.response import Response
-from django.db.models import Sum
-
-from django.http import FileResponse, HttpResponse
-from io import BytesIO
-from openpyxl.styles import Font, PatternFill, Alignment
-import openpyxl
 
 
-class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
+class DailyProjectUpdateViewSet(BaseModelViewSet):
     queryset = (
         DailyProjectUpdate.objects.select_related("employee", "manager", "project")
         .prefetch_related(
@@ -27,8 +30,8 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
         )
         .all()
     )
+
     serializer_class = DailyProjectUpdateCreateSerializer
-    filter_backends = [DjangoFilterBackend]
     filterset_class = DailyProjectUpdateFilter
     search_fields = (
         "employee__full_name",
@@ -36,11 +39,11 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
         "manager__full_name",
     )
     permission_classes = [permissions.IsAuthenticated]
-    # pagination_class = FasterPageNumberPagination
+    serializers = {
+        "status_update": StatusUpdateSerializer,
+    }
 
     def get_serializer_class(self):
-        if self.action == "status_update":
-            return StatusUpdateSerializer
         if self.action in ["export_update", "export_excel", "export_excel_merged"]:
             return BulkDailyUpdateSerializer
         return super().get_serializer_class()
@@ -349,3 +352,23 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
 
         wb.save(response)
         return response
+
+
+class WeeklyProjectUpdateViewSet(BaseModelViewSet):
+    queryset = ProjectHour.objects.select_related(
+        "project", "manager", "tpm"
+    ).prefetch_related("employeeprojecthour_set", "projecthourhistory_set")
+    serializer_class = WeeklyProjectUpdate
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_class = ProjectHourFilter
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser or user.has_perm("project_management.show_all_hours"):
+            return qs
+        employee = user.employee
+        if employee.manager:
+            qs = qs.filter(manager=employee)
+        elif employee.is_tpm:
+            qs = qs.filter(tpm=employee)
