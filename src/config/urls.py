@@ -52,9 +52,9 @@ extra_context = dict(
 )
 schema_view = swagger_get_schema_view(
     openapi.Info(
-        title="Smugglers API Doc",
+        title="HR API Doc",
         default_version="v1",
-        description="Test description",
+        description="HR Api description",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
