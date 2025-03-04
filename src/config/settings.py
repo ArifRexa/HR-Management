@@ -36,6 +36,12 @@ DEBUG = os.environ.get("DEBUG", False).lower() in ("true", 1, "t")
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
+API_APPS = [
+    "api.employeeapp",
+    "api.authentication",
+    "api.projectapp",
+]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -78,10 +84,11 @@ INSTALLED_APPS = [
     "reception",
     "nested_admin",
     "smart_selects",
-    "api",
     "rest_framework_simplejwt",
     "drf_yasg",
-]
+] + API_APPS
+
+
 USE_DJANGO_JQUERY = True
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",

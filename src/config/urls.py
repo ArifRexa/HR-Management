@@ -52,16 +52,16 @@ extra_context = dict(
 )
 schema_view = swagger_get_schema_view(
     openapi.Info(
-        title="Smugglers API Doc",
+        title="HR API Doc",
         default_version="v1",
-        description="Test description",
+        description="HR Api description",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(email="contact@snippets.local"),
         license=openapi.License(name="BSD License"),
     ),
     public=True,
     permission_classes=(permissions.AllowAny,),
-    url=os.environ.get("SWAGGER_API_ENDPOINT", "localhost:8000/api"),
+    url=os.environ.get("SWAGGER_URL", "http://127.0.0.1:8000/api"),
 )
 # urlpatterns = [
 #     path(
@@ -171,7 +171,9 @@ urlpatterns = [
     path("chat/", include("chat.urls")),
     path("", include("reception.urls")),
     path("chaining/", include("smart_selects.urls")),
-    path("external-api/", include("api.urls")),
+    path("employee/", include("api.employeeapp.urls")),
+    path("authentication/", include("api.authentication.urls")),
+    path("project/", include("api.projectapp.urls")),
 ]
 # if settings.DEBUG:
 #     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
