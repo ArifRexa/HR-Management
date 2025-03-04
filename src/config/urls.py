@@ -171,7 +171,9 @@ urlpatterns = [
     path("chat/", include("chat.urls")),
     path("", include("reception.urls")),
     path("chaining/", include("smart_selects.urls")),
-    path("external-api/", include("api.urls")),
+    path("employee/", include("api.employeeapp.urls")),
+    path("authentication/", include("api.authentication.urls")),
+    path("project/", include("api.projectapp.urls")),
 ]
 # if settings.DEBUG:
 #     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]

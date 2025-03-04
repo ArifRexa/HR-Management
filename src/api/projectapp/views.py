@@ -1,20 +1,17 @@
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework.exceptions import AuthenticationFailed
+
 from rest_framework import viewsets, permissions, parsers, decorators, status
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from api.filters import DailyProjectUpdateFilter, ProjectHourFilter
-from api.serializer import (
+from .filters import DailyProjectUpdateFilter, ProjectHourFilter
+from .serializers import (
     BulkDailyUpdateSerializer,
     DailyProjectUpdateCreateSerializer,
-    EmployeeSerializer,
     StatusUpdateSerializer,
-    UserLoginSerializer,
-    UserSerializer,
     WeeklyProjectUpdate,
 )
-from employee.models.employee import Employee
+
 from project_management.models import DailyProjectUpdate, ProjectHour
 from rest_framework.response import Response
 from django.db.models import Sum
@@ -23,9 +20,6 @@ from django.http import FileResponse, HttpResponse
 from io import BytesIO
 from openpyxl.styles import Font, PatternFill, Alignment
 import openpyxl
-from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
 
 
 class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
@@ -48,7 +42,6 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
         "manager__full_name",
     )
     permission_classes = [permissions.IsAuthenticated]
-    # pagination_class = FasterPageNumberPagination
 
     def get_serializer_class(self):
         if self.action == "status_update":
@@ -363,60 +356,6 @@ class DailyProjectUpdateViewSet(viewsets.ModelViewSet):
         return response
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.select_related("employee").prefetch_related(
-        "employee__leave_set",
-    )
-    serializer_class = UserSerializer
-
-    permission_classes = [permissions.IsAuthenticated]
-    http_method_names = ["get", "post", "put", "patch", "delete"]
-
-    def get_permissions(self):
-        if self.action in ["login"]:
-            return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
-
-    def get_serializer_class(self):
-        if self.action == "login":
-            return UserLoginSerializer
-        return UserSerializer
-
-    @decorators.action(detail=False, methods=["POST"])
-    def login(self, request):
-        # create login system using simplejwt
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = authenticate(
-            username=serializer.validated_data["username"],
-            password=serializer.validated_data["password"],
-        )
-        if not user:
-            return Response(
-                {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
-            )
-        refresh = RefreshToken.for_user(user)
-        return Response(
-            {
-                "refresh": str(refresh),
-                "access": str(refresh.access_token),
-            }
-        )
-
-
-class EmployeeViewSet(viewsets.ModelViewSet):
-    queryset = Employee.objects.select_related(
-        "user", "user__profile", "user__userlogs"
-    ).prefetch_related(
-        "leave_set",
-        "dailyprojectupdate_employee",
-        "dailyprojectupdate_manager",
-    )
-    serializer_class = EmployeeSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
-
-
 class WeeklyProjectUpdateViewSet(viewsets.ModelViewSet):
     queryset = ProjectHour.objects.select_related(
         "project", "manager", "tpm"
@@ -436,6 +375,7 @@ class WeeklyProjectUpdateViewSet(viewsets.ModelViewSet):
         elif employee.is_tpm:
             qs = qs.filter(tpm=employee)
         return qs
+
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
