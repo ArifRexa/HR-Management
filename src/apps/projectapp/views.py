@@ -7,7 +7,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from rest_framework import decorators, parsers, permissions, status
 from rest_framework.response import Response
 
-from api.mixin.views import BaseModelViewSet
+from apps.mixin.views import BaseModelViewSet
 from project_management.models import DailyProjectUpdate, ProjectHour
 
 from .filters import DailyProjectUpdateFilter, ProjectHourFilter
@@ -357,16 +357,18 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 class WeeklyProjectUpdateViewSet(BaseModelViewSet):
     queryset = ProjectHour.objects.select_related(
         "project", "manager", "tpm"
-    ).prefetch_related("employeeprojecthour_set")
+    ).prefetch_related("employeeprojecthour_set", "projecthourhistory_set")
     serializer_class = WeeklyProjectUpdate
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = ProjectHourFilter
 
     def get_queryset(self):
         qs = super().get_queryset()
-        employee = self.request.user.employee
+        user = self.request.user
+        if user.is_superuser or user.has_perm("project_management.show_all_hours"):
+            return qs
+        employee = user.employee
         if employee.manager:
             qs = qs.filter(manager=employee)
         elif employee.is_tpm:
             qs = qs.filter(tpm=employee)
-        return qs

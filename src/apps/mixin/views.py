@@ -3,7 +3,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
-from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from .filters import BaseFilterSet
 from .swagger_schema import CustomSwaggerAutoSchema
@@ -36,7 +35,6 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = BaseFilterSet
     http_method_names = ["get", "post", "put", "patch", "delete"]
-    authentication_classes = [JWTAuthentication]
 
     def get_serializer_class(self):
         return self.serializers.get(self.action, super().get_serializer_class())

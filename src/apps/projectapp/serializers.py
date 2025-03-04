@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateAttachment,
@@ -147,3 +148,14 @@ class WeeklyProjectUpdate(serializers.ModelSerializer):
         model = ProjectHour
         fields = "__all__"
         ref_name = "api_weekly_project_update"
+        
+    def create(self, validated_data):
+        request = self.context.get("request", None)
+        validated_data["manager"] = request.user.employee
+        obj = super().create(validated_data)
+        tpm_project = EmployeeUnderTPM.objects.select_related("employee", "tpm").filter(project=obj.project)
+        if tpm_project.exists():
+            obj.tpm = tpm_project.first().tpm
+        else:
+            obj.status = "approved"
+        obj.save()

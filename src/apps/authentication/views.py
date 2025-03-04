@@ -4,7 +4,7 @@ from rest_framework import decorators, permissions, status
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.mixin.views import BaseModelViewSet
+from apps.mixin.views import BaseModelViewSet
 
 from .serializers import UserLoginSerializer, UserSerializer
 

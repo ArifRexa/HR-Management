@@ -1,4 +1,4 @@
-from api.authentication.serializers import UserSerializer
+from apps.authentication.serializers import UserSerializer
 from employee.models.employee import Employee
 from rest_framework import serializers
 

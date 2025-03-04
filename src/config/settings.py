@@ -37,9 +37,9 @@ DEBUG = os.environ.get("DEBUG", False).lower() in ("true", 1, "t")
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(" ")
 
 API_APPS = [
-    "api.employeeapp",
-    "api.authentication",
-    "api.projectapp",
+    "apps.employeeapp",
+    "apps.authentication",
+    "apps.projectapp",
 ]
 
 # Application definition
@@ -337,6 +337,7 @@ REST_FRAMEWORK = {
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
