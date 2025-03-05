@@ -1,10 +1,13 @@
+from datetime import datetime, timedelta
 from io import BytesIO
 
 import openpyxl
-from django.db.models import Sum
+from django.db.models import F, Q, Sum
 from django.http import FileResponse, HttpResponse
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
-from rest_framework import decorators, parsers, permissions, status
+from rest_framework import decorators, parsers, permissions, response, status
 from rest_framework.response import Response
 
 from apps.mixin.views import BaseModelViewSet
@@ -13,7 +16,7 @@ from project_management.models import DailyProjectUpdate, ProjectHour
 from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
     BulkDailyUpdateSerializer,
-    DailyProjectUpdateCreateSerializer,
+    DailyProjectUpdateSerializer,
     StatusUpdateSerializer,
     WeeklyProjectUpdate,
 )
@@ -31,7 +34,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
         .all()
     )
 
-    serializer_class = DailyProjectUpdateCreateSerializer
+    serializer_class = DailyProjectUpdateSerializer
     filterset_class = DailyProjectUpdateFilter
     search_fields = (
         "employee__full_name",
@@ -70,7 +73,72 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
         for update in updates:
             update.status = data["status"]
         DailyProjectUpdate.objects.bulk_update(updates, ["status"])
-        return Response(DailyProjectUpdateCreateSerializer(queryset, many=True).data)
+        return Response(DailyProjectUpdateSerializer(queryset, many=True).data)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "project_hour_id",
+                openapi.IN_QUERY,
+                description="Project ID",
+                type=openapi.TYPE_INTEGER,
+            ),
+        ]
+    )
+    @decorators.action(
+        detail=False,
+        methods=["GET"],
+        url_path="(?P<project_id>[^/.]+)/daily-update/(?P<date>[^/.]+)",
+    )
+    def get_daily_update_by_weekly(self, request, project_id, date, *args, **kwargs):
+        project_hour_id = request.GET.get("project_hour_id")
+        manager_id = request.user.employee.id
+        if project_hour_id:
+            manager_id = (
+                ProjectHour.objects.select_related("manager")
+                .get(id=project_hour_id)
+                .manager_id
+            )
+        q_obj = Q(
+            project=project_id,
+            manager=manager_id,
+            status="approved",
+            created_at__date__lte=datetime.strptime(date, "%Y-%m-%d"),
+            created_at__date__gte=datetime.strptime(date, "%Y-%m-%d")
+            - timedelta(days=6),
+        )
+        daily_update = (
+            self.get_queryset()
+            .filter(
+                q_obj,
+                employee__active=True,
+                employee__project_eligibility=True,
+            )
+            .annotate(
+                full_name=F("employee__full_name"), update_text=F("updates_json__0__0")
+            )
+            .exclude(hours=0.0)
+            .values(
+                "id",
+                "created_at",
+                "employee_id",
+                "full_name",
+                "hours",
+                "update",
+                "updates_json",
+                "update_text",
+            )
+        )
+
+        totalHours = daily_update.aggregate(total=Sum("hours"))["total"] or 0
+
+        data = {
+            "manager_id": manager_id,
+            "weekly_hour": list(daily_update),
+            "total_project_hours": totalHours,
+        }
+
+        return response.Response(data)
 
     @decorators.action(detail=False, methods=["POST"], url_path="export-text")
     def export_update(self, request):
@@ -357,13 +425,18 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 class WeeklyProjectUpdateViewSet(BaseModelViewSet):
     queryset = ProjectHour.objects.select_related(
         "project", "manager", "tpm"
-    ).prefetch_related("employeeprojecthour_set", "projecthourhistory_set")
+    ).prefetch_related(
+        "employeeprojecthour_set",
+        "projecthourhistry_set",
+        "employeeprojecthour_set__employee",
+    )
     serializer_class = WeeklyProjectUpdate
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = ProjectHourFilter
 
     def get_queryset(self):
         qs = super().get_queryset()
+        # print(dir(qs.first()))
         user = self.request.user
         if user.is_superuser or user.has_perm("project_management.show_all_hours"):
             return qs

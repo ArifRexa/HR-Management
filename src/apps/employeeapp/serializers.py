@@ -1,8 +1,9 @@
 from apps.authentication.serializers import UserSerializer
+from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import Employee
-from rest_framework import serializers
 
-class EmployeeSerializer(serializers.ModelSerializer):
+
+class EmployeeSerializer(BaseModelSerializer):
     user = UserSerializer(read_only=True)
 
     class Meta:
@@ -12,4 +13,3 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "user": {"read_only": True},
         }
         ref_name = "api_employee"
-
