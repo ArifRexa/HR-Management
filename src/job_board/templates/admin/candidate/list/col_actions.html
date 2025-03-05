@@ -31,7 +31,7 @@
             <input type="text"
                    class="schedule-datetime" style="margin-right: 5px;"
                    placeholder="Schedule Interview"
-                   value="{{ candidate.schedule_datetime|date:'Y-m-d h:i' }}"
+                   value="{{ candidate.schedule_datetime|date:'Y-m-d H:i' }}"
                    onchange="updateSchedule({{ candidate.id }}, this.value)">
             <i class="calendar-icon"></i>
             <button type="button" class="cancel-schedule-btn"
