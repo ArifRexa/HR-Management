@@ -279,6 +279,7 @@ def send_reschedule_email(candidate_id):
 
         # Get the most recent schedule_datetime
         schedule_datetime = candidate.schedule_datetime
+        print(f"schedule_datetime: {schedule_datetime}")
 
         if not schedule_datetime:
             print(f"No schedule datetime found for candidate {candidate_id}")

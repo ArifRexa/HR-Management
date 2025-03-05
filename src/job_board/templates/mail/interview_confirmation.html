@@ -105,7 +105,10 @@
             <p style="text-align: center; font-size: 18px; margin: 0;">Your interview is scheduled for:</p>
             <p style="text-align: center; font-size: 20px; font-weight: bold; color: #372d9f; margin: 10px 0;">
                 {{ interview_datetime|date:"l, F j, Y" }}<br>
-                {{ interview_datetime|date:"g:i " }}PM
+                {% with hour=interview_datetime|date:"H" %}
+                    {{ interview_datetime|date:"g:i" }} {% if hour|add:"0" >= 12 and hour|add:"0" <= 23 %}pm{% else %}am{% endif %}
+
+                {% endwith %}
             </p>
         </div>
 

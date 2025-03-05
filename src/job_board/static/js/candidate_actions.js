@@ -48,9 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (typeof flatpickr !== 'undefined') {
         flatpickr(".schedule-datetime", {
             enableTime: true,
-            dateFormat: "Y-m-d h:i",
+            dateFormat: "Y-m-d H:i",
             minDate: "today",
-            time_24hr: false,
+            time_24hr: true,
             minuteIncrement: 15,
             defaultHour: 9,
             onChange: function(selectedDates, dateStr, instance) {
@@ -138,6 +138,7 @@ async function updateCall(candidateId, value) {
 let scheduleTimeout = null;  // Store the timeout globally
 
 async function updateSchedule(candidateId, value) {
+    console.log(value)
     const scheduleContainer = document.querySelector(`[data-candidate-id="${candidateId}"] .schedule-input-wrapper`);
     const cancelButton = scheduleContainer.querySelector('.cancel-schedule-btn');
 
