@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
     DailyProjectUpdate,
@@ -9,7 +10,7 @@ from project_management.models import (
 )
 
 
-class DailyProjectUpdateAttachmentSerializer(serializers.ModelSerializer):
+class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):
     attachment = serializers.FileField(required=True)
 
     class Meta:
@@ -18,7 +19,7 @@ class DailyProjectUpdateAttachmentSerializer(serializers.ModelSerializer):
         extra_kwargs = {"created_at": {"read_only": True}}
 
 
-class DailyProjectUpdateCreateSerializer(serializers.ModelSerializer):
+class DailyProjectUpdateCreateSerializer(BaseModelSerializer):
     attachment = DailyProjectUpdateAttachmentSerializer(many=True, required=False)
 
     class Meta:
@@ -125,7 +126,7 @@ class DailyProjectUpdateCreateSerializer(serializers.ModelSerializer):
         return instance
 
 
-class BulkDailyUpdateSerializer(serializers.ModelSerializer):
+class BulkDailyUpdateSerializer(BaseModelSerializer):
     update_ids = serializers.ListField(
         required=True, child=serializers.IntegerField(), write_only=True
     )
@@ -142,20 +143,23 @@ class StatusUpdateSerializer(BulkDailyUpdateSerializer):
         fields = ("status", "update_ids")
 
 
-class WeeklyProjectUpdate(serializers.ModelSerializer):
+class WeeklyProjectUpdate(BaseModelSerializer):
 
     class Meta:
         model = ProjectHour
         fields = "__all__"
         ref_name = "api_weekly_project_update"
-        
+
     def create(self, validated_data):
         request = self.context.get("request", None)
         validated_data["manager"] = request.user.employee
-        obj = super().create(validated_data)
-        tpm_project = EmployeeUnderTPM.objects.select_related("employee", "tpm").filter(project=obj.project)
+
+        tpm_project = EmployeeUnderTPM.objects.select_related("employee", "tpm").filter(
+            project=validated_data.get("project")
+        )
         if tpm_project.exists():
-            obj.tpm = tpm_project.first().tpm
+            validated_data["tpm"] = tpm_project.first().tpm
         else:
-            obj.status = "approved"
-        obj.save()
+            validated_data["status"] = "approved"
+
+        super().create(validated_data)

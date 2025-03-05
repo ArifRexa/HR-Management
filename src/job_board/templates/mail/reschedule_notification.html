@@ -125,7 +125,9 @@
             <p>Your interview has been rescheduled to:</p>
             <p style="font-size: 18px; font-weight: bold; text-align: center;">
                 {{ schedule_datetime|date:"l, F j, Y" }}<br>
-                {{ schedule_datetime|date:"g:i " }}PM
+                {% with hour=schedule_datetime|date:"H" %}
+                    {{ schedule_datetime|date:"g:i" }} {% if hour|add:"0" >= 12 and hour|add:"0" <= 23 %}pm{% else %}am{% endif %}
+                {% endwith %}
             </p>
         </div>
 
