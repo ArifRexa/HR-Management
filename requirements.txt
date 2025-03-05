@@ -94,3 +94,4 @@ langchain
 langchain-community
 langchain-openai
 drf-yasg[validation]
+djangorestframework-simplejwt==5.2.2
