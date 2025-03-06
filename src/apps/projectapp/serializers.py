@@ -180,6 +180,23 @@ class WeeklyProjectUpdate(BaseModelSerializer):
         ref_name = "api_weekly_project_update"
 
     def create(self, validated_data):
+        request = self.context["request"]
+        project = validated_data.get("project")
+        if (
+            validated_data.get("hour_type") != "bonus"
+            and project
+            and ProjectHour.objects.filter(
+                manager_id=request.user.employee.id,
+                project_id=project.id,
+                date=validated_data.get("date"),
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                {
+                    "date": "Project Hour for this date with this project and manager already exists",
+                }
+            )
+
         request = self.context.get("request", None)
         validated_data["manager"] = request.user.employee
         employee_project_hour = validated_data.pop("employee_project_hour", None)
@@ -204,6 +221,14 @@ class WeeklyProjectUpdate(BaseModelSerializer):
         return instance
 
     def update(self, instance, validated_data):
+        request = self.context.get("request", None)
+        if (
+            request.user.employee.is_tpm
+            and not EmployeeUnderTPM.objects.filter(
+                tpm=request.user.employee, project=instance.project
+            ).exists()
+        ):
+            raise serializers.ValidationError("You are not assign TPM for this project")
         employee_project_hour = validated_data.pop("employee_project_hour", None)
 
         instance = super().update(instance, validated_data)
