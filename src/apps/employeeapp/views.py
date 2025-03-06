@@ -5,11 +5,13 @@ from .serializers import EmployeeSerializer
 
 
 class EmployeeViewSet(BaseModelViewSet):
-    queryset = Employee.objects.select_related(
-        "user", "user__profile", "user__userlogs"
-    ).prefetch_related(
-        "leave_set",
-        "dailyprojectupdate_employee",
-        "dailyprojectupdate_manager",
-    ).order_by("id")
+    queryset = (
+        Employee.objects.select_related("user", "user__profile", "user__userlogs")
+        .prefetch_related(
+            "leave_set",
+            "dailyprojectupdate_employee",
+            "dailyprojectupdate_manager",
+        )
+        .order_by("id")
+    )
     serializer_class = EmployeeSerializer
