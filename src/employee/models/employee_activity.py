@@ -49,6 +49,7 @@ def save_employee_attendance(sender, **kwargs):
             activities.update(end_time=timezone.now())
 
 
+
 class EmployeeAttendance(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     date = models.DateField()
