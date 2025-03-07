@@ -341,10 +341,10 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-        "apps.mixin.permission.ModelPermission"
-    ],
+    # "DEFAULT_PERMISSION_CLASSES": [
+    #     "rest_framework.permissions.IsAuthenticated",
+    #     "apps.mixin.permission.ModelPermission"
+    # ],
 }
 # CRON_CLASSES = [
 #     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
