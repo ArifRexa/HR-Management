@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from account.models import Income
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
@@ -24,7 +25,7 @@ class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):
 class DailyProjectUpdateHistorySerializer(BaseModelSerializer):
     class Meta:
         model = DailyProjectUpdateHistory
-        exclude = ("daily_update",)
+        exclude = ("daily_update", "created_by")
 
 
 class DailyProjectUpdateSerializer(BaseModelSerializer):
@@ -178,6 +179,30 @@ class WeeklyProjectUpdate(BaseModelSerializer):
         model = ProjectHour
         fields = "__all__"
         ref_name = "api_weekly_project_update"
+        extra_kwargs = {"tpm": {"read_only": True}}
+
+    def get_fields(self):
+        """
+        Dynamically adjust fields based on user permissions, mirroring the provided get_fields logic.
+        """
+        fields = super().get_fields()
+        request = self.context.get("request", None)
+
+        if request and not request.user.is_superuser:
+            if "manager" in fields:
+                del fields["manager"]
+            if "payable" in fields:
+                del fields["payable"]
+
+            if not request.user.has_perm("project_management.select_hour_type"):
+                if "hour_type" in fields:
+                    del fields["hour_type"]
+
+            if not request.user.employee.is_tpm:
+                if "status" in fields:
+                    del fields["status"]
+
+        return fields
 
     def create(self, validated_data):
         request = self.context["request"]
@@ -222,6 +247,17 @@ class WeeklyProjectUpdate(BaseModelSerializer):
 
     def update(self, instance, validated_data):
         request = self.context.get("request", None)
+        seven_day_earlier = timezone.now() - timezone.timedelta(days=6)
+        if (
+            instance.created_at <= seven_day_earlier
+            and not request.user.is_superuser
+            and not request.user.has_perm(
+                "project_management.weekly_project_hours_approve"
+            )
+        ):
+            raise serializers.ValidationError(
+                "Cannot update project hours older than 6 days unless you are a superuser or have approval permission."
+            )
         if (
             request.user.employee.is_tpm
             and not EmployeeUnderTPM.objects.filter(
@@ -251,3 +287,16 @@ class WeeklyProjectUpdate(BaseModelSerializer):
                 )
 
         return instance
+
+
+class BulkUpdateSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        required=True, child=serializers.IntegerField(), write_only=True
+    )
+
+
+class IncomeSerializer(BaseModelSerializer):
+    class Meta:
+        model = Income
+        fields = "__all__"
+        ref_name = "api_income"

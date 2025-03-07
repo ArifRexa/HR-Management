@@ -12,3 +12,10 @@ class ModelPermission(permissions.DjangoModelPermissions):
         "DELETE": ["%(app_label)s.delete_%(model_name)s"],
     }
     authenticated_users_only = True
+    
+    
+
+class IsSuperUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_superuser)
+    
