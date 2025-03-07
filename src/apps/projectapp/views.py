@@ -1,8 +1,10 @@
+import csv
 from datetime import datetime, timedelta
+from decimal import Decimal
 from io import BytesIO
 
 import openpyxl
-from django.db.models import F, Q, Sum
+from django.db.models import F, Prefetch, Q, Sum
 from django.http import FileResponse, HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -10,13 +12,22 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from rest_framework import decorators, parsers, permissions, response, status
 from rest_framework.response import Response
 
+from account.models import Income
+from apps.mixin.permission import IsSuperUser
 from apps.mixin.views import BaseModelViewSet
-from project_management.models import DailyProjectUpdate, ProjectHour
+from employee.models.employee import EmployeeUnderTPM
+from project_management.models import (
+    DailyProjectUpdate,
+    DailyProjectUpdateHistory,
+    ProjectHour,
+)
 
 from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
     BulkDailyUpdateSerializer,
+    BulkUpdateSerializer,
     DailyProjectUpdateSerializer,
+    IncomeSerializer,
     StatusUpdateSerializer,
     WeeklyProjectUpdate,
 )
@@ -26,7 +37,10 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
     queryset = (
         DailyProjectUpdate.objects.select_related("employee", "manager", "project")
         .prefetch_related(
-            "history",
+            Prefetch(
+                "history",
+                queryset=DailyProjectUpdateHistory.objects.order_by("-id"),
+            ),
             "dailyprojectupdateattachment_set",
             "employee__leave_set",
             "project__client",
@@ -434,6 +448,22 @@ class WeeklyProjectUpdateViewSet(BaseModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filterset_class = ProjectHourFilter
 
+    def get_permissions(self):
+        if self.action in ["enable_payable_status", "disable_payable_status"]:
+            return [IsSuperUser()]
+        return super().get_permissions()
+
+    def get_serializer_class(self, *args, **kwargs):
+        if self.action in [
+            "approve_project_hours",
+            "export_as_csv",
+            "enable_payable_status",
+            "disable_payable_status",
+            "create_income",
+        ]:
+            return BulkUpdateSerializer
+        return super().get_serializer_class(*args, **kwargs)
+
     def get_queryset(self):
         qs = super().get_queryset()
         # print(dir(qs.first()))
@@ -447,3 +477,292 @@ class WeeklyProjectUpdateViewSet(BaseModelViewSet):
             qs = qs.filter(tpm=employee)
         return qs
 
+    @decorators.action(
+        detail=False,
+        methods=["POST"],
+        url_path="approve-hours",
+    )
+    def approve_project_hours(self, request):
+        """
+        Approve multiple project hours based on user permissions.
+        Expects a list of project hour IDs in the request data.
+        """
+        user = request.user
+
+        if not hasattr(user, "employee"):
+            return Response(
+                {"detail": "User has no employee profile"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project_hour_ids = serializer.validated_data.get("ids", [])
+        if not project_hour_ids:
+            return Response(
+                {"detail": "No project hour IDs provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        queryset = self.get_queryset().filter(id__in=project_hour_ids)
+        employee = user.employee
+
+        try:
+            if employee.is_tpm:
+                tpm_projects = (
+                    EmployeeUnderTPM.objects.select_related(
+                        "employee", "tpm", "project"
+                    )
+                    .filter(tpm_id=employee.id)
+                    .values_list("project_id", flat=True)
+                    .distinct()
+                )
+
+                update_queryset = queryset.filter(project_id__in=tpm_projects)
+                updated_count = update_queryset.update(status="approved")
+
+            elif user.is_superuser:
+                updated_count = queryset.update(status="approved")
+            else:
+                return Response(
+                    {"detail": "Insufficient permissions"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            return Response(
+                {
+                    "detail": f"Successfully approved {updated_count} project hours",
+                    "updated_count": updated_count,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error approving project hours: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @decorators.action(detail=False, methods=["POST"], url_path="export-csv")
+    def export_as_csv(self, request):
+        """
+        Export selected project hours as CSV.
+        Expects a list of project hour IDs in the request data.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project_hour_ids = serializer.validated_data.get("ids", [])
+
+        if project_hour_ids:
+            queryset = self.get_queryset().filter(id__in=project_hour_ids)
+        else:
+            queryset = self.get_queryset()
+
+        if not queryset.exists():
+            return Response(
+                {"detail": "No project hours found for export"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        response = HttpResponse(
+            content_type="text/csv",
+            headers={"Content-Disposition": 'attachment; filename="project_hours.csv"'},
+        )
+
+        writer = csv.writer(response)
+
+        writer.writerow(["Date", "Project", "Hours", "Payment", "Manager"])
+
+        total = 0
+        for project_hour in queryset:
+            payment = project_hour.hours * 10
+            total += payment
+            writer.writerow(
+                [
+                    project_hour.date,
+                    str(project_hour.project),
+                    project_hour.hours,
+                    payment,
+                    str(project_hour.manager) if project_hour.manager else "N/A",
+                ]
+            )
+
+        writer.writerow(["", "Total", "", total, ""])
+
+        return response
+
+    @decorators.action(
+        detail=False,
+        methods=["post"],
+        url_path="enable-payable",
+    )
+    def enable_payable_status(self, request):
+        """
+        Enable payable status for selected project hours.
+        Only accessible to superusers.
+        Expects a list of project hour IDs in the request data.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project_hour_ids = serializer.validated_data.get("ids", [])
+        if not project_hour_ids:
+            return Response(
+                {"detail": "No project hour IDs provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+
+            queryset = self.get_queryset().filter(id__in=project_hour_ids)
+            updated_count = queryset.update(payable=True)
+
+            if updated_count == 0:
+                return Response(
+                    {"detail": "No project hours were updated"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            return Response(
+                {
+                    "detail": f"Successfully enabled payable status for {updated_count} project hours",
+                    "updated_count": updated_count,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error updating payable status: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @decorators.action(detail=False, methods=["post"], url_path="disable-payable")
+    def disable_payable_status(self, request):
+        """
+        Disable payable status for selected project hours.
+        Only accessible to superusers.
+        Expects a list of project hour IDs in the request data.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project_hour_ids = serializer.validated_data.get("ids", [])
+        if not project_hour_ids:
+            return Response(
+                {"detail": "No project hour IDs provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+
+            queryset = self.get_queryset().filter(id__in=project_hour_ids)
+            updated_count = queryset.update(payable=False)
+
+            if updated_count == 0:
+                return Response(
+                    {"detail": "No project hours were updated"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            return Response(
+                {
+                    "detail": f"Successfully disabled payable status for {updated_count} project hours",
+                    "updated_count": updated_count,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error updating payable status: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+    @decorators.action(
+        detail=False,
+        methods=["POST"],
+        url_path="create-income",
+    )
+    def create_income(self, request):
+        """
+        Create Income records from selected project hours.
+        Only accessible to superusers.
+        Expects a list of project hour IDs in the request data.
+        """
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        project_hour_ids = serializer.validated_data.get("ids", [])
+        if not project_hour_ids:
+            return Response(
+                {"detail": "No project hour IDs provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            queryset = self.get_queryset().filter(id__in=project_hour_ids)
+            if not queryset.exists():
+                return Response(
+                    {"detail": "No valid project hours found"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
+            income_objects = []
+            convert_rate = Decimal("90.0")
+
+            for project_hour in queryset:
+                project = project_hour.project
+
+                hourly_rate = (
+                    project.hourly_rate
+                    if project.hourly_rate and project.hourly_rate > 0
+                    else (
+                        project.client.hourly_rate
+                        if project.client
+                        else Decimal("0.00")
+                    )
+                )
+
+                hours = project_hour.hours or 0
+                payment = Decimal(hours) * Decimal(hourly_rate) * convert_rate
+
+                pdf_url = None
+                if project_hour.report_file:
+                    pdf_url = (
+                        project_hour.report_file.url
+                        if "http" in project_hour.report_file.url
+                        else request.build_absolute_uri(project_hour.report_file.url)
+                    )
+
+                income_obj = Income(
+                    project=project,
+                    hours=hours,
+                    hour_rate=hourly_rate,
+                    convert_rate=convert_rate,
+                    date=project_hour.date,
+                    status="pending",
+                    payment=payment,
+                    pdf_url=pdf_url,
+                )
+                income_objects.append(income_obj)
+
+            created_records = Income.objects.bulk_create(income_objects)
+            created_count = len(created_records)
+
+            return Response(
+                {
+                    "detail": f"Successfully created {created_count} income records",
+                    "data": IncomeSerializer(created_records, many=True).data,
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Exception as e:
+            return Response(
+                {"detail": f"Error creating income records: {str(e)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
