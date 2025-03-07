@@ -445,3 +445,5 @@ class WeeklyProjectUpdateViewSet(BaseModelViewSet):
             qs = qs.filter(manager=employee)
         elif employee.is_tpm:
             qs = qs.filter(tpm=employee)
+        return qs
+
