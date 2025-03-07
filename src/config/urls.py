@@ -81,7 +81,6 @@ api_urlpatterns = [
 ]
 
 urlpatterns = [
-    path("api/", include(api_urlpatterns)),
     path(
         "swagger/",
         schema_view.with_ui("swagger", cache_timeout=0),
@@ -178,6 +177,7 @@ urlpatterns = [
     path("", include("reception.urls")),
     path("chaining/", include("smart_selects.urls")),
 ]
+urlpatterns.extend(api_urlpatterns)
 # if settings.DEBUG:
 #     urlpatterns += [path('__debug__/', include('debug_toolbar.urls'))]
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

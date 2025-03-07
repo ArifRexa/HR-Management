@@ -1,9 +1,28 @@
-from apps.authentication.serializers import UserSerializer
-from employee.models.employee import Employee
 from rest_framework import serializers
 
-class EmployeeSerializer(serializers.ModelSerializer):
+from apps.authentication.serializers import UserSerializer
+from apps.mixin.serializer import BaseModelSerializer
+from employee.models.employee import Employee
+
+
+class EmployeeListSerializer(BaseModelSerializer):
+    permissions = serializers.SerializerMethodField()
+
+    def get_permissions(self, obj):
+        return obj.user.get_all_permissions()
+
+    class Meta:
+        model = Employee
+        fields = ["id", "full_name", "designation", "permissions", "image"]
+        ref_name = "api_employee_list"
+
+
+class EmployeeSerializer(BaseModelSerializer):
     user = UserSerializer(read_only=True)
+    permissions = serializers.SerializerMethodField()
+
+    def get_permissions(self, obj):
+        return obj.user.get_all_permissions()
 
     class Meta:
         model = Employee
@@ -12,4 +31,3 @@ class EmployeeSerializer(serializers.ModelSerializer):
             "user": {"read_only": True},
         }
         ref_name = "api_employee"
-
