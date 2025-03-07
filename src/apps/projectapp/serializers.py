@@ -6,6 +6,8 @@ from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateAttachment,
+    DailyProjectUpdateHistory,
+    EmployeeProjectHour,
     ProjectHour,
 )
 
@@ -19,8 +21,17 @@ class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):
         extra_kwargs = {"created_at": {"read_only": True}}
 
 
-class DailyProjectUpdateCreateSerializer(BaseModelSerializer):
+class DailyProjectUpdateHistorySerializer(BaseModelSerializer):
+    class Meta:
+        model = DailyProjectUpdateHistory
+        exclude = ("daily_update",)
+
+
+class DailyProjectUpdateSerializer(BaseModelSerializer):
     attachment = DailyProjectUpdateAttachmentSerializer(many=True, required=False)
+    history = DailyProjectUpdateHistorySerializer(
+        many=True, read_only=True, required=False
+    )
 
     class Meta:
         model = DailyProjectUpdate
@@ -143,7 +154,25 @@ class StatusUpdateSerializer(BulkDailyUpdateSerializer):
         fields = ("status", "update_ids")
 
 
+class ProjectHourHistorySerializer(BaseModelSerializer):
+    class Meta:
+        model = DailyProjectUpdate
+        fields = "__all__"
+
+
+class EmployeeProjectHourSerializer(BaseModelSerializer):
+    class Meta:
+        model = EmployeeProjectHour
+        exclude = ("project_hour",)
+
+
 class WeeklyProjectUpdate(BaseModelSerializer):
+    hour_history = ProjectHourHistorySerializer(
+        source="projecthourhistry_set", read_only=True, many=True
+    )
+    employee_project_hour = EmployeeProjectHourSerializer(
+        source="employeeprojecthour_set", many=True
+    )
 
     class Meta:
         model = ProjectHour
@@ -151,10 +180,28 @@ class WeeklyProjectUpdate(BaseModelSerializer):
         ref_name = "api_weekly_project_update"
 
     def create(self, validated_data):
+        request = self.context["request"]
+        project = validated_data.get("project")
+        if (
+            validated_data.get("hour_type") != "bonus"
+            and project
+            and ProjectHour.objects.filter(
+                manager_id=request.user.employee.id,
+                project_id=project.id,
+                date=validated_data.get("date"),
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                {
+                    "date": "Project Hour for this date with this project and manager already exists",
+                }
+            )
+
         request = self.context.get("request", None)
         validated_data["manager"] = request.user.employee
-
-        tpm_project = EmployeeUnderTPM.objects.select_related("employee", "tpm").filter(
+        employee_project_hour = validated_data.pop("employee_project_hour", None)
+        employee_hour_list = []
+        tpm_project = EmployeeUnderTPM.objects.select_related("tpm").filter(
             project=validated_data.get("project")
         )
         if tpm_project.exists():
@@ -162,4 +209,45 @@ class WeeklyProjectUpdate(BaseModelSerializer):
         else:
             validated_data["status"] = "approved"
 
-        super().create(validated_data)
+        instance = super().create(validated_data)
+        if employee_project_hour:
+            employee_hour_list.append(
+                EmployeeProjectHour(**employee_project_hour, project_hour=instance)
+            )
+
+        EmployeeProjectHour.objects.select_related("employee").bulk_create(
+            employee_hour_list
+        )
+        return instance
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request", None)
+        if (
+            request.user.employee.is_tpm
+            and not EmployeeUnderTPM.objects.filter(
+                tpm=request.user.employee, project=instance.project
+            ).exists()
+        ):
+            raise serializers.ValidationError("You are not assign TPM for this project")
+        employee_project_hour = validated_data.pop("employee_project_hour", None)
+
+        instance = super().update(instance, validated_data)
+
+        if employee_project_hour:
+
+            existing_hour = (
+                EmployeeProjectHour.objects.select_related("employee")
+                .filter(project_hour=instance)
+                .first()
+            )
+            if existing_hour:
+
+                for key, value in employee_project_hour.items():
+                    setattr(existing_hour, key, value)
+                existing_hour.save()
+            else:
+                EmployeeProjectHour.objects.select_related("employee").create(
+                    **employee_project_hour, project_hour=instance
+                )
+
+        return instance
