@@ -123,6 +123,23 @@ class UpdateCallView(APIView):
         candidate.save()
         return Response({'status': 'success'}, status=status.HTTP_200_OK)
 
+# class UpdateScheduleView(APIView):
+#     permission_classes = [IsAdminUser]
+#
+#     def post(self, request, candidate_id):
+#         candidate = get_object_or_404(Candidate, id=candidate_id)
+#         schedule_datetime = request.data.get('schedule_datetime')
+#
+#         if schedule_datetime:  # Update with new value
+#             candidate.schedule_datetime = schedule_datetime
+#         else:  # Reset to null if cancel is triggered
+#             candidate.schedule_datetime = None
+#             send_cancellation_email(candidate.id)
+#
+#         candidate.save()
+#
+#         # Don't send any emails here - emails will be sent when status changes to 'scheduled'
+#         return Response({'status': 'success'}, status=status.HTTP_200_OK)
 class UpdateScheduleView(APIView):
     permission_classes = [IsAdminUser]
 
