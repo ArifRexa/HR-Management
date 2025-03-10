@@ -98,13 +98,17 @@
                                         <td align="right">{{ employeesalary.food_allowance|default:"0.00" }}</td>
                                     </tr>
                                     <tr>
+                                        <td>Leave Bonus</td>
+                                        <td align="right">{{ employeesalary.leave_bonus|floatformat:2|default:"0.00" }}</td>
+                                    </tr>
+                                    <tr>
                                         <td><br></td>
                                     </tr>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <th align="left">Total Earning/Salary</th>
-                                        <th align="right">{{ employeesalary.net_salary|addition:employeesalary.project_bonus|addition:employeesalary.food_allowance|addition:employeesalary.festival_bonus|floatformat:2|intcomma|default:"0.00" }} BDT</th>
+                                        <th align="right">{{ employeesalary.net_salary|addition:employeesalary.project_bonus|addition:employeesalary.food_allowance|addition:employeesalary.festival_bonus|addition:employeesalary.leave_bonus|floatformat:2|intcomma|default:"0.00" }} BDT</th>
                                     </tr>
                                 </tfoot>
                             </table>
