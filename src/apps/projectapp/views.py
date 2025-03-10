@@ -9,7 +9,7 @@ from django.http import FileResponse, HttpResponse
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
-from rest_framework import decorators, parsers, permissions, response, status
+from rest_framework import decorators, parsers, response, status
 from rest_framework.response import Response
 
 from account.models import Income
@@ -55,7 +55,6 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
         "project__title",
         "manager__full_name",
     )
-    permission_classes = [permissions.IsAuthenticated]
     serializers = {
         "status_update": StatusUpdateSerializer,
     }
@@ -445,7 +444,6 @@ class WeeklyProjectUpdateViewSet(BaseModelViewSet):
         "employeeprojecthour_set__employee",
     )
     serializer_class = WeeklyProjectUpdate
-    permission_classes = [permissions.IsAuthenticated]
     filterset_class = ProjectHourFilter
 
     def get_permissions(self):

@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.employeeapp.serializers import EmployeeListSerializer
-from apps.mixin.permission import ModelPermission
 from apps.mixin.views import BaseModelViewSet
 
 from .serializers import UserLoginSerializer, UserSerializer
@@ -17,7 +16,6 @@ class UserViewSet(BaseModelViewSet):
     )
     serializer_class = UserSerializer
 
-    permission_classes = [permissions.IsAuthenticated, ModelPermission]
     serializers = {
         "login": UserLoginSerializer,
     }
