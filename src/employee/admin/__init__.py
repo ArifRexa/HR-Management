@@ -25,7 +25,5 @@ from .hr_policy import (
 from .needhelp_position import (
     # EmployeeNeedHelpAdmin,
     NeedHelpPosition,
-    EmployeeAttendanceThree
 )
 
-from .test_admin import EmployeeAttendanceOneAdmin
