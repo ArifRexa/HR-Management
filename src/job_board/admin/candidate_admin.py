@@ -326,7 +326,7 @@ class CandidateAdmin(admin.ModelAdmin):
                 else feedback.comment
             )
             truncated_feedback_list += (
-                f"<p><strong>{feedback.user}:</strong> {truncated_comment}</p>"
+                f"<p><strong>{feedback.user.employee.full_name}:</strong> {truncated_comment}</p>"
             )
 
             # Full feedback (for hover), preserving line breaks
