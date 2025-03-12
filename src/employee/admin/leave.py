@@ -1,19 +1,18 @@
-from datetime import date, timedelta, time
 import datetime
+from datetime import date, time, timedelta
 
-from django.utils.html import format_html
-from django.contrib import admin, messages
 from django import forms
+from django.contrib import admin, messages
 from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404, redirect
-from django.template.loader import get_template
-from django.utils.html import format_html
-from django.utils import timezone
-from django_q.tasks import async_task
-from icecream import ic
 from django.core.mail import EmailMessage
+from django.shortcuts import get_object_or_404
+from django.template.loader import get_template
+from django.utils import timezone
+from django.utils.html import format_html
+from django_q.tasks import async_task
+
+from employee.models import Leave, LeaveAttachment
 from employee.models.employee_activity import EmployeeProject
-from employee.models import LeaveAttachment, Leave
 from employee.models.leave import leave
 
 
@@ -152,6 +151,7 @@ class LeaveManagement(admin.ModelAdmin):
         LeaveManagementInline,
         FeedbackInline,
     )
+    autocomplete_fields = ("employee",)
     search_fields = ("employee__full_name", "leave_type")
     form = LeaveForm
     date_hierarchy = "start_date"
