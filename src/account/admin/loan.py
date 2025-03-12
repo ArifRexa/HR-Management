@@ -41,6 +41,7 @@ class LoadAdmin(admin.ModelAdmin):
     search_fields = ("employee__full_name",)
     date_hierarchy = "effective_date"
     change_list_template = "admin/loan.html"
+    autocomplete_fields = ("employee",)
 
     @admin.action(description="Print Agreement")
     def print_loan_agreement(self, request, queryset):

@@ -78,7 +78,7 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email.subject = f"{subject} of {employee.full_name}"
     email.attach_alternative(html_body, "text/html")
     email.to = [employee.email]
-    email.from_email = '"Mediusware-Admin" <admin@mediusware.com>'
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     if pdf.__contains__("http"):
         # URL of the PDF file
         pdf_url = pdf
