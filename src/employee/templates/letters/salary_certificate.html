@@ -6,107 +6,113 @@
 
 {% block content %}
     {% for employee in employees %}
-        <p>Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.resignation_date | date:'Ym' }}{{ employee.id }} <br>
-            Date: {% now "jS F Y" %} <br>
-            <b>{{ employee.full_name | title }}</b> <br>
-            Email: {{ employee.email }}<br>
+        <p style="width: 50%; margin: auto; text-align: left;">
+            <strong>Ref:</strong> Mediusware Ltd./{{ latter_type }}/{{ employee.resignation_date | date:'Ym' }}{{ employee.id }} <br>
+            <strong>Date:</strong> {% now "d M Y" %} <br>
         </p>
+        
+        <h2 style="margin-bottom: -20px;"><u>Salary Certificate</u></h2>
+        <table>
+            <tr>
+                <td>Name</td>
+                <td style="margin-left: -200px;">: {{ employee.full_name | title }}</td>
+            </tr>
+            <tr>
+                <td>Employee ID</td>
+                <td style="margin-left: -200px;">: {{ employee.joining_date | date:'Yd' }}{{ employee.id }}</td>
+            </tr>
+            <tr>
+                <td>Designation</td>
+                <td style="margin-left: -200px;">: {{ employee.designation }}</td>
+            </tr>
+            <tr>
+                <td>Joining Date</td>
+                <td style="margin-left: -200px;">: {{ employee.joining_date | date:'M. d, Y' }}</td>
+            </tr>
+            <tr>
+                <td>Department</td>
+                <td style="margin-left: -200px;">: </td>
+            </tr>
+        </table>
+        
         <br>
-        <br>
-        <br>
-        <center><h2>To Whom It May Concern</h2></center>
 
 
-        <p>
-            This is to certify that <b>{{ employee.full_name | title }}</b>, <b>{{ employee.designation }}</b> has
-            received the following emolument from Mediusware
-            Ltd. During the period from {{ context.financial_year.start_date }} to {{ context.financial_year.end_date }}
+        <p style="width: 50%; margin: auto;">
+            This is to certify that the above-mentioned employee is a permanent employee of Mediusware Ltd. Below is their current salary structure:
         </p>
 
-
-        <table width="50%" border="1" cellpadding="5" align="center">
+        <table width="100%" border="1" cellpadding="5" align="center" style="border-collapse: collapse; text-align: left;">
             <thead>
             <tr>
-                <th>Particulars</th>
-                <th>Taka</th>
+                <th>Pay Particulars</th>
+                <th>Amount (BDT)</th>
             </tr>
             </thead>
             <tbody>
             <tr>
-                <td width="55%">Basic Salary</td>
-                <td align="right">
-                    {{ employee.employeesalary_set | sum_employee_salary:'gross_salary' | percentage:55 }}</td>
+                <td width="55%">Basic (55%)</td>
+                <td align="right">{{ employee.employeesalary_set | sum_employee_salary:'gross_salary' | percentage:55 }}</td>
             </tr>
             <tr>
-                <td>House Rent Allowance</td>
-                <td align="right">
-                    {{ employee.employeesalary_set | sum_employee_salary:'gross_salary'| percentage:20 }}</td>
+                <td>House Allowance (20%)</td>
+                <td align="right">{{ employee.employeesalary_set | sum_employee_salary:'gross_salary'| percentage:20 }}</td>
             </tr>
             <tr>
-                <td>Medical Allowance</td>
-                <td align="right">
-                    {{ employee.employeesalary_set | sum_employee_salary:'gross_salary' | percentage:10 }}</td>
+                <td>Conveyance (15%)</td>
+                <td align="right">{{ employee.employeesalary_set | sum_employee_salary:'gross_salary'| percentage:15  }}</td>
             </tr>
             <tr>
-                <td>Conveyance Allowance</td>
-                <td align="right">
-                    {{ employee.employeesalary_set | sum_employee_salary:'gross_salary'| percentage:15  }}</td>
+                <td>Medical Allowance (10%)</td>
+                <td align="right">{{ employee.employeesalary_set | sum_employee_salary:'gross_salary' | percentage:10 }}</td>
             </tr>
             <tr>
-                <td>Festival Bonus</td>
-                <td align="right">
-                    {{ employee.employeesalary_set | sum_employee_salary:'festival_bonus'| floatformat:2  }}</td>
+                <td>Lunch Allowance</td>
+                <td align="right">{{ employee.lunch_allowance | floatformat:2 }}</td>
             </tr>
             </tbody>
 
             <tfoot style="border-top: 1px solid black;">
             <tr>
-                <th align='right'>Total</th>
+                <th align='right'>Total Compensation</th>
                 <td align="right"><b>
-                    {{ employee.employeesalary_set | sum_employee_salary_with_festival_bonus | floatformat:2 }}
-                    BDT</b>
+                    {{ employee.employeesalary_set | sum_employee_salary_with_festival_bonus | floatformat:2 }} BDT</b>
                 </td>
             </tr>
             </tfoot>
-
         </table>
         <br>
 
-        <p>
-            His tax payer identification number {{ employee.tax_info }}. The company has not
-            deducted any advance income tax at source from his salary during this period.
+        <p style="width: 50%; margin: auto;">
+            Words: ({{ employee.employeesalary_set | sum_employee_salary_with_festival_bonus | num_to_word }} Taka Only.)
         </p>
 
         <br>
         <br>
         <br>
         <table width="100%">
-
             <tr>
-                <td width="70%">For Mediusware Ltd</td>
+                <td width="70%">Yours faithfully,</td>
                 <td></td>
             </tr>
             <tr>
                 <td rowspan="1"><img src="{{ seal }}" height="80px" alt=""></td>
                 <td></td>
             </tr>
-
             <tr>
-                <td>
-                    <br>
-                </td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Md. Shahinur Rahman</td>
-                <td></td>
-            </tr>
-            <tr>
-                <td>Managing Director</td>
+                <td>HR & Admin</td>
                 <td></td>
             </tr>
             <tr>
                 <td>Mediusware Ltd.</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Contact: 01897661850</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Email: hr@mediusware.com</td>
                 <td></td>
             </tr>
         </table>
