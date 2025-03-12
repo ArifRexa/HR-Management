@@ -73,7 +73,17 @@ class ScheduleDateFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         # Get distinct dates and count candidates for each schedule date
-        queryset = Candidate.objects.exclude(schedule_datetime__date=None).values('schedule_datetime__date').annotate(
+        # queryset = Candidate.objects.exclude(schedule_datetime__date=None).values('schedule_datetime__date').annotate(
+        #     candidate_count=Count('schedule_datetime')
+        # ).order_by('schedule_datetime__date')
+        
+        
+        past_seven_days = timezone.now().date() - timedelta(days=7)
+
+        queryset = Candidate.objects.filter(
+            schedule_datetime__date__gte=past_seven_days,
+            schedule_datetime__date__isnull=False
+        ).values('schedule_datetime__date').annotate(
             candidate_count=Count('schedule_datetime')
         ).order_by('schedule_datetime__date')
 
