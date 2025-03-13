@@ -1,7 +1,7 @@
 from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIView
-
+from rest_framework.routers import DefaultRouter
 from website.models import LifeAtMediusware
 from website.views import (
     AwardListView,
@@ -9,9 +9,11 @@ from website.views import (
     ClientListAPIView,
     ClientLogoListView,
     ClientReviewListAPIView,
+    ContactModelViewSet,
     EmployeeTestimonialListAPIView,
     GalleryListView,
     IndustryWeServeListAPIView,
+    InquiryModelViewSet,
     LeadershipAPIView,
     LifeAtMediuswareListView,
     OfficeLocationListView,
@@ -26,6 +28,7 @@ from website.views import (
     ProjectSitemapView,
     ProjectDetails,
     EmployeeList,
+    SubscriptionModelViewSet,
     VideoTestimonialListAPIView,
     index,
     EmployeeDetails,
@@ -235,6 +238,12 @@ api_v2_urls = [
     path("benefits/", BenefitsOfEmploymentListAPIView.as_view(), name="benefits"),
 ]
 
+
+router = DefaultRouter()
+router.register("contact", ContactModelViewSet)
+router.register("inquiry", InquiryModelViewSet)
+router.register("subscription", SubscriptionModelViewSet)
+
 urlpatterns = [
     path("api/website/", include(api_urls + api_v2_urls)),
     path("website/", include(web_url)),
@@ -244,3 +253,5 @@ urlpatterns = [
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+urlpatterns += [path("api/website/", include(router.urls)),]

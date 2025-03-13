@@ -1,21 +1,22 @@
-from website.models_v2.hire_resources import HireResourcePage
-from .hire_models import *  # noqa
-from django.db import models
-import uuid
 import base64
+import uuid
 from io import BytesIO
-from weasyprint import HTML
+
+from django.core.exceptions import ValidationError
+from django.db import models
+from mptt.models import MPTTModel, TreeForeignKey
 
 # Create your models here
 from tinymce.models import HTMLField
-from mptt.models import MPTTModel, TreeForeignKey
-
+from weasyprint import HTML
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-from project_management.models import Client, Country, Project, Technology
 from employee.models import Employee
-from django.core.exceptions import ValidationError
+from project_management.models import Client, Country, Project, Technology
+from website.models_v2.hire_resources import HireResourcePage
+
+from .hire_models import *  # noqa
 
 
 class ServiceProcess(models.Model):
@@ -98,10 +99,12 @@ class BlogStatus(models.TextChoices):
     APPROVED = "approved", "Approved"
     PUBLISHED = "published", "Published"
 
+
 class BlogSlugField(models.SlugField):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.max_length = 255
+
 
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
@@ -197,8 +200,7 @@ class BlogSEOEssential(TimeStampMixin, AuthorMixin):
     description = models.TextField(verbose_name="Meta Description")
     keywords = models.TextField(verbose_name="Meta Keywords")
     blog = models.ForeignKey(Blog, on_delete=models.CASCADE, null=True, blank=True)
-    
-    
+
     class Meta:
         verbose_name = "SEO Essential"
         verbose_name_plural = "SEO Essentials"
@@ -820,3 +822,34 @@ class HireResourceKeyword(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BaseContact(TimeStampMixin):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    company_name = models.CharField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    message = models.TextField(null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class Contact(BaseContact):
+
+    file = models.FileField(upload_to="contact_files/", null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Inquiry(BaseContact):
+    def __str__(self):
+        return self.name
+
+
+class Subscription(TimeStampMixin):
+    email = models.EmailField(unique=True)
+
+    def __str__(self):
+        return self.email
