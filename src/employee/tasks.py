@@ -1,49 +1,48 @@
 import calendar
 import datetime
 import math
-from re import sub
-import requests
-from dateutil.relativedelta import relativedelta, FR
-
-from .models import EmployeeAttendance
+import re
 from datetime import datetime
+
+import requests
+from dateutil.relativedelta import relativedelta
 from django.core import management
-from django.core.mail import EmailMultiAlternatives, EmailMessage
-from django.template import Context, loader
-from django.template.loader import get_template
-from django.utils import timezone
-from django.conf import settings
+from django.core.mail import EmailMessage, EmailMultiAlternatives
 from django.db.models import (
-    Prefetch,
-    F,
+    Count,
     ExpressionWrapper,
+    F,
     FloatField,
+    OuterRef,
+    Prefetch,
     Q,
     Subquery,
-    OuterRef,
-    Count,
 )
-from employee.models.employee import LateAttendanceFine
+from django.template import loader
+from django.utils import timezone
+
+from account.models import Loan
 from employee.models import (
     Employee,
+    EmployeeAttendance,
+    EmployeeFeedback,
+    EmployeeOnline,
+    HRPolicy,
     Leave,
     LeaveManagement,
-    EmployeeOnline,
-    EmployeeAttendance,
-    PrayerInfo,
-    EmployeeFeedback,
-    SalaryHistory,
     NeedHelpPosition,
-    HRPolicy,
-    EmployeeRating,
+    PrayerInfo,
+    SalaryHistory,
 )
+from employee.models.employee import LateAttendanceFine
 from project_management.models import (
-    ProjectHour,
-    EmployeeProjectHour,
     DailyProjectUpdate,
+    EmployeeProjectHour,
     Project,
+    ProjectHour,
 )
-from account.models import Loan
+
+from .models import EmployeeAttendance
 
 
 def set_default_exit_time(default_time):
@@ -111,23 +110,69 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
     email.send()
 
 
+# def leave_mail(leave: Leave):
+#     leave_manage = LeaveManagement.objects.filter(leave=leave)
+#     manager_email = []
+#     for leave_manage_obj in leave_manage:
+#         manager_email.append(leave_manage_obj.manager.email)
+#     email = EmailMessage()
+#     message_body = f"{leave.message} \n {leave.note} \n Status : {leave.status}"
+#     if leave.status == "pending":
+#         email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
+#         email.to = ['"Mediusware-HR" <hr@mediusware.com>']
+#         email.cc = manager_email
+#         email.subject = f"Leave application for {leave.applied_leave_type}"
+#     else:
+#         email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+#         email.to = [f"{leave.employee.full_name} <{leave.employee.email}>"]
+#         email.subject = f"Leave application for {leave.leave_type}"
+#     email.body = message_body
+#     email.send()
+
+
 def leave_mail(leave: Leave):
+    print("start leave mail")
     leave_manage = LeaveManagement.objects.filter(leave=leave)
     manager_email = []
     for leave_manage_obj in leave_manage:
         manager_email.append(leave_manage_obj.manager.email)
-    email = EmailMessage()
-    message_body = f"{leave.message} \n {leave.note} \n Status : {leave.status}"
+    email = EmailMultiAlternatives()
+    text = "Applied day total 1. chargeable day 1"
+    pattern = r"Applied day total (\d+)\. chargeable day (\d+)"
+
+    match = re.search(pattern, text)
+    applied_days = 0
+    chargeable_days = 0
+    if match:
+        applied_days = int(match.group(1))
+        chargeable_days = int(match.group(2))
+    leave_type = leave.leave_type if leave.leave_type else leave.applied_leave_type
+    html_body = loader.render_to_string(
+        "mails/leave_mail.html",
+        context={
+            "leave": leave,
+            "leave_type": leave_type,
+            "applied_days": applied_days,
+            "chargeable_days": chargeable_days,
+        },
+    )
     if leave.status == "pending":
-        email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
-        email.to = ['"Mediusware-HR" <hr@mediusware.com>']
+        email.from_email = "mdborhan.st@gmail.com"
+        email.to = ['mdborhan.st@gmail.com']
         email.cc = manager_email
+        email.subject = (
+            f"{leave.employee.full_name}: Leave application: {leave.applied_leave_type}"
+        )
     else:
-        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        email.from_email = '"mdborhan.st@gmail.com"'
         email.to = [f"{leave.employee.full_name} <{leave.employee.email}>"]
-    email.subject = f"Leave application {leave.leave_type}, {leave.status}"
-    email.body = message_body
+        email.subject = (
+            f"{leave.employee.full_name}: Leave application: {leave.leave_type}"
+        )
+
+    email.attach_alternative(html_body, "text/html")
     email.send()
+    print("end leave mail")
 
 
 # TODO : Resignation notification
@@ -433,8 +478,8 @@ def bonus__project_hour_add(target_date=None):
         print("[Bot] Bonus Done")
 
 
-from employee.models import Employee, Config
 from employee.mail import cto_help_mail, hr_help_mail, send_need_help_mails
+from employee.models import Config
 
 
 def cto_help_pending_alert():
@@ -557,8 +602,7 @@ def employee_attendance_old_data_delete(months):
     old_data.delete()
 
 
-from datetime import datetime, time
-from django.db.models.functions import ExtractMonth, ExtractYear
+from datetime import time
 
 
 def late_attendance_calculate(late_entry_time):
@@ -594,7 +638,7 @@ def late_attendance_calculate(late_entry_time):
         today_late_entry = EmployeeAttendance.objects.filter(
             employee=employee, date=current_date, entry_time__gt=late_entry
         )
-        #TODO: month and year remove
+        # TODO: month and year remove
         if not LateAttendanceFine.objects.filter(
             employee=employee,
             # month=current_month,
@@ -609,9 +653,11 @@ def late_attendance_calculate(late_entry_time):
                     date=current_date,
                     is_consider=False,
                     total_late_attendance_fine=500.00,
-                    entry_time=today_late_entry.first().entry_time
-                    if today_late_entry.exists()
-                    else None,
+                    entry_time=(
+                        today_late_entry.first().entry_time
+                        if today_late_entry.exists()
+                        else None
+                    ),
                 )
                 html_body = loader.render_to_string(
                     "mails/late_entry_mail.html",
@@ -635,9 +681,11 @@ def late_attendance_calculate(late_entry_time):
                     date=current_date,
                     is_consider=False,
                     total_late_attendance_fine=80.00,
-                    entry_time=today_late_entry.first().entry_time
-                    if today_late_entry.exists()
-                    else None,
+                    entry_time=(
+                        today_late_entry.first().entry_time
+                        if today_late_entry.exists()
+                        else None
+                    ),
                 )
 
                 html_body = loader.render_to_string(
@@ -662,9 +710,11 @@ def late_attendance_calculate(late_entry_time):
                     date=current_date,
                     is_consider=False,
                     total_late_attendance_fine=0.00,
-                    entry_time=today_late_entry.first().entry_time
-                    if today_late_entry.exists()
-                    else None,
+                    entry_time=(
+                        today_late_entry.first().entry_time
+                        if today_late_entry.exists()
+                        else None
+                    ),
                 )
 
 
@@ -689,9 +739,8 @@ def send_birthday_email():
         email.send()
 
 
-from django.db.models import F, Q, Value, Count, DateTimeField, Max
+from django.db.models import DateTimeField, Max, Value
 from django.db.models.functions import Coalesce
-from datetime import datetime, time
 
 
 def new_late_attendance_calculate(late_entry_time):
@@ -790,8 +839,7 @@ def new_late_attendance_calculate(late_entry_time):
     # Send emails
     for email in emails:
         email.send()
-        
-        
+
 
 def send_resignation_application_email(obj):
     body = f"""
@@ -812,8 +860,7 @@ def send_resignation_application_email(obj):
         to=["hr@mediusware.com"],
     )
     email.send()
-    
-    
+
 
 def send_resignation_feedback_email(subject, body, from_email, to_email):
     email = EmailMultiAlternatives()
