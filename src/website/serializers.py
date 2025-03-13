@@ -4,83 +4,86 @@ from rest_framework import serializers
 # from chat import models
 from employee.models import (
     Employee,
-    EmployeeSocial,
     EmployeeContent,
     EmployeeNOC,
-    Skill,
     EmployeeSkill,
+    EmployeeSocial,
+    Skill,
 )
 from project_management.models import (
-    Project,
     Client,
-    ProjectResultStatistic,
-    ProjectServiceSolution,
-    Technology,
-    ProjectTechnology,
-    ProjectContent,
-    ProjectScreenshot,
-    Tag,
-    ProjectKeyFeature,
     ClientFeedback,
-    ProjectResults,
     OurTechnology,
-    ProjectPlatform,
+    Project,
+    ProjectContent,
+    ProjectKeyFeature,
     ProjectKeyPoint,
+    ProjectPlatform,
+    ProjectResults,
+    ProjectResultStatistic,
+    ProjectScreenshot,
+    ProjectServiceSolution,
+    ProjectTechnology,
+    Tag,
+    Technology,
 )
 from settings.models import Designation
 from website.models import (
+    FAQ,
+    AllServicesTitle,
     Award,
+    AwardsTitle,
     BenefitsOfEmployment,
+    Blog,
+    BlogCategory,
+    BlogComment,
+    BlogContext,
     BlogFAQ,
     BlogMeatadata,
     BlogSEOEssential,
     BlogStatus,
+    BlogTag,
+    BlogTitle,
+    Brand,
+    Category,
+    Contact,
+    EmployeePerspective,
     EmployeeTestimonial,
+    FAQHomeTitle,
     Gallery,
     HomeBanner,
+    Industry,
+    IndustryTitle,
     IndustryWeServe,
+    Inquiry,
+    Lead,
     Leadership,
     LeadershipSpeech,
     LifeAtMediusware,
+    LifeAtMediuswareTitle,
+    ModelTitle,
     OfficeLocation,
+    OurAchievement,
+    OurGrowth,
+    OurJourney,
+    OurJourneyTitle,
     PageBanner,
     PostCredential,
     ProjectMetadata,
     ProjectServiceSolutionTitle,
+    ProjectsVideoTitle,
     Service,
-    Blog,
-    Category,
-    BlogTag,
-    BlogCategory,
-    BlogContext,
-    BlogComment,
-    FAQ,
+    ServiceContent,
     ServiceMeatadata,
     ServiceProcess,
-    OurAchievement,
-    OurJourney,
-    OurGrowth,
-    EmployeePerspective,
-    Industry,
-    Lead,
-    ServiceContent,
-    VideoTestimonial,
-    Brand,
-    WebsiteTitle,
-    ModelTitle,
-    AwardsTitle,
-    WhyUsTitle,
-    AllServicesTitle,
-    TechnologyTitle,
-    VideoTestimonialTitle,
-    IndustryTitle,
-    LifeAtMediuswareTitle,
-    ProjectsVideoTitle,
-    BlogTitle,
-    TextualTestimonialTitle,
     SpecialProjectsTitle,
-    FAQHomeTitle,
-    OurJourneyTitle,
+    Subscription,
+    TechnologyTitle,
+    TextualTestimonialTitle,
+    VideoTestimonial,
+    VideoTestimonialTitle,
+    WebsiteTitle,
+    WhyUsTitle,
 )
 from website.models_v2.services import ServicePage
 
@@ -549,7 +552,6 @@ class EmployeeSerializer(serializers.ModelSerializer):
         model = Employee
         fields = ("slug", "full_name", "designation", "manager", "image", "socials")
         ref_name = "website_employee"
-
 
     def get_image_url(self, employee):
         request = self.context.get("request")
@@ -1312,3 +1314,22 @@ class BenefitsOfEmploymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = BenefitsOfEmployment
         exclude = ["created_at", "updated_at", "career"]
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = "__all__"
+
+
+class InquirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Inquiry
+        fields = "__all__"
+
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = "__all__"
