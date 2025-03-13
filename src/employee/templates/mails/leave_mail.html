@@ -1,0 +1,155 @@
+<!-- templates/mail/reschedule_notification.html -->
+{% load salary_sheet_util %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Application For {{ leave.type }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-container {
+            max-width: 650px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #372d9f, #594bd8);
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 26px;
+            letter-spacing: 0.5px;
+        }
+
+        .content {
+            padding: 25px;
+            line-height: 1.8;
+            color: #4a4a4a;
+        }
+
+        .content p {
+            margin: 10px 0;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #372d9f;
+            margin: 20px 0 10px;
+            text-align: left;
+        }
+
+        .highlight-box {
+            background-color: #f7f9fc;
+            border-left: 5px solid #372d9f;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 600px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            text-align: center;
+            background-color: #372d9f;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            font-size: 16px;
+            margin: 25px auto;
+            font-weight: bold;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 8px rgba(55, 45, 159, 0.3);
+        }
+
+        .cta-button:hover {
+            background-color: #2a2277;
+            box-shadow: 0 6px 12px rgba(55, 45, 159, 0.4);
+        }
+
+        .footer {
+            background-color: #f9f9f9;
+            color: #777777;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .social-links a {
+            margin: 0 10px;
+            color: #372d9f;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .social-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media screen and (max-width: 768px) {
+            .email-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div>
+    <p>{{ leave.message|strip_last_newline|safe }}</p>
+    
+    <div class="content">
+        
+
+        
+
+        <div class="highlight-box">
+            <div style="text-align: center;">
+                <table style="font-size: 18px; font-weight: bold; border: none; margin: 0 auto;">
+                  <tr>
+                    <th style="text-align: left;">Employee</th>
+                    <td style="text-align: left;">: {{leave.employee.full_name}}</td>
+                  </tr>
+                  <tr>
+                    <th style="text-align: left;">Leave Date</th>
+                    <td style="text-align: left;">: {{leave.start_date|date:"SHORT_DATE_FORMAT"}} - {{leave.end_date|date:"SHORT_DATE_FORMAT"}}</td>
+                  </tr>
+                  <tr>
+                    <th style="text-align: left;">Applied Days</th>
+                    <td style="text-align: left;">: {{applied_days}}</td>
+                  </tr>
+                  <tr>
+                    <th style="text-align: left;">Chargeable Days</th>
+                    <td style="text-align: left;">: {{chargeable_days}}</td>
+                  </tr>
+                  <tr>
+                    <th style="text-align: left;">Status</th>
+                    <td style="text-align: left;">: {{leave.status}}</td>
+                  </tr>
+                </table>
+                </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
