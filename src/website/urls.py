@@ -96,7 +96,7 @@ api_urls = [
         AvailableTagsListView.as_view(),
         name="available.tags",
     ),
-    # path("projects/<str:tag_name>/", ProjectList.as_view(), name='project.list.by.tag'),
+
     path("projects/<str:slug>/", ProjectDetails.as_view(), name="project.details"),
     path(
         "special_projects/", SpecialProjectListView.as_view(), name="special_projects"
