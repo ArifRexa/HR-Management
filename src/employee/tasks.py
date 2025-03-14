@@ -157,14 +157,14 @@ def leave_mail(leave: Leave):
         },
     )
     if leave.status == "pending":
-        email.from_email = "mdborhan.st@gmail.com"
-        email.to = ['mdborhan.st@gmail.com']
+        email.from_email = f"{leave.employee.full_name} <{leave.employee.email}>"
+        email.to = ['"Mediusware-HR" <hr@mediusware.com>']
         email.cc = manager_email
         email.subject = (
             f"{leave.employee.full_name}: Leave application: {leave.applied_leave_type}"
         )
     else:
-        email.from_email = '"mdborhan.st@gmail.com"'
+        email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
         email.to = [f"{leave.employee.full_name} <{leave.employee.email}>"]
         email.subject = (
             f"{leave.employee.full_name}: Leave application: {leave.leave_type}"
