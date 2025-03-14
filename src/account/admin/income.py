@@ -304,7 +304,7 @@ class IncomeAdmin(AdminConfirmMixin, admin.ModelAdmin):
     #     body = (body,)
     #     email.attach_file(pdf.create())
     #     email.to = [client.email]
-    #     email.from_email = "mdborhan.st@gmail.com"
+    #     email.from_email = "hr@mediusware.com"
     #     email.cc = [client.cc_email.split(",") if client.cc_email else []]
     #     email.send()
 
