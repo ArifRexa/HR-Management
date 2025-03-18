@@ -9,7 +9,7 @@ from django.dispatch import receiver
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     otp = models.CharField(max_length=6, blank=True, null=True)
-    otp_created_at = models.DateTimeField(auto_now_add=True)
+    otp_created_at = models.DateTimeField(auto_now=True)
 
 class UserLogs(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)

@@ -14,3 +14,7 @@ class UserSerializer(BaseModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)
+
+
+class OTPSerializer(serializers.Serializer):
+    otp = serializers.CharField(required=True)
