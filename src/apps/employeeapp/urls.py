@@ -1,10 +1,14 @@
 from rest_framework.routers import DefaultRouter
 
-from .views import EmployeeViewSet
+from .views import DashboardView, EmployeeViewSet
+from django.urls import path
 
 
 router = DefaultRouter()
 
 router.register("", EmployeeViewSet)
 
-urlpatterns = router.urls
+urlpatterns = [
+    *router.urls,
+    path("dashboard-test", DashboardView.as_view(), name="dashboard"),
+]
