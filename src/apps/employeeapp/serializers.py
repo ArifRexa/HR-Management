@@ -1,4 +1,4 @@
-from django.db.models import Q, Sum
+from django.db.models import Case, FloatField, Q, Sum, When
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -6,6 +6,7 @@ from apps.authentication.serializers import UserSerializer
 from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import Employee
+from employee.models.leave.leave import Leave
 
 
 class EmployeeListSerializer(BaseModelSerializer):
@@ -74,7 +75,40 @@ class DashboardSerializer(BaseModelSerializer):
             "weekly_expected": weekly_expected_hour,
         }
 
+    def _get_leave_info(self, instance, _type: str = "casual"):
+        current_year = timezone.now().year
+        passed_leave = (
+            Leave.objects.annotate(
+                leave_count=Case(
+                    When(
+                        Q(leave_type="medical")
+                        | Q(leave_type="casual")
+                        | Q(leave_type="non_paid") & Q(status="Approved"),
+                        then=1,
+                    ),
+                    When(
+                        Q(leave_type="half_day_medical")
+                        | Q(leave_type="half_day") & Q(status="Approved"),
+                        then=0.5,
+                    ),
+                    default=0,
+                    output_field=FloatField(),
+                )
+            )
+            .filter(employee=instance, end_date__year=current_year, leave_type=_type)
+            .aggregate(total=Sum("leave_count"))
+        )
+        return passed_leave.get("total", 0)
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["project_hours"] = self._get_project_hour(instance)
+        data["leave_info"] = {
+            "passed_casual": self._get_leave_info(instance, "casual") or 0,
+            "total_casual": instance.leave_management.casual_leave or 0,
+            "passed_medical": self._get_leave_info(instance, "medical") or 0,
+            "total_medical": instance.leave_management.medical_leave or 0,
+            "passed_non_paid": self._get_leave_info(instance, "non_paid") or 0,
+            
+        }
         return data
