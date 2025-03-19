@@ -44,8 +44,7 @@ class UserViewSet(BaseModelViewSet):
 
         subject = "Your OTP Code To Login Mediusware HR"
         message = f"Your OTP code is {otp}"
-        # email_from = "admin@mediusware.com"
-        email_from = "mdborhan.st@gmail.com"
+        email_from = "admin@mediusware.com"
         recipient_list = [user_email]
         send_mail(subject, message, email_from, recipient_list)
 
