@@ -198,7 +198,7 @@ class WeeklyProjectUpdate(BaseModelSerializer):
                 if "hour_type" in fields:
                     del fields["hour_type"]
 
-            if not request.user.employee.is_tpm:
+            if request.user.is_authenticated and not request.user.employee.is_tpm:
                 if "status" in fields:
                     del fields["status"]
 
