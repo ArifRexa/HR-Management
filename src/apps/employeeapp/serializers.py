@@ -1,4 +1,7 @@
-from django.db.models import Case, FloatField, Q, Sum, When
+import datetime
+from calendar import month_abbr
+
+from django.db.models import Case, FloatField, IntegerField, Q, Sum, When, functions
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -100,6 +103,58 @@ class DashboardSerializer(BaseModelSerializer):
         )
         return passed_leave.get("total", 0)
 
+    def _project_hour_statistic(self, instance):
+        hour_data = (
+            instance.employeeprojecthour_set.filter(
+                created_at__year=timezone.now().year
+            )
+            .annotate(
+                month=functions.ExtractMonth("created_at", output_field=IntegerField()),
+            )
+            .values("month")
+            .annotate(total_hours=Sum("hours"))
+            .order_by("month")
+            .values("month", "total_hours")
+        )
+        hour_data = map(
+            lambda x: {
+                "month": month_abbr[x["month"]],
+                "total_hours": x["total_hours"],
+            },
+            hour_data,
+        )
+        return hour_data
+
+    def _late_fine_info(self, instance):
+        current_date = timezone.now().date()
+        last_month = current_date.replace(day=1) - timezone.timedelta(days=1)
+        this_fine = (
+            instance.lateattendancefine_set.filter(
+                date__year=current_date.year,
+                date__month=current_date.month,
+                is_consider=False,
+            ).count()
+            * 80
+        )
+        last_fine = (
+            instance.lateattendancefine_set.filter(
+                date__year=last_month.year,
+                date__month=last_month.month,
+                is_consider=False,
+            ).count()
+            * 80
+        )
+        total_late_day = instance.employeeattendance_set.filter(
+            date__year=current_date.year,
+            date__month=current_date.month,
+            entry_time__gt=datetime.time(11, 10),
+        ).count()
+        return {
+            "this_month": this_fine,
+            "last_month": last_fine,
+            "total_late_day": total_late_day,
+        }
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data["project_hours"] = self._get_project_hour(instance)
@@ -109,6 +164,7 @@ class DashboardSerializer(BaseModelSerializer):
             "passed_medical": self._get_leave_info(instance, "medical") or 0,
             "total_medical": instance.leave_management.medical_leave or 0,
             "passed_non_paid": self._get_leave_info(instance, "non_paid") or 0,
-            
         }
+        data["project_hour_statistic"] = self._project_hour_statistic(instance)
+        data["late_fine_info"] = self._late_fine_info(instance)
         return data
