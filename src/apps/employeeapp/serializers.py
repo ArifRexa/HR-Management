@@ -8,7 +8,9 @@ from rest_framework import serializers
 from apps.authentication.serializers import UserSerializer
 from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
+from employee.models.attachment import Attachment
 from employee.models.employee import Employee
+from employee.models.employee_skill import EmployeeSkill
 from employee.models.leave.leave import Leave
 
 
@@ -40,10 +42,54 @@ class EmployeeSerializer(BaseModelSerializer):
         ref_name = "api_employee"
 
 
+class EmployeeAttachmentSerializer(BaseModelSerializer):
+    class Meta:
+        model = Attachment
+        fields = ["id", "file_name", "file"]
+        ref_name = "api_employee_attachment"
+
+
+class EmployeeSkillSerializer(BaseModelSerializer):
+    skill = serializers.CharField(source="skill.title")
+
+    class Meta:
+        model = EmployeeSkill
+        fields = ["skill", "percentage"]
+        ref_name = "api_employee_skill"
+
+
 class DashboardSerializer(BaseModelSerializer):
+    designation = serializers.CharField(source="designation.title")
+    employee_id = serializers.SerializerMethodField()
+    attachments = EmployeeAttachmentSerializer(
+        many=True, read_only=True, source="attachment_set"
+    )
+    skills = EmployeeSkillSerializer(
+        many=True, read_only=True, source="employeeskill_set"
+    )
+    projects = serializers.SerializerMethodField()
+
+    def get_projects(self, instance):
+        return instance.employeeproject.project.filter(active=True).values_list(
+            "title", flat=True
+        )
+
+    def get_employee_id(self, instance):
+        return str(f"{instance.joining_date.strftime('%Y%d')}{instance.id}")
+
     class Meta:
         model = Employee
-        fields = ["id", "full_name", "designation", "image"]
+        fields = [
+            "id",
+            "full_name",
+            "designation",
+            "image",
+            "joining_date",
+            "employee_id",
+            "attachments",
+            "skills",
+            "projects",
+        ]
         ref_name = "api_dashboard"
 
     def _get_project_hour(self, instance):
