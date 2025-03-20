@@ -10,5 +10,5 @@ router.register("", EmployeeViewSet)
 
 urlpatterns = [
     *router.urls,
-    path("dashboard-test", DashboardView.as_view(), name="dashboard"),
+    path("dashboard", DashboardView.as_view(), name="dashboard"),
 ]

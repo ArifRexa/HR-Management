@@ -7,8 +7,14 @@ from website.models_v2.services import (
     DiscoverOurService,
     ServiceCriteria,
     ServiceFAQQuestion,
+    ServiceMetaData,
     ServicePage,
 )
+
+
+class ServiceMetaDataInline(admin.StackedInline):
+    model = ServiceMetaData
+    extra = 1
 
 
 class DiscoverOurServiceInline(admin.StackedInline):
@@ -19,6 +25,7 @@ class DiscoverOurServiceInline(admin.StackedInline):
 class DevelopmentServiceProcessInline(admin.TabularInline):
     model = DevelopmentServiceProcess
     extra = 1
+
 
 class AdditionalServiceContentInline(admin.StackedInline):
     model = AdditionalServiceContent
@@ -50,7 +57,10 @@ class ServicePageAdmin(admin.ModelAdmin):
     search_fields = ("title",)
     fieldsets = (
         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
-        ("Banner", {"fields": ("title", "sub_title", "banner_query", "slug", "description")}),
+        (
+            "Banner",
+            {"fields": ("title", "sub_title", "banner_query", "slug", "description")},
+        ),
         ("Explore Our Services", {"fields": ("icon", "feature_image")}),
         ("Menu", {"fields": ("menu_title",)}),
         ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
@@ -81,4 +91,5 @@ class ServicePageAdmin(admin.ModelAdmin):
         DevelopmentServiceProcessInline,
         ComparativeAnalysisInline,
         FAQQuestionInline,
+        ServiceMetaDataInline,
     ]
