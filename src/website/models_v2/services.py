@@ -58,14 +58,22 @@ class DiscoverOurService(TimeStampMixin):
     def __str__(self):
         return self.title
 
+
 class AdditionalServiceContent(models.Model):
-    services = models.ForeignKey(ServicePage,related_name='additional_service_content',null=True,blank=True,on_delete=models.CASCADE)
-    title = models.CharField(max_length=255,null=True,blank=True)
-    content = HTMLField(null=True,blank=True)
-    image = models.ImageField(upload_to="service_content_image",null=True,blank=True)
+    services = models.ForeignKey(
+        ServicePage,
+        related_name="additional_service_content",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    content = HTMLField(null=True, blank=True)
+    image = models.ImageField(upload_to="service_content_image", null=True, blank=True)
 
     def __str__(self):
         return self.title
+
 
 class DevelopmentServiceProcess(TimeStampMixin):
     services = models.ForeignKey(
@@ -125,3 +133,14 @@ class ServiceFAQQuestion(models.Model):
     class Meta:
         verbose_name = "Service FAQ"
         verbose_name_plural = "Service FAQs"
+
+
+class ServiceMetaData(models.Model):
+    services = models.OneToOneField(
+        ServicePage, related_name="service_meta_data", on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255)
+    description = models.TextField()
+
+    def __str__(self):
+        return self.title
