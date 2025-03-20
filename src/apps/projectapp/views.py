@@ -73,6 +73,9 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 
     @decorators.action(detail=False, methods=["PATCH"], url_path="status-update")
     def status_update(self, request, *args, **kwargs):
+        """
+        this view method accept list of daily project id and update status
+        """
         serializer = self.get_serializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
@@ -104,6 +107,10 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
         url_path="(?P<project_id>[^/.]+)/daily-update/(?P<date>[^/.]+)",
     )
     def get_daily_update_by_weekly(self, request, project_id, date, *args, **kwargs):
+        """
+        this view accept project id and date then response all daily project update base on the project hour manager id
+
+        """
         project_hour_id = request.GET.get("project_hour_id")
         manager_id = request.user.employee.id
         if project_hour_id:
@@ -155,10 +162,12 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 
     @decorators.action(detail=False, methods=["POST"], url_path="export-text")
     def export_update(self, request):
+        """
+        export selected update into txt file
+        """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Use values() to optimize query
         queryset = (
             self.get_queryset()
             .filter(id__in=serializer.validated_data.get("update_ids", []))
@@ -175,10 +184,8 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # Use annotate for calculations
         total_hours = queryset.aggregate(total=Sum("hours"))["total"] or 0
 
-        # Group updates by employee
         updates_by_employee = {}
         for update in queryset:
             if not update["updates_json"]:
@@ -190,7 +197,6 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 
             updates_by_employee[emp_name].extend(update["updates_json"])
 
-        # Build file content more efficiently
         content = [
             "Today's Update\n",
             "-----------------\n",
@@ -220,6 +226,9 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 
     @decorators.action(detail=False, methods=["POST"], url_path="export-excel")
     def export_excel(self, request):
+        """
+        export selected update into excel file
+        """
         serialize = self.get_serializer(data=request.data)
         serialize.is_valid(raise_exception=True)
         product_ids = serialize.validated_data.get("update_ids", [])
