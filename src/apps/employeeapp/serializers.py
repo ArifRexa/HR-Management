@@ -107,6 +107,7 @@ class DashboardSerializer(BaseModelSerializer):
         """
         this_week = get_week_date_range()
         last_week = get_week_date_range(week_number=2)
+        print(this_week, last_week)
         project_hours = instance.employeeprojecthour_set.filter(
             created_at__date__gte=timezone.now().date() - timezone.timedelta(days=14)
         ).aggregate(
@@ -119,8 +120,8 @@ class DashboardSerializer(BaseModelSerializer):
             else 0
         )
         return {
-            "this_week": project_hours.get("this_week_h") if project_hours else 0,
-            "last_week": project_hours.get("last_week_h") if project_hours else 0,
+            "this_week": project_hours.get("this_week_h",0) if project_hours else 0,
+            "last_week": project_hours.get("last_week_h", 0) if project_hours else 0,
             "weekly_expected": weekly_expected_hour,
         }
 
