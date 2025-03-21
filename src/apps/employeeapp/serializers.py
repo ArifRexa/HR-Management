@@ -1,7 +1,7 @@
 import datetime
 from calendar import month_abbr
 
-from django.db.models import Case, FloatField, IntegerField, Q, Sum, When, functions
+from django.db.models import Case, FloatField, Q, Sum, When, functions
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -69,14 +69,6 @@ class DashboardSerializer(BaseModelSerializer):
     )
     projects = serializers.SerializerMethodField()
 
-    def get_projects(self, instance):
-        return instance.employeeproject.project.filter(active=True).values_list(
-            "title", flat=True
-        )
-
-    def get_employee_id(self, instance):
-        return str(f"{instance.joining_date.strftime('%Y%d')}{instance.id}")
-
     class Meta:
         model = Employee
         fields = [
@@ -92,134 +84,139 @@ class DashboardSerializer(BaseModelSerializer):
         ]
         ref_name = "api_dashboard"
 
-    def _get_project_hour(self, instance):
-        """_get_project_hour this function return employee last two week project hours
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Cache frequently used values
+        self.current_date = timezone.now().date()
+        self.current_year = self.current_date.year
+        self.last_month = self.current_date.replace(day=1) - timezone.timedelta(days=1)
+        self.this_week = get_week_date_range()
+        self.last_week = get_week_date_range(2)
 
-        Args:
-            instance (Employee): _description_
-
-        Returns:
-            dict: {
-                "this_week": 0,
-                "last_week":23,
-                "weekly_expected": 25
-            }
-        """
-        this_week = get_week_date_range()
-        last_week = get_week_date_range(week_number=2)
-        print(this_week, last_week)
-        project_hours = instance.employeeprojecthour_set.filter(
-            created_at__date__gte=timezone.now().date() - timezone.timedelta(days=14)
-        ).aggregate(
-            this_week_h=Sum("hours", filter=Q(project_hour__date__range=this_week)),
-            last_week_h=Sum("hours", filter=Q(project_hour__date__range=last_week)),
+    def get_projects(self, instance):
+        return instance.employeeproject.project.filter(active=True).values_list(
+            "title", flat=True
         )
-        weekly_expected_hour = (
-            int(instance.monthly_expected_hours / 4)
+
+    def get_employee_id(self, instance):
+        return f"{instance.joining_date.strftime('%Y%d')}{instance.id}"
+
+    def _get_project_hour(self, instance):
+        fourteen_days_ago = self.current_date - timezone.timedelta(days=14)
+        project_hours = instance.employeeprojecthour_set.filter(
+            created_at__date__gte=fourteen_days_ago
+        ).aggregate(
+            this_week_h=Sum(
+                "hours", filter=Q(project_hour__date__range=self.this_week)
+            ),
+            last_week_h=Sum(
+                "hours", filter=Q(project_hour__date__range=self.last_week)
+            ),
+        )
+
+        weekly_expected = (
+            instance.monthly_expected_hours // 4
             if instance.monthly_expected_hours
             else 0
         )
+
         return {
-            "this_week": project_hours.get("this_week_h",0) if project_hours else 0,
-            "last_week": project_hours.get("last_week_h", 0) if project_hours else 0,
-            "weekly_expected": weekly_expected_hour,
+            "this_week": project_hours.get("this_week_h") or 0,
+            "last_week": project_hours.get("last_week_h") or 0,
+            "weekly_expected": weekly_expected,
         }
 
-    def _get_leave_info(self, instance, _type: str = "casual"):
-        current_year = timezone.now().year
-        if _type == "medical":
-            _type = ["medical", "half_day_medical"]
-        elif _type == "casual":
-            _type = ["casual", "half_day"]
-        else:
-            _type = ["non_paid"]
-        passed_leave = (
-            Leave.objects.annotate(
-                leave_count=Case(
-                    When(
-                        Q(leave_type="medical")
-                        | Q(leave_type="casual")
-                        | Q(leave_type="non_paid") & Q(status="Approved"),
-                        then=1,
-                    ),
-                    When(
-                        Q(leave_type="half_day_medical")
-                        | Q(leave_type="half_day") & Q(status="Approved"),
-                        then=0.5,
-                    ),
+    def _get_leave_info(self, instance):
+        """Calculate all leave types in a single query"""
+        leave_counts = Leave.objects.filter(
+            employee=instance, end_date__year=self.current_year, status="Approved"
+        ).aggregate(
+            casual=Sum(
+                Case(
+                    When(leave_type__in=["casual"], then=1),
+                    When(leave_type__in=["half_day"], then=0.5),
                     default=0,
                     output_field=FloatField(),
                 )
-            )
-            .filter(
-                employee=instance, end_date__year=current_year, leave_type__in=_type
-            )
-            .aggregate(total=Sum("leave_count"))
+            ),
+            medical=Sum(
+                Case(
+                    When(leave_type__in=["medical"], then=1),
+                    When(leave_type__in=["half_day_medical"], then=0.5),
+                    default=0,
+                    output_field=FloatField(),
+                )
+            ),
+            non_paid=Sum(
+                Case(
+                    When(leave_type="non_paid", then=1),
+                    default=0,
+                    output_field=FloatField(),
+                )
+            ),
         )
-        return passed_leave.get("total", 0)
+        leave_mgmt = instance.leave_management
+        return {
+            "passed_casual": leave_counts.get("casual") or 0,
+            "total_casual": leave_mgmt.casual_leave or 0,
+            "passed_medical": leave_counts.get("medical") or 0,
+            "total_medical": leave_mgmt.medical_leave or 0,
+            "passed_non_paid": leave_counts.get("non_paid") or 0,
+        }
 
     def _project_hour_statistic(self, instance):
         hour_data = (
-            instance.employeeprojecthour_set.filter(
-                created_at__year=timezone.now().year
-            )
-            .annotate(
-                month=functions.ExtractMonth("created_at", output_field=IntegerField()),
-            )
+            instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
+            .annotate(month=functions.ExtractMonth("created_at"))
             .values("month")
             .annotate(total_hours=Sum("hours"))
             .order_by("month")
-            .values("month", "total_hours")
         )
-        hour_data = map(
-            lambda x: {
-                "month": month_abbr[x["month"]],
-                "total_hours": x["total_hours"],
-            },
-            hour_data,
-        )
-        return hour_data
+
+        return [
+            {"month": month_abbr[item["month"]], "total_hours": item["total_hours"]}
+            for item in hour_data
+        ]
 
     def _late_fine_info(self, instance):
-        current_date = timezone.now().date()
-        last_month = current_date.replace(day=1) - timezone.timedelta(days=1)
-        this_fine = (
-            instance.lateattendancefine_set.filter(
-                date__year=current_date.year,
-                date__month=current_date.month,
-                is_consider=False,
-            ).count()
-            * 80
+        late_fines = instance.lateattendancefine_set.filter(
+            is_consider=False
+        ).aggregate(
+            this_month=Sum(
+                "id",
+                filter=Q(
+                    date__year=self.current_date.year,
+                    date__month=self.current_date.month,
+                ),
+            ),
+            last_month=Sum(
+                "id",
+                filter=Q(
+                    date__year=self.last_month.year, date__month=self.last_month.month
+                ),
+            ),
         )
-        last_fine = (
-            instance.lateattendancefine_set.filter(
-                date__year=last_month.year,
-                date__month=last_month.month,
-                is_consider=False,
-            ).count()
-            * 80
-        )
+
         total_late_day = instance.employeeattendance_set.filter(
-            date__year=current_date.year,
-            date__month=current_date.month,
+            date__year=self.current_date.year,
+            date__month=self.current_date.month,
             entry_time__gt=datetime.time(11, 10),
         ).count()
+
         return {
-            "this_month": this_fine,
-            "last_month": last_fine,
+            "this_month": (late_fines.get("this_month") or 0) * 80,
+            "last_month": (late_fines.get("last_month") or 0) * 80,
             "total_late_day": total_late_day,
         }
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data["project_hours"] = self._get_project_hour(instance)
-        data["leave_info"] = {
-            "passed_casual": self._get_leave_info(instance, "casual") or 0,
-            "total_casual": instance.leave_management.casual_leave or 0,
-            "passed_medical": self._get_leave_info(instance, "medical") or 0,
-            "total_medical": instance.leave_management.medical_leave or 0,
-            "passed_non_paid": self._get_leave_info(instance, "non_paid") or 0,
-        }
-        data["project_hour_statistic"] = self._project_hour_statistic(instance)
-        data["late_fine_info"] = self._late_fine_info(instance)
+        data.update(
+            {
+                "project_hours": self._get_project_hour(instance),
+                "leave_info": self._get_leave_info(instance),
+                "project_hour_statistic": self._project_hour_statistic(instance),
+                "late_fine_info": self._late_fine_info(instance),
+            }
+        )
         return data
