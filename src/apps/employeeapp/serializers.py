@@ -126,6 +126,12 @@ class DashboardSerializer(BaseModelSerializer):
 
     def _get_leave_info(self, instance, _type: str = "casual"):
         current_year = timezone.now().year
+        if _type == "medical":
+            _type = ["medical", "half_day_medical"]
+        elif _type == "casual":
+            _type = ["casual", "half_day"]
+        else:
+            _type = ["non_paid"]
         passed_leave = (
             Leave.objects.annotate(
                 leave_count=Case(
@@ -144,7 +150,7 @@ class DashboardSerializer(BaseModelSerializer):
                     output_field=FloatField(),
                 )
             )
-            .filter(employee=instance, end_date__year=current_year, leave_type=_type)
+            .filter(employee=instance, end_date__year=current_year, leave_type__in=_type)
             .aggregate(total=Sum("leave_count"))
         )
         return passed_leave.get("total", 0)
