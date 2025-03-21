@@ -30,8 +30,8 @@ def send_pending_requests_report(days_back=7):
     send_mail(
         subject=subject,
         message="Please view this email in HTML format to see the report.",
-        from_email="mdborhan.st@gmail.com",
-        recipient_list=["mdborhan.st@gmail.com"],
+        from_email="hr@mediusware.com",
+        recipient_list=["admin@mediusware.com"],
         html_message=html_content,
         fail_silently=False,
     )
