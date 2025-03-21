@@ -110,8 +110,8 @@ class DashboardSerializer(BaseModelSerializer):
         project_hours = instance.employeeprojecthour_set.filter(
             created_at__date__gte=timezone.now().date() - timezone.timedelta(days=14)
         ).aggregate(
-            this_week_h=Sum("hours", filter=Q(created_at__date__range=this_week)),
-            last_week_h=Sum("hours", filter=Q(created_at__date__range=last_week)),
+            this_week_h=Sum("hours", filter=Q(project_hour__date__range=this_week)),
+            last_week_h=Sum("hours", filter=Q(project_hour__date__range=last_week)),
         )
         weekly_expected_hour = (
             int(instance.monthly_expected_hours / 4)
@@ -150,7 +150,9 @@ class DashboardSerializer(BaseModelSerializer):
                     output_field=FloatField(),
                 )
             )
-            .filter(employee=instance, end_date__year=current_year, leave_type__in=_type)
+            .filter(
+                employee=instance, end_date__year=current_year, leave_type__in=_type
+            )
             .aggregate(total=Sum("leave_count"))
         )
         return passed_leave.get("total", 0)
