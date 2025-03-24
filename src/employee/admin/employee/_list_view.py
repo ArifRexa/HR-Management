@@ -1,20 +1,16 @@
-from django.contrib.humanize.templatetags.humanize import intcomma, naturalday
-from django.db.models import Sum
-from django.template.loader import get_template
+import datetime
 
+from dateutil.relativedelta import relativedelta
+from django.conf import settings
+from django.contrib import admin
+from django.contrib.humanize.templatetags.humanize import intcomma, naturalday
+from django.db.models import Avg, Q, Sum
+from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
-from dateutil.relativedelta import relativedelta
-from django.contrib import admin
-from django.db.models import Avg
-from django.db.models import Q
-
 
 from employee.models import Employee
-
 from employee.models.employee_rating_models import EmployeeRating
-
-import datetime
 
 
 class EmployeeAdminListView:
@@ -185,8 +181,8 @@ class EmployeeAdminListView:
     @admin.display(ordering="active", description="Status")
     def permanent_status(self, obj):
         return format_html(
-            f'Active : {"<img src=/static/admin/img/icon-yes.svg />" if obj.active else "<img src=/static/admin/img/icon-no.svg />"} <br>'
-            f'Permanent : {"<img src=/static/admin/img/icon-yes.svg />" if obj.permanent_date else "<img src=/static/admin/img/icon-no.svg />"}'
+            f'Active : {"<img src=" + settings.STATIC_URL + "admin/img/icon-yes.svg />" if obj.active else "<img src=" + settings.STATIC_URL + "admin/img/icon-no.svg />"} <br>'
+            f'Permanent : {"<img src=" + settings.STATIC_URL + "admin/img/icon-yes.svg />" if obj.permanent_date else "<img src=" + settings.STATIC_URL + "admin/img/icon-no.svg />"}'
         )
 
     @admin.display(ordering="employeeskill__skill")
