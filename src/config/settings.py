@@ -407,7 +407,7 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
     class MediaStorage(S3Boto3Storage):
         # bucket_name = 'mw-hr-staging'
         location = MEDIAFILES_LOCATION
-        file_overwrite = True
+        file_overwrite = False
         default_acl = "public-read"
         custom_domain = f"{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com"
 
