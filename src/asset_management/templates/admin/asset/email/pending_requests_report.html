@@ -57,23 +57,21 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Request ID</th>
-                        <th>Category</th>
                         <th>Quantity</th>
                         <th>Priority</th>
                         <th>Requested By</th>
-                        <th>Created Date</th>
+                        <th>Due Days</th>
+                        <th>Notes</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for request in requests %}
                     <tr>
-                        <td>{{ request.id }}</td>
-                        <td>{{ request.category.name }}</td>
                         <td>{{ request.quantity }}</td>
                         <td>{{ request.priority }}</td>
                         <td>{{ request.created_by.employee.full_name }}</td>
-                        <td>{{ request.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>{{ request.due_days.days }}</td>
+                        <td>{{ request.asset_request_notes.last|default_if_none:"-" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
