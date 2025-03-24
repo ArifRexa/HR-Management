@@ -1,4 +1,6 @@
 from django.core.mail import send_mail
+from django.db.models import ExpressionWrapper, F, DurationField
+from django.db.models.functions import Now
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -13,9 +15,18 @@ def send_pending_requests_report(days_back=7):
     """
 
     date_threshold = timezone.now().date() - timezone.timedelta(days=days_back)
-    pending_requests = AssetRequest.objects.filter(
-        status=AssetRequestStatus.PENDING, created_at__lte=date_threshold
-    ).select_related("category", "created_by")
+    pending_requests = (
+        AssetRequest.objects.filter(
+            status=AssetRequestStatus.PENDING, created_at__lte=date_threshold
+        )
+        .annotate(
+            due_days=ExpressionWrapper(
+                Now() - F("created_at"), output_field=DurationField()
+            )
+        )
+        .select_related("category", "created_by")
+        .prefetch_related("asset_request_notes")
+    )
     context = {
         "date": timezone.now().date(),
         "days_back": days_back,
@@ -30,7 +41,7 @@ def send_pending_requests_report(days_back=7):
     send_mail(
         subject=subject,
         message="Please view this email in HTML format to see the report.",
-        from_email="hr@mediusware.com",
+        from_email="coredeveloper.2013@gmail.com",
         recipient_list=["admin@mediusware.com"],
         html_message=html_content,
         fail_silently=False,
