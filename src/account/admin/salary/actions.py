@@ -126,7 +126,7 @@ class SalarySheetAction(admin.ModelAdmin):
                     {
                         "sheet_date": sheet.date,
                         "name": emp_salary.employee.full_name,
-                        "account_number": employee_bank.account_number if employee_bank else "",
+                        "account_number": employee_bank.account_number if employee_bank else "-",
                         "gross_salary": gross_salary,
                     }
                 )
