@@ -605,11 +605,11 @@ def employee_attendance_old_data_delete(months):
 from datetime import time
 
 
-def late_attendance_calculate(late_entry_time):
+def late_attendance_calculate(late_entry_time=None):
     employees = Employee.objects.filter(
         active=True, show_in_attendance_list=True, exception_la=False
     ).exclude(salaryhistory__isnull=True)
-    late_entry = time(hour=11, minute=11)
+    late_entry = late_entry_time if late_entry_time else time(hour=11, minute=11)
 
     current_date = datetime.now()
     current_month = current_date.month
@@ -629,7 +629,7 @@ def late_attendance_calculate(late_entry_time):
                 employee=employee,
                 date__year=current_year,
                 date__month=current_month,
-                entry_time__gt=late_entry_time,
+                entry_time__gt=late_entry,
             ).count()
             - total_consider
         )
