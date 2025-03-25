@@ -1,5 +1,5 @@
-from django.core.mail import send_mail
-from django.db.models import ExpressionWrapper, F, DurationField
+from django.core.mail import EmailMultiAlternatives
+from django.db.models import DurationField, ExpressionWrapper, F
 from django.db.models.functions import Now
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -38,12 +38,11 @@ def send_pending_requests_report(days_back=7):
     )
 
     subject = "Pending Asset Requests Report"
-    send_mail(
-        subject=subject,
-        message="Please view this email in HTML format to see the report.",
-        from_email="coredeveloper.2013@gmail.com",
-        recipient_list=["admin@mediusware.com"],
-        html_message=html_content,
-        fail_silently=False,
-    )
+    email = EmailMultiAlternatives()
+    email.subject = subject
+    email.attach_alternative(html_content, "text/html")
+    email.to = ["admin@mediusware.com"]
+    email.from_email = "coredeveloper.2013@gmail.com"
+    email.send()
+
     return f"Sent report with {pending_requests.count()} pending requests"
