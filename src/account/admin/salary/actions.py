@@ -109,10 +109,10 @@ class SalarySheetAction(admin.ModelAdmin):
 
     @admin.action(description="Export City Bank NPSB")
     def export_city_bank_npsb(self, request, queryset):
-        # Pre-fetch related data to optimize database queries
+
         salary_sheets = queryset
 
-        # Prepare data for the template
+
         salary_data = []
         for sheet in salary_sheets:
             employee_salaries = sheet.employeesalary_set.all()
@@ -121,7 +121,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 employee_bank = BankAccount.objects.filter(
                     employee=emp_salary.employee, default=True, is_approved=True
                 ).first()
-                if emp_salary.emp_salary.gross_salary <= 0 and employee_bank:
+                if emp_salary.gross_salary <= 0 and employee_bank:
                     continue
                 gross_salary = emp_salary.gross_salary or 0.0
                 salary_data.append(
