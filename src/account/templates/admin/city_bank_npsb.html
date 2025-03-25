@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+{% load humanize_extra %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salary Disbursement Request</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          margin: 20px;
+          font-size: 16px;
+        }
+        h3 {
+          text-decoration: underline;
+          font-size: 16px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-top: 10px;
+          font-size: 12px;
+        }
+        table, th, td {
+          border: 1px solid black;
+          text-align: left;
+          padding: 8px;
+        }
+        .footer {
+          margin-top: 20px;
+          font-size: 16px;
+        }
+        .signature {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 40px;
+        }
+        .signature-line {
+          display: block;
+          border-bottom: 1pt solid black; /* Line above text */
+          margin-bottom: 5pt; /* Space between line and text */
+        }
+    </style>
+</head>
+<body>
+    <p><strong>Date:</strong> ___________________</p>
+    <p><strong>To</strong><br>
+    The Manager<br>
+    The City Bank Ltd<br>
+    Dhaka</p>
+    
+    <h3>Subject: Requesting to Disburse Staff Salary for the month of (month name) by debiting our A/C Name: {{bank.ref}}, A/C No.: {{bank.account_number}}</h3>
+    
+    <p>Dear Sir,</p>
+    <p>Please arrange to transfer the salary to our individual staff accounts as follows:</p>
+    
+    <table>
+        <tr>
+            <th style="width: 70px; text-align: center;">SL. No.</th>
+            <th>Name</th>
+            <th>A/C No.</th>
+            <th>Amount in Tk.</th>
+        </tr>
+        {% for sheet in salary_sheets %}
+            <tr>
+                <td style="width: 70px; text-align: center;">{{ forloop.counter }}</td>
+                <td>{{ sheet.name }}</td>
+                <td>{{ sheet.account_number }}</td>
+                <td>{{ sheet.gross_salary }}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="3" style="text-align: right;"><strong>Total Amount</strong></td>
+            <td></td>
+            <td>{{ total }}</td>
+        </tr>
+    </table>
+    
+    <p><strong>Taka In Words:</strong> {{ total|num_to_word|default:"Zero" }}</p>
+
+    <div class="footer">
+        <p>According to the above-mentioned statement, you are requested to debit from our A/C Name: {{bank.account_name}}. A/C No.: {{bank.account_number}}</p>
+        <p>We need your kind cooperation in this regard.</p>
+        <p>Thanking you.</p>
+        <br>
+        <table style="border: none; padding: 0">
+            <tr style="border: none;">
+                <td style="width: 240pt; text-align: left; border: none;">
+                    <span class="signature-line"></span>
+                    Authorised Signature
+                </td>
+                <td style="width: 240pt; text-align: right; border: none;">
+                    <span class="signature-line"></span>
+                    Authorised Signature
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>
