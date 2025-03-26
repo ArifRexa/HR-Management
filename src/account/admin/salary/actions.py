@@ -133,7 +133,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 employee_bank = BankAccount.objects.filter(
                     employee=emp_salary.employee, default=True, is_approved=True
                 ).first()
-                if emp_salary.gross_salary <= 0 and employee_bank:
+                if emp_salary.gross_salary <= 0 or not employee_bank:
                     continue
                 gross_salary = emp_salary.gross_salary or 0.0
                 salary_data.append(
@@ -186,7 +186,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 employee_bank = BankAccount.objects.filter(
                     employee=emp_salary.employee, default=True, is_approved=True
                 ).first()
-                if emp_salary.gross_salary <= 0 and employee_bank:
+                if emp_salary.gross_salary <= 0 or not employee_bank:
                     continue
                 gross_salary = emp_salary.gross_salary or 0.0
                 salary_data.append(
