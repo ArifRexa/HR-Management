@@ -737,7 +737,7 @@ class PlagiarismInfo(TimeStampMixin):
 class BaseMetadata(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
-    canonical = models.URLField()
+    canonical = models.URLField(null=True, blank=True)
 
     class Meta:
         abstract = True
