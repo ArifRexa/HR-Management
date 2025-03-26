@@ -15,6 +15,7 @@ class SalarySheetAction(admin.ModelAdmin):
     actions = (
         "export_excel",
         "export_city_bank_npsb",
+        "export_city_bank_npsb_excel",
         "export_city_bank_beftn",
         "export_bankasia_salary_acc_dis_excel",
         "export_salary_account_dis",
@@ -107,26 +108,94 @@ class SalarySheetAction(admin.ModelAdmin):
         response["Content-Disposition"] = "attachment; filename=City_Bank_BEFTN.xlsx"
         return response
 
-    @admin.action(description="Export City Bank NPSB")
-    def export_city_bank_npsb(self, request, queryset):
-        # Pre-fetch related data to optimize database queries
+    @admin.action(description="Export City Bank NPSB(Excel)")
+    def export_city_bank_npsb_excel(self, request, queryset):
+        wb = Workbook()
+        work_sheet = wb.active
+        work_sheet.title = "NPSB Export"
+
+        # Add headers including 'Total Salary' at the end
+        work_sheet.append(
+            [
+                "SL No",
+                "Name",
+                "A/C No.",
+                "Amount in Tk.",
+            ]
+        )
         salary_sheets = queryset
 
-        # Prepare data for the template
+        total = 0
+        salary_data = []
+        for sheet in salary_sheets:
+            employee_salaries = sheet.employeesalary_set.all()
+            for emp_salary in employee_salaries:
+                employee_bank = BankAccount.objects.filter(
+                    employee=emp_salary.employee, default=True, is_approved=True
+                ).first()
+                if emp_salary.gross_salary <= 0 and employee_bank:
+                    continue
+                gross_salary = emp_salary.gross_salary or 0.0
+                salary_data.append(
+                    {
+                        "sheet_date": sheet.date,
+                        "name": emp_salary.employee.full_name,
+                        "account_number": (
+                            employee_bank.account_number if employee_bank else "-"
+                        ),
+                        "gross_salary": gross_salary,
+                    }
+                )
+                total += gross_salary
+
+        for index, data in enumerate(salary_data, start=1):
+            work_sheet.append(
+                [
+                    index,
+                    data["name"],
+                    data["account_number"],
+                    data["gross_salary"],
+                ]
+            )
+
+        work_sheet.append(
+            [
+                "",
+                "",
+                "Total",
+                f"{int(total)}",
+            ]
+        )
+
+        response = HttpResponse(
+            content=save_virtual_workbook(wb), content_type="application/ms-excel"
+        )
+        response["Content-Disposition"] = "attachment; filename=City_Bank_npsb.xlsx"
+        return response
+
+    @admin.action(description="Export City Bank NPSB")
+    def export_city_bank_npsb(self, request, queryset):
+
+        salary_sheets = queryset
+
         salary_data = []
         for sheet in salary_sheets:
             employee_salaries = sheet.employeesalary_set.all()
             total = 0
             for emp_salary in employee_salaries:
                 employee_bank = BankAccount.objects.filter(
-                            employee=emp_salary.employee, default=True, is_approved=True
-                        ).first()
+                    employee=emp_salary.employee, default=True, is_approved=True
+                ).first()
+                if emp_salary.gross_salary <= 0 and employee_bank:
+                    continue
                 gross_salary = emp_salary.gross_salary or 0.0
                 salary_data.append(
                     {
                         "sheet_date": sheet.date,
                         "name": emp_salary.employee.full_name,
-                        "account_number": employee_bank.account_number if employee_bank else "-",
+                        "account_number": (
+                            employee_bank.account_number if employee_bank else "-"
+                        ),
                         "gross_salary": gross_salary,
                     }
                 )
