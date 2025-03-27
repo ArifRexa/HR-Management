@@ -1,47 +1,45 @@
-<!DOCTYPE html>
+{% extends 'compliance/base/layout.html' %}
 {% load humanize_extra %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salary Disbursement Request</title>
-    <style>
-        body {
-          font-family: Arial, sans-serif;
-          margin: 20px;
-          font-size: 16px;
-        }
-        h3 {
-          font-size: 16px;
-        }
-        table {
-          width: 100%;
-          border-collapse: collapse;
-          margin-top: 10px;
-          font-size: 12px;
-        }
-        table, th, td {
-          border: 1px solid black;
-          text-align: left;
-          padding: 8px;
-        }
-        .footer {
-          margin-top: 20px;
-          font-size: 16px;
-        }
-        .signature {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 40px;
-        }
-        .signature-line {
-          display: block;
-          border-bottom: 1pt solid black; /* Line above text */
-          margin-bottom: 5pt; /* Space between line and text */
-        }
-    </style>
-</head>
-<body>
+
+
+{% block content %}
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+  }
+  h3 {
+    font-size: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  table, th, td {
+    border: 1px solid black;
+    text-align: left;
+    padding: 8px;
+  }
+  .footer {
+    margin-top: 20px;
+    font-size: 16px;
+  }
+  .signature {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 40px;
+  }
+  .signature-line {
+    display: block;
+    border-bottom: 1pt solid black; /* Line above text */
+    margin-bottom: 5pt; /* Space between line and text */
+  }
+</style>
+  
+
+  <div>
+    <br>
     <p><strong>Date:</strong> ___________________</p>
     <p><strong>To</strong><br>
     The Manager<br>
@@ -95,5 +93,5 @@
             </tr>
         </table>
     </div>
-</body>
-</html>
+  </div>
+{% endblock content %}
