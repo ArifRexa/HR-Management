@@ -1,4 +1,5 @@
 from math import floor
+import math
 
 from django.conf import settings
 from django.contrib import admin, messages
@@ -143,10 +144,10 @@ class SalarySheetAction(admin.ModelAdmin):
                         "account_number": (
                             employee_bank.account_number if employee_bank else "-"
                         ),
-                        "gross_salary": gross_salary,
+                        "gross_salary": math.ceil(gross_salary),
                     }
                 )
-                total += gross_salary
+                total += math.ceil(gross_salary)
 
         for index, data in enumerate(salary_data, start=1):
             work_sheet.append(
@@ -196,10 +197,10 @@ class SalarySheetAction(admin.ModelAdmin):
                         "account_number": (
                             employee_bank.account_number if employee_bank else "-"
                         ),
-                        "gross_salary": gross_salary,
+                        "gross_salary": math.ceil(gross_salary),
                     }
                 )
-                total += gross_salary
+                total += math.ceil(gross_salary)
         pdf = PDF(
             template_path="admin/city_bank_npsb.html",
             context={
