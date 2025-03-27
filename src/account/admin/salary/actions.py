@@ -424,7 +424,8 @@ class SalarySheetAction(admin.ModelAdmin):
                 bank_account = employee_salary.employee.bankaccount_set.filter(
                     is_approved=True, id=11
                 ).last()
-
+                if not bank_account:
+                    continue
                 work_sheet.append(
                     [
                         employee_salary.employee.full_name,
