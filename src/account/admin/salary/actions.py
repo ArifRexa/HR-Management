@@ -219,9 +219,10 @@ class SalarySheetAction(admin.ModelAdmin):
 
     @admin.action(description="Export Bank Asia Salary Account Disbursements (Excel)")
     def export_bankasia_salary_acc_dis_excel(self, request, queryset):
-        salary_disbursement = SalaryDisbursement.objects.filter(
-            disbursement_type="salary_account"
-        ).first()
+        # salary_disbursement = SalaryDisbursement.objects.filter(
+        #     disbursement_type="salary_account"
+        # ).first()
+        salary_disbursement = SalaryDisbursement.objects.first()
         return self.export_in_xl_bankasia(
             queryset,
             ("employee__in", salary_disbursement.employee.all()),
