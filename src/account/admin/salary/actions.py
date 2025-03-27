@@ -422,7 +422,7 @@ class SalarySheetAction(admin.ModelAdmin):
 
                 salary_sheet.total_value += floor(employee_salary.gross_salary)
                 bank_account = employee_salary.employee.bankaccount_set.filter(
-                    default=True, is_approved=True
+                    is_approved=True, id=11
                 ).last()
 
                 work_sheet.append(
