@@ -42,7 +42,7 @@ def send_pending_requests_report(days_back=7):
     email.subject = subject
     email.attach_alternative(html_content, "text/html")
     email.to = ["admin@mediusware.com"]
-    email.from_email = "coredeveloper.2013@gmail.com"
+    email.from_email = "hr@mediusware.com"
     email.send()
 
     return f"Sent report with {pending_requests.count()} pending requests"

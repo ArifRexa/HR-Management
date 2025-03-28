@@ -7,7 +7,7 @@ from employee.models import BankAccount
 @admin.register(BankAccount)
 class BankAccountAdmin(admin.ModelAdmin):
     list_display = ('employee', 'bank', 'default', 'is_approved')
-    actions = ('approve_bank_account_info',)
+    actions = ('approve_bank_account_info',"make_default")
     list_filter = ('employee',)
     fields = (
         'bank',
@@ -19,6 +19,14 @@ class BankAccountAdmin(admin.ModelAdmin):
         'bank__name',
         'account_number',
     )
+    
+    @admin.action(description="Make Default Account")
+    def make_default(self, request, queryset):
+        if queryset.count() > 1:
+            messages.error(request, "You can only select one bank account to make default")
+            return
+        queryset.update(default=True)
+        messages.success(request, "Default Bank Account Updated")
 
     def has_module_permission(self, request):
         return False
