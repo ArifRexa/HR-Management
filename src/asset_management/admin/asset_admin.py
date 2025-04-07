@@ -435,11 +435,11 @@ class AssetRequestAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         # Get the maximum creation date
-        max_created = AssetRequest.objects.aggregate(max_created=Max('created_at'))['max_created']
+        max_created = timezone.now()
         
         
         # Calculate the start of the seven-day period
-        start_date = max_created - datetime.timedelta(days=7)
+        start_date = max_created - datetime.timedelta(days=30)
         
         # Filter asset requests within the seven-day period
         return AssetRequest.objects.filter(created_at__range=(start_date, max_created))
