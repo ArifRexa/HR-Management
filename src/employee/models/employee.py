@@ -569,8 +569,8 @@ class BookConferenceRoom(models.Model):
             time(hour, minute),
             f"{(hour + 11) % 12 + 1}:{minute:02} {'AM' if hour < 12 else 'PM'}",
         )
-        # for hour in range(11, 21)
-        for hour in range(9, 16)
+        for hour in range(11, 21)
+        # for hour in range(9, 16) # for ramadan month
         for minute in (0, 15, 30, 45)  # Adjusted for 15-minute intervals
         if not (hour == 20 and minute == 30)
     ]
