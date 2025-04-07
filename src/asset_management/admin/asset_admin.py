@@ -1,9 +1,9 @@
-from urllib.parse import urlparse
 import datetime
+from urllib.parse import urlparse
+
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Q, Max
-from django.template.loader import get_template
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -400,7 +400,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
     list_display = (
         "category",
         "quantity",
-        "get_notes",
+        # "get_notes",
         "get_priority",
         "requested_by",
         "requested_date",
@@ -423,26 +423,21 @@ class AssetRequestAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
-        extra_context["has_pending_request"] = (
-            self.get_queryset(request)
-            .filter(status=AssetRequestStatus.PENDING)
-            .exists()
+
+        pending_info = self.get_queryset(request).aggregate(
+            pending_count=Count("id", filter=Q(status=AssetRequestStatus.PENDING))
         )
-        extra_context["pending_count"] = (
-            self.get_queryset(request).filter(status=AssetRequestStatus.PENDING).count()
-        )
+        extra_context["has_pending_request"] = pending_info["pending_count"] > 0
+        extra_context["pending_count"] = pending_info["pending_count"]
         return super().changelist_view(request, extra_context)
 
     def get_queryset(self, request):
-        # Get the maximum creation date
         max_created = timezone.now()
-        
-        
-        # Calculate the start of the seven-day period
         start_date = max_created - datetime.timedelta(days=30)
-        
-        # Filter asset requests within the seven-day period
-        return AssetRequest.objects.filter(created_at__range=(start_date, max_created))
+
+        return AssetRequest.objects.select_related("category").filter(
+            created_at__range=(start_date, max_created)
+        )
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -492,17 +487,17 @@ class AssetRequestAdmin(admin.ModelAdmin):
     def requested_by(self, obj):
         return obj.created_by.employee.full_name
 
-    @admin.display(description="Notes")
-    def get_notes(self, obj):
-        if not obj.asset_request_notes.exists():
-            return "-"
-        html_template = get_template("admin/asset/col_note.html")
+    # @admin.display(description="Notes")
+    # def get_notes(self, obj):
+    #     if not obj.asset_request_notes.exists():
+    #         return "-"
+    #     html_template = get_template("admin/asset/col_note.html")
 
-        html_content = html_template.render(
-            {
-                "note": obj.asset_request_notes.first(),
-                "notes": obj.asset_request_notes.all(),
-            }
-        )
+    #     html_content = html_template.render(
+    #         {
+    #             "note": obj.asset_request_notes.first(),
+    #             "notes": obj.asset_request_notes.all(),
+    #         }
+    #     )
 
-        return format_html(html_content)
+    #     return format_html(html_content)
