@@ -43,7 +43,7 @@ def send_pending_requests_report(days_back=7):
     email.body = "bellow you are find pending asset request information"
     email.attach_alternative(html_content, "text/html")
     email.to = ["shahinur@mediusware.com"]
-    email.from_email = "hr@mediusware.com"
+    email.from_email = "HR Mediusware <hr@mediusware.com>"
     email.send()
 
     return f"Sent report with {pending_requests.count()} pending requests"
