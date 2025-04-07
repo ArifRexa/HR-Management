@@ -431,13 +431,13 @@ class AssetRequestAdmin(admin.ModelAdmin):
         extra_context["pending_count"] = pending_info["pending_count"]
         return super().changelist_view(request, extra_context)
 
-    def get_queryset(self, request):
-        max_created = timezone.now()
-        start_date = max_created - datetime.timedelta(days=30)
+    # def get_queryset(self, request):
+    #     max_created = timezone.now()
+    #     start_date = max_created - datetime.timedelta(days=30)
 
-        return AssetRequest.objects.select_related("category").filter(
-            created_at__range=(start_date, max_created)
-        )
+    #     return AssetRequest.objects.select_related("category").filter(
+    #         created_at__range=(start_date, max_created)
+    #     )
 
     class Media:
         css = {"all": ("css/list.css",)}
