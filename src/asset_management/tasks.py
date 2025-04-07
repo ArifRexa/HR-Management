@@ -42,7 +42,7 @@ def send_pending_requests_report(days_back=7):
     email.subject = subject
     email.body = "bellow you are find pending asset request information"
     email.attach_alternative(html_content, "text/html")
-    email.to = ["admin@mediusware.com"]
+    email.to = ["shahinur@mediusware.com"]
     email.from_email = "hr@mediusware.com"
     email.send()
 
