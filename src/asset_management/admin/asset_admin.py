@@ -1,23 +1,21 @@
-from pyexpat.errors import messages
 from urllib.parse import urlparse
-
-from django.core.exceptions import PermissionDenied
-from django.template.loader import get_template
+import datetime
 from django.contrib import admin
-from django.db.models import Q
-from django.utils.html import format_html
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q, Max
+from django.template.loader import get_template
 from django.utils import timezone
+from django.utils.html import format_html
 
-from asset_management.models import (
-    Asset,
-    # AssetCategory,
-    EmployeeAssignedAsset,
-    EmployeeAsset,
-    AssetHead,
+from asset_management.models import (  # AssetCategory,
     Addition,
+    Asset,
+    AssetHead,
     AssetItem,
-    Vendor,
     Brand,
+    EmployeeAsset,
+    EmployeeAssignedAsset,
+    Vendor,
 )
 from asset_management.models.asset import (
     AssetRequest,
@@ -26,7 +24,6 @@ from asset_management.models.asset import (
     AssetVariant,
     PriorityChoices,
 )
-
 
 # @admin.register(AssetCategory)
 # class AssetCategoryAdmin(admin.ModelAdmin):
@@ -91,14 +88,14 @@ class AssetAdmin(admin.ModelAdmin):
         "description",
         "is_active",
         "is_available",
-        "colored_status"
+        "colored_status",
     )
     autocomplete_fields = ("vendor", "brand", "variant")
     search_fields = (
         # "title",
         "code",
         "description",
-        "status"
+        "status",
     )
     fields = (
         "head",
@@ -112,7 +109,7 @@ class AssetAdmin(admin.ModelAdmin):
         "description",
         "is_available",
         "is_active",
-        "status"
+        "status",
     )
     inlines = [AdditionInline]
     # exclude = ("head",)
@@ -177,17 +174,19 @@ class AssetAdmin(admin.ModelAdmin):
         readonly_fields = list(super().get_readonly_fields(request, obj))
 
         # If user doesn't have permission to change status, make it read-only
-        if not request.user.has_perm('asset_management.can_change_asset_status'):
-            readonly_fields.append('status')
+        if not request.user.has_perm("asset_management.can_change_asset_status"):
+            readonly_fields.append("status")
 
         return readonly_fields
 
     def save_model(self, request, obj, form, change):
         # Check if status field was changed
-        if change and 'status' in form.changed_data:
+        if change and "status" in form.changed_data:
             # Verify permission before allowing status change
-            if not request.user.has_perm('asset_management.can_change_asset_status'):
-                raise PermissionDenied("You don't have permission to change asset status.")
+            if not request.user.has_perm("asset_management.can_change_asset_status"):
+                raise PermissionDenied(
+                    "You don't have permission to change asset status."
+                )
 
         super().save_model(request, obj, form, change)
 
@@ -199,73 +198,74 @@ class AssetAdmin(admin.ModelAdmin):
             return False
 
         # If trying to change status, check for specific permission
-        if obj and 'status' in request.POST:
-            return request.user.has_perm('asset_management.can_change_asset_status')
+        if obj and "status" in request.POST:
+            return request.user.has_perm("asset_management.can_change_asset_status")
 
         return True
 
-    actions = ['make_pending', 'make_approved']
+    actions = ["make_pending", "make_approved"]
 
     def has_can_change_asset_status_permission(self, request):
         """
         Permission method for status change actions
         """
-        return request.user.has_perm('asset_management.can_change_asset_status')
+        return request.user.has_perm("asset_management.can_change_asset_status")
 
     @admin.action(
-        description='Mark selected assets as Pending',
-        permissions=['can_change_asset_status']  # Requires this permission
+        description="Mark selected assets as Pending",
+        permissions=["can_change_asset_status"],  # Requires this permission
     )
     def make_pending(self, request, queryset):
-        if not request.user.has_perm('asset_management.can_change_asset_status'):
-            self.message_user(request, "You don't have permission to change asset status.")
+        if not request.user.has_perm("asset_management.can_change_asset_status"):
+            self.message_user(
+                request, "You don't have permission to change asset status."
+            )
             return
 
         try:
-            updated = queryset.update(status='pending')
-            self.message_user(request, f'Successfully marked {updated} assets as Pending.')
+            updated = queryset.update(status="pending")
+            self.message_user(
+                request, f"Successfully marked {updated} assets as Pending."
+            )
         except Exception as e:
-            self.message_user(request, f'Error changing status: {str(e)}')
+            self.message_user(request, f"Error changing status: {str(e)}")
 
     @admin.action(
-        description='Mark selected assets as Approved',
-        permissions=['can_change_asset_status']  # Requires this permission
+        description="Mark selected assets as Approved",
+        permissions=["can_change_asset_status"],  # Requires this permission
     )
     def make_approved(self, request, queryset):
-        if not request.user.has_perm('asset_management.can_change_asset_status'):
-            self.message_user(request, "You don't have permission to change asset status.")
+        if not request.user.has_perm("asset_management.can_change_asset_status"):
+            self.message_user(
+                request, "You don't have permission to change asset status."
+            )
             return
 
         try:
-            updated = queryset.update(status='approved')
-            self.message_user(request, f'Successfully marked {updated} assets as Approved.')
+            updated = queryset.update(status="approved")
+            self.message_user(
+                request, f"Successfully marked {updated} assets as Approved."
+            )
         except Exception as e:
-            self.message_user(request, f'Error changing status: {str(e)}')
+            self.message_user(request, f"Error changing status: {str(e)}")
 
     def get_actions(self, request):
         actions = super().get_actions(request)
         if not self.has_can_change_asset_status_permission(request):
-            if 'make_pending' in actions:
-                del actions['make_pending']
-            if 'make_approved' in actions:
-                del actions['make_approved']
+            if "make_pending" in actions:
+                del actions["make_pending"]
+            if "make_approved" in actions:
+                del actions["make_approved"]
         return actions
 
     # @admin.display(description='Status')
     def colored_status(self, obj):
-        colors = {
-            'pending': '#FF0000',  # Orange
-            'approved': '#28a745'  # Green
-        }
+        colors = {"pending": "#FF0000", "approved": "#28a745"}  # Orange  # Green
         return format_html(
             '<span style="color: {}; font-weight: bold;">{}</span>',
-            colors.get(obj.status, 'black'),
-            obj.get_status_display()
+            colors.get(obj.status, "black"),
+            obj.get_status_display(),
         )
-
-
-
-
 
 
 # @admin.register(EmployeeAssignedAsset)
@@ -414,7 +414,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "update_status_pending",
         "update_status_in_progress",
     ]
-    
+
     def save_model(self, request, obj, form, change):
         if change:
             if obj.status == AssetRequestStatus.DONE:
@@ -433,10 +433,20 @@ class AssetRequestAdmin(admin.ModelAdmin):
         )
         return super().changelist_view(request, extra_context)
 
+    def get_queryset(self, request):
+        # Get the maximum creation date
+        max_created = AssetRequest.objects.aggregate(max_created=Max('created_at'))['max_created']
+        
+        
+        # Calculate the start of the seven-day period
+        start_date = max_created - datetime.timedelta(days=7)
+        
+        # Filter asset requests within the seven-day period
+        return AssetRequest.objects.filter(created_at__range=(start_date, max_created))
+
     class Media:
         css = {"all": ("css/list.css",)}
-        
-    
+
     @admin.display(description="Due Days", ordering="created_at")
     def requested_date(self, obj):
         if obj.approved_at:
