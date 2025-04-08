@@ -49,7 +49,6 @@ def save_employee_attendance(sender, **kwargs):
             activities.update(end_time=timezone.now())
 
 
-
 class EmployeeAttendance(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     date = models.DateField()
@@ -66,6 +65,11 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
             ("can_see_full_month_attendance", "Can see full month attendance"),
             ("can_download_attendance_report", "Can download attendance report"),
         )
+
+
+class TrialEmployeeAttendance(EmployeeAttendance):
+    class Meta:
+        proxy = True
 
 
 class EmployeeActivity(TimeStampMixin, AuthorMixin):
