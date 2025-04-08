@@ -737,6 +737,11 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         return response
 
 
+"""
+A trial employee attendance model is created to track the attendance of trial employees.
+"""
+
+
 @admin.register(TrialEmployeeAttendance)
 class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
     list_display = ("date", "employee", "entry_time", "exit_time")
@@ -871,6 +876,8 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
     def calculate_times(self, activities):
         break_time = 0
         inside_time = 0
+
+        # Existing time calculation logic
         for i in range(len(activities) - 1):
             et = activities[i].end_time
             if et and et.date() == activities[i + 1].start_time.date():
@@ -882,7 +889,16 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                 et = timezone.now()
             inside_time += et.timestamp() - st.timestamp()
 
-        return sToTime(break_time), sToTime(inside_time)
+        # Return both formatted and numerical values
+        return {
+            "break_time_str": sToTime(break_time),
+            "inside_time_str": sToTime(inside_time),
+            "break_time_hours": break_time / 3600,
+            "break_time_minutes": (break_time % 3600) / 60,
+            "inside_time_hours": inside_time / 3600,
+            "inside_time_minutes": (inside_time % 3600) / 60,
+            "total_time": (break_time + inside_time) / 3600,
+        }
 
     def waqt_select(self, request, *args, **kwargs) -> redirect:
         if not request.user.is_authenticated:
@@ -1014,8 +1030,20 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                                 start_time = activities[0].start_time
                                 end_time = activities[-1].end_time
                                 is_updated_by_bot = activities[-1].is_updated_by_bot
-                                break_time, inside_time = self.calculate_times(
-                                    activities
+                                time_data = self.calculate_times(activities)
+                                break_time = time_data["break_time_str"]
+                                inside_time = time_data["inside_time_str"]
+                                temp[date].update(
+                                    {
+                                        **time_data,
+                                        "entry_time": (
+                                            start_time.time() if start_time else "-"
+                                        ),
+                                        "exit_time": (
+                                            end_time.time() if end_time else "-"
+                                        ),
+                                        "is_updated_by_bot": is_updated_by_bot,
+                                    }
                                 )
 
                                 temp[date].update(
@@ -1083,13 +1111,17 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         attendance_sheet = wb.create_sheet(title="Employee Attendance")
         attendance_sheet.append(
             [
-                "Employee",
-                "Date",
-                "Entry Time",
-                "Exit Time",
-                "Break Time",
-                "Inside Hours",
-                "Total Hours",
+                employee.full_name if row_num == first_row else "",
+                date.strftime("%d/%m/%Y"),
+                data.get("entry_time", None),
+                data.get("exit_time", None),
+                data.get("break_time_hour", 0)
+                + data.get("break_time_minute", 0) / 60,  # Total hours as float
+                data.get("inside_time_hour", 0)
+                + data.get("inside_time_minute", 0) / 60,  # Total hours as float
+                (data.get("inside_time_hour", 0) + data.get("break_time_hour", 0))
+                + (data.get("inside_time_minute", 0) + data.get("break_time_minute", 0))
+                / 60,
             ]
         )
         row_num = 2
