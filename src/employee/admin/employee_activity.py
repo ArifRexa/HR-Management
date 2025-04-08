@@ -737,6 +737,11 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         return response
 
 
+"""
+A trial employee attendance model is created to track the attendance of trial employees.
+"""
+
+
 @admin.register(TrialEmployeeAttendance)
 class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
     list_display = ("date", "employee", "entry_time", "exit_time")
