@@ -2,13 +2,13 @@
 <div class="popover-wrapper">
 
     <div class="popover-title">
-        {{note.note |truncatewords:10}}
+        {{note.note|striptags|truncatewords:10}}
     </div>
     <div class="popover-message">
 
         {% for note_item in notes %}
             <span style="text-decoration: underline;">{{note_item.created_by.employee.full_name}}</span> <br>
-            {{note_item.note}} <br> <br>
+            {{note_item.note|striptags}} <br> <br>
             
         {% endfor %}
     </div>
