@@ -765,6 +765,18 @@ A trial employee attendance model is created to track the attendance of trial em
 """
 
 
+from django.contrib import admin
+from django.db.models import Count, Q
+from django.shortcuts import redirect
+from django.utils import timezone
+from django.template.response import TemplateResponse
+from openpyxl import Workbook
+from openpyxl.styles import Alignment
+from openpyxl.writer.excel import save_virtual_workbook
+import datetime
+import math
+
+
 @admin.register(TrialEmployeeAttendance)
 class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
     list_display = ("date", "employee", "entry_time", "exit_time")
@@ -863,9 +875,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                                 start_time = activities[0].start_time
                                 end_time = activities[-1].end_time
                                 is_updated_by_bot = activities[-1].is_updated_by_bot
-                                time_data = self.calculate_times(
-                                    activities
-                                )  # Get the full dictionary
+                                time_data = self.calculate_times(activities)
                                 break_time = time_data["break_time_str"]
                                 inside_time = time_data["inside_time_str"]
                                 temp[date].update(
@@ -965,9 +975,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         return employee_online_urls + urls
 
     def generate_monthly_attendance_report_xlsx(self, request, *args, **kwargs):
-        from openpyxl.styles import Alignment
-        from openpyxl.writer.excel import save_virtual_workbook
-
         data = request.POST
         to_date = datetime.datetime.strptime(data.get("to_date"), "%Y-%m-%d")
         from_date = datetime.datetime.strptime(data.get("from_date"), "%Y-%m-%d")
@@ -1070,20 +1077,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                                     }
                                 )
 
-                                temp[date].update(
-                                    {
-                                        "entry_time": (
-                                            start_time.time() if start_time else "-"
-                                        ),
-                                        "exit_time": (
-                                            end_time.time() if end_time else "-"
-                                        ),
-                                        "is_updated_by_bot": is_updated_by_bot,
-                                        "break_time": break_time,
-                                        "inside_time": inside_time,
-                                        "total_time": sToTime(inside_time + break_time),
-                                    }
-                                )
                         break
             date_datas.update({emp: temp})
 
@@ -1135,17 +1128,13 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         attendance_sheet = wb.create_sheet(title="Employee Attendance")
         attendance_sheet.append(
             [
-                employee.full_name if row_num == first_row else "",
-                date.strftime("%d/%m/%Y"),
-                data.get("entry_time", None),
-                data.get("exit_time", None),
-                data.get("break_time_hour", 0)
-                + data.get("break_time_minute", 0) / 60,  # Total hours as float
-                data.get("inside_time_hour", 0)
-                + data.get("inside_time_minute", 0) / 60,  # Total hours as float
-                (data.get("inside_time_hour", 0) + data.get("break_time_hour", 0))
-                + (data.get("inside_time_minute", 0) + data.get("break_time_minute", 0))
-                / 60,
+                "Employee",
+                "Date",
+                "Entry Time",
+                "Exit Time",
+                "Break Time",
+                "Inside Hours",
+                "Total Hours",
             ]
         )
         row_num = 2
