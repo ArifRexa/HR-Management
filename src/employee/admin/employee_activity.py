@@ -831,7 +831,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
                             activities = list(activities)
-                            if activities:  # Check if the list is not empty
+                            if len(activities) > 0:  # Check if the list is not empty
                                 start_time = activities[0].start_time
                                 end_time = activities[-1].end_time
                                 is_updated_by_bot = activities[-1].is_updated_by_bot
@@ -1010,7 +1010,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
                             activities = list(activities)
-                            if activities:  # Check if the list is not empty
+                            if len(activities) > 0:  # Check if the list is not empty
                                 start_time = activities[0].start_time
                                 end_time = activities[-1].end_time
                                 is_updated_by_bot = activities[-1].is_updated_by_bot
