@@ -1,9 +1,9 @@
-import datetime
 from urllib.parse import urlparse
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Q
+from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
 
@@ -400,7 +400,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
     list_display = (
         "category",
         "quantity",
-        # "get_notes",
+        "get_notes",
         "get_priority",
         "requested_by",
         "requested_date",
@@ -431,13 +431,14 @@ class AssetRequestAdmin(admin.ModelAdmin):
         extra_context["pending_count"] = pending_info["pending_count"]
         return super().changelist_view(request, extra_context)
 
-    # def get_queryset(self, request):
-    #     max_created = timezone.now()
-    #     start_date = max_created - datetime.timedelta(days=30)
+    def get_queryset(self, request):
 
-    #     return AssetRequest.objects.select_related("category").filter(
-    #         created_at__range=(start_date, max_created)
-    #     )
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("category")
+            .prefetch_related("asset_request_notes")
+        )
 
     class Media:
         css = {"all": ("css/list.css",)}
@@ -487,17 +488,17 @@ class AssetRequestAdmin(admin.ModelAdmin):
     def requested_by(self, obj):
         return obj.created_by.employee.full_name
 
-    # @admin.display(description="Notes")
-    # def get_notes(self, obj):
-    #     if not obj.asset_request_notes.exists():
-    #         return "-"
-    #     html_template = get_template("admin/asset/col_note.html")
+    @admin.display(description="Notes")
+    def get_notes(self, obj):
+        if not obj.asset_request_notes.exists():
+            return "-"
+        html_template = get_template("admin/asset/col_note.html")
 
-    #     html_content = html_template.render(
-    #         {
-    #             "note": obj.asset_request_notes.first(),
-    #             "notes": obj.asset_request_notes.all(),
-    #         }
-    #     )
+        html_content = html_template.render(
+            {
+                "note": obj.asset_request_notes.first(),
+                "notes": obj.asset_request_notes.all(),
+            }
+        )
 
-    #     return format_html(html_content)
+        return format_html(html_content)
