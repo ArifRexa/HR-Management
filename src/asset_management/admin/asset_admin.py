@@ -6,6 +6,7 @@ from django.db.models import Count, Q
 from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
+from django.utils.safestring import mark_safe
 
 from asset_management.models import (  # AssetCategory,
     Addition,
@@ -501,4 +502,4 @@ class AssetRequestAdmin(admin.ModelAdmin):
             }
         )
 
-        return format_html(html_content)
+        return mark_safe(html_content)
