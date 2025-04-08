@@ -31,9 +31,32 @@ from employee.models import (
 from employee.models.employee_activity import EmployeeProject, TrialEmployeeAttendance
 
 
+import re
+import math
+
+
 def sToTime(duration):
-    minutes = math.floor((int(duration) / 60) % 60)
-    hours = math.floor((int(duration) / (60 * 60)) % 24)
+    # Check if the input is a string
+    if isinstance(duration, str):
+        # Use regex to find hours and minutes in the format "Xh: Ym"
+        match = re.match(r"(?:(\d+)h: )?(?:(\d+)m)?", duration)
+        if match:
+            hours = int(match.group(1)) if match.group(1) else 0
+            minutes = int(match.group(2)) if match.group(2) else 0
+            # Convert to total seconds
+            duration = (hours * 3600) + (minutes * 60)
+        else:
+            raise ValueError("Invalid duration format. Use 'Xh: Ym'.")
+
+    # Ensure duration is numeric (int or float)
+    if not isinstance(duration, (int, float)):
+        raise ValueError(
+            "Duration must be a numeric value representing seconds or a formatted string."
+        )
+
+    # Calculate hours and minutes from total seconds
+    minutes = math.floor((duration / 60) % 60)
+    hours = math.floor((duration / (60 * 60)) % 24)
 
     return f"{hours:01}h: {minutes:01}m"
 
