@@ -2,18 +2,74 @@
 
 {% block content %}
 
-    <p>
-        Dear <b>{{ loan.employee.full_name }}</b>
-    </p>
+<p>
+    Dear <b>{{ loan.employee.full_name }}</b>,
+</p>
 
-    <p>
-        You have taken <b>{{ loan.loan_amount }}</b> taka as loan with EMI of {{ loan.emi }}
-    </p>
+<p>
+    Below are the details of your loan:
+</p>
 
-    <p>
-        Sincerely, <br>
-        Md Shahinur Rahman <br>
-        Managing Director <br>
-        Mediusware Ltd.
-    </p>
+<table border="1" cellpadding="8" cellspacing="0" style="border-collapse: collapse; width: 50%; font-family: Arial, sans-serif;">
+    <thead>
+        <tr style="background-color: #f2f2f2;">
+            <th align="left">Info</th>
+            <th align="left">Details</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Loan Amount</td>
+            <td>{{ loan.loan_amount }} Taka</td>
+        </tr>
+        <tr>
+            <td>EMI</td>
+            <td>{{ loan.emi }} Taka</td>
+        </tr>
+        <tr>
+            <td>Loan Type</td>
+            <td>{{ loan.get_loan_type_display }}</td>
+        </tr>
+        <tr>
+            <td>Payment Method</td>
+            <td>{{ loan.get_payment_method_display }}</td>
+        </tr>
+        <tr>
+            <td>Effective Date</td>
+            <td>{{ loan.effective_date }}</td>
+        </tr>
+        <tr>
+            <td>Start Date</td>
+            <td>{{ loan.start_date }}</td>
+        </tr>
+        <tr>
+            <td>End Date</td>
+            <td>{{ loan.end_date }}</td>
+        </tr>
+        <tr>
+            <td>Tenor (Months)</td>
+            <td>{{ loan.tenor }}</td>
+        </tr>
+        {% if loan.tax_calan_no %}
+        <tr>
+            <td>Tax Challan No</td>
+            <td>{{ loan.tax_calan_no }}</td>
+        </tr>
+        {% endif %}
+        {% if loan.description %}
+        <tr>
+            <td>Description</td>
+            <td>{{ loan.description }}</td>
+        </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<p>
+    Sincerely, <br>
+    Md Shahinur Rahman <br>
+    Managing Director <br>
+    Mediusware Ltd.
+</p>
+
 {% endblock %}

@@ -30,7 +30,7 @@ class LoadAttachmentInline(admin.TabularInline):
 
 
 @admin.register(Loan)
-class LoadAdmin(admin.ModelAdmin):
+class LoanAdmin(admin.ModelAdmin):
     list_display = ("employee", "loan_amount", "due", "emi", "tenor", "description")
     inlines = (LoadAttachmentInline,)
     actions = ("print_loan_agreement", "duplicate")
@@ -111,8 +111,6 @@ class LoadAdmin(admin.ModelAdmin):
         email.from_email = "hr@mediusware.com"
         email.cc = ["shahinur@mediusware.com"]
         email.send()
-        # email.to = ["admin@mediusware.com"]
-        # email.send()
         return super().save_model(request, obj, form, change)
 
     def get_queryset(self, request):
