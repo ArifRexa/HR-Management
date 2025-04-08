@@ -32,8 +32,8 @@ from employee.models.employee_activity import EmployeeProject, TrialEmployeeAtte
 
 
 def sToTime(duration):
-    minutes = math.floor((duration / 60) % 60)
-    hours = math.floor((duration / (60 * 60)) % 24)
+    minutes = math.floor((int(duration) / 60) % 60)
+    hours = math.floor((int(duration) / (60 * 60)) % 24)
 
     return f"{hours:01}h: {minutes:01}m"
 
