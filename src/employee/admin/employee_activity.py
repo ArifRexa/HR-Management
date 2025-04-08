@@ -840,10 +840,11 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                                 start_time = activities[0].start_time
                                 end_time = activities[-1].end_time
                                 is_updated_by_bot = activities[-1].is_updated_by_bot
-                                break_time, inside_time = self.calculate_times(
+                                time_data = self.calculate_times(
                                     activities
-                                )
-
+                                )  # Get the full dictionary
+                                break_time = time_data["break_time_str"]
+                                inside_time = time_data["inside_time_str"]
                                 temp[date].update(
                                     {
                                         "entry_time": (
