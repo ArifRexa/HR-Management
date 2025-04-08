@@ -108,7 +108,7 @@ class LoanAdmin(admin.ModelAdmin):
         email = EmailMultiAlternatives(subject="Loan Approved")
         email.attach_alternative(html_content, "text/html")
         email.to = [obj.employee.email]
-        email.from_email = "hr@mediusware.com"
+        email.from_email = "HR Mediusware <hr@mediusware.com>"
         email.cc = ["shahinur@mediusware.com"]
         email.send()
         return super().save_model(request, obj, form, change)
