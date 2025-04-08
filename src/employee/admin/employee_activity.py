@@ -830,23 +830,29 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            start_time = activities[0].start_time
-                            end_time = activities[-1].end_time
-                            is_updated_by_bot = activities[-1].is_updated_by_bot
-                            break_time, inside_time = self.calculate_times(activities)
+                            activities = list(activities)
+                            if activities:  # Check if the list is not empty
+                                start_time = activities[0].start_time
+                                end_time = activities[-1].end_time
+                                is_updated_by_bot = activities[-1].is_updated_by_bot
+                                break_time, inside_time = self.calculate_times(
+                                    activities
+                                )
 
-                            temp[date].update(
-                                {
-                                    "entry_time": (
-                                        start_time.time() if start_time else "-"
-                                    ),
-                                    "exit_time": end_time.time() if end_time else "-",
-                                    "is_updated_by_bot": is_updated_by_bot,
-                                    "break_time": break_time,
-                                    "inside_time": inside_time,
-                                    "total_time": sToTime(inside_time + break_time),
-                                }
-                            )
+                                temp[date].update(
+                                    {
+                                        "entry_time": (
+                                            start_time.time() if start_time else "-"
+                                        ),
+                                        "exit_time": (
+                                            end_time.time() if end_time else "-"
+                                        ),
+                                        "is_updated_by_bot": is_updated_by_bot,
+                                        "break_time": break_time,
+                                        "inside_time": inside_time,
+                                        "total_time": sToTime(inside_time + break_time),
+                                    }
+                                )
                         break
 
             date_datas[emp] = temp
@@ -918,9 +924,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         ]
         return employee_online_urls + urls
 
-    # def has_module_permission(self, request):
-    #     return False
-
     def generate_monthly_attendance_report_xlsx(self, request, *args, **kwargs):
         from openpyxl.styles import Alignment
         from openpyxl.writer.excel import save_virtual_workbook
@@ -929,14 +932,13 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         to_date = datetime.datetime.strptime(data.get("to_date"), "%Y-%m-%d")
         from_date = datetime.datetime.strptime(data.get("from_date"), "%Y-%m-%d")
         now = to_date
-        DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
+        DEFAULT_EXIT_HOUR = 20  # 8 PM
         DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
-        day_count = to_date - from_date
-        day_range = day_count.days + 1
+        day_count = (to_date - from_date).days + 1
 
         last_x_dates = [
             (now - datetime.timedelta(i)).date()
-            for i in range(day_range)
+            for i in range(day_count)
             if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
         ]
         last_x_date = (now - datetime.timedelta(10)).date()
@@ -969,7 +971,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
             emps.insert(0, user_data)
 
         date_datas = {}
-
         manager_date_and_hours = {}
 
         for emp in emps:
@@ -1009,100 +1010,36 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
                             activities = list(activities)
-                            al = len(activities)
-                            start_time = activities[0].start_time
-                            end_time = activities[-1].end_time
-                            is_updated_by_bot = activities[-1].is_updated_by_bot
-                            break_time = 0
-                            inside_time = 0
-
-                            for i in range(al - 1):
-                                et = activities[i].end_time
-                                if (
-                                    et
-                                    and et.date() == activities[i + 1].start_time.date()
-                                ):
-                                    break_time += (
-                                        activities[i + 1].start_time.timestamp()
-                                        - et.timestamp()
-                                    )
-                            for i in range(al):
-                                st, et = (
-                                    activities[i].start_time,
-                                    activities[i].end_time,
+                            if activities:  # Check if the list is not empty
+                                start_time = activities[0].start_time
+                                end_time = activities[-1].end_time
+                                is_updated_by_bot = activities[-1].is_updated_by_bot
+                                break_time, inside_time = self.calculate_times(
+                                    activities
                                 )
-                                if not et:
-                                    et = timezone.now()
-                                inside_time += et.timestamp() - st.timestamp()
 
-                            break_time_s = sToTime(break_time)
-                            inside_time_s = sToTime(inside_time)
-                            employee_is_lead = emp.lead or emp.manager
-                            start_time_timeobj = start_time.time()
-                            if start_time:
-                                is_late = (
-                                    employee_is_lead
-                                    and (
-                                        (
-                                            start_time_timeobj.hour == 11
-                                            and start_time_timeobj.minute > 30
-                                        )
-                                        or start_time_timeobj.hour >= 12
-                                    )
-                                ) or (
-                                    not employee_is_lead
-                                    and (
-                                        (
-                                            start_time_timeobj.hour >= 11
-                                            and start_time_timeobj.minute > 30
-                                        )
-                                        or start_time_timeobj.hour >= 12
-                                    )
+                                temp[date].update(
+                                    {
+                                        "entry_time": (
+                                            start_time.time() if start_time else "-"
+                                        ),
+                                        "exit_time": (
+                                            end_time.time() if end_time else "-"
+                                        ),
+                                        "is_updated_by_bot": is_updated_by_bot,
+                                        "break_time": break_time,
+                                        "inside_time": inside_time,
+                                        "total_time": sToTime(inside_time + break_time),
+                                    }
                                 )
-                            temp[date].update(
-                                {
-                                    "entry_time": (
-                                        start_time.time() if start_time else "-"
-                                    ),
-                                    "exit_time": end_time.time() if end_time else "-",
-                                    "is_updated_by_bot": is_updated_by_bot,
-                                    "break_time": break_time_s,
-                                    "break_time_hour": math.floor(
-                                        (break_time / (60 * 60)) % 24
-                                    ),
-                                    "break_time_minute": math.floor(break_time / 60),
-                                    "inside_time": inside_time_s,
-                                    "inside_time_hour": math.floor(
-                                        (inside_time / (60 * 60)) % 24
-                                    ),
-                                    "inside_time_minute": math.floor(inside_time / 60),
-                                    "total_time": sToTime(inside_time + break_time),
-                                    "total_time_hour": math.floor(
-                                        (inside_time + break_time) / (60 * 60) % 24
-                                    ),
-                                    "employee_is_lead": emp.lead or emp.manager,
-                                    "is_late": is_late,
-                                }
-                            )
                         break
             date_datas.update({emp: temp})
 
-        # for emp in emps:
-        #         if manager_date_and_hours.get(emp.id):
-        #                 print(date_datas[emp])
-        #                 for date in last_x_dates:
-        #                     if date_datas[emp][date].get('accepted_hour'):
-        #                         date_datas[emp][date]['accepted_hour'] +=  manager_date_and_hours.get(emp.id).get(0, date)
-        #                     else:
-        #                         date_datas[emp][date]['accepted_hour'] = manager_date_and_hours.get(emp.id).get(0, date)
         for emp in emps:
             if manager_date_and_hours.get(emp.id):
-                # print(date_datas[emp])
                 for date in last_x_dates:
                     accepted_hour = date_datas[emp][date].get("accepted_hour", 0)
-
                     manager_hour = manager_date_and_hours.get(emp.id, {}).get(date, 0)
-
                     date_datas[emp][date]["accepted_hour"] = accepted_hour
                     date_datas[emp][date]["manager_hour"] = manager_hour
 
@@ -1132,6 +1069,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                 o = "entry"
 
             date_datas = dict(date_datas_sorted)
+
         context = dict(
             self.admin_site.each_context(request),
             dates=last_x_dates,
@@ -1140,6 +1078,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
             o=o,  # order key
             online_status_form=online_status_form,
         )
+
         wb = Workbook()
         attendance_sheet = wb.create_sheet(title="Employee Attendance")
         attendance_sheet.append(
