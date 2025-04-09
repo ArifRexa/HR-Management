@@ -872,22 +872,24 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            start_time = activities[0].start_time
-                            end_time = activities[-1].end_time
-                            is_updated_by_bot = activities[-1].is_updated_by_bot
+                            if len(activities) > 1:
+                                start_time = activities[0].start_time
+                                end_time = activities[-1].end_time
+                                is_updated_by_bot = activities[-1].is_updated_by_bot
 
-                            # Calculate break time and inside time
-                            break_time = 0
-                            inside_time = 0
-                            for i in range(len(activities) - 1):
-                                et = activities[i].end_time
-                                if (
-                                    et
-                                    and et.date() == activities[i + 1].start_time.date()
-                                ):
-                                    break_time += (
-                                        activities[i + 1].start_time - et
-                                    ).total_seconds()
+                                # Calculate break time and inside time
+                                break_time = 0
+                                inside_time = 0
+                                for i in range(len(activities) - 1):
+                                    et = activities[i].end_time
+                                    if (
+                                        et
+                                        and et.date()
+                                        == activities[i + 1].start_time.date()
+                                    ):
+                                        break_time += (
+                                            activities[i + 1].start_time - et
+                                        ).total_seconds()
 
                             for activity in activities:
                                 st, et = activity.start_time, activity.end_time
