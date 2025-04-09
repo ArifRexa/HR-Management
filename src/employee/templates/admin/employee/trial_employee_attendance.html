@@ -1,11 +1,16 @@
-{% extends "admin/base_site.html" %} {% block title %} Employee Attendance {% endblock %} {% block content %} {% load humanize %} {% load static %} {% load custom_filters %}
+{% extends "admin/base_site.html" %}
+{% block title %} Employee Attendance {% endblock %}
+{% block content %}
+{% load humanize %}
+{% load static %}
+{% load custom_filters %}
 <link
   href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
   rel="stylesheet"
   integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD"
   crossorigin="anonymous" />
 <style>
-  /* Table Caption Fix for Django Admin Navbar (Bootstrap Override) */
+ /* Table Caption Fix for Django Admin Navbar (Bootstrap Override) */
   table {
     caption-side: unset !important;
   }
@@ -94,20 +99,9 @@
 
   <div class="pb-3">
     <div class="d-flex justify-content-between">
-        {% comment %} {% if form %}
-            <div class="d-inline-block rounded p-2 bg-body-secondary">
-                {% include 'admin/form/employee_prayerinfo_form.html' %}
-            </div>
-        {% endif %} {% endcomment %}
-{#            {% if user.groups.all.0.name != "Employee" %}#}
-{#            <div class="py-2">#}
-{#                <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>#}
-{#            </div>#}
-{#            {% endif %}#}
+      {# Additional controls can be added here if needed #}
     </div>
-
-
-</div>
+  </div>
 
   <div class="table-responsive">
     <table class="table w-100 table-bordered">
@@ -117,9 +111,9 @@
           {% for date in dates %}
           <th class="border text-dark bg-white text-center py-3">
             {% if forloop.counter0 == 0 %}
-            <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?o={% if o %}{{ o }}{% else %}entry{% endif %}"
-              >{{ date|date:"M d" }}</a
-            >
+            <a class="text-decoration-none text-dark btn btn-outline-secondary btn-sm" id="sorting-button" href="?o={% if o %}{{ o }}{% else %}entry{% endif %}">
+                {{ date|date:"M d" }}
+                </a>
             {% else %}
             <span>{{ date|date:"M d" }}</span>
             {% endif %}
@@ -129,61 +123,72 @@
         </tr>
       </thead>
       <tbody>
-        {% for employee in page_obj %} {% if request.user.is_superuser or perms.employee.can_see_full_month_attendance or employee.user == request.user %}
+        {% for employee, date_data in page_obj %}
+        {% if request.user.is_superuser or perms.employee.can_see_full_month_attendance or employee.user == request.user %}
         <tr class="table__row">
-          <td class="align-middle" style="text-align: center">
-            {% if employee.is_online %}
-            <span style="color: green">🟢</span>
-            {% else %}
-            <span>🔴</span>
-            {% endif %}
-            <b>{{ employee.full_name }}</b>
-          </td>
-          {% for date in dates %} {% with employee|get_item:date_datas as data %} {% if data and data.date %}
-          <td title="{{ employee.full_name }}&#10;{{ date|date:'M d' }}" class="pb-0">
-            <p class="text-center mb-1">
-              <span>
-                {% if data.accepted_hour %}
-                <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em">
-                  {{ data.accepted_hour | floatformat:2 }} H
-                </span>
-                {% else %} {% if data.manager_hour %}
-                <span style="color: red; font-size: 1.2em">0.00 H</span>
-                {% else %} - {% endif %} {% endif %} {% if data.manager_hour %}
-                <span class="{% if data.manager_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em">
-                  - {{ data.manager_hour | floatformat:2 }} H
-                </span>
+            <td class="align-middle" style="text-align: center">
+                {% if employee.is_online %}
+                <span style="color: green">🟢</span>
+                {% else %}
+                <span>🔴</span>
                 {% endif %}
-              </span>
-            </p>
-            <p class="text-center mb-1">
-              <span {% if data.is_late %}class="text-danger fw-bold" style="color: white !important; background: red; padding: 2px; border-radius: 5px" {% endif %}>
-                {{ data.entry_time|time:"h:i A" }}
-              </span>
-              &nbsp;/
-              <span {% if data.is_updated_by_bot %} style="color: #ff00ff" class="p-1" {% endif %}>
-                {% if data.exit_time != '-' %} {{ data.exit_time|time:"h:i A" }} {% else %} {{ data.exit_time }} {% endif %}
-              </span>
-            </p>
-            <p class="text-center mb-2">
-              <span {% if data.break_time_minute >= 75 %} style="background: #50e0ff;border-radius: 3px;padding: 1px 4px;" {% endif %} > {{ data.break_time }} </span>
-              /
-              <span {% if data.inside_time_hour >= 8 %} class="text-success fw-bold" {% else %} class="p-1 bg-warning fw-bold" style="border-radius: 3px;" {% endif %} > {{ data.inside_time }}
-              </span>
-            </p>
-            <p class="text-center mb-2">
-              <span 
-              {% if data.inside_time_hour >= 8 and data.total_time_hour >= 9 %} class="text-success fw-bold"; {% else %} class="text-danger fw-bold"; {% endif %} > {{ data.total_time }}
-              </span>
-            </p>
-          </td>
-          {% else %}
-          <td class="align-middle text-center color-muted">-</td>
-          {% endif %} {% endwith %} {% endfor %}
-          <td class="text-center align-middle fs-5" title="{{ employee.full_name }}">{{ employee.last_month_attendance }}</td>
+                <b>{{ employee.full_name }}</b>
+            </td>
+            {% for date in dates %}
+            {% with employee|get_item:date_datas as data %}
+            {% if data and data.date %}
+            <td title="{{ employee.full_name }}&#10;{{ date|date:'M d' }}" class="pb-0">
+                <p class="text-center mb-1">
+                    <span>
+                        {% if data.accepted_hour %}
+                        <span class="{% if data.accepted_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em">
+                            {{ data.accepted_hour | floatformat:2 }} H
+                        </span>
+                        {% else %}
+                        {% if data.manager_hour %}
+                        <span style="color: red; font-size: 1.2em">0.00 H</span>
+                        {% else %}
+                        - 
+                        {% endif %}
+                        {% endif %}
+                        {% if data.manager_hour %}
+                        <span class="{% if data.manager_hour < 6 %}text-danger{% else %}text-primary{% endif %}" style="font-size: 1.2em">
+                            - {{ data.manager_hour | floatformat:2 }} H
+                        </span>
+                        {% endif %}
+                    </span>
+                </p>
+                <p class="text-center mb-1">
+                    <span {% if data.is_late %}class="text-danger fw-bold" style="color: white !important; background: red; padding: 2px; border-radius: 5px" {% endif %}>
+                        {{ data.entry_time|time:"h:i A" }}
+                    </span>
+                    &nbsp;/
+                    <span {% if data.is_updated_by_bot %} style="color: #ff00ff" class="p-1" {% endif %}>
+                        {% if data.exit_time != '-' %} {{ data.exit_time|time:"h:i A" }} {% else %} {{ data.exit_time }} {% endif %}
+                    </span>
+                </p>
+                <p class="text-center mb-2">
+                    <span {% if data.break_time_minute >= 75 %} style="background: #50e0ff;border-radius: 3px;padding: 1px 4px;" {% endif %}> {{ data.break_time }} </span>
+                    /
+                    <span {% if data.inside_time_hour >= 8 %} class="text-success fw-bold" {% else %} class="p-1 bg-warning fw-bold" style="border-radius: 3px;" {% endif %}> {{ data.inside_time }}
+                    </span>
+                </p>
+                <p class="text-center mb-2">
+                    <span 
+                    {% if data.inside_time_hour >= 8 and data.total_time_hour >= 9 %} class="text-success fw-bold"; {% else %} class="text-danger fw-bold"; {% endif %}> {{ data.total_time }}
+                    </span>
+                </p>
+            </td>
+            {% else %}
+            <td class="align-middle text-center color-muted">-</td>
+            {% endif %}
+            {% endwith %}
+            {% endfor %}
+            <td class="text-center align-middle fs-5" title="{{ employee.full_name }}">{{ employee.last_month_attendance }}</td>
         </tr>
-        {% endif %} {% endfor %}
-      </tbody>
+        {% endif %}
+        {% endfor %}
+    </tbody>
     </table>
   </div>
 

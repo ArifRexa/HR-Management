@@ -1004,23 +1004,28 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         if str(request.user.employee.id) not in management_ids:
             online_status_form = True
 
-        # Pagination logic
-        page_number = request.GET.get("page", 1)
-        paginator = Paginator(emps, 10)  # Show 10 employees per page
-        page_obj = paginator.get_page(page_number)
+        # After calculating date_datas
 
         # Handle sorting
         o = request.GET.get("o", None)  # Define 'o' for sorting
+
+        date_datas_items = [(emp, date_datas[emp]) for emp in emps]
+
+        # Pagination logic
+        page_number = request.GET.get("page", 1)
+        paginator = Paginator(date_datas_items, 10)  # Show 10 items per page
+        page_obj = paginator.get_page(page_number)
 
         context = dict(
             self.admin_site.each_context(request),
             dates=last_x_dates,
             last_month=last_month,
-            date_datas=date_datas,
+            date_datas=date_datas,  # Keep the original for reference if needed
             o=o,  # order key
             online_status_form=online_status_form,
             page_obj=page_obj,  # Add page_obj to context
         )
+
         return TemplateResponse(
             request, "admin/employee/trial_employee_attendance.html", context
         )
