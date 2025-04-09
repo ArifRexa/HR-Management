@@ -872,7 +872,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            if len(activities) > 1:
+                            if len(activities) > 0:
                                 start_time = activities[0].start_time
                                 end_time = activities[-1].end_time
                                 is_updated_by_bot = activities[-1].is_updated_by_bot
@@ -891,11 +891,11 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                                             activities[i + 1].start_time - et
                                         ).total_seconds()
 
-                            for activity in activities:
-                                st, et = activity.start_time, activity.end_time
-                                if not et:
-                                    et = timezone.now()
-                                inside_time += (et - st).total_seconds()
+                                for activity in activities:
+                                    st, et = activity.start_time, activity.end_time
+                                    if not et:
+                                        et = timezone.now()
+                                    inside_time += (et - st).total_seconds()
 
                             # Update temp with calculated values
                             temp[date].update(
@@ -1059,38 +1059,42 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            start_time = activities[0].start_time
-                            end_time = activities[-1].end_time
+                            if len(activities) > 0:
+                                start_time = activities[0].start_time
+                                end_time = activities[-1].end_time
 
-                            break_time = 0
-                            inside_time = 0
-                            for i in range(len(activities) - 1):
-                                et = activities[i].end_time
-                                if (
-                                    et
-                                    and et.date() == activities[i + 1].start_time.date()
-                                ):
-                                    break_time += (
-                                        activities[i + 1].start_time - et
-                                    ).total_seconds()
+                                break_time = 0
+                                inside_time = 0
+                                for i in range(len(activities) - 1):
+                                    et = activities[i].end_time
+                                    if (
+                                        et
+                                        and et.date()
+                                        == activities[i + 1].start_time.date()
+                                    ):
+                                        break_time += (
+                                            activities[i + 1].start_time - et
+                                        ).total_seconds()
 
-                            for activity in activities:
-                                st, et = activity.start_time, activity.end_time
-                                if not et:
-                                    et = timezone.now()
-                                inside_time += (et - st).total_seconds()
+                                for activity in activities:
+                                    st, et = activity.start_time, activity.end_time
+                                    if not et:
+                                        et = timezone.now()
+                                    inside_time += (et - st).total_seconds()
 
-                            temp[date].update(
-                                {
-                                    "entry_time": (
-                                        start_time.time() if start_time else "-"
-                                    ),
-                                    "exit_time": end_time.time() if end_time else "-",
-                                    "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
-                                    "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
-                                    "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
-                                }
-                            )
+                                temp[date].update(
+                                    {
+                                        "entry_time": (
+                                            start_time.time() if start_time else "-"
+                                        ),
+                                        "exit_time": (
+                                            end_time.time() if end_time else "-"
+                                        ),
+                                        "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
+                                        "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
+                                        "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
+                                    }
+                                )
                         break
                 date_datas[emp] = temp
 
