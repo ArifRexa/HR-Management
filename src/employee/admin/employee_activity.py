@@ -788,7 +788,6 @@ from openpyxl import Workbook
 from openpyxl.styles import Alignment
 from openpyxl.writer.excel import save_virtual_workbook
 import datetime
-import math
 
 
 @admin.register(TrialEmployeeAttendance)
@@ -807,8 +806,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
             return redirect("/")
 
         now = timezone.now()
-        DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
-        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
         day_range = 30
 
         last_x_dates = [
@@ -846,7 +843,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         )
 
         date_datas = {}
-        manager_date_and_hours = {}
 
         # Prefetch related data to minimize queries
         for emp in emps.prefetch_related(
@@ -874,8 +870,11 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                         if activities.exists():
                             if len(activities) > 0:
                                 start_time = activities[0].start_time
-                                end_time = activities[-1].end_time
-                                is_updated_by_bot = activities[-1].is_updated_by_bot
+                                end_time = (
+                                    activities[-1].end_time
+                                    if activities[-1].end_time
+                                    else timezone.now()
+                                )
 
                                 # Calculate break time and inside time
                                 break_time = 0
@@ -897,22 +896,24 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                                         et = timezone.now()
                                     inside_time += (et - st).total_seconds()
 
-                            # Update temp with calculated values
-                            temp[date].update(
-                                {
-                                    "entry_time": (
-                                        start_time.time() if start_time else "-"
-                                    ),
-                                    "exit_time": end_time.time() if end_time else "-",
-                                    "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
-                                    "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
-                                    "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
-                                    "is_late": self.check_if_late(start_time, emp),
-                                }
-                            )
+                                # Update temp with calculated values
+                                temp[date].update(
+                                    {
+                                        "entry_time": (
+                                            start_time.time() if start_time else "-"
+                                        ),
+                                        "exit_time": (
+                                            end_time.time() if end_time else "-"
+                                        ),
+                                        "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
+                                        "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
+                                        "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
+                                        "is_late": self.check_if_late(start_time, emp),
+                                    }
+                                )
                         break
 
-            date_datas[emp] = temp
+                date_datas[emp] = temp
 
         context = dict(
             self.admin_site.each_context(request),
@@ -1008,8 +1009,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         to_date = datetime.datetime.strptime(data.get("to_date"), "%Y-%m-%d")
         from_date = datetime.datetime.strptime(data.get("from_date"), "%Y-%m-%d")
         now = to_date
-        DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
-        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
         day_count = to_date - from_date
         day_range = day_count.days + 1
 
@@ -1018,7 +1017,6 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
             for i in range(day_range)
             if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
         ]
-        last_x_date = (now - datetime.timedelta(10)).date()
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
         emps = (
@@ -1061,7 +1059,11 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                         if activities.exists():
                             if len(activities) > 0:
                                 start_time = activities[0].start_time
-                                end_time = activities[-1].end_time
+                                end_time = (
+                                    activities[-1].end_time
+                                    if activities[-1].end_time
+                                    else timezone.now()
+                                )
 
                                 break_time = 0
                                 inside_time = 0
