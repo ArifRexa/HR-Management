@@ -868,7 +868,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            if len(activities) > 0:
+                            if len(activities) > 1:
                                 start_time = activities[0].start_time
                                 end_time = (
                                     activities[-1].end_time
