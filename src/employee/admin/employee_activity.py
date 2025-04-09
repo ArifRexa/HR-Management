@@ -868,48 +868,57 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            if len(activities) > 1:
-                                start_time = activities[0].start_time
-                                end_time = (
-                                    activities[-1].end_time
-                                    if activities[-1].end_time
-                                    else timezone.now()
-                                )
+                            try:
+                                if len(activities) > 0:
+                                    start_time = activities[0].start_time
+                                    end_time = (
+                                        activities[-1].end_time
+                                        if len(activities) > 1
+                                        and activities[-1].end_time
+                                        else timezone.now()
+                                    )
 
-                                # Calculate break time and inside time
-                                break_time = 0
-                                inside_time = 0
-                                for i in range(len(activities) - 1):
-                                    et = activities[i].end_time
-                                    if (
-                                        et
-                                        and et.date()
-                                        == activities[i + 1].start_time.date()
-                                    ):
-                                        break_time += (
-                                            activities[i + 1].start_time - et
-                                        ).total_seconds()
+                                    # Calculate break time and inside time
+                                    break_time = 0
+                                    inside_time = 0
+                                    for i in range(len(activities) - 1):
+                                        et = activities[i].end_time
+                                        if (
+                                            et
+                                            and et.date()
+                                            == activities[i + 1].start_time.date()
+                                        ):
+                                            break_time += (
+                                                activities[i + 1].start_time - et
+                                            ).total_seconds()
 
-                                for activity in activities:
-                                    st, et = activity.start_time, activity.end_time
-                                    if not et:
-                                        et = timezone.now()
-                                    inside_time += (et - st).total_seconds()
+                                    for activity in activities:
+                                        st, et = activity.start_time, activity.end_time
+                                        if not et:
+                                            et = timezone.now()
+                                        inside_time += (et - st).total_seconds()
 
-                                # Update temp with calculated values
-                                temp[date].update(
-                                    {
-                                        "entry_time": (
-                                            start_time.time() if start_time else "-"
-                                        ),
-                                        "exit_time": (
-                                            end_time.time() if end_time else "-"
-                                        ),
-                                        "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
-                                        "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
-                                        "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
-                                        "is_late": self.check_if_late(start_time, emp),
-                                    }
+                                    # Update temp with calculated values
+                                    temp[date].update(
+                                        {
+                                            "entry_time": (
+                                                start_time.time() if start_time else "-"
+                                            ),
+                                            "exit_time": (
+                                                end_time.time() if end_time else "-"
+                                            ),
+                                            "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
+                                            "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
+                                            "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
+                                            "is_late": self.check_if_late(
+                                                start_time, emp
+                                            ),
+                                        }
+                                    )
+                            except Exception as e:
+                                # Handle any exceptions that occur during calculations
+                                print(
+                                    f"Error processing attendance for {emp.full_name} on {date}: {e}"
                                 )
                         break
 
@@ -1057,45 +1066,51 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
                     if attendance.date == date:
                         activities = attendance.employeeactivity_set.all()
                         if activities.exists():
-                            if len(activities) > 0:
-                                start_time = activities[0].start_time
-                                end_time = (
-                                    activities[-1].end_time
-                                    if activities[-1].end_time
-                                    else timezone.now()
-                                )
+                            try:
+                                if len(activities) > 0:
+                                    start_time = activities[0].start_time
+                                    end_time = (
+                                        activities[-1].end_time
+                                        if len(activities) > 1
+                                        and activities[-1].end_time
+                                        else timezone.now()
+                                    )
 
-                                break_time = 0
-                                inside_time = 0
-                                for i in range(len(activities) - 1):
-                                    et = activities[i].end_time
-                                    if (
-                                        et
-                                        and et.date()
-                                        == activities[i + 1].start_time.date()
-                                    ):
-                                        break_time += (
-                                            activities[i + 1].start_time - et
-                                        ).total_seconds()
+                                    break_time = 0
+                                    inside_time = 0
+                                    for i in range(len(activities) - 1):
+                                        et = activities[i].end_time
+                                        if (
+                                            et
+                                            and et.date()
+                                            == activities[i + 1].start_time.date()
+                                        ):
+                                            break_time += (
+                                                activities[i + 1].start_time - et
+                                            ).total_seconds()
 
-                                for activity in activities:
-                                    st, et = activity.start_time, activity.end_time
-                                    if not et:
-                                        et = timezone.now()
-                                    inside_time += (et - st).total_seconds()
+                                    for activity in activities:
+                                        st, et = activity.start_time, activity.end_time
+                                        if not et:
+                                            et = timezone.now()
+                                        inside_time += (et - st).total_seconds()
 
-                                temp[date].update(
-                                    {
-                                        "entry_time": (
-                                            start_time.time() if start_time else "-"
-                                        ),
-                                        "exit_time": (
-                                            end_time.time() if end_time else "-"
-                                        ),
-                                        "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
-                                        "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
-                                        "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
-                                    }
+                                    temp[date].update(
+                                        {
+                                            "entry_time": (
+                                                start_time.time() if start_time else "-"
+                                            ),
+                                            "exit_time": (
+                                                end_time.time() if end_time else "-"
+                                            ),
+                                            "break_time": f"{break_time // 3600}h: {(break_time % 3600) // 60}m",
+                                            "inside_time": f"{inside_time // 3600}h: {(inside_time % 3600) // 60}m",
+                                            "total_time": f"{(inside_time + break_time) // 3600}h: {((inside_time + break_time) % 3600) // 60}m",
+                                        }
+                                    )
+                            except Exception as e:
+                                print(
+                                    f"Error processing attendance for {emp.full_name} on {date}: {e}"
                                 )
                         break
                 date_datas[emp] = temp
@@ -1120,9 +1135,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
             for date, data in all_data.items():
                 attendance_sheet.append(
                     [
-                        (
-                            employee.full_name if row_num == 2 else ""
-                        ),  # Only show employee name on the first row for each employee
+                        (employee.full_name if row_num == 2 else ""),
                         date,
                         data["entry_time"],
                         data["exit_time"],
@@ -1136,7 +1149,7 @@ class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
         # Adjust column widths
         for column in attendance_sheet.columns:
             max_length = 0
-            column = column[0].column_letter  # Get the column name
+            column = column[0].column_letter
             for cell in attendance_sheet[column]:
                 try:
                     if len(str(cell.value)) > max_length:
