@@ -92,6 +92,23 @@
   </div>
   {% endif %}
 
+  <div class="pb-3">
+    <div class="d-flex justify-content-between">
+        {% comment %} {% if form %}
+            <div class="d-inline-block rounded p-2 bg-body-secondary">
+                {% include 'admin/form/employee_prayerinfo_form.html' %}
+            </div>
+        {% endif %} {% endcomment %}
+{#            {% if user.groups.all.0.name != "Employee" %}#}
+{#            <div class="py-2">#}
+{#                <a class="btn btn-secondary text-white px-3" href="{% url 'admin:employee_attendance' %}admin/">Old View</a>#}
+{#            </div>#}
+{#            {% endif %}#}
+    </div>
+
+
+</div>
+
   <div class="table-responsive">
     <table class="table w-100 table-bordered">
       <thead>
