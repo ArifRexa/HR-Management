@@ -119,6 +119,11 @@ class Employee(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.full_name
+    
+    @property
+    def employee_id(self):
+        join_date = self.joining_date.strftime('%Y%d')
+        return f"{join_date}{self.pk}"
 
     @property
     def has_pending_appointment(self):
