@@ -24,6 +24,7 @@ from config.model.AuthorMixin import AuthorMixin
 from employee.models import Employee
 from django.utils.html import format_html
 from django.utils.text import slugify
+from django.core.validators import FileExtensionValidator
 from icecream import ic
 
 # from employee.models import LeaveManagement
@@ -445,6 +446,19 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     is_highlighted = models.BooleanField(verbose_name="Is Highlighted?", default=False)
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
+    # case_study_pdf = models.FileField(
+    #     verbose_name="Case Study File (PDF)",
+    #     help_text="Only Upload PDF File",
+    #     upload_to="case_study_pdf", 
+    #     null=True, 
+    #     blank=True, 
+    #     validators=[
+    #         FileExtensionValidator(
+    #             allowed_extensions=["pdf"], 
+    #             message="Only PDF files are allowed. Please upload a valid PDF file."
+    #         )
+    #     ]
+    # )
 
     # project_results = models.OneToOneField(
     #     ProjectResults,
@@ -656,6 +670,7 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     content = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="project_images/", null=True, blank=True)
     image2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
+    video_url = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return self.title or "-"
