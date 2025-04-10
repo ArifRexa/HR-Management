@@ -99,7 +99,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
 class ProjectContentAdmin(nested_admin.NestedStackedInline):
     model = ProjectContent
     extra = 1
-    fields = ("title", "content", "image")
+    fields = ("title", "content", "image", "video_url")
 
 
 class ProjectKeyFeatureInline(nested_admin.NestedStackedInline):

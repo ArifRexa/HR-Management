@@ -670,6 +670,7 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
     content = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="project_images/", null=True, blank=True)
     image2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
+    video_url = models.URLField(null=True, blank=True)
 
     def __str__(self):
         return self.title or "-"
