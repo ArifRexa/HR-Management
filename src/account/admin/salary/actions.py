@@ -1,8 +1,9 @@
-from math import floor
 import math
+from math import floor
 
 from django.conf import settings
 from django.contrib import admin, messages
+from django.db.models import Sum
 from django.http import HttpResponse
 from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
@@ -22,13 +23,65 @@ class SalarySheetAction(admin.ModelAdmin):
         "export_salary_account_dis",
         "export_salary_account_dis_pdf",
         "export_bonus_account_dis_pdf",
+        "export_tax_loan_list",
     )
 
     def get_actions(self, request):
         actions = super().get_actions(request)
+        if not request.user.is_superuser and not request.user.has_perm("account.view_salarysheet"):
+            del actions["export_tax_loan_list"]
         if request.user.is_superuser:
             return actions
         return tuple()
+
+    @admin.action(description="Export Tax Loan List")
+    def export_tax_loan_list(self, request, queryset):
+        salary_sheet = queryset.first()
+        employees = salary_sheet.employeesalary_set.filter(employee__active=True)
+        employee_list = []
+        for employee in employees:
+            if tax_loan := employee.employee.loan_set.filter(
+                start_date__month=salary_sheet.date.month,
+                end_date__year=salary_sheet.date.year,
+                loan_type="tds",
+            ):
+                loan_amount = tax_loan.aggregate(total=Sum("emi"))
+                employee_list.append(
+                    {
+                        "loan": loan_amount.get("total", 0),
+                        "id": employee.employee.employee_id,
+                        "name": employee.employee.full_name,
+                        "designation": employee.employee.designation.title,
+                    }
+                )
+        if len(employee_list) == 0:
+            messages.error(request, "No Tax Loan Found")
+            return None
+
+        wb = Workbook()
+        work_sheet = wb.active
+        work_sheet.title = "Tax Loan Employee List"
+
+        work_sheet.append(
+            ["SL No", "Name Of Employee", "Employee ID", "Designation", "TDS"]
+        )
+
+        for index, employee in enumerate(employee_list, start=1):
+            work_sheet.append(
+                [
+                    index,
+                    employee.get("name"),
+                    employee.get("id"),
+                    employee.get("designation"),
+                    employee.get("loan"),
+                ]
+            )
+
+        response = HttpResponse(
+            content=save_virtual_workbook(wb), content_type="application/ms-excel"
+        )
+        response["Content-Disposition"] = "attachment; filename=City_Bank_npsb.xlsx"
+        return response
 
     @admin.action(description="Export in Excel")
     def export_excel(self, request, queryset):
