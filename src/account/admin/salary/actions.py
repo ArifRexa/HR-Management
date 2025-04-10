@@ -23,19 +23,24 @@ class SalarySheetAction(admin.ModelAdmin):
         "export_salary_account_dis",
         "export_salary_account_dis_pdf",
         "export_bonus_account_dis_pdf",
-        "export_tax_loan_list",
+        "export_tax_loan_list"
     )
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        if not request.user.is_superuser and not request.user.has_perm("account.view_salarysheet"):
-            del actions["export_tax_loan_list"]
+        if not request.user.is_superuser and request.user.has_perm(
+            "account.view_salarysheet"
+        ):
+            for key in actions:
+                if "export_tax_loan_list" == key:
+                    return {"export_tax_loan_list": actions.get(key)}
+            
         if request.user.is_superuser:
             return actions
         return tuple()
 
     @admin.action(description="Export Tax Loan List")
-    def export_tax_loan_list(self, request, queryset):
+    def export_tax_loan_list(self, request, queryset, *args, **kwargs):
         salary_sheet = queryset.first()
         employees = salary_sheet.employeesalary_set.filter(employee__active=True)
         employee_list = []
