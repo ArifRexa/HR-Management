@@ -388,7 +388,7 @@ class ProjectServiceSolutionSerializer(serializers.ModelSerializer):
 class ProjectContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectContent
-        fields = ("title", "content", "image", "image2")
+        fields = ("title", "content", "image", "image2", "video_url")
 
 
 class ProjectMetadataSerializer(serializers.ModelSerializer):
