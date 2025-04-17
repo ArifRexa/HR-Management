@@ -99,7 +99,8 @@ class ProjectDocumentAdmin(admin.StackedInline):
 class ProjectContentAdmin(nested_admin.NestedStackedInline):
     model = ProjectContent
     extra = 1
-    fields = ("title", "content", "image", "iframe")
+    # fields = ("title", "content", "image", "iframe")
+    fields = ("image", "iframe")
 
 
 class ProjectKeyFeatureInline(nested_admin.NestedStackedInline):
@@ -177,13 +178,13 @@ class ProjectAdmin(nested_admin.NestedModelAdmin):
     )
     date_hierarchy = "created_at"
     inlines = (
-        ProjectResultInline,
+        # ProjectResultInline,
         ProjectKeyPointInline,
-        ProjectTechnologyInline,
+        # ProjectTechnologyInline,
         ProjectContentAdmin,
-        ProjectServiceInline,
-        ProjectKeyFeatureInline,
-        ProjectScreenshotInline,
+        # ProjectServiceInline,
+        # ProjectKeyFeatureInline,
+        # ProjectScreenshotInline,
         # ProjectDocumentAdmin,
         # ProjectPlatformImageInline,
         ProjectMetadataInline,
@@ -195,15 +196,15 @@ class ProjectAdmin(nested_admin.NestedModelAdmin):
     form = ProjectAdminForm
     fields = (
         "title",
-        "web_title",
+        # "web_title",
         "description",
         "client",
-        "client_web_name",
-        "client_image",
+        # "client_web_name",
+        # "client_image",
         "client_review",
         "platforms",
-        "industries",
-        "services",
+        # "industries",
+        # "services",
         "live_link",
         # "location",
         "country",
