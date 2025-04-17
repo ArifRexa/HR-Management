@@ -1,7 +1,6 @@
 import calendar
 import datetime
 import math
-import re
 from datetime import datetime
 
 import requests
@@ -41,6 +40,7 @@ from project_management.models import (
     Project,
     ProjectHour,
 )
+from settings.models import PublicHolidayDate
 
 from .models import EmployeeAttendance
 
@@ -137,15 +137,29 @@ def leave_mail(leave: Leave):
     for leave_manage_obj in leave_manage:
         manager_email.append(leave_manage_obj.manager.email)
     email = EmailMultiAlternatives()
-    text = "Applied day total 1. chargeable day 1"
-    pattern = r"Applied day total (\d+)\. chargeable day (\d+)"
+    delta = leave.end_date - leave.start_date
+    applied_days = delta.days + 1
+    weekly_holiday = []
+    public_holiday = []
 
-    match = re.search(pattern, text)
-    applied_days = 0
-    chargeable_days = 0
-    if match:
-        applied_days = int(match.group(1))
-        chargeable_days = int(match.group(2))
+
+    office_holidays = PublicHolidayDate.objects.filter(
+        date__gte=leave.start_date, date__lte=leave.end_date
+    ).values_list("date", flat=True)
+
+
+    for i in range(applied_days):
+        date = leave.start_date + timezone.timedelta(days=i)
+        if date.strftime("%A") in ["Saturday", "Sunday"]:
+            weekly_holiday.append(date)
+        if date in office_holidays:
+            public_holiday.append(date)
+
+    if leave.leave_type != "non_paid":
+        chargeable_days = applied_days - len(weekly_holiday) - len(public_holiday)
+    else:
+        chargeable_days = applied_days
+
     leave_type = leave.leave_type if leave.leave_type else leave.applied_leave_type
     html_body = loader.render_to_string(
         "mails/leave_mail.html",
