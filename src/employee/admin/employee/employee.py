@@ -901,7 +901,7 @@ class LessHourAdmin(admin.ModelAdmin):
         )
         employee_hours = (
             EmployeeProjectHour.objects.filter(
-                project_hour__tpm=obj.tpm,
+                # project_hour__tpm=obj.tpm,
                 project_hour__date=obj.date,
                 project_hour__hour_type="project",
                 employee=obj.employee,
