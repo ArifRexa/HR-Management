@@ -1,0 +1,58 @@
+{% load replace_newline daily_groupby %}
+<style>
+    .popover-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.popover-wrapper .popover-title {
+
+}
+
+.popover-wrapper .popover-message {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    left: 0;
+    transform: translate(0, 10px);
+    background-color: #d7d5d5;
+    padding: 5px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    width: auto;
+    top: 40px;
+    color: black;
+}
+
+.popover-message:before {
+    position: absolute;
+    z-index: -1;
+    content: "";
+    right: calc(50% - 10px);
+    top: -8px;
+    border-style: solid;
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #d7d5d5 transparent;
+    transition-duration: 0.3s;
+    transition-property: transform;
+}
+
+.popover-wrapper:hover .popover-message {
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, -10px);
+    transition: all 0.5s cubic-bezier(0.75, -0.02, 0.2, 0.97);
+}
+
+</style>
+<div class="popover-wrapper">
+
+    <div class="popover-title">
+        {{remark|truncatewords:10}}
+    </div>
+    <div class="popover-message">
+        {{remark}}
+
+    </div>
+
+</div>
