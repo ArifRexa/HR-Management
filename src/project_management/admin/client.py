@@ -1,9 +1,13 @@
 from django import forms
 from django.contrib import admin
-from django.http import HttpRequest
-from django.utils.html import format_html
-from django.utils.timesince import timesince
 from django.contrib import messages as message
+from django.db.models import Case, DateField, When
+from django.http import HttpRequest
+from django.template.loader import get_template
+from django.utils.html import format_html
+from django.utils.safestring import mark_safe
+from django.utils.timesince import timesince
+from django.utils.translation import gettext_lazy as _
 
 # from networkx import project
 from project_management.models import (
@@ -15,13 +19,11 @@ from project_management.models import (
     ClientReview,
     ClientStatus,
     Country,
+    CurrencyType,
+    InvoiceType,
     PaymentMethod,
     Project,
-    Technology,
-    InvoiceType, CurrencyType,
 )
-from django.utils.translation import gettext_lazy as _
-from django.db.models import Case, When, DateField
 
 
 class ClientInvoiceDateInline(admin.StackedInline):
@@ -127,9 +129,16 @@ class ClientForm(forms.ModelForm):
 
 @admin.register(CurrencyType)
 class CurrencyTypeAdmin(admin.ModelAdmin):
-    list_display = ('currency_name', 'currency_code', 'icon', 'is_active', 'is_default', 'exchange_rate')
-    list_filter = ('is_active', 'is_default')
-    search_fields = ('currency_name', 'currency_code')
+    list_display = (
+        "currency_name",
+        "currency_code",
+        "icon",
+        "is_active",
+        "is_default",
+        "exchange_rate",
+    )
+    list_filter = ("is_active", "is_default")
+    search_fields = ("currency_name", "currency_code")
     # readonly_fields = ('exchange_rate',)
 
     # def get_readonly_fields(self, request, obj=None):
@@ -159,7 +168,7 @@ class ClientAdmin(admin.ModelAdmin):
         "get_hourly_rate",
         "payment_method",
         "invoice_type",
-        "get_client_age",
+        "get_remark",
     )
     fields = (
         "name",
@@ -185,6 +194,7 @@ class ClientAdmin(admin.ModelAdmin):
         "payment_method",
         "invoice_type",
         "review",
+        "remark",
     )
     list_filter = [
         "is_need_feedback",
@@ -195,7 +205,13 @@ class ClientAdmin(admin.ModelAdmin):
         "currency",
     ]
     inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
-    search_fields = ["name", "web_name", "currency__currency_name", "currency__currency_code", "currency__icon"]
+    search_fields = [
+        "name",
+        "web_name",
+        "currency__currency_name",
+        "currency__currency_code",
+        "currency__icon",
+    ]
     autocomplete_fields = ["country", "payment_method"]
     form = ClientForm
     actions = ["mark_as_in_active"]
@@ -209,27 +225,37 @@ class ClientAdmin(admin.ModelAdmin):
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
         if obj.hourly_rate is None:
-            return '-'
+            return "-"
 
         # Get currency icon
-        currency_icon = obj.currency.icon if obj.currency else ''
+        currency_icon = obj.currency.icon if obj.currency else ""
 
         # Create the display string with icon
         rate_display = f"{currency_icon} {obj.hourly_rate}"
 
         if obj.is_active_over_six_months:
             return format_html(
-                '<span style="color: red; white-space:nowrap;">{}</span>',
-                rate_display
+                '<span style="color: red; white-space:nowrap;">{}</span>', rate_display
             )
-        return format_html(
-            '<span style="white-space:nowrap;">{}</span>',
-            rate_display
-        )
+        return format_html('<span style="white-space:nowrap;">{}</span>', rate_display)
 
     @admin.display(description="Age", ordering="created_at")
     def get_client_age(self, obj):
         return timesince(obj.created_at)
+
+    @admin.display(description="Remark")
+    def get_remark(self, obj):
+        if not obj.remark:
+            return "-"
+        html_template = get_template("admin/client_remark.html")
+
+        html_content = html_template.render(
+            {
+                "remark": obj.remark,
+            }
+        )
+
+        return mark_safe(html_content)
 
     def get_list_filter(self, request: HttpRequest):
         if request.user.has_perm("project_management.view_client"):
@@ -244,7 +270,7 @@ class ClientAdmin(admin.ModelAdmin):
             self.message_user(
                 request, "Selected clients are marked as active.", message.SUCCESS
             )
-        except Exception as e:
+        except Exception:
             self.message_user(
                 request, "Selected clients are not marked as active.", message.ERROR
             )
@@ -419,7 +445,7 @@ class ClientExperienceAdmin(admin.ModelAdmin):
             self.message_user(
                 request, "Selected clients are marked as active.", message.SUCCESS
             )
-        except Exception as e:
+        except Exception:
             self.message_user(
                 request, "Selected clients are not marked as active.", message.ERROR
             )
@@ -440,4 +466,5 @@ class ClientExperienceAdmin(admin.ModelAdmin):
             obj.follow_up_date = None
         elif obj.status == ClientStatus.FOLLOW_UP:
             obj.meeting_date = None
+        super().save_model(request, obj, form, change)
         super().save_model(request, obj, form, change)
