@@ -24,4 +24,4 @@ class SalaryHistory(TimeStampMixin, AuthorMixin):
         return timesince(self.active_from)
 
     class Meta:
-        permissions = (("can_see_note_field", "Can see note field"),)
+        permissions = (("can_see_note_field", "Can see note field"),("can_see_salary_receive_history", "Can See Employee Salary Receive History"))
