@@ -664,8 +664,8 @@ class ProjectScreenshot(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     image = models.ImageField()
 
-
-class ProjectContent(TimeStampMixin, AuthorMixin):
+from adminsortable.models import SortableMixin
+class ProjectContent(SortableMixin, TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200, null=True, blank=True)
     content = HTMLField(null=True, blank=True)
@@ -676,6 +676,9 @@ class ProjectContent(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title or "-"
+    
+    class Meta:
+        ordering = ["id"]
 
 
 class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
