@@ -95,8 +95,8 @@ class ProjectDocumentAdmin(admin.StackedInline):
     model = ProjectDocument
     extra = 0
 
-
-class ProjectContentAdmin(nested_admin.NestedStackedInline):
+from adminsortable.admin import SortableStackedInline, NonSortableParentAdmin
+class ProjectContentAdmin(SortableStackedInline, nested_admin.NestedStackedInline):
     model = ProjectContent
     extra = 1
     # fields = ("title", "content", "image", "iframe")
@@ -158,7 +158,7 @@ class ProjectMetadataInline(nested_admin.NestedStackedInline):
 
 
 @admin.register(Project)
-class ProjectAdmin(nested_admin.NestedModelAdmin):
+class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     list_display = (
         "project_title_with_client",
         "web_title",
