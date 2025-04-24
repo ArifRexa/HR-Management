@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "smart_selects",
     "rest_framework_simplejwt",
     "drf_yasg",
+    'adminsortable',
 ] + API_APPS
 
 
@@ -122,6 +123,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.static",
                 "config.context_processors.employees.formal_summery",
                 "config.context_processors.employees.employee_status_form",
                 "config.context_processors.employees.employee_project_form",
