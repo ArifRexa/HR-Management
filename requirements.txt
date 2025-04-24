@@ -94,3 +94,4 @@ langchain
 langchain-community
 langchain-openai
 drf-yasg[validation]
+django-admin-sortable==2.2.4
