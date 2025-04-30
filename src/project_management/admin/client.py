@@ -243,7 +243,7 @@ class ClientAdmin(admin.ModelAdmin):
     def get_client_age(self, obj):
         return timesince(obj.created_at)
 
-    @admin.display(description="Remark")
+    @admin.display(description="Remark", ordering="remark")
     def get_remark(self, obj):
         if not obj.remark:
             return "-"
