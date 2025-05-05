@@ -35,6 +35,7 @@ class UserViewSet(BaseModelViewSet):
     }
     permissions = {
         "login": [permissions.AllowAny()],
+        "verify_otp":[permissions.AllowAny()],
     }
 
     def _generate_otp(self):
