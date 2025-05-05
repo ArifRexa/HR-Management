@@ -59,7 +59,7 @@ schema_view = swagger_get_schema_view(
         license=openapi.License(name="BSD License"),
     ),
     public=True,
-    permission_classes=(permissions.AllowAny,),
+    permission_classes=(permissions.IsAuthenticated,),
     url=os.environ.get("SWAGGER_URL", "http://127.0.0.1:8000/api"),
 )
 # urlpatterns = [
