@@ -4,6 +4,7 @@ from datetime import timedelta
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import decorators, permissions, status
 from rest_framework.response import Response
@@ -13,7 +14,7 @@ from apps.employeeapp.serializers import EmployeeListSerializer
 from apps.mixin.views import BaseModelViewSet
 from user_auth.models import Profile, UserLogs
 
-from .serializers import OTPSerializer, UserLoginSerializer, UserSerializer
+from .serializers import OTPSerializer, OtpResendSerializer, UserLoginSerializer, UserSerializer
 from .utils import (
     get_browser_name,
     get_device_name,
@@ -32,14 +33,17 @@ class UserViewSet(BaseModelViewSet):
     serializers = {
         "login": UserLoginSerializer,
         "verify_otp": OTPSerializer,
+        "resend_otp": OtpResendSerializer
     }
     permissions = {
         "login": [permissions.AllowAny()],
         "verify_otp":[permissions.AllowAny()],
+        "resend_otp":[permissions.AllowAny()],
     }
 
     def _generate_otp(self):
         return str(random.randint(100000, 999999))
+    
 
     def _send_otp_via_email(self, otp, user_email):
 
@@ -49,7 +53,7 @@ class UserViewSet(BaseModelViewSet):
         recipient_list = [user_email]
         send_mail(subject, message, email_from, recipient_list)
 
-    @decorators.action(detail=False, methods=["POST"])
+    @decorators.action(detail=False, methods=["POST"], url_path="login")
     def login(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -78,9 +82,12 @@ class UserViewSet(BaseModelViewSet):
             status=status.HTTP_200_OK,
         )
     
-    @decorators.action(detail=True, methods=["POST"], url_path="resend-otp")
+    @decorators.action(detail=False, methods=["POST"], url_path="resend-otp")
     def resend_otp(self, request, *args, **kwargs):
-        user = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        user = get_object_or_404(User, username=data.get("email"))
         otp_code = self._generate_otp()
 
         # Save OTP in the database
@@ -150,7 +157,7 @@ class UserViewSet(BaseModelViewSet):
         return Response(user_data, status=status.HTTP_200_OK)
 
     # user registration action
-    @decorators.action(detail=False, methods=["POST"])
+    @decorators.action(detail=False, methods=["POST"], url_path="register")
     def register(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
