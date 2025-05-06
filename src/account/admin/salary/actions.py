@@ -23,7 +23,8 @@ class SalarySheetAction(admin.ModelAdmin):
         "export_salary_account_dis",
         "export_salary_account_dis_pdf",
         "export_bonus_account_dis_pdf",
-        "export_tax_loan_list"
+        "export_tax_loan_list",
+        "export_city_live_excel"
     )
 
     def get_actions(self, request):
@@ -232,6 +233,57 @@ class SalarySheetAction(admin.ModelAdmin):
         response["Content-Disposition"] = "attachment; filename=City_Bank_npsb.xlsx"
         return response
 
+    @admin.action(description="Export City Live Excel")
+    def export_city_live_excel(self, request, queryset):
+        wb = Workbook()
+        work_sheet = wb.active
+        work_sheet.title = "City Live Export"
+        work_sheet.append(
+            [
+                "Reason",
+                "Sender Account No",
+                "Receiving Bank Routing No",
+                "Beneficiary Bank Account  No",
+                "Account Type",
+                "Amount",
+                "Receiver ID",	
+                "Receiver Name",
+                "Remarks",
+                "Receiver Mobile Number",
+                "Receiver Email Address",
+            ]
+        )
+
+        for salary_sheet in queryset:
+
+            for employee_salary in salary_sheet.employeesalary_set.all():
+
+                bank_account = employee_salary.employee.bankaccount_set.filter(
+                    default=True, is_approved=True
+                ).last()
+                if bank_account:
+                    work_sheet.append(
+                        [
+                            "",
+                            "",
+                            "",
+                            bank_account.account_number,
+                            "",
+                            str(int(employee_salary.gross_salary)),
+                            "",
+                            employee_salary.employee.full_name,
+                            "",
+                            "",
+                            "",
+                        ]
+                    )
+
+        response = HttpResponse(
+            content=save_virtual_workbook(wb), content_type="application/ms-excel"
+        )
+        response["Content-Disposition"] = "attachment; filename=City_Live.xlsx"
+        return response
+    
     @admin.action(description="Export City Bank NPSB")
     def export_city_bank_npsb(self, request, queryset):
 
