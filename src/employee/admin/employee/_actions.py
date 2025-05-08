@@ -1,13 +1,12 @@
 import os
 from io import BytesIO
-from datetime import date as dt_datetime,timedelta
-import qrcode
-import pdf2image
-import requests
 
+import pdf2image
+import qrcode
+import requests
+from django.contrib import admin, messages
 from django.core.files import File
 from django.core.files.base import ContentFile
-from django.contrib import admin, messages
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.text import slugify
@@ -17,9 +16,8 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 import config.settings
 from config.utils.pdf import PDF
-from employee.models import Employee, HRPolicy, EmployeeNOC
+from employee.models import Employee, EmployeeNOC, HRPolicy
 from settings.models import FinancialYear
-from account.models import EmployeeSalary
 
 NOC_MAIL_DATA = """
 <h3>Dear {{ employee.full_name | title }},</h3>
@@ -71,7 +69,6 @@ class EmployeeActions:
         "mail_noc_letter",
         "download_employee_info",
         "print_salary_pay_slip_all_months",
-        
     ]
 
     @admin.action(description="Print Salary Pay Slip (All months)")
@@ -79,7 +76,7 @@ class EmployeeActions:
         return self.generate_pdf(
             request, queryset=queryset, letter_type="ESPS"
         ).render_to_pdf()
-    
+
     @admin.action(description="Generate NOC Letter")
     def generate_noc_letter(self, request, queryset):
         names: list[str] = []
@@ -160,29 +157,27 @@ class EmployeeActions:
         return self.generate_pdf(
             request, queryset=queryset, letter_type="ELMSC"
         ).render_to_pdf()
-        
-   
+
     @admin.action(description="Print Salary Certificate (All months)")
     def print_salary_certificate_all_months(self, request, queryset):
         # employee_ids = queryset.values_list('id', flat=True)
         # employee_salarys = EmployeeSalary.objects.filter(employee__id__in=employee_ids)
-        
-        # for salary in employee_salarys:
-            
 
-            return self.generate_pdf(
-                request, queryset=queryset, letter_type="EAMSC"
-            ).render_to_pdf()
+        # for salary in employee_salarys:
+
+        return self.generate_pdf(
+            request, queryset=queryset, letter_type="EAMSC"
+        ).render_to_pdf()
 
     @admin.action(description="Print Salary Account Forwarding Letter")
     def print_bank_forwarding_letter(self, request, queryset):
         return self.generate_pdf(
             request, queryset=queryset, letter_type="AFL"
         ).render_to_pdf()
-    
+
     @admin.action(description="Print Experience Letter")
-    def print_experience_letter(self,request, queryset):
-        
+    def print_experience_letter(self, request, queryset):
+
         return self.generate_pdf(
             request, queryset=queryset, letter_type="EXPL"
         ).render_to_pdf()
@@ -200,7 +195,7 @@ class EmployeeActions:
         else:
             hr_policies = hr_policy.policy_file
 
-        # policy_file = 
+        # policy_file =
 
         self.__send_mail(
             queryset,
@@ -216,7 +211,7 @@ class EmployeeActions:
         #             "employee.tasks.send_mail_to_employee",
         #             employee,
         #             pdf = ["mails/appointment.html", "mails/appointment.html"],
-        #             html_body = 
+        #             html_body =
         #             subject,
         #         )
 
@@ -265,7 +260,9 @@ class EmployeeActions:
         wb = Workbook()
         work_sheets = {}
         work_sheet = wb.create_sheet(title="Employee List")
-        work_sheet.append(["Name", "Designation", "Phone", "Email", "Address"])
+        work_sheet.append(
+            ["Name", "Designation", "Phone", "Email", "Address", "Date Of Birth"]
+        )
         for employee in Employee.objects.filter(active=True).all():
             work_sheet.append(
                 [
@@ -274,6 +271,7 @@ class EmployeeActions:
                     employee.phone,
                     employee.email,
                     employee.address,
+                    employee.date_of_birth,
                 ]
             )
         work_sheets["employee"] = work_sheet
@@ -295,7 +293,7 @@ class EmployeeActions:
     ):
         for employee in queryset:
             note = employee.salaryhistory_set.first().note
-            extra_context['note'] = note
+            extra_context["note"] = note
             pdf = self.generate_pdf(
                 request,
                 queryset=(employee,),
@@ -306,12 +304,12 @@ class EmployeeActions:
             print(type(pdf))
             # pdf = [pdf, pdf]
             enoc = EmployeeNOC.objects.filter(employee_id=employee.id)
-            if letter_type == 'NOC':
+            if letter_type == "NOC":
                 if enoc.exists():
                     enoc = enoc.first()
-                    if pdf.__contains__('http'):
+                    if pdf.__contains__("http"):
                         file_obj = requests.get(pdf).content
-                        file_name = pdf.split('/')[-1]
+                        file_name = pdf.split("/")[-1]
                         image_name = file_name[:-4] + ".jpg"
                         enoc.noc_pdf.save(file_name, ContentFile(file_obj, file_name))
                         image_file = pdf2image.convert_from_bytes(file_obj)[0]
@@ -348,9 +346,7 @@ class EmployeeActions:
                 pdf,
                 html_body,
                 subject,
-                letter_type
-
-
+                letter_type,
             )
         self.message_user(request, "Mail sent successfully", messages.SUCCESS)
 
@@ -364,7 +360,6 @@ class EmployeeActions:
             os.makedirs(qr_root, exist_ok=True)
         except Exception as e:
             print(e)
-
 
         if letter_type == "NOC":
             extra_context["qr_root"] = qr_root
