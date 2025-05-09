@@ -1,7 +1,7 @@
 import datetime
 from calendar import month_abbr
 
-from django.db.models import Case, FloatField, Q, Sum, When, functions
+from django.db.models import Case, FloatField, Q, Sum, When, functions, Value
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -77,6 +77,7 @@ class DashboardSerializer(BaseModelSerializer):
             "designation",
             "image",
             "joining_date",
+            "permanent_date",
             "employee_id",
             "attachments",
             "skills",
@@ -169,14 +170,14 @@ class DashboardSerializer(BaseModelSerializer):
             instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
             .annotate(month=functions.ExtractMonth("created_at"))
             .values("month")
-            .annotate(total_hours=Sum("hours"))
+            .annotate(total_hours=functions.Round(
+                Sum("hours"), precision=2
+            ))
             .order_by("month")
         )
-
-        return [
-            {"month": month_abbr[item["month"]], "total_hours": item["total_hours"]}
-            for item in hour_data
-        ]
+        d = {item["month"]: item["total_hours"] for item in hour_data}
+        data = [{"month": month_abbr[i],"total_hours":d.get(i, 0)} for i in range(1,13)]
+        return data
 
     def _late_fine_info(self, instance):
         late_fines = instance.lateattendancefine_set.filter(
@@ -211,12 +212,8 @@ class DashboardSerializer(BaseModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data.update(
-            {
-                "project_hours": self._get_project_hour(instance),
-                "leave_info": self._get_leave_info(instance),
-                "project_hour_statistic": self._project_hour_statistic(instance),
-                "late_fine_info": self._late_fine_info(instance),
-            }
-        )
+        data["project_hours"] = self._get_project_hour(instance),
+        data["leave_info"] = self._get_leave_info(instance),
+        data["project_hour_statistic"] = self._project_hour_statistic(instance),
+        data["late_fine_info"] = self._late_fine_info(instance),
         return data
