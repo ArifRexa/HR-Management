@@ -1,7 +1,17 @@
 import datetime
 from calendar import month_abbr
 
-from django.db.models import Case, FloatField, Q, Sum, When, functions
+from django.db.models import (
+    Case,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    FloatField,
+    Q,
+    Sum,
+    When,
+    functions,
+)
 from django.utils import timezone
 from rest_framework import serializers
 
@@ -10,6 +20,7 @@ from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.attachment import Attachment
 from employee.models.employee import Employee
+from employee.models.employee_activity import EmployeeActivity
 from employee.models.employee_skill import EmployeeSkill
 from employee.models.leave.leave import Leave
 
@@ -58,6 +69,19 @@ class EmployeeSkillSerializer(BaseModelSerializer):
         ref_name = "api_employee_skill"
 
 
+from django.db.models import Func
+
+
+class ExtractEpoch(Func):
+    function = "TIMESTAMPDIFF"
+    template = "%(function)s(SECOND, %(expressions)s)"
+    output_field = FloatField()
+
+    def __init__(self, start_time, end_time, **extra):
+        expressions = (start_time, end_time)
+        super().__init__(*expressions, **extra)
+
+
 class DashboardSerializer(BaseModelSerializer):
     designation = serializers.CharField(source="designation.title")
     employee_id = serializers.SerializerMethodField()
@@ -77,6 +101,7 @@ class DashboardSerializer(BaseModelSerializer):
             "designation",
             "image",
             "joining_date",
+            "permanent_date",
             "employee_id",
             "attachments",
             "skills",
@@ -169,14 +194,14 @@ class DashboardSerializer(BaseModelSerializer):
             instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
             .annotate(month=functions.ExtractMonth("created_at"))
             .values("month")
-            .annotate(total_hours=Sum("hours"))
+            .annotate(total_hours=functions.Round(Sum("hours"), precision=2))
             .order_by("month")
         )
-
-        return [
-            {"month": month_abbr[item["month"]], "total_hours": item["total_hours"]}
-            for item in hour_data
+        d = {item["month"]: item["total_hours"] for item in hour_data}
+        data = [
+            {"month": month_abbr[i], "total_hours": d.get(i, 0)} for i in range(1, 13)
         ]
+        return data
 
     def _late_fine_info(self, instance):
         late_fines = instance.lateattendancefine_set.filter(
@@ -209,14 +234,50 @@ class DashboardSerializer(BaseModelSerializer):
             "total_late_day": total_late_day,
         }
 
+    def _get_last_week_attendance(self, instance):
+        from django.utils.timezone import timedelta
+
+        today = timezone.now().date()
+        weekday = today.weekday()  # Monday=0, Sunday=6
+
+        # Current week's Monday
+        this_monday = today - timedelta(days=weekday)
+
+        # Last week's Monday to Friday
+        last_monday = this_monday - timedelta(days=7)
+        last_friday = last_monday + timedelta(days=4)
+
+        activities = (
+            EmployeeActivity.objects.filter(
+                employee_attendance__employee_id=instance,
+                employee_attendance__date__range=[last_monday, last_friday],
+                start_time__isnull=False,
+                end_time__isnull=False,
+            )
+            .annotate(
+                duration=ExpressionWrapper(
+                    F("end_time") - F("start_time"), output_field=DurationField()
+                )
+            )
+            .values("employee_attendance__id", "employee_attendance__date")
+            .annotate(
+                total_seconds=Sum(ExtractEpoch(F("start_time"), F("end_time"))),
+                outside_hours=ExpressionWrapper(
+                    F("total_seconds") / 3600 * 0.1, output_field=FloatField()
+                ),
+                inside_hours=ExpressionWrapper(
+                    F("total_seconds") / 3600 * 0.9, output_field=FloatField()
+                ),
+            )
+            .values("outside_hours", "inside_hours")
+        )
+        return activities
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        data.update(
-            {
-                "project_hours": self._get_project_hour(instance),
-                "leave_info": self._get_leave_info(instance),
-                "project_hour_statistic": self._project_hour_statistic(instance),
-                "late_fine_info": self._late_fine_info(instance),
-            }
-        )
+        data["project_hours"] = self._get_project_hour(instance)
+        data["leave_info"] = self._get_leave_info(instance)
+        data["project_hour_statistic"] = self._project_hour_statistic(instance)
+        data["late_fine_info"] = self._late_fine_info(instance)
+        data["last_week_attendance"] = self._get_last_week_attendance(instance)
         return data
