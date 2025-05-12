@@ -11,6 +11,7 @@ from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
 from rest_framework import decorators, parsers, response, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from account.models import Income
 from apps.mixin.permission import IsSuperUser
@@ -19,6 +20,7 @@ from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
+    Project,
     ProjectHour,
 )
 
@@ -28,9 +30,16 @@ from .serializers import (
     BulkUpdateSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
+    ProjectSerializer,
     StatusUpdateSerializer,
     WeeklyProjectUpdate,
 )
+
+
+class ProjectViewSet(BaseModelViewSet):
+    queryset = Project.objects.filter(active=True)
+    serializer_class = ProjectSerializer
+
 
 
 class DailyProjectUpdateViewSet(BaseModelViewSet):
