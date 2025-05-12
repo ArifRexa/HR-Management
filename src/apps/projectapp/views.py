@@ -12,6 +12,7 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from rest_framework import decorators, parsers, response, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from account.models import Income
 from apps.mixin.permission import IsSuperUser
@@ -39,6 +40,12 @@ from .serializers import (
 class ProjectViewSet(BaseModelViewSet):
     queryset = Project.objects.filter(active=True)
     serializer_class = ProjectSerializer
+    # permission_classes = [IsAuthenticated]
+    @property
+    def paginator(self):
+        if self.action == 'list':
+            return None
+        return super().paginator
 
 
 
