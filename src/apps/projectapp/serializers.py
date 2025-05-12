@@ -9,9 +9,17 @@ from project_management.models import (
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     EmployeeProjectHour,
+    Project,
     ProjectHour,
 )
 
+
+class ProjectSerializer(BaseModelSerializer):
+    
+    class Meta:
+        model = Project
+        fields = "__all__"
+        ref_name = "api_project_serializer"
 
 class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):
     attachment = serializers.FileField(required=True)
