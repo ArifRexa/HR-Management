@@ -66,8 +66,8 @@ class UserViewSet(BaseModelViewSet):
                 {"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
             )
         otp_code = self._generate_otp()
-
-        # Save OTP in the database
+        print("="*20)
+        print(otp_code)
         otp, created = Profile.objects.get_or_create(
             user=user, defaults={"otp": otp_code}
         )
