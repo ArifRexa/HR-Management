@@ -55,7 +55,7 @@ class EmployeeViewSet(BaseModelViewSet):
         return super().list(request, *args, **kwargs)
 
 
-class DashboardView(views.APIView):
+class EmployeeDashboardView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
