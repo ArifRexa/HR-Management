@@ -29,6 +29,7 @@ from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
     BulkDailyUpdateSerializer,
     BulkUpdateSerializer,
+    DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
     ProjectSerializer,
@@ -61,7 +62,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
             "employee__leave_set",
             "project__client",
         )
-        .all()
+        .all().order_by("-created_at")
     )
 
     serializer_class = DailyProjectUpdateSerializer
@@ -73,6 +74,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
     )
     serializers = {
         "status_update": StatusUpdateSerializer,
+        "list": DailyProjectUpdateListSerializer
     }
 
     def get_serializer_class(self):
