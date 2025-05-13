@@ -11,6 +11,8 @@ from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
 from rest_framework import decorators, parsers, response, status
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 from account.models import Income
 from apps.mixin.permission import IsSuperUser
@@ -19,6 +21,7 @@ from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
+    Project,
     ProjectHour,
 )
 
@@ -26,11 +29,25 @@ from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
     BulkDailyUpdateSerializer,
     BulkUpdateSerializer,
+    DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
+    ProjectSerializer,
     StatusUpdateSerializer,
     WeeklyProjectUpdate,
 )
+
+
+class ProjectViewSet(BaseModelViewSet):
+    queryset = Project.objects.filter(active=True)
+    serializer_class = ProjectSerializer
+    # permission_classes = [IsAuthenticated]
+    @property
+    def paginator(self):
+        if self.action == 'list':
+            return None
+        return super().paginator
+
 
 
 class DailyProjectUpdateViewSet(BaseModelViewSet):
@@ -45,7 +62,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
             "employee__leave_set",
             "project__client",
         )
-        .all()
+        .all().order_by("-created_at")
     )
 
     serializer_class = DailyProjectUpdateSerializer
@@ -57,6 +74,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
     )
     serializers = {
         "status_update": StatusUpdateSerializer,
+        "list": DailyProjectUpdateListSerializer
     }
 
     def get_serializer_class(self):

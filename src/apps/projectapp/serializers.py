@@ -9,8 +9,17 @@ from project_management.models import (
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     EmployeeProjectHour,
+    Project,
     ProjectHour,
 )
+
+
+class ProjectSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = Project
+        fields = "__all__"
+        ref_name = "api_project_serializer"
 
 
 class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):
@@ -26,6 +35,25 @@ class DailyProjectUpdateHistorySerializer(BaseModelSerializer):
     class Meta:
         model = DailyProjectUpdateHistory
         exclude = ("daily_update", "created_by")
+
+
+class DailyProjectUpdateListSerializer(serializers.ModelSerializer):
+    employee_name = serializers.CharField(source="employee.full_name")
+    manager_name = serializers.CharField(source="manager.full_name")
+    history = DailyProjectUpdateHistorySerializer(
+        many=True, read_only=True, required=False
+    )
+
+    class Meta:
+        model = DailyProjectUpdate
+        fields = (
+            "updates_json",
+            "employee_name",
+            "manager_name",
+            "status",
+            "history",
+            "created_at",
+        )
 
 
 class DailyProjectUpdateSerializer(BaseModelSerializer):
