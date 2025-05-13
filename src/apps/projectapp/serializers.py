@@ -68,6 +68,7 @@ class DailyProjectUpdateSerializer(BaseModelSerializer):
     manager = EmployeeInfoSerializer()
     class Meta:
         model = DailyProjectUpdate
+        ignore_exclude_fields = ["created_at"]
         fields = "__all__"
         extra_kwargs = {
             "hours": {"required": True, "write_only": True},
