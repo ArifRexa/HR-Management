@@ -25,6 +25,12 @@ from employee.models.employee_skill import EmployeeSkill
 from employee.models.leave.leave import Leave
 
 
+class EmployeeInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = ["id", "full_name", "designation","image"]
+        ref_name = "api_employee_info"
+
 class EmployeeListSerializer(BaseModelSerializer):
     permissions = serializers.SerializerMethodField()
 

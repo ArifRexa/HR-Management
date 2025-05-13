@@ -74,7 +74,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
     )
     serializers = {
         "status_update": StatusUpdateSerializer,
-        "list": DailyProjectUpdateListSerializer
+        # "list": DailyProjectUpdateListSerializer
     }
 
     def get_serializer_class(self):

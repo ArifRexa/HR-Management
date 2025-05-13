@@ -2,6 +2,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from account.models import Income
+from apps.employeeapp.serializers import EmployeeInfoSerializer
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import EmployeeUnderTPM
 from project_management.models import (
@@ -38,8 +39,8 @@ class DailyProjectUpdateHistorySerializer(BaseModelSerializer):
 
 
 class DailyProjectUpdateListSerializer(serializers.ModelSerializer):
-    employee_name = serializers.CharField(source="employee.full_name")
-    manager_name = serializers.CharField(source="manager.full_name")
+    employee = EmployeeInfoSerializer()
+    manager = EmployeeInfoSerializer()
     history = DailyProjectUpdateHistorySerializer(
         many=True, read_only=True, required=False
     )
@@ -47,9 +48,10 @@ class DailyProjectUpdateListSerializer(serializers.ModelSerializer):
     class Meta:
         model = DailyProjectUpdate
         fields = (
+            "id",
             "updates_json",
-            "employee_name",
-            "manager_name",
+            "employee",
+            "manager",
             "status",
             "hours",
             "history",
@@ -62,7 +64,8 @@ class DailyProjectUpdateSerializer(BaseModelSerializer):
     history = DailyProjectUpdateHistorySerializer(
         many=True, read_only=True, required=False
     )
-
+    employee = EmployeeInfoSerializer()
+    manager = EmployeeInfoSerializer()
     class Meta:
         model = DailyProjectUpdate
         fields = "__all__"
