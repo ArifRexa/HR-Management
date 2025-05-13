@@ -51,6 +51,7 @@ class DailyProjectUpdateListSerializer(serializers.ModelSerializer):
             "employee_name",
             "manager_name",
             "status",
+            "hours",
             "history",
             "created_at",
         )
