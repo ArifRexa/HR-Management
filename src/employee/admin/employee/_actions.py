@@ -62,6 +62,8 @@ class EmployeeActions:
         "print_salary_certificate_all_months",
         "print_bank_forwarding_letter",
         "print_promotion_letter",
+        "mail_role_change_letter",
+        "mail_promotion_letter",
         "print_experience_letter",
         "mail_appointment_letter",
         "mail_permanent_letter",
@@ -181,7 +183,42 @@ class EmployeeActions:
         return self.generate_pdf(
             request, queryset=queryset, letter_type="EXPL"
         ).render_to_pdf()
-
+        
+        
+    @admin.action(description="Mail Role Change Letter")
+    def mail_role_change_letter(self, request, queryset):
+        print(config.settings.STATIC_URL)
+        promotion_policy_file = f"{config.settings.STATIC_URL}stationary/Employee-hierarchy-plan-for-mediusware-ltd.pdf"
+        
+        for employee in queryset:
+            html_context = loader.render_to_string(
+            "mails/role_update.html", context={"employee": employee}
+        )
+            async_task(
+                    "employee.tasks.email_send_to_employee",
+                    employee,
+                    promotion_policy_file,
+                    html_context,
+                    "Your Updated Role and Growth Path at Mediusware Ltd.",
+                )
+            
+    
+    @admin.action(description="Mail Promotion Letter")
+    def mail_promotion_letter(self, request, queryset):
+        promotion_policy_file = f"{config.settings.STATIC_URL}stationary/Employee-hierarchy-plan-for-mediusware-ltd.pdf"
+        for employee in queryset:
+            html_context = loader.render_to_string(
+                "mails/promotion.html", context={"employee": employee}
+            )
+            async_task(
+                "employee.tasks.email_send_to_employee",
+                employee,
+                promotion_policy_file,
+                html_context,
+                "Congratulations on Your Promotion at Mediusware Ltd.",
+            )
+        
+    
     @admin.action(description="Mail Appointment Letter")
     def mail_appointment_letter(self, request, queryset):
         hr_policy = (

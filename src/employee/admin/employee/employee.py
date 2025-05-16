@@ -247,6 +247,8 @@ class EmployeeAdmin(
                 "mail_permanent_letter",
                 "mail_increment_letter",
                 "mail_noc_letter",
+                "mail_role_change_letter",
+                "mail_promotion_letter",
             ],
             "employee.can_print_employee_info": [
                 "generate_noc_letter",
