@@ -197,11 +197,12 @@ class EmployeeActions:
         )
             # email_send_to_employee(employee, promotion_policy_file, html_context, "Your Updated Role and Growth Path at Mediusware Ltd.")
             async_task(
-                    "employee.tasks.role_change_email_send_to_employee",
+                    "employee.tasks.send_mail_to_employee",
                     employee,
                     promotion_policy_file,
                     html_context,
                     "Your Updated Role and Growth Path at Mediusware Ltd.",
+                    None
                 )
             
     
@@ -214,11 +215,12 @@ class EmployeeActions:
             )
             # email_send_to_employee(employee, promotion_policy_file, html_context, "Congratulations on Your Promotion at Mediusware Ltd.")
             async_task(
-                "employee.tasks.email_send_to_employee",
+                "employee.tasks.send_mail_to_employee",
                 employee,
                 promotion_policy_file,
                 html_context,
                 "Congratulations on Your Promotion at Mediusware Ltd.",
+                None
             )
         
     
