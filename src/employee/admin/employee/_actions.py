@@ -195,14 +195,14 @@ class EmployeeActions:
             html_context = loader.render_to_string(
             "mails/role_update.html", context={"employee": employee}
         )
-            # email_send_to_employee(employee, promotion_policy_file, html_context, "Your Updated Role and Growth Path at Mediusware Ltd.")
-            async_task(
-                    email_send_to_employee,
-                    employee,
-                    promotion_policy_file,
-                    html_context,
-                    "Your Updated Role and Growth Path at Mediusware Ltd.",
-                )
+            email_send_to_employee(employee, promotion_policy_file, html_context, "Your Updated Role and Growth Path at Mediusware Ltd.")
+            # async_task(
+            #         email_send_to_employee,
+            #         employee,
+            #         promotion_policy_file,
+            #         html_context,
+            #         "Your Updated Role and Growth Path at Mediusware Ltd.",
+            #     )
             
     
     @admin.action(description="Mail Promotion Letter")
@@ -212,14 +212,14 @@ class EmployeeActions:
             html_context = loader.render_to_string(
                 "mails/promotion.html", context={"employee": employee}
             )
-            # email_send_to_employee(employee, promotion_policy_file, html_context, "Congratulations on Your Promotion at Mediusware Ltd.")
-            async_task(
-                email_send_to_employee,
-                employee,
-                promotion_policy_file,
-                html_context,
-                "Congratulations on Your Promotion at Mediusware Ltd.",
-            )
+            email_send_to_employee(employee, promotion_policy_file, html_context, "Congratulations on Your Promotion at Mediusware Ltd.")
+            # async_task(
+            #     email_send_to_employee,
+            #     employee,
+            #     promotion_policy_file,
+            #     html_context,
+            #     "Congratulations on Your Promotion at Mediusware Ltd.",
+            # )
         
     
     @admin.action(description="Mail Appointment Letter")
