@@ -1,6 +1,7 @@
 import os
 from io import BytesIO
 
+from employee.tasks import email_send_to_employee
 import pdf2image
 import qrcode
 import requests
@@ -194,12 +195,14 @@ class EmployeeActions:
             html_context = loader.render_to_string(
             "mails/role_update.html", context={"employee": employee}
         )
+            # email_send_to_employee(employee, promotion_policy_file, html_context, "Your Updated Role and Growth Path at Mediusware Ltd.")
             async_task(
-                    "employee.tasks.email_send_to_employee",
+                    "employee.tasks.send_mail_to_employee",
                     employee,
                     promotion_policy_file,
                     html_context,
                     "Your Updated Role and Growth Path at Mediusware Ltd.",
+                    None
                 )
             
     
@@ -210,12 +213,14 @@ class EmployeeActions:
             html_context = loader.render_to_string(
                 "mails/promotion.html", context={"employee": employee}
             )
+            # email_send_to_employee(employee, promotion_policy_file, html_context, "Congratulations on Your Promotion at Mediusware Ltd.")
             async_task(
-                "employee.tasks.email_send_to_employee",
+                "employee.tasks.send_mail_to_employee",
                 employee,
                 promotion_policy_file,
                 html_context,
                 "Congratulations on Your Promotion at Mediusware Ltd.",
+                None
             )
         
     
