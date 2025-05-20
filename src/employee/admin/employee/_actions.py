@@ -195,7 +195,7 @@ class EmployeeActions:
             "mails/role_update.html", context={"employee": employee}
         )
             async_task(
-                    "employee.tasks.email_send_to_employee",
+                    "employee.tasks.role_change_email_send_to_employee",
                     employee,
                     promotion_policy_file,
                     html_context,
@@ -211,7 +211,7 @@ class EmployeeActions:
                 "mails/promotion.html", context={"employee": employee}
             )
             async_task(
-                "employee.tasks.email_send_to_employee",
+                "employee.tasks.role_change_email_send_to_employee",
                 employee,
                 promotion_policy_file,
                 html_context,
