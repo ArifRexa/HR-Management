@@ -36,7 +36,7 @@ class SalarySheetAction(admin.ModelAdmin):
                 if "export_tax_loan_list" == key:
                     return {"export_tax_loan_list": actions.get(key)}
             
-        if request.user.is_superuser:
+        if request.user.is_superuser or request.user.has_perm("account.can_see_salary_on_salary_sheet"):
             return actions
         return tuple()
 
