@@ -17,7 +17,67 @@ class FestivalBonusAction(admin.ModelAdmin):
         "export_bankasia_salary_acc_dis_excel",
         "export_salary_account_dis_excel",
         "export_bonus_account_dis_pdf",
+        "export_city_live_excel",
     )
+    
+    
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+            
+        if request.user.is_superuser or request.user.has_perm("account.can_see_salary_on_salary_sheet"):
+            return actions
+        return tuple()
+    
+    @admin.action(description="Export City Live Excel")
+    def export_city_live_excel(self, request, queryset):
+        wb = Workbook()
+        work_sheet = wb.active
+        work_sheet.title = "City Live Export"
+        work_sheet.append(
+            [
+                "Reason",
+                "Sender Account No",
+                "Receiving Bank Routing No",
+                "Beneficiary Bank Account  No",
+                "Account Type",
+                "Amount",
+                "Receiver ID",	
+                "Receiver Name",
+                "Remarks",
+                "Receiver Mobile Number",
+                "Receiver Email Address",
+            ]
+        )
+
+        for bonus_sheet in queryset:
+            print(dir(bonus_sheet))
+            for employee_bonus in bonus_sheet.employeefestivalbonus_set.all():
+
+                bank_account = employee_bonus.employee.bankaccount_set.filter(
+                    default=True, is_approved=True
+                ).last()
+                if bank_account:
+                    work_sheet.append(
+                        [
+                            "",
+                            "",
+                            "",
+                            bank_account.account_number,
+                            "",
+                            str(int(employee_bonus.amount)),
+                            "",
+                            employee_bonus.employee.full_name,
+                            "",
+                            "",
+                            "",
+                        ]
+                    )
+
+        response = HttpResponse(
+            content=save_virtual_workbook(wb), content_type="application/ms-excel"
+        )
+        response["Content-Disposition"] = "attachment; filename=City_Live.xlsx"
+        return response
 
     @admin.action(description="Export City Bank BEFTN")
     def export_city_bank_beftn(self, request, queryset):
