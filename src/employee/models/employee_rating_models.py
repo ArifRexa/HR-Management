@@ -8,6 +8,11 @@ from django.core.validators import MaxValueValidator
 
 
 
+def get_current_month():
+    return timezone.now().month
+def get_current_year():
+    return timezone.now().year
+
 class EmployeeRating(TimeStampMixin, AuthorMixin):
 
     if timezone.now().month == 1:  
@@ -30,8 +35,8 @@ class EmployeeRating(TimeStampMixin, AuthorMixin):
     # professional_growth_and_development = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
     # overall_contribution_to_team_success = models.IntegerField(choices=list(zip(range(0, 11), range(0, 11))), default=0)
     comment = models.TextField(null=True, blank=True)
-    month = models.IntegerField(choices=MONTH_CHOICE, default=timezone.now().month)
-    year = models.IntegerField(choices=YEAR_CHOICES, default=timezone.now().year)
+    month = models.IntegerField(choices=MONTH_CHOICE, default=get_current_month)
+    year = models.IntegerField(choices=YEAR_CHOICES, default=get_current_year)
 
     rating_overall_satisfaction = models.FloatField(blank=True, null=True)
     communication_effectiveness = models.FloatField(blank=True, null=True)

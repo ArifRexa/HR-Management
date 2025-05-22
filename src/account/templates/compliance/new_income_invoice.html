@@ -151,7 +151,7 @@
                         {% endcomment %}
                         
                         {% if invoice.note %}
-                        {{ invoice.note |strip_last_newline|safe }}
+                        {{ invoice.description |strip_last_newline|safe }}
                         {% else %}
                         {{ invoice.project.title }}
                         {% endif %}
@@ -181,6 +181,7 @@
                 <table style="margin-top: 20px;">
                     <tr>
                         <td>
+                            {{ invoice.note|strip_last_newline|safe }} <br> <br>
                             {{ invoice.project.client.notes|strip_last_newline|safe }}
                         </td>
                         <td></td>
