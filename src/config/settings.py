@@ -486,25 +486,6 @@ SIMPLE_JWT = {
 }
 
 
-# SWAGGER_SETTINGS = {
-#     "SECURITY_DEFINITIONS": {
-#         "Bearer": {
-#             "type": "apiKey",
-#             "name": "Authorization",
-#             "in": "header",
-#         },
-#         "basic": {
-#             "type": "basic",
-#         },
-#     },
-#     "USE_SESSION_AUTH": True,
-#     "PUBLIC": True,
-#     "LOGIN_URL": "rest_framework:login",
-#     "LOGOUT_URL": "rest_framework:logout",
-#     "url": os.environ.get("SWAGGER_URL", "http://localhost:8000"),
-#     "REFETCH_SCHEMA_WITH_AUTH": True,
-# }
-
 SWAGGER_SETTINGS = {
     "DEFAULT_INFO": "your_project.urls.api_info",
     "SECURITY_DEFINITIONS": {
