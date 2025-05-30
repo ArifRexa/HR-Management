@@ -2,7 +2,7 @@ from django.utils.decorators import method_decorator
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import viewsets, filters
 from rest_framework import permissions as drf_permissions
 
 from apps.mixin.permission import ModelPermission
@@ -35,7 +35,7 @@ class BaseModelViewSet(viewsets.ModelViewSet):
     serializers = {}
     querysets = {}
     permissions = {}
-    filter_backends = [DjangoFilterBackend]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = BaseFilterSet
     http_method_names = ["get", "post", "put", "patch", "delete"]
     permission_classes = [ModelPermission, drf_permissions.IsAuthenticated]

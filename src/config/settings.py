@@ -335,18 +335,20 @@ COMPANY_ACCOUNT_NO = os.environ.get("COMPANY_ACCOUNT_NO", "-")
 MACHINE_SECRETS = os.environ.get("MACHINE_SECRETS")
 
 
+
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 10,
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
     # "DEFAULT_PERMISSION_CLASSES": [
     #     "rest_framework.permissions.IsAuthenticated",
     #     "apps.mixin.permission.ModelPermission"
     # ],
+
 }
 # CRON_CLASSES = [
 #     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
@@ -484,21 +486,38 @@ SIMPLE_JWT = {
 }
 
 
+# SWAGGER_SETTINGS = {
+#     "SECURITY_DEFINITIONS": {
+#         "Bearer": {
+#             "type": "apiKey",
+#             "name": "Authorization",
+#             "in": "header",
+#         },
+#         "basic": {
+#             "type": "basic",
+#         },
+#     },
+#     "USE_SESSION_AUTH": True,
+#     "PUBLIC": True,
+#     "LOGIN_URL": "rest_framework:login",
+#     "LOGOUT_URL": "rest_framework:logout",
+#     "url": os.environ.get("SWAGGER_URL", "http://localhost:8000"),
+#     "REFETCH_SCHEMA_WITH_AUTH": True,
+# }
+
 SWAGGER_SETTINGS = {
+    "DEFAULT_INFO": "your_project.urls.api_info",
     "SECURITY_DEFINITIONS": {
         "Bearer": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-        },
-        "basic": {
-            "type": "basic",
-        },
+            "description": 'Example: "Authorization: Bearer <your_token>"',
+        }
     },
-    "USE_SESSION_AUTH": True,
-    "PUBLIC": True,
+    "USE_SESSION_AUTH": False,
     "LOGIN_URL": "rest_framework:login",
     "LOGOUT_URL": "rest_framework:logout",
-    "url": os.environ.get("SWAGGER_URL", "http://localhost:8000"),
-    "REFETCH_SCHEMA_WITH_AUTH": True,
+    "JSON_EDITOR": True,
+    "PERSIST_AUTH": True,
 }

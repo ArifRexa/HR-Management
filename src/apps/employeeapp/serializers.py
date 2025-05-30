@@ -46,7 +46,16 @@ class EmployeeListSerializer(BaseModelSerializer):
 class EmployeeSerializer(BaseModelSerializer):
     user = UserSerializer(read_only=True)
     permissions = serializers.SerializerMethodField()
-
+    designation = serializers.CharField(source="designation.title")
+    skill = serializers.SerializerMethodField(method_name="get_skill")
+    
+    def get_skill(self, obj):
+        employee_skill = getattr(obj, "top_one_skill", None)
+        if employee_skill:
+            return employee_skill.skill.title
+        
+        return None
+    
     def get_permissions(self, obj):
         return obj.user.get_all_permissions()
 
