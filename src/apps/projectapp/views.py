@@ -29,6 +29,7 @@ from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
     BulkDailyUpdateSerializer,
     BulkUpdateSerializer,
+    DailyProjectUpdateCreateSerializer,
     DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
@@ -74,6 +75,7 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
     )
     serializers = {
         "status_update": StatusUpdateSerializer,
+        "create": DailyProjectUpdateCreateSerializer,
         # "list": DailyProjectUpdateListSerializer
     }
 
@@ -82,12 +84,25 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
             return BulkDailyUpdateSerializer
         return super().get_serializer_class()
 
+    @swagger_auto_schema(
+        responses={201: DailyProjectUpdateSerializer}
+    )
     def create(self, request, *args, **kwargs):
         self.parser_classes = [
             parsers.MultiPartParser,
             parsers.FormParser,
         ]
-        return super().create(request, *args, **kwargs)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        # Re-serialize using the output serializer
+        read_serializer = self.serializer_class(
+            instance=serializer.instance,
+            context=self.get_serializer_context()
+        )
+        headers = self.get_success_headers(read_serializer.data)
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @decorators.action(detail=False, methods=["PATCH"], url_path="status-update")
     def status_update(self, request, *args, **kwargs):
