@@ -61,9 +61,6 @@ class DailyProjectUpdateListSerializer(serializers.ModelSerializer):
 
 class DailyProjectUpdateCreateSerializer(BaseModelSerializer):
     attachment = DailyProjectUpdateAttachmentSerializer(many=True, required=False)
-    # employee = serializers.PrimaryKeyRelatedField(
-    #     queryset=Employee.objects.all()
-    # )
     # manager = serializers.PrimaryKeyRelatedField(
     #     queryset=Employee.objects.all()
     # )
@@ -75,12 +72,15 @@ class DailyProjectUpdateCreateSerializer(BaseModelSerializer):
             "hours": {"required": True, "write_only": True},
             "update": {"required": True, "write_only": True},
             "updates_json": {"read_only": True},
+            "employee": {"read_only": True},
+            "status": {"read_only": True},
+            "created_at": {"read_only": True},
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.request = self.context.get("request", None)
-        self.read_only_fields = ["employee", "status", "created_at", "note"]
+        # self.read_only_fields = ["employee", "status", "created_at", "note"]
         # self._get_readonly_fields(self.request, self.instance)
 
     def _get_readonly_fields(self, request, obj=None):
@@ -134,8 +134,8 @@ class DailyProjectUpdateCreateSerializer(BaseModelSerializer):
 
     def validate(self, attrs):
         if not self.partial:
-            if attrs.get("employee"):
-                employee = attrs.get("employee")
+            if self.request.user:
+                employee = self.request.user.employee
             else:
                 employee = self.instance.employee
             if DailyProjectUpdate.objects.filter(
@@ -147,7 +147,7 @@ class DailyProjectUpdateCreateSerializer(BaseModelSerializer):
                 raise serializers.ValidationError(
                     "Already you have given today's update for this project"
                 )
-
+            attrs["employee"] = employee
         return super().validate(attrs)
 
     def create(self, validated_data):
