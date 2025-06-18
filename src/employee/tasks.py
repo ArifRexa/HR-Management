@@ -900,3 +900,19 @@ def email_send_to_employee(employee, pdf, html_body, subject):
     elif pdf:
         email.attach_file(pdf)
     email.send()
+    
+    
+    
+def role_change_email_send_to_employee(employee, pdf, html_body, subject):
+    email = EmailMultiAlternatives()
+    email.subject = subject
+    email.attach_alternative(html_body, "text/html")
+    email.to = [employee.email]
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    if pdf and pdf.__contains__("http"):
+        pdf_url = pdf
+        response = requests.get(pdf_url)
+        email.attach(pdf.split("/")[-1], response.content, "application/pdf")
+    elif pdf:
+        email.attach_file(pdf)
+    email.send()

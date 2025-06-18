@@ -3,6 +3,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from inventory_management.models import (
     InventoryItem,
+    InventoryItemHead,
     InventoryTransaction,
     InventoryUnit,
 )
@@ -10,13 +11,25 @@ from inventory_management.forms import InventoryTransactionForm, InventoryItemFo
 
 # Register your models here.
 
-
+@admin.register(InventoryItemHead)
+class InventoryItemHeadAdmin(admin.ModelAdmin):
+    list_display = ("title", )
+    search_fields = ("title",)
+    
+    
 @admin.register(InventoryItem)
 class InventoryItemAdmin(admin.ModelAdmin):
-    list_display = ("show_item_name", "show_quantity", "unit")
+    list_display = ("get_head","show_item_name", "show_quantity", "unit")
     readonly_fields = ["quantity"]
     search_fields = ("name",)
     form = InventoryItemForm
+    autocomplete_fields = ("head", )
+    list_filter = ("head", "unit")
+    
+    
+    @admin.display(description="head", ordering="head.title")
+    def get_head(self, obj):
+        return obj.head.title
 
     @admin.display(description="item name", ordering="name")
     def show_item_name(self, obj):
