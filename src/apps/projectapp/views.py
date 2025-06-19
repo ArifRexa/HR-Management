@@ -1,11 +1,15 @@
-import csv
+import csv, os
 from datetime import datetime, timedelta
 from decimal import Decimal
 from io import BytesIO
+from dateutil.relativedelta import relativedelta
 
 import openpyxl
-from django.db.models import F, Prefetch, Q, Sum
+from django.db.models import (
+    F, Prefetch, Q, Sum, Value,
+)
 from django.http import FileResponse, HttpResponse
+from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -13,11 +17,12 @@ from rest_framework import decorators, parsers, response, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import LimitOffsetPagination
 
 from account.models import Income
 from apps.mixin.permission import IsSuperUser
 from apps.mixin.views import BaseModelViewSet
-from employee.models.employee import EmployeeUnderTPM
+from employee.models.employee import Employee, EmployeeUnderTPM
 from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
@@ -475,6 +480,75 @@ class DailyProjectUpdateViewSet(BaseModelViewSet):
 
         wb.save(response)
         return response
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                "created_at_after",
+                openapi.IN_QUERY,
+                description="created_at from date",
+                type=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                "created_at_before",
+                openapi.IN_QUERY,
+                description="created_at to date",
+                type=openapi.FORMAT_DATE,
+            ),
+        ]
+    )
+    @decorators.action(
+        detail=False,
+        methods=["GET"],
+        url_path="daily-update-missing-employees",
+    )
+    def get_employees_without_project_updates(self, request):
+        """
+        Returns a paginated list of employees who did not submit
+        their daily project update for each working day.
+        """
+
+        # current_date_time = timezone.now()
+        # start_date_time = request.query_params.get("created_at_after", (current_date_time-relativedelta(months=1)))
+        # end_date_time = request.query_params.get("created_at_before", current_date_time)
+        
+        # working_days = self.get_working_days(start_date_time, end_date_time)
+        # update_not_provided_by_employes = []
+        # employees = Employee.objects.all()
+        # for working_day in working_days:
+        #     daily_project_update_employees_id = DailyProjectUpdate.objects.filter(
+        #         created_at__date=working_day.date(),
+        #     ).values_list("employee_id", flat=True)
+        #     # print('daily_project_updates', daily_project_update_employees_id)
+
+        #     missing_employees = employees.exclude(
+        #         pk__in=daily_project_update_employees_id
+        #     ).annotate(date=Value(working_day.date()))
+        #     update_not_provided_by_employes.extend(missing_employees)
+
+        query_set = self.get_queryset().filter(
+            history__isnull=True,
+            employee__operation=False,
+        ).exclude(
+            employee_id=os.environ.get("SUPERUSER_ID", 30)
+        )
+        filtered_queryset = self.filter_queryset(query_set)
+        paginator = LimitOffsetPagination()
+        paginated_list = paginator.paginate_queryset(
+            queryset=filtered_queryset,
+            request=request,
+        )
+        return paginator.get_paginated_response(
+            data=self.serializer_class(instance=paginated_list, many=True).data
+        )
+
+    # def get_working_days(self, start_date_time: datetime, end_date_time: datetime):
+    #     working_days = []
+    #     while start_date_time <= end_date_time:
+    #         if start_date_time.weekday() < 5:  # 5=Saturday, 6=Sunday, Skip Saturday/Sunday
+    #             working_days.append(start_date_time)
+    #         start_date_time += timedelta(days=1)
+    #     return working_days
 
 
 class WeeklyProjectUpdateViewSet(BaseModelViewSet):
