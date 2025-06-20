@@ -223,29 +223,30 @@ class DashboardSerializer(BaseModelSerializer):
             is_consider=False
         ).aggregate(
             this_month=Sum(
-                "id",
+                "total_late_attendance_fine",
                 filter=Q(
                     date__year=self.current_date.year,
                     date__month=self.current_date.month,
                 ),
             ),
             last_month=Sum(
-                "id",
+                "total_late_attendance_fine",
                 filter=Q(
-                    date__year=self.last_month.year, date__month=self.last_month.month
+                    date__year=self.last_month.year,
+                    date__month=self.last_month.month,
                 ),
+                default=0
             ),
         )
-
         total_late_day = instance.employeeattendance_set.filter(
             date__year=self.current_date.year,
             date__month=self.current_date.month,
             entry_time__gt=datetime.time(11, 10),
         ).count()
-
+        
         return {
-            "this_month": (late_fines.get("this_month") or 0) * 80,
-            "last_month": (late_fines.get("last_month") or 0) * 80,
+            "this_month": late_fines.get("this_month") or 0,
+            "last_month": late_fines.get("last_month") or 0,
             "total_late_day": total_late_day,
         }
 
