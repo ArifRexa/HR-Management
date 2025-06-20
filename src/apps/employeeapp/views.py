@@ -3,12 +3,12 @@ from calendar import month_abbr
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, views
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
 
 from apps.employeeapp.filters import EmployeeFilter
 from apps.mixin.views import BaseModelViewSet
-from employee.models.employee import Employee
+from employee.models.employee import BookConferenceRoom, Employee
 from employee.models.employee_skill import EmployeeSkill
 from django.db.models import (
     Prefetch, functions, Sum, Q,
@@ -18,7 +18,12 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 
 from project_management.models import EmployeeProjectHour
-from .serializers import DashboardSerializer, EmployeeBirthdaySerializer, EmployeeSerializer
+from .serializers import (
+    BaseBookConferenceRoomCreateModelSerializer, 
+    BookConferenceRoomListModelSerializer,
+    DashboardSerializer, EmployeeBirthdaySerializer, 
+    EmployeeSerializer,
+)
 
 
 class EmployeeViewSet(BaseModelViewSet):
@@ -161,7 +166,7 @@ class EmployeeProjectHourStatisticView(views.APIView):
         return employee_yearly_project_hours.values("year", "total_hours")
 
         
-class NearByEmployeesBirthDay(ListAPIView):
+class NearByEmployeesBirthDayView(ListAPIView):
     
     permission_classes = [
         permissions.IsAuthenticated,
@@ -198,3 +203,21 @@ class NearByEmployeesBirthDay(ListAPIView):
             )
         ).order_by("birth_day")
         return queryset
+
+
+class BookConferenceRoomListCreateView(ListCreateAPIView):
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+    serializer_class = BookConferenceRoomListModelSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return BaseBookConferenceRoomCreateModelSerializer
+        return super().get_serializer_class()
+
+    queryset = BookConferenceRoom.objects.filter(
+        created_at__date=datetime.datetime.today().date()
+    ).select_related(
+        "manager_or_lead",
+    ).order_by("start_time")

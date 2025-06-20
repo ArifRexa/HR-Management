@@ -5,7 +5,8 @@ from .views import (
     EmployeeDashboardView,
     EmployeeViewSet,
     EmployeeProjectHourStatisticView,
-    NearByEmployeesBirthDay,
+    NearByEmployeesBirthDayView,
+    BookConferenceRoomListCreateView,
 )
 
 
@@ -17,5 +18,6 @@ urlpatterns = [
     *router.urls,
     path("dashboard", EmployeeDashboardView.as_view(), name="dashboard"),
     path("project-hour-statistic", EmployeeProjectHourStatisticView.as_view(), name="project-hour-statistic"),
-    path("near-by-employees-birthday", NearByEmployeesBirthDay.as_view(), name="employees-birthday"),
+    path("near-by-employees-birthday", NearByEmployeesBirthDayView.as_view(), name="employees-birthday"),
+    path("book-conference-rooms", BookConferenceRoomListCreateView.as_view(), name="book-conference-room"),
 ]

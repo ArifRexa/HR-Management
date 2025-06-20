@@ -19,7 +19,7 @@ from apps.authentication.serializers import UserSerializer
 from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.attachment import Attachment
-from employee.models.employee import Employee
+from employee.models.employee import BookConferenceRoom, Employee
 from employee.models.employee_activity import EmployeeActivity
 from employee.models.employee_skill import EmployeeSkill
 from employee.models.leave.leave import Leave
@@ -49,13 +49,6 @@ class EmployeeListSerializer(BaseModelSerializer):
         model = Employee
         fields = ["id", "full_name", "designation", "permissions", "image"]
         ref_name = "api_employee_list"
-
-
-class EmployeeInfoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Employee
-        fields = ["id", "full_name", "designation","image"]
-        ref_name = "api_employee_info"
 
 
 class EmployeeSerializer(BaseModelSerializer):
@@ -313,3 +306,36 @@ class DashboardSerializer(BaseModelSerializer):
         data["late_fine_info"] = self._late_fine_info(instance)
         data["last_week_attendance"] = self._get_last_week_attendance(instance)
         return data
+
+
+class BaseBookConferenceRoomCreateModelSerializer(BaseModelSerializer):
+    
+    class Meta:
+        model = BookConferenceRoom
+        fields = [
+            "id", "project_name", "start_time",
+        ]
+    
+    def validate_start_time(self, value):
+        is_alredy_booked = BookConferenceRoom.objects.filter(
+            created_at__date=datetime.datetime.today().date(),
+            start_time=value
+        ).exists()
+        if is_alredy_booked:
+            raise serializers.ValidationError("That time slot is already booked for the conference room.")
+        return value
+
+    def validate(self, attrs):
+        attrs["manager_or_lead"] = self.context.get("request").user.employee
+        return super().validate(attrs)
+
+
+class BookConferenceRoomListModelSerializer(BaseBookConferenceRoomCreateModelSerializer):
+    manager_or_lead = EmployeeInfoSerializer()
+    
+    class Meta:
+        model = BookConferenceRoom
+        fields = [
+            "id", "manager_or_lead", "start_time", "end_time",
+            "created_at",
+        ]
