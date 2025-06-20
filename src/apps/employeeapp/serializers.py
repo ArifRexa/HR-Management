@@ -10,7 +10,7 @@ from django.db.models import (
     Q,
     Sum,
     When,
-    functions,
+    # functions,
 )
 from django.utils import timezone
 from rest_framework import serializers
@@ -31,6 +31,14 @@ class EmployeeInfoSerializer(serializers.ModelSerializer):
         fields = ["id", "full_name", "designation","image"]
         ref_name = "api_employee_info"
 
+
+class EmployeeBirthdaySerializer(serializers.ModelSerializer):
+    birth_day = serializers.DateField()
+    class Meta:
+        model = Employee
+        fields = ["id", "full_name", "birth_day", "image"]
+
+
 class EmployeeListSerializer(BaseModelSerializer):
     permissions = serializers.SerializerMethodField()
 
@@ -41,6 +49,13 @@ class EmployeeListSerializer(BaseModelSerializer):
         model = Employee
         fields = ["id", "full_name", "designation", "permissions", "image"]
         ref_name = "api_employee_list"
+
+
+class EmployeeInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = ["id", "full_name", "designation","image"]
+        ref_name = "api_employee_info"
 
 
 class EmployeeSerializer(BaseModelSerializer):

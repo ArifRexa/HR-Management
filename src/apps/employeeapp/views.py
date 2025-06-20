@@ -1,18 +1,24 @@
+import datetime
 from calendar import month_abbr
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, views
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 
 from apps.employeeapp.filters import EmployeeFilter
 from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee
 from employee.models.employee_skill import EmployeeSkill
-from django.db.models import Prefetch, functions, Sum
+from django.db.models import (
+    Prefetch, functions, Sum, Q,
+    Value, Case, When, CharField,
+)
+from django.db.models.functions import Concat
 from django.utils import timezone
 
 from project_management.models import EmployeeProjectHour
-from .serializers import DashboardSerializer, EmployeeSerializer
+from .serializers import DashboardSerializer, EmployeeBirthdaySerializer, EmployeeSerializer
 
 
 class EmployeeViewSet(BaseModelViewSet):
@@ -99,7 +105,7 @@ class EmployeeProjectHourStatisticView(views.APIView):
                     "yearly",
                 ],
                 type=openapi.TYPE_STRING,
-                required=False,
+                required=True,
             ) 
         ]
     )
@@ -155,6 +161,40 @@ class EmployeeProjectHourStatisticView(views.APIView):
         return employee_yearly_project_hours.values("year", "total_hours")
 
         
+class NearByEmployeesBirthDay(ListAPIView):
+    
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
 
+    serializer_class = EmployeeBirthdaySerializer
+    queryset = Employee.objects.filter(active=True)
+    
+    def get_queryset(self):
+        current = now = datetime.datetime.now()
+        then = now + datetime.timedelta(days=31)
 
-
+        filters = Q()
+        while now <= then:
+            filters |= Q(date_of_birth__month=now.month, date_of_birth__day=now.day)
+            now += datetime.timedelta(days=1)
+        
+        queryset =  super().get_queryset().filter(
+            filters
+        ).annotate(
+            birth_day=Concat(
+                Case(
+                    When(
+                        date_of_birth__month__lt=current.month,
+                        then=Value(current.year+1)
+                    ),
+                    default=Value(current.year)
+                ),
+                Value('-'),
+                "date_of_birth__month",
+                Value('-'),
+                "date_of_birth__day",
+                output_field=CharField()
+            )
+        ).order_by("birth_day")
+        return queryset
