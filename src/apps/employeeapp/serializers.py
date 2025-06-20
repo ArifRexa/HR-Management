@@ -204,19 +204,20 @@ class DashboardSerializer(BaseModelSerializer):
             "passed_non_paid": leave_counts.get("non_paid") or 0,
         }
 
-    def _project_hour_statistic(self, instance):
-        hour_data = (
-            instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
-            .annotate(month=functions.ExtractMonth("created_at"))
-            .values("month")
-            .annotate(total_hours=functions.Round(Sum("hours"), precision=2))
-            .order_by("month")
-        )
-        d = {item["month"]: item["total_hours"] for item in hour_data}
-        data = [
-            {"month": month_abbr[i], "total_hours": d.get(i, 0)} for i in range(1, 13)
-        ]
-        return data
+    # def _project_hour_statistic(self, instance):
+    #     print(instance.employeeprojecthour_set.all())
+    #     hour_data = (
+    #         instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
+    #         .annotate(month=functions.ExtractMonth("created_at"))
+    #         .values("month")
+    #         .annotate(total_hours=functions.Round(Sum("hours"), precision=2))
+    #         .order_by("month")
+    #     )
+    #     d = {item["month"]: item["total_hours"] for item in hour_data}
+    #     data = [
+    #         {"month": month_abbr[i], "total_hours": d.get(i, 0)} for i in range(1, 13)
+    #     ]
+    #     return data
 
     def _late_fine_info(self, instance):
         late_fines = instance.lateattendancefine_set.filter(
@@ -293,7 +294,7 @@ class DashboardSerializer(BaseModelSerializer):
         data = super().to_representation(instance)
         data["project_hours"] = self._get_project_hour(instance)
         data["leave_info"] = self._get_leave_info(instance)
-        data["project_hour_statistic"] = self._project_hour_statistic(instance)
+        # data["project_hour_statistic"] = self._project_hour_statistic(instance)
         data["late_fine_info"] = self._late_fine_info(instance)
         data["last_week_attendance"] = self._get_last_week_attendance(instance)
         return data

@@ -1,13 +1,17 @@
+from calendar import month_abbr
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, views, parsers
+from rest_framework import permissions, views
 from rest_framework.response import Response
 
 from apps.employeeapp.filters import EmployeeFilter
 from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee
 from employee.models.employee_skill import EmployeeSkill
-from django.db.models import Prefetch
+from django.db.models import Prefetch, functions, Sum
+from django.utils import timezone
+
+from project_management.models import EmployeeProjectHour
 from .serializers import DashboardSerializer, EmployeeSerializer
 
 
@@ -79,3 +83,78 @@ class EmployeeDashboardView(views.APIView):
         employee = Employee.objects.get(user=request.user)
         serializer = DashboardSerializer(employee)
         return Response(serializer.data)
+
+
+class EmployeeProjectHourStatisticView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name="filter_by",
+                in_=openapi.IN_QUERY,
+                description="generate project hour stastics",
+                enum=[
+                    "monthly",
+                    "yearly",
+                ],
+                type=openapi.TYPE_STRING,
+                required=False,
+            ) 
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        """
+        generate employee projects hour statistic based on a month or yearly.
+        """
+        filter_by = request.query_params.get("filter_by", "monthly")
+        
+        get_statistic_data = {
+            "monthly": self.get_monthly_statistic,
+            "yearly": self.get_yearly_statistic,
+        }
+        
+        return Response(get_statistic_data.get(filter_by)(request))
+    
+    def get_monthly_statistic(self, request):
+        current_time = timezone.now()
+        employee_project_hours = EmployeeProjectHour.objects.filter(
+            employee=request.user.employee,
+            created_at__year=current_time.year,
+        ).annotate(
+            month=functions.ExtractMonth("created_at")
+        ).values("month").annotate(
+            total_hours=functions.Round(
+                Sum("hours"),
+                precision=2
+            )
+        ).order_by("month")
+        employee_project_hours_dict = {
+            employee_project_hour["month"]: employee_project_hour["total_hours"] for employee_project_hour in employee_project_hours
+        }
+        monthly_employee_project_hours = [
+            {
+                "month": month_abbr[month_number],
+                "total_hours": employee_project_hours_dict.get(month_number, 0)
+            }
+            for month_number in range(1, 13)
+        ]
+        return monthly_employee_project_hours
+    
+    def get_yearly_statistic(self, request):
+        employee_yearly_project_hours = EmployeeProjectHour.objects.filter(
+            employee=request.user.employee,
+        ).annotate(
+            year=functions.ExtractYear("created_at")
+        ).values("year").annotate(
+            total_hours=functions.Round(
+                Sum("hours"),
+                precision=2
+            )
+        ).order_by("year")
+        return employee_yearly_project_hours.values("year", "total_hours")
+
+        
+
+
+
