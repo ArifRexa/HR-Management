@@ -7,6 +7,7 @@ from rest_framework.generics import ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
 
 from apps.employeeapp.filters import EmployeeFilter
+from apps.employeeapp.permissions import IsManagerOrLead
 from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import BookConferenceRoom, Employee
 from employee.models.employee_skill import EmployeeSkill
@@ -208,6 +209,7 @@ class NearByEmployeesBirthDayView(ListAPIView):
 class BookConferenceRoomListCreateView(ListCreateAPIView):
     permission_classes = [
         permissions.IsAuthenticated,
+        IsManagerOrLead,
     ]
     serializer_class = BookConferenceRoomListModelSerializer
 
