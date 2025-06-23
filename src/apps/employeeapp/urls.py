@@ -2,6 +2,7 @@ from rest_framework.routers import DefaultRouter
 from django.urls import path
 
 from .views import (
+    CredentialViewSetView,
     EmployeeDashboardView,
     EmployeeViewSet,
     EmployeeProjectHourStatisticView,
@@ -12,6 +13,7 @@ from .views import (
 
 router = DefaultRouter()
 
+router.register("credentials", CredentialViewSetView, basename='sfsgsg')
 router.register("", EmployeeViewSet)
 
 urlpatterns = [

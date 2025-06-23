@@ -1,6 +1,5 @@
 import datetime
 from calendar import month_abbr
-
 from django.db.models import (
     Case,
     DurationField,
@@ -15,9 +14,10 @@ from django.db.models import (
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.authentication.serializers import UserSerializer
+from apps.authentication.serializers import UserSerializer, UserInfoSerializer
 from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
+from asset_management.models.credential import Credential, CredentialCategory
 from employee.models.attachment import Attachment
 from employee.models.employee import BookConferenceRoom, Employee
 from employee.models.employee_activity import EmployeeActivity
@@ -339,3 +339,61 @@ class BookConferenceRoomListModelSerializer(BaseBookConferenceRoomCreateModelSer
             "id", "manager_or_lead", "start_time", "end_time",
             "created_at",
         ]
+
+
+class CredentialCategoryModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = CredentialCategory
+        fields = [
+            "id", "title", "description",
+        ]
+
+class CreateUpdateCredentialModelSerializer(BaseModelSerializer):
+    class Meta:
+        model = Credential
+        fields = [
+            "id", "title", "category",
+            "description", "created_by",
+            "status", "privileges",
+        ]
+
+    def update(self, instance, validated_data):
+        instance.privileges.set(validated_data.pop("privileges", []))
+        super().update(instance, validated_data)
+        return instance
+
+
+class DetailsCredentialModelSerializer(BaseModelSerializer):
+    category = CredentialCategoryModelSerializer()
+    privileges = UserInfoSerializer(many=True)
+    class Meta:
+        model = Credential
+        fields = [
+            "id", "title", "category",
+            "description", "status",
+            "privileges",
+        ]
+
+
+class CredentialModelSerializer(BaseModelSerializer):
+    total_privilege = serializers.IntegerField()
+    category = CredentialCategoryModelSerializer()
+    created_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Credential
+        fields = [
+            "id", "title", "description",
+            "category", "created_by",
+            "total_privilege", "status",
+        ]
+
+    def get_created_by(self, instance):
+        return instance.created_by.email
+
+
+class CredentialStatusUpdateSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+    )
