@@ -8,7 +8,7 @@
     {% for employee in employees %}
         {% for employeesalary in employee.employeesalary_set.all %}
         <div class="employee-details" style="page-break-after: always;">
-            <p>Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.joining_date | date:'Ym' }}{{ employee.designation.id }}{{ employee.id }}
+            <p>Ref: Mediusware Ltd./{{ latter_type }}/{{employee.employee_id}}
                 <br>
                 Date: {% now "jS F Y" %} <br>
                 <b>{{ employee.full_name | title }}</b><br>
@@ -36,7 +36,7 @@
                 </tr>
                 <tr>
                     <td>Employee ID</td>
-                    <td>: {{ employee.joining_date | date:"Ym" }}{{ employee.designation.id }}{{ employee.id }}</td>
+                    <td>: {{employee.employee_id}}</td>
                 </tr>
                 <tr>
                     <td>Monthly gross Salary</td>
