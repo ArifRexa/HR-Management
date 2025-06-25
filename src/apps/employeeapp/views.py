@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from apps.employeeapp.filters import EmployeeFilter
 from apps.employeeapp.permissions import HasConferenceRoomBookPermission, IsSuperUserOrReadOnly
 from apps.mixin.views import BaseModelViewSet
-from asset_management.models.credential import Credential
+from asset_management.models.credential import Credential, CredentialCategory
 from employee.models.employee import BookConferenceRoom, Employee
 from employee.models.employee_skill import EmployeeSkill
 from django.db.models import (
@@ -27,6 +27,7 @@ from .serializers import (
     BaseBookConferenceRoomCreateModelSerializer, 
     BookConferenceRoomListModelSerializer,
     CreateUpdateCredentialModelSerializer,
+    CredentialCategoryModelSerializer,
     CredentialModelSerializer,
     CredentialStatusUpdateSerializer,
     DashboardSerializer,
@@ -318,3 +319,17 @@ class CredentialViewSetView(BaseModelViewSet):
             id__in=serializer.validated_data.get("ids")
         ).delete()
         return Response(data={"result": "Credentials delete successfull."})
+
+
+class CredentialCategoryViewSet(BaseModelViewSet):
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsSuperUserOrReadOnly,
+    ]
+    queryset = CredentialCategory.objects.all()
+    serializer_class = CredentialCategoryModelSerializer
+
+    search_fields = [
+        "title", "description",
+    ]

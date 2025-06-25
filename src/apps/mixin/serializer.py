@@ -27,3 +27,5 @@ class BaseModelSerializer(serializers.ModelSerializer):
         for key, value in validated_data.items():
             setattr(instance, key, value)
         instance.save()
+        return instance
+
