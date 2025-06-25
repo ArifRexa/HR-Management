@@ -7,7 +7,9 @@
     <b>Joined at &emsp;&nbsp;:</b> {{ employee.joining_date }} ({{ employee.joining_date_human }}) <br>
     <b>Phone &emsp; &emsp; :</b> <a href="tel:{{ employee.phone }}">{{ employee.phone }}</a> <br>
     <b>ID &emsp; &emsp; &emsp; &nbsp; &nbsp;: </b>
-    {{ employee.joining_date | date:'Yd' }}{{ employee.id }}<br>
+    {{employee.employee_id}}<br>
+
+
 </div>
 
 <a href="{% url 'admin:hour_graph' employee.id %}">📈</a>
