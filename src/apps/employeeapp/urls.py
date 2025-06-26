@@ -4,6 +4,7 @@ from django.urls import path
 from .views import (
     CredentialCategoryViewSet,
     CredentialViewSetView,
+    EmployeeAttendanceListView,
     EmployeeDashboardView,
     EmployeeViewSet,
     EmployeeProjectHourStatisticView,
@@ -20,6 +21,7 @@ router.register("", EmployeeViewSet)
 
 urlpatterns = [
     *router.urls,
+    path("attendance", EmployeeAttendanceListView.as_view(), name="employee-attendance"),
     path("dashboard", EmployeeDashboardView.as_view(), name="dashboard"),
     path("project-hour-statistic", EmployeeProjectHourStatisticView.as_view(), name="project-hour-statistic"),
     path("near-by-employees-birthday", NearByEmployeesBirthDayView.as_view(), name="employees-birthday"),
