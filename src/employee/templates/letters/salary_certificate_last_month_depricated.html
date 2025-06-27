@@ -1,0 +1,281 @@
+{% extends 'letters/extra/base.html' %}
+
+{% load humanize %}
+{% load humanize_extra %}
+{% load employee_helper %}
+
+{% block content %}
+    {% for employee in employees %}
+        <p>Ref: Mediusware
+            Ltd./{{ latter_type }}/{{employee.employee_id}}
+            <br>
+            Date: {% now "jS F Y" %} <br>
+            <b>{{ employee.full_name | title }}</b> <br>
+            Email: {{ employee.email }}<br>
+        </p>
+        <center><h2>To Whom It May Concern</h2></center>
+        <p>
+            This is to certify that <b>{{ employee.full_name | title }}</b> has been working as a regular employee in
+            our organization. His/Her employment details are as follows:
+        </p>
+
+        <table width="60%" cellpadding="2">
+            <tbody>
+            <tr>
+                <td>Job Status</td>
+                <td>: {% if employee.permanent_date %}Permanent {% else %}Provisional {% endif %}</td>
+            </tr>
+            <tr>
+                <td>Designation</td>
+                <td>: {{ employee.designation }}</td>
+            </tr>
+            <tr>
+                <td>Date of Joining</td>
+                <td>: {{ employee.joining_date }}</td>
+            </tr>
+            <tr>
+                <td>Employee ID</td>
+                <td>: {{employee.employee_id}}</td>
+            </tr>
+            <tr>
+                <td>Monthly gross Salary</td>
+                <td>: {{ employee.employeesalary_set.last.net_salary |floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td>Model Of Salary Payment</td>
+                <td>: A/C payee</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table width="100%" border="1" cellpadding="5">
+            <tbody>
+            <tr>
+                <td style="vertical-align: top">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th align="left">Particulars</th>
+                            <th align="right">Amount (BDT)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>Basic (55%)</td>
+                            <td align="right">{{ employee.employeesalary_set.last.net_salary | percentage:55 }}</td>
+                        </tr>
+                        <tr>
+                            <td>House Allowance (20%)</td>
+
+                            <td align="right">{{ employee.employeesalary_set.last.net_salary | percentage:20 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Conveyance (15%)</td>
+
+                            <td align="right">{{ employee.employeesalary_set.last.net_salary | percentage:15 }}</td>
+                        </tr>
+                        <tr>
+                            <td>Medical Allowance (10%)</td>
+
+                            <td align="right">
+                                {{ employee.employeesalary_set.last.net_salary | percentage:10 }}</td>
+                        </tr>
+                        
+
+                        {% if employee.employeesalary_set.last.project_bonus %}
+                            <tr>
+                                <td>Project Bonus</td>
+                                <td align="right">
+                                    {{ employee.employeesalary_set.last.project_bonus|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+                        {% if employee.employeesalary_set.last.festival_bonus %}
+                            <tr>
+                                <td>Festival Bonus</td>
+                                <td align="right">
+                                    {{ employee.employeesalary_set.last.festival_bonus|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if employee.employeesalary_set.last.overtime %}
+                            <tr>
+                                <td>Overtime Bonus</td>
+                                <td>{{ employee.employeesalary_set.last.overtime|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if employee.employeesalary_set.last.leave_bonus > 0 %}
+                            <tr>
+                                <td>Leave Bonus</td>
+                                <td>{{ employee.employeesalary_set.last.leave_bonus|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if employee.employeesalary_set.last.food_allowance %}
+                            <tr>
+                                <td>Food Allowance</td>
+                                <td>{{ employee.employeesalary_set.last.food_allowance|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        {% if employee.employeesalary_set.last.device_allowance %}
+                            <tr>
+                                <td>Device Allowance</td>
+                                <td>{{ employee.employeesalary_set.last.device_allowance|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+
+                        <tr>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>-</td>
+                            <td>-</td>
+                        </tr>
+                        </tbody>
+                        <tfoot>
+                        <tr>
+                            <th align="left">Total Earning/Salary</th>
+                            <th align="right">
+                                {{ employee.employeesalary_set.last.net_salary |addition:employee.employeesalary_set.last.project_bonus | floatformat:2|intcomma }}
+                                BDT
+                            </th>
+                        </tr>
+                        </tfoot>
+                    </table>
+                </td>
+                <td>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th align="left">Particulars</th>
+                            <th align="right">Amount (BDT)</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <tr>
+                            <td>PF (Org)</td>
+                            <td align="right">0.00</td>
+                        </tr>
+
+                        <tr>
+                            <td>PF (Own)</td>
+                            <td align="right">0.00</td>
+                        </tr>
+                        <tr>
+                            <td>PF Loan (P)</td>
+                            <td align="right">0.00</td>
+                        </tr>
+                        <tr>
+                            <td>PF Loan (I)</td>
+                            <td align="right">0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Laptop Loan</td>
+                            <td align="right">0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Salary Advance Loan (P)</td>
+                            <td align="right">
+                                {% if employee.employeesalary_set.last.loan_emi %}
+                                    {{ employee.employeesalary_set.last.loan_emi|floatformat:2 }}
+                                {% else %}
+                                    0.00
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Salary Advance Loan (I)</td>
+                            <td align="right">0.00</td>
+                        </tr>
+                        {% if employee.employeesalary_set.last.leave_bonus < 0 %}
+                            <tr>
+                                <td>Non-paid Leave</td>
+                                <td align="right">{{ employee.employeesalary_set.last.leave_bonus|floatformat:2|intcomma }}</td>
+                            </tr>
+                        {% endif %}
+                        </tbody>
+
+                        <tfoot>
+                        <tr>
+                            <th align="left">Total Deduction</th>
+                            {% if employee.employeesalary_set.last.leave_bonus < 0  %}
+                                <th align="right">{{ employee.employeesalary_set.last.loan_emi | addition:employee.employeesalary_set.last.leave_bonus |floatformat:2  }}</th>
+                            {% else %}
+                                <th align="right">{{ employee.employeesalary_set.last.loan_emic  }}</th>
+                            {% endif %}
+                        </tr>
+                        </tfoot>
+
+
+                    </table>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <table width="100%" border="1" cellpadding="5">
+
+
+            <tfoot style="border-top: 1px solid black;">
+            <tr>
+                <th align='left'>Net Salary:</th>
+
+                <th align="right">
+                    {{ employee.employeesalary_set.last.net_salary |addition:employee.employeesalary_set.last.project_bonus|floatformat:2|intcomma }}
+                    BDT
+                </th>
+            </tr>
+            </tfoot>
+        </table>
+        <br>
+        {% if employee.employeesalary_set.last.loan_emi or employee.employeesalary_set.last.leave_bonus%}
+            <p>Deducted on salary :
+                {% if employee.employeesalary_set.last.leave_bonus > 0  %}
+                    {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus | addition:employee.employeesalary_set.last.festival_bonus |addition:employee.employeesalary_set.last.overtime |addition:employee.employeesalary_set.last.leave_bonus |addition:employee.employeesalary_set.last.food_allowance |addition:employee.employeesalary_set.last.device_allowance }}
+                    {{ employee.employeesalary_set.last.loan_emi }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
+                        Taka</b>
+                {% else %}
+                    {{ employee.employeesalary_set.last.net_salary | addition:employee.employeesalary_set.last.project_bonus | addition:employee.employeesalary_set.last.festival_bonus |addition:employee.employeesalary_set.last.overtime |addition:employee.employeesalary_set.last.food_allowance |addition:employee.employeesalary_set.last.device_allowance }}
+                    {{ employee.employeesalary_set.last.loan_emi | addition:employee.employeesalary_set.last.leave_bonus |floatformat:2 }} = <b>{{ employee.employeesalary_set.last.gross_salary }}
+                        Taka</b>
+                {% endif %}
+            </p>
+
+            <p><b>In Word : </b>{{ employee.employeesalary_set.last.gross_salary | num_to_word }} Taka only </p>
+        {% endif %}
+        <table width="100%">
+            <tr>
+                <td width="70%">For Mediusware Ltd</td>
+            </tr>
+            <tr>
+                <td rowspan="1">
+                                        <img src="{{ seal }}" height="80px" alt="">
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <br>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <br>
+                <td>Md. Shahinur Rahman</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Managing Director</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>Mediusware Ltd.</td>
+                <td></td>
+            </tr>
+        </table>
+       <div class="page-break"></div>
+    {% endfor %}
+{% endblock %}
