@@ -397,3 +397,16 @@ class CredentialStatusUpdateSerializer(serializers.Serializer):
     ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
     )
+
+class EmployeeAttendanceSerializer(serializers.ModelSerializer):
+    late_count = serializers.IntegerField()
+    total_attend_in_day = serializers.IntegerField()
+    total_inside_office_in_secends = serializers.FloatField()
+    attendance = serializers.JSONField()
+    class Meta:
+        model = Employee
+        fields = [
+            "id", "full_name", "image", "late_count",
+            "total_attend_in_day", "total_inside_office_in_secends",
+            "attendance",
+        ]
