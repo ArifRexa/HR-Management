@@ -11,6 +11,13 @@ class UserSerializer(BaseModelSerializer):
         ref_name = "authentication_user"
 
 
+class UserInfoSerializer(BaseModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "id", "first_name", "last_name", "email",
+        ]
+
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True)

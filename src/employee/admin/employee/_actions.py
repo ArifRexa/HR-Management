@@ -157,8 +157,27 @@ class EmployeeActions:
 
     @admin.action(description="Print Salary Certificate (Last month)")
     def print_salary_certificate(self, request, queryset):
+        employee = request.user.employee
+        generate_by_employee_contact_info = {
+            "shuyaib21@gmail.com": {
+                "generate_by_contact_email": "shuyaib@mediusware.com",
+                "generate_by_contact_number": "01897661851",
+            },
+            "": {
+                "generate_by_contact_email": "",
+                "generate_by_contact_number": "",
+            },
+            employee.email: {
+                "generate_by_contact_number": employee.phone,
+                "generate_by_contact_email": employee.email,
+            }
+        }
         return self.generate_pdf(
-            request, queryset=queryset, letter_type="ELMSC"
+            request, queryset=queryset, letter_type="ELMSC",
+            extra_context={
+                **generate_by_employee_contact_info.get(employee.email),
+                "generate_by": request.user.employee,
+            }
         ).render_to_pdf()
 
     @admin.action(description="Print Salary Certificate (All months)")
@@ -412,8 +431,8 @@ class EmployeeActions:
                     url = f"{os.environ.get('NOC_VERIFY_URL')}/{emp_uuid}"
                     qr = qrcode.make(url)
                     qr.save(qr_loc)
-
         pdf = PDF()
+        
         pdf.file_name = f"{self.create_file_name(queryset)}{letter_type}"
         pdf.template_path = self.get_letter_type(letter_type)
         pdf.context = {
