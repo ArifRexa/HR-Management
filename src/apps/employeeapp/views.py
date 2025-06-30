@@ -13,7 +13,7 @@ from apps.employeeapp.filters import EmployeeFilter
 from apps.employeeapp.permissions import HasConferenceRoomBookPermission, IsSuperUserOrReadOnly
 from apps.mixin.views import BaseModelViewSet
 from asset_management.models.credential import Credential, CredentialCategory
-from employee.models.employee import BookConferenceRoom, Employee
+from employee.models.employee import BookConferenceRoom, Employee, LateAttendanceFine
 from employee.models.employee_activity import EmployeeAttendance
 from employee.models.employee_skill import EmployeeSkill
 from django.db.models import (
@@ -37,6 +37,7 @@ from .serializers import (
     DetailsCredentialModelSerializer, EmployeeBirthdaySerializer,
     EmployeeInfoSerializer, 
     EmployeeSerializer,
+    LateAttendanceFineModelSerializer,
 )
 
 
@@ -487,3 +488,21 @@ class EmployeeAttendanceListView(ListAPIView):
             employee_list.append(employe_dict)
         
         return employee_list
+
+
+class EmployeeLateAttendanceFine(ListAPIView):
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+    ]
+    serializer_class = LateAttendanceFineModelSerializer
+
+    queryset = LateAttendanceFine.objects.all().order_by("-id")
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if user.is_superuser or user.employee.operation:
+            return queryset
+        return queryset.filter(employee=user.employee)
+

@@ -19,7 +19,7 @@ from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
 from asset_management.models.credential import Credential, CredentialCategory
 from employee.models.attachment import Attachment
-from employee.models.employee import BookConferenceRoom, Employee
+from employee.models.employee import BookConferenceRoom, Employee, LateAttendanceFine
 from employee.models.employee_activity import EmployeeActivity
 from employee.models.employee_skill import EmployeeSkill
 from employee.models.leave.leave import Leave
@@ -410,3 +410,11 @@ class EmployeeAttendanceSerializer(serializers.ModelSerializer):
             "total_attend_in_day", "total_inside_office_in_secends",
             "attendance",
         ]
+
+
+class LateAttendanceFineModelSerializer(BaseModelSerializer):
+    employee = EmployeeInfoSerializer(many=False)
+
+    class Meta:
+        model = LateAttendanceFine
+        fields = "__all__"
