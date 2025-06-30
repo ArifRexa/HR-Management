@@ -22,7 +22,7 @@ from employee.models.attachment import Attachment
 from employee.models.employee import BookConferenceRoom, Employee, LateAttendanceFine
 from employee.models.employee_activity import EmployeeActivity
 from employee.models.employee_skill import EmployeeSkill
-from employee.models.leave.leave import Leave
+from employee.models.leave.leave import Leave, LeaveAttachment
 
 
 class EmployeeInfoSerializer(serializers.ModelSerializer):
@@ -393,7 +393,7 @@ class CredentialModelSerializer(BaseModelSerializer):
         return instance.created_by.email
 
 
-class CredentialStatusUpdateSerializer(serializers.Serializer):
+class IdListSerializer(serializers.Serializer):
     ids = serializers.ListField(
         child=serializers.IntegerField(min_value=1),
     )
@@ -418,3 +418,72 @@ class LateAttendanceFineModelSerializer(BaseModelSerializer):
     class Meta:
         model = LateAttendanceFine
         fields = "__all__"
+
+
+class BaseLeaveModelSerializer(BaseModelSerializer):
+    leave_attachment = serializers.FileField(required=False)
+    employee = EmployeeInfoSerializer(
+        many=False,
+        required=False,
+        read_only=True,
+    )
+    class Meta:
+        model = Leave
+        fields = [
+            "id", "start_date", "end_date", "applied_leave_type",
+            "message", "leave_attachment", "employee",
+        ]
+
+    def validate(self, attrs):
+        if attrs.get("applied_leave_type") == "medical" and attrs.get("leave_attachment") is None:
+            raise serializers.ValidationError(
+                {
+                    "leave_attachment": "Medical leave requires an attachment. Please provide supporting documentation."
+                }
+            )
+        attrs["employee"] = self.context.get("request").user.employee
+        return super().validate(attrs)
+    
+    def create(self, validated_data):
+        leave_attachment = validated_data.pop("leave_attachment", None)
+        leave_object = super().create(validated_data)
+        if leave_attachment:
+            LeaveAttachment.objects.create(
+                leave=leave_object,
+                attachment=leave_attachment,
+            )
+        return leave_object
+    
+    def update(self, instance, validated_data):
+        instance.leaveattachment_set.all().delete()
+
+        leave_attachment = validated_data.pop("leave_attachment", None)
+        if leave_attachment:
+            LeaveAttachment.objects.create(
+                leave=instance,
+                attachment=leave_attachment,
+            )
+        return super().update(instance, validated_data)
+
+
+class LeaveAttachmentModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = LeaveAttachment
+        fields = [
+            "id", "leave", "attachment",
+        ]
+
+
+class LeaveModelSerializer(BaseLeaveModelSerializer):
+    leaveattachment_set = LeaveAttachmentModelSerializer(
+        many=True,
+    )
+
+    class Meta:
+        model = Leave
+        fields = [
+            "id", "start_date", "end_date", "leave_type", "applied_leave_type",
+            "total_leave", "status", "message", "leaveattachment_set",
+            "employee", 
+        ]

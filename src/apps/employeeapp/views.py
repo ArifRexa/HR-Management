@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from apps.employeeapp.filters import EmployeeFilter
-from apps.employeeapp.permissions import HasConferenceRoomBookPermission, IsSuperUserOrReadOnly
+from apps.employeeapp.permissions import HasConferenceRoomBookPermission, IsLeaveEditable, IsSuperUserOrReadOnly
 from apps.mixin.views import BaseModelViewSet
 from asset_management.models.credential import Credential, CredentialCategory
 from employee.models.employee import BookConferenceRoom, Employee, LateAttendanceFine
@@ -24,20 +24,23 @@ from django.db.models import (
 from django.db.models.functions import Concat
 from django.utils import timezone
 
+from employee.models.leave.leave import Leave
 from project_management.models import EmployeeProjectHour
 from .serializers import (
+    BaseLeaveModelSerializer,
     EmployeeAttendanceSerializer,
     BaseBookConferenceRoomCreateModelSerializer, 
     BookConferenceRoomListModelSerializer,
     CreateUpdateCredentialModelSerializer,
     CredentialCategoryModelSerializer,
     CredentialModelSerializer,
-    CredentialStatusUpdateSerializer,
+    IdListSerializer,
     DashboardSerializer,
     DetailsCredentialModelSerializer, EmployeeBirthdaySerializer,
     EmployeeInfoSerializer, 
     EmployeeSerializer,
     LateAttendanceFineModelSerializer,
+    LeaveModelSerializer,
 )
 
 
@@ -254,8 +257,8 @@ class CredentialViewSetView(BaseModelViewSet):
     ]
     serializer_class = CredentialModelSerializer
     serializers = {
-        "credential_status_update": CredentialStatusUpdateSerializer,
-        "delete_credentials": CredentialStatusUpdateSerializer,
+        "credential_status_update": IdListSerializer,
+        "delete_credentials": IdListSerializer,
         "create": CreateUpdateCredentialModelSerializer,
         "update": CreateUpdateCredentialModelSerializer,
         "partial_update": CreateUpdateCredentialModelSerializer,
@@ -497,7 +500,7 @@ class EmployeeLateAttendanceFine(ListAPIView):
     ]
     serializer_class = LateAttendanceFineModelSerializer
 
-    queryset = LateAttendanceFine.objects.all().order_by("-id")
+    queryset = LateAttendanceFine.objects.select_related("employee").order_by("-id")
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -506,3 +509,62 @@ class EmployeeLateAttendanceFine(ListAPIView):
             return queryset
         return queryset.filter(employee=user.employee)
 
+
+class EmployeeLeaveView(BaseModelViewSet):
+    permission_classes = [
+        permissions.IsAuthenticated,
+        IsLeaveEditable,
+    ]
+    filterset_class = None
+    filterset_fields = [
+        "status",
+        "leave_type",
+        "applied_leave_type",
+    ]
+    queryset = Leave.objects.select_related(
+        "employee",
+    ).prefetch_related(
+        "leaveattachment_set"
+    ).all()
+    serializers = {
+        "create": BaseLeaveModelSerializer,
+        "update": BaseLeaveModelSerializer,
+        "partial_update": BaseLeaveModelSerializer,
+        "leave_status_update_or_delete": IdListSerializer,
+    }
+    serializer_class = LeaveModelSerializer
+
+    @swagger_auto_schema(
+        request_body=IdListSerializer,
+        manual_parameters=[
+            openapi.Parameter(
+                name="action_by",
+                in_=openapi.IN_QUERY,
+                description="Leaves status update or delete",
+                required=True,
+                type=openapi.TYPE_STRING,
+                enum=[
+                    "approved", "rejected",
+                    "delete",
+                ]
+            )
+        ]
+    )
+    @action(methods=["post"], detail=False)
+    def leave_status_update_or_delete(self, request):
+        """
+        Leave status updated or delete Leave based on the 'action_by' value.
+        """
+        query_param = request.query_params.get("action_by")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        filtered_queryset = super().get_queryset().filter(id__in=serializer.validated_data.get("ids"))
+        if query_param == "delete":
+            filtered_queryset.delete()
+            return Response(data={"result": "Leaves delete successfull."})
+        elif query_param == "approved":
+            filtered_queryset.update(status="approved")
+        elif query_param == "rejected":
+            filtered_queryset.update(status="rejected")
+        return Response(data={"result": "Leave status updated"})

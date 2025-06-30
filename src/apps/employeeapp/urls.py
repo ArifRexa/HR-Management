@@ -11,6 +11,7 @@ from .views import (
     NearByEmployeesBirthDayView,
     BookConferenceRoomListCreateView,
     EmployeeLateAttendanceFine,
+    EmployeeLeaveView,
 )
 
 
@@ -18,6 +19,7 @@ router = DefaultRouter()
 
 router.register("credentials", CredentialViewSetView, basename="employee-credentials")
 router.register("credential-categories", CredentialCategoryViewSet, basename="credential-category")
+router.register("leaves", EmployeeLeaveView, basename="employee-leave")
 router.register("", EmployeeViewSet)
 
 urlpatterns = [

@@ -38,3 +38,25 @@ class IsSuperUserOrReadOnly(BasePermission):
         elif user.is_superuser:
             return True
         return request.method in SAFE_METHODS
+
+
+class IsLeaveEditable(BasePermission):
+    """
+    Deny permission to update a leave if it has already been approved.
+    """
+
+    def has_permission(self, request, view):
+        if request.user.employee.operation is False and request.method == "POST" and view.action == "leave_status_update_or_delete":
+            return False
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request, view, obj):
+        # Allow safe methods (GET, HEAD, OPTIONS)
+        if request.method in SAFE_METHODS:
+            return True
+        # Block updates if leave is already approved
+        if request.method in ["PUT", "PATCH", "DELETE"] and (obj.status == "approved" or request.user.employee != obj.employee):
+            return False
+
+        return True
+    
