@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib import admin
 from django.contrib import messages as message
-from django.db.models import Case, DateField, When
+from django.db.models import Case, DateField, When, Sum
 from django.http import HttpRequest
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -10,6 +10,7 @@ from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 
 # from networkx import project
+from account.models import Income
 from project_management.models import (
     Client,
     ClientAttachment,
@@ -159,16 +160,18 @@ class ClientAdmin(admin.ModelAdmin):
         "name",
         # "web_name",
         "get_project_name",
-        "email",
+        "get_referrals_name",
+        "get_project_income",
+        # "email",
         # 'hourly_rate_display',  # Add this
         # "linkedin_url",
-        # "get_client_review",
-        "country",
+        # "country",
         # "currency",
         "get_hourly_rate",
         "payment_method",
         "invoice_type",
         "get_remark",
+        "get_client_review",
     )
     fields = (
         "name",
@@ -195,6 +198,7 @@ class ClientAdmin(admin.ModelAdmin):
         "invoice_type",
         "review",
         "remark",
+        "refered_by",
     )
     list_filter = [
         "is_need_feedback",
@@ -215,12 +219,19 @@ class ClientAdmin(admin.ModelAdmin):
     autocomplete_fields = ["country", "payment_method"]
     form = ClientForm
     actions = ["mark_as_in_active"]
-
+    
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
+    
+    @admin.display(description="Referrals")
+    def get_referrals_name(self, obj):
+        clients = Client.objects.filter(
+            refered_by=obj
+        ).values_list("name", flat=True)
+        return format_html("<br>".join(clients))
 
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
@@ -281,6 +292,16 @@ class ClientAdmin(admin.ModelAdmin):
         client_review = obj.review.all().values_list("name", flat=True)
 
         return format_html("<br>".join(client_review))
+
+    @admin.display(description="Income")
+    def get_project_income(self, client_object):
+        total_income = Income.objects.filter(
+            project_id__in=client_object.project_set.all().values_list("id", flat=True),
+            status="approved",
+        ).aggregate(
+            total_income=Sum("payment")
+        ).get("total_income") or 0.0
+        return f"{total_income}"
 
     def has_module_permission(self, request):
         return False
