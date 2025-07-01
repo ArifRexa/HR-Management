@@ -216,7 +216,7 @@ class ClientAdmin(admin.ModelAdmin):
         "currency__currency_code",
         "currency__icon",
     ]
-    autocomplete_fields = ["country", "payment_method"]
+    autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
     actions = ["mark_as_in_active"]
     
