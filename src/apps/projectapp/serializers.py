@@ -393,3 +393,22 @@ class IncomeSerializer(BaseModelSerializer):
         model = Income
         fields = "__all__"
         ref_name = "api_income"
+
+
+class ProjectResourceModelSerializer(BaseModelSerializer):
+    employees = serializers.SerializerMethodField()
+    class Meta:
+        model = Project
+        fields = [
+            "id", "title", "employees",
+        ]
+    
+    def get_employees(self, instance):
+        employee_projects = getattr(instance, "employeeprojects", [])
+        return  EmployeeInfoSerializer(
+            instance=[employee_project.employee for employee_project in employee_projects],
+            many=True,
+            context={"request": self.context.get("request")}
+        ).data
+
+

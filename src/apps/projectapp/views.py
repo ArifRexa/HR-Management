@@ -13,9 +13,10 @@ from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
-from rest_framework import decorators, parsers, response, status
+from rest_framework import decorators, parsers, response, status, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -23,11 +24,13 @@ from account.models import Income
 from apps.mixin.permission import IsSuperUser
 from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee, EmployeeUnderTPM
+from employee.models.employee_activity import EmployeeProject
 from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
     Project,
     ProjectHour,
+    ProjectResource,
 )
 
 from .filters import DailyProjectUpdateFilter, ProjectHourFilter
@@ -38,6 +41,7 @@ from .serializers import (
     DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
+    ProjectResourceModelSerializer,
     ProjectSerializer,
     StatusUpdateSerializer,
     WeeklyProjectUpdate,
@@ -880,3 +884,28 @@ class WeeklyProjectUpdateViewSet(BaseModelViewSet):
                 {"detail": f"Error creating income records: {str(e)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+
+class ProjectResourceListView(ListAPIView):
+    serializer_class = ProjectResourceModelSerializer
+    filter_backends = [
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    ]
+    ordering_fields = [
+        "id",
+        "title",
+    ]
+    search_fields = [
+        "title",
+        "web_title",
+    ]
+    queryset = Project.objects.filter(
+        active=True,
+    ).prefetch_related(
+        Prefetch(
+            lookup="employeeproject_set",
+            queryset=EmployeeProject.objects.select_related("employee"),
+            to_attr="employeeprojects",
+        )
+    ).all()

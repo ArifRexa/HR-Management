@@ -1,7 +1,12 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views import DailyProjectUpdateViewSet, ProjectViewSet, WeeklyProjectUpdateViewSet
+from .views import (
+    DailyProjectUpdateViewSet,
+    ProjectViewSet,
+    WeeklyProjectUpdateViewSet,
+    ProjectResourceListView,
+)
 
 router = routers.DefaultRouter()
 
@@ -11,4 +16,5 @@ router.register("projects", ProjectViewSet, basename="projects")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("resources", ProjectResourceListView.as_view(), name="project-resources"),
 ]
