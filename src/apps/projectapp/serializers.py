@@ -412,3 +412,13 @@ class ProjectResourceModelSerializer(BaseModelSerializer):
         ).data
 
 
+class ProjectResourceAddDeleteSerializer(serializers.Serializer):
+    employee_ids = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Employee.objects.all()
+    )
+    project_id = serializers.PrimaryKeyRelatedField(
+        many=False,
+        queryset=Project.objects.filter(active=True).all()
+    )
+    

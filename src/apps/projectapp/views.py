@@ -13,7 +13,10 @@ from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from openpyxl.styles import Alignment, Font, PatternFill
-from rest_framework import decorators, parsers, response, status, filters
+from rest_framework import (
+    decorators, parsers, response,
+    status, filters, exceptions,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
@@ -41,6 +44,7 @@ from .serializers import (
     DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
+    ProjectResourceAddDeleteSerializer,
     ProjectResourceModelSerializer,
     ProjectSerializer,
     StatusUpdateSerializer,
@@ -886,8 +890,16 @@ class WeeklyProjectUpdateViewSet(BaseModelViewSet):
             )
 
 
-class ProjectResourceListView(ListAPIView):
+class ProjectResourceListView(BaseModelViewSet):
+    
+    http_method_names = [
+        "get", "post",
+    ]
     serializer_class = ProjectResourceModelSerializer
+    serializers = {
+        "add_resource_in_a_project": ProjectResourceAddDeleteSerializer,
+        "remove_resource_from_a_project": ProjectResourceAddDeleteSerializer,
+    }
     filter_backends = [
         filters.SearchFilter,
         filters.OrderingFilter,
@@ -909,3 +921,43 @@ class ProjectResourceListView(ListAPIView):
             to_attr="employeeprojects",
         )
     ).all()
+
+    def create(self, request, *args, **kwargs):
+        raise exceptions.MethodNotAllowed(method="create")
+
+    @decorators.action(detail=False, methods=["post"])
+    def add_resource_in_a_project(self, request):
+        """
+        add resources in a Project.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        employees = serializer.validated_data.get("employee_ids")
+        project = serializer.validated_data.get("project_id")
+        for employee in employees:
+            employee_project, is_created = EmployeeProject.objects.get_or_create(
+                employee=employee,
+                defaults={
+                    "project": project,
+                }
+            )
+            if is_created is False:
+                employee_project.project.add(project)
+        return Response(data={"result": f"{len(employees)} Resource added in the '{project.title}' project."})
+    
+    @decorators.action(detail=False, methods=["post"])
+    def remove_resource_from_a_project(self, request):
+        """
+        remove resources from a project.
+        """
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        employees = serializer.validated_data.get("employee_ids")
+        project = serializer.validated_data.get("project_id")
+        for employee in employees:
+            employee_project = EmployeeProject.objects.get(
+                employee=employee,
+            )
+            employee_project.project.remove(project)
+        return Response(data={"result": f"{len(employees)} Resource remove from '{project.title}' project."})
