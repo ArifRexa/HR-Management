@@ -271,6 +271,12 @@ class Client(TimeStampMixin, AuthorMixin):
     follow_up_date = models.DateField(null=True, blank=True)
     meeting_date = models.DateField(null=True, blank=True)
     remark = models.TextField(null=True, blank=True)
+    refered_by = models.ForeignKey(
+        "self",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
         return self.name
