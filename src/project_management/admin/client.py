@@ -1,5 +1,7 @@
 from django import forms
 from django.contrib import admin
+from django.utils import timezone
+from datetime import datetime
 from django.contrib import messages as message
 from django.db.models import Case, DateField, When, Sum
 from django.http import HttpRequest
@@ -157,9 +159,9 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
-        "name",
+        "get_client_info",
         # "web_name",
-        "get_project_name",
+        # "get_project_name",
         "get_referrals_name",
         "get_project_income",
         # "email",
@@ -168,6 +170,8 @@ class ClientAdmin(admin.ModelAdmin):
         # "country",
         # "currency",
         "get_hourly_rate",
+        "inactive_from",
+        "get_duration",
         "payment_method",
         "invoice_type",
         "get_remark",
@@ -194,6 +198,7 @@ class ClientAdmin(admin.ModelAdmin):
         "currency",
         "hourly_rate",
         "active_from",
+        "inactive_from",
         "payment_method",
         "invoice_type",
         "review",
@@ -225,6 +230,25 @@ class ClientAdmin(admin.ModelAdmin):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
+    
+    @admin.display(description="Name")
+    def get_client_info(self, obj):
+        html_template = get_template(
+            "admin/project_management/list/client_info.html"
+        )
+        html_content = html_template.render(
+            {
+                "projects": obj.project_set.all(),
+                "client_obj": obj,
+            }
+        )
+
+        try:
+            data = format_html(html_content)
+        except:
+            data = "-"
+        
+        return data
     
     @admin.display(description="Referrals")
     def get_referrals_name(self, obj):
@@ -302,6 +326,16 @@ class ClientAdmin(admin.ModelAdmin):
             total_income=Sum("payment")
         ).get("total_income") or 0.0
         return f"{total_income}"
+    
+    @admin.display(description="Duration")
+    def get_duration(self, client_object):
+        """
+        get active duration, Example: "1y-5m-10d"
+        """
+        current_date = timezone.now().date()
+        active_from_from = client_object.active_from or current_date
+        inactive_from = client_object.inactive_from or current_date
+        return f"{inactive_from.year-active_from_from.year}y-{inactive_from.month-active_from_from.month}m-{inactive_from.day-active_from_from.day}d"
 
     def has_module_permission(self, request):
         return False
@@ -309,7 +343,16 @@ class ClientAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
         if not obj.active:
+            if obj.inactive_from is None:
+                obj.inactive_from = timezone.now().date()
+                obj.save()
             obj.project_set.update(active=False)
+        else:
+            obj.inactive_from = None
+            obj.save()
+    
+    class Media:
+        css = {"all": ("css/list.css", "css/daily-update.css")}
 
 
 @admin.register(ClientFeedbackEmail)

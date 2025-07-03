@@ -263,6 +263,7 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, null=True)
     active_from = models.DateField(null=True, blank=True)
+    inactive_from = models.DateField(null=True, blank=True)
     status = models.PositiveSmallIntegerField(
         choices=ClientStatus.choices,
         null=True,
@@ -286,6 +287,7 @@ class Client(TimeStampMixin, AuthorMixin):
         if not self.active_from:
             return False
         return timezone.now().date() >= self.active_from + timedelta(days=180)
+
 
 
 class ClientExperience(Client):
