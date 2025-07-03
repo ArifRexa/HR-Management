@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.utils import timezone
 from datetime import datetime
 from django.contrib import messages as message
-from django.db.models import Case, DateField, When, Sum
+from django.db.models import Case, DateField, When, Sum, F
 from django.http import HttpRequest
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -319,13 +319,18 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.display(description="Income")
     def get_project_income(self, client_object):
-        total_income = Income.objects.filter(
-            project_id__in=client_object.project_set.all().values_list("id", flat=True),
-            status="approved",
-        ).aggregate(
-            total_income=Sum("payment")
-        ).get("total_income") or 0.0
-        return f"{total_income}"
+        client_project_ids = client_object.project_set.all().values_list("id", flat=True)
+        total_income = 0.0
+        for client_project_id in client_project_ids:
+            total_income += Income.objects.filter(
+                project_id=client_project_id,
+                status="approved",
+            ).annotate(
+                sub_total=F("hours")*F("hour_rate")
+            ).aggregate(
+                total=Sum("sub_total")
+            ).get("total") or 0.0
+        return f"$ {total_income}"
     
     @admin.display(description="Duration")
     def get_duration(self, client_object):
