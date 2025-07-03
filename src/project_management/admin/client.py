@@ -197,8 +197,8 @@ class ClientAdmin(admin.ModelAdmin):
         "is_hour_breakdown",
         "currency",
         "hourly_rate",
-        "active_from",
-        "inactive_from",
+        # "active_from",
+        # "inactive_from",
         "payment_method",
         "invoice_type",
         "review",
@@ -335,24 +335,35 @@ class ClientAdmin(admin.ModelAdmin):
     @admin.display(description="Duration")
     def get_duration(self, client_object):
         """
-        get active duration, Example: "1y-5m-10d"
+        get active duration, Example: "1y 5m 10d"
         """
         current_date = timezone.now().date()
+
         active_from_from = client_object.active_from or current_date
-        inactive_from = client_object.inactive_from or current_date
-        return f"{inactive_from.year-active_from_from.year}y-{inactive_from.month-active_from_from.month}m-{inactive_from.day-active_from_from.day}d"
+        total_days = (current_date - active_from_from).days
+        years, remainder = divmod(total_days, 365)
+        months, days = divmod(remainder, 30)
+        time_list = []
+        if years:
+            time_list.append(f"{years}y")
+        if months:
+            time_list.append(f"{months}m")
+        if days:
+            time_list.append(f"{days}d")
+        return " ".join(time_list) or None
 
     def has_module_permission(self, request):
         return False
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
-        if not obj.active:
-            if obj.inactive_from is None:
-                obj.inactive_from = timezone.now().date()
-                obj.save()
+        if not obj.active and obj.inactive_from is None:
+            obj.inactive_from = timezone.now().date()
+            obj.save()
             obj.project_set.update(active=False)
-        else:
+        elif obj.active:
+            if obj.active_from is None:
+                obj.active_from = timezone.now().date()
             obj.inactive_from = None
             obj.save()
     
