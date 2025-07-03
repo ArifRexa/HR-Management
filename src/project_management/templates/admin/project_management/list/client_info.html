@@ -5,18 +5,33 @@
 
 <div class="popover-wrapper">
     <div class="popover-title">
-        <a href="{% url 'admin:project_management_client_change' client_obj.id %}">{{client_obj.name}}</a>
+        {% if client_obj.hourly_rate is None %}
+            {{rate_display}}
+        {% elif client_obj.is_active_over_six_months %}
+            <span style="color: red; white-space:nowrap;"> {{rate_display}}</span>
+        {% else %}
+            <span style="white-space:nowrap;">{{rate_display}}</span>
+        {% endif %}
     </div>
 
-    <div class="popover-message" >
-        <strong>Projects:</strong> <br>
+    <div class="popover-message" style="padding: 10px 20px; min-width: 200px;">
+        <strong style="font-size: 1.4em;">Projects:</strong> <br>
         {% for project in projects %}
-            {{forloop.counter}}. {{project.title}} <br>
+            <span style="font-size: 1.3em;">{{forloop.counter}}. {{project.title}}</span> {% if forloop.last is not True %}<br>{% endif %}
         {% endfor %}
-        <hr>
-        <strong>Email:</strong> {{client_obj.email}}
-        <hr>
-        <strong>Country:</strong> {% if client_obj.country %} {{client_obj.country}} {% else %} - {% endif %}
+        <br><br>
+
+        <strong style="font-size: 1.4em;">Email:</strong> <br>
+        <span style="font-size: 1.3em;"> {% if client_obj.email %} {{client_obj.email}} {% else %} - {% endif %}</span>
+        <br> <br>
+        <strong style="font-size: 1.4em;">Country:</strong>
+        <br>
+        <span style="font-size: 1.3em;">{% if client_obj.country %}  {{client_obj.country}} {% else %} - {% endif %}</span>  <br>
+        <br>
+        <strong style="font-size: 1.4em;">Review:</strong>  <br>
+        {% for review in client_review %}
+            <span style="font-size: 1.3em;">{{review}}</span><br>
+        {% endfor %}
     </div>
 </div>
 
