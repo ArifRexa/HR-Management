@@ -159,23 +159,23 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
-        "get_client_info",
+        "name",
+        "get_hourly_rate",
+        "get_project_income",
+        "get_inactive_from",
+        "get_duration",
+        "get_referrals_name",
         # "web_name",
         # "get_project_name",
-        "get_referrals_name",
-        "get_project_income",
         # "email",
         # 'hourly_rate_display',  # Add this
         # "linkedin_url",
         # "country",
         # "currency",
-        "get_hourly_rate",
-        "inactive_from",
-        "get_duration",
         "payment_method",
         "invoice_type",
         "get_remark",
-        "get_client_review",
+        # "get_client_review",
     )
     fields = (
         "name",
@@ -185,8 +185,8 @@ class ClientAdmin(admin.ModelAdmin):
         "designation",
         "company_name",
         "logo",
-        "is_need_feedback",
-        "client_feedback",
+        # "is_need_feedback",
+        # "client_feedback",
         "image",
         "linkedin_url",
         "bill_from",
@@ -202,7 +202,7 @@ class ClientAdmin(admin.ModelAdmin):
         "payment_method",
         "invoice_type",
         "review",
-        "remark",
+        # "remark",
         "refered_by",
     )
     list_filter = [
@@ -213,7 +213,7 @@ class ClientAdmin(admin.ModelAdmin):
         "invoice_type",
         "currency",
     ]
-    inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
+    inlines = (ClientAttachmentInline, )
     search_fields = [
         "name",
         "web_name",
@@ -224,15 +224,32 @@ class ClientAdmin(admin.ModelAdmin):
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
     actions = ["mark_as_in_active"]
-    
+
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
 
         return format_html("<br>".join(project_name))
     
-    @admin.display(description="Name")
-    def get_client_info(self, obj):
+    @admin.display(description="Inactive")
+    def get_inactive_from(self, client_obj):
+        return client_obj.inactive_from
+    
+    @admin.display(description="Referrals")
+    def get_referrals_name(self, obj):
+        client_referrals = Client.objects.filter(refered_by=obj).values_list("name", flat=True)
+        return format_html("<br>".join(client_referrals))
+
+    @admin.display(description="Hourly Rate", ordering="hourly_rate")
+    def get_hourly_rate(self, obj):
+        rate_display = "-"
+        if obj.hourly_rate is not None:
+            # Get currency icon
+            currency_icon = obj.currency.icon if obj.currency else ""
+
+            # Create the display string with icon
+            rate_display = f"{currency_icon} {obj.hourly_rate}"
+
         html_template = get_template(
             "admin/project_management/list/client_info.html"
         )
@@ -240,39 +257,15 @@ class ClientAdmin(admin.ModelAdmin):
             {
                 "projects": obj.project_set.all(),
                 "client_obj": obj,
+                "rate_display": rate_display,
+                "client_review": obj.review.all().values_list("name", flat=True),
             }
         )
-
         try:
             data = format_html(html_content)
         except:
-            data = "-"
-        
+            data = "-"    
         return data
-    
-    @admin.display(description="Referrals")
-    def get_referrals_name(self, obj):
-        clients = Client.objects.filter(
-            refered_by=obj
-        ).values_list("name", flat=True)
-        return format_html("<br>".join(clients))
-
-    @admin.display(description="Hourly Rate", ordering="hourly_rate")
-    def get_hourly_rate(self, obj):
-        if obj.hourly_rate is None:
-            return "-"
-
-        # Get currency icon
-        currency_icon = obj.currency.icon if obj.currency else ""
-
-        # Create the display string with icon
-        rate_display = f"{currency_icon} {obj.hourly_rate}"
-
-        if obj.is_active_over_six_months:
-            return format_html(
-                '<span style="color: red; white-space:nowrap;">{}</span>', rate_display
-            )
-        return format_html('<span style="white-space:nowrap;">{}</span>', rate_display)
 
     @admin.display(description="Age", ordering="created_at")
     def get_client_age(self, obj):
@@ -311,11 +304,11 @@ class ClientAdmin(admin.ModelAdmin):
             )
 
     # get_project_name.short_description = "Project Name"
-    @admin.display(description="Client Review")
-    def get_client_review(self, obj):
-        client_review = obj.review.all().values_list("name", flat=True)
+    # @admin.display(description="Client Review")
+    # def get_client_review(self, obj):
+    #     client_review = obj.review.all().values_list("name", flat=True)
 
-        return format_html("<br>".join(client_review))
+    #     return format_html("<br>".join(client_review))
 
     @admin.display(description="Income")
     def get_project_income(self, client_object):
@@ -502,7 +495,7 @@ class ClientExperienceAdmin(admin.ModelAdmin):
 
         return format_html("<br>".join(project_name))
 
-    @admin.display(description="Hourly Rate", ordering="hourly_rate")
+    @admin.display(description="Hourly", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
         if obj.is_active_over_six_months:
             return format_html(f"<span style='color: red;'>{obj.hourly_rate}</span>")
