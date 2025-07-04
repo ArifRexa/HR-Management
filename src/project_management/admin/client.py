@@ -3,13 +3,17 @@ from django.contrib import admin
 from django.utils import timezone
 from datetime import datetime
 from django.contrib import messages as message
-from django.db.models import Case, DateField, When, Sum, F
+from django.db.models import (
+    Case, DateField, When, Sum,
+    F, functions, ExpressionWrapper, DurationField,
+)
 from django.http import HttpRequest
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
+from django.core.management import call_command
 
 # from networkx import project
 from account.models import Income
@@ -192,13 +196,13 @@ class ClientAdmin(admin.ModelAdmin):
         "bill_from",
         # "cc_email",
         "address",
+        # "active_from",
+        # "inactive_from",
         "country",
         "notes",
         "is_hour_breakdown",
         "currency",
         "hourly_rate",
-        # "active_from",
-        # "inactive_from",
         "payment_method",
         "invoice_type",
         "review",
@@ -223,7 +227,7 @@ class ClientAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
-    actions = ["mark_as_in_active"]
+    actions = ["mark_as_in_active",]
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
@@ -302,6 +306,18 @@ class ClientAdmin(admin.ModelAdmin):
             self.message_user(
                 request, "Selected clients are not marked as active.", message.ERROR
             )
+    
+    # @admin.action(description="Set inactive-from value for inactive Clients.")
+    # def set_inactive_from_value_for_inactive_alients(self, request, queryset):
+    #     try:
+    #         call_command("set_inactive_dates")
+    #         self.message_user(
+    #             request, "Inactive-from value set for Inactive Clients.", message.SUCCESS
+    #         )
+    #     except Exception:
+    #         self.message_user(
+    #             request, "Inactive-from value set failed for Inactive Clients!", message.ERROR
+    #         )
 
     # get_project_name.short_description = "Project Name"
     # @admin.display(description="Client Review")
@@ -325,17 +341,20 @@ class ClientAdmin(admin.ModelAdmin):
             ).get("total") or 0.0
         return f"$ {total_income}"
     
-    @admin.display(description="Duration")
+    @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
         """
         get active duration, Example: "1y 5m 10d"
         """
         current_date = timezone.now().date()
 
-        active_from_from = client_object.active_from or current_date
-        total_days = (current_date - active_from_from).days
+        active_from = client_object.active_from or current_date
+        inactive_from = client_object.inactive_from or current_date
+
+        total_days = (inactive_from - active_from).days
         years, remainder = divmod(total_days, 365)
         months, days = divmod(remainder, 30)
+
         time_list = []
         if years:
             time_list.append(f"{years}y")
@@ -347,6 +366,21 @@ class ClientAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+    
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        current_date = timezone.now().date()
+
+        active_from = F("active_from")
+        inactive_from = F("inactive_from")
+        queryset = queryset.annotate(
+            duration_in_days=ExpressionWrapper(
+                expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+                output_field=DurationField(),
+            )
+        )
+        return queryset
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
