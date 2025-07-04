@@ -13,6 +13,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
+from django.core.management import call_command
 
 # from networkx import project
 from account.models import Income
@@ -195,6 +196,8 @@ class ClientAdmin(admin.ModelAdmin):
         "bill_from",
         # "cc_email",
         "address",
+        # "active_from",
+        # "inactive_from",
         "country",
         "notes",
         "is_hour_breakdown",
@@ -224,7 +227,7 @@ class ClientAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
-    actions = ["mark_as_in_active"]
+    actions = ["mark_as_in_active",]
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
@@ -303,6 +306,18 @@ class ClientAdmin(admin.ModelAdmin):
             self.message_user(
                 request, "Selected clients are not marked as active.", message.ERROR
             )
+    
+    # @admin.action(description="Set inactive-from value for inactive Clients.")
+    # def set_inactive_from_value_for_inactive_alients(self, request, queryset):
+    #     try:
+    #         call_command("set_inactive_dates")
+    #         self.message_user(
+    #             request, "Inactive-from value set for Inactive Clients.", message.SUCCESS
+    #         )
+    #     except Exception:
+    #         self.message_user(
+    #             request, "Inactive-from value set failed for Inactive Clients!", message.ERROR
+    #         )
 
     # get_project_name.short_description = "Project Name"
     # @admin.display(description="Client Review")
