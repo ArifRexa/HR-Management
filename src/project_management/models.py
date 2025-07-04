@@ -289,7 +289,6 @@ class Client(TimeStampMixin, AuthorMixin):
         return timezone.now().date() >= self.active_from + timedelta(days=180)
 
 
-
 class ClientExperience(Client):
     class Meta:
         proxy = True

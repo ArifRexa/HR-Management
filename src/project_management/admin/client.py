@@ -3,7 +3,10 @@ from django.contrib import admin
 from django.utils import timezone
 from datetime import datetime
 from django.contrib import messages as message
-from django.db.models import Case, DateField, When, Sum, F
+from django.db.models import (
+    Case, DateField, When, Sum,
+    F, functions, ExpressionWrapper, DurationField,
+)
 from django.http import HttpRequest
 from django.template.loader import get_template
 from django.utils.html import format_html
@@ -197,8 +200,6 @@ class ClientAdmin(admin.ModelAdmin):
         "is_hour_breakdown",
         "currency",
         "hourly_rate",
-        # "active_from",
-        # "inactive_from",
         "payment_method",
         "invoice_type",
         "review",
@@ -325,17 +326,20 @@ class ClientAdmin(admin.ModelAdmin):
             ).get("total") or 0.0
         return f"$ {total_income}"
     
-    @admin.display(description="Duration")
+    @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
         """
         get active duration, Example: "1y 5m 10d"
         """
         current_date = timezone.now().date()
 
-        active_from_from = client_object.active_from or current_date
-        total_days = (current_date - active_from_from).days
+        active_from = client_object.active_from or current_date
+        inactive_from = client_object.inactive_from or current_date
+
+        total_days = (inactive_from - active_from).days
         years, remainder = divmod(total_days, 365)
         months, days = divmod(remainder, 30)
+
         time_list = []
         if years:
             time_list.append(f"{years}y")
@@ -347,6 +351,21 @@ class ClientAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+    
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        current_date = timezone.now().date()
+
+        active_from = F("active_from")
+        inactive_from = F("inactive_from")
+        queryset = queryset.annotate(
+            duration_in_days=ExpressionWrapper(
+                expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+                output_field=DurationField(),
+            )
+        )
+        return queryset
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
