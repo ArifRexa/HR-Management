@@ -7,10 +7,17 @@ from apps.employeeapp.serializers import EmployeeInfoSerializer
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import Employee, EmployeeUnderTPM
 from project_management.models import (
+    Client,
+    ClientInvoiceDate,
+    ClientReview,
+    Country,
+    CurrencyType,
     DailyProjectUpdate,
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     EmployeeProjectHour,
+    InvoiceType,
+    PaymentMethod,
     Project,
     ProjectContent,
     ProjectHour,
@@ -469,4 +476,115 @@ class ProjectResourceAddDeleteSerializer(serializers.Serializer):
         many=False,
         queryset=Project.objects.filter(active=True).all()
     )
+    
+
+class ClientInvoiceDateBaseModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = ClientInvoiceDate
+        exclude = ["clients"]
+
+
+class ClientInvoiceDateModelSerializer(ClientInvoiceDateBaseModelSerializer):
+    id = serializers.IntegerField()
+
+
+class CountryModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = Country
+        fields = "__all__"
+
+
+class PaymentMethodModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = PaymentMethod
+        fields = "__all__"
+
+
+class InvoiceTypeModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = InvoiceType
+        fields = "__all__"
+
+
+class ClientReviewModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = ClientReview
+        fields = "__all__"
+
+
+
+class CurrencyTypeModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = CurrencyType
+        fields = "__all__"
+
+
+class ClientBaseModelSerializer(BaseModelSerializer):
+    clientinvoicedate_set = ClientInvoiceDateBaseModelSerializer(
+        many=True,
+        required=False,
+    )
+
+    class Meta:
+        model = Client
+        fields = "__all__"
+
+    def create(self, validated_data):
+        clientinvoicedate_set = validated_data.pop("clientinvoicedate_set", [])
+        client = super().create(validated_data)
+        client_invoice_date_list = []
+        for client_invoice_date in clientinvoicedate_set:
+            client_invoice_date_list.append(
+                ClientInvoiceDate(
+                    clients=client,
+                    **client_invoice_date,
+                )
+            )
+        if client_invoice_date_list:
+            ClientInvoiceDate.objects.bulk_create(client_invoice_date_list)
+        return client
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["country"] = CountryModelSerializer(instance=instance.country).data
+        representation["payment_method"] = PaymentMethodModelSerializer(instance=instance.payment_method).data
+        representation["invoice_type"] = InvoiceTypeModelSerializer(instance=instance.invoice_type).data
+        representation["review"] = ClientReviewModelSerializer(
+            instance=instance.review.all(),
+            many=True,
+        ).data
+        representation["currency"] = CurrencyTypeModelSerializer(instance=instance.currency).data
+        return representation
+
+
+
+class ClientModelSerializer(ClientBaseModelSerializer):
+    clientinvoicedate_set = ClientInvoiceDateModelSerializer(
+        many=True,
+        required=False,
+        partial=True,
+    )
+
+    def update(self, instance, validated_data):
+        review = validated_data.pop("review", [])
+        if review:
+            instance.review.set(review)
+        
+        clientinvoicedate_set = validated_data.pop("clientinvoicedate_set", [])
+        if clientinvoicedate_set:
+            client_invoice_dates = ClientInvoiceDate.objects.filter(
+                clients_id=instance.id,
+                id__in=[client_invoice_date.get("id") for client_invoice_date in clientinvoicedate_set]
+            )
+            for client_invoice_date_obj, client_invoice_date_dict in zip(client_invoice_dates, clientinvoicedate_set):
+                client_invoice_date_obj.invoice_date = client_invoice_date_dict.get("invoice_date")
+            ClientInvoiceDate.objects.bulk_update(client_invoice_dates, fields=["invoice_date"])
+            
+        return super().update(instance, validated_data)
     

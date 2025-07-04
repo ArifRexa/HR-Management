@@ -29,6 +29,7 @@ from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee, EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
 from project_management.models import (
+    Client,
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
     Project,
@@ -41,6 +42,8 @@ from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
     BulkDailyUpdateSerializer,
     BulkUpdateSerializer,
+    ClientBaseModelSerializer,
+    ClientModelSerializer,
     DailyProjectUpdateCreateSerializer,
     DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
@@ -54,6 +57,7 @@ from .serializers import (
 
 
 class ProjectViewSet(BaseModelViewSet):
+    http_method_names = ["get", "post"]
     queryset = Project.objects.filter(
         active=True,
     ).prefetch_related(
@@ -61,11 +65,11 @@ class ProjectViewSet(BaseModelViewSet):
     )
     serializer_class = ProjectSerializer
     # permission_classes = [IsAuthenticated]
-    @property
-    def paginator(self):
-        if self.action == 'list':
-            return None
-        return super().paginator
+    # @property
+    # def paginator(self):
+    #     if self.action == 'list':
+    #         return None
+    #     return super().paginator
 
 
 
@@ -966,3 +970,20 @@ class ProjectResourceListView(BaseModelViewSet):
             )
             employee_project.project.remove(project)
         return Response(data={"result": f"{len(employees)} Resource remove from '{project.title}' project."})
+
+
+
+class ClientViewSet(BaseModelViewSet):
+    queryset = Client.objects.select_related(
+        "country", "payment_method", "invoice_type",
+        "currency",
+    ).prefetch_related(
+        "review",
+        "clientinvoicedate_set",
+    )
+    serializer_class = ClientBaseModelSerializer
+
+    serializers = {
+        "update": ClientModelSerializer,
+        "partial_update": ClientModelSerializer
+    }
