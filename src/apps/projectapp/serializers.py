@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.text import slugify
 from rest_framework import serializers
 
 from account.models import Income
@@ -11,16 +12,63 @@ from project_management.models import (
     DailyProjectUpdateHistory,
     EmployeeProjectHour,
     Project,
+    ProjectContent,
     ProjectHour,
 )
 
+class ProjectContentModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = ProjectContent
+        exclude = ["project", ]
+
 
 class ProjectSerializer(BaseModelSerializer):
+    projectcontent_set = ProjectContentModelSerializer(many=True, required=False)
 
     class Meta:
         model = Project
-        fields = "__all__"
+        fields = [
+            "id", "title", "web_title", "slug", "description", "client",
+            "client_web_name", "client_image", "client_review",
+            "platforms", "industries", "services", "live_link",
+            "location", "country", "active", "is_special",
+            "hourly_rate", "activate_from", "featured_image", "display_image",
+            "project_logo", "special_image", "thumbnail", "featured_video",
+            "show_in_website", "tags", "is_highlighted",
+            "is_team", "projectcontent_set"
+        ]
+        extra_kwargs = {
+            "slug": {
+                "read_only": True,
+            }
+        }
         ref_name = "api_project_serializer"
+    
+    def create(self, validated_data):
+        """
+        save the Project and related ProjectContent data and return the project instance.
+        """
+        project_contents = validated_data.pop("projectcontent_set", [])
+
+        # build unique slug for same project name.
+        projects = self.Meta.model.objects.filter(slug__contains=slugify(validated_data.get("title")))
+        if projects.exists():
+            validated_data['slug'] = slugify(validated_data.get("title")+ f" {projects.count()}")
+        
+        project = super().create(validated_data)
+        
+        project_contents_list = []
+        for project_content in project_contents:
+            project_contents_list.append(
+                ProjectContent(
+                    project=project,
+                    **project_content,
+                )
+            )
+        if project_contents_list:
+            ProjectContent.objects.bulk_create(project_contents_list)
+        return project
 
 
 class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):

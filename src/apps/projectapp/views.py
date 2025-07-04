@@ -32,6 +32,7 @@ from project_management.models import (
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
     Project,
+    ProjectContent,
     ProjectHour,
     ProjectResource,
 )
@@ -53,7 +54,11 @@ from .serializers import (
 
 
 class ProjectViewSet(BaseModelViewSet):
-    queryset = Project.objects.filter(active=True)
+    queryset = Project.objects.filter(
+        active=True,
+    ).prefetch_related(
+        "projectcontent_set",
+    )
     serializer_class = ProjectSerializer
     # permission_classes = [IsAuthenticated]
     @property
