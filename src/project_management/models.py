@@ -288,6 +288,11 @@ class Client(TimeStampMixin, AuthorMixin):
             return False
         return timezone.now().date() >= self.active_from + timedelta(days=180)
 
+    class Meta:
+        permissions = [
+            ("exclude_hourly_rate", "Client hourly rate exclude."),
+            ("exclude_income", "Client income exclude."),
+        ]
 
 class ClientExperience(Client):
     class Meta:
