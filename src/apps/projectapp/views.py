@@ -18,6 +18,7 @@ from rest_framework import (
     decorators, parsers, response,
     status, filters, exceptions, viewsets
 )
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import ListAPIView
@@ -40,6 +41,8 @@ from project_management.models import (
 
 from .filters import DailyProjectUpdateFilter, ProjectHourFilter
 from .serializers import (
+    AddEmployeesSerializer,
+    AddProjectsSerializer,
     BulkDailyUpdateSerializer,
     BulkUpdateSerializer,
     DailyProjectUpdateCreateSerializer,
@@ -51,6 +54,7 @@ from .serializers import (
     ProjectSerializer,
     StatusUpdateSerializer,
     TeamSerializer,
+    TeamUpdateSerializer,
     WeeklyProjectUpdate,
 )
 
@@ -967,6 +971,88 @@ class ProjectResourceListView(BaseModelViewSet):
 
 
 
+# class TeamViewSet(BaseModelViewSet):
+#     """
+#     API ViewSet for managing Teams.
+#     Supports CRUD operations and actions to add/remove projects and employees.
+#     """
+#     queryset = Teams.objects.all().prefetch_related('projects', 'employees')
+#     serializer_class = TeamSerializer
+#     http_method_names = ['get', 'post', 'patch', 'delete']
+#     parser_classes = [MultiPartParser, FormParser, JSONParser]
+
+
+#     serializer_classes = {
+#         'update': TeamUpdateSerializer,
+#         'partial_update': TeamUpdateSerializer,
+#         'add_projects': AddProjectsSerializer,
+#         'add_employees': AddEmployeesSerializer,
+#         'remove_projects': AddProjectsSerializer,
+#         'remove_employees': AddEmployeesSerializer,
+#     }
+
+#     def get_serializer_class(self):
+#         """Return the serializer class based on the action."""
+#         return self.serializer_classes.get(self.action, self.serializer_class)
+
+#     @action(detail=True, methods=['post'], url_path='add-projects')
+#     def add_projects(self, request, pk=None):
+#         team = self.get_object()
+#         project_ids = request.data.get('project_ids', [])
+#         if not isinstance(project_ids, list) or not project_ids:
+#             return Response({'error': 'A non-empty list of project IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
+#         projects = Project.objects.filter(id__in=project_ids, active=True)
+#         if not projects.exists():
+#             return Response({'error': 'No valid projects found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
+#         count_before = team.projects.count()
+#         team.projects.add(*projects)
+#         count_added = team.projects.count() - count_before
+#         return Response({'message': f'Added {count_added} project(s) to team "{team.team_name}".'}, status=status.HTTP_200_OK)
+
+#     @action(detail=True, methods=['post'], url_path='remove-projects')
+#     def remove_projects(self, request, pk=None):
+#         team = self.get_object()
+#         project_ids = request.data.get('project_ids', [])
+#         if not isinstance(project_ids, list) or not project_ids:
+#             return Response({'error': 'A non-empty list of project IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
+#         projects = Project.objects.filter(id__in=project_ids)
+#         if not projects.exists():
+#             return Response({'error': 'No valid projects found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
+#         count_before = team.projects.count()
+#         team.projects.remove(*projects)
+#         count_removed = count_before - team.projects.count()
+#         return Response({'message': f'Removed {count_removed} project(s) from team "{team.team_name}".'}, status=status.HTTP_200_OK)
+
+#     @action(detail=True, methods=['post'], url_path='add-employees')
+#     def add_employees(self, request, pk=None):
+#         team = self.get_object()
+#         employee_ids = request.data.get('employee_ids', [])
+#         if not isinstance(employee_ids, list) or not employee_ids:
+#             return Response({'error': 'A non-empty list of employee IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
+#         employees = Employee.objects.filter(id__in=employee_ids, active=True, project_eligibility=True)
+#         if not employees.exists():
+#             return Response({'error': 'No valid employees found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
+#         count_before = team.employees.count()
+#         team.employees.add(*employees)
+#         count_added = team.employees.count() - count_before
+#         return Response({'message': f'Added {count_added} employee(s) to team "{team.team_name}".'}, status=status.HTTP_200_OK)
+
+#     @action(detail=True, methods=['post'], url_path='remove-employees')
+#     def remove_employees(self, request, pk=None):
+#         team = self.get_object()
+#         employee_ids = request.data.get('employee_ids', [])
+#         if not isinstance(employee_ids, list) or not employee_ids:
+#             return Response({'error': 'A non-empty list of employee IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
+#         employees = Employee.objects.filter(id__in=employee_ids)
+#         if not employees.exists():
+#             return Response({'error': 'No valid employees found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
+#         count_before = team.employees.count()
+#         team.employees.remove(*employees)
+#         count_removed = count_before - team.employees.count()
+#         return Response({'message': f'Removed {count_removed} employee(s) from team "{team.team_name}".'}, status=status.HTTP_200_OK)
+
+
+
 class TeamViewSet(viewsets.ModelViewSet):
     """
     API ViewSet for managing Teams.
@@ -975,145 +1061,78 @@ class TeamViewSet(viewsets.ModelViewSet):
     queryset = Teams.objects.all().prefetch_related('projects', 'employees')
     serializer_class = TeamSerializer
     http_method_names = ['get', 'post', 'patch', 'delete']
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    def perform_create(self, serializer):
-        """Create a new team."""
-        serializer.save()
+    serializer_classes = {
+        'update': TeamUpdateSerializer,
+        'partial_update': TeamUpdateSerializer,
+        'add_projects': AddProjectsSerializer,
+        'add_employees': AddEmployeesSerializer,
+        'remove_projects': AddProjectsSerializer,
+        'remove_employees': AddEmployeesSerializer,
+    }
 
-    def perform_update(self, serializer):
-        """Update an existing team."""
-        serializer.save()
+    def get_serializer_class(self):
+        return self.serializer_classes.get(self.action, self.serializer_class)
 
-    def destroy(self, request, *args, **kwargs):
-        """Delete a team."""
+    def _handle_relation_action(self, request, pk, relation_field, serializer_class, model, model_name, filter_conditions=None):
+        """
+        Generic method to handle add/remove actions for many-to-many relations.
+        """
         team = self.get_object()
-        team_name = team.team_name
-        team.delete()
+        ids = request.data.get(f'{model_name}_ids', [])
+        
+        # Validate input using serializer
+        serializer = serializer_class(
+            data=request.data,
+            context={'request': request},
+            model=model,
+            model_name=model_name,
+            filter_conditions=filter_conditions or {}
+        )
+        serializer.is_valid(raise_exception=True)
+
+        # Get related objects
+        related_objects = model.objects.filter(id__in=ids, **(filter_conditions or {}))
+        count_before = getattr(team, relation_field).count()
+
+        # Perform add or remove action
+        action = self.action  # 'add_projects', 'remove_projects', etc.
+        if 'add' in action:
+            getattr(team, relation_field).add(*related_objects)
+            count_changed = getattr(team, relation_field).count() - count_before
+            action_word = 'Added'
+        else:
+            getattr(team, relation_field).remove(*related_objects)
+            count_changed = count_before - getattr(team, relation_field).count()
+            action_word = 'Removed'
+
         return Response(
-            {'message': f'Team "{team_name}" deleted successfully.'},
-            status=status.HTTP_204_NO_CONTENT
+            {'message': f'{action_word} {count_changed} {model_name}(s) to/from team "{team.team_name}".'},
+            status=status.HTTP_200_OK
         )
 
     @action(detail=True, methods=['post'], url_path='add-projects')
     def add_projects(self, request, pk=None):
-        """
-        Add projects to a team.
-        Expects a list of project IDs in the request body.
-        """
-        team = self.get_object()
-        project_ids = request.data.get('project_ids', [])
-
-        if not isinstance(project_ids, list) or not project_ids:
-            return Response(
-                {'error': 'A non-empty list of project IDs is required.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        projects = Project.objects.filter(id__in=project_ids, active=True)
-        if not projects.exists():
-            return Response(
-                {'error': 'No valid projects found for the provided IDs.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        count_before = team.projects.count()
-        team.projects.add(*projects)
-        count_added = team.projects.count() - count_before
-
-        return Response(
-            {'message': f'Added {count_added} project(s) to team "{team.team_name}".'},
-            status=status.HTTP_200_OK
+        return self._handle_relation_action(
+            request, pk, 'projects', AddProjectsSerializer, Project, 'project', {'active': True}
         )
 
     @action(detail=True, methods=['post'], url_path='remove-projects')
     def remove_projects(self, request, pk=None):
-        """
-        Remove projects from a team.
-        Expects a list of project IDs in the request body.
-        """
-        team = self.get_object()
-        project_ids = request.data.get('project_ids', [])
-
-        if not isinstance(project_ids, list) or not project_ids:
-            return Response(
-                {'error': 'A non-empty list of project IDs is required.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        projects = Project.objects.filter(id__in=project_ids)
-        if not projects.exists():
-            return Response(
-                {'error': 'No valid projects found for the provided IDs.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        count_before = team.projects.count()
-        team.projects.remove(*projects)
-        count_removed = count_before - team.projects.count()
-
-        return Response(
-            {'message': f'Removed {count_removed} project(s) from team "{team.team_name}".'},
-            status=status.HTTP_200_OK
+        return self._handle_relation_action(
+            request, pk, 'projects', AddProjectsSerializer, Project, 'project'
         )
 
     @action(detail=True, methods=['post'], url_path='add-employees')
     def add_employees(self, request, pk=None):
-        """
-        Add employees to a team.
-        Expects a list of employee IDs in the request body.
-        """
-        team = self.get_object()
-        employee_ids = request.data.get('employee_ids', [])
-
-        if not isinstance(employee_ids, list) or not employee_ids:
-            return Response(
-                {'error': 'A non-empty list of employee IDs is required.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        employees = Employee.objects.filter(id__in=employee_ids, active=True, project_eligibility=True)
-        if not employees.exists():
-            return Response(
-                {'error': 'No valid employees found for the provided IDs.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        count_before = team.employees.count()
-        team.employees.add(*employees)
-        count_added = team.employees.count() - count_before
-
-        return Response(
-            {'message': f'Added {count_added} employee(s) to team "{team.team_name}".'},
-            status=status.HTTP_200_OK
+        return self._handle_relation_action(
+            request, pk, 'employees', AddEmployeesSerializer, Employee, 'employee',
+            {'active': True, 'project_eligibility': True}
         )
 
     @action(detail=True, methods=['post'], url_path='remove-employees')
     def remove_employees(self, request, pk=None):
-        """
-        Remove employees from a team.
-        Expects a list of employee IDs in the request body.
-        """
-        team = self.get_object()
-        employee_ids = request.data.get('employee_ids', [])
-
-        if not isinstance(employee_ids, list) or not employee_ids:
-            return Response(
-                {'error': 'A non-empty list of employee IDs is required.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        employees = Employee.objects.filter(id__in=employee_ids)
-        if not employees.exists():
-            return Response(
-                {'error': 'No valid employees found for the provided IDs.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        count_before = team.employees.count()
-        team.employees.remove(*employees)
-        count_removed = count_before - team.employees.count()
-
-        return Response(
-            {'message': f'Removed {count_removed} employee(s) from team "{team.team_name}".'},
-            status=status.HTTP_200_OK
+        return self._handle_relation_action(
+            request, pk, 'employees', AddEmployeesSerializer, Employee, 'employee'
         )

@@ -440,15 +440,15 @@ class EmployeeSerializer(serializers.ModelSerializer):
         fields = ['id', 'full_name', 'email', 'designation', 'active']
         read_only_fields = ['id', 'full_name', 'email', 'designation', 'active']
         ref_name = 'api_employee_serializer'
-        
+
 class TeamSerializer(serializers.ModelSerializer):
     projects = TeamProjectSerializer(many=True, read_only=True)
     employees = EmployeeSerializer(many=True, read_only=True)
-    # team_leader = EmployeeSerializer(read_only=True)
 
     class Meta:
         model = Teams
-        fields = ['id', 'team_name', 'projects', 'employees', 'created_at', 'updated_at']
+        # fields = ['id', 'team_name', 'description', 'team_image', 'projects', 'employees', 'created_at', 'updated_at']
+        fields = "__all__"
         read_only_fields = ['id', 'created_at', 'updated_at']
 
     def validate_team_name(self, value):
@@ -458,3 +458,59 @@ class TeamSerializer(serializers.ModelSerializer):
         if Teams.objects.filter(team_name__iexact=value).exclude(pk=self.instance.pk if self.instance else None).exists():
             raise serializers.ValidationError('Team name must be unique.')
         return value
+
+
+class TeamUpdateSerializer(serializers.ModelSerializer):
+    team_name = serializers.CharField(required=False, allow_blank=True)  # Make team_name optional
+    description = serializers.CharField(required=False, allow_blank=True)  # Optional
+    team_image = serializers.ImageField(required=False, allow_null=True)  # Optional for file uploads
+
+    class Meta:
+        model = Teams
+        fields = ['id', 'team_name', 'description', 'team_image']
+        read_only_fields = ['id']
+        ref_name = 'api_team_update_serializer'
+
+    def validate_team_name(self, value):
+        value = value.strip()
+        if value:  # Only validate if team_name is provided
+            if Teams.objects.filter(team_name__iexact=value).exclude(pk=self.instance.pk if self.instance else None).exists():
+                raise serializers.ValidationError('Team name must be unique.')
+        return value
+    
+
+class AddProjectsSerializer(serializers.Serializer):
+    project_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+        required=True
+    )
+
+    def validate_project_ids(self, value):
+        projects = Project.objects.filter(id__in=value, active=True)
+        if not projects.exists():
+            raise serializers.ValidationError('No valid projects found for the provided IDs.')
+        if len(projects) != len(set(value)):
+            raise serializers.ValidationError('Some project IDs are invalid or duplicated.')
+        return value
+
+    class Meta:
+        ref_name = 'api_add_projects_serializer'
+
+class AddEmployeesSerializer(serializers.Serializer):
+    employee_ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+        required=True
+    )
+
+    def validate_employee_ids(self, value):
+        employees = Employee.objects.filter(id__in=value, active=True, project_eligibility=True)
+        if not employees.exists():
+            raise serializers.ValidationError('No valid employees found for the provided IDs.')
+        if len(employees) != len(set(value)):
+            raise serializers.ValidationError('Some employee IDs are invalid or duplicated.')
+        return value
+
+    class Meta:
+        ref_name = 'api_add_employees_serializer'

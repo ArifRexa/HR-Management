@@ -1425,38 +1425,17 @@ class ClientFeedbackEmail(models.Model):
 
 
 
-# class Teams(TimeStampMixin):
-#     team_name = models.CharField(max_length=255, null=True, blank=True)
-#     projects = models.ManyToManyField(
-#         Project,
-#         related_name="teams",
-#         limit_choices_to={"active": True},
-#         blank=True,
-#     )
-#     employees = models.ManyToManyField(
-#         Employee,
-#         related_name="teams",
-#         limit_choices_to={"active": True, "project_eligibility": True},
-#         blank=True,
-#     )
-
-#     class Meta:
-#         verbose_name = "Team"
-#         verbose_name_plural = "Teams"
-
-#     def __str__(self):
-#         return self.team_name
-    
-#     @property
-#     def team_leader(self):
-#         return self.employees.filter(lead=True)
 class Teams(TimeStampMixin):
     team_name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True, blank=True)
     projects = models.ManyToManyField(
         'Project',
         related_name='teams',
         limit_choices_to={'active': True},
         blank=True,
+    )
+    team_image = models.ImageField(
+        upload_to='team_images/', null=True, blank=True, help_text='Upload team image'
     )
     employees = models.ManyToManyField(
         Employee,
