@@ -263,6 +263,7 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, null=True)
     active_from = models.DateField(null=True, blank=True)
+    inactive_from = models.DateField(null=True, blank=True)
     status = models.PositiveSmallIntegerField(
         choices=ClientStatus.choices,
         null=True,
@@ -271,6 +272,12 @@ class Client(TimeStampMixin, AuthorMixin):
     follow_up_date = models.DateField(null=True, blank=True)
     meeting_date = models.DateField(null=True, blank=True)
     remark = models.TextField(null=True, blank=True)
+    refered_by = models.ForeignKey(
+        "self",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+    )
 
     def __str__(self):
         return self.name

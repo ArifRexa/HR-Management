@@ -1,6 +1,5 @@
 import datetime
 from calendar import month_abbr
-
 from django.db.models import (
     Case,
     DurationField,
@@ -10,19 +9,20 @@ from django.db.models import (
     Q,
     Sum,
     When,
-    functions,
+    # functions,
 )
 from django.utils import timezone
 from rest_framework import serializers
 
-from apps.authentication.serializers import UserSerializer
+from apps.authentication.serializers import UserSerializer, UserInfoSerializer
 from apps.authentication.utils import get_week_date_range
 from apps.mixin.serializer import BaseModelSerializer
+from asset_management.models.credential import Credential, CredentialCategory
 from employee.models.attachment import Attachment
-from employee.models.employee import Employee
+from employee.models.employee import BookConferenceRoom, Employee, LateAttendanceFine
 from employee.models.employee_activity import EmployeeActivity
 from employee.models.employee_skill import EmployeeSkill
-from employee.models.leave.leave import Leave
+from employee.models.leave.leave import Leave, LeaveAttachment
 
 
 class EmployeeInfoSerializer(serializers.ModelSerializer):
@@ -30,6 +30,14 @@ class EmployeeInfoSerializer(serializers.ModelSerializer):
         model = Employee
         fields = ["id", "full_name", "designation","image"]
         ref_name = "api_employee_info"
+
+
+class EmployeeBirthdaySerializer(serializers.ModelSerializer):
+    birth_day = serializers.DateField()
+    class Meta:
+        model = Employee
+        fields = ["id", "full_name", "birth_day", "image"]
+
 
 class EmployeeListSerializer(BaseModelSerializer):
     permissions = serializers.SerializerMethodField()
@@ -204,48 +212,50 @@ class DashboardSerializer(BaseModelSerializer):
             "passed_non_paid": leave_counts.get("non_paid") or 0,
         }
 
-    def _project_hour_statistic(self, instance):
-        hour_data = (
-            instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
-            .annotate(month=functions.ExtractMonth("created_at"))
-            .values("month")
-            .annotate(total_hours=functions.Round(Sum("hours"), precision=2))
-            .order_by("month")
-        )
-        d = {item["month"]: item["total_hours"] for item in hour_data}
-        data = [
-            {"month": month_abbr[i], "total_hours": d.get(i, 0)} for i in range(1, 13)
-        ]
-        return data
+    # def _project_hour_statistic(self, instance):
+    #     print(instance.employeeprojecthour_set.all())
+    #     hour_data = (
+    #         instance.employeeprojecthour_set.filter(created_at__year=self.current_year)
+    #         .annotate(month=functions.ExtractMonth("created_at"))
+    #         .values("month")
+    #         .annotate(total_hours=functions.Round(Sum("hours"), precision=2))
+    #         .order_by("month")
+    #     )
+    #     d = {item["month"]: item["total_hours"] for item in hour_data}
+    #     data = [
+    #         {"month": month_abbr[i], "total_hours": d.get(i, 0)} for i in range(1, 13)
+    #     ]
+    #     return data
 
     def _late_fine_info(self, instance):
         late_fines = instance.lateattendancefine_set.filter(
             is_consider=False
         ).aggregate(
             this_month=Sum(
-                "id",
+                "total_late_attendance_fine",
                 filter=Q(
                     date__year=self.current_date.year,
                     date__month=self.current_date.month,
                 ),
             ),
             last_month=Sum(
-                "id",
+                "total_late_attendance_fine",
                 filter=Q(
-                    date__year=self.last_month.year, date__month=self.last_month.month
+                    date__year=self.last_month.year,
+                    date__month=self.last_month.month,
                 ),
+                default=0
             ),
         )
-
         total_late_day = instance.employeeattendance_set.filter(
             date__year=self.current_date.year,
             date__month=self.current_date.month,
             entry_time__gt=datetime.time(11, 10),
         ).count()
-
+        
         return {
-            "this_month": (late_fines.get("this_month") or 0) * 80,
-            "last_month": (late_fines.get("last_month") or 0) * 80,
+            "this_month": late_fines.get("this_month") or 0,
+            "last_month": late_fines.get("last_month") or 0,
             "total_late_day": total_late_day,
         }
 
@@ -292,7 +302,188 @@ class DashboardSerializer(BaseModelSerializer):
         data = super().to_representation(instance)
         data["project_hours"] = self._get_project_hour(instance)
         data["leave_info"] = self._get_leave_info(instance)
-        data["project_hour_statistic"] = self._project_hour_statistic(instance)
+        # data["project_hour_statistic"] = self._project_hour_statistic(instance)
         data["late_fine_info"] = self._late_fine_info(instance)
         data["last_week_attendance"] = self._get_last_week_attendance(instance)
         return data
+
+
+class BaseBookConferenceRoomCreateModelSerializer(BaseModelSerializer):
+    
+    class Meta:
+        model = BookConferenceRoom
+        fields = [
+            "id", "project_name", "start_time",
+        ]
+    
+    def validate_start_time(self, value):
+        is_alredy_booked = BookConferenceRoom.objects.filter(
+            created_at__date=datetime.datetime.today().date(),
+            start_time=value
+        ).exists()
+        if is_alredy_booked:
+            raise serializers.ValidationError("That time slot is already booked for the conference room.")
+        return value
+
+    def validate(self, attrs):
+        attrs["manager_or_lead"] = self.context.get("request").user.employee
+        return super().validate(attrs)
+
+
+class BookConferenceRoomListModelSerializer(BaseBookConferenceRoomCreateModelSerializer):
+    manager_or_lead = EmployeeInfoSerializer()
+    
+    class Meta:
+        model = BookConferenceRoom
+        fields = [
+            "id", "manager_or_lead", "start_time", "end_time",
+            "created_at",
+        ]
+
+
+class CredentialCategoryModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = CredentialCategory
+        fields = [
+            "id", "title", "description",
+        ]
+
+class CreateUpdateCredentialModelSerializer(BaseModelSerializer):
+    class Meta:
+        model = Credential
+        fields = [
+            "id", "title", "category",
+            "description", "created_by",
+            "status", "privileges",
+        ]
+
+    def update(self, instance, validated_data):
+        instance.privileges.set(validated_data.pop("privileges", []))
+        super().update(instance, validated_data)
+        return instance
+
+
+class DetailsCredentialModelSerializer(BaseModelSerializer):
+    category = CredentialCategoryModelSerializer()
+    privileges = UserInfoSerializer(many=True)
+    class Meta:
+        model = Credential
+        fields = [
+            "id", "title", "category",
+            "description", "status",
+            "privileges",
+        ]
+
+
+class CredentialModelSerializer(BaseModelSerializer):
+    total_privilege = serializers.IntegerField()
+    category = CredentialCategoryModelSerializer()
+    created_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Credential
+        fields = [
+            "id", "title", "description",
+            "category", "created_by",
+            "total_privilege", "status",
+        ]
+
+    def get_created_by(self, instance):
+        return instance.created_by.email
+
+
+class IdListSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+    )
+
+class EmployeeAttendanceSerializer(serializers.ModelSerializer):
+    late_count = serializers.IntegerField()
+    total_attend_in_day = serializers.IntegerField()
+    total_inside_office_in_secends = serializers.FloatField()
+    attendance = serializers.JSONField()
+    class Meta:
+        model = Employee
+        fields = [
+            "id", "full_name", "image", "late_count",
+            "total_attend_in_day", "total_inside_office_in_secends",
+            "attendance",
+        ]
+
+
+class LateAttendanceFineModelSerializer(BaseModelSerializer):
+    employee = EmployeeInfoSerializer(many=False)
+
+    class Meta:
+        model = LateAttendanceFine
+        fields = "__all__"
+
+
+class BaseLeaveModelSerializer(BaseModelSerializer):
+    leave_attachment = serializers.FileField(required=False)
+    employee = EmployeeInfoSerializer(
+        many=False,
+        required=False,
+        read_only=True,
+    )
+    class Meta:
+        model = Leave
+        fields = [
+            "id", "start_date", "end_date", "applied_leave_type",
+            "message", "leave_attachment", "employee",
+        ]
+
+    def validate(self, attrs):
+        if attrs.get("applied_leave_type") == "medical" and attrs.get("leave_attachment") is None:
+            raise serializers.ValidationError(
+                {
+                    "leave_attachment": "Medical leave requires an attachment. Please provide supporting documentation."
+                }
+            )
+        attrs["employee"] = self.context.get("request").user.employee
+        return super().validate(attrs)
+    
+    def create(self, validated_data):
+        leave_attachment = validated_data.pop("leave_attachment", None)
+        leave_object = super().create(validated_data)
+        if leave_attachment:
+            LeaveAttachment.objects.create(
+                leave=leave_object,
+                attachment=leave_attachment,
+            )
+        return leave_object
+    
+    def update(self, instance, validated_data):
+        instance.leaveattachment_set.all().delete()
+
+        leave_attachment = validated_data.pop("leave_attachment", None)
+        if leave_attachment:
+            LeaveAttachment.objects.create(
+                leave=instance,
+                attachment=leave_attachment,
+            )
+        return super().update(instance, validated_data)
+
+
+class LeaveAttachmentModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = LeaveAttachment
+        fields = [
+            "id", "leave", "attachment",
+        ]
+
+
+class LeaveModelSerializer(BaseLeaveModelSerializer):
+    leaveattachment_set = LeaveAttachmentModelSerializer(
+        many=True,
+    )
+
+    class Meta:
+        model = Leave
+        fields = [
+            "id", "start_date", "end_date", "leave_type", "applied_leave_type",
+            "total_leave", "status", "message", "leaveattachment_set",
+            "employee", 
+        ]

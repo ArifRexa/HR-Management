@@ -7,7 +7,7 @@
 {% block content %}
     {% for employee in employees %}
         <p style="width: 50%; margin: auto; text-align: left;">
-            <strong>Ref:</strong> Mediusware Ltd./{{ latter_type }}/{{ employee.resignation_date | date:'Ym' }}{{ employee.id }} <br>
+            <strong>Ref:</strong> Mediusware Ltd./{{ latter_type }}/{{ employee.employee_id }}<br>
             <strong>Date:</strong> {% now "d M Y" %} <br>
         </p>
         
@@ -19,7 +19,7 @@
             </tr>
             <tr>
                 <td>Employee ID</td>
-                <td style="margin-left: -200px;">: {{ employee.joining_date | date:'Yd' }}{{ employee.id }}</td>
+                <td style="margin-left: -200px;">: {{ employee.employee_id }}</td>
             </tr>
             <tr>
                 <td>Designation</td>

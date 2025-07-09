@@ -10,7 +10,7 @@
 <body>
 {% for employee in employees %}
     <p>
-        Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.approved_resignation.date | date:'Ym' }}{{ employee.id }}
+        Ref: Mediusware Ltd./{{ latter_type }}/{{ employee.employee_id }}
         <br>
         Date: {{ employee.approved_resignation.date }} <br>
         <b>{{ employee.full_name | title }}</b> <br>
