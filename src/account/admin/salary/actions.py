@@ -36,7 +36,7 @@ class SalarySheetAction(admin.ModelAdmin):
             for key in actions:
                 # if "export_tax_loan_list" == key:
                 #     return {"export_tax_loan_list": actions.get(key)}
-                if key in ["export_tax_loan_list", "can_see_salary_on_salary_sheet"]:
+                if key in ["export_tax_loan_list", "export_city_live_excel"]:
                     user_action[key] = actions.get(key)
             return user_action
             
