@@ -32,9 +32,13 @@ class SalarySheetAction(admin.ModelAdmin):
         if not request.user.is_superuser and request.user.has_perm(
             "account.view_salarysheet"
         ):
+            user_action = {}
             for key in actions:
-                if "export_tax_loan_list" == key:
-                    return {"export_tax_loan_list": actions.get(key)}
+                # if "export_tax_loan_list" == key:
+                #     return {"export_tax_loan_list": actions.get(key)}
+                if key in ["export_tax_loan_list", "can_see_salary_on_salary_sheet"]:
+                    user_action[key] = actions.get(key)
+            return user_action
             
         if request.user.is_superuser or request.user.has_perm("account.can_see_salary_on_salary_sheet"):
             return actions
