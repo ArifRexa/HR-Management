@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils.html import format_html
 from icecream import ic
 import nested_admin
-
+from project_management.models import Teams
 from website.models import ProjectKeyword, ProjectMetadata
 from .forms import ProjectTechnologyInlineForm, ProjectAdminForm
 from django import forms
@@ -407,3 +407,9 @@ class ProjectTechnologyAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
+
+
+# Register Teams models here.
+@admin.register(Teams)
+class TeamsAdmin(admin.ModelAdmin):
+    pass

@@ -12,6 +12,7 @@ from project_management.models import (
     EmployeeProjectHour,
     Project,
     ProjectHour,
+    Teams,
 )
 
 
@@ -422,3 +423,38 @@ class ProjectResourceAddDeleteSerializer(serializers.Serializer):
         queryset=Project.objects.filter(active=True).all()
     )
     
+
+
+class TeamProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'title', 'slug', 'description', 'active']
+        read_only_fields = ['id', 'slug']
+
+
+class EmployeeSerializer(serializers.ModelSerializer):
+    designation = serializers.CharField(source='designation.name', read_only=True, allow_null=True)
+
+    class Meta:
+        model = Employee
+        fields = ['id', 'full_name', 'email', 'designation', 'active']
+        read_only_fields = ['id', 'full_name', 'email', 'designation', 'active']
+        ref_name = 'api_employee_serializer'
+        
+class TeamSerializer(serializers.ModelSerializer):
+    projects = TeamProjectSerializer(many=True, read_only=True)
+    employees = EmployeeSerializer(many=True, read_only=True)
+    # team_leader = EmployeeSerializer(read_only=True)
+
+    class Meta:
+        model = Teams
+        fields = ['id', 'team_name', 'projects', 'employees', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    def validate_team_name(self, value):
+        value = value.strip()
+        if not value:
+            raise serializers.ValidationError('Team name cannot be empty.')
+        if Teams.objects.filter(team_name__iexact=value).exclude(pk=self.instance.pk if self.instance else None).exists():
+            raise serializers.ValidationError('Team name must be unique.')
+        return value
