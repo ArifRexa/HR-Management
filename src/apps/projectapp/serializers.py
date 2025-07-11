@@ -522,7 +522,9 @@ class CurrencyTypeModelSerializer(BaseModelSerializer):
 
     class Meta:
         model = CurrencyType
-        fields = "__all__"
+        exclude = [
+            "is_active", "is_default", "exchange_rate"
+        ]
 
 
 class ClientBaseModelSerializer(BaseModelSerializer):
@@ -568,7 +570,6 @@ class ClientModelSerializer(ClientBaseModelSerializer):
     clientinvoicedate_set = ClientInvoiceDateModelSerializer(
         many=True,
         required=False,
-        partial=True,
     )
 
     def update(self, instance, validated_data):

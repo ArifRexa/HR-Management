@@ -24,14 +24,19 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination
 
 from account.models import Income
-from apps.mixin.permission import IsSuperUser
+from apps.mixin.permission import IsSuperUser, ModelPermission
 from apps.mixin.views import BaseModelViewSet
 from employee.models.employee import Employee, EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
 from project_management.models import (
     Client,
+    ClientReview,
+    Country,
+    CurrencyType,
     DailyProjectUpdate,
     DailyProjectUpdateHistory,
+    InvoiceType,
+    PaymentMethod,
     Project,
     ProjectContent,
     ProjectHour,
@@ -44,10 +49,15 @@ from .serializers import (
     BulkUpdateSerializer,
     ClientBaseModelSerializer,
     ClientModelSerializer,
+    ClientReviewModelSerializer,
+    CountryModelSerializer,
+    CurrencyTypeModelSerializer,
     DailyProjectUpdateCreateSerializer,
     DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
     IncomeSerializer,
+    InvoiceTypeModelSerializer,
+    PaymentMethodModelSerializer,
     ProjectResourceAddDeleteSerializer,
     ProjectResourceModelSerializer,
     ProjectSerializer,
@@ -974,6 +984,9 @@ class ProjectResourceListView(BaseModelViewSet):
 
 
 class ClientViewSet(BaseModelViewSet):
+    http_method_names = [
+        "get", "post", "put", "patch",
+    ]
     queryset = Client.objects.select_related(
         "country", "payment_method", "invoice_type",
         "currency",
@@ -987,3 +1000,59 @@ class ClientViewSet(BaseModelViewSet):
         "update": ClientModelSerializer,
         "partial_update": ClientModelSerializer
     }
+
+
+class CountryViewSet(BaseModelViewSet):
+    http_method_names = [
+        "get", "post", "put",
+    ]
+    serializer_class = CountryModelSerializer
+    queryset = Country.objects.all()
+
+    search_fields = [
+        "name",
+    ]
+
+
+class CurrencyListView(ListAPIView):
+    permission_classes = [ModelPermission, IsAuthenticated]
+    filter_backends = [
+        filters.SearchFilter,
+    ]
+    search_fields = [
+        "currency_name", "currency_code",
+    ]
+    serializer_class = CurrencyTypeModelSerializer
+    queryset = CurrencyType.objects.filter(
+        is_active=True,
+    )
+
+
+class PaymentMethodListView(ListAPIView):
+    permission_classes = [ModelPermission, IsAuthenticated]
+    filter_backends = [
+        filters.SearchFilter,
+    ]
+    search_fields = ["name",]
+    serializer_class = PaymentMethodModelSerializer
+    queryset = PaymentMethod.objects.all()
+
+
+class InvoiceTypeListView(ListAPIView):
+    permission_classes = [ModelPermission, IsAuthenticated]
+    filter_backends = [
+        filters.SearchFilter,
+    ]
+    search_fields = ["name",]
+    serializer_class = InvoiceTypeModelSerializer
+    queryset = InvoiceType.objects.all()
+
+
+class ClientReviewViewSet(BaseModelViewSet):
+    http_method_names = [
+        "get", "post", "put",
+    ]
+    search_fields = ["name",]
+    serializer_class = ClientReviewModelSerializer
+    queryset = ClientReview.objects.all()
+
