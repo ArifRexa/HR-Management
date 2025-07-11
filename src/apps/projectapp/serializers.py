@@ -15,7 +15,7 @@ from project_management.models import (
     Teams,
 )
 
-
+from django.db.models import Sum
 class ProjectSerializer(BaseModelSerializer):
 
     class Meta:
@@ -514,3 +514,108 @@ class AddEmployeesSerializer(serializers.Serializer):
 
     class Meta:
         ref_name = 'api_add_employees_serializer'
+
+
+class UpdateSerializer(serializers.ModelSerializer):
+    """Serialize DailyProjectUpdate with update text from updates_json or update field."""
+    update = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DailyProjectUpdate
+        fields = ['id', 'hours', 'update', 'status', 'created_at']
+
+    def get_update(self, obj):
+        """Return formatted updates_json if available, else fall back to update field."""
+        return obj.str_updates_json if obj.updates_json else obj.update or ""
+
+class EmployeeUpdateSerializer(serializers.ModelSerializer):
+    """Serialize Employee with their updates and total hours for a project in a date range."""
+    id = serializers.IntegerField(source='pk')
+    total_hour = serializers.SerializerMethodField()
+    updates = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Employee
+        fields = ['id', 'full_name', 'total_hour', 'updates']
+
+    def get_updates(self, obj):
+        """Fetch updates for the employee within the specified project and date range."""
+        project_id = self.context['project_id']
+        week_start = self.context['week_start']
+        selected_date = self.context['selected_date']
+        
+        updates = obj.dailyprojectupdate_employee.filter(
+            project_id=project_id,
+            created_at__date__gte=week_start,
+            created_at__date__lte=selected_date
+        ).order_by('-created_at')
+        
+        return UpdateSerializer(updates, many=True).data
+
+    def get_total_hour(self, obj):
+        """Calculate total hours for the employee in the project and date range."""
+        project_id = self.context['project_id']
+        week_start = self.context['week_start']
+        selected_date = self.context['selected_date']
+        
+        total_hours = obj.dailyprojectupdate_employee.filter(
+            project_id=project_id,
+            created_at__date__gte=week_start,
+            created_at__date__lte=selected_date
+        ).aggregate(total=Sum('hours'))['total'] or 0.0
+        
+        return f"{total_hours:.2f}"
+
+class ProjectUpdateSerializer(serializers.Serializer):
+    """Serialize project updates with manager name, total approved hours, and employee details."""
+    manager = serializers.SerializerMethodField()
+    total_approved_hour = serializers.SerializerMethodField()
+    employees = serializers.SerializerMethodField()
+
+    def get_manager(self, obj):
+        """Retrieve the project manager's full name from EmployeeUnderTPM."""
+        tpm = EmployeeUnderTPM.objects.filter(project_id=obj['project_id']).select_related('tpm').first()
+        return tpm.tpm.full_name if tpm else "No Manager Assigned"
+
+    def get_total_approved_hour(self, obj):
+        """Calculate total approved hours for the project in the date range."""
+        total_approved = DailyProjectUpdate.objects.filter(
+            project_id=obj['project_id'],
+            created_at__date__gte=obj['week_start'],
+            created_at__date__lte=obj['selected_date'],
+            status='approved'
+        ).aggregate(total=Sum('hours'))['total'] or 0.0
+        
+        return f"{total_approved:.0f}"
+
+    def get_employees(self, obj):
+        """Fetch employees with updates for the project in the date range."""
+        employees = Employee.objects.filter(
+            dailyprojectupdate_employee__project_id=obj['project_id'],
+            dailyprojectupdate_employee__created_at__date__gte=obj['week_start'],
+            dailyprojectupdate_employee__created_at__date__lte=obj['selected_date']
+        ).distinct().prefetch_related('dailyprojectupdate_employee')
+        
+        return EmployeeUpdateSerializer(
+            employees,
+            many=True,
+            context={
+                'project_id': obj['project_id'],
+                'week_start': obj['week_start'],
+                'selected_date': obj['selected_date']
+            }
+        ).data
+
+    class Meta:
+        fields = ['manager', 'total_approved_hour', 'employees']
+
+class ProjectUpdateFilterSerializer(serializers.Serializer):
+    """Validate input parameters for project ID and selected date."""
+    project_id = serializers.IntegerField(required=True, help_text="ID of the project to filter updates")
+    selected_date = serializers.DateField(required=True, help_text="Date up to which updates are retrieved (YYYY-MM-DD)")
+
+    def validate_selected_date(self, value):
+        """Ensure the selected date is not in the future."""
+        if value > timezone.now().date():
+            raise serializers.ValidationError("Selected date cannot be in the future.")
+        return value

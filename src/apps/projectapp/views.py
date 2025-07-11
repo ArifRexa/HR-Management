@@ -32,6 +32,7 @@ from employee.models.employee import Employee, EmployeeUnderTPM
 from employee.models.employee_activity import EmployeeProject
 from project_management.models import (
     DailyProjectUpdate,
+    DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     Project,
     ProjectHour,
@@ -48,16 +49,24 @@ from .serializers import (
     DailyProjectUpdateCreateSerializer,
     DailyProjectUpdateListSerializer,
     DailyProjectUpdateSerializer,
+    EmployeeUpdateSerializer,
     IncomeSerializer,
     ProjectResourceAddDeleteSerializer,
     ProjectResourceModelSerializer,
     ProjectSerializer,
+    ProjectUpdateFilterSerializer,
+    ProjectUpdateSerializer,
     StatusUpdateSerializer,
     TeamSerializer,
     TeamUpdateSerializer,
     WeeklyProjectUpdate,
 )
-
+from rest_framework.response import Response
+from datetime import datetime, timedelta
+from django.db.models import Sum, Prefetch
+# from .models import Project, DailyProjectUpdate, DailyProjectUpdateAttachment, ProjectHour
+# from .serializers import WeeklyProjectHoursRequestSerializer, WeeklyProjectHoursResponseSerializer
+from rest_framework.permissions import IsAuthenticated
 
 class ProjectViewSet(BaseModelViewSet):
     queryset = Project.objects.filter(active=True)
@@ -1118,7 +1127,7 @@ class TeamViewSet(viewsets.ModelViewSet):
             request, pk, 'projects', AddProjectsSerializer, Project, 'project', {'active': True}
         )
 
-    @action(detail=True, methods=['post'], url_path='remove-projects')
+    @action(detail=True, methods=['delete'], url_path='remove-projects')
     def remove_projects(self, request, pk=None):
         return self._handle_relation_action(
             request, pk, 'projects', AddProjectsSerializer, Project, 'project'
@@ -1131,8 +1140,137 @@ class TeamViewSet(viewsets.ModelViewSet):
             {'active': True, 'project_eligibility': True}
         )
 
-    @action(detail=True, methods=['post'], url_path='remove-employees')
+    @action(detail=True, methods=['delete'], url_path='remove-employees')
     def remove_employees(self, request, pk=None):
         return self._handle_relation_action(
             request, pk, 'employees', AddEmployeesSerializer, Employee, 'employee'
         )
+    
+
+class WeeklyProjectHoursViewSet(BaseModelViewSet):
+    permission_classes = [IsAuthenticated]
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                'project_id',
+                openapi.IN_QUERY,
+                description="ID of the project to filter updates",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            ),
+            openapi.Parameter(
+                'selected_date',
+                openapi.IN_QUERY,
+                description="Date up to which updates are retrieved (YYYY-MM-DD)",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+                required=True
+            )
+        ],
+        responses={
+            200: openapi.Response(
+                description="Successful response with project updates grouped by employee",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'manager': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Name of the project manager"
+                        ),
+                        'total_approved_hour': openapi.Schema(
+                            type=openapi.TYPE_STRING,
+                            description="Total approved hours for the project in the specified week"
+                        ),
+                        'employees': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Items(
+                                type=openapi.TYPE_OBJECT,
+                                properties={
+                                    'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                    'full_name': openapi.Schema(type=openapi.TYPE_STRING),
+                                    'total_hour': openapi.Schema(type=openapi.TYPE_STRING),
+                                    'updates': openapi.Schema(
+                                        type=openapi.TYPE_ARRAY,
+                                        items=openapi.Items(
+                                            type=openapi.TYPE_OBJECT,
+                                            properties={
+                                                'hours': openapi.Schema(type=openapi.TYPE_NUMBER),
+                                                'update': openapi.Schema(type=openapi.TYPE_STRING),
+                                                'status': openapi.Schema(type=openapi.TYPE_STRING),
+                                                'created_at': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)
+                                            }
+                                        )
+                                    )
+                                }
+                            )
+                        )
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description="Bad Request: Missing required fields",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'project_id': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Items(type=openapi.TYPE_STRING),
+                            description="Error message for missing project_id"
+                        ),
+                        'selected_date': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Items(type=openapi.TYPE_STRING),
+                            description="Error message for missing selected_date"
+                        )
+                    }
+                ),
+                examples={
+                    'application/json': {
+                        "project_id": ["This field is required."],
+                        "selected_date": ["This field is required."]
+                    }
+                }
+            ),
+            404: openapi.Response(
+                description="Not Found: Project not found or is inactive",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            )
+        },
+        operation_description="Retrieve daily project updates for a given project ID and date range (from week start to selected date), grouped by employee with manager name and total approved hours."
+    )
+    def list(self, request):
+        """List daily project updates for a project and date range."""
+        serializer = ProjectUpdateFilterSerializer(data=request.query_params)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        project_id = serializer.validated_data['project_id']
+        selected_date = serializer.validated_data['selected_date']
+        
+        # Calculate the start of the week (Monday)
+        week_start = selected_date - timedelta(days=selected_date.weekday())
+        
+        try:
+            Project.objects.get(id=project_id, active=True)
+        except Project.DoesNotExist:
+            return Response(
+                {"error": "Project not found or is inactive"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Prepare data for serialization
+        data = {
+            'project_id': project_id,
+            'week_start': week_start,
+            'selected_date': selected_date
+        }
+        
+        # Serialize and return the data
+        serializer = ProjectUpdateSerializer(data, context=data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
