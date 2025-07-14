@@ -183,8 +183,16 @@ class ClientAdmin(admin.ModelAdmin):
     )
     fields = (
         "name",
-        "active",
+        "hourly_rate",
+        "inactive_from",
+        "refered_by",
+        "payment_method",
+        "invoice_type",
+        "remark",
         "email",
+        "country",
+        "review",
+        "active",
         "invoice_cc_email",
         "designation",
         "company_name",
@@ -197,17 +205,9 @@ class ClientAdmin(admin.ModelAdmin):
         # "cc_email",
         "address",
         # "active_from",
-        # "inactive_from",
-        "country",
         "notes",
         "is_hour_breakdown",
         "currency",
-        "hourly_rate",
-        "payment_method",
-        "invoice_type",
-        "review",
-        # "remark",
-        "refered_by",
     )
     list_filter = [
         "is_need_feedback",
@@ -232,9 +232,8 @@ class ClientAdmin(admin.ModelAdmin):
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
-
         return format_html("<br>".join(project_name))
-    
+
     @admin.display(description="Inactive")
     def get_inactive_from(self, client_obj):
         return client_obj.inactive_from
@@ -363,7 +362,7 @@ class ClientAdmin(admin.ModelAdmin):
         if days:
             time_list.append(f"{days}d")
         return " ".join(time_list) or None
-
+    
     def has_module_permission(self, request):
         return False
     
@@ -380,7 +379,21 @@ class ClientAdmin(admin.ModelAdmin):
                 output_field=DurationField(),
             )
         )
+        
         return queryset
+    
+    def get_list_display(self, request):
+        list_display = list(super().get_list_display(request))
+        
+        if request.user.is_superuser:
+            return tuple(list_display)
+        if request.user.has_perm("project_management.exclude_income"):
+            if "get_project_income" in list_display:
+                list_display.remove("get_project_income")
+        if request.user.has_perm("project_management.exclude_hourly_rate"):
+            if "get_hourly_rate" in list_display:
+                list_display.remove("get_hourly_rate")
+        return tuple(list_display)
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)

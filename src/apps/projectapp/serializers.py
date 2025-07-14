@@ -1,4 +1,5 @@
 from django.utils import timezone
+from django.utils.text import slugify
 from rest_framework import serializers
 
 from account.models import Income
@@ -6,21 +7,75 @@ from apps.employeeapp.serializers import EmployeeInfoSerializer
 from apps.mixin.serializer import BaseModelSerializer
 from employee.models.employee import Employee, EmployeeUnderTPM
 from project_management.models import (
+    Client,
+    ClientInvoiceDate,
+    ClientReview,
+    Country,
+    CurrencyType,
     DailyProjectUpdate,
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     EmployeeProjectHour,
+    InvoiceType,
+    PaymentMethod,
     Project,
+    ProjectContent,
     ProjectHour,
 )
 
+class ProjectContentModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = ProjectContent
+        exclude = ["project", ]
+
 
 class ProjectSerializer(BaseModelSerializer):
+    projectcontent_set = ProjectContentModelSerializer(many=True, required=False)
 
     class Meta:
         model = Project
-        fields = "__all__"
+        fields = [
+            "id", "title", "web_title", "slug", "description", "client",
+            "client_web_name", "client_image", "client_review",
+            "platforms", "industries", "services", "live_link",
+            "location", "country", "active", "is_special",
+            "hourly_rate", "activate_from", "featured_image", "display_image",
+            "project_logo", "special_image", "thumbnail", "featured_video",
+            "show_in_website", "tags", "is_highlighted",
+            "is_team", "projectcontent_set"
+        ]
+        extra_kwargs = {
+            "slug": {
+                "read_only": True,
+            }
+        }
         ref_name = "api_project_serializer"
+    
+    def create(self, validated_data):
+        """
+        save the Project and related ProjectContent data and return the project instance.
+        """
+        project_contents = validated_data.pop("projectcontent_set", [])
+
+        # build unique slug for same project name.
+        projects = self.Meta.model.objects.filter(slug__contains=slugify(validated_data.get("title")))
+        if projects.exists():
+            validated_data['slug'] = slugify(validated_data.get("title")+ f" {projects.count()}")
+        
+        project = super().create(validated_data)
+        
+        project_contents_list = []
+        for project_content in project_contents:
+            project_contents_list.append(
+                ProjectContent(
+                    project=project,
+                    **project_content,
+                )
+            )
+        if project_contents_list:
+            ProjectContent.objects.bulk_create(project_contents_list)
+        return project
 
 
 class DailyProjectUpdateAttachmentSerializer(BaseModelSerializer):
@@ -421,4 +476,116 @@ class ProjectResourceAddDeleteSerializer(serializers.Serializer):
         many=False,
         queryset=Project.objects.filter(active=True).all()
     )
+    
+
+class ClientInvoiceDateBaseModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = ClientInvoiceDate
+        exclude = ["clients"]
+
+
+class ClientInvoiceDateModelSerializer(ClientInvoiceDateBaseModelSerializer):
+    id = serializers.IntegerField()
+
+
+class CountryModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = Country
+        fields = "__all__"
+
+
+class PaymentMethodModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = PaymentMethod
+        fields = "__all__"
+
+
+class InvoiceTypeModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = InvoiceType
+        fields = "__all__"
+
+
+class ClientReviewModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = ClientReview
+        fields = "__all__"
+
+
+
+class CurrencyTypeModelSerializer(BaseModelSerializer):
+
+    class Meta:
+        model = CurrencyType
+        exclude = [
+            "is_active", "is_default", "exchange_rate"
+        ]
+
+
+class ClientBaseModelSerializer(BaseModelSerializer):
+    clientinvoicedate_set = ClientInvoiceDateBaseModelSerializer(
+        many=True,
+        required=False,
+    )
+
+    class Meta:
+        model = Client
+        fields = "__all__"
+
+    def create(self, validated_data):
+        clientinvoicedate_set = validated_data.pop("clientinvoicedate_set", [])
+        client = super().create(validated_data)
+        client_invoice_date_list = []
+        for client_invoice_date in clientinvoicedate_set:
+            client_invoice_date_list.append(
+                ClientInvoiceDate(
+                    clients=client,
+                    **client_invoice_date,
+                )
+            )
+        if client_invoice_date_list:
+            ClientInvoiceDate.objects.bulk_create(client_invoice_date_list)
+        return client
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["country"] = CountryModelSerializer(instance=instance.country).data
+        representation["payment_method"] = PaymentMethodModelSerializer(instance=instance.payment_method).data
+        representation["invoice_type"] = InvoiceTypeModelSerializer(instance=instance.invoice_type).data
+        representation["review"] = ClientReviewModelSerializer(
+            instance=instance.review.all(),
+            many=True,
+        ).data
+        representation["currency"] = CurrencyTypeModelSerializer(instance=instance.currency).data
+        return representation
+
+
+
+class ClientModelSerializer(ClientBaseModelSerializer):
+    clientinvoicedate_set = ClientInvoiceDateModelSerializer(
+        many=True,
+        required=False,
+    )
+
+    def update(self, instance, validated_data):
+        review = validated_data.pop("review", [])
+        if review:
+            instance.review.set(review)
+        
+        clientinvoicedate_set = validated_data.pop("clientinvoicedate_set", [])
+        if clientinvoicedate_set:
+            client_invoice_dates = ClientInvoiceDate.objects.filter(
+                clients_id=instance.id,
+                id__in=[client_invoice_date.get("id") for client_invoice_date in clientinvoicedate_set]
+            )
+            for client_invoice_date_obj, client_invoice_date_dict in zip(client_invoice_dates, clientinvoicedate_set):
+                client_invoice_date_obj.invoice_date = client_invoice_date_dict.get("invoice_date")
+            ClientInvoiceDate.objects.bulk_update(client_invoice_dates, fields=["invoice_date"])
+            
+        return super().update(instance, validated_data)
     
