@@ -24,6 +24,7 @@ from project_management.models import (
     ClientFeedbackEmail,
     ClientInvoiceDate,
     ClientReview,
+    ClientSource,
     ClientStatus,
     Country,
     CurrencyType,
@@ -159,6 +160,10 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
             return False
         return super().has_delete_permission(request, obj)
 
+@admin.register(ClientSource)
+class ClientSourceAdmin(admin.ModelAdmin):
+    pass
+
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -178,11 +183,13 @@ class ClientAdmin(admin.ModelAdmin):
         # "currency",
         "payment_method",
         "invoice_type",
+        "get_source",
         "get_remark",
         # "get_client_review",
     )
     fields = (
         "name",
+        "source",
         "hourly_rate",
         "inactive_from",
         "refered_by",
@@ -237,6 +244,10 @@ class ClientAdmin(admin.ModelAdmin):
     @admin.display(description="Inactive", ordering="inactive_from")
     def get_inactive_from(self, client_obj):
         return client_obj.inactive_from
+    
+    @admin.display(description="source", ordering="source")
+    def get_source(self, client_obj):
+        return client_obj.source
     
     @admin.display(description="Referrals")
     def get_referrals_name(self, obj):
