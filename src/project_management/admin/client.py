@@ -1,21 +1,23 @@
 from django import forms
 from django.contrib import admin
 from django.utils import timezone
-from datetime import datetime
+from datetime import date, datetime
 from django.contrib import messages as message
 from django.db.models import (
     Case, DateField, When, Sum,
     F, functions, ExpressionWrapper, DurationField,
 )
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 from django.core.management import call_command
-
-# from networkx import project
+from django.db.models import Subquery, OuterRef, F, Sum, DecimalField, ExpressionWrapper, DurationField, functions
+from django.db.models.functions import Coalesce
+import openpyxl# from networkx import project
+from openpyxl.utils import get_column_letter
 from account.models import Income
 from project_management.models import (
     Client,
@@ -24,6 +26,7 @@ from project_management.models import (
     ClientFeedbackEmail,
     ClientInvoiceDate,
     ClientReview,
+    ClientSource,
     ClientStatus,
     Country,
     CurrencyType,
@@ -31,7 +34,7 @@ from project_management.models import (
     PaymentMethod,
     Project,
 )
-
+from django.db import models
 
 class ClientInvoiceDateInline(admin.StackedInline):
     model = ClientInvoiceDate
@@ -159,6 +162,10 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
             return False
         return super().has_delete_permission(request, obj)
 
+@admin.register(ClientSource)
+class ClientSourceAdmin(admin.ModelAdmin):
+    pass
+
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
@@ -178,11 +185,13 @@ class ClientAdmin(admin.ModelAdmin):
         # "currency",
         "payment_method",
         "invoice_type",
+        "get_source",
         "get_remark",
         # "get_client_review",
     )
     fields = (
         "name",
+        "source",
         "hourly_rate",
         "inactive_from",
         "refered_by",
@@ -227,16 +236,20 @@ class ClientAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
-    actions = ["mark_as_in_active",]
+    actions = ["mark_as_in_active", "export_to_excel"]
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
         return format_html("<br>".join(project_name))
 
-    @admin.display(description="Inactive")
+    @admin.display(description="Inactive", ordering="inactive_from")
     def get_inactive_from(self, client_obj):
         return client_obj.inactive_from
+    
+    @admin.display(description="source", ordering="source")
+    def get_source(self, client_obj):
+        return client_obj.source
     
     @admin.display(description="Referrals")
     def get_referrals_name(self, obj):
@@ -325,20 +338,26 @@ class ClientAdmin(admin.ModelAdmin):
 
     #     return format_html("<br>".join(client_review))
 
-    @admin.display(description="Income")
+
+    # @admin.display(description="Income")
+    # def get_project_income(self, client_object):
+    #     client_project_ids = client_object.project_set.all().values_list("id", flat=True)
+    #     total_income = 0.0
+    #     for client_project_id in client_project_ids:
+    #         total_income += Income.objects.filter(
+    #             project_id=client_project_id,
+    #             status="approved",
+    #         ).annotate(
+    #             sub_total=F("hours")*F("hour_rate")
+    #         ).aggregate(
+    #             total=Sum("sub_total")
+    #         ).get("total") or 0.0
+    #     return f"$ {total_income}"
+
+    @admin.display(description="Income", ordering="total_income")
     def get_project_income(self, client_object):
-        client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-        total_income = 0.0
-        for client_project_id in client_project_ids:
-            total_income += Income.objects.filter(
-                project_id=client_project_id,
-                status="approved",
-            ).annotate(
-                sub_total=F("hours")*F("hour_rate")
-            ).aggregate(
-                total=Sum("sub_total")
-            ).get("total") or 0.0
-        return f"$ {total_income}"
+        total_income = getattr(client_object, "total_income", 0.0)
+        return f"$ {float(total_income):.2f}"
     
     @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
@@ -367,6 +386,20 @@ class ClientAdmin(admin.ModelAdmin):
         return False
     
 
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     current_date = timezone.now().date()
+
+    #     active_from = F("active_from")
+    #     inactive_from = F("inactive_from")
+    #     queryset = queryset.annotate(
+    #         duration_in_days=ExpressionWrapper(
+    #             expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+    #             output_field=DurationField(),
+    #         )
+    #     )
+        
+    #     return queryset
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         current_date = timezone.now().date()
@@ -375,11 +408,22 @@ class ClientAdmin(admin.ModelAdmin):
         inactive_from = F("inactive_from")
         queryset = queryset.annotate(
             duration_in_days=ExpressionWrapper(
-                expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+                expression=Coalesce(inactive_from, current_date) - Coalesce(active_from, current_date),
                 output_field=DurationField(),
-            )
+            ),
+            total_income=Coalesce(
+                Sum(
+                    ExpressionWrapper(
+                        F("project__income__hours") * F("project__income__hour_rate"),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    ),
+                    filter=models.Q(project__income__status="approved"),
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                ),
+                0.0,
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            ),
         )
-        
         return queryset
     
     def get_list_display(self, request):
@@ -406,6 +450,80 @@ class ClientAdmin(admin.ModelAdmin):
                 obj.active_from = timezone.now().date()
             obj.inactive_from = None
             obj.save()
+
+    @admin.action(description="Export selected clients to Excel")
+    def export_to_excel(self, request, queryset):
+        # Create a new workbook and select the active sheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Clients"
+
+        # Define headers based on list_display
+        headers = [
+            "Name",
+            "Hourly Rate",
+            "Income",
+            "Inactive From",
+            "Duration",
+            "Referrals",
+            "Payment Method",
+            "Invoice Type",
+            "Source",
+            "Remark",
+        ]
+        for col_num, header in enumerate(headers, 1):
+            ws[f"{get_column_letter(col_num)}1"] = header
+            ws[f"{get_column_letter(col_num)}1"].font = openpyxl.styles.Font(bold=True)
+
+        # Populate data
+        for row_num, client in enumerate(queryset, 2):
+            # Handle computed fields and model fields
+            ws[f"{get_column_letter(1)}{row_num}"] = client.name
+            ws[f"{get_column_letter(2)}{row_num}"] = (
+                f"{client.currency.icon if client.currency else ''} {client.hourly_rate}"
+                if client.hourly_rate is not None else "-"
+            )
+            ws[f"{get_column_letter(3)}{row_num}"] = self.get_project_income(client)
+            ws[f"{get_column_letter(4)}{row_num}"] = (
+                client.inactive_from.strftime("%Y-%m-%d") if client.inactive_from else ""
+            )
+            ws[f"{get_column_letter(5)}{row_num}"] = self.get_duration(client) or ""
+            ws[f"{get_column_letter(6)}{row_num}"] = (
+                self.get_referrals_name(client).replace('<br>', ', ') if '<br>' in self.get_referrals_name(client)
+                else self.get_referrals_name(client)
+            )
+            ws[f"{get_column_letter(7)}{row_num}"] = (
+                str(client.payment_method) if client.payment_method else ""
+            )
+            ws[f"{get_column_letter(8)}{row_num}"] = (
+                str(client.invoice_type) if client.invoice_type else ""
+            )
+            ws[f"{get_column_letter(9)}{row_num}"] = client.source or ""
+            ws[f"{get_column_letter(10)}{row_num}"] = (
+                self.get_remark(client).replace('<br>', ', ') if '<br>' in self.get_remark(client)
+                else self.get_remark(client)
+            )
+
+        # Adjust column widths
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = max_length + 2
+            ws.column_dimensions[column].width = adjusted_width
+
+        # Prepare response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="clients_export_{date.today().strftime("%Y%m%d")}.xlsx"'
+        wb.save(response)
+        return response
     
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}

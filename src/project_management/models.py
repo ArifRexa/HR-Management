@@ -211,8 +211,23 @@ class CurrencyType(TimeStampMixin):
         verbose_name_plural = "Currency Types"
 
 
+class ClientSource(TimeStampMixin, AuthorMixin):
+    name = models.CharField(max_length=200, unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Client Source"
+        verbose_name_plural = "Client Sources"
+
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
+    source = models.ForeignKey(
+        ClientSource, on_delete=models.SET_NULL, null=True, blank=True
+    )
     web_name = models.CharField(
         max_length=200, verbose_name="Web Name", null=True, blank=True
     )
