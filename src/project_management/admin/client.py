@@ -14,8 +14,8 @@ from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 from django.core.management import call_command
-
-# from networkx import project
+from django.db.models import Subquery, OuterRef, F, Sum, DecimalField, ExpressionWrapper, DurationField, functions
+from django.db.models.functions import Coalesce# from networkx import project
 from account.models import Income
 from project_management.models import (
     Client,
@@ -31,7 +31,7 @@ from project_management.models import (
     PaymentMethod,
     Project,
 )
-
+from django.db import models
 
 class ClientInvoiceDateInline(admin.StackedInline):
     model = ClientInvoiceDate
@@ -325,20 +325,35 @@ class ClientAdmin(admin.ModelAdmin):
 
     #     return format_html("<br>".join(client_review))
 
-    @admin.display(description="Income")
+
+    # @admin.display(description="Income")
+    # def get_project_income(self, client_object):
+    #     client_project_ids = client_object.project_set.all().values_list("id", flat=True)
+    #     total_income = 0.0
+    #     for client_project_id in client_project_ids:
+    #         total_income += Income.objects.filter(
+    #             project_id=client_project_id,
+    #             status="approved",
+    #         ).annotate(
+    #             sub_total=F("hours")*F("hour_rate")
+    #         ).aggregate(
+    #             total=Sum("sub_total")
+    #         ).get("total") or 0.0
+    #     return f"$ {total_income}"
+    @admin.display(description="Income", ordering="total_income")
     def get_project_income(self, client_object):
-        client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-        total_income = 0.0
-        for client_project_id in client_project_ids:
-            total_income += Income.objects.filter(
-                project_id=client_project_id,
-                status="approved",
-            ).annotate(
-                sub_total=F("hours")*F("hour_rate")
-            ).aggregate(
-                total=Sum("sub_total")
-            ).get("total") or 0.0
-        return f"$ {total_income}"
+        total_income = getattr(client_object, "total_income", None)
+        if total_income is None:
+            client_project_ids = client_object.project_set.all().values_list("id", flat=True)
+            total_income = 0.0
+            for client_project_id in client_project_ids:
+                total_income += (
+                    Income.objects.filter(project_id=client_project_id, status="approved")
+                    .annotate(sub_total=F("hours") * F("hour_rate"))
+                    .aggregate(total=Sum("sub_total"))
+                    .get("total") or 0.0
+                )
+        return f"$ {float(total_income):.2f}"
     
     @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
@@ -367,6 +382,20 @@ class ClientAdmin(admin.ModelAdmin):
         return False
     
 
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     current_date = timezone.now().date()
+
+    #     active_from = F("active_from")
+    #     inactive_from = F("inactive_from")
+    #     queryset = queryset.annotate(
+    #         duration_in_days=ExpressionWrapper(
+    #             expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+    #             output_field=DurationField(),
+    #         )
+    #     )
+        
+    #     return queryset
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         current_date = timezone.now().date()
@@ -375,11 +404,22 @@ class ClientAdmin(admin.ModelAdmin):
         inactive_from = F("inactive_from")
         queryset = queryset.annotate(
             duration_in_days=ExpressionWrapper(
-                expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+                expression=Coalesce(inactive_from, current_date) - Coalesce(active_from, current_date),
                 output_field=DurationField(),
-            )
+            ),
+            total_income=Coalesce(
+                Sum(
+                    ExpressionWrapper(
+                        F("project__income__hours") * F("project__income__hour_rate"),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    ),
+                    filter=models.Q(project__income__status="approved"),
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                ),
+                0.0,
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            ),
         )
-        
         return queryset
     
     def get_list_display(self, request):
