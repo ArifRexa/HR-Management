@@ -1149,6 +1149,12 @@ class TeamViewSet(viewsets.ModelViewSet):
 
 class WeeklyProjectHoursViewSet(BaseModelViewSet):
     permission_classes = [IsAuthenticated]
+    serializer_class = ProjectUpdateSerializer
+    queryset = Project.objects.all().prefetch_related(
+        'employeeproject_set__employee',
+        'manager',
+        'tpm'
+    )
     @swagger_auto_schema(
         manual_parameters=[
             openapi.Parameter(
