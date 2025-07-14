@@ -1,13 +1,13 @@
 from django import forms
 from django.contrib import admin
 from django.utils import timezone
-from datetime import datetime
+from datetime import date, datetime
 from django.contrib import messages as message
 from django.db.models import (
     Case, DateField, When, Sum,
     F, functions, ExpressionWrapper, DurationField,
 )
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.template.loader import get_template
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
@@ -15,7 +15,9 @@ from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 from django.core.management import call_command
 from django.db.models import Subquery, OuterRef, F, Sum, DecimalField, ExpressionWrapper, DurationField, functions
-from django.db.models.functions import Coalesce# from networkx import project
+from django.db.models.functions import Coalesce
+import openpyxl# from networkx import project
+from openpyxl.utils import get_column_letter
 from account.models import Income
 from project_management.models import (
     Client,
@@ -234,7 +236,7 @@ class ClientAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
-    actions = ["mark_as_in_active",]
+    actions = ["mark_as_in_active", "export_to_excel"]
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
@@ -448,6 +450,80 @@ class ClientAdmin(admin.ModelAdmin):
                 obj.active_from = timezone.now().date()
             obj.inactive_from = None
             obj.save()
+
+    @admin.action(description="Export selected clients to Excel")
+    def export_to_excel(self, request, queryset):
+        # Create a new workbook and select the active sheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Clients"
+
+        # Define headers based on list_display
+        headers = [
+            "Name",
+            "Hourly Rate",
+            "Income",
+            "Inactive From",
+            "Duration",
+            "Referrals",
+            "Payment Method",
+            "Invoice Type",
+            "Source",
+            "Remark",
+        ]
+        for col_num, header in enumerate(headers, 1):
+            ws[f"{get_column_letter(col_num)}1"] = header
+            ws[f"{get_column_letter(col_num)}1"].font = openpyxl.styles.Font(bold=True)
+
+        # Populate data
+        for row_num, client in enumerate(queryset, 2):
+            # Handle computed fields and model fields
+            ws[f"{get_column_letter(1)}{row_num}"] = client.name
+            ws[f"{get_column_letter(2)}{row_num}"] = (
+                f"{client.currency.icon if client.currency else ''} {client.hourly_rate}"
+                if client.hourly_rate is not None else "-"
+            )
+            ws[f"{get_column_letter(3)}{row_num}"] = self.get_project_income(client)
+            ws[f"{get_column_letter(4)}{row_num}"] = (
+                client.inactive_from.strftime("%Y-%m-%d") if client.inactive_from else ""
+            )
+            ws[f"{get_column_letter(5)}{row_num}"] = self.get_duration(client) or ""
+            ws[f"{get_column_letter(6)}{row_num}"] = (
+                self.get_referrals_name(client).replace('<br>', ', ') if '<br>' in self.get_referrals_name(client)
+                else self.get_referrals_name(client)
+            )
+            ws[f"{get_column_letter(7)}{row_num}"] = (
+                str(client.payment_method) if client.payment_method else ""
+            )
+            ws[f"{get_column_letter(8)}{row_num}"] = (
+                str(client.invoice_type) if client.invoice_type else ""
+            )
+            ws[f"{get_column_letter(9)}{row_num}"] = client.source or ""
+            ws[f"{get_column_letter(10)}{row_num}"] = (
+                self.get_remark(client).replace('<br>', ', ') if '<br>' in self.get_remark(client)
+                else self.get_remark(client)
+            )
+
+        # Adjust column widths
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = max_length + 2
+            ws.column_dimensions[column].width = adjusted_width
+
+        # Prepare response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = f'attachment; filename="clients_export_{date.today().strftime("%Y%m%d")}.xlsx"'
+        wb.save(response)
+        return response
     
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
