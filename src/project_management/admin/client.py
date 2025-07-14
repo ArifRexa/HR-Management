@@ -234,7 +234,7 @@ class ClientAdmin(admin.ModelAdmin):
         project_name = obj.project_set.all().values_list("title", flat=True)
         return format_html("<br>".join(project_name))
 
-    @admin.display(description="Inactive")
+    @admin.display(description="Inactive", ordering="inactive_from")
     def get_inactive_from(self, client_obj):
         return client_obj.inactive_from
     
