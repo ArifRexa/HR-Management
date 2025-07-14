@@ -340,19 +340,10 @@ class ClientAdmin(admin.ModelAdmin):
     #             total=Sum("sub_total")
     #         ).get("total") or 0.0
     #     return f"$ {total_income}"
+
     @admin.display(description="Income", ordering="total_income")
     def get_project_income(self, client_object):
-        total_income = getattr(client_object, "total_income", None)
-        if total_income is None:
-            client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-            total_income = 0.0
-            for client_project_id in client_project_ids:
-                total_income += (
-                    Income.objects.filter(project_id=client_project_id, status="approved")
-                    .annotate(sub_total=F("hours") * F("hour_rate"))
-                    .aggregate(total=Sum("sub_total"))
-                    .get("total") or 0.0
-                )
+        total_income = getattr(client_object, "total_income", 0.0)
         return f"$ {float(total_income):.2f}"
     
     @admin.display(description="Duration", ordering="duration_in_days")
