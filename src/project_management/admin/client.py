@@ -1,3 +1,4 @@
+from pyexpat.errors import messages
 from django import forms
 from django.contrib import admin
 from django.utils import timezone
@@ -6,6 +7,7 @@ from django.contrib import messages as message
 from django.db.models import (
     Case, DateField, When, Sum,
     F, functions, ExpressionWrapper, DurationField,
+    Q,
 )
 from django.http import HttpRequest, HttpResponse
 from django.template.loader import get_template
@@ -238,6 +240,17 @@ class ClientAdmin(admin.ModelAdmin):
     form = ClientForm
     actions = ["mark_as_in_active", "export_to_excel"]
 
+    
+    # Override get_actions to restrict actions based on permissions
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        # Remove actions if the user lacks the required permissions
+        if not request.user.has_perm("project_management.can_mark_as_inactive"):
+            actions.pop("mark_as_in_active", None)
+        if not request.user.has_perm("project_management.can_export_to_excel"):
+            actions.pop("export_to_excel", None)
+        return actions
+
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
@@ -309,6 +322,13 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark as In-active")
     def mark_as_in_active(self, request, queryset):
+        if not request.user.has_perm("project_management.can_mark_as_inactive"):
+            self.message_user(
+                request,
+                "You do not have permission to mark clients as inactive.",
+                messages.ERROR,
+            )
+            return
         try:
             queryset.update(active=False)
             self.message_user(
@@ -425,6 +445,56 @@ class ClientAdmin(admin.ModelAdmin):
             ),
         )
         return queryset
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     current_date = timezone.now().date()
+
+    #     # Get date range from request
+    #     from_date = request.GET.get("from_date")
+    #     to_date = request.GET.get("to_date")
+
+    #     # Convert string dates to date objects
+    #     try:
+    #         from_date = datetime.strptime(from_date, "%Y-%m-%d").date() if from_date else None
+    #         to_date = datetime.strptime(to_date, "%Y-%m-%d").date() if to_date else None
+    #     except ValueError:
+    #         # Handle invalid date formats
+    #         from_date = None
+    #         to_date = None
+    #         self.message_user(
+    #             request,
+    #             "Invalid date format provided. Please use YYYY-MM-DD.",
+    #             messages.WARNING,
+    #         )
+
+    #     # Build the income filter
+    #     income_filter = Q(project__income__status="approved")
+    #     if from_date:
+    #         income_filter &= Q(project__income__date__gte=from_date)
+    #     if to_date:
+    #         income_filter &= Q(project__income__date__lte=to_date)
+
+    #     # Annotate queryset with total_income for the date range
+    #     queryset = queryset.annotate(
+    #         duration_in_days=ExpressionWrapper(
+    #             expression=Coalesce(F("inactive_from"), current_date)
+    #             - Coalesce(F("active_from"), current_date),
+    #             output_field=DurationField(),
+    #         ),
+    #         total_income=Coalesce(
+    #             Sum(
+    #                 ExpressionWrapper(
+    #                     F("project__income__hours") * F("project__income__hour_rate"),
+    #                     output_field=DecimalField(max_digits=10, decimal_places=2),
+    #                 ),
+    #                 filter=income_filter,
+    #                 output_field=DecimalField(max_digits=10, decimal_places=2),
+    #             ),
+    #             0.0,
+    #             output_field=DecimalField(max_digits=10, decimal_places=2),
+    #         ),
+    #     )
+    #     return queryset
     
     def get_list_display(self, request):
         list_display = list(super().get_list_display(request))
@@ -453,6 +523,13 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.action(description="Export selected clients to Excel")
     def export_to_excel(self, request, queryset):
+        if not request.user.has_perm("project_management.can_export_to_excel"):
+            self.message_user(
+                request,
+                "You do not have permission to export clients to Excel.",
+                messages.ERROR,
+            )
+            return
         # Create a new workbook and select the active sheet
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -499,10 +576,10 @@ class ClientAdmin(admin.ModelAdmin):
                 str(client.invoice_type) if client.invoice_type else ""
             )
             ws[f"{get_column_letter(9)}{row_num}"] = client.source or ""
-            ws[f"{get_column_letter(10)}{row_num}"] = (
-                self.get_remark(client).replace('<br>', ', ') if '<br>' in self.get_remark(client)
-                else self.get_remark(client)
-            )
+            # ws[f"{get_column_letter(10)}{row_num}"] = (
+            #     self.get_remark(client).replace('<br>', ', ') if '<br>' in self.get_remark(client)
+            #     else self.get_remark(client)
+            # )
 
         # Adjust column widths
         for col in ws.columns:

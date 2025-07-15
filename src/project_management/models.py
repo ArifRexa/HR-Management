@@ -307,6 +307,8 @@ class Client(TimeStampMixin, AuthorMixin):
         permissions = [
             ("exclude_hourly_rate", "Client hourly rate exclude."),
             ("exclude_income", "Client income exclude."),
+            ("can_mark_as_inactive", "Can mark clients as inactive"),
+            ("can_export_to_excel", "Can export clients to Excel"),
         ]
 
 class ClientExperience(Client):

@@ -1,0 +1,30 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block result_list %}
+  <!-- Custom date range filter form above the table -->
+  <div style="margin-bottom: 20px;">
+    <!-- <h3>{% trans 'Filter by Income Date Range' %}</h3> -->
+    <form id="date-range-filter" method="GET" action="">
+      <div style="display: flex; gap: 20px; align-items: center;">
+        <div>
+          <label for="id_from_date">{% trans 'From Date' %}</label>
+          <input type="date" name="from_date" id="id_from_date" value="{{ request.GET.from_date|default_if_none:'' }}">
+        </div>
+        <div>
+          <label for="id_to_date">{% trans 'To Date' %}</label>
+          <input type="date" name="to_date" id="id_to_date" value="{{ request.GET.to_date|default_if_none:'' }}">
+        </div>
+        <div>
+          <input type="submit" value="{% trans 'Apply' %}">
+          {% if request.GET.from_date or request.GET.to_date %}
+            <a href="?{% for key, value in request.GET.items %}{% if key != 'from_date' and key != 'to_date' %}{{ key }}={{ value }}&{% endif %}{% endfor %}">{% trans 'Clear' %}</a>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Render the default result list (table) -->
+  {{ block.super }}
+{% endblock %}
