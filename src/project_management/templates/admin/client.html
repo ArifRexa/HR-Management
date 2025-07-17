@@ -1,8 +1,14 @@
 {% extends "admin/change_list.html" %}
 {% block content %}
-<form id="income-date-filter" method="get" style="margin-bottom:1em;">
-    {{ date_form.as_p }}
-    <button type="submit">Filter</button>
-  </form>
+<form method="get" action="." style="width:50%;margin-bottom:1em">
+  <input type="date" name="from_date" value="{{ from_date }}">
+  <input type="date" name="to_date" value="{{ to_date }}">
+  <input type="submit" class="default" value="Generate">
+  {% for k, v in request.GET.items %}
+    {% if k != 'from_date' and k != 'to_date' %}
+      <input type="hidden" name="{{ k }}" value="{{ v }}">
+    {% endif %}
+  {% endfor %}
+</form>
 {{ block.super }}
 {% endblock %}
