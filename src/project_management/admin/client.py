@@ -192,9 +192,10 @@ class ClientAdmin(admin.ModelAdmin):
     )
     fields = (
         "name",
+        "active",
         "source",
         "hourly_rate",
-        "inactive_from",
+        # "inactive_from",
         "refered_by",
         "payment_method",
         "invoice_type",
@@ -202,7 +203,6 @@ class ClientAdmin(admin.ModelAdmin):
         "email",
         "country",
         "review",
-        "active",
         "invoice_cc_email",
         "designation",
         "company_name",
@@ -271,7 +271,7 @@ class ClientAdmin(admin.ModelAdmin):
     def get_source(self, client_obj):
         return client_obj.source
     
-    @admin.display(description="Referrals")
+    @admin.display(description="Referrals", ordering="refered_by")
     def get_referrals_name(self, obj):
         client_referrals = Client.objects.filter(refered_by=obj).values_list("name", flat=True)
         return format_html("<br>".join(client_referrals))
