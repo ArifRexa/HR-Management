@@ -1,25 +1,31 @@
-from pyexpat.errors import messages
+from datetime import date
+
+import openpyxl  # from networkx import project
 from django import forms
 from django.contrib import admin
-from django.utils import timezone
-from datetime import date, datetime
 from django.contrib import messages as message
+from django.contrib.admin.views.main import ERROR_FLAG
+from django.db import models
 from django.db.models import (
-    Case, DateField, When, Sum,
-    F, functions, ExpressionWrapper, DurationField,
+    Case,
+    DateField,
+    DecimalField,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    Sum,
+    When,
 )
-from django.http import HttpRequest, HttpResponse
+from django.db.models.functions import Coalesce
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
-from django.core.management import call_command
-from django.db.models import Subquery, OuterRef, F, Sum, DecimalField, ExpressionWrapper, DurationField, functions
-from django.db.models.functions import Coalesce
-import openpyxl# from networkx import project
 from openpyxl.utils import get_column_letter
-from account.models import Income
+
 from project_management.models import (
     Client,
     ClientAttachment,
@@ -35,7 +41,7 @@ from project_management.models import (
     PaymentMethod,
     Project,
 )
-from django.db import models
+
 
 class ClientInvoiceDateInline(admin.StackedInline):
     model = ClientInvoiceDate
@@ -163,6 +169,7 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
             return False
         return super().has_delete_permission(request, obj)
 
+
 @admin.register(ClientSource)
 class ClientSourceAdmin(admin.ModelAdmin):
     pass
@@ -227,7 +234,7 @@ class ClientAdmin(admin.ModelAdmin):
         "invoice_type",
         "currency",
     ]
-    inlines = (ClientAttachmentInline, )
+    inlines = (ClientAttachmentInline,)
     search_fields = [
         "name",
         "web_name",
@@ -238,6 +245,9 @@ class ClientAdmin(admin.ModelAdmin):
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
     actions = ["mark_as_in_active", "export_to_excel"]
+    change_list_template = "admin/client.html"
+
+    custom_filters = ["from_date", "to_date"]
 
     # Restrict actions based on permissions
     def get_actions(self, request):
@@ -249,14 +259,40 @@ class ClientAdmin(admin.ModelAdmin):
             if not request.user.has_perm("project_management.can_export_to_excel"):
                 actions.pop("export_to_excel", None)
         return actions
-    
+
     # Dynamically exclude hourly_rate field in detail view for users with exclude_hourly_rate permission
     def get_fields(self, request, obj=None):
         fields = list(super().get_fields(request, obj))
-        if not request.user.is_superuser and request.user.has_perm("project_management.exclude_hourly_rate"):
+        if not request.user.is_superuser and request.user.has_perm(
+            "project_management.exclude_hourly_rate"
+        ):
             if "hourly_rate" in fields:
                 fields.remove("hourly_rate")
         return tuple(fields)
+
+    def changelist_view(self, request, extra_context=None):
+        params = request.GET.copy()
+        actual_params = request.GET.copy()
+        fd = params.pop('from_date', [None])[0]
+        td = params.pop('to_date', [None])[0]
+
+        # If Django mistakenly added e=1, clean it once—but only that
+        if ERROR_FLAG in params:
+            params.pop(ERROR_FLAG, None)
+            url = request.path + ('?' + params.urlencode() if params else '')
+            return HttpResponseRedirect(url)
+
+        # Replace GET so Django sees only filters it expects
+        request.GET = actual_params
+
+        extra_context = extra_context or {}
+        extra_context.update({'from_date': fd, 'to_date': td})
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def lookup_allowed(self, lookup, value):
+        if lookup in self.custom_filters:
+            return True
+        return super().lookup_allowed(lookup, value)
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
@@ -266,14 +302,16 @@ class ClientAdmin(admin.ModelAdmin):
     @admin.display(description="Inactive", ordering="inactive_from")
     def get_inactive_from(self, client_obj):
         return client_obj.inactive_from
-    
+
     @admin.display(description="source", ordering="source")
     def get_source(self, client_obj):
         return client_obj.source
-    
+
     @admin.display(description="Referrals", ordering="refered_by")
     def get_referrals_name(self, obj):
-        client_referrals = Client.objects.filter(refered_by=obj).values_list("name", flat=True)
+        client_referrals = Client.objects.filter(refered_by=obj).values_list(
+            "name", flat=True
+        )
         return format_html("<br>".join(client_referrals))
 
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
@@ -286,9 +324,7 @@ class ClientAdmin(admin.ModelAdmin):
             # Create the display string with icon
             rate_display = f"{currency_icon} {obj.hourly_rate}"
 
-        html_template = get_template(
-            "admin/project_management/list/client_info.html"
-        )
+        html_template = get_template("admin/project_management/list/client_info.html")
         html_content = html_template.render(
             {
                 "projects": obj.project_set.all(),
@@ -300,7 +336,7 @@ class ClientAdmin(admin.ModelAdmin):
         try:
             data = format_html(html_content)
         except:
-            data = "-"    
+            data = "-"
         return data
 
     @admin.display(description="Age", ordering="created_at")
@@ -329,7 +365,9 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark as In-active")
     def mark_as_in_active(self, request, queryset):
-        if not request.user.is_superuser and not request.user.has_perm("your_app.can_mark_as_inactive"):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "your_app.can_mark_as_inactive"
+        ):
             self.message_user(
                 request,
                 "You do not have permission to mark clients as inactive.",
@@ -345,7 +383,7 @@ class ClientAdmin(admin.ModelAdmin):
             self.message_user(
                 request, "Selected clients are not marked as active.", message.ERROR
             )
-    
+
     # @admin.action(description="Set inactive-from value for inactive Clients.")
     # def set_inactive_from_value_for_inactive_alients(self, request, queryset):
     #     try:
@@ -364,7 +402,6 @@ class ClientAdmin(admin.ModelAdmin):
     #     client_review = obj.review.all().values_list("name", flat=True)
 
     #     return format_html("<br>".join(client_review))
-
 
     # @admin.display(description="Income")
     # def get_project_income(self, client_object):
@@ -385,7 +422,7 @@ class ClientAdmin(admin.ModelAdmin):
     def get_project_income(self, client_object):
         total_income = getattr(client_object, "total_income", 0.0)
         return f"$ {float(total_income):.2f}"
-    
+
     @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
         """
@@ -408,10 +445,9 @@ class ClientAdmin(admin.ModelAdmin):
         if days:
             time_list.append(f"{days}d")
         return " ".join(time_list) or None
-    
+
     def has_module_permission(self, request):
         return False
-    
 
     # def get_queryset(self, request):
     #     queryset = super().get_queryset(request)
@@ -425,17 +461,29 @@ class ClientAdmin(admin.ModelAdmin):
     #             output_field=DurationField(),
     #         )
     #     )
-        
+
     #     return queryset
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         current_date = timezone.now().date()
+        params = request.GET.copy()
+        fd = params.get("from_date")
+        if fd:
+            td = params.get("to_date", timezone.now())
+        else:
+            td = params.get("to_date")
+        income_filter = models.Q(project__income__status="approved")
+        if fd:
+            income_filter = income_filter & models.Q(project__income__date__gte=fd)
+        if td:
+            income_filter = income_filter & models.Q(project__income__date__lte=td)
 
         active_from = F("active_from")
         inactive_from = F("inactive_from")
         queryset = queryset.annotate(
             duration_in_days=ExpressionWrapper(
-                expression=Coalesce(inactive_from, current_date) - Coalesce(active_from, current_date),
+                expression=Coalesce(inactive_from, current_date)
+                - Coalesce(active_from, current_date),
                 output_field=DurationField(),
             ),
             total_income=Coalesce(
@@ -444,18 +492,19 @@ class ClientAdmin(admin.ModelAdmin):
                         F("project__income__hours") * F("project__income__hour_rate"),
                         output_field=DecimalField(max_digits=10, decimal_places=2),
                     ),
-                    filter=models.Q(project__income__status="approved"),
+                    filter=income_filter,
                     output_field=DecimalField(max_digits=10, decimal_places=2),
                 ),
                 0.0,
                 output_field=DecimalField(max_digits=10, decimal_places=2),
             ),
         )
+
         return queryset
-    
+
     def get_list_display(self, request):
         list_display = list(super().get_list_display(request))
-        
+
         if request.user.is_superuser:
             return tuple(list_display)
         if request.user.has_perm("project_management.exclude_income"):
@@ -480,7 +529,9 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.action(description="Export selected clients to Excel")
     def export_to_excel(self, request, queryset):
-        if not request.user.is_superuser and not request.user.has_perm("your_app.can_export_to_excel"):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "your_app.can_export_to_excel"
+        ):
             self.message_user(
                 request,
                 "You do not have permission to export clients to Excel.",
@@ -516,7 +567,8 @@ class ClientAdmin(admin.ModelAdmin):
             ws[f"{get_column_letter(1)}{row_num}"] = client.name
             ws[f"{get_column_letter(2)}{row_num}"] = (
                 ", ".join(client.project_set.all().values_list("title", flat=True))
-                if client.project_set.exists() else ""
+                if client.project_set.exists()
+                else ""
             )
             ws[f"{get_column_letter(3)}{row_num}"] = client.email or ""
             ws[f"{get_column_letter(4)}{row_num}"] = (
@@ -524,15 +576,19 @@ class ClientAdmin(admin.ModelAdmin):
             )
             ws[f"{get_column_letter(5)}{row_num}"] = (
                 f"{client.currency.icon if client.currency else ''} {client.hourly_rate}"
-                if client.hourly_rate is not None else "-"
+                if client.hourly_rate is not None
+                else "-"
             )
             ws[f"{get_column_letter(6)}{row_num}"] = self.get_project_income(client)
             ws[f"{get_column_letter(7)}{row_num}"] = (
-                client.inactive_from.strftime("%Y-%m-%d") if client.inactive_from else ""
+                client.inactive_from.strftime("%Y-%m-%d")
+                if client.inactive_from
+                else ""
             )
             ws[f"{get_column_letter(8)}{row_num}"] = self.get_duration(client) or ""
             ws[f"{get_column_letter(9)}{row_num}"] = (
-                self.get_referrals_name(client).replace('<br>', ', ') if '<br>' in self.get_referrals_name(client)
+                self.get_referrals_name(client).replace("<br>", ", ")
+                if "<br>" in self.get_referrals_name(client)
                 else self.get_referrals_name(client)
             )
             ws[f"{get_column_letter(10)}{row_num}"] = (
@@ -558,10 +614,12 @@ class ClientAdmin(admin.ModelAdmin):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = f'attachment; filename="clients_export_{date.today().strftime("%Y%m%d")}.xlsx"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="clients_export_{date.today().strftime("%Y%m%d")}.xlsx"'
+        )
         wb.save(response)
         return response
-    
+
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
 
