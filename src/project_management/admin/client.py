@@ -271,22 +271,19 @@ class ClientAdmin(admin.ModelAdmin):
         return tuple(fields)
 
     def changelist_view(self, request, extra_context=None):
-        params = request.GET.copy()
-        actual_params = request.GET.copy()
-        fd = params.pop('from_date', [None])[0]
-        td = params.pop('to_date', [None])[0]
+        request.GET._mutable = True
+        from_date = request.GET.pop('from_date', [''])[0]
+        to_date = request.GET.pop('to_date', [''])[0]
+        request.GET._mutable = False
 
-        # If Django mistakenly added e=1, clean it once—but only that
-        if ERROR_FLAG in params:
-            params.pop(ERROR_FLAG, None)
-            url = request.path + ('?' + params.urlencode() if params else '')
-            return HttpResponseRedirect(url)
-
-        # Replace GET so Django sees only filters it expects
-        request.GET = actual_params
+        if ERROR_FLAG in request.GET:
+            return HttpResponseRedirect(request.path)
 
         extra_context = extra_context or {}
-        extra_context.update({'from_date': fd, 'to_date': td})
+        extra_context.update({
+            'from_date': from_date,
+            'to_date': to_date
+        })
         return super().changelist_view(request, extra_context=extra_context)
 
     def lookup_allowed(self, lookup, value):
