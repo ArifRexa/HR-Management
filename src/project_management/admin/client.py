@@ -17,6 +17,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.management import call_command
 from django.db.models import Subquery, OuterRef, F, Sum, DecimalField, ExpressionWrapper, DurationField, functions
 from django.db.models.functions import Coalesce
+from dateutil.relativedelta import relativedelta
 import openpyxl# from networkx import project
 from openpyxl.utils import get_column_letter
 from account.models import Income
@@ -381,10 +382,66 @@ class ClientAdmin(admin.ModelAdmin):
     #         ).get("total") or 0.0
     #     return f"$ {total_income}"
 
+    # @admin.display(description="Income", ordering="total_income")
+    # def get_project_income(self, client_object):
+    #     total_income = getattr(client_object, "total_income", 0.0)
+    #     return f"$ {float(total_income):.2f}"
+
     @admin.display(description="Income", ordering="total_income")
     def get_project_income(self, client_object):
+        """
+        Display the total income followed by the income for the last 4 months.
+        Format: $ total_income/month1, month2, month3, month4
+        Example: $ 1000.00/500.00, 350.00, 200.00, 800.00
+        """
+        # Get the current date and calculate the start of the last 4 months
+        current_date = timezone.now().date()
+        four_months_ago = current_date - relativedelta(months=4)
+        four_months_ago = four_months_ago.replace(day=1)  # Start from the 1st of the month
+
+        # Get all projects associated with the client
+        client_project_ids = client_object.project_set.all().values_list("id", flat=True)
+
+        # Get total income from the annotated queryset
         total_income = getattr(client_object, "total_income", 0.0)
-        return f"$ {float(total_income):.2f}"
+
+        # Calculate monthly incomes
+        monthly_incomes = []
+        for i in range(4):
+            # Define the start and end of the month
+            month_start = (current_date - relativedelta(months=i)).replace(day=1)
+            if i == 0:
+                month_end = current_date  # Current month includes up to today
+            else:
+                month_end = (month_start + relativedelta(months=1) - relativedelta(days=1))
+
+            # Sum the income for the month
+            month_income = (
+                Income.objects.filter(
+                    project_id__in=client_project_ids,
+                    status="approved",
+                    date__gte=month_start,
+                    date__lte=month_end,
+                ).aggregate(
+                    total=Coalesce(
+                        Sum(
+                            ExpressionWrapper(
+                                F("hours") * F("hour_rate"),
+                                output_field=DecimalField(max_digits=10, decimal_places=2),
+                            )
+                        ),
+                        0.0,
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    )
+                )["total"]
+            )
+            monthly_incomes.append(float(month_income))
+
+        # Format the output: $ total_income/month1, month2, month3, month4
+        formatted_income = f"$ {float(total_income):.2f} / " + ", ".join(
+            f"{month_income:.2f}" for month_income in monthly_incomes
+        )
+        return formatted_income
     
     @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
