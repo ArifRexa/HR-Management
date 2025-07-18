@@ -251,7 +251,6 @@ class ClientAdmin(admin.ModelAdmin):
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
     actions = ["mark_as_in_active", "export_to_excel"]
-    change_list_template = "admin/client.html"
 
     custom_filters = ["from_date", "to_date"]
 
@@ -387,39 +386,6 @@ class ClientAdmin(admin.ModelAdmin):
                 request, "Selected clients are not marked as active.", message.ERROR
             )
 
-    # @admin.action(description="Set inactive-from value for inactive Clients.")
-    # def set_inactive_from_value_for_inactive_alients(self, request, queryset):
-    #     try:
-    #         call_command("set_inactive_dates")
-    #         self.message_user(
-    #             request, "Inactive-from value set for Inactive Clients.", message.SUCCESS
-    #         )
-    #     except Exception:
-    #         self.message_user(
-    #             request, "Inactive-from value set failed for Inactive Clients!", message.ERROR
-    #         )
-
-    # get_project_name.short_description = "Project Name"
-    # @admin.display(description="Client Review")
-    # def get_client_review(self, obj):
-    #     client_review = obj.review.all().values_list("name", flat=True)
-
-    #     return format_html("<br>".join(client_review))
-
-    # @admin.display(description="Income")
-    # def get_project_income(self, client_object):
-    #     client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-    #     total_income = 0.0
-    #     for client_project_id in client_project_ids:
-    #         total_income += Income.objects.filter(
-    #             project_id=client_project_id,
-    #             status="approved",
-    #         ).annotate(
-    #             sub_total=F("hours")*F("hour_rate")
-    #         ).aggregate(
-    #             total=Sum("sub_total")
-    #         ).get("total") or 0.0
-    #     return f"$ {total_income}"
 
     # @admin.display(description="Income", ordering="total_income")
     # def get_project_income(self, client_object):
@@ -443,6 +409,13 @@ class ClientAdmin(admin.ModelAdmin):
 
         # Get total income from the annotated queryset
         total_income = getattr(client_object, "total_income", 0.0)
+
+        # monthly_incomes = Income.objects.filter(
+        #             project_id__in=client_project_ids,
+        #             status="approved",
+        #             date__gte=four_months_ago,
+        #             date__lte=current_date,
+        #         )
 
         # Calculate monthly incomes
         monthly_incomes = []
@@ -525,18 +498,7 @@ class ClientAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         current_date = timezone.now().date()
-        params = request.GET.copy()
-        fd = params.get("from_date")
-        if fd:
-            td = params.get("to_date", timezone.now())
-        else:
-            td = params.get("to_date")
         income_filter = models.Q(project__income__status="approved")
-        if fd:
-            income_filter = income_filter & models.Q(project__income__date__gte=fd)
-        if td:
-            income_filter = income_filter & models.Q(project__income__date__lte=td)
-
         active_from = F("active_from")
         inactive_from = F("inactive_from")
         queryset = queryset.annotate(
