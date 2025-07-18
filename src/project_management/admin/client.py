@@ -517,7 +517,7 @@ class ClientAdmin(admin.ModelAdmin):
 
         # Format the output: $ total_income/month1, month2, month3, month4
         formatted_income = format_html(
-            '<span style="font-weight: bold; font-size: calc(1rem + 2px);">$ {}</span><br>{}<br>{}<br>{}<br>{}',
+            '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>{}<br>{}<br>{}<br>{}',
             f"{float(total_income):.2f}",
             f"{incomes[0]:.2f}",
             f"{incomes[1]:.2f}",
