@@ -575,7 +575,27 @@ class ProjectUpdateSerializer(serializers.Serializer):
     def get_manager(self, obj):
         """Retrieve the project manager's full name from EmployeeUnderTPM."""
         tpm = EmployeeUnderTPM.objects.filter(project_id=obj['project_id']).select_related('tpm').first()
+        # Fetch the lead who approved the latest daily project update for this project
+        approved_update = DailyProjectUpdate.objects.filter(
+            project_id=obj['project_id'],
+            status='approved'
+        ).select_related('manager').order_by('-created_at').first()
+        
+        lead_name = approved_update.manager.full_name if approved_update and approved_update.manager else "No Lead Assigned"
+        print("Lead is:", lead_name, "\nManager is:", tpm.tpm.full_name)
         return tpm.tpm.full_name if tpm else "No Manager Assigned"
+    
+    def get_lead(self, obj):
+        # Fetch the lead who approved the latest daily project update for this project
+        approved_update = DailyProjectUpdate.objects.filter(
+            project_id=obj['project_id'],
+            status='approved'
+        ).select_related('manager').order_by('-created_at').first()
+        
+        lead_name = approved_update.manager.full_name if approved_update and approved_update.manager else "No Lead Assigned"
+        print("Lead is:", lead_name)
+        return lead_name
+
 
     def get_total_approved_hour(self, obj):
         """Calculate total approved hours for the project in the date range."""
