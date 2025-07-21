@@ -2,7 +2,6 @@ from django.db import models
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
-from django.template.defaultfilters import truncatewords
 
 
 
