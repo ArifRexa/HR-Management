@@ -387,147 +387,6 @@ class ClientAdmin(admin.ModelAdmin):
                 request, "Selected clients are not marked as active.", message.ERROR
             )
 
-
-    # @admin.display(description="Income", ordering="total_income")
-    # def get_project_income(self, client_object):
-    #     total_income = getattr(client_object, "total_income", 0.0)
-    #     return f"$ {float(total_income):.2f}"
-
-    # @admin.display(description="Income", ordering="total_income")
-    # def get_project_income(self, client_object):
-    #     """
-    #     Display the total income followed by the income for the last 4 months.
-    #     Format: $ total_income/month1, month2, month3, month4
-    #     Example: $ 1000.00/500.00, 350.00, 200.00, 800.00
-    #     """
-    #     # Get the current date and calculate the start of the last 4 months
-    #     current_date = timezone.now().date()
-    #     four_months_ago = current_date - relativedelta(months=4)
-    #     four_months_ago = four_months_ago.replace(day=1)  # Start from the 1st of the month
-
-    #     # Get all projects associated with the client
-    #     client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-
-    #     # Get total income from the annotated queryset
-    #     total_income = getattr(client_object, "total_income", 0.0)
-
-    #     # monthly_incomes = Income.objects.filter(
-    #     #             project_id__in=client_project_ids,
-    #     #             status="approved",
-    #     #             date__gte=four_months_ago,
-    #     #             date__lte=current_date,
-    #     #         )
-
-    #     # Calculate monthly incomes
-    #     monthly_incomes = []
-    #     for i in range(4):
-    #         # Define the start and end of the month
-    #         month_start = (current_date - relativedelta(months=i)).replace(day=1)
-    #         if i == 0:
-    #             month_end = current_date  # Current month includes up to today
-    #         else:
-    #             month_end = (month_start + relativedelta(months=1) - relativedelta(days=1))
-
-    #         # Sum the income for the month
-    #         month_income = (
-    #             Income.objects.filter(
-    #                 project_id__in=client_project_ids,
-    #                 status="approved",
-    #                 date__gte=month_start,
-    #                 date__lte=month_end,
-    #             ).aggregate(
-    #                 total=Coalesce(
-    #                     Sum(
-    #                         ExpressionWrapper(
-    #                             F("hours") * F("hour_rate"),
-    #                             output_field=DecimalField(max_digits=10, decimal_places=2),
-    #                         )
-    #                     ),
-    #                     0.0,
-    #                     output_field=DecimalField(max_digits=10, decimal_places=2),
-    #                 )
-    #             )["total"]
-    #         )
-    #         monthly_incomes.append(float(month_income))
-
-    #     # Format the output: $ total_income/month1, month2, month3, month4
-    #     formatted_income = f"$ {float(total_income):.2f} / " + ", ".join(
-    #         f"{month_income:.2f}" for month_income in monthly_incomes
-    #     )
-    #     return formatted_income
-
-
-    # @admin.display(description="Income", ordering="total_income")
-    # def get_project_income(self, client_object):
-        # """
-        # Display the total income followed by the income for the last 4 months.
-        # Format: $ total_income/month1, month2, month3, month4
-        # Example: $ 1000.00/500.00, 350.00, 200.00, 800.00
-        # """
-        # # Get the current date and define the start of the last 4 months
-        # current_date = timezone.now().date()
-        # four_months_ago = current_date - relativedelta(months=4)
-        # four_months_ago = four_months_ago.replace(day=1)  # Start from the 1st of the month
-
-        # # Define the month keys for the last 4 months
-        # month_0 = current_date.replace(day=1)  # Current month
-        # month_1 = (current_date - relativedelta(months=1)).replace(day=1)
-        # month_2 = (current_date - relativedelta(months=2)).replace(day=1)
-        # month_3 = (current_date - relativedelta(months=3)).replace(day=1)
-
-        # # Get all projects associated with the client
-        # client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-
-        # # Get total income from the annotated queryset
-        # total_income = getattr(client_object, "total_income", 0.0)
-
-        # # Aggregate monthly incomes in a single query
-        # monthly_incomes_qs = (
-        #     Income.objects.filter(
-        #         project_id__in=client_project_ids,
-        #         status="approved",
-        #         date__gte=four_months_ago,
-        #         date__lte=current_date,
-        #     )
-        #     .annotate(month=TruncMonth("date"))
-        #     .values("month")
-        #     .annotate(
-        #         total=Coalesce(
-        #             Sum(
-        #                 ExpressionWrapper(
-        #                     F("hours") * F("hour_rate"),
-        #                     output_field=DecimalField(max_digits=10, decimal_places=2),
-        #                 )
-        #             ),
-        #             0.0,
-        #             output_field=DecimalField(max_digits=10, decimal_places=2),
-        #         )
-        #     )
-        # )
-
-        # # Create a dictionary of monthly incomes
-        # monthly_incomes = {item["month"]: float(item["total"]) for item in monthly_incomes_qs}
-
-        # # Get incomes for the last 4 months using dictionary lookups
-        # incomes = [
-        #     monthly_incomes.get(month_0, 0.0),
-        #     monthly_incomes.get(month_1, 0.0),
-        #     monthly_incomes.get(month_2, 0.0),
-        #     monthly_incomes.get(month_3, 0.0),
-        # ]
-
-        # # Format the output: $ total_income/month1, month2, month3, month4
-        # formatted_income = format_html(
-        #     '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>{}<br>{}<br>{}<br>{}',
-        #     f"{float(total_income):.2f}",
-        #     f"{incomes[0]:.2f}",
-        #     f"{incomes[1]:.2f}",
-        #     f"{incomes[2]:.2f}",
-        #     f"{incomes[3]:.2f}",
-        # )
-        # return formatted_income
-    
-
     @admin.display(description="Income", ordering="total_income")
     def get_project_income(self, client_object):
         """
@@ -586,6 +445,30 @@ class ClientAdmin(admin.ModelAdmin):
             )
         )
 
+        # Aggregate pending payments for the last 4 months
+        pending_incomes_qs = (
+            Income.objects.filter(
+                project_id__in=client_project_ids,
+                status="pending",
+                date__gte=four_months_ago,
+                date__lte=current_date,
+            )
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(
+                total=Coalesce(
+                    Sum(
+                        ExpressionWrapper(
+                            F("hours") * F("hour_rate"),
+                            output_field=DecimalField(max_digits=10, decimal_places=2),
+                        )
+                    ),
+                    0.0,
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                )
+            )
+        )
+
         # Aggregate income for the 5th month (March 2025)
         fifth_month_income_qs = (
             Income.objects.filter(
@@ -611,6 +494,7 @@ class ClientAdmin(admin.ModelAdmin):
 
         # Create a dictionary of monthly incomes
         monthly_incomes = {item["month"]: float(item["total"]) for item in monthly_incomes_qs}
+        pending_incomes = {item["month"]: float(item["total"]) for item in pending_incomes_qs}
 
         # Get incomes for the last 4 months using dictionary lookups and apply ceiling
         incomes = [
@@ -620,6 +504,13 @@ class ClientAdmin(admin.ModelAdmin):
             math.ceil(monthly_incomes.get(month_3, 0.0)),
         ]
 
+        pending = [
+            math.ceil(pending_incomes.get(month_0, 0.0)),
+            math.ceil(pending_incomes.get(month_1, 0.0)),
+            math.ceil(pending_incomes.get(month_2, 0.0)),
+            math.ceil(pending_incomes.get(month_3, 0.0)),
+        ]   
+
         # Determine which months have a drop greater than 500 compared to the previous month
         red_flags = [
             incomes[0] < incomes[1] - 500 if incomes[1] > 0 else False,  # July vs June
@@ -628,7 +519,24 @@ class ClientAdmin(admin.ModelAdmin):
             incomes[3] < fifth_month_income - 500 if fifth_month_income > 0 else False,  # April vs March
         ]
 
-        # Format the output with HTML: bold total_income, month names with incomes, red for significant drops
+        month_lines = [
+            f"{incomes[i]}{f' ({pending[i]})' if pending[i] > 0 else ''}"
+            for i in range(4)
+        ]
+
+        # # Format the output with HTML: bold total_income, month names with incomes, red for significant drops
+        # formatted_income = format_html(
+        #     '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>'
+        #     '<span style="color: {}">{}</span><br>'
+        #     '<span style="color: {}">{}</span><br>'
+        #     '<span style="color: {}">{}</span><br>'
+        #     '<span style="color: {}">{}</span>',
+        #     total_income,
+        #     "red" if red_flags[0] else "inherit", incomes[0],
+        #     "red" if red_flags[1] else "inherit", incomes[1],
+        #     "red" if red_flags[2] else "inherit", incomes[2],
+        #     "red" if red_flags[3] else "inherit", incomes[3],
+        # )
         formatted_income = format_html(
             '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>'
             '<span style="color: {}">{}</span><br>'
@@ -636,10 +544,10 @@ class ClientAdmin(admin.ModelAdmin):
             '<span style="color: {}">{}</span><br>'
             '<span style="color: {}">{}</span>',
             total_income,
-            "red" if red_flags[0] else "inherit", incomes[0],
-            "red" if red_flags[1] else "inherit", incomes[1],
-            "red" if red_flags[2] else "inherit", incomes[2],
-            "red" if red_flags[3] else "inherit", incomes[3],
+            "red" if red_flags[0] else "inherit", month_lines[0],
+            "red" if red_flags[1] else "inherit", month_lines[1],
+            "red" if red_flags[2] else "inherit", month_lines[2],
+            "red" if red_flags[3] else "inherit", month_lines[3],
         )
         return formatted_income
 
