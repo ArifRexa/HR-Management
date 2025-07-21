@@ -19,6 +19,25 @@ class HRReportNoteCategory(AuthorMixin, TimeStampMixin):
 
 
 class ExcuseNote(AuthorMixin, TimeStampMixin):
+    SEVERITY_CHOICES = (
+            ('low', 'Low'),
+            ('medium', 'Medium'),
+            ('high', 'High'),
+            ('critical', 'Critical'),
+        )
+    STATUS = (
+        ('pending', 'Pending'),
+        ('resolved', 'Resolved')
+    )
+    incedent_date = models.DateField(help_text='Date of the incident', null=True, blank=True)
+    reported_by = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='reported_excuse_notes', null=True, blank=True)
+    severity = models.CharField(
+        max_length=20,
+        choices=SEVERITY_CHOICES,
+        default='low',
+        help_text='Severity of the incident',
+        null=True, blank=True
+    )
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE, limit_choices_to={'active': True})
     category = models.ForeignKey(
         HRReportNoteCategory, 
@@ -27,6 +46,16 @@ class ExcuseNote(AuthorMixin, TimeStampMixin):
         limit_choices_to={'active': True},
     )
     excuse_acts = models.TextField()
+    action_taken = models.TextField(blank=True, null=True, help_text='Actions taken to resolve the incident')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS,
+        default='pending',
+        help_text='Status of the excuse note',
+        null=True, blank=True
+    )
+
+    
 
     def __str__(self) -> str:
         return f"{self.employee.full_name}"
