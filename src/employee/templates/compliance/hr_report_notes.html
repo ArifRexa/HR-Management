@@ -1,0 +1,77 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% block content %}
+    <style type="text/css">
+        
+        .title {
+            font-size: 18pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 5pt;
+        }
+        .record {
+            margin-bottom: 15pt;
+        }
+        .label {
+            font-weight: bold;
+            margin-bottom: 3pt;
+        }
+        .value {
+            margin-bottom: 8pt;
+            font-weight: normal;
+        }
+        .side-by-side {
+            margin-bottom: 8pt;
+            font-size: 12pt;
+        }
+        .side-by-side b {
+            font-weight: bold;
+        }
+        .side-by-side span {
+            font-weight: normal;
+        }
+        .separator {
+            padding: 0 10pt;
+            font-weight: normal;
+        }
+        .record-separator {
+            border-top: 1pt dashed #000;
+            margin: 15pt 0;
+        }
+    </style>
+
+    <div class="title">HR Report Notes</div>
+    {% for note in notes %}
+        <div class="record">
+            <div class="label">Incident Date</div>
+            <div class="value">{{ note.incedent_date|date:"Y-m-d"|default:"N/A" }}</div>
+
+            <div class="side-by-side">
+                <b>Reported By:</b> <span>{{ note.reported_by|default:"N/A" }}</span>
+                <span class="separator">|</span>
+                <b>Severity:</b> <span>{{ note.get_severity_display }}</span>
+            </div>
+
+            <div class="side-by-side">
+                <b>Category:</b> <span>{{ note.category }}</span>
+                <span class="separator">|</span>
+                <b>Status:</b> <span>{{ note.get_status_display }}</span>
+            </div>
+
+            <div class="label">Employee</div>
+            <div class="value">{{ note.employee }}</div>
+
+            <div class="label">Excuse Acts</div>
+            <div class="value">{{ note.excuse_acts|default:"N/A" }}</div>
+
+            <div class="label">Action Taken</div>
+            <div class="value">{{ note.action_taken|default:"N/A" }}</div>
+        </div>
+        {% if not forloop.last %}
+            <div class="record-separator"></div>
+        {% endif %}
+    {% empty %}
+        <div class="value">No reports selected.</div>
+    {% endfor %}
+
+{% endblock %}
