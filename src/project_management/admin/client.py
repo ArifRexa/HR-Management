@@ -1,21 +1,37 @@
+from datetime import date
+
+import openpyxl  # from networkx import project
 from django import forms
 from django.contrib import admin
-from django.utils import timezone
-from datetime import datetime
 from django.contrib import messages as message
+from django.contrib.admin.views.main import ERROR_FLAG
+from django.db import models
 from django.db.models import (
-    Case, DateField, When, Sum,
-    F, functions, ExpressionWrapper, DurationField,
+    Case,
+    DateField,
+    DecimalField,
+    DurationField,
+    ExpressionWrapper,
+    F,
+    Sum,
+    When,
 )
-from django.http import HttpRequest
+import math
+from django.db.models.functions import Coalesce
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.template.loader import get_template
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.timesince import timesince
 from django.utils.translation import gettext_lazy as _
 from django.core.management import call_command
+from django.db.models import Subquery, OuterRef, F, Sum, DecimalField, ExpressionWrapper, DurationField, functions
+from django.db.models.functions import Coalesce, TruncMonth
+from dateutil.relativedelta import relativedelta
+import openpyxl# from networkx import project
+from openpyxl.utils import get_column_letter
 
-# from networkx import project
 from account.models import Income
 from project_management.models import (
     Client,
@@ -24,6 +40,7 @@ from project_management.models import (
     ClientFeedbackEmail,
     ClientInvoiceDate,
     ClientReview,
+    ClientSource,
     ClientStatus,
     Country,
     CurrencyType,
@@ -160,6 +177,11 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
         return super().has_delete_permission(request, obj)
 
 
+@admin.register(ClientSource)
+class ClientSourceAdmin(admin.ModelAdmin):
+    pass
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -178,13 +200,23 @@ class ClientAdmin(admin.ModelAdmin):
         # "currency",
         "payment_method",
         "invoice_type",
+        "get_source",
         "get_remark",
         # "get_client_review",
     )
     fields = (
         "name",
         "active",
+        "source",
+        "hourly_rate",
+        # "inactive_from",
+        "refered_by",
+        "payment_method",
+        "invoice_type",
+        "remark",
         "email",
+        "country",
+        "review",
         "invoice_cc_email",
         "designation",
         "company_name",
@@ -197,17 +229,9 @@ class ClientAdmin(admin.ModelAdmin):
         # "cc_email",
         "address",
         # "active_from",
-        # "inactive_from",
-        "country",
         "notes",
         "is_hour_breakdown",
         "currency",
-        "hourly_rate",
-        "payment_method",
-        "invoice_type",
-        "review",
-        # "remark",
-        "refered_by",
     )
     list_filter = [
         "is_need_feedback",
@@ -217,7 +241,7 @@ class ClientAdmin(admin.ModelAdmin):
         "invoice_type",
         "currency",
     ]
-    inlines = (ClientAttachmentInline, )
+    inlines = (ClientAttachmentInline,)
     search_fields = [
         "name",
         "web_name",
@@ -227,21 +251,70 @@ class ClientAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["country", "payment_method", "refered_by"]
     form = ClientForm
-    actions = ["mark_as_in_active",]
+    actions = ["mark_as_in_active", "export_to_excel"]
+
+    custom_filters = ["from_date", "to_date"]
+
+    # Restrict actions based on permissions
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        # Remove actions if the user is not a superuser and lacks the specific permissions
+        if not request.user.is_superuser:
+            if not request.user.has_perm("project_management.can_mark_as_inactive"):
+                actions.pop("mark_as_in_active", None)
+            if not request.user.has_perm("project_management.can_export_to_excel"):
+                actions.pop("export_to_excel", None)
+        return actions
+
+    # Dynamically exclude hourly_rate field in detail view for users with exclude_hourly_rate permission
+    def get_fields(self, request, obj=None):
+        fields = list(super().get_fields(request, obj))
+        if not request.user.is_superuser and request.user.has_perm(
+            "project_management.exclude_hourly_rate"
+        ):
+            if "hourly_rate" in fields:
+                fields.remove("hourly_rate")
+        return tuple(fields)
+
+    def changelist_view(self, request, extra_context=None):
+        request.GET._mutable = True
+        from_date = request.GET.pop('from_date', [''])[0]
+        to_date = request.GET.pop('to_date', [''])[0]
+        request.GET._mutable = False
+
+        if ERROR_FLAG in request.GET:
+            return HttpResponseRedirect(request.path)
+
+        extra_context = extra_context or {}
+        extra_context.update({
+            'from_date': from_date,
+            'to_date': to_date
+        })
+        return super().changelist_view(request, extra_context=extra_context)
+
+    def lookup_allowed(self, lookup, value):
+        if lookup in self.custom_filters:
+            return True
+        return super().lookup_allowed(lookup, value)
 
     @admin.display(description="Project Name")
     def get_project_name(self, obj):
         project_name = obj.project_set.all().values_list("title", flat=True)
-
         return format_html("<br>".join(project_name))
-    
-    @admin.display(description="Inactive")
+
+    @admin.display(description="Inactive", ordering="inactive_from")
     def get_inactive_from(self, client_obj):
         return client_obj.inactive_from
-    
-    @admin.display(description="Referrals")
+
+    @admin.display(description="source", ordering="source")
+    def get_source(self, client_obj):
+        return client_obj.source
+
+    @admin.display(description="Referrals", ordering="refered_by")
     def get_referrals_name(self, obj):
-        client_referrals = Client.objects.filter(refered_by=obj).values_list("name", flat=True)
+        client_referrals = Client.objects.filter(refered_by=obj).values_list(
+            "name", flat=True
+        )
         return format_html("<br>".join(client_referrals))
 
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
@@ -254,9 +327,7 @@ class ClientAdmin(admin.ModelAdmin):
             # Create the display string with icon
             rate_display = f"{currency_icon} {obj.hourly_rate}"
 
-        html_template = get_template(
-            "admin/project_management/list/client_info.html"
-        )
+        html_template = get_template("admin/project_management/list/client_info.html")
         html_content = html_template.render(
             {
                 "projects": obj.project_set.all(),
@@ -268,7 +339,7 @@ class ClientAdmin(admin.ModelAdmin):
         try:
             data = format_html(html_content)
         except:
-            data = "-"    
+            data = "-"
         return data
 
     @admin.display(description="Age", ordering="created_at")
@@ -297,6 +368,15 @@ class ClientAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark as In-active")
     def mark_as_in_active(self, request, queryset):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "your_app.can_mark_as_inactive"
+        ):
+            self.message_user(
+                request,
+                "You do not have permission to mark clients as inactive.",
+                # messages.ERROR,
+            )
+            return
         try:
             queryset.update(active=False)
             self.message_user(
@@ -306,40 +386,172 @@ class ClientAdmin(admin.ModelAdmin):
             self.message_user(
                 request, "Selected clients are not marked as active.", message.ERROR
             )
-    
-    # @admin.action(description="Set inactive-from value for inactive Clients.")
-    # def set_inactive_from_value_for_inactive_alients(self, request, queryset):
-    #     try:
-    #         call_command("set_inactive_dates")
-    #         self.message_user(
-    #             request, "Inactive-from value set for Inactive Clients.", message.SUCCESS
-    #         )
-    #     except Exception:
-    #         self.message_user(
-    #             request, "Inactive-from value set failed for Inactive Clients!", message.ERROR
-    #         )
 
-    # get_project_name.short_description = "Project Name"
-    # @admin.display(description="Client Review")
-    # def get_client_review(self, obj):
-    #     client_review = obj.review.all().values_list("name", flat=True)
-
-    #     return format_html("<br>".join(client_review))
-
-    @admin.display(description="Income")
+    @admin.display(description="Income", ordering="total_income")
     def get_project_income(self, client_object):
+        """
+        Display the total income (bold) followed by the income for the last 4 months (with month names),
+        each on a new line. If a month's income drops by more than 500 compared to the previous month
+        (or March for April), display it in red. Use ceiling rounding for all values.
+        Format: $ total_income\nJuly income\nJune income\nMay income\nApril income
+        Example: $ 1000\nJuly 500\nJune 400\nMay 1000\nApril 700
+        """
+        # Get the current date and define the start of the last 4 months and 5th month
+        current_date = timezone.now().date()
+        four_months_ago = current_date - relativedelta(months=4)
+        four_months_ago = four_months_ago.replace(day=1)  # Start from the 1st of the month
+        fifth_month_start = (current_date - relativedelta(months=4)).replace(day=1)
+        fifth_month_end = fifth_month_start + relativedelta(months=1) - relativedelta(days=1)
+
+        # Define the month keys and names for the last 4 months
+        month_0 = current_date.replace(day=1)  # Current month (July 2025)
+        month_1 = (current_date - relativedelta(months=1)).replace(day=1)  # June 2025
+        month_2 = (current_date - relativedelta(months=2)).replace(day=1)  # May 2025
+        month_3 = (current_date - relativedelta(months=3)).replace(day=1)  # April 2025
+        month_names = [
+            month_0.strftime("%B"),
+            month_1.strftime("%B"),
+            month_2.strftime("%B"),
+            month_3.strftime("%B"),
+        ]
+
+        # Get all projects associated with the client
         client_project_ids = client_object.project_set.all().values_list("id", flat=True)
-        total_income = 0.0
-        for client_project_id in client_project_ids:
-            total_income += Income.objects.filter(
-                project_id=client_project_id,
+
+        # Get total income from the annotated queryset and apply ceiling
+        total_income = math.ceil(float(getattr(client_object, "total_income", 0.0)))
+
+        # Aggregate monthly incomes in a single query for the last 4 months
+        monthly_incomes_qs = (
+            Income.objects.filter(
+                project_id__in=client_project_ids,
                 status="approved",
-            ).annotate(
-                sub_total=F("hours")*F("hour_rate")
-            ).aggregate(
-                total=Sum("sub_total")
-            ).get("total") or 0.0
-        return f"$ {total_income}"
+                date__gte=four_months_ago,
+                date__lte=current_date,
+            )
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(
+                total=Coalesce(
+                    Sum(
+                        ExpressionWrapper(
+                            F("hours") * F("hour_rate"),
+                            output_field=DecimalField(max_digits=10, decimal_places=2),
+                        )
+                    ),
+                    0.0,
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                )
+            )
+        )
+
+        # Aggregate pending payments for the last 4 months
+        pending_incomes_qs = (
+            Income.objects.filter(
+                project_id__in=client_project_ids,
+                status="pending",
+                date__gte=four_months_ago,
+                date__lte=current_date,
+            )
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(
+                total=Coalesce(
+                    Sum(
+                        ExpressionWrapper(
+                            F("hours") * F("hour_rate"),
+                            output_field=DecimalField(max_digits=10, decimal_places=2),
+                        )
+                    ),
+                    0.0,
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                )
+            )
+        )
+
+        # Aggregate income for the 5th month (March 2025)
+        fifth_month_income_qs = (
+            Income.objects.filter(
+                project_id__in=client_project_ids,
+                status="approved",
+                date__gte=fifth_month_start,
+                date__lte=fifth_month_end,
+            )
+            .aggregate(
+                total=Coalesce(
+                    Sum(
+                        ExpressionWrapper(
+                            F("hours") * F("hour_rate"),
+                            output_field=DecimalField(max_digits=10, decimal_places=2),
+                        )
+                    ),
+                    0.0,
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                )
+            )
+        )
+        fifth_month_income = float(fifth_month_income_qs["total"])
+
+        # Create a dictionary of monthly incomes
+        monthly_incomes = {item["month"]: float(item["total"]) for item in monthly_incomes_qs}
+        pending_incomes = {item["month"]: float(item["total"]) for item in pending_incomes_qs}
+
+        # Get incomes for the last 4 months using dictionary lookups and apply ceiling
+        incomes = [
+            math.ceil(monthly_incomes.get(month_0, 0.0)),
+            math.ceil(monthly_incomes.get(month_1, 0.0)),
+            math.ceil(monthly_incomes.get(month_2, 0.0)),
+            math.ceil(monthly_incomes.get(month_3, 0.0)),
+        ]
+
+        pending = [
+            math.ceil(pending_incomes.get(month_0, 0.0)),
+            math.ceil(pending_incomes.get(month_1, 0.0)),
+            math.ceil(pending_incomes.get(month_2, 0.0)),
+            math.ceil(pending_incomes.get(month_3, 0.0)),
+        ]   
+
+        # Determine which months have a drop greater than 500 compared to the previous month
+        red_flags = [
+            incomes[0] < incomes[1] - 500 if incomes[1] > 0 else False,  # July vs June
+            incomes[1] < incomes[2] - 500 if incomes[2] > 0 else False,  # June vs May
+            incomes[2] < incomes[3] - 500 if incomes[3] > 0 else False,  # May vs April
+            incomes[3] < fifth_month_income - 500 if fifth_month_income > 0 else False,  # April vs March
+        ]
+
+        month_lines = [
+            f"{incomes[i]}{f' ({pending[i]})' if pending[i] > 0 else ''}"
+            for i in range(4)
+        ]
+
+        # # Format the output with HTML: bold total_income, month names with incomes, red for significant drops
+        # formatted_income = format_html(
+        #     '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>'
+        #     '<span style="color: {}">{}</span><br>'
+        #     '<span style="color: {}">{}</span><br>'
+        #     '<span style="color: {}">{}</span><br>'
+        #     '<span style="color: {}">{}</span>',
+        #     total_income,
+        #     "red" if red_flags[0] else "inherit", incomes[0],
+        #     "red" if red_flags[1] else "inherit", incomes[1],
+        #     "red" if red_flags[2] else "inherit", incomes[2],
+        #     "red" if red_flags[3] else "inherit", incomes[3],
+        # )
+        formatted_income = format_html(
+            '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>'
+            '<span style="color: {}">{}</span><br>'
+            '<span style="color: {}">{}</span><br>'
+            '<span style="color: {}">{}</span><br>'
+            '<span style="color: {}">{}</span>',
+            total_income,
+            "red" if red_flags[0] else "inherit", month_lines[0],
+            "red" if red_flags[1] else "inherit", month_lines[1],
+            "red" if red_flags[2] else "inherit", month_lines[2],
+            "red" if red_flags[3] else "inherit", month_lines[3],
+        )
+        return formatted_income
+
+
     
     @admin.display(description="Duration", ordering="duration_in_days")
     def get_duration(self, client_object):
@@ -366,21 +578,61 @@ class ClientAdmin(admin.ModelAdmin):
 
     def has_module_permission(self, request):
         return False
-    
 
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     current_date = timezone.now().date()
+
+    #     active_from = F("active_from")
+    #     inactive_from = F("inactive_from")
+    #     queryset = queryset.annotate(
+    #         duration_in_days=ExpressionWrapper(
+    #             expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+    #             output_field=DurationField(),
+    #         )
+    #     )
+
+    #     return queryset
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         current_date = timezone.now().date()
-
+        income_filter = models.Q(project__income__status="approved")
         active_from = F("active_from")
         inactive_from = F("inactive_from")
         queryset = queryset.annotate(
             duration_in_days=ExpressionWrapper(
-                expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
+                expression=Coalesce(inactive_from, current_date)
+                - Coalesce(active_from, current_date),
                 output_field=DurationField(),
-            )
+            ),
+            total_income=Coalesce(
+                Sum(
+                    ExpressionWrapper(
+                        F("project__income__hours") * F("project__income__hour_rate"),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    ),
+                    filter=income_filter,
+                    output_field=DecimalField(max_digits=10, decimal_places=2),
+                ),
+                0.0,
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            ),
         )
+
         return queryset
+
+    def get_list_display(self, request):
+        list_display = list(super().get_list_display(request))
+
+        if request.user.is_superuser:
+            return tuple(list_display)
+        if request.user.has_perm("project_management.exclude_income"):
+            if "get_project_income" in list_display:
+                list_display.remove("get_project_income")
+        if request.user.has_perm("project_management.exclude_hourly_rate"):
+            if "get_hourly_rate" in list_display:
+                list_display.remove("get_hourly_rate")
+        return tuple(list_display)
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -393,7 +645,100 @@ class ClientAdmin(admin.ModelAdmin):
                 obj.active_from = timezone.now().date()
             obj.inactive_from = None
             obj.save()
-    
+
+    @admin.action(description="Export selected clients to Excel")
+    def export_to_excel(self, request, queryset):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "your_app.can_export_to_excel"
+        ):
+            self.message_user(
+                request,
+                "You do not have permission to export clients to Excel.",
+                # messages.ERROR,
+            )
+            return
+        # Create a new workbook and select the active sheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Clients"
+
+        # Define headers based on list_display
+        headers = [
+            "Name",
+            "Projects",
+            "Email",
+            "Country",
+            "Hourly Rate",
+            "Income",
+            "Inactive From",
+            "Duration",
+            "Referrals",
+            "Payment Method",
+            "Invoice Type",
+            "Source",
+            # "Remark",
+        ]
+        for col_num, header in enumerate(headers, 1):
+            ws[f"{get_column_letter(col_num)}1"] = header
+            ws[f"{get_column_letter(col_num)}1"].font = openpyxl.styles.Font(bold=True)
+
+        for row_num, client in enumerate(queryset, 2):
+            ws[f"{get_column_letter(1)}{row_num}"] = client.name
+            ws[f"{get_column_letter(2)}{row_num}"] = (
+                ", ".join(client.project_set.all().values_list("title", flat=True))
+                if client.project_set.exists()
+                else ""
+            )
+            ws[f"{get_column_letter(3)}{row_num}"] = client.email or ""
+            ws[f"{get_column_letter(4)}{row_num}"] = (
+                str(client.country) if client.country else ""
+            )
+            ws[f"{get_column_letter(5)}{row_num}"] = (
+                f"{client.currency.icon if client.currency else ''} {client.hourly_rate}"
+                if client.hourly_rate is not None
+                else "-"
+            )
+            ws[f"{get_column_letter(6)}{row_num}"] = self.get_project_income(client)
+            ws[f"{get_column_letter(7)}{row_num}"] = (
+                client.inactive_from.strftime("%Y-%m-%d")
+                if client.inactive_from
+                else ""
+            )
+            ws[f"{get_column_letter(8)}{row_num}"] = self.get_duration(client) or ""
+            ws[f"{get_column_letter(9)}{row_num}"] = (
+                self.get_referrals_name(client).replace("<br>", ", ")
+                if "<br>" in self.get_referrals_name(client)
+                else self.get_referrals_name(client)
+            )
+            ws[f"{get_column_letter(10)}{row_num}"] = (
+                str(client.payment_method) if client.payment_method else ""
+            )
+            ws[f"{get_column_letter(11)}{row_num}"] = (
+                str(client.invoice_type) if client.invoice_type else ""
+            )
+            ws[f"{get_column_letter(12)}{row_num}"] = client.source or ""
+
+        for col in ws.columns:
+            max_length = 0
+            column = col[0].column_letter
+            for cell in col:
+                try:
+                    if len(str(cell.value)) > max_length:
+                        max_length = len(str(cell.value))
+                except:
+                    pass
+            adjusted_width = max_length + 2
+            ws.column_dimensions[column].width = adjusted_width
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = (
+            f'attachment; filename="clients_export_{date.today().strftime("%Y%m%d")}.xlsx"'
+        )
+        wb.save(response)
+        return response
+
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
 

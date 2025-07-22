@@ -1,0 +1,42 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Invoices</title>
+    {% load static %}
+    <style>
+        * {
+            font-size: 13px;
+        }
+
+        @page {
+            size: a4 portrait;
+            background-image: url("{{ watermark }}");
+            @frame content_frame {
+            left: 40pt;
+            width: 512pt;
+            top: 70pt;
+            height: 590pt;
+        }
+
+        @frame footer_frame {
+            /* Another static Frame */
+        -pdf-frame-content:footer_content;
+        left: 50pt; width: 512pt; top: 680pt; height: 120pt;
+        }
+
+        @frame logo {
+        -pdf-frame-content:logo;
+        left: 40px;
+        top: 20px;
+        width: 150px;
+        height: 60px;
+        }
+        }
+
+        .page-break {
+            page-break-after: always;
+        }
+    </style>
+</head>

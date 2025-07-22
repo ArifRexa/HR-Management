@@ -4,7 +4,7 @@ import math
 from datetime import datetime, timedelta
 
 
-from django.db.models import Sum, Count, DecimalField, Value
+from django.db.models import Sum, Count, DecimalField, Value, Q, Case, FloatField, When, F
 from django.db.models.functions import Coalesce
 
 from django.utils import timezone
@@ -551,29 +551,65 @@ class SalarySheetRepository:
         return 0
 
     def __calculate_non_paid_leave(self, salary_sheet: SalarySheet, employee: Employee):
-        """Calculate Non Paid Leave
-        it will calculate non paid leave if the employee tokes any
-        it should always return negative integer
+        """Calculate Non Paid Leave and Half Day Non Paid Leave
+        It calculates the total non-paid leave, including half-day non-paid leave where
+        2 half-day leaves equal 1 full non-paid leave. It always returns a negative number.
 
-        @param salary_sheet:
-        @param employee:
-        @return negative number:
+        @param salary_sheet: The salary sheet object containing the date for the calculation
+        @param employee: The employee object whose leaves are being calculated
+        @return: Negative number representing the deduction for non-paid leaves
         """
-        total_non_paid_leave = employee.leave_set.filter(
+        # # Filter non-paid leaves
+        # non_paid_leaves = employee.leave_set.filter(
+        #     start_date__month=salary_sheet.date.month,
+        #     start_date__year=salary_sheet.date.year,
+        #     end_date__year=salary_sheet.date.year,
+        #     end_date__month=salary_sheet.date.month,
+        #     leave_type="non_paid",
+        #     status="approved",
+        # ).aggregate(total_leave=Sum("total_leave"))["total_leave"] or 0
+
+        # # Filter half-day non-paid leaves
+        # half_day_leaves = employee.leave_set.filter(
+        #     start_date__month=salary_sheet.date.month,
+        #     start_date__year=salary_sheet.date.year,
+        #     end_date__year=salary_sheet.date.year,
+        #     end_date__month=salary_sheet.date.month,
+        #     leave_type="half_day_non_paid",
+        #     status="approved",
+        # ).aggregate(total_leave=Sum("total_leave"))["total_leave"] or 0
+
+        # # Convert half-day leaves to equivalent full days (2 half-days = 1 full day)
+        # equivalent_full_days = non_paid_leaves + (half_day_leaves / 2)
+
+        leaves = employee.leave_set.filter(
+            Q(leave_type__in=["non_paid", "half_day_non_paid"]),
             start_date__month=salary_sheet.date.month,
             start_date__year=salary_sheet.date.year,
             end_date__year=salary_sheet.date.year,
             end_date__month=salary_sheet.date.month,
-            leave_type="non_paid",
-            status="approved",
-        ).aggregate(total_leave=Sum("total_leave"))["total_leave"]
-        if total_non_paid_leave:
+            status="approved"
+        ).aggregate(
+            equivalent_full_days=Sum(
+                Case(
+                    When(leave_type="non_paid", then=Value(1)),
+                    When(leave_type="half_day_non_paid", then=Value(0.5)),
+                    output_field=FloatField()
+                )
+            )
+        )
+
+        equivalent_full_days = leaves["equivalent_full_days"] or 0
+        # print("*#"*100)
+        # print(equivalent_full_days)
+
+        if equivalent_full_days:
             total_month_day = calendar.monthrange(
                 salary_sheet.date.year, salary_sheet.date.month
             )
             return (
                 -(self.__employee_current_salary.payable_salary / total_month_day[1])
-                * total_non_paid_leave
+                * equivalent_full_days
             )
         return 0
 

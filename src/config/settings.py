@@ -76,7 +76,7 @@ INSTALLED_APPS = [
     # "debug_toolbar",
     "client_management",
     "mptt",
-    "academy",
+    # "academy",
     "storages",
     "user_auth",
     "chat",

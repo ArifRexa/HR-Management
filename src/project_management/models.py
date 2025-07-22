@@ -211,8 +211,23 @@ class CurrencyType(TimeStampMixin):
         verbose_name_plural = "Currency Types"
 
 
+class ClientSource(TimeStampMixin, AuthorMixin):
+    name = models.CharField(max_length=200, unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Client Source"
+        verbose_name_plural = "Client Sources"
+
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
+    source = models.ForeignKey(
+        ClientSource, on_delete=models.SET_NULL, null=True, blank=True
+    )
     web_name = models.CharField(
         max_length=200, verbose_name="Web Name", null=True, blank=True
     )
@@ -288,6 +303,13 @@ class Client(TimeStampMixin, AuthorMixin):
             return False
         return timezone.now().date() >= self.active_from + timedelta(days=180)
 
+    class Meta:
+        permissions = [
+            ("exclude_hourly_rate", "Client hourly rate exclude."),
+            ("exclude_income", "Client income exclude."),
+            ("can_mark_as_inactive", "Can mark clients as inactive"),
+            ("can_export_to_excel", "Can export clients to Excel"),
+        ]
 
 class ClientExperience(Client):
     class Meta:
@@ -775,7 +797,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             FileExtensionValidator(allowed_extensions=["pdf"]),
         ],
         verbose_name="Weekly Update (PDF)",
-        help_text="Must Be You have to Give Report File"
+        help_text="Please Submit the Report File"
     )
 
     def __str__(self):

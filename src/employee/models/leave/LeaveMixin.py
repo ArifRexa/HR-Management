@@ -21,6 +21,7 @@ class LeaveMixin(models.Model):
         ("non_paid", "Non Paid Leave"),
         ("half_day", "Half Day Casual"),
         ("half_day_medical", "Half Day Medical"),
+        ("half_day_non_paid", "Half Day Non Paid"),
         ("emergency_leave", "Emergency Leave"),
     )
     LEAVE_STATUS = (
