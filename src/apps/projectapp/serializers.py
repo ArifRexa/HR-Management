@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
+from django.db.models import Sum
 
 from account.models import Income
 from apps.employeeapp.serializers import EmployeeInfoSerializer
@@ -735,6 +736,7 @@ class EmployeeUpdateSerializer(serializers.ModelSerializer):
 class ProjectUpdateSerializer(serializers.Serializer):
     """Serialize project updates with manager name, total approved hours, and employee details."""
     manager = serializers.SerializerMethodField()
+    lead = serializers.SerializerMethodField()
     total_approved_hour = serializers.SerializerMethodField()
     employees = serializers.SerializerMethodField()
 
