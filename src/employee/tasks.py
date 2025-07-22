@@ -1,7 +1,7 @@
 import calendar
 import datetime
 import math
-from datetime import datetime
+from datetime import date, datetime
 
 import requests
 from dateutil.relativedelta import relativedelta
@@ -915,4 +915,51 @@ def role_change_email_send_to_employee(employee, pdf, html_body, subject):
         email.attach(pdf.split("/")[-1], response.content, "application/pdf")
     elif pdf:
         email.attach_file(pdf)
+    email.send()
+
+
+def send_absent_without_leave_email():
+    """
+    Sends an email to HR with a list of employees who are absent without leave for today.
+    """
+    # Get today's date
+    today = date.today()
+
+    # Query to get employees who are not on leave today
+    employees_on_leave = Leave.objects.filter(
+        start_date__lte=today,
+        end_date__gte=today,
+        status__in=['approved', 'pending']  # Consider only approved or pending leaves
+    ).values_list('employee_id', flat=True)
+
+    # Query to get employees who have attendance today
+    employees_with_attendance = EmployeeAttendance.objects.filter(
+        date=today
+    ).values_list('employee_id', flat=True)
+
+    # Get active employees who are neither on leave nor have attendance
+    absent_employees = Employee.objects.filter(
+        active=True
+    ).exclude(
+        id__in=employees_on_leave
+    ).exclude(
+        id__in=employees_with_attendance
+    )
+
+    # Prepare the email
+    employee_names = [employee.full_name for employee in absent_employees]
+    html_body = loader.render_to_string(
+        "mails/absent_without_leave.html",
+        context={
+            "employees": employee_names,
+            "total_employees": len(employee_names),
+            "date": today,
+        },
+    )
+
+    email = EmailMultiAlternatives()
+    email.subject = f"Employees Absent Without Leave on {today}"
+    email.attach_alternative(html_body, "text/html")
+    email.to = ["mailarif3126@gmail.com"]  # Replace with desired recipient email
+    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.send()

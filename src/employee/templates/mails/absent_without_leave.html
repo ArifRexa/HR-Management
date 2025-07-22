@@ -1,0 +1,45 @@
+<!-- your_app/templates/mails/absent_without_leave.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employees Absent Without Leave</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h2 {
+            color: #005555;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Employees Absent Without Leave on {{ date }}</h2>
+        {% if employees %}
+            <p>Total Employees Absent Without Leave: {{ total_employees }}</p>
+            <ul>
+                {% for employee in employees %}
+                    <li>{{ employee }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No employees are absent without leave today.</p>
+        {% endif %}
+        <div class="footer">
+            <p>Mediusware HR | Automated Notification</p>
+        </div>
+    </div>
+</body>
+</html>
