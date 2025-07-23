@@ -793,6 +793,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
     report_file = models.FileField(
         upload_to="project_hours/",
         null=True,
+        blank=True,
         validators=[
             FileExtensionValidator(allowed_extensions=["pdf"]),
         ],
@@ -1444,3 +1445,44 @@ class ClientFeedbackEmail(models.Model):
     feedback_type = models.CharField(
         max_length=50, choices=Feedback_Type_Choices, default="initial"
     )
+
+
+
+class Teams(TimeStampMixin):
+    team_name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(null=True, blank=True)
+    projects = models.ManyToManyField(
+        'Project',
+        related_name='teams',
+        limit_choices_to={'active': True},
+        blank=True,
+    )
+    team_image = models.ImageField(
+        upload_to='team_images/', null=True, blank=True, help_text='Upload team image'
+    )
+    employees = models.ManyToManyField(
+        Employee,
+        related_name='teams',
+        limit_choices_to={'active': True, 'project_eligibility': True},
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = 'Team'
+        verbose_name_plural = 'Teams'
+        ordering = ['team_name']
+
+    def __str__(self):
+        return self.team_name
+
+    @property
+    def team_leader(self):
+        return self.employees.filter(lead=True)
+    @property
+    def is_tpm(self):
+        return self.employees.filter(is_tpm=True).exists()
+
+    def clean(self):
+        if not self.team_name:
+            raise ValidationError('Team name is required.')
+        super().clean()
