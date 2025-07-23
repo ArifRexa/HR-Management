@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from rest_framework import serializers
 from django.db.models import Sum
+from django.core.validators import FileExtensionValidator
 
 from account.models import Income
 from apps.employeeapp.serializers import EmployeeInfoSerializer
@@ -807,3 +808,127 @@ class ProjectUpdateFilterSerializer(serializers.Serializer):
         if value > timezone.now().date():
             raise serializers.ValidationError("Selected date cannot be in the future.")
         return value
+    
+
+class WeeklyProjectHoursSerializer(serializers.ModelSerializer):
+    """Serializer for creating and retrieving WeeklyProjectHours with custom response fields."""
+    date = serializers.DateField()
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.filter(active=True))
+    hour_type = serializers.ChoiceField(choices=ProjectHour.HOUR_TYPE_SELECTOR, default="project")
+    hours = serializers.FloatField()
+    report_file = serializers.FileField(
+        required=False,
+        validators=[FileExtensionValidator(allowed_extensions=['pdf'])],
+        allow_null=True
+    )
+    employees = serializers.JSONField(write_only=True)  # To accept employee updates JSON
+    projects = serializers.SerializerMethodField()
+    lead = serializers.SerializerMethodField()
+    resources = serializers.SerializerMethodField()
+    Approved_By_TPM = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProjectHour
+        fields = ['date', 'project', 'hour_type', 'hours', 'report_file', 'employees', 'projects', 'lead', 'resources', 'Approved_By_TPM']
+        read_only_fields = ['projects', 'lead', 'resources', 'Approved_By_TPM']
+
+    def get_projects(self, obj):
+        """Return the project title or another identifying field."""
+        return str(obj.project) if obj.project else "No Project Assigned"
+
+    def get_lead(self, obj):
+        """Return the full name of the manager (lead)."""
+        return obj.manager.full_name if obj.manager else "No Lead Assigned"
+
+    def get_resources(self, obj):
+        """Return dictionary of employee names and their total hours from EmployeeProjectHour."""
+        employee_hours = EmployeeProjectHour.objects.filter(project_hour=obj).select_related('employee')
+        return {
+            employee_hour.employee.full_name: float(employee_hour.hours)
+            for employee_hour in employee_hours
+            if employee_hour.employee
+        }
+
+    def get_Approved_By_TPM(self, obj):
+        """Return whether the project hour is approved by TPM."""
+        return obj.tpm.full_name if obj.status == 'approved' and obj.tpm else "Not Approved"
+
+    def validate_date(self, value):
+        """Ensure the date is a Friday and not in the future."""
+        if value > timezone.now().date():
+            raise serializers.ValidationError("Date cannot be in the future.")
+        if value.weekday() != 4 and self.initial_data.get('hour_type') != 'bonus':
+            raise serializers.ValidationError("Date must be a Friday for non-bonus hours.")
+        return value
+
+    def validate(self, data):
+        """Ensure project is assigned and active, and validate employee data."""
+        project = data.get('project')
+        if not project or not project.active:
+            raise serializers.ValidationError({"project": "You must assign an active project."})
+        
+        employees = data.get('employees')
+        if not employees or not isinstance(employees, list):
+            raise serializers.ValidationError({"employees": "Employee updates must be provided as a list."})
+        
+        for employee in employees:
+            if not isinstance(employee, dict) or 'id' not in employee or 'total_hour' not in employee:
+                raise serializers.ValidationError({"employees": "Each employee must have 'id' and 'total_hour' fields."})
+            try:
+                Employee.objects.get(id=employee['id'], active=True, project_eligibility=True)
+            except Employee.DoesNotExist:
+                raise serializers.ValidationError({"employees": f"Employee with ID {employee['id']} is not active or eligible."})
+        
+        return data
+
+    def create(self, validated_data):
+        """Create a new ProjectHour instance and associated EmployeeProjectHour instances."""
+        employees_data = validated_data.pop('employees', [])
+        # Format employee updates for the description field
+        description = "Employee Updates:\n"
+        for employee in employees_data:
+            full_name = employee.get('full_name', 'Unknown')
+            total_hour = employee.get('total_hour', '0.00')
+            updates = employee.get('updates', [])
+            description += f"\n{full_name} (Total Hours: {total_hour}):\n"
+            for update in updates:
+                hours = update.get('hours', 0)
+                update_text = update.get('update', '')
+                created_at = update.get('created_at', 'Unknown date')
+                description += f"- {hours} hours on {created_at}: {update_text}\n"
+        
+        validated_data['description'] = description
+        # Set the manager as the Employee instance corresponding to the authenticated user
+        user = self.context['request'].user
+        try:
+            employee = Employee.objects.get(user=user, active=True)
+            validated_data['manager'] = employee
+        except Employee.DoesNotExist:
+            raise serializers.ValidationError({"manager": "No active Employee instance found for the authenticated user."})
+        
+        # Set default values for optional fields if not provided
+        validated_data.setdefault('tpm', None)
+        validated_data.setdefault('forcast', None)
+        validated_data.setdefault('payable', True)
+        validated_data.setdefault('status', 'pending')
+        
+        # Create and save the ProjectHour instance
+        project_hour = ProjectHour(**validated_data)
+        project_hour.save()
+
+        # Create EmployeeProjectHour instances for each employee
+        for employee_data in employees_data:
+            employee_id = employee_data['id']
+            total_hours = float(employee_data['total_hour'])
+            try:
+                employee = Employee.objects.get(id=employee_id, active=True, project_eligibility=True)
+                EmployeeProjectHour.objects.create(
+                    project_hour=project_hour,
+                    employee=employee,
+                    hours=total_hours,
+                    created_by=user  # Assuming AuthorMixin expects created_by
+                )
+            except Employee.DoesNotExist:
+                raise serializers.ValidationError({"employees": f"Employee with ID {employee_id} does not exist or is not eligible."})
+        
+        return project_hour

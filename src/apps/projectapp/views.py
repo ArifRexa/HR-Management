@@ -73,6 +73,7 @@ from .serializers import (
     StatusUpdateSerializer,
     TeamSerializer,
     TeamUpdateSerializer,
+    WeeklyProjectHoursSerializer,
     WeeklyProjectUpdate,
 )
 from rest_framework.response import Response
@@ -1074,89 +1075,6 @@ class ClientReviewViewSet(BaseModelViewSet):
 
 
 
-
-# class TeamViewSet(BaseModelViewSet):
-#     """
-#     API ViewSet for managing Teams.
-#     Supports CRUD operations and actions to add/remove projects and employees.
-#     """
-#     queryset = Teams.objects.all().prefetch_related('projects', 'employees')
-#     serializer_class = TeamSerializer
-#     http_method_names = ['get', 'post', 'patch', 'delete']
-#     parser_classes = [MultiPartParser, FormParser, JSONParser]
-
-
-#     serializer_classes = {
-#         'update': TeamUpdateSerializer,
-#         'partial_update': TeamUpdateSerializer,
-#         'add_projects': AddProjectsSerializer,
-#         'add_employees': AddEmployeesSerializer,
-#         'remove_projects': AddProjectsSerializer,
-#         'remove_employees': AddEmployeesSerializer,
-#     }
-
-#     def get_serializer_class(self):
-#         """Return the serializer class based on the action."""
-#         return self.serializer_classes.get(self.action, self.serializer_class)
-
-#     @action(detail=True, methods=['post'], url_path='add-projects')
-#     def add_projects(self, request, pk=None):
-#         team = self.get_object()
-#         project_ids = request.data.get('project_ids', [])
-#         if not isinstance(project_ids, list) or not project_ids:
-#             return Response({'error': 'A non-empty list of project IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
-#         projects = Project.objects.filter(id__in=project_ids, active=True)
-#         if not projects.exists():
-#             return Response({'error': 'No valid projects found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
-#         count_before = team.projects.count()
-#         team.projects.add(*projects)
-#         count_added = team.projects.count() - count_before
-#         return Response({'message': f'Added {count_added} project(s) to team "{team.team_name}".'}, status=status.HTTP_200_OK)
-
-#     @action(detail=True, methods=['post'], url_path='remove-projects')
-#     def remove_projects(self, request, pk=None):
-#         team = self.get_object()
-#         project_ids = request.data.get('project_ids', [])
-#         if not isinstance(project_ids, list) or not project_ids:
-#             return Response({'error': 'A non-empty list of project IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
-#         projects = Project.objects.filter(id__in=project_ids)
-#         if not projects.exists():
-#             return Response({'error': 'No valid projects found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
-#         count_before = team.projects.count()
-#         team.projects.remove(*projects)
-#         count_removed = count_before - team.projects.count()
-#         return Response({'message': f'Removed {count_removed} project(s) from team "{team.team_name}".'}, status=status.HTTP_200_OK)
-
-#     @action(detail=True, methods=['post'], url_path='add-employees')
-#     def add_employees(self, request, pk=None):
-#         team = self.get_object()
-#         employee_ids = request.data.get('employee_ids', [])
-#         if not isinstance(employee_ids, list) or not employee_ids:
-#             return Response({'error': 'A non-empty list of employee IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
-#         employees = Employee.objects.filter(id__in=employee_ids, active=True, project_eligibility=True)
-#         if not employees.exists():
-#             return Response({'error': 'No valid employees found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
-#         count_before = team.employees.count()
-#         team.employees.add(*employees)
-#         count_added = team.employees.count() - count_before
-#         return Response({'message': f'Added {count_added} employee(s) to team "{team.team_name}".'}, status=status.HTTP_200_OK)
-
-#     @action(detail=True, methods=['post'], url_path='remove-employees')
-#     def remove_employees(self, request, pk=None):
-#         team = self.get_object()
-#         employee_ids = request.data.get('employee_ids', [])
-#         if not isinstance(employee_ids, list) or not employee_ids:
-#             return Response({'error': 'A non-empty list of employee IDs is required.'}, status=status.HTTP_400_BAD_REQUEST)
-#         employees = Employee.objects.filter(id__in=employee_ids)
-#         if not employees.exists():
-#             return Response({'error': 'No valid employees found for the provided IDs.'}, status=status.HTTP_400_BAD_REQUEST)
-#         count_before = team.employees.count()
-#         team.employees.remove(*employees)
-#         count_removed = count_before - team.employees.count()
-#         return Response({'message': f'Removed {count_removed} employee(s) from team "{team.team_name}".'}, status=status.HTTP_200_OK)
-
-
-
 class TeamViewSet(viewsets.ModelViewSet):
     """
     API ViewSet for managing Teams.
@@ -1375,3 +1293,132 @@ class DailyUpdatesForWeeklyProjectHoursViewSet(BaseModelViewSet):
         serializer = ProjectUpdateSerializer(data, context=data)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+
+class WeeklyProjectHoursViewSet(BaseModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WeeklyProjectHoursSerializer
+    queryset = ProjectHour.objects.all().select_related('project', 'manager', 'tpm')
+    parser_classes = [JSONParser, MultiPartParser, FormParser]  # Support both JSON and multipart
+
+    @swagger_auto_schema(
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                'date': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATE, description="Date of the project hours (YYYY-MM-DD)"),
+                'project': openapi.Schema(type=openapi.TYPE_INTEGER, description="ID of the active project"),
+                'hour_type': openapi.Schema(type=openapi.TYPE_STRING, enum=['project', 'bonus'], description="Type of project hour", default='project'),
+                'hours': openapi.Schema(type=openapi.TYPE_NUMBER, description="Total hours for the week"),
+                'report_file': openapi.Schema(type=openapi.TYPE_FILE, description="Weekly update PDF (optional)", nullable=True),
+                'employees': openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                            'full_name': openapi.Schema(type=openapi.TYPE_STRING),
+                            'total_hour': openapi.Schema(type=openapi.TYPE_STRING),
+                            'updates': openapi.Schema(
+                                type=openapi.TYPE_ARRAY,
+                                items=openapi.Items(
+                                    type=openapi.TYPE_OBJECT,
+                                    properties={
+                                        'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                        'hours': openapi.Schema(type=openapi.TYPE_NUMBER),
+                                        'update': openapi.Schema(type=openapi.TYPE_STRING),
+                                        'status': openapi.Schema(type=openapi.TYPE_STRING),
+                                        'created_at': openapi.Schema(type=openapi.TYPE_STRING, format=openapi.FORMAT_DATETIME)
+                                    }
+                                )
+                            )
+                        }
+                    ),
+                    description="List of employee updates from daily project updates"
+                )
+            },
+            required=['date', 'project', 'hours', 'employees']
+        ),
+        responses={
+            201: openapi.Response(
+                description="Project hours created successfully",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'status': openapi.Schema(type=openapi.TYPE_STRING, description="Status message"),
+                        'code': openapi.Schema(type=openapi.TYPE_INTEGER, description="HTTP status code")
+                    }
+                )
+            ),
+            400: openapi.Response(
+                description="Bad Request: Invalid input data",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'date': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+                        'project': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+                        'hours': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+                        'employees': openapi.Schema(type=openapi.TYPE_ARRAY, items=openapi.Items(type=openapi.TYPE_STRING)),
+                    }
+                )
+            )
+        },
+        operation_description="Create a new WeeklyProjectHours entry for a project, including employee updates."
+    )
+    def create(self, request, *args, **kwargs):
+        """Handle POST request to create a WeeklyProjectHours entry."""
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(
+                {"status": "successfully created", "code": 201},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response(
+                description="List of project hours for the authenticated user",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'date': openapi.Schema(type=openapi.TYPE_STRING, description="Date of the project hours"),
+                            'project': openapi.Schema(type=openapi.TYPE_STRING, description="Project name"),
+                            'hours': openapi.Schema(type=openapi.TYPE_NUMBER, description="Total hours"),
+                            'lead': openapi.Schema(type=openapi.TYPE_STRING, description="Manager/lead name"),
+                            'resources': openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                additional_properties=openapi.Schema(type=openapi.TYPE_NUMBER),
+                                description="Dictionary of employee names and their total hours"
+                            )
+                        }
+                    )
+                )
+            )
+        },
+        operation_description="Retrieve WeeklyProjectHours entries for the authenticated user."
+    )
+    def list(self, request, *args, **kwargs):
+        """Retrieve WeeklyProjectHours entries for the authenticated user."""
+        try:
+            employee = Employee.objects.get(user=request.user, active=True)
+        except Employee.DoesNotExist:
+            return Response(
+                {"error": "No active Employee instance found for the authenticated user."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        queryset = self.queryset.filter(manager=employee)
+        results = []
+        for obj in queryset:
+            serializer = self.get_serializer(obj, context={'request': request})
+            results.append({
+                'date': obj.date.strftime('%B %d, %Y'),
+                'project': str(obj.project) if obj.project else "No Project Assigned",
+                'hours': float(obj.hours),
+                'lead': obj.manager.full_name if obj.manager else "No Lead Assigned",
+                'resources': serializer.get_resources(obj)
+            })
+        
+        return Response(results, status=status.HTTP_200_OK)
