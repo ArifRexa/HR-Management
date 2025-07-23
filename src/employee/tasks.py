@@ -941,6 +941,8 @@ def send_absent_without_leave_email():
     absent_employees = Employee.objects.filter(
         active=True
     ).exclude(
+        user__is_superuser=True  # Exclude superusers
+    ).exclude(
         id__in=employees_on_leave
     ).exclude(
         id__in=employees_with_attendance
