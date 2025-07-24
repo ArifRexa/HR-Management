@@ -960,7 +960,7 @@ def send_absent_without_leave_email():
             employee=employee,  # Use employee object directly
             start_date=today,
             end_date=today,
-            leave_type='system_generated',
+            # leave_type='system_generated',
             applied_leave_type='system_generated',
             total_leave=1.0,
             note=f"System-generated leave for absence on {today}",

@@ -14,7 +14,7 @@
                             <th class="original">Applied Leave Type</th>
                             <th class="original">Approval Leave Type</th>
                             <th class="original">Total Leave</th>
-                            <th class="original">Manager Approval</th>
+                            <!-- <th class="original">Manager Approval</th> -->
                             <th class="original">Status</th>
                             <th class="original">Date <br>start/end</th>
                         </tr>
@@ -26,7 +26,7 @@
                                 <td>{{ leave | total_leave:leave.get_applied_leave_type_display }}</td>
                                 <td>{{ leave | total_leave:leave.get_leave_type_display }}</td>
                                 <td>{{ leave | total_leave:leave.total_leave }}</td>
-                                <td>{{ leave | manager_approval }}</td>
+                                <!-- <td>{{ leave | manager_approval }}</td> -->
                                 <td>{{ leave | leave_status }}</td>
                                 <td>{{ leave.start_date|date:"d-m-Y" }}<br /> {{ leave.end_date|date:"d-m-Y" }}</td>
                                 
