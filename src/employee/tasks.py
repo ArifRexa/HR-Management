@@ -2,7 +2,7 @@ import calendar
 import datetime
 import math
 from datetime import date, datetime
-
+from django.contrib.auth.models import User
 import requests
 from dateutil.relativedelta import relativedelta
 from django.core import management
@@ -947,6 +947,27 @@ def send_absent_without_leave_email():
     ).exclude(
         id__in=employees_with_attendance
     )
+
+
+    # Get system user for creating leave applications
+    system_user = User.objects.filter(is_superuser=True).first()
+
+    # Create system-generated leave applications
+    for employee in absent_employees:
+        leave = Leave(
+            employee=employee,
+            start_date=today,
+            end_date=today,
+            leave_type='system_generated',
+            applied_leave_type='system_generated',
+            total_leave=1.0,
+            note=f"System-generated leave for absence on {today}",
+            message=f"Automatically generated leave application for {employee.full_name} due to absence without leave on {today}.",
+            created_by=system_user,
+            status='pending'
+        )
+        leave.save()
+
 
     # Prepare the email
     employee_names = [employee.full_name for employee in absent_employees]

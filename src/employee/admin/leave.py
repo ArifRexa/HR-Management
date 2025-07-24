@@ -13,7 +13,7 @@ from django_q.tasks import async_task
 
 from employee.models import Leave, LeaveAttachment
 from employee.models.employee_activity import EmployeeProject
-from employee.models.leave import leave
+from employee.models.leave import LeaveMixin, leave
 
 
 class LeaveAttachmentInline(admin.TabularInline):
@@ -57,6 +57,15 @@ class LeaveForm(forms.ModelForm):
     class Meta:
         model = Leave
         fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.request.user.has_perm("employee.can_approve_leave_applications"):
+            # Exclude 'system_generated' from applied_leave_type choices
+            self.fields['applied_leave_type'].choices = [
+                (key, value) for key, value in LeaveMixin.LeaveMixin.LEAVE_CHOICE
+                if key != 'system_generated'
+            ]
 
     def has_emergency_leave_last_3_months(self, employee):
         # Get the current date and calculate the date 3 months ago

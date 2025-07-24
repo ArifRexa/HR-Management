@@ -23,6 +23,7 @@ class LeaveMixin(models.Model):
         ("half_day_medical", "Half Day Medical"),
         ("half_day_non_paid", "Half Day Non Paid"),
         ("emergency_leave", "Emergency Leave"),
+        ("system_generated", "System Generated"),
     )
     LEAVE_STATUS = (
         ("pending", "⏳ Pending"),
