@@ -541,35 +541,72 @@ class LeaveManagement(admin.ModelAdmin):
 
     change_form_template = "admin/leave/leave_change_form.html"
 
+    # def change_view(self, request, object_id, form_url="", extra_context=None):
+    #     current_time = datetime.datetime.now()
+    #     leave = None
+    #     all_leaves = None
+    #     employee_name = None
+    #     if object_id:
+    #         leave = get_object_or_404(Leave, id=object_id)
+    #         if request.user.employee != leave.employee:
+    #             one_year_ago = current_time - datetime.timedelta(days=365)
+    #             all_leaves = (
+    #                 Leave.objects.filter(
+    #                     employee=leave.employee, created_at__gte=one_year_ago
+    #                 )
+    #                 .exclude(id=object_id)
+    #                 .order_by("-id")
+    #             )
+    #             employee_name = leave.employee.full_name
+    #         else:
+    #             all_leaves = Leave.objects.none()
+    #     else:
+    #         all_leaves = Leave.objects.none()
+
+    #     extra_context = extra_context or {}
+    #     extra_context["all_leaves"] = all_leaves
+    #     extra_context["employee_name"] = employee_name
+
+    #     return super().change_view(
+    #         request, object_id, form_url, extra_context=extra_context
+    #     )
+
+
+
     def change_view(self, request, object_id, form_url="", extra_context=None):
         current_time = datetime.datetime.now()
         leave = None
         all_leaves = None
         employee_name = None
+        employee_report_link = None
         if object_id:
             leave = get_object_or_404(Leave, id=object_id)
             if request.user.employee != leave.employee:
                 one_year_ago = current_time - datetime.timedelta(days=365)
-                all_leaves = (
-                    Leave.objects.filter(
-                        employee=leave.employee, created_at__gte=one_year_ago
-                    )
-                    .exclude(id=object_id)
-                    .order_by("-id")
-                )
+                all_leaves = Leave.objects.filter(employee=leave.employee, created_at__gte=one_year_ago).exclude(id=object_id).order_by("-id")
                 employee_name = leave.employee.full_name
+                employee_report_link = f"/admin/employee/excusenote/?employee__id__exact={leave.employee.id}"
             else:
                 all_leaves = Leave.objects.none()
         else:
             all_leaves = Leave.objects.none()
-
         extra_context = extra_context or {}
         extra_context["all_leaves"] = all_leaves
-        extra_context["employee_name"] = employee_name
+        extra_context["employee_name"] = format_html(
+            '<a href="{}" style="display: inline-block; margin-bottom: 20px; padding: 8px 16px; background-color: #3c778f; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; transition: all 0.3s ease; animation: pulse 2s infinite; cursor: pointer;">See {}\'s HR Reports</a>'
+            '<style>'
+            '@keyframes pulse {{'
+            '  0% {{ transform: scale(1); box-shadow: 0 0 0 0 rgba(60, 119, 143, 0.7); }}'
+            '  50% {{ transform: scale(1.05); box-shadow: 0 0 0 10px rgba(60, 119, 143, 0); }}'
+            '  100% {{ transform: scale(1); box-shadow: 0 0 0 0 rgba(60, 119, 143, 0); }}'
+            '}}'
+            'a:hover {{ background-color: #2a5a6e; transform: scale(1.1); }}'
+            '</style>',
+            employee_report_link or '#',
+            employee_name or 'N/A'
+        ) if employee_name else None
+        return super().change_view(request, object_id, form_url, extra_context=extra_context)
 
-        return super().change_view(
-            request, object_id, form_url, extra_context=extra_context
-        )
 
     # @admin.display()
     # def start_date_(self, leave: Leave):

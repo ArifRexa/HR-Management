@@ -4,6 +4,9 @@
 {% block submit_buttons_bottom %}
     
     {% if all_leaves %}
+    {% if employee_name %}
+        <p >{{ employee_name|safe }}</p>
+    {% endif %}
         <fieldset class="module">
             <h2 style="font-size: 0.8rem; text-transform: uppercase;">Leave Histories</h2>
             <div class="inline-group" id="all-leaves-inline">
