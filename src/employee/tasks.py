@@ -951,6 +951,9 @@ def send_absent_without_leave_email():
     # Get system user for creating leave applications
     system_user = User.objects.filter(is_superuser=True).first()
 
+    if not absent_employees.exists():
+        return
+
     # Prepare leave objects and employee names using comprehensions
     leave_objects = [
         Leave(

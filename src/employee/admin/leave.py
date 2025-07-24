@@ -157,8 +157,8 @@ class LeaveManagement(admin.ModelAdmin):
     exclude = ["status_changed_at", "status_changed_by"]
     inlines = (
         LeaveAttachmentInline,
-        LeaveManagementInline,
-        FeedbackInline,
+        # LeaveManagementInline,
+        # FeedbackInline,
     )
     autocomplete_fields = ("employee",)
     search_fields = ("employee__full_name", "leave_type")
@@ -187,7 +187,7 @@ class LeaveManagement(admin.ModelAdmin):
             "applied_leave_type_",
             "approved_leave_type_",
             "total_leave_",
-            "manager_approval",
+            # "manager_approval",
             "status_",
             # "attachment_link",
             # "get_massage",
@@ -428,7 +428,10 @@ class LeaveManagement(admin.ModelAdmin):
         qs = super().get_queryset(request).select_related("employee")
         if request.user.has_perm("employee.can_approve_leave_applications"):
             return qs
-        return qs.filter(employee_id=request.user.employee)
+        
+        return qs.filter(employee_id=request.user.employee).exclude(
+            applied_leave_type="system_generated"
+        )
 
     def get_list_filter(self, request):
         list_filter = [
