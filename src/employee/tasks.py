@@ -920,19 +920,19 @@ def role_change_email_send_to_employee(employee, pdf, html_body, subject):
 
 def send_absent_without_leave_email():
     """
-    Sends an email to HR with a list of employees who are absent without leave for today.
+    Sends an email to HR with a list of employees who are absent without leave for today
+    and creates system-generated leave applications in bulk.
     """
-    # Get today's date
     today = date.today()
 
-    # Query to get employees who are not on leave today
+    # Query to get employee IDs who are on leave today
     employees_on_leave = Leave.objects.filter(
         start_date__lte=today,
         end_date__gte=today,
-        status__in=['approved', 'pending']  # Consider only approved or pending leaves
+        status__in=['approved', 'pending']
     ).values_list('employee_id', flat=True)
 
-    # Query to get employees who have attendance today
+    # Query to get employee IDs with attendance today
     employees_with_attendance = EmployeeAttendance.objects.filter(
         date=today
     ).values_list('employee_id', flat=True)
@@ -941,21 +941,20 @@ def send_absent_without_leave_email():
     absent_employees = Employee.objects.filter(
         active=True
     ).exclude(
-        user__is_superuser=True  # Exclude superusers
+        user__is_superuser=True
     ).exclude(
         id__in=employees_on_leave
     ).exclude(
         id__in=employees_with_attendance
-    )
-
+    ).only('id', 'full_name', 'phone')  # Optimize by fetching only needed fields
 
     # Get system user for creating leave applications
     system_user = User.objects.filter(is_superuser=True).first()
 
-    # Create system-generated leave applications
-    for employee in absent_employees:
-        leave = Leave(
-            employee=employee,
+    # Prepare leave objects and employee names using comprehensions
+    leave_objects = [
+        Leave(
+            employee=employee,  # Use employee object directly
             start_date=today,
             end_date=today,
             leave_type='system_generated',
@@ -965,24 +964,28 @@ def send_absent_without_leave_email():
             message=f"Automatically generated leave application for {employee.full_name} due to absence without leave on {today}.",
             created_by=system_user,
             status='pending'
-        )
-        leave.save()
+        ) for employee in absent_employees
+    ]
+    employee_data = [{'name': employee.full_name, 'phone': employee.phone} for employee in absent_employees]
 
+    # Bulk create leave applications
+    if leave_objects:
+        Leave.objects.bulk_create(leave_objects)
 
-    # Prepare the email
-    employee_names = [employee.full_name for employee in absent_employees]
+    # Prepare and send the email
     html_body = loader.render_to_string(
         "mails/absent_without_leave.html",
         context={
-            "employees": employee_names,
-            "total_employees": len(employee_names),
+            "employees": employee_data,  # Pass list of dicts with name and phone
+            "total_employees": len(employee_data),
             "date": today,
         },
     )
 
-    email = EmailMultiAlternatives()
-    email.subject = f"Employees Absent Without Leave on {today}"
+    email = EmailMultiAlternatives(
+        subject=f"Employees Absent Without Leave on {today}",
+        from_email='"Mediusware-HR" <hr@mediusware.com>',
+        to=["hr@mediusware.com"],
+    )
     email.attach_alternative(html_body, "text/html")
-    email.to = ["mailarif3126@gmail.com"]  # Replace with desired recipient email
-    email.from_email = '"Mediusware-HR" <hr@mediusware.com>'
     email.send()

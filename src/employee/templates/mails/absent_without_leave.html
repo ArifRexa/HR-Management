@@ -103,11 +103,22 @@
                             <h2 style="color: #3c778f; font-size: 20px; margin: 0 0 10px 0;">Employees Absent Without Leave on {{ date }}</h2>
                             <p style="font-size: 16px; line-height: 1.5; margin: 0 0 10px 0;"><strong>Total Employees Absent Without Leave:</strong> {{ total_employees }}</p>
                             {% if employees %}
-                                <ul class="employee-list" style="list-style: none; padding: 0; margin: 0;">
-                                    {% for employee in employees %}
-                                        <li style="padding: 10px 0; border-bottom: 1px solid #eeeeee; font-size: 16px;">{{ employee }}</li>
-                                    {% endfor %}
-                                </ul>
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr>
+                                            <th style="padding: 10px; border-bottom: 2px solid #eeeeee; font-size: 16px; text-align: left;">Employee Name</th>
+                                            <th style="padding: 10px; border-bottom: 2px solid #eeeeee; font-size: 16px; text-align: left;">Phone Number</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for employee in employees %}
+                                            <tr>
+                                                <td style="padding: 10px; border-bottom: 1px solid #eeeeee; font-size: 16px;">{{ employee.name }}</td>
+                                                <td style="padding: 10px; border-bottom: 1px solid #eeeeee; font-size: 16px;">{{ employee.phone|default:"N/A" }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
                             {% else %}
                                 <p class="no-employees" style="color: #666666; font-style: italic; font-size: 16px; margin: 0;">No employees are absent without leave today.</p>
                             {% endif %}
