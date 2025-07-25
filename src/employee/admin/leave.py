@@ -613,7 +613,7 @@ class LeaveManagement(admin.ModelAdmin):
         extra_context = extra_context or {}
         extra_context["all_leaves"] = all_leaves
         extra_context["employee_name"] = format_html(
-            '<a href="{}" style="display: inline-block; margin-bottom: 20px; padding: 8px 16px; background-color: #3c778f; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; transition: all 0.3s ease; animation: pulse 2s infinite; cursor: pointer;">See {}\'s HR Reports</a>'
+            '<a href="{}" target="_blank" style="display: inline-block; margin-bottom: 20px; padding: 8px 16px; background-color: #3c778f; color: #ffffff; text-decoration: none; border-radius: 4px; font-weight: bold; transition: all 0.3s ease; animation: pulse 2s infinite; cursor: pointer;">See {}\'s HR Reports</a>'
             '<style>'
             '@keyframes pulse {{'
             '  0% {{ transform: scale(1); box-shadow: 0 0 0 0 rgba(60, 119, 143, 0.7); }}'
