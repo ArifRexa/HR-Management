@@ -10,10 +10,12 @@ from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
 from django_q.tasks import async_task
+from django.apps import apps
 
 from employee.models import Leave, LeaveAttachment
 from employee.models.employee_activity import EmployeeProject
 from employee.models.leave import LeaveMixin, leave
+from employee.models.leave import Leave, LeaveMixin  # Updated import
 
 
 class LeaveAttachmentInline(admin.TabularInline):
@@ -60,12 +62,26 @@ class LeaveForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self.request.user.has_perm("employee.can_approve_leave_applications"):
-            # Exclude 'system_generated' from applied_leave_type choices
+        if 'applied_leave_type' in self.fields and not self.request.user.has_perm("employee.can_approve_leave_applications"):
             self.fields['applied_leave_type'].choices = [
-                (key, value) for key, value in LeaveMixin.LeaveMixin.LEAVE_CHOICE
+                (key, value) for key, value in LeaveMixin.LEAVE_CHOICE
                 if key != 'system_generated'
             ]
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     if 'applied_leave_type' in self.fields:
+    #         # Use LeaveMixin.LEAVE_CHOICE for choices
+    #         choices = LeaveMixin.LEAVE_CHOICE
+    #         if not self.request.user.has_perm("employee.can_approve_leave_applications"):
+    #             choices = [(key, value) for key, value in choices if key != 'system_generated']
+    #             self.fields['applied_leave_type'].label = "Leave Type"
+    #             self.fields['applied_leave_type'].required = True
+    #         else:
+    #             # For approved leaves, use leave_type if applied_leave_type is None
+    #             if self.instance and self.instance.status == "approved" and not self.instance.applied_leave_type:
+    #                 self.fields['applied_leave_type'].initial = self.instance.leave_type
+    #                 self.fields['applied_leave_type'].label = "Approved Leave Type"
+    #         self.fields['applied_leave_type'].choices = choices
 
     def has_emergency_leave_last_3_months(self, employee):
         # Get the current date and calculate the date 3 months ago
@@ -210,14 +226,18 @@ class LeaveManagement(admin.ModelAdmin):
         #     print(fields)
         return fields
 
-    def get_form(self, request, obj=None, change=None, **kwargs):
-        form = super().get_form(request, obj, change, **kwargs)
-        form.request = request
-        if form.base_fields.get(
-            "applied_leave_type", None
-        ) and not request.user.has_perm("employee.can_approve_leave_applications"):
-            form.base_fields["applied_leave_type"].label = "Leave Type"
-            form.base_fields["applied_leave_type"].required = True
+    # def get_form(self, request, obj=None, change=None, **kwargs):
+    #     form = super().get_form(request, obj, change, **kwargs)
+    #     form.request = request
+    #     if form.base_fields.get(
+    #         "applied_leave_type", None
+    #     ) and not request.user.has_perm("employee.can_approve_leave_applications"):
+    #         form.base_fields["applied_leave_type"].label = "Leave Type"
+    #         form.base_fields["applied_leave_type"].required = True
+    #     return form
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.request = request  # Attach request to the form
         return form
 
     @admin.display()
