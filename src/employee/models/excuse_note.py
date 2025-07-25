@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -28,7 +29,7 @@ class ExcuseNote(AuthorMixin, TimeStampMixin):
         ('pending', 'Pending'),
         ('resolved', 'Resolved')
     )
-    incedent_date = models.DateField(help_text='Date of the incident', null=True, blank=True, verbose_name='incident_date',)
+    incedent_date = models.DateField(help_text='Date of the incident', null=True, blank=True, verbose_name='incident_date', default=timezone.now)
     reported_by = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='reported_excuse_notes', null=True, blank=True)
     severity = models.CharField(
         max_length=20,
