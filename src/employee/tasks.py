@@ -988,8 +988,7 @@ def send_absent_without_leave_email():
     email = EmailMultiAlternatives(
         subject=f"Employees Absent Without Leave on {today}",
         from_email='"Mediusware-HR" <hr@mediusware.com>',
-        # to=["hr@mediusware.com"],
-        to=["mailarif3126@gmail.com"],
+        to=["hr@mediusware.com"],
     )
     email.attach_alternative(html_body, "text/html")
     email.send()
