@@ -932,3 +932,39 @@ class WeeklyProjectHoursSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"employees": f"Employee with ID {employee_id} does not exist or is not eligible."})
         
         return project_hour
+    
+
+class MissingWeeklyProjectHoursSerializer(serializers.ModelSerializer):
+    """Serializer for DailyProjectUpdate entries not included in WeeklyProjectHours."""
+    date = serializers.SerializerMethodField()
+    employee = serializers.SerializerMethodField()
+    project = serializers.SerializerMethodField()
+    manager = serializers.SerializerMethodField()
+    lead = serializers.SerializerMethodField()
+
+    class Meta:
+        model = DailyProjectUpdate
+        fields = ['date', 'employee', 'project', 'manager', 'lead']
+
+    def get_date(self, obj):
+        """Return the date of the DailyProjectUpdate."""
+        return obj.created_at.strftime('%B %d, %Y')
+
+    def get_employee(self, obj):
+        """Return the full name of the employee."""
+        return obj.employee.full_name if obj.employee else "Unknown"
+
+    def get_project(self, obj):
+        """Return the project title."""
+        return str(obj.project) if obj.project else "No Project Assigned"
+
+    def get_manager(self, obj):
+        """Return the TPM's full name for the project."""
+        # from .models import EmployeeUnderTPM
+        tpm = EmployeeUnderTPM.objects.filter(project=obj.project).first()
+        return tpm.tpm.full_name if tpm and tpm.tpm else "No TPM Assigned"
+
+
+    def get_lead(self, obj):
+        """Return the full name of the manager (lead)."""
+        return obj.manager.full_name if obj.manager else "No Lead Assigned"

@@ -6,6 +6,7 @@ from .views import (
     CountryViewSet,
     CurrencyListView,
     DailyProjectUpdateViewSet,
+    MissingWeeklyProjectHoursViewSet,
     ProjectViewSet,
     TeamViewSet,
     DailyUpdatesForWeeklyProjectHoursViewSet,
@@ -31,6 +32,8 @@ router.register("client-reviews", ClientReviewViewSet, basename="client-reviews"
 router.register(r"teams", TeamViewSet, basename='teams')
 router.register(r"daily-updates-for-weekly-project-hours", DailyUpdatesForWeeklyProjectHoursViewSet, basename='daily-updates-for-weekly-project-hours')
 router.register("weekly-project-hours", WeeklyProjectHoursViewSet, basename='weekly-project-hours')
+router.register("missing-weekly-project-hours", MissingWeeklyProjectHoursViewSet, basename='missing-weekly-project-hours')
+
 
 urlpatterns = [
     path("", include(router.urls)),

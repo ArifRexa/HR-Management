@@ -64,6 +64,7 @@ from .serializers import (
     EmployeeUpdateSerializer,
     IncomeSerializer,
     InvoiceTypeModelSerializer,
+    MissingWeeklyProjectHoursSerializer,
     PaymentMethodModelSerializer,
     ProjectResourceAddDeleteSerializer,
     ProjectResourceModelSerializer,
@@ -1422,3 +1423,74 @@ class WeeklyProjectHoursViewSet(BaseModelViewSet):
             })
         
         return Response(results, status=status.HTTP_200_OK)
+    
+
+class MissingWeeklyProjectHoursViewSet(BaseModelViewSet):
+    """ViewSet to list DailyProjectUpdate entries not included in WeeklyProjectHours."""
+    permission_classes = [IsAuthenticated]
+    serializer_class = MissingWeeklyProjectHoursSerializer
+    queryset = DailyProjectUpdate.objects.all().select_related('employee', 'project')
+
+    def get_queryset(self):
+        """Filter DailyProjectUpdate entries not included in WeeklyProjectHours."""
+        try:
+            employee = Employee.objects.get(user=self.request.user, active=True)
+        except Employee.DoesNotExist:
+            return DailyProjectUpdate.objects.none()
+
+        # Get projects where the user is a manager or TPM
+        user_projects = Project.objects.filter(
+            Q(projecthour__manager=employee) | Q(employees_under_tpm__tpm=employee)
+        ).distinct()
+
+        # Get DailyProjectUpdate entries for these projects
+        queryset = self.queryset.filter(project__in=user_projects)
+
+        # Exclude DailyProjectUpdate entries already included in WeeklyProjectHours
+        weekly_hours = ProjectHour.objects.filter(project__in=user_projects)
+        for weekly_hour in weekly_hours:
+            # Calculate the week range (Monday to Sunday) for the WeeklyProjectHours date
+            week_start = weekly_hour.date - timedelta(days=weekly_hour.date.weekday())
+            week_end = week_start + timedelta(days=6)
+            queryset = queryset.exclude(
+                project=weekly_hour.project,
+                created_at__date__range=(week_start, week_end)
+            )
+
+        return queryset.order_by('created_at')
+
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response(
+                description="List of DailyProjectUpdate entries not included in WeeklyProjectHours",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_ARRAY,
+                    items=openapi.Items(
+                        type=openapi.TYPE_OBJECT,
+                        properties={
+                            'date': openapi.Schema(type=openapi.TYPE_STRING, description="Date of the daily update"),
+                            'employee': openapi.Schema(type=openapi.TYPE_STRING, description="Employee name"),
+                            'project': openapi.Schema(type=openapi.TYPE_STRING, description="Project name"),
+                            'manager': openapi.Schema(type=openapi.TYPE_STRING, description="TPM name"),
+                            'lead': openapi.Schema(type=openapi.TYPE_STRING, description="Lead name")
+                        }
+                    )
+                )
+            ),
+            400: openapi.Response(
+                description="Bad Request: No active Employee instance found",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'error': openapi.Schema(type=openapi.TYPE_STRING)
+                    }
+                )
+            )
+        },
+        operation_description="Retrieve DailyProjectUpdate entries not included in WeeklyProjectHours for the authenticated user's projects."
+    )
+    def list(self, request, *args, **kwargs):
+        """Retrieve DailyProjectUpdate entries not included in WeeklyProjectHours."""
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
