@@ -274,7 +274,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "code,help,wordcount,codesample,spellchecker",
     "toolbar": "undo redo | formatselect | fontsizeselect | "
     "bold italic backcolor forecolor | alignleft aligncenter "
-    "alignright alignjustify | bullist numlist outdent indent table | "
+    "alignright alignjustify | bullist numlist outdent indent table | blockquote |"
     "removeformat codesample image link | preview fullscreen help",
     "contextmenu": "copy | paste | link",
     "images_upload_url": "/upload_image",
@@ -289,6 +289,14 @@ TINYMCE_DEFAULT_CONFIG = {
     "Terminal=terminal,monaco; Times New Roman=times new roman,times; Trebuchet MS=trebuchet ms,geneva; Verdana=verdana,geneva;"
     "Webdings=webdings; Wingdings=wingdings,zapf dingbats; Afacad=afacad,sans-serif; Marcellus=marcellus,serif; Poppins=poppins,sans-serif; Raleway=raleway,sans-serif;",
     "font_css": "https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap",
+    "formats": {
+        "blockquote": {"block": "blockquote", "classes": "custom-quote"},
+    },
+    # "content_style": "blockquote.custom-quote { border-left: 4px solid #888; padding-left: 1em; color: #555; font-style: italic; }",
+    # Optionally define style_formats too:
+    "style_formats": [
+        {"title": "Custom Quote", "format": "blockquote"}
+    ],
 }
 
 TINYMCE_SPELLCHECKER = True
