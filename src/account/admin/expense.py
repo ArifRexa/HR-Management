@@ -68,6 +68,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         "expense_category",
         "get_amount",
         "note",
+        "get_attachments",
         "created_by",
         "is_approved",
     )
@@ -103,6 +104,29 @@ class ExpenseAdmin(admin.ModelAdmin):
         if lookup in ["created_by__employee__id__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
+    
+    # @admin.display(description="Attachments", ordering="expanseattachment__count")
+    # def get_attachments(self, obj):
+    #     # Count the number of attachments for the expense
+    #     attachment_count = obj.expanseattachment_set.count()
+    #     # Render 📄 icon for each attachment
+    #     return format_html(
+    #         "{}",
+    #         "".join(["📄" for _ in range(attachment_count)])
+    #     )
+
+
+    @admin.display(description="Attachments", ordering="expanseattachment__count")
+    def get_attachments(self, obj):
+        attachments = obj.expanseattachment_set.all()
+        if not attachments:
+            return "-"
+        # Create a clickable 📄 icon for each attachment
+        html = "".join(
+            '<a href="{}" target="_blank">📄</a>'.format(attachment.attachment.url)
+            for attachment in attachments
+        )
+        return format_html(html)
 
     def get_readonly_fields(self, request, obj):
         rfs = super().get_readonly_fields(request, obj)
