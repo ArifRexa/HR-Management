@@ -1,36 +1,25 @@
-from ast import mod
-from datetime import datetime
 import datetime
-from datetime import timedelta
-from typing import Iterable
-from dateutil.relativedelta import relativedelta, FR
+from datetime import datetime, timedelta
 from uuid import uuid4
 
-from django.utils import timezone
-from datetime import date
+from dateutil.relativedelta import FR, relativedelta
 from dateutil.utils import today
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.core.validators import FileExtensionValidator
 from django.db import models
-from django.db.models import Sum, ExpressionWrapper, Case, Value, When, F, Q
-from django.db.models.functions import Trunc, ExtractWeekDay, ExtractWeek
-from django.db.models.signals import pre_save
+from django.db.models import Q, Sum
 from django.db.models.signals import post_save
-
 from django.dispatch import receiver
-from tinymce.models import HTMLField
-from config.model.TimeStampMixin import TimeStampMixin
-from config.model.AuthorMixin import AuthorMixin
-from employee.models import Employee
+from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.text import slugify
-from django.core.validators import FileExtensionValidator
-from icecream import ic
+from tinymce.models import HTMLField
+
+from config.model.AuthorMixin import AuthorMixin
+from config.model.TimeStampMixin import TimeStampMixin
+from employee.models import Employee
 
 # from employee.models import LeaveManagement
-from django.apps import apps
-
-from website.models_v2.industries_we_serve import IndustryServe, ServeCategory
 from website.models_v2.services import ServicePage
 
 
@@ -84,9 +73,18 @@ class ClientStatus(models.IntegerChoices):
 
 
 class CurrencyType(TimeStampMixin):
-    currency_name = models.CharField(max_length=200, help_text="Example: US Dollar, Euro, etc.", blank=True, null=True)
-    currency_code = models.CharField(max_length=10, help_text="Example: USD, EUR, etc.", blank=True, null=True)
-    icon = models.CharField(max_length=10, help_text="Currency symbol like $, €, £", blank=False, null=False)
+    currency_name = models.CharField(
+        max_length=200,
+        help_text="Example: US Dollar, Euro, etc.",
+        blank=True,
+        null=True,
+    )
+    currency_code = models.CharField(
+        max_length=10, help_text="Example: USD, EUR, etc.", blank=True, null=True
+    )
+    icon = models.CharField(
+        max_length=10, help_text="Currency symbol like $, €, £", blank=False, null=False
+    )
     is_active = models.BooleanField(default=True, help_text="Set as active currency")
     is_default = models.BooleanField(default=False, help_text="Set as default currency")
     exchange_rate = models.DecimalField(
@@ -94,7 +92,7 @@ class CurrencyType(TimeStampMixin):
         decimal_places=4,
         null=True,
         blank=True,
-        help_text="Exchange rate relative to base currency"
+        help_text="Exchange rate relative to base currency",
     )
 
     # def save_model(self, request, obj, form, change):
@@ -138,6 +136,7 @@ class CurrencyType(TimeStampMixin):
         """Update all clients to use this currency if it's the default"""
         if self.is_default:
             from .models import Client  # Import here to avoid circular import
+
             Client.objects.filter(currency__isnull=True).update(currency=self)
             # Or to update ALL clients:
             # Client.objects.all().update(currency=self)
@@ -222,7 +221,6 @@ class ClientSource(TimeStampMixin, AuthorMixin):
         verbose_name_plural = "Client Sources"
 
 
-
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     source = models.ForeignKey(
@@ -271,10 +269,7 @@ class Client(TimeStampMixin, AuthorMixin):
         ClientReview, blank=True, verbose_name="Client Review", related_name="clients"
     )
     currency = models.ForeignKey(
-        CurrencyType,
-        on_delete=models.SET_NULL,
-        null=True,
-        related_name='clients'
+        CurrencyType, on_delete=models.SET_NULL, null=True, related_name="clients"
     )
     hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, null=True)
     active_from = models.DateField(null=True, blank=True)
@@ -310,6 +305,7 @@ class Client(TimeStampMixin, AuthorMixin):
             ("can_mark_as_inactive", "Can mark clients as inactive"),
             ("can_export_to_excel", "Can export clients to Excel"),
         ]
+
 
 class ClientExperience(Client):
     class Meta:
@@ -479,12 +475,12 @@ class Project(TimeStampMixin, AuthorMixin):
     # case_study_pdf = models.FileField(
     #     verbose_name="Case Study File (PDF)",
     #     help_text="Only Upload PDF File",
-    #     upload_to="case_study_pdf", 
-    #     null=True, 
-    #     blank=True, 
+    #     upload_to="case_study_pdf",
+    #     null=True,
+    #     blank=True,
     #     validators=[
     #         FileExtensionValidator(
-    #             allowed_extensions=["pdf"], 
+    #             allowed_extensions=["pdf"],
     #             message="Only PDF files are allowed. Please upload a valid PDF file."
     #         )
     #     ]
@@ -693,7 +689,10 @@ class ProjectScreenshot(TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     image = models.ImageField()
 
+
 from adminsortable.models import SortableMixin
+
+
 class ProjectContent(SortableMixin, TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200, null=True, blank=True)
@@ -705,7 +704,7 @@ class ProjectContent(SortableMixin, TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title or "-"
-    
+
     class Meta:
         ordering = ["id"]
 
@@ -721,9 +720,6 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.title or str(self.pk)
-
-
-from django.core.validators import FileExtensionValidator
 
 
 class ProjectHour(TimeStampMixin, AuthorMixin):
@@ -798,7 +794,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
             FileExtensionValidator(allowed_extensions=["pdf"]),
         ],
         verbose_name="Weekly Update (PDF)",
-        help_text="Please Submit the Report File"
+        help_text="Please Submit the Report File",
     )
 
     def __str__(self):
@@ -963,7 +959,7 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
                 print(history)
                 historyData += f"{history.hours}"
                 if history != self.history.order_by("-created_at").last():
-                    historyData += f" > "
+                    historyData += " > "
             return format_html(historyData)
 
         return "No changes"
@@ -1447,30 +1443,29 @@ class ClientFeedbackEmail(models.Model):
     )
 
 
-
 class Teams(TimeStampMixin):
     team_name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
     projects = models.ManyToManyField(
-        'Project',
-        related_name='teams',
-        limit_choices_to={'active': True},
+        "Project",
+        related_name="teams",
+        limit_choices_to={"active": True},
         blank=True,
     )
     team_image = models.ImageField(
-        upload_to='team_images/', null=True, blank=True, help_text='Upload team image'
+        upload_to="team_images/", null=True, blank=True, help_text="Upload team image"
     )
     employees = models.ManyToManyField(
         Employee,
-        related_name='teams',
-        limit_choices_to={'active': True, 'project_eligibility': True},
+        related_name="teams",
+        limit_choices_to={"active": True, "project_eligibility": True},
         blank=True,
     )
 
     class Meta:
-        verbose_name = 'Team'
-        verbose_name_plural = 'Teams'
-        ordering = ['team_name']
+        verbose_name = "Team"
+        verbose_name_plural = "Teams"
+        ordering = ["team_name"]
 
     def __str__(self):
         return self.team_name
@@ -1478,11 +1473,12 @@ class Teams(TimeStampMixin):
     @property
     def team_leader(self):
         return self.employees.filter(lead=True)
+
     @property
     def is_tpm(self):
         return self.employees.filter(is_tpm=True).exists()
 
     def clean(self):
         if not self.team_name:
-            raise ValidationError('Team name is required.')
+            raise ValidationError("Team name is required.")
         super().clean()

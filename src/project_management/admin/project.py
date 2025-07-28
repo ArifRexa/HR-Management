@@ -100,7 +100,7 @@ class ProjectContentAdmin(SortableStackedInline, nested_admin.NestedStackedInlin
     model = ProjectContent
     extra = 1
     # fields = ("title", "content", "image", "iframe")
-    fields = ("image", "iframe")
+    fields = ("image", "content")
 
 
 class ProjectKeyFeatureInline(nested_admin.NestedStackedInline):
