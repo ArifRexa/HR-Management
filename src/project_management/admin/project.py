@@ -1,48 +1,41 @@
-from collections.abc import Callable, Sequence
 from datetime import datetime
-from typing import Any
+
+import nested_admin
+from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
-from django.http import HttpRequest
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
-from icecream import ic
-import nested_admin
-from project_management.models import Teams
-from website.models import ProjectKeyword, ProjectMetadata
-from .forms import ProjectTechnologyInlineForm, ProjectAdminForm
-from django import forms
-from django.contrib.sites.shortcuts import get_current_site
+
 from project_management.models import (
+    ClientInvoiceDate,
+    EnableDailyUpdateNow,
+    OurTechnology,
     PlatformImage,
     Project,
-    ProjectResultStatistic,
+    ProjectContent,
+    ProjectDocument,
+    ProjectIndustry,
+    ProjectKeyFeature,
+    ProjectKeyPoint,
+    ProjectNeed,
+    ProjectPlatform,
+    ProjectReport,
     ProjectResults,
+    ProjectResultStatistic,
+    ProjectScreenshot,
+    ProjectService,
     ProjectServiceSolution,
     ProjectTechnology,
-    ProjectScreenshot,
-    ProjectContent,
-    Technology,
-    ProjectNeed,
-    Tag,
-    ProjectDocument,
-    ProjectReport,
-    EnableDailyUpdateNow,
-    ObservationProject,
-    ProjectOverview,
-    ProjectStatement,
-    ProjectChallenges,
-    ProjectSolution,
-    ProjectKeyFeature,
-    OurTechnology,
-    ProjectPlatform,
-    ProjectIndustry,
-    ProjectService,
-    ClientInvoiceDate,
-    ProjectKeyPoint,
     ProjectToken,
+    Tag,
+    Teams,
+    Technology,
 )
+from website.models import ProjectKeyword, ProjectMetadata
+
+from .forms import ProjectAdminForm, ProjectTechnologyInlineForm
 
 
 @admin.register(Technology)
@@ -95,7 +88,7 @@ class ProjectDocumentAdmin(admin.StackedInline):
     model = ProjectDocument
     extra = 0
 
-from adminsortable.admin import SortableStackedInline, NonSortableParentAdmin
+
 class ProjectContentAdmin(SortableStackedInline, nested_admin.NestedStackedInline):
     model = ProjectContent
     extra = 1
