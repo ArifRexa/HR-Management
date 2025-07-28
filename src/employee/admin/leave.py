@@ -14,8 +14,9 @@ from django.apps import apps
 
 from employee.models import Leave, LeaveAttachment
 from employee.models.employee_activity import EmployeeProject
-from employee.models.leave import LeaveMixin, leave
-from employee.models.leave import Leave, LeaveMixin  # Updated import
+from employee.models.leave import leave
+# from employee.models.leave import Leave, LeaveMixin  # Updated import
+from employee.models.leave.LeaveMixin import LeaveMixin
 
 
 class LeaveAttachmentInline(admin.TabularInline):
