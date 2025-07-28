@@ -730,6 +730,11 @@ def late_attendance_calculate(late_entry_time=None):
                         else None
                     ),
                 )
+    send_absent_without_leave_email()            
+
+
+
+
 
 
 def send_birthday_email():
@@ -988,7 +993,10 @@ def send_absent_without_leave_email():
     email = EmailMultiAlternatives(
         subject=f"Employees Absent Without Leave on {today}",
         from_email='"Mediusware-HR" <hr@mediusware.com>',
-        to=["hr@mediusware.com"],
+        to=["mailarif3126@gmail.com"],
     )
+    print("email body")
     email.attach_alternative(html_body, "text/html")
+    print("email body end")
     email.send()
+    print(f"Email sent to HR with {len(employee_data)} absent employees for {today}.")
