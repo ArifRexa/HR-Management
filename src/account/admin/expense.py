@@ -69,8 +69,8 @@ class ExpenseAdmin(admin.ModelAdmin):
         "get_amount",
         "note",
         "get_attachments",
-        "created_by",
         "is_approved",
+        "created_by",
     )
     date_hierarchy = "date"
     list_filter = [
