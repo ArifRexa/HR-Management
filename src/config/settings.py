@@ -73,7 +73,7 @@ INSTALLED_APPS = [
     "provident_fund",
     # Custom App
     # "silk",
-    # "debug_toolbar",
+    "debug_toolbar",
     "client_management",
     "mptt",
     # "academy",
@@ -107,7 +107,7 @@ MIDDLEWARE = [
     "employee.middleware.CheckUserHasEmployee",
     # "silk.middleware.SilkyMiddleware",
     # 'weasyprint.middleware.WeasyPrintMiddleware',
-    # "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 INTERNAL_IPS = ["127.0.0.1"]
 ROOT_URLCONF = "config.urls"
@@ -509,4 +509,12 @@ SWAGGER_SETTINGS = {
     "LOGOUT_URL": "rest_framework:logout",
     "JSON_EDITOR": True,
     "PERSIST_AUTH": True,
+}
+
+
+def show_toolbar_for_superuser(request):
+    return request.user.is_superuser
+
+DEBUG_TOOLBAR_CONFIG = {
+    "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar_for_superuser",
 }

@@ -59,7 +59,7 @@ class ActiveCreatedByFilter(admin.SimpleListFilter):
             return queryset.filter(created_by__employee__id__exact=self.value())
         return queryset
 
-# admin.py
+
 
 from django.db.models import Prefetch, Sum
 from django.utils.html import format_html
