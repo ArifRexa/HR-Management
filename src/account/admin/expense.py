@@ -17,9 +17,18 @@ from django.contrib import messages
 
 @admin.register(ExpenseGroup)
 class ExpenseGroupAdmin(admin.ModelAdmin):
-    list_display = ("title", "account_code", "note")
+    list_display = ("title", "account_code", "get_vds_rate", "get_tds_rate", "note")
     search_fields = ["title"]
     ordering = ["account_code"]
+    
+    
+    @admin.display(description="VDS Rate (%)", ordering="vds_rate")
+    def get_vds_rate(self, obj):
+        return obj.vds_rate
+    
+    @admin.display(description="TDS Rate (%)", ordering="tds_rate")
+    def get_tds_rate(self, obj):
+        return obj.tds_rate
 
     def has_module_permission(self, request):
         return True
@@ -60,6 +69,11 @@ class ActiveCreatedByFilter(admin.SimpleListFilter):
         return queryset
 
 
+
+from django.db.models import Prefetch, Sum
+from django.utils.html import format_html
+
+
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = (
@@ -69,9 +83,8 @@ class ExpenseAdmin(admin.ModelAdmin):
         "get_amount",
         "note",
         "get_attachments",
-        "get_approved",
-        "get_add_to_balance_sheet",
         "created_by",
+        "is_approved",
     )
     date_hierarchy = "date"
     list_filter = [
@@ -91,7 +104,60 @@ class ExpenseAdmin(admin.ModelAdmin):
         "remove_from_balance_sheet",
     )
     autocomplete_fields = ("expanse_group", "expense_category")
+    list_select_related = ("expanse_group", "expense_category", "created_by")
+    list_per_page = 20
 
+    
+    
+    # ✅ OPTIMIZATION 1: Centralized data fetching
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        qs = qs.select_related("expanse_group", "expense_category", "created_by").prefetch_related("expanseattachment_set")
+        
+        if not request.user.has_perm(
+            "account.can_approve_expense"
+        ) and not request.user.has_perm("account.can_view_all_expenses"):
+            return qs.filter(created_by__id=request.user.id)
+            
+        return qs
+
+    # ✅ OPTIMIZATION 2: Efficient amount display
+    @admin.display(description="Amount", ordering="amount")
+    def get_amount(self, obj):
+        # Assumes you want to format it as a currency. Much faster than template rendering.
+        return f"{obj.amount:,.2f}"
+
+    # This method is now efficient because of get_queryset's prefetch_related
+    @admin.display(description="Attachments", ordering="expanseattachment__count")
+    def get_attachments(self, obj):
+        # .all() here uses the prefetched cache, so no new DB query is made
+        attachments = obj.expanseattachment_set.all()
+        if not attachments:
+            return "-"
+        html = "".join(
+            f'<a href="{attachment.attachment.url}" target="_blank">📄</a>'
+            for attachment in attachments
+        )
+        return format_html(html)
+
+    # ✅ OPTIMIZATION 3: Efficient voucher data mapping
+    def _get_mapped_expense_data(self, queryset):
+        user_ids = queryset.values_list("created_by", flat=True).distinct()
+        users = User.objects.in_bulk(user_ids)
+
+        mapped_data = []
+        for expense_info in queryset.values("date", "created_by").distinct():
+            context = dict(
+                created_at=expense_info["date"],
+                created_by=users.get(expense_info["created_by"]),
+                data=queryset.filter(
+                    date=expense_info["date"], created_by=expense_info["created_by"]
+                ),
+            )
+            mapped_data.append(context)
+        return mapped_data
+
+    # ... (the rest of your methods like get_actions, save_model, etc., remain the same)
     def get_actions(self, request):
         actions = super().get_actions(request)
         if not request.user.is_superuser and not request.user.has_perm(
@@ -100,46 +166,11 @@ class ExpenseAdmin(admin.ModelAdmin):
             actions.pop("add_to_balance_sheet")
             actions.pop("remove_from_balance_sheet")
         return actions
-    
-    @admin.display(description="Approved", ordering="is_approved")
-    def get_approved(self, obj):
-        if obj.is_approved:
-            return "✅"
-        return "❌"
-    
-    @admin.display(description="BS", ordering="add_to_balance_sheet")
-    def get_add_to_balance_sheet(self, obj):
-        if obj.add_to_balance_sheet:
-            return "✅"
-        return "❌"
 
     def lookup_allowed(self, lookup, value):
         if lookup in ["created_by__employee__id__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
-    
-    # @admin.display(description="Attachments", ordering="expanseattachment__count")
-    # def get_attachments(self, obj):
-    #     # Count the number of attachments for the expense
-    #     attachment_count = obj.expanseattachment_set.count()
-    #     # Render 📄 icon for each attachment
-    #     return format_html(
-    #         "{}",
-    #         "".join(["📄" for _ in range(attachment_count)])
-    #     )
-
-
-    @admin.display(description="Attachments", ordering="expanseattachment__count")
-    def get_attachments(self, obj):
-        attachments = obj.expanseattachment_set.all()
-        if not attachments:
-            return "-"
-        # Create a clickable 📄 icon for each attachment
-        html = "".join(
-            '<a href="{}" target="_blank">📄</a>'.format(attachment.attachment.url)
-            for attachment in attachments
-        )
-        return format_html(html)
 
     def get_readonly_fields(self, request, obj):
         rfs = super().get_readonly_fields(request, obj)
@@ -161,24 +192,6 @@ class ExpenseAdmin(admin.ModelAdmin):
                 perm = False
         return perm
 
-    @admin.display(description="Amount", ordering="amount")
-    def get_amount(self, obj):
-        html_template = get_template("admin/expense/list/col_amount.html")
-        html_content = html_template.render(
-            {
-                "expense": obj,
-            }
-        )
-        return format_html(html_content)
-
-    def get_queryset(self, request):
-        qs = super(ExpenseAdmin, self).get_queryset(request)
-        if not request.user.has_perm(
-            "account.can_approve_expense"
-        ) and not request.user.has_perm("account.can_view_all_expenses"):
-            return qs.filter(created_by__id=request.user.id)
-        return qs
-
     def get_total_hour(self, request):
         qs = self.get_queryset(request).filter(**simple_request_filter(request))
         if not request.user.is_superuser:
@@ -194,11 +207,12 @@ class ExpenseAdmin(admin.ModelAdmin):
                 "date__lte": request.GET.get("date__lte", timezone.now().date()),
             }
         )
-        my_context = {"total": self.get_total_hour(request), "filter_form": filter_form}
+        if request.GET:
+            total = self.get_total_hour(request)
+        else:
+            total = None
+        my_context = {"total": total, "filter_form": filter_form}
         return super().changelist_view(request, extra_context=my_context)
-
-    # TODO : Export to excel
-    # TODO : Credit feature
 
     @admin.action()
     def add_to_balance_sheet(self, request, queryset):
@@ -227,19 +241,6 @@ class ExpenseAdmin(admin.ModelAdmin):
             messages.success(request, "Updated Successfully")
         else:
             messages.error(request, "You don't have enough permission")
-
-    def _get_mapped_expense_data(self, queryset):
-        mapped_date = []
-        for expense in queryset.values("date", "created_by"):
-            context = dict(
-                created_at=expense["date"],
-                created_by=User.objects.get(id=expense["created_by"]),
-                data=queryset.filter(
-                    date=expense["date"], created_by=expense["created_by"]
-                ),
-            )
-            mapped_date.append(context)
-        return mapped_date
 
     def get_form(self, request, obj, **kwargs):
         if not request.user.has_perm("account.can_approve_expense"):
