@@ -140,6 +140,7 @@ class ExpenseAdmin(admin.ModelAdmin):
             return "✅"
         return "❌"
     
+    @admin.display(description="Created By", ordering="created_by__employee__full_name")
     def get_created_by(self, obj):
         if obj.created_by:
             return obj.created_by.employee.full_name
