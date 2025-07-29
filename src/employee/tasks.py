@@ -621,7 +621,7 @@ from datetime import time
 
 def late_attendance_calculate(late_entry_time=None):
     employees = Employee.objects.filter(
-        active=True, show_in_attendance_list=True, exception_la=False
+        active=True, show_in_attendance_list=True, exception_la=False  #exception_la = exception_late_attendance if true then thats are not counted as late
     ).exclude(salaryhistory__isnull=True)
     late_entry = late_entry_time if late_entry_time else time(hour=11, minute=11)
 
@@ -956,8 +956,8 @@ def send_absent_without_leave_email():
     # Get system user for creating leave applications
     system_user = User.objects.filter(is_superuser=True).first()
 
-    if not absent_employees.exists():
-        return
+    # if not absent_employees.exists():
+    #     return
 
     # Prepare leave objects and employee names using comprehensions
     leave_objects = [
@@ -993,7 +993,7 @@ def send_absent_without_leave_email():
     email = EmailMultiAlternatives(
         subject=f"Employees Absent Without Leave on {today}",
         from_email='"Mediusware-HR" <hr@mediusware.com>',
-        to=["hr@mediusware.com"],
+        to=["sales@mediusware.com", "hr@mediusware.com", "mailarif3126@gmail.com"],
     )
     print("email body")
     email.attach_alternative(html_body, "text/html")
