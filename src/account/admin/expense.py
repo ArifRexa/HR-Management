@@ -25,8 +25,8 @@ class ExpenseGroupAdmin(admin.ModelAdmin):
         return True
 
     def has_delete_permission(self, request, obj=None):
-        # if request.user.is_superuser:
-        #     return True
+        if request.user.is_superuser:
+            return True
         return False
 
 
