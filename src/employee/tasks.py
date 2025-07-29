@@ -993,7 +993,7 @@ def send_absent_without_leave_email():
     email = EmailMultiAlternatives(
         subject=f"Employees Absent Without Leave on {today}",
         from_email='"Mediusware-HR" <hr@mediusware.com>',
-        to=["sales@mediusware.com", "hr@mediusware.com", "mailarif3126@gmail.com"],
+        to=["sales@mediusware.com", "mailarif3126@gmail.com"],
     )
     print("email body")
     email.attach_alternative(html_body, "text/html")
