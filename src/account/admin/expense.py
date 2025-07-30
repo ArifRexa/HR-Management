@@ -83,8 +83,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         "get_amount",
         "note",
         "get_attachments",
-        "created_by",
-        "is_approved",
+        "get_approved",
+        "get_add_to_balance_sheet",
+        "get_created_by",
     )
     date_hierarchy = "date"
     list_filter = [
@@ -126,6 +127,24 @@ class ExpenseAdmin(admin.ModelAdmin):
     def get_amount(self, obj):
         # Assumes you want to format it as a currency. Much faster than template rendering.
         return f"{obj.amount:,.2f}"
+    
+    @admin.display(description="Approved", ordering="is_approved")
+    def get_approved(self, obj):
+        if obj.is_approved:
+            return "✅"
+        return "❌"
+    
+    @admin.display(description="BS", ordering="add_to_balance_sheet")
+    def get_add_to_balance_sheet(self, obj):
+        if obj.add_to_balance_sheet:
+            return "✅"
+        return "❌"
+    
+    @admin.display(description="Created By", ordering="created_by__employee__full_name")
+    def get_created_by(self, obj):
+        if obj.created_by:
+            return obj.created_by.employee.full_name
+        return "Unknown"
 
     # This method is now efficient because of get_queryset's prefetch_related
     @admin.display(description="Attachments", ordering="expanseattachment__count")
