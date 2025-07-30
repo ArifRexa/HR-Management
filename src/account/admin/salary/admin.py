@@ -106,14 +106,33 @@ class EmployeeSalaryInline(admin.TabularInline):
         if not request.user.is_superuser and not request.user.has_perm('account.can_see_salary_on_salary_sheet'):
             exclude.extend(self.superadminonly_fields)
         return exclude
-    def get_late_fine(self, obj):
+    # def get_late_fine(self, obj):
         
-        fine = LateAttendanceFine.objects.filter(
-                    employee=obj.employee,
-                    month=obj.salary_sheet.date.month,
-                    year=obj.salary_sheet.date.year,
-                ).aggregate(fine=Sum('total_late_attendance_fine'))
-        return int(fine.get('fine', 0)) if fine.get('fine') else 0
+    #     fine = LateAttendanceFine.objects.filter(
+    #                 employee=obj.employee,
+    #                 month=obj.salary_sheet.date.month,
+    #                 year=obj.salary_sheet.date.year,
+    #             ).aggregate(fine=Sum('total_late_attendance_fine'))
+    #     return int(fine.get('fine', 0)) if fine.get('fine') else 0
+    def get_late_fine(self, obj):
+        late_count = LateAttendanceFine.objects.filter(
+            employee=obj.employee,
+            month=obj.salary_sheet.date.month,
+            year=obj.salary_sheet.date.year,
+        ).count()
+
+        total_fine = 0.00
+        if late_count > 3:
+            # Apply 80 BDT for 4th to 6th late entries
+            late_entries_4_to_6 = min(late_count, 6) - 3
+            if late_entries_4_to_6 > 0:
+                total_fine += late_entries_4_to_6 * 80.00
+            # Apply 500 BDT for 7th and subsequent late entries
+            if late_count > 6:
+                late_entries_7_and_above = late_count - 6
+                total_fine += late_entries_7_and_above * 500.00
+        
+        return int(total_fine) if total_fine > 0 else 0
     get_late_fine.short_description = "Late Fine"
 
     # def get_salary_loan(self, obj):
