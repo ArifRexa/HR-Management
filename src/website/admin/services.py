@@ -93,3 +93,4 @@ class ServicePageAdmin(admin.ModelAdmin):
         FAQQuestionInline,
         ServiceMetaDataInline,
     ]
+    list_per_page = 20

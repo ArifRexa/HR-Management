@@ -1,67 +1,82 @@
-import re
-import time
 from typing import Any, Union
+
+import nested_admin
 from django import forms
 from django.contrib import admin
-from django.db.models.query import QuerySet
-from django.http.request import HttpRequest
-from django.utils import timezone
-from mptt.admin import MPTTModelAdmin
-from django.utils.html import format_html
-from django.db import transaction
-from django.forms.models import model_to_dict
-import requests
-from django_q.tasks import async_task
-from django.urls import reverse
-from django.forms.models import BaseInlineFormSet
+from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.models import Count
-from datetime import timedelta
+from django.db.models.query import QuerySet
+from django.forms.models import BaseInlineFormSet, model_to_dict
+from django.http.request import HttpRequest
 from django.template.loader import get_template
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.html import format_html
+from django_q.tasks import async_task
+from mptt.admin import MPTTModelAdmin
 
 # Register your models here.
 from employee.models.employee import Employee
-from project_management.models import (
-    EmployeeProjectHour,
-    ProjectHour,
-    ProjectServiceSolution,
-)
-from settings.models import Announcement
+from project_management.models import ProjectHour
 from website.models import (
+    FAQ,
     AllProjectsBanner,
+    AllServicesTitle,
     Award,
     AwardsBanner,
-    BannerImage,
+    AwardsTitle,
     BenefitsOfEmployment,
     BenefitsOfEmploymentTitle,
+    Blog,
+    BlogCategory,
+    BlogComment,
+    BlogContext,
     BlogFAQ,
     BlogKeyword,
     BlogMeatadata,
     BlogModeratorFeedback,
     BlogSEOEssential,
     BlogStatus,
-    CSRBanner,
+    BlogTag,
+    BlogTitle,
+    Brand,
     Career,
     CareerBanner,
+    Category,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
+    CSRBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
+    EmployeePerspective,
     EmployeeTestimonial,
     EmployeeTestimonialTitle,
     EngagementModelBanner,
     EventCalender,
+    FAQHomeTitle,
     Gallery,
     HomeBanner,
+    Industry,
+    IndustryTitle,
     IndustryWeServe,
-    LeaderShipBanner,
+    Lead,
     Leadership,
+    LeaderShipBanner,
     LeadershipSpeech,
     LifeAtMediusware,
+    LifeAtMediuswareTitle,
     ModelTitle,
     OfficeLocation,
+    OurAchievement,
+    OurGrowth,
+    OurJourney,
+    OurJourneyTitle,
     PageBanner,
+    PlagiarismInfo,
     PostCredential,
     PostPlatform,
     ProjectClientReviewTitle,
@@ -69,61 +84,28 @@ from website.models import (
     ProjectResultsTitle,
     ProjectScreenshotTitle,
     ProjectServiceSolutionTitle,
+    ProjectsVideoTitle,
     ProjectTechnologyTitle,
     PublicImage,
     ReferenceBlogs,
     RelatedBlogs,
     Service,
-    Blog,
-    Category,
+    ServiceContent,
     ServiceKeyword,
     ServiceMeatadata,
-    Tag,
-    BlogCategory,
-    BlogTag,
-    BlogContext,
-    BlogComment,
-    FAQ,
-    ServiceTechnology,
     ServiceProcess,
-    OurAchievement,
-    OurGrowth,
-    OurJourney,
-    EmployeePerspective,
-    Industry,
-    Lead,
-    ServiceContent,
-    VideoTestimonial,
-    Brand,
-    WebsiteTitle,
-    AwardsTitle,
-    WhyUsTitle,
-    AllServicesTitle,
-    TechnologyTitle,
-    VideoTestimonialTitle,
-    IndustryTitle,
-    LifeAtMediuswareTitle,
-    ProjectsVideoTitle,
-    BlogTitle,
-    TextualTestimonialTitle,
+    ServiceTechnology,
     SpecialProjectsTitle,
-    FAQHomeTitle,
-    OurJourneyTitle,
+    Tag,
+    TechnologyTitle,
+    TextualTestimonialTitle,
+    VideoTestimonial,
+    VideoTestimonialTitle,
+    WebsiteTitle,
+    WhyUsTitle,
     WhyWeAreBanner,
     WomenEmpowermentBanner,
-    PlagiarismInfo,
 )
-
-from website.linkedin_post import automate_posts, automatic_blog_post_linkedin
-
-
-from django.contrib.auth.models import User, Group
-from django.contrib.auth.admin import (
-    UserAdmin as BaseUserAdmin,
-    GroupAdmin as BaseGroupAdmin,
-)
-import nested_admin
-
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -504,6 +486,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     )
     form = BlogForm
     list_filter = ("status", BlogCategoryFilter, ActiveEmployeeFilter)
+    list_per_page = 20
 
     class Media:
         js = ("js/blog_post_field_escape.js",)
@@ -561,7 +544,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                 host_url = request.build_absolute_uri("/")
                 check_plagiarism(queryset, host_url)
                 self.message_user(
-                    request, f"Successfully queue blogs for plagiarism check."
+                    request, "Successfully queue blogs for plagiarism check."
                 )
             except Exception as e:
                 print(e)
@@ -571,7 +554,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         else:
             self.message_user(
                 request,
-                f"You do not have permission to submit blogs for plagiarism check.",
+                "You do not have permission to submit blogs for plagiarism check.",
                 level="ERROR",
             )
 
@@ -721,6 +704,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
     def get_urls(self):
         from functools import update_wrapper
+
         from django.urls import path
 
         def wrap(view):
