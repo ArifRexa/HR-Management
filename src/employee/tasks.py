@@ -730,7 +730,7 @@ def late_attendance_calculate(late_entry_time=None):
                         else None
                     ),
                 )
-    send_absent_without_leave_email()            
+    # send_absent_without_leave_email()            
 
 
 
