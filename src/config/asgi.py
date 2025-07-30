@@ -20,12 +20,12 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
 # Import your websocket routes if you have any
-from chat.routers import websocket_urlpatterns
+# from chat.routers import websocket_urlpatterns
 
 application = ProtocolTypeRouter(
     {
         "http": get_asgi_application(),
         # Add "websocket" route handling here
-        "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+        # "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
     }
 )

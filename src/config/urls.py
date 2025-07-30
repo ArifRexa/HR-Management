@@ -173,8 +173,8 @@ urlpatterns = [
     path("", lambda request: redirect("/admin")),
     path("clients/", include("client_management.urls")),
     # path("api/academy/", include("academy.urls")),
-    path("chat/", include("chat.urls")),
-    path("", include("reception.urls")),
+    # path("chat/", include("chat.urls")),
+    # path("", include("reception.urls")),
     path("chaining/", include("smart_selects.urls")),
 ]
 urlpatterns.extend(api_urlpatterns)

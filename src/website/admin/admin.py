@@ -465,7 +465,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "status",
         "total_view",
         "get_preview_link",
-        "get_plagiarism_percentage",
+        # "get_plagiarism_percentage",
     )
     readonly_fields = ("status",)
     # exclude = ("slug",)
@@ -558,12 +558,12 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                 level="ERROR",
             )
 
-    @admin.display(description="Plagiarism(%)")
-    def get_plagiarism_percentage(self, obj):
-        plagiarism_objects = obj.plagiarism_info.order_by("-created_at")
-        html_template = get_template("blog/plagiarism_report_link.html")
-        html_content = html_template.render({"plagiarism_objects": plagiarism_objects})
-        return format_html(html_content)
+    # @admin.display(description="Plagiarism(%)")
+    # def get_plagiarism_percentage(self, obj):
+    #     plagiarism_objects = obj.plagiarism_info.order_by("-created_at")
+    #     html_template = get_template("blog/plagiarism_report_link.html")
+    #     html_content = html_template.render({"plagiarism_objects": plagiarism_objects})
+    #     return format_html(html_content)
 
     @admin.action(description="Clone selected blogs")
     def clone_selected(self, request, queryset):
