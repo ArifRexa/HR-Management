@@ -7,7 +7,7 @@ from django.contrib.admin import SimpleListFilter
 from django.contrib.auth import hashers
 from django.contrib.auth.models import User
 from django.core import management
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.shortcuts import redirect
 from django.template.loader import get_template, render_to_string
 from django.template.response import TemplateResponse
@@ -22,6 +22,7 @@ from config import settings
 from job_board.mails.mail import re_apply_alert_mail
 from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
+from job_board.models import job
 from job_board.models.candidate import (
     Candidate,
     CandidateApplicationSummary,
@@ -138,6 +139,13 @@ class FeedbackInline(admin.TabularInline):
         return True  # Allow deletion in the inline
 
 
+# from django.core.paginator import Paginator
+# class DumbPaginator(Paginator):
+#     @cached_property
+#     def count(self):
+#         return 10**9
+
+
 @admin.register(Candidate)
 class CandidateAdmin(admin.ModelAdmin):
     change_form_template = "admin/candidate/custom_candidate_form.html"
@@ -158,10 +166,36 @@ class CandidateAdmin(admin.ModelAdmin):
         "download_offer_letter",
         "job_re_apply",
     )
-    list_per_page = 50
     date_hierarchy = "created_at"
     inlines = [FeedbackInline]
     exclude = ("feedback",)
+
+    list_per_page = 30
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Prefetch jobs ordered by newest first
+        qs = qs.prefetch_related(
+            Prefetch(
+                "candidatejob_set",
+                queryset=CandidateJob.objects.order_by("-id").prefetch_related(
+                    Prefetch(
+                        "candidate_assessment",
+                        queryset=CandidateAssessment.objects.select_related(
+                            "assessment"
+                        ).prefetch_related("candidateassessmentreview_set"),
+                        to_attr="assessments",
+                    )
+                ),
+                to_attr="jobs",
+            ),
+            Prefetch(
+                "feedbacks",
+                queryset=Feedback.objects.select_related("user__employee"),
+                to_attr="cached_feedbacks",
+            ),
+        )
+        return qs
 
     class Media:
         css = {
@@ -176,11 +210,6 @@ class CandidateAdmin(admin.ModelAdmin):
             "https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/confirmDate/confirmDate.js",
             "js/candidate_actions.js",
         )
-
-    # def changelist_view(self, request, extra_context=None):
-    #     extra_context = extra_context or {}
-    #     extra_context['csrf_token'] = get_token(request)
-    #     return super().changelist_view(request, extra_context=extra_context)
 
     def get_list_display(self, request):
         if request.user.is_superuser or request.user.has_perm(
@@ -214,13 +243,15 @@ class CandidateAdmin(admin.ModelAdmin):
 
     @admin.display(ordering="candidatejob__expected_salary")
     def expected_salary(self, obj: Candidate):
-        candidate_job = obj.candidatejob_set.last()
+        jobs = getattr(obj, "jobs", None)
+        candidate_job = jobs[-1] if jobs else None
         if candidate_job is not None:
             return candidate_job.expected_salary
 
     @admin.display(ordering="created_at")
     def contact_information(self, obj: Candidate):
-        candidate_job = obj.candidatejob_set.last()
+        jobs = getattr(obj, "jobs", None)
+        candidate_job = jobs[-1] if jobs else None
         return format_html(
             f"{obj.full_name} <br>"
             f"{obj.email} <br>"
@@ -230,87 +261,23 @@ class CandidateAdmin(admin.ModelAdmin):
         )
 
     @admin.display(ordering="created_at")
-    def assessment(self, obj: Candidate):
-        candidate_job = obj.candidatejob_set.last()
-        if candidate_job is not None:
-            html_template = get_template("admin/candidate/list/col_assessment.html")
-            html_content = html_template.render(
+    def assessment(self, obj):
+        job = obj.jobs[0] if hasattr(obj, "jobs") and obj.jobs else None
+        if job:
+            assessments = job.assessments  # already prefetched CandidateAssessment
+            html = get_template("admin/candidate/list/col_assessment.html").render(
                 {
-                    "candidate_job": candidate_job,
-                    "candidate_assessments": candidate_job.candidate_assessment.all(),
+                    "candidate_job": job,
+                    "candidate_assessments": assessments,
                 }
             )
-            return html_content
+            return html
+        return "-"
 
-    # def get_queryset(self, request):
-    #     queryset = super().get_queryset(request)
-    #
-    #     # Subquery to fetch the score of the latest candidate assessment
-    #     assessment_subquery = CandidateAssessment.objects.filter(
-    #         candidate_job=OuterRef('candidatejob__id')
-    #     ).order_by('-created_at').values('score')[:1]
-    #
-    #     return queryset.annotate(
-    #         assessment_sort_field=Subquery(assessment_subquery, output_field=IntegerField())
-    #     )
-    #
-    # @admin.display(ordering='assessment_sort_field')
-    # def assessment(self, obj: Candidate):
-    #     candidate_job = obj.candidatejob_set.last()
-    #     if candidate_job is not None:
-    #         html_template = get_template('admin/candidate/list/col_assessment.html')
-    #         html_content = html_template.render({
-    #             'candidate_job': candidate_job,
-    #             'candidate_assessments': candidate_job.candidate_assessment.all()
-    #         })
-    #         return html_content
-
-    # @admin.display()
-    # def review(self, obj: Candidate):
-    #     review = ''
-    #     candidate_job = obj.candidatejob_set.last()
-    #     if candidate_job is not None:
-    #         for candidate_assessment in candidate_job.candidate_assessment.all():
-    #             review += f'{candidate_assessment.note.replace("{","_").replace("}", "_") if candidate_assessment.note is not None else ""} <br>'
-    #     return format_html(review)
-    # @admin.display()
-    # def review(self, obj: Candidate):
-    #     feedbacks = obj.feedbacks.all()  # Get related feedbacks
-    #     if not feedbacks:
-    #         return "No Feedback"
-    #
-    #     review_summary = ""
-    #     for feedback in feedbacks:
-    #         truncated_comment = feedback.comment[:15]  # Show the first 30 characters
-    #         review_summary += format_html(
-    #             f'<div title="{feedback.user.username}: {feedback.comment}">'
-    #             f'{truncated_comment}...</div>'
-    #         )
-    #
-    #     return format_html(review_summary)
     from django.utils.html import format_html
 
-    # @admin.display()
-    # def review(self, obj: Candidate):
-    #     feedbacks = obj.feedbacks.all()
-    #     if not feedbacks:
-    #         return ""
-    #
-    #     # Render feedback list
-    #     feedback_list = "".join(
-    #         f"<p><strong>{feedback.user}:</strong> {feedback.comment}</p>"
-    #         for feedback in feedbacks
-    #     )
-    #
-    #     return format_html(
-    #         f'<div class="feedback-wrapper">'
-    #         f'    <span class="feedback-hover">View</span>'
-    #         f'    <div class="feedback-popup">{feedback_list}</div>'
-    #         f'</div>'
-    #     )
-    # @admin.display()
     def review(self, obj: Candidate):
-        feedbacks = obj.feedbacks.all()
+        feedbacks = getattr(obj, "cached_feedbacks", None)
         if not feedbacks:
             return ""
 
@@ -325,9 +292,7 @@ class CandidateAdmin(admin.ModelAdmin):
                 if len(feedback.comment) > 50
                 else feedback.comment
             )
-            truncated_feedback_list += (
-                f"<p><strong>{feedback.user.employee.full_name}:</strong> {truncated_comment}</p>"
-            )
+            truncated_feedback_list += f"<p><strong>{feedback.user.employee.full_name}:</strong> {truncated_comment}</p>"
 
             # Full feedback (for hover), preserving line breaks
             # Use string concatenation to handle the line breaks
@@ -347,7 +312,8 @@ class CandidateAdmin(admin.ModelAdmin):
 
     @admin.display()
     def note(self, obj: Candidate):
-        candidate_job = obj.candidatejob_set.last()
+        jobs = getattr(obj, "jobs", None)
+        candidate_job = jobs[-1] if jobs else None
         if candidate_job:
             return format_html(
                 linebreaks(
@@ -386,18 +352,29 @@ class CandidateAdmin(admin.ModelAdmin):
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         extra_context = extra_context or {}
-        extra_context["candidate_jobs"] = CandidateJob.objects.filter(
-            candidate_id=object_id
-        ).all()
-        return super(CandidateAdmin, self).change_view(
+        candidate_jobs_qs = (
+            CandidateJob.objects.filter(candidate_id=object_id)
+            .order_by("-id")
+            .select_related("job")
+            .prefetch_related(
+                Prefetch(
+                    "candidate_assessment",
+                    queryset=CandidateAssessment.objects.select_related(
+                        "assessment"
+                    ).prefetch_related("candidateassessmentreview_set"),
+                    to_attr="assessments",
+                )
+            )
+        )
+        extra_context["candidate_jobs"] = list(candidate_jobs_qs)
+        return super().change_view(
             request, object_id, form_url, extra_context=extra_context
         )
 
     def save_model(self, request, obj, form, change):
         try:
-            print(hashers.identify_hasher(request.POST["password"]))
             super(CandidateAdmin, self).save_model(request, obj, form, change)
-        except:
+        except Exception:
             obj.password = hashers.make_password(
                 request.POST["password"], settings.CANDIDATE_PASSWORD_HASH
             )
@@ -406,7 +383,6 @@ class CandidateAdmin(admin.ModelAdmin):
     def save_formset(self, request, form, formset, change):
         instances = formset.save(commit=False)
 
-        # Delete instances marked for deletion
         for obj in formset.deleted_objects:
             obj.delete()
 
@@ -591,6 +567,18 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         self.request = request
+        qs = qs.select_related(
+            "candidate_job__candidate",
+            "candidate_job__job",
+            "assessment",
+        )
+        qs = qs.prefetch_related(
+            Prefetch(
+                "candidateassessmentreview_set",
+                queryset=CandidateAssessmentReview.objects.select_related("created_by"),
+                to_attr="cached_reviews",
+            )
+        )
         return qs
 
     class Media:
@@ -741,13 +729,14 @@ class CandidateAssessmentAdmin(admin.ModelAdmin):
 
     @admin.display(ordering="updated_at")
     def meta_review(self, obj: CandidateAssessment):
+        reviews = getattr(obj, "cached_reviews", [])
         html_template = get_template(
             "admin/candidate_assessment/list/col_meta_review.html"
         )
         html_content = html_template.render(
             {
                 "candidate_assessment": obj,
-                "reviews": obj.candidateassessmentreview_set.order_by("-id").all(),
+                "reviews": reviews,
             }
         )
         return format_html(html_content)
