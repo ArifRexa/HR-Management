@@ -180,10 +180,10 @@ class ProjectHourAdmin(
         return super().changelist_view(request, extra_context=extra_context)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request) #.prefetch_related("projecthourhistory_set",Prefetch(
-        #     "employeeprojecthour_set",
-        #     queryset=EmployeeProjectHour.objects.select_related("employee") #.order_by("date"),
-        # ))
+        qs = super().get_queryset(request).prefetch_related("projecthourhistry_set",Prefetch(
+            "employeeprojecthour_set",
+            queryset=EmployeeProjectHour.objects.select_related("employee")
+        ))
         
         if not request.GET.get("created_at__date__gte") and not request.GET.get("q"):
             qs = qs.filter(created_at__gte=timezone.now() - timedelta(days=60))
