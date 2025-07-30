@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 # Register your models here.
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Prefetch
 
 # from django.template.context_processors import request
 from django.utils import timezone
@@ -180,7 +180,10 @@ class ProjectHourAdmin(
         return super().changelist_view(request, extra_context=extra_context)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).prefetch_related("projecthourhistory_set",Prefetch(
+            "employeeprojecthour_set",
+            queryset=EmployeeProjectHour.objects.select_related("employee") #.order_by("date"),
+        ))
         
         if not request.GET.get("created_at__date__gte") and not request.GET.get("q"):
             qs = qs.filter(created_at__gte=timezone.now() - timedelta(days=60))
