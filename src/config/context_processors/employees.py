@@ -39,7 +39,7 @@ from settings.models import Announcement, Notice
 
 
 def formal_summery(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {}
     if not request.user.is_authenticated:
         return {}
@@ -150,7 +150,7 @@ def formal_summery(request):
 
 
 def total_attendance_fine(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {}
     if not request.user.is_authenticated:
         return ""
@@ -177,7 +177,7 @@ def total_attendance_fine(request):
 
 
 def employee_status_form(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {"status_form": None}
     if (
         request.user.is_authenticated
@@ -192,7 +192,7 @@ def employee_status_form(request):
 
 
 def employee_project_form(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {"employee_project_form": None}
     if (
         request.user.is_authenticated
@@ -207,7 +207,7 @@ def employee_project_form(request):
 
 
 def employee_need_help_form(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {"employee_need_help_form": None}
     if (
         request.user.is_authenticated
@@ -224,7 +224,7 @@ def employee_need_help_form(request):
 
 
 def unread_inbox(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {}
     if not request.user.is_authenticated:
         return {}
@@ -235,7 +235,7 @@ def unread_inbox(request):
 
 
 def all_notices(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {"notices": []}
     return {
         "notices": Notice.objects.filter(
@@ -245,7 +245,7 @@ def all_notices(request):
 
 
 def get_announcement(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return []
     data = []
     now = timezone.now()
@@ -366,7 +366,7 @@ def get_announcement(request):
 
 
 def get_managed_birthday_image(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return False
     path = request.get_full_path()
     if not path == "/admin/":
@@ -402,7 +402,7 @@ def favourite_menu_list(request):
 
 
 def project_lists(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return []
     if request.user.is_authenticated:
         data = {}
@@ -412,7 +412,7 @@ def project_lists(request):
 
 
 def conference_room_bookings(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {"conference_room_bookings": []}
     today = datetime.today().date()
     return {
@@ -431,7 +431,7 @@ def conference_room_bookings_form(request):
 
 
 def employee_context_processor(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {}
     if request.user.is_authenticated:
         try:
@@ -464,7 +464,7 @@ def employee_context_processor(request):
 
 
 def employee_project_list(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {"employee_project_list": None}
     if request.user.is_authenticated:
         try:
@@ -482,7 +482,7 @@ def employee_project_list(request):
 
 
 def approval_info_leave_daily_update(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {}
     if not request.user.is_authenticated:
         return ""  # Return empty response if user is not authenticated
@@ -519,7 +519,7 @@ def approval_info_leave_daily_update(request):
 
 
 def last_four_week_project_hour(request):
-    if "account" in request.path:
+    if not request.path=="/admin/":
         return {}
     if not request.user.is_authenticated:
         return ""
@@ -541,8 +541,3 @@ def can_show_permanent_increment(reqeust):
     return {"can_show_permanent_increment": can_show}
 
 
-def can_show_permanent_increment(reqeust):
-    can_show = False
-    if reqeust.user.has_perm("employee.can_show_permanent_increment"):
-        can_show = True
-    return {"can_show_permanent_increment": can_show}
