@@ -974,25 +974,90 @@ class SalarySheetRepository:
 
         return -monthly_amount if monthly_amount else 0.0
 
-    def __calculate_late_entry_fine(
-        self, employee: Employee, salary_date: datetime.date
-    ):
+    # def __calculate_late_entry_fine(
+    #     self, employee: Employee, salary_date: datetime.date
+    # ):
+    #     current_month = (
+    #         datetime(salary_date).month
+    #         if isinstance(salary_date, str)
+    #         else salary_date.month
+    #     )
+    #     current_year = (
+    #         datetime(salary_date).year
+    #         if isinstance(salary_date, str)
+    #         else salary_date.year
+    #     )
+    #     total_fine = LateAttendanceFine.objects.filter(
+    #         employee=employee,
+    #         month=current_month,
+    #         year=current_year,
+    #     ).aggregate(fine=Sum("total_late_attendance_fine"))
+    #     return -float(total_fine.get("fine", 0)) if total_fine.get("fine") else 0.00
+
+# my one
+    # def __calculate_late_entry_fine(
+    #     self, employee: Employee, salary_date: datetime.date
+    # ):
+    #     current_month = (
+    #         datetime(salary_date).month
+    #         if isinstance(salary_date, str)
+    #         else salary_date.month
+    #     )
+    #     current_year = (
+    #         datetime(salary_date).year
+    #         if isinstance(salary_date, str)
+    #         else salary_date.year
+    #     )
+    #     late_count = LateAttendanceFine.objects.filter(
+    #         employee=employee,
+    #         month=current_month,
+    #         year=current_year,
+    #     ).count()
+    #     total_fine = 0.00
+    #     if late_count > 3:
+    #         # Apply 80 BDT for 4th to 6th late entries
+    #         late_entries_4_to_6 = min(late_count, 6) - 3
+    #         if late_entries_4_to_6 > 0:
+    #             total_fine += late_entries_4_to_6 * 80.00
+    #         # Apply 500 BDT for 7th and subsequent late entries
+    #         if late_count > 6:
+    #             late_entries_7_and_above = late_count - 6
+    #             total_fine += late_entries_7_and_above * 500.00
+        
+    #     return -float(total_fine) if total_fine > 0 else 0.00
+    def __calculate_late_entry_fine(self, employee: Employee, salary_date: datetime.date):
         current_month = (
             datetime(salary_date).month
             if isinstance(salary_date, str)
             else salary_date.month
         )
+        print("Current Month:", current_month)
         current_year = (
             datetime(salary_date).year
             if isinstance(salary_date, str)
             else salary_date.year
         )
-        total_fine = LateAttendanceFine.objects.filter(
+        print("Current Year:", current_year)
+        late_count = LateAttendanceFine.objects.filter(
             employee=employee,
             month=current_month,
             year=current_year,
-        ).aggregate(fine=Sum("total_late_attendance_fine"))
-        return -float(total_fine.get("fine", 0)) if total_fine.get("fine") else 0.00
+        ).count()
+        print("Late Count:", late_count)
+        total_fine = 0.00
+        if late_count > 3:
+            # Apply 80 BDT for 4th to 6th late entries
+            late_entries_4_to_6 = min(late_count, 6) - 3
+            print("Late Entries 4 to 6:", late_entries_4_to_6)
+            if late_entries_4_to_6 > 0:
+                total_fine += late_entries_4_to_6 * 80.00
+            # Apply 500 BDT for 7th and subsequent late entries
+            if late_count > 6:
+                late_entries_7_and_above = late_count - 6
+                print("Late Entries 7 and Above:", late_entries_7_and_above)
+                total_fine += late_entries_7_and_above * 500.00
+        print("Total Fine:", total_fine)
+        return -float(total_fine) if total_fine > 0 else 0.00
 
     def __calculate_food_allowance(self, employee: Employee, salary_date):
         if not employee.lunch_allowance:

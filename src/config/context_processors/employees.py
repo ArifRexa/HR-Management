@@ -175,6 +175,40 @@ def total_attendance_fine(request):
     is_super = request.user.is_superuser
     return {"is_super": is_super, "late_attendance_fine": format_html(html)}
 
+def total_late_entry_count(request):
+    if not request.user.is_authenticated:
+        current_date = timezone.now()
+        current_month_name = current_date.strftime("%b").lower()
+        last_month_date = current_date - timedelta(days=30)
+        last_month_name = last_month_date.strftime("%b").lower()
+        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+        return {"is_super": False, "late_attendance_count": format_html(html)}
+
+    obj = getattr(request.user, 'employee', None)
+    current_date = timezone.now()
+    current_month = current_date.month
+    last_month = current_date.month - 1 or 12
+    current_year = current_date.year
+    last_year = current_year if last_month != 12 else current_year - 1
+
+    current_month_name = current_date.strftime("%b").lower()
+    last_month_date = current_date - timedelta(days=30)
+    last_month_name = last_month_date.strftime("%b").lower()
+
+    if not obj:
+        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+    else:
+        current_late_count = LateAttendanceFine.objects.filter(
+            employee=obj, month=current_month, year=current_year
+        ).count()
+        last_late_count = LateAttendanceFine.objects.filter(
+            employee=obj, month=last_month, year=last_year
+        ).count()
+        html = f'{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})'
+
+    is_super = request.user.is_superuser
+    return {"is_super": is_super, "late_attendance_count": format_html(html)}
+
 
 def employee_status_form(request):
     if not request.path=="/admin/":

@@ -204,7 +204,7 @@
                 Last 4 Weeks: {{monthly_expected_hours}} ({% if monthly_expected_hours > request.user.employee.get_last_four_weeks_totals.1 %}<span style="color: red;">{{ request.user.employee.get_last_four_weeks_totals.1 }}</span>{% else %}{{ request.user.employee.get_last_four_weeks_totals.1 }}{% endif %})</p>
             
                 <div style="float: right; margin-right: 10px; ">
-                    <p style="color: red; margin-bottom: 0;">{{late_attendance_fine }} </p>
+                    <p style="color: red; margin-bottom: 0;">{{late_attendance_count }} </p>
                 </div>
             
           {%endif%}

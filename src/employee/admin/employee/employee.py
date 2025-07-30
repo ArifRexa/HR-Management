@@ -423,6 +423,97 @@ from django.utils.html import format_html
 from calendar import month_name
 
 
+# @admin.register(LateAttendanceFine)
+# class LateAttendanceFineAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "date",
+#         "get_employee",
+#         "get_month_name",
+#         "get_year",
+#         "total_late_attendance_fine",
+#         "entry_time",
+#     )
+#     list_filter = ("employee", "is_consider")
+#     date_hierarchy = "date"
+#     autocomplete_fields = ("employee",)
+#     change_list_template = "admin/total_fine.html"
+
+#     @admin.display(description="Employee", ordering="employee__full_name")
+#     def get_employee(self, obj):
+#         consider_count = LateAttendanceFine.objects.filter(
+#             date__month=obj.date.month, date__year=obj.date.year, is_consider=True
+#         ).count()
+#         if consider_count > 0:
+#             return f"{obj.employee} ({consider_count})"
+#         return obj.employee
+
+#     # get_employee.short_description = "Employee"
+
+#     def get_month_name(self, obj):
+#         return month_name[obj.date.month]
+
+#     get_month_name.short_description = "Month"
+
+#     def get_year(self, obj):
+#         return obj.date.year
+
+#     get_year.short_description = "Year"
+
+#     def get_fields(self, request, obj=None):
+#         # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
+#         fields = ["employee", "total_late_attendance_fine", "date", "is_consider"]
+#         return fields
+
+#     # def get_list_filter(self, request):
+#     #     # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
+#     #     if request.user.is_superuser or request.user.has_perm(
+#     #         "can_view_all_late_attendance"
+#     #     ):
+#     #         return ("employee",)
+#     #     return ("employee",)
+
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         if request.user.is_superuser or request.user.has_perm(
+#             "employee.can_view_all_late_attendance"
+#         ):
+#             return qs
+#         return qs.filter(employee=request.user.employee)
+
+#     def get_total_fine(self, request):
+#         qs = self.get_queryset(request).filter(**simple_request_filter(request))
+#         if not request.user.is_superuser:
+#             qs.filter(employee__id__exact=request.user.employee.id)
+#         return qs.aggregate(total_fine=Sum("total_late_attendance_fine"))
+    
+#     def get_total_late_entries(self, request):
+#         qs = self.get_queryset(request).filter(**simple_request_filter(request))
+#         if not request.user.is_superuser:
+#             qs = qs.filter(employee__id__exact=request.user.employee.id)
+#         return qs.count()
+
+#     # def changelist_view(self, request, extra_context=None):
+#     #     extra_context = extra_context or {}
+#     #     extra_context["total_fine"] = self.get_total_fine(request)["total_fine"]
+#     #     return super(self.__class__, self).changelist_view(
+#     #         request, extra_context=extra_context
+#     #     )
+
+#     def changelist_view(self, request, extra_context=None):
+#         extra_context = extra_context or {}
+#         extra_context["total_late_entries"] = self.get_total_late_entries(request)
+#         return super(self.__class__, self).changelist_view(
+#             request, extra_context=extra_context
+#         )
+
+#     def save_model(self, request, obj, form, change):
+#         if not obj.year:
+#             obj.year = obj.date.year
+#         if not obj.month:
+#             obj.month = obj.date.month
+#         obj.save()
+
+
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = (
@@ -447,8 +538,6 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             return f"{obj.employee} ({consider_count})"
         return obj.employee
 
-    # get_employee.short_description = "Employee"
-
     def get_month_name(self, obj):
         return month_name[obj.date.month]
 
@@ -460,17 +549,8 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
     get_year.short_description = "Year"
 
     def get_fields(self, request, obj=None):
-        # Specify the fields to be displayed in the admin form, excluding 'month', 'year', and 'date'
         fields = ["employee", "total_late_attendance_fine", "date", "is_consider"]
         return fields
-
-    # def get_list_filter(self, request):
-    #     # Customize list_filter to hide the 'month' and 'year' fields for non-superusers
-    #     if request.user.is_superuser or request.user.has_perm(
-    #         "can_view_all_late_attendance"
-    #     ):
-    #         return ("employee",)
-    #     return ("employee",)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -485,13 +565,24 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         if not request.user.is_superuser:
             qs.filter(employee__id__exact=request.user.employee.id)
         return qs.aggregate(total_fine=Sum("total_late_attendance_fine"))
+    def get_total_late_entries(self, request):
+        qs = self.get_queryset(request).filter(**simple_request_filter(request))
+        if not request.user.is_superuser:
+            try:
+                qs = qs.filter(employee__id__exact=request.user.employee.id)
+            except AttributeError:
+                return 0
+        return qs.count()
+
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
+        extra_context["total_late_entries"] = self.get_total_late_entries(request)
         extra_context["total_fine"] = self.get_total_fine(request)["total_fine"]
         return super(self.__class__, self).changelist_view(
             request, extra_context=extra_context
         )
+        # return super().changelist_view(request, extra_context=extra_context)
 
     def save_model(self, request, obj, form, change):
         if not obj.year:
