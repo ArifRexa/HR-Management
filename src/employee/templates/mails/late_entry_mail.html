@@ -8,7 +8,8 @@
 {% load humanize_extra %}
 <h3>Dear {{ employee.full_name | title }},</h3>
 <p>
-    We noticed that you have been arriving late to the office today <span style="color: red;">{{entry_time}}</span>.
+    We noticed that you have been arriving late to the office today at <span style="color: red;">{{entry_time}}</span>. 
+    This is your {{ late_count|ordinal }} late entry this month.
 </p>
 <p>
     Being on time is important for our team to work well together. We understand that sometimes things come up, but arriving late regularly can affect everyone's work.
@@ -24,6 +25,5 @@
     Best regards,<br>
     Mediusware HR Team
 </p>
-
 </body>
 </html>

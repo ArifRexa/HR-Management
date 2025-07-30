@@ -750,6 +750,8 @@ class LateAttendanceFine(models.Model):
         decimal_places=2,
         verbose_name="Late Attendance Fine",
         default=0.00,
+        null=True,
+        blank=True,
     )
     date = models.DateField(default=datetime.now, null=True, blank=True)
     is_consider = models.BooleanField(default=True)
