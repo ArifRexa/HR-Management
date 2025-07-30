@@ -1,38 +1,46 @@
+from datetime import datetime, timedelta
+
 from django.contrib.auth.models import AnonymousUser
-from django.db.models import Count, BooleanField, Case, When, Value, Min, Q, Prefetch
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    Min,
+    Prefetch,
+    Q,
+    Sum,
+    Value,
+    When,
+)
 from django.utils import timezone
 from django.utils.html import format_html
-from django.db.models import Sum
-from datetime import timedelta
-from config.settings import employee_ids as management_ids
 
+from config.settings import employee_ids as management_ids
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
-from employee.forms.employee_online import EmployeeStatusForm
-from employee.forms.employee_project import EmployeeProjectForm
 from employee.forms.employee_need_help import EmployeeNeedHelpForm
+from employee.forms.employee_online import EmployeeStatusForm
+from employee.forms.employee_project import BookConferenceRoomForm, EmployeeProjectForm
 from employee.models import (
-    EmployeeOnline,
-    Leave,
-    EmployeeSkill,
-    HomeOffice,
-    EmployeeNeedHelp,
-    NeedHelpPosition,
     Employee,
+    EmployeeNeedHelp,
+    EmployeeOnline,
+    EmployeeSkill,
+    FavouriteMenu,
+    HomeOffice,
+    Leave,
     LeaveManagement,
+    NeedHelpPosition,
 )
+from employee.models.employee import BookConferenceRoom, Inbox, LateAttendanceFine
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
-from employee.models.employee import BookConferenceRoom, Inbox
-from employee.models import FavouriteMenu
-from employee.forms.employee_project import BookConferenceRoomForm
-from project_management.models import Project, DailyProjectUpdate
-from employee.models.employee import LateAttendanceFine
+from project_management.models import DailyProjectUpdate, Project
 from settings.models import Announcement, Notice
-
-from datetime import datetime
 
 
 def formal_summery(request):
+    if "account" in request.path:
+        return {}
     if not request.user.is_authenticated:
         return {}
 
@@ -142,6 +150,8 @@ def formal_summery(request):
 
 
 def total_attendance_fine(request):
+    if "account" in request.path:
+        return {}
     if not request.user.is_authenticated:
         return ""
     obj = request.user.employee
@@ -167,6 +177,8 @@ def total_attendance_fine(request):
 
 
 def employee_status_form(request):
+    if "account" in request.path:
+        return {"status_form": None}
     if (
         request.user.is_authenticated
         and str(request.user.employee.id) not in management_ids
@@ -180,9 +192,11 @@ def employee_status_form(request):
 
 
 def employee_project_form(request):
+    if "account" in request.path:
+        return {"employee_project_form": None}
     if (
         request.user.is_authenticated
-        and not str(request.user.employee.id) in management_ids
+        and str(request.user.employee.id) not in management_ids
     ):
         employee_project = EmployeeProject.objects.get(
             employee_id=request.user.employee.id
@@ -193,9 +207,11 @@ def employee_project_form(request):
 
 
 def employee_need_help_form(request):
+    if "account" in request.path:
+        return {"employee_need_help_form": None}
     if (
         request.user.is_authenticated
-        and not str(request.user.employee.id) in management_ids
+        and str(request.user.employee.id) not in management_ids
     ):
         employee_need_help, _ = EmployeeNeedHelp.objects.get_or_create(
             employee_id=request.user.employee.id,
@@ -208,16 +224,19 @@ def employee_need_help_form(request):
 
 
 def unread_inbox(request):
+    if "account" in request.path:
+        return {}
     if not request.user.is_authenticated:
         return {}
     if not request.user.has_perm("employee.can_see_all_employee_inbox"):
         qs = Inbox.objects.filter(employee=request.user.employee, is_read=False).count()
         return {"unread_inbox_count": qs}
     return {}
-        
 
 
 def all_notices(request):
+    if "account" in request.path:
+        return {"notices": []}
     return {
         "notices": Notice.objects.filter(
             start_date__lte=timezone.now(), end_date__gte=timezone.now()
@@ -226,6 +245,8 @@ def all_notices(request):
 
 
 def get_announcement(request):
+    if "account" in request.path:
+        return []
     data = []
     now = timezone.now()
 
@@ -345,6 +366,8 @@ def get_announcement(request):
 
 
 def get_managed_birthday_image(request):
+    if "account" in request.path:
+        return False
     path = request.get_full_path()
     if not path == "/admin/":
         return False
@@ -378,10 +401,9 @@ def favourite_menu_list(request):
     return []
 
 
-from project_management.models import Project
-
-
 def project_lists(request):
+    if "account" in request.path:
+        return []
     if request.user.is_authenticated:
         data = {}
         data["active_projects"] = Project.objects.filter(active=True)
@@ -390,6 +412,8 @@ def project_lists(request):
 
 
 def conference_room_bookings(request):
+    if "account" in request.path:
+        return {"conference_room_bookings": []}
     today = datetime.today().date()
     return {
         "conference_room_bookings": BookConferenceRoom.objects.filter(
@@ -407,6 +431,8 @@ def conference_room_bookings_form(request):
 
 
 def employee_context_processor(request):
+    if "account" in request.path:
+        return {}
     if request.user.is_authenticated:
         try:
             employee = Employee.objects.get(user=request.user)
@@ -438,6 +464,8 @@ def employee_context_processor(request):
 
 
 def employee_project_list(request):
+    if "account" in request.path:
+        return {"employee_project_list": None}
     if request.user.is_authenticated:
         try:
             employee = Employee.objects.get(user=request.user)
@@ -454,6 +482,8 @@ def employee_project_list(request):
 
 
 def approval_info_leave_daily_update(request):
+    if "account" in request.path:
+        return {}
     if not request.user.is_authenticated:
         return ""  # Return empty response if user is not authenticated
 
@@ -489,6 +519,8 @@ def approval_info_leave_daily_update(request):
 
 
 def last_four_week_project_hour(request):
+    if "account" in request.path:
+        return {}
     if not request.user.is_authenticated:
         return ""
 
@@ -500,6 +532,13 @@ def last_four_week_project_hour(request):
         "weekly_expected_hours": weekly_expected_hours,
         "monthly_expected_hours": monthly_expected_hours,
     }
+
+
+def can_show_permanent_increment(reqeust):
+    can_show = False
+    if reqeust.user.has_perm("employee.can_show_permanent_increment"):
+        can_show = True
+    return {"can_show_permanent_increment": can_show}
 
 
 def can_show_permanent_increment(reqeust):
