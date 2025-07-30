@@ -1,53 +1,39 @@
 import datetime
-import re
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
 from datetime import timedelta
 
-from django.db.models import Count
-from django.db.models.functions import TruncDate
-from django.http import HttpResponseBadRequest
-from django.shortcuts import redirect
+import openpyxl
 from django.contrib import admin, messages
-from django.db.models import Q, Sum
+from django.db.models import Count, Prefetch, Q, Sum
+from django.db.models.functions import TruncDate
 from django.http import HttpResponse
-
+from django.shortcuts import redirect
 from django.template.loader import get_template
 from django.utils import timezone
-from django.utils.html import format_html, linebreaks, escape
-from django.utils.safestring import mark_safe
-from django import forms
-from employee.models.employee_activity import EmployeeProject
+from django.utils.html import format_html
+from icecream import ic
+from openpyxl.styles import Alignment, Font, PatternFill
 
-from employee.admin.employee._forms import DailyUpdateFilterForm
-from project_management.utils.send_report import send_report_slack
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
+from employee.admin.employee._forms import DailyUpdateFilterForm
+from employee.models import Employee, LeaveManagement
+from employee.models.employee_activity import EmployeeProject
+from employee.models.employee_rating_models import EmployeeRating
+from project_management.admin.project_hour.options import (
+    ProjectLeadFilter,
+    ProjectManagerFilter,
+)
+from project_management.forms import AddDDailyProjectUpdateForm
 from project_management.models import (
-    EmployeeProjectHour,
     DailyProjectUpdate,
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
-    ProjectReport,
+    EmployeeProjectHour,
     EnableDailyUpdateNow,
     Project,
+    ProjectReport,
 )
-from project_management.admin.project_hour.options import (
-    ProjectManagerFilter,
-    ProjectLeadFilter,
-)
-from project_management.forms import AddDDailyProjectUpdateForm
-from icecream import ic
-from client_management.templatetags.replace_newline import check_valid_url
-from employee.models import LeaveManagement, Employee
-from employee.models.employee_rating_models import EmployeeRating
-from django.db.models import Q
-
-
-from django.core.cache import cache
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.template.response import TemplateResponse
+from project_management.utils.send_report import send_report_slack
 
 
 class ProjectTypeFilter(admin.SimpleListFilter):
@@ -240,7 +226,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 ),
             },
         ),
-        ("Updates", {"fields": ("updates_json","management_updates")}),
+        ("Updates", {"fields": ("updates_json", "management_updates")}),
         (
             "Extras",
             {
@@ -248,6 +234,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             },
         ),
     )
+    list_per_page = 50
+    list_select_related = ('employee', 'manager', 'project')
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
@@ -255,7 +243,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj=None):
 
-        if request.user.is_superuser or request.user.has_perm('project_management.can_submit_previous_daily_project_update'):
+        if request.user.is_superuser or request.user.has_perm(
+            "project_management.can_submit_previous_daily_project_update"
+        ):
             return []
         if request.user.has_perm(
             "project_management.can_approve_or_edit_daily_update_at_any_time"
@@ -293,15 +283,13 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             # If interact as the project employee and status not approved
             return self.readonly_fields
 
+    @admin.display(description="History")
     def history(self, obj):
-        historyData = ""
-        if obj.history is not None:
-            for history in obj.history.order_by("-created_at"):
-                historyData += f"{round(history.hours, 2)}"
-                if history != obj.history.order_by("-created_at").last():
-                    historyData += " > "
-            return format_html(historyData)
-
+        history_qs = getattr(obj, "history_list", None)
+        if history_qs:
+            history_list = list(history_qs)
+            hours_str = " > ".join(f"{round(h.hours, 2)}" for h in history_list)
+            return format_html(hours_str)
         return "No changes"
 
     @admin.display(description="Date", ordering="created_at")
@@ -318,9 +306,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         is_github_link_show = True
         html_content = html_template.render(
             {
-                "update": obj.update.replace("{", "_").replace("}", "_")
-                if obj.updates_json is None
-                else obj.str_updates_json.replace("{", "_").replace("}", "_"),
+                "update": (
+                    obj.update.replace("{", "_").replace("}", "_")
+                    if obj.updates_json is None
+                    else obj.str_updates_json.replace("{", "_").replace("}", "_")
+                ),
                 "update_json": None if obj.updates_json is None else obj.updates_json,
                 "is_github_link_show": is_github_link_show,
             }
@@ -375,7 +365,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         #     messages.info(request, "You have pending leave request(s).")
 
         if self.today > self.deadline:
-            if self.is_rating_completed(request) == False:
+            if not self.is_rating_completed(request):
                 messages.error(
                     request,
                     "You have to complete your 'Employee Rating' first to add daily project update",
@@ -390,24 +380,30 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         return response
 
     def get_total_hour(self, request):
-        qs = self.get_queryset(request).filter(**simple_request_filter(request))
-        return qs.aggregate(tot=Sum("hours"))["tot"]
+        base_qs = self.get_queryset(request)
+        filtered_qs = base_qs.filter(**simple_request_filter(request))
+        result = filtered_qs.aggregate(total_hours=Sum("hours"))
+        return result.get("total_hours") or 0
 
     def get_queryset(self, request):
-        
+
         # if condition remove if need to show all
-        if request.GET.get("created_at__date__gte", None) is None and request.GET.get("q", None) is None:
+        if (
+            request.GET.get("created_at__date__gte", None) is None
+            and request.GET.get("q", None) is None
+        ):
             one_month_ago = timezone.now() - timedelta(days=30)
-            query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request).select_related(
-                "employee",
-                "manager",
-                "project"
-            ).filter(created_at__gte=one_month_ago)
+            query_set = (
+                super(DailyProjectUpdateAdmin, self)
+                .get_queryset(request)
+                .select_related("employee", "manager", "project")
+                .filter(created_at__gte=one_month_ago)
+            )
         else:
-            query_set = super(DailyProjectUpdateAdmin, self).get_queryset(request).select_related(
-                "employee",
-                "manager",
-                "project"
+            query_set = (
+                super(DailyProjectUpdateAdmin, self)
+                .get_queryset(request)
+                .select_related("employee", "manager", "project")
             )
 
         if not request.user.is_superuser and not request.user.has_perm(
@@ -420,8 +416,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 )
             else:
                 query_set = query_set.filter(employee=request.user.employee)
-
-        return query_set
+        query_set = query_set.prefetch_related(
+            Prefetch(
+                "history",
+                queryset=DailyProjectUpdateHistory.objects.order_by("-created_at"),
+                to_attr="history_list",
+            )
+        )
+        return query_set.defer('management_updates')
 
     def get_list_filter(self, request):
         filters = list(super(DailyProjectUpdateAdmin, self).get_list_filter(request))
@@ -565,7 +567,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             ):
                 return messages.error(
                     request,
-                    f"You have pending leave application(s). Please approve first.",
+                    "You have pending leave application(s). Please approve first.",
                 )
 
             qs_count = queryset.filter(manager_id=request.user.employee.id).update(
@@ -875,14 +877,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             tmp_add = (
                 f"{obj.employee.full_name}\n\n"
                 + f"{updates}\n\n"
-                + f"Associated Links: \n"
+                + "Associated Links: \n"
                 + f"{commit_links}\n"
                 + "-------------------------------------------------------------\n\n"
             )
 
             update_list_str += tmp_add
         all_updates = (
-            f"Today's Update\n"
+            "Today's Update\n"
             + "-----------------\n"
             + f"{date}\n\n"
             + f"Total Hours: {round(total_hour, 3)}H\n\n"
@@ -965,7 +967,8 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             # f"\nTotal Hours: {round(total_hour, 3)}H\n\n"
             # "Updates:\n" + updates_section + "\n\n"
             #                                  "Links:\n" + links_section
-            f"Updates:\n" + updates_section + "\n\n" "Links:\n" + links_section
+            "Updates:\n" + updates_section + "\n\n"
+            "Links:\n" + links_section
         )
 
         # Add other sections as needed
@@ -1131,28 +1134,6 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             actions.pop("update_status_pending", None)
 
         return actions
-
-    # def get_actions(self, request):
-    #     actions = super().get_actions(request)
-    #     if (
-    #             request.user.is_superuser or
-    #             request.user.employee.manager or
-    #             request.user.employee.lead or
-    #             request.user.employee.top_one_skill.skill.title.lower() == "sqa"
-    #     ):
-    #         actions['send_report_to_slack'] = (
-    #             self.send_report_to_slack,
-    #             "send_report_to_slack",
-    #             "Send report to slack"
-    #         )
-    #     return actions
-
-    # def add_view(self, request, form_url='', extra_context=None):
-    #     print('Inside form update view..')
-    #     # Customize the form instance
-    #     self.form = AddDDailyProjectUpdateForm
-    #     extra_context = {'form':self.form}
-    #     return super().add_view(request, form_url, extra_context)
 
     def response_add(self, request, obj, post_url_continue=None):
         if obj.pk:

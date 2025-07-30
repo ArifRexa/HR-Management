@@ -22,7 +22,6 @@ from config import settings
 from job_board.mails.mail import re_apply_alert_mail
 from job_board.management.commands.send_offer_letter import generate_attachment
 from job_board.models import SMSPromotion
-from job_board.models import job
 from job_board.models.candidate import (
     Candidate,
     CandidateApplicationSummary,
