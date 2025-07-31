@@ -304,13 +304,74 @@ class ReferenceBlogInline(nested_admin.NestedStackedInline):
 class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
     model = BlogModeratorFeedback
     extra = 1
-    # formset = BlogModeratorFeedbackFormSet
     fields = ("created_by_title", "feedback")
     readonly_fields = ("created_by_title",)
 
 
+# class BlogForm(forms.ModelForm):
+#     next_status = forms.ChoiceField(
+#         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
+#         required=True,
+#         label="Next Status"
+#     )
+
+#     class Meta:
+#         model = Blog
+#         fields = "__all__"
+#         widgets = {
+#             "title": forms.Textarea(
+#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+#             ),
+#             "slug": forms.Textarea(
+#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+#             ),
+#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         self.request = kwargs.pop('request', None)
+#         super().__init__(*args, **kwargs)
+#         if self.request:
+#             if not self.request.user.is_superuser and not self.request.user.has_perm(
+#                 "website.can_approve"
+#             ):
+#                 self.fields["next_status"].choices = [
+#                     ('', 'Select option'),
+#                     ("draft", "In Draft"),
+#                     ("submit_for_review", "In Review"),
+#                 ]
+#             elif not self.request.user.is_superuser and self.request.user.has_perm(
+#                 "website.can_approve"
+#             ):
+#                 self.fields["next_status"].choices = [
+#                     ('', 'Select option'),
+#                     ("need_revision", "In Revision"),
+#                     ("approved", "Approved"),
+#                 ]
+
+#     def save(self, commit=True):
+#         from django.utils.text import slugify
+
+#         if self.cleaned_data.get("next_status"):
+#             self.instance.status = self.cleaned_data["next_status"]
+#         if not self.instance.slug:
+#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
+#         if self.request.user.is_superuser or self.request.user.has_perm(
+#             "website.can_approve"
+#         ):
+#             if self.cleaned_data.get("next_status") == "approved":
+#                 self.instance.active = True
+#         return super().save(commit)
+
+
+
+# In BlogForm class
 class BlogForm(forms.ModelForm):
-    next_status = forms.ChoiceField(choices=BlogStatus.choices[:-1], required=False)
+    next_status = forms.ChoiceField(
+        choices=[('', 'Select option')] + BlogStatus.choices[:-1],
+        required=True,
+        label="Next Status"
+    )
 
     class Meta:
         model = Blog
@@ -326,26 +387,25 @@ class BlogForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)  # Safely pop request
         super().__init__(*args, **kwargs)
-        if self.fields:
+        if self.request and hasattr(self.request, 'user'):
             if not self.request.user.is_superuser and not self.request.user.has_perm(
                 "website.can_approve"
             ):
-                self.fields["next_status"].choices = (
+                self.fields["next_status"].choices = [
+                    ('', 'Select option'),
                     ("draft", "In Draft"),
                     ("submit_for_review", "In Review"),
-                )
+                ]
             elif not self.request.user.is_superuser and self.request.user.has_perm(
                 "website.can_approve"
             ):
-                # if (self.change and self.instance.created_by == self.request.user) or not self.change:
-                #     pass
-                # else:
-
-                self.fields["next_status"].choices = (
+                self.fields["next_status"].choices = [
+                    ('', 'Select option'),
                     ("need_revision", "In Revision"),
                     ("approved", "Approved"),
-                )
+                ]
 
     def save(self, commit=True):
         from django.utils.text import slugify
@@ -354,11 +414,12 @@ class BlogForm(forms.ModelForm):
             self.instance.status = self.cleaned_data["next_status"]
         if not self.instance.slug:
             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-        if self.request.user.is_superuser or self.request.user.has_perm(
-            "website.can_approve"
-        ):
-            if self.cleaned_data.get("next_status") == "approved":
-                self.instance.active = True
+        if self.request and hasattr(self.request, 'user'):
+            if self.request.user.is_superuser or self.request.user.has_perm(
+                "website.can_approve"
+            ):
+                if self.cleaned_data.get("next_status") == "approved":
+                    self.instance.active = True
         return super().save(commit)
 
 
@@ -656,6 +717,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             return querySet.filter(created_by=user)
 
     def get_form(self, request, obj=None, **kwargs):
+        kwargs['form'] = BlogForm
         form = super().get_form(request, obj, **kwargs)
         form.request = request
         form.change = obj is not None
