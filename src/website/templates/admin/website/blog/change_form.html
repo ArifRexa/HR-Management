@@ -3,17 +3,13 @@
 {% block content_title %}
     {% if has_change_permission %}
         <div class="preview sticky-title">
-            <button style="margin-right: 15px;" type="button" class="extra-button">See Before Publish</button>
-            <a href="https://drive.google.com/file/d/1bIynETuxzoOTAmcrlVpEwqK0xySRu0MB/view" target="_blank">
-                <button type="button" class="extra-button">Writing Guideline</button>
-            </a>
+            <button style="margin-right: 15px;" type="button" class="preview-button extra-button">See Before Publish</button>
+            <button type="submit" name="_save" class="save-button extra-button">Save</button>
         </div>
     {% elif not original %}
         <div class="preview sticky-title">
-            <button style="margin-right: 15px;" type="button" class="extra-button">See Before Publish</button>
-            <a href="https://drive.google.com/file/d/1bIynETuxzoOTAmcrlVpEwqK0xySRu0MB/view" target="_blank">
-                <button type="button" class="extra-button">Writing Guideline</button>
-            </a>
+            <button style="margin-right: 15px;" type="button" class="preview-button extra-button">See Before Publish</button>
+            <button type="submit" name="_save" class="save-button extra-button">Save</button>
         </div>
     {% endif %}
 {% endblock %}
@@ -113,17 +109,37 @@
     </style>
 
     <script>
-        document.querySelector('.extra-button').addEventListener('click', function() {
+        document.querySelector('.preview-button').addEventListener('click', function() {
             const url = window.location.pathname.split("/");
             const slug = "{{ original.slug }}";
             if (url[url.length - 2] != "change") {
                 alert("You can't Preview Blog Before Save");
             } else {
-                window.open(`https://www.mediusware.com/blog/details/${slug}/?q=preview`, "_blank");
+                window.open(`https://www.mediusware.com/blog/${slug}/?q=preview`, "_blank");
             }
         });
-
-        // Loader functionality on submit
+        
+        // Handle save button click
+        document.querySelector('.save-button').addEventListener('click', function() {
+            // Find the main form and submit it
+            const form = document.querySelector('#content-main form');
+            if (form) {
+                // Create a hidden input to ensure the save action is triggered
+                const saveInput = document.createElement('input');
+                saveInput.type = 'hidden';
+                saveInput.name = '_save';
+                saveInput.value = 'Save';
+                form.appendChild(saveInput);
+                
+                // Submit the form
+                form.submit();
+                
+                // Show loader
+                document.getElementById('loader-overlay').style.display = 'flex';
+            }
+        });
+        
+        // Loader functionality on form submit
         document.querySelector('#content-main form').addEventListener('submit', function(event) {
             // Show loader and disable form submission clicks
             document.getElementById('loader-overlay').style.display = 'flex';
