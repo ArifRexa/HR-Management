@@ -534,7 +534,7 @@ def employee_project_list(request):
                 emp = Employee.objects.select_related("user").prefetch_related(
                     # "employeeproject_set__project",
                     Prefetch(
-                        "employeeproject_set__project",
+                        "employeeproject__project",
                         queryset=Project.objects.all(),
                         to_attr="project_list",
                     )
