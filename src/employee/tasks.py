@@ -1152,7 +1152,7 @@ def send_absent_without_leave_email():
     ).exclude(
         id__in=employees_on_leave
     ).exclude(
-        user__show_in_attendance_list=False
+        show_in_attendance_list=False
     ).exclude(
         id__in=employees_with_attendance
     ).only('id', 'full_name', 'phone')  # Optimize by fetching only needed fields
