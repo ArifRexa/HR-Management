@@ -814,17 +814,21 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         # if not self.manager.manager:
         #     self.payable = False
 
-        if self.pk:
-            old_instance = ProjectHour.objects.get(id=self.id)
-            if old_instance.hours != self.hours:
-                ProjectHourHistry.objects.create(
-                    date=self.date, history=self, hour_history=self.hours
-                )
+        if (
+            self.pk
+            and "hours" in kwargs.get("update_fields", [])
+            and self.hours != ProjectHour.objects.get(pk=self.pk).hours
+        ):
+            ProjectHourHistry.objects.create(
+                date=self.date, history=self, hour_history=self.hours
+            )
         super(ProjectHour, self).save(*args, **kwargs)
 
     def employee_hour(self, employee_id):
-        total = self.employeeprojecthour_set.aggregate(Sum("hours"))
-        return employee_id, total["hours__sum"]
+        total = self.employeeprojecthour_set.filter(employee_id=employee_id).aggregate(
+            Sum("hours")
+        )
+        return employee_id, total["hours__sum"] or 0
 
     class Meta:
         verbose_name_plural = "Weekly Project Hours"

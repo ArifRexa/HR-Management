@@ -1,11 +1,11 @@
 from django import forms
 from django.contrib import admin
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from django.utils.html import format_html
 
-from asset_management.models import CredentialCategory, Credential
+from asset_management.models import Credential, CredentialCategory
 from config.widgets.mw_select_multiple import UserFilteredSelectMultiple
-
 from employee.models import Employee
 
 
@@ -16,7 +16,9 @@ class CredentialCategoryAdmin(admin.ModelAdmin):
 
 
 class CredentialAdminForm(forms.ModelForm):
-    queryset = User.objects.filter(employee__active=True, is_superuser=False)
+    queryset = User.objects.filter(
+        employee__active=True, is_superuser=False
+    ).select_related("employee")
     privileges = forms.ModelMultipleChoiceField(
         required=False,
         queryset=queryset,
@@ -75,9 +77,22 @@ class CredentialAdmin(admin.ModelAdmin):
         "mark_as_inactive",
     ]
     change_form_template = "admin/credentials/change_form.html"
+    list_select_related = ("category", "created_by")
+    list_per_page = 30
 
     def get_queryset(self, request):
-        query_set = super(CredentialAdmin, self).get_queryset(request)
+        query_set = (
+            super(CredentialAdmin, self)
+            .get_queryset(request)
+            .select_related("category")
+            .prefetch_related(
+                Prefetch(
+                    "privileges",
+                    queryset=User.objects.select_related("employee"),
+                    to_attr="all_privileges",
+                )
+            )
+        )
         if not request.user.is_superuser and not request.user.has_perm(
             "asset_management.access_all_credentials"
         ):
@@ -86,7 +101,8 @@ class CredentialAdmin(admin.ModelAdmin):
 
     @admin.display(description="Total Privileges")
     def access_count(self, obj: Credential):
-        return obj.privileges.count()
+        data = getattr(obj, "all_privileges", [])
+        return len(data)
 
     @admin.action(description="Mark as Active")
     def mark_as_active(self, request, queryset):

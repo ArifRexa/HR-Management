@@ -7,7 +7,7 @@ from django.core.exceptions import ValidationError
 from django import forms
 
 # Register your models here.
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Prefetch
 
 # from django.template.context_processors import request
 from django.utils import timezone
@@ -127,6 +127,8 @@ class ProjectHourAdmin(
         ),
     )
     form = ProjectHourAdminForm
+    list_select_related = ("project", "manager")
+    list_per_page = 50
 
     def get_form(self, request, obj, change, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
@@ -135,21 +137,20 @@ class ProjectHourAdmin(
 
     # query for get total hour by query string
     def get_total_hour(self, request):
-        filter_data = simple_request_filter(request)
-        if "tpm_id__exact" in request.GET:
-            tpm_project = (
-                EmployeeUnderTPM.objects.filter(
-                    tpm__id__exact=request.GET.get("tpm_id__exact", 0),
-                )
-                .values_list("project_id", flat=True)
-                .distinct()
-            )
-            filter_data.pop("tpm_id__exact")
-            filter_data["project_id__in"] = list(tpm_project)
-        qs = self.get_queryset(request).filter(**filter_data)
+        filters = simple_request_filter(request)
+
+        tpm_id = request.GET.get("tpm_id__exact")
+        if tpm_id:
+            project_ids = EmployeeUnderTPM.objects.filter(tpm_id=tpm_id).values_list("project_id", flat=True)
+            filters.pop("tpm_id__exact")
+            filters["project_id__in"] = list(project_ids)
+
+        qs = self.get_queryset(request).filter(**filters)
+
         if not request.user.is_superuser:
-            qs.filter(manager__id__exact=request.user.employee.id)
-        return qs.aggregate(tot=Sum("hours"))["tot"]
+            qs = qs.filter(manager_id=request.user.employee.id)
+
+        return qs.aggregate(total_hours=Sum("hours"))["total_hours"] or 0
 
     def lookup_allowed(self, key, *args, **kwargs):
         if key in (
@@ -165,74 +166,76 @@ class ProjectHourAdmin(
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
+        initial = {
+            "created_at__date__gte": request.GET.get("created_at__date__gte", timezone.now().date() - timedelta(days=7)),
+            "created_at__date__lte": request.GET.get("created_at__date__lte", timezone.now().date()),
+        }
 
-        # if not request.GET:
-        #     # Redirect to the filtered view
-        #     return redirect(f"{request.path}?{urlencode({'hour_type':'project'})}")
-        my_context = dict(
-            self.admin_site.each_context(request),
-            total=self.get_total_hour(request),
-            # series=self.get_data(request),
-            filter_form=ProjectHourFilterForm(
-                initial={
-                    "created_at__date__gte": request.GET.get(
-                        "created_at__date__gte",
-                        timezone.now().date() - datetime.timedelta(days=7),
-                    ),
-                    "created_at__date__lte": request.GET.get(
-                        "created_at__date__lte", timezone.now().date()
-                    ),
-                }
-            ),
-        )
-        return super(ProjectHourAdmin, self).changelist_view(
-            request, extra_context=my_context
-        )
+        extra_context = extra_context or {}
+        extra_context.update({
+            "total": self.get_total_hour(request),
+            "filter_form": ProjectHourFilterForm(initial=initial),
+        })
+
+        return super().changelist_view(request, extra_context=extra_context)
 
     def get_queryset(self, request):
-        """Return query_set
-
-        overrides django admin query set
-        allow super admin only to see all project hour
-        manager's will only see theirs
-        @type request: object
-        """
-        if (
-            request.GET.get("created_at__date__gte", None) is None
-            and request.GET.get("q", None) is None
-        ):
-            two_month_ago = timezone.now() - timedelta(days=60)
-            query_set = (
-                super(ProjectHourAdmin, self)
-                .get_queryset(request)
-                .filter(created_at__gte=two_month_ago)
-            )
-        else:
-            query_set = super(ProjectHourAdmin, self).get_queryset(request)
-
+        qs = super().get_queryset(request).prefetch_related("projecthourhistry_set",Prefetch(
+            "employeeprojecthour_set",
+            queryset=EmployeeProjectHour.objects.select_related("employee")
+        ))
+        
+        if not request.GET.get("created_at__date__gte") and not request.GET.get("q"):
+            qs = qs.filter(created_at__gte=timezone.now() - timedelta(days=60))
+        
         if not request.GET:
-            return query_set.filter(hour_type="project")
-        if request.user.is_superuser or request.user.has_perm(
-            "project_management.show_all_hours"
-        ):
-            return query_set
-        return query_set.filter(manager_id=request.user.employee.id)
+            qs = qs.filter(hour_type="project")
+
+        if request.user.is_superuser or request.user.has_perm("project_management.show_all_hours"):
+            return qs
+        
+        return qs.filter(manager_id=request.user.employee.id)
+    
+    # def get_queryset(self, request):
+    #     """Return query_set
+
+    #     overrides django admin query set
+    #     allow super admin only to see all project hour
+    #     manager's will only see theirs
+    #     @type request: object
+    #     """
+    #     if (
+    #         request.GET.get("created_at__date__gte", None) is None
+    #         and request.GET.get("q", None) is None
+    #     ):
+    #         two_month_ago = timezone.now() - timedelta(days=60)
+    #         query_set = (
+    #             super(ProjectHourAdmin, self)
+    #             .get_queryset(request)
+    #             .filter(created_at__gte=two_month_ago)
+    #         )
+    #     else:
+    #         query_set = super(ProjectHourAdmin, self).get_queryset(request)
+
+    #     if not request.GET:
+    #         return query_set.filter(hour_type="project")
+    #     if request.user.is_superuser or request.user.has_perm(
+    #         "project_management.show_all_hours"
+    #     ):
+    #         return query_set
+    #     return query_set.filter(manager_id=request.user.employee.id)
 
     def save_model(self, request, obj, form, change):
-        """
-        override project hour save
-        manager id will be authenticate user employee id if the user is not super user
-        """
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
 
-        tpm_project = EmployeeUnderTPM.objects.filter(project=obj.project)
-        if tpm_project.exists():
-            obj.tpm = tpm_project.first().tpm
+        tpm_record = EmployeeUnderTPM.objects.filter(project=obj.project).select_related("tpm").first()
+        if tpm_record:
+            obj.tpm = tpm_record.tpm
         else:
             obj.status = "approved"
 
-        super(ProjectHourAdmin, self).save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)
 
     def get_fieldsets(self, request, obj):
         fieldsets = super(ProjectHourAdmin, self).get_fieldsets(request, obj)
@@ -250,119 +253,69 @@ class ProjectHourAdmin(
         #     return (fieldsets[0],)
 
         return fieldsets
-
     def get_data(self, request):
-        print("*******************")
-        print("get_data has called")
-        series = list()
-        selected_projects = (
+        print("******************* get_data has called")
+
+        series = []
+        date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+
+        # Extract selected project ID from filters
+        selected_project_id = (
             self.get_changelist_instance(request)
             .get_filters_params()
             .get("project__id__exact")
         )
-        print("************** project id is *************", selected_projects)
-        print("*** selected projects are ", selected_projects)
-        if selected_projects:
-            projects = Project.objects.filter(
-                id__in=[selected_projects], active=True
-            ).all()
+
+        print("************** Selected project id is *************", selected_project_id)
+
+        # Filter projects
+        if selected_project_id:
+            projects = Project.objects.filter(id=selected_project_id, active=True)
         else:
-            projects = Project.objects.filter(active=True).all()
-        date_to_check = datetime.date.today() - datetime.timedelta(days=60)
+            projects = Project.objects.filter(active=True)
+
+        # Get project-wise series
         for project in projects:
             data = (
-                project.projecthour_set.filter(date__gte=date_to_check)
+                project.projecthour_set
+                .filter(date__gte=date_to_check)
                 .annotate(date_str=F("date"))
-                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
+                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})  # Still using extra for JS compatibility
                 .values("date_str")
                 .annotate(total_hours=Sum("hours"))
                 .values_list("date_str", "total_hours")
                 .order_by("date_str")
             )
 
-            print(data)
-            # TODO : must be optimize otherwise it will effect the load time
-            print("***************** data **************", data)
-            array_date = []
-            for value in data:
-                array_date.append(list(value))
+            array_date = [list(row) for row in data]
 
-            series.append(
-                {
-                    "type": "spline",
-                    # 'visible': 'false',
-                    "name": project.title,
-                    "data": list(array_date),
-                }
-            )
-        if selected_projects:
-            sum_hours = (
-                ProjectHour.objects.filter(
-                    project_id__in=selected_projects, date__gte=date_to_check
-                )
-                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
-                .order_by("date")
-                .values_list("date_str")
-                .annotate(Sum("hours"))
-            )
+            series.append({
+                "type": "spline",
+                "name": project.title,
+                "data": array_date,
+            })
 
-        else:
-            sum_hours = (
-                ProjectHour.objects.filter(date__gte=date_to_check)
-                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
-                .order_by("date")
-                .values_list("date_str")
-                .annotate(Sum("hours"))
-            )
-        sum_array = []
-        # for sum_hour in sum_hours:
-        #     sum_array.append(list(sum_hour)) #  it will return the total hours of projects.
-        series.append(
-            {"type": "spline", "name": "Total Project Hours", "data": sum_array}
+        # Prepare total project hour summary
+        sum_query = ProjectHour.objects.filter(date__gte=date_to_check)
+        if selected_project_id:
+            sum_query = sum_query.filter(project_id=selected_project_id)
+
+        sum_hours = (
+            sum_query
+            .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
+            .values("date_str")
+            .annotate(total=Sum("hours"))
+            .order_by("date_str")
+            .values_list("date_str", "total")
         )
-        # print('************** series ***********', series)
+
+        sum_array = [list(row) for row in sum_hours]
+
+        series.append({
+            "type": "spline",
+            "name": "Total Project Hours",
+            "data": sum_array,
+        })
+
         return series
 
-    # def get_data(self, request):
-    #     series = []
-    #     selected_projects = self.get_changelist_instance(request).get_filters_params().get('project__id__exact')
-    #
-    #     if selected_projects:
-    #         projects = Project.objects.filter(id__in=selected_projects, active=True).all()
-    #     else:
-    #         projects = Project.objects.filter(active=True).all()
-    #
-    #     date_to_check = datetime.date.today() - datetime.timedelta(days=60)
-    #
-    #     for project in projects:
-    #         data = project.projecthour_set.filter(date__gte=date_to_check).extra(
-    #             select={'date_str': "UNIX_TIMESTAMP(date)*1000"}
-    #         ).order_by('date').values_list('date_str', 'hours')
-    #
-    #         array_date = []
-    #         for value in data:
-    #             array_date.append(list(value))
-    #
-    #         series.append({
-    #             'type': 'spline',
-    #             'name': project.title,
-    #             'data': list(array_date)
-    #         })
-    #
-    #     # Calculate total project hours for filtered projects only
-    #     if selected_projects:
-    #         sum_hours = ProjectHour.objects.filter(project_id__in=selected_projects, date__gte=date_to_check).extra(
-    #             select={'date_str': 'UNIX_TIMESTAMP(date)*1000'}
-    #         ).order_by('date').values_list('date_str').annotate(Sum('hours'))
-    #
-    #         sum_array = []
-    #         for sum_hour in sum_hours:
-    #             sum_array.append(list(sum_hour))
-    #
-    #         series.append({
-    #             'type': 'spline',
-    #             'name': 'Total Project Hours',
-    #             'data': sum_array
-    #         })
-    #
-    #     return series
