@@ -127,12 +127,12 @@ TEMPLATES = [
                 "config.context_processors.employees.employee_project_form",
                 "config.context_processors.employees.employee_need_help_form",
                 "config.context_processors.employees.favourite_menu_list",
-                "config.context_processors.employees.project_lists",
+                # "config.context_processors.employees.project_lists",
                 "config.context_processors.month_year.current_month_year",
                 "config.context_processors.employees.conference_room_bookings",
                 "config.context_processors.employees.conference_room_bookings_form",
                 "config.context_processors.employees.employee_context_processor",
-                "config.context_processors.employees.employee_project_list",
+                # "config.context_processors.employees.employee_project_list",
                 "config.context_processors.employees.total_attendance_fine",
                 "config.context_processors.employees.total_late_entry_count",
                 "config.context_processors.employees.approval_info_leave_daily_update",
@@ -511,9 +511,9 @@ SWAGGER_SETTINGS = {
 }
 
 
-def show_toolbar_for_superuser(request):
-    return request.user.is_superuser
+# def show_toolbar_for_superuser(request):
+#     return request.user.is_superuser
 
-DEBUG_TOOLBAR_CONFIG = {
-    "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar_for_superuser",
-}
+# DEBUG_TOOLBAR_CONFIG = {
+#     "SHOW_TOOLBAR_CALLBACK": "config.settings.show_toolbar_for_superuser",
+# }
