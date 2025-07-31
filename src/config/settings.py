@@ -296,6 +296,12 @@ TINYMCE_DEFAULT_CONFIG = {
     "style_formats": [
         {"title": "Custom Quote", "format": "blockquote"}
     ],
+    "rel_list": [
+        {"title": "None (Dofollow)", "value": ""},
+        {"title": "Nofollow", "value": "nofollow"},
+        {"title": "Noopener", "value": "noopener"},
+        {"title": "Noreferrer", "value": "noreferrer"}
+    ],
 }
 
 TINYMCE_SPELLCHECKER = True
