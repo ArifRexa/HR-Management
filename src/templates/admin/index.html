@@ -482,7 +482,7 @@
                         {% for employee_project in employee_projects %}
                         <li class="list-group-item">
                             <span class="float-start w-50">
-                                {% if employee_project.employee.is_online %}
+                                {% if employee_project.is_online %}
                                 <span style="color: green">🟢</span>
                                 {% else %}
                                 <span>🔴</span>
@@ -492,16 +492,16 @@
 <!--                                ( {{ employee_project.employee.employeeskill_set.first.skill.title }} )-->
                                 {{ employee_project.employee.full_name }}
 
-                                {% if employee_project.employee.employeeskill_set.first.skill.title %}
+                                {% if employee_project.employee_skill %}
 
                                 <!-- Visible on small screens -->
                                 <small class="d-block d-lg-none">
-                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})
+                                    ({{ employee_project.employee.employee_skill }})
                                 </small>
 
                                 <!-- Visible on large screens -->
                                 <span class="d-none d-lg-inline">
-                                    ({{ employee_project.employee.employeeskill_set.first.skill.title }})
+                                    ({{ employee_project.employee_skill }})
                                 </span>
                                 {% endif %}
                             </span>

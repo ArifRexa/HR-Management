@@ -1,13 +1,16 @@
-from datetime import datetime, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import (
     BooleanField,
     Case,
     Count,
+    F,
     Min,
+    OuterRef,
     Prefetch,
     Q,
+    Subquery,
     Sum,
     Value,
     When,
@@ -26,10 +29,8 @@ from employee.models import (
     EmployeeOnline,
     EmployeeSkill,
     FavouriteMenu,
-    HomeOffice,
     Leave,
     LeaveManagement,
-    NeedHelpPosition,
 )
 from employee.models.employee import BookConferenceRoom, Inbox, LateAttendanceFine
 from employee.models.employee_activity import EmployeeProject
@@ -39,7 +40,7 @@ from settings.models import Announcement, Notice
 
 
 def formal_summery(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {}
     if not request.user.is_authenticated:
         return {}
@@ -69,7 +70,11 @@ def formal_summery(request):
             "employee",
         )
     )
-
+    best_skill_qs = (
+        EmployeeSkill.objects.filter(employee_id=OuterRef("employee_id"))
+        .order_by("-percentage")
+        .values("skill__title")[:1]
+    )
     employee_projects = (
         EmployeeProject.objects.filter(
             employee__active=True,
@@ -84,6 +89,8 @@ def formal_summery(request):
                 default=Value(True),
                 output_field=BooleanField(),
             ),
+            is_online=F("employee__employeeonline__active"),
+            employee_skill=Subquery(best_skill_qs),
         )
         .order_by(
             "project_exists",
@@ -150,7 +157,7 @@ def formal_summery(request):
 
 
 def total_attendance_fine(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {}
     if not request.user.is_authenticated:
         return ""
@@ -175,16 +182,17 @@ def total_attendance_fine(request):
     is_super = request.user.is_superuser
     return {"is_super": is_super, "late_attendance_fine": format_html(html)}
 
+
 def total_late_entry_count(request):
     if not request.user.is_authenticated:
         current_date = timezone.now()
         current_month_name = current_date.strftime("%b").lower()
         last_month_date = current_date - timedelta(days=30)
         last_month_name = last_month_date.strftime("%b").lower()
-        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
         return {"is_super": False, "late_attendance_count": format_html(html)}
 
-    obj = getattr(request.user, 'employee', None)
+    obj = getattr(request.user, "employee", None)
     current_date = timezone.now()
     current_month = current_date.month
     last_month = current_date.month - 1 or 12
@@ -196,7 +204,7 @@ def total_late_entry_count(request):
     last_month_name = last_month_date.strftime("%b").lower()
 
     if not obj:
-        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
     else:
         current_late_count = LateAttendanceFine.objects.filter(
             employee=obj, month=current_month, year=current_year
@@ -204,14 +212,14 @@ def total_late_entry_count(request):
         last_late_count = LateAttendanceFine.objects.filter(
             employee=obj, month=last_month, year=last_year
         ).count()
-        html = f'{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})'
+        html = f"{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})"
 
     is_super = request.user.is_superuser
     return {"is_super": is_super, "late_attendance_count": format_html(html)}
 
 
 def employee_status_form(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {"status_form": None}
     if (
         request.user.is_authenticated
@@ -226,7 +234,7 @@ def employee_status_form(request):
 
 
 def employee_project_form(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {"employee_project_form": None}
     if (
         request.user.is_authenticated
@@ -241,7 +249,7 @@ def employee_project_form(request):
 
 
 def employee_need_help_form(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {"employee_need_help_form": None}
     if (
         request.user.is_authenticated
@@ -258,7 +266,7 @@ def employee_need_help_form(request):
 
 
 def unread_inbox(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {}
     if not request.user.is_authenticated:
         return {}
@@ -269,7 +277,7 @@ def unread_inbox(request):
 
 
 def all_notices(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {"notices": []}
     return {
         "notices": Notice.objects.filter(
@@ -279,7 +287,7 @@ def all_notices(request):
 
 
 def get_announcement(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return []
     data = []
     now = timezone.now()
@@ -298,32 +306,32 @@ def get_announcement(request):
         .values_list("description", flat=True)
     )
 
-    need_help_positions = (
-        NeedHelpPosition.objects.filter(
-            employeeneedhelp__employee__active=True,
-        )
-        .distinct()
-        .order_by("id")
-    )
-    for need_help_position in need_help_positions:
-        title = need_help_position.title
-        names = list(
-            need_help_position.employeeneedhelp_set.values_list(
-                "employee__full_name",
-                flat=True,
-            )
-        )
-        if names and (
-            title != "CEO"
-            or (
-                title == "CEO"
-                and request.user.employee.id == 30  # Employee ID must be 30
-            )
-        ):
-            names_str = ", ".join(names)
-            data.append(
-                f"{names_str} need{'s' if len(names)==1 else ''} the {title}'s help."
-            )
+    # need_help_positions = (
+    #     NeedHelpPosition.objects.filter(
+    #         employeeneedhelp__employee__active=True,
+    #     )
+    #     .distinct()
+    #     .order_by("id")
+    # )
+    # for need_help_position in need_help_positions:
+    #     title = need_help_position.title
+    #     names = list(
+    #         need_help_position.employeeneedhelp_set.values_list(
+    #             "employee__full_name",
+    #             flat=True,
+    #         )
+    #     )
+    #     if names and (
+    #         title != "CEO"
+    #         or (
+    #             title == "CEO"
+    #             and request.user.employee.id == 30  # Employee ID must be 30
+    #         )
+    #     ):
+    #         names_str = ", ".join(names)
+    #         data.append(
+    #             f"{names_str} need{'s' if len(names)==1 else ''} the {title}'s help."
+    #         )
 
     # Announcements
     data.extend(announcements)
@@ -354,27 +362,27 @@ def get_announcement(request):
                     ]
                 )
 
-    # Get Home Offices
-    home_offices_today = (
-        HomeOffice.objects.filter(
-            employee__active=True,
-            start_date__lte=now,
-            end_date__gte=now,
-        )
-        .exclude(
-            status="rejected",
-        )
-        .select_related(
-            "employee",
-        )
-    )
-    if home_offices_today.exists():
-        homeoffices = [
-            homeoffice.employee.full_name for homeoffice in home_offices_today
-        ]
-        data.extend(
-            [f"{homeoffice} is on Home Office today." for homeoffice in homeoffices]
-        )
+    # # Get Home Offices
+    # home_offices_today = (
+    #     HomeOffice.objects.filter(
+    #         employee__active=True,
+    #         start_date__lte=now,
+    #         end_date__gte=now,
+    #     )
+    #     .exclude(
+    #         status="rejected",
+    #     )
+    #     .select_related(
+    #         "employee",
+    #     )
+    # )
+    # if home_offices_today.exists():
+    #     homeoffices = [
+    #         homeoffice.employee.full_name for homeoffice in home_offices_today
+    #     ]
+    #     data.extend(
+    #         [f"{homeoffice} is on Home Office today." for homeoffice in homeoffices]
+    #     )
 
     # Get Birthdays
     birthdays_today = Employee.objects.filter(
@@ -400,7 +408,7 @@ def get_announcement(request):
 
 
 def get_managed_birthday_image(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return False
     path = request.get_full_path()
     if not path == "/admin/":
@@ -436,7 +444,7 @@ def favourite_menu_list(request):
 
 
 def project_lists(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return []
     if request.user.is_authenticated:
         data = {}
@@ -445,16 +453,28 @@ def project_lists(request):
     return []
 
 
+from django.core.cache import cache
+from django.utils.functional import SimpleLazyObject
+
+
+def bookings_processor(request):
+    def get_bookings():
+        today = date.today()
+        start = datetime.combine(today, time.min)
+        end = datetime.combine(today, time.max)
+        bookings = (
+            BookConferenceRoom.objects.filter(created_at__range=(start, end))
+            .select_related("project_name", "manager_or_lead")
+            .order_by("start_time")
+            .only("manager_or_lead", "project_name", "start_time")
+        )
+        return bookings
+
+    return {"conference_room_bookings": SimpleLazyObject(get_bookings)}
+
+
 def conference_room_bookings(request):
-    if not request.path=="/admin/":
-        return {"conference_room_bookings": []}
-    today = datetime.today().date()
-    return {
-        "conference_room_bookings": BookConferenceRoom.objects.filter(
-            created_at__date=today
-        ).order_by("start_time")
-    }
-    # return {'conference_room_bookings': BookConferenceRoom.objects.all()}
+    return bookings_processor(request)
 
 
 def conference_room_bookings_form(request):
@@ -465,7 +485,7 @@ def conference_room_bookings_form(request):
 
 
 def employee_context_processor(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {}
     if request.user.is_authenticated:
         try:
@@ -498,25 +518,42 @@ def employee_context_processor(request):
 
 
 def employee_project_list(request):
-    if not request.path=="/admin/":
+    print("project list")
+    if not request.path == "/admin/":
         return {"employee_project_list": None}
-    if request.user.is_authenticated:
-        try:
-            employee = Employee.objects.get(user=request.user)
-            project_queryset = employee.employee_project_list.values_list(
-                "title", flat=True
-            )
-            project_list = list(project_queryset)
-        except Employee.DoesNotExist:
-            project_list = None
-    else:
-        project_list = None
 
-    return {"employee_project_list": project_list}
+    if not request.user.is_authenticated:
+        return {"employee_project_list": None}
+
+    def _get_projects():
+        user = request.user
+        key = f"employee_projects_{user.id}_{date.today().isoformat()}"
+        proj = cache.get(key)
+        if proj is None:
+            try:
+                emp = Employee.objects.select_related("user").prefetch_related(
+                    # "employeeproject_set__project",
+                    Prefetch(
+                        "employeeproject_set__project",
+                        queryset=Project.objects.all(),
+                        to_attr="project_list",
+                    )
+                )
+                p = getattr(emp.get(user=user), "project_list", [])
+                print(p)
+                emp = emp.get(user=user)
+                proj = list(emp.employee_project_list.values_list("title", flat=True))
+            except Employee.DoesNotExist:
+                print(f"Employee not found for user {user.id}")
+                proj = []
+            cache.set(key, proj, timeout=86400)
+        return proj
+
+    return {"employee_project_list": SimpleLazyObject(_get_projects)}
 
 
 def approval_info_leave_daily_update(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {}
     if not request.user.is_authenticated:
         return ""  # Return empty response if user is not authenticated
@@ -553,7 +590,7 @@ def approval_info_leave_daily_update(request):
 
 
 def last_four_week_project_hour(request):
-    if not request.path=="/admin/":
+    if not request.path == "/admin/":
         return {}
     if not request.user.is_authenticated:
         return ""
@@ -573,5 +610,3 @@ def can_show_permanent_increment(reqeust):
     if reqeust.user.has_perm("employee.can_show_permanent_increment"):
         can_show = True
     return {"can_show_permanent_increment": can_show}
-
-
