@@ -399,6 +399,12 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
 
     def balance_sheet_url(self):
         return reverse("account:balance_sheet", args=[str(self.id)])
+    
+    def get_monthly_expense_url(self):
+        return reverse("account:monthly_expense", args=[str(self.id)])
+    
+    def get_monthly_expense_attachment_url(self):
+        return reverse("account:monthly_expense_attachment", args=[str(self.id)])
 
 
 class DailyPaymentVoucher(AccountJournal):

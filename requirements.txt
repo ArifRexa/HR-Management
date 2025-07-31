@@ -95,3 +95,5 @@ langchain-community
 langchain-openai
 drf-yasg[validation]
 django-admin-sortable==2.2.4
+pydyf==0.8.0
+pandas

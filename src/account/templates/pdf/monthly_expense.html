@@ -1,0 +1,106 @@
+{% load daily_expense %}
+{% load humanize %}
+{% load humanize_extra %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Voucher</title>
+    <style>
+        header {
+            width: 90%;
+            margin: 0px auto;
+            text-align: center;
+            line-height: 0.5;
+        }
+
+        @page {
+            size: A4;
+            /* You can also use other predefined sizes like 'letter', 'legal', etc. */
+            margin: 15mm;
+            /* Set your preferred margins */
+        }
+        body {
+            font-size: 12px; /* Adjust as needed */
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #fafafa;
+        }
+
+        .table-sm {
+            width: 40% !important;
+            margin-top: 25px !important;
+        }
+
+        .float-right {
+            float: right !important;
+        }
+
+        .head-container {
+            display: flex;
+            justify-content: space-between;
+            margin: 25px 0px;
+        }
+
+        .my-30 {
+            margin: 25px 0px;
+        }
+
+        .my-25 {
+            margin: 25px 0px;
+        }
+
+        .my-20 {
+            margin: 20px 0px;
+        }
+        .my-10 {
+            margin: 10px 0px;
+        }
+
+
+        .my-50 {
+            margin: 50px 0px;
+        }
+
+        .report-by {
+            margin-top: 80px;
+            margin-bottom: 50px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .footer {
+            margin-top: 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h2>Mediusware</h2>
+        <p>24/1, Taj Mahal Road, Shiya Masjid mor,</p>
+        <p>Floor - 7th & 8th, Ring Road, 1207</p>
+        <strong style="line-height: 2;">Monthly Expense ({{month}})</strong>
+    </header>
+    <div class="main">
+        {{table | safe}}
+    </div>
+
+</body>
+
+</html>

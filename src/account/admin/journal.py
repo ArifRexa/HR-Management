@@ -29,17 +29,18 @@ class MonthlyJournalForm(forms.ModelForm):
         
 @admin.register(MonthlyJournal)
 class MonthlyJournalAdmin(admin.ModelAdmin):
-    list_display = ['date', 'type', 'debit', 'credit', 'created_by', 'export_btn']
+    # list_display = ['date', 'type', 'debit', 'credit', 'created_by', 'export_btn']
+    list_display = ['date', 'export_btn', 'created_by']
     ordering = ['-date']
     date_hierarchy = 'date'
     list_filter = ['type', 'date']
     form = MonthlyJournalForm
 
-    def debit(self, obj=None):
-        return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
+    # def debit(self, obj=None):
+    #     return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
     
-    def credit(self, obj=None):
-        return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
+    # def credit(self, obj=None):
+    #     return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
     
     def save_model(self, request, obj, form, change) -> None:
         obj.type = 'monthly'
@@ -48,15 +49,22 @@ class MonthlyJournalAdmin(admin.ModelAdmin):
         obj.expenses.set(expenses)
 
     @admin.display(description='Export File')
-    def export_btn(self, obj=None):
+    def export_btn(self, obj: AccountJournal=None):
         url = obj.get_monthly_journal()
         group_costs = obj.group_cost_url()
         balance_sheet = obj.balance_sheet_url()
+        monthly_expense = obj.get_monthly_expense_url()
+        # monthly_expense_attachment = obj.get_monthly_expense_attachment_url()
         btn = f"""
             <a href="{url}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Account Journal</a>
             <a href="{group_costs}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Group Costs</a>
             <a href="{balance_sheet}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Income Statement </a>
+            <a href="{monthly_expense}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; ME - Date </a>
+            <a href="{monthly_expense}?order_by=amount" class="button" style="padding: 6px;text-decoration: none;">&#x2913; ME - Amount </a>
+            
             """
+            # <a href="{monthly_expense_attachment}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; MA - Date </a>
+            # <a href="{monthly_expense_attachment}?order_by=amount" class="button" style="padding: 6px;text-decoration: none;">&#x2913; MA - Amount </a>
     
         return format_html(btn)
     
