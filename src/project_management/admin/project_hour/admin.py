@@ -147,8 +147,8 @@ class ProjectHourAdmin(
 
         qs = self.get_queryset(request).filter(**filters)
 
-        if not request.user.is_superuser:
-            qs = qs.filter(manager_id=request.user.employee.id)
+        # if not request.user.is_superuser:
+        #     qs = qs.filter(manager_id=request.user.employee.id)
 
         return qs.aggregate(total_hours=Sum("hours"))["total_hours"] or 0
 
