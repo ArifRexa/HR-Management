@@ -250,7 +250,7 @@ class BlogFAQForm(forms.ModelForm):
             "question": forms.Textarea(
                 attrs={"rows": 2, "cols": 40, "style": "width: 95%;resize:none;"}
             ),
-            "answer": forms.Textarea(attrs={"style": "width: 95%;"}),
+            # "answer": forms.Textarea(attrs={"style": "width: 95%;"}),
         }
 
 
@@ -366,10 +366,67 @@ class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
 
 
 # In BlogForm class
+# class BlogForm(forms.ModelForm):
+#     next_status = forms.ChoiceField(
+#         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
+#         required=True,
+#         label="Next Status"
+#     )
+
+#     class Meta:
+#         model = Blog
+#         fields = "__all__"
+#         widgets = {
+#             "title": forms.Textarea(
+#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+#             ),
+#             "slug": forms.Textarea(
+#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
+#             ),
+#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
+#         }
+
+#     def __init__(self, *args, **kwargs):
+#         self.request = kwargs.pop('request', None)  # Safely pop request
+#         super().__init__(*args, **kwargs)
+#         if self.request and hasattr(self.request, 'user'):
+#             if not self.request.user.is_superuser and not self.request.user.has_perm(
+#                 "website.can_approve"
+#             ):
+#                 self.fields["next_status"].choices = [
+#                     ('', 'Select option'),
+#                     ("draft", "In Draft"),
+#                     ("submit_for_review", "In Review"),
+#                 ]
+#             elif not self.request.user.is_superuser and self.request.user.has_perm(
+#                 "website.can_approve"
+#             ):
+#                 self.fields["next_status"].choices = [
+#                     ('', 'Select option'),
+#                     ("need_revision", "In Revision"),
+#                     ("approved", "Approved"),
+#                 ]
+
+#     def save(self, commit=True):
+#         from django.utils.text import slugify
+
+#         if self.cleaned_data.get("next_status"):
+#             self.instance.status = self.cleaned_data["next_status"]
+#         if not self.instance.slug:
+#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
+#         if self.request and hasattr(self.request, 'user'):
+#             if self.request.user.is_superuser or self.request.user.has_perm(
+#                 "website.can_approve"
+#             ):
+#                 if self.cleaned_data.get("next_status") == "approved":
+#                     self.instance.active = True
+#         return super().save(commit)
+
+
 class BlogForm(forms.ModelForm):
     next_status = forms.ChoiceField(
         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
-        required=True,
+        required=False,  # Changed to False to allow "Select option" without forcing a choice
         label="Next Status"
     )
 
@@ -389,6 +446,8 @@ class BlogForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)  # Safely pop request
         super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:  # Check if editing an existing blog
+            self.fields['next_status'].initial = self.instance.status  # Set current status as initial value
         if self.request and hasattr(self.request, 'user'):
             if not self.request.user.is_superuser and not self.request.user.has_perm(
                 "website.can_approve"
@@ -412,6 +471,7 @@ class BlogForm(forms.ModelForm):
 
         if self.cleaned_data.get("next_status"):
             self.instance.status = self.cleaned_data["next_status"]
+        # If no next_status is selected, retain the current status (no change)
         if not self.instance.slug:
             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
         if self.request and hasattr(self.request, 'user'):
@@ -492,6 +552,7 @@ class BlogSEOEssentialForm(forms.ModelForm):
 class BlogSEOEssentialInline(nested_admin.NestedStackedInline):
     model = BlogSEOEssential
     extra = 1
+    exclude = ("keywords",)
     # form = BlogSEOEssentialForm
 
 
@@ -503,10 +564,10 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         BlogContextInline,
         BlogSEOEssentialInline,
         BlogFAQInline,
-        ReferenceBlogInline,
-        RelatedBlogInline,
-        BlogModeratorFeedbackInline,
-        BlogMetadataInline,
+        # ReferenceBlogInline,
+        # RelatedBlogInline,
+        # BlogModeratorFeedbackInline,
+        # BlogMetadataInline,
     )
     actions = [
         "clone_selected",
@@ -529,10 +590,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         # "get_plagiarism_percentage",
     )
     readonly_fields = ("status",)
-    # exclude = ("slug",)
+    exclude = ("content",)
     fields = (
         "title",
         "slug",
+        "status",
         "image",
         # "video",
         "youtube_link",
@@ -540,9 +602,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         # "tag",
         # "short_description",
         "is_featured",
-        "content",
-        "read_time_minute",
-        "status",
+        # "content",
+        # "read_time_minute",
         "next_status",
     )
     form = BlogForm
