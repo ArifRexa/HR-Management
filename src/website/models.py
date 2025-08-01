@@ -112,7 +112,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     image = models.ImageField(upload_to="blog_images/", verbose_name="Banner Image")
     # video = models.FileField(upload_to="blog_video", blank=True, null=True)
     youtube_link = models.URLField(
-        null=True, blank=True, verbose_name="Banner Youtube Video Link"
+        null=True, blank=True, verbose_name="Banner Video Link"
     )
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
@@ -122,7 +122,7 @@ class Blog(AuthorMixin, TimeStampMixin):
         verbose_name="LinkedIn Marketing Content", blank=True, null=True
     )
     # active = models.BooleanField(default=False)
-    read_time_minute = models.IntegerField(default=1)
+    read_time_minute = models.IntegerField(default=1, null=True, blank=True)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
     status = models.CharField(
         max_length=20,
@@ -205,6 +205,9 @@ class BlogSEOEssential(TimeStampMixin, AuthorMixin):
         verbose_name = "SEO Essential"
         verbose_name_plural = "SEO Essentials"
 
+    def __str__(self):
+        return self.title or f"SEO Essential for {self.blog.title if self.blog else 'No Blog'}"
+
 
 class ReferenceBlogs(models.Model):
     blog = models.ForeignKey(
@@ -275,12 +278,17 @@ class BlogContext(AuthorMixin, TimeStampMixin):
         blank=True, null=True, verbose_name="Section YouTube Video Link"
     )
 
+    def __str__(self):
+        return self.title or f"Context for {self.blog.title if self.blog else 'No Blog'}"
+
 
 class BlogFAQ(AuthorMixin, TimeStampMixin):
     blogs = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="blog_faqs")
     question = models.CharField(max_length=255)
-    answer = models.TextField()
+    answer = HTMLField(null=True, blank=True)
 
+    def __str__(self):
+        return self.question or f"FAQ for {self.blogs.title if self.blogs else 'No Blog'}"
 
 class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     MODERATOR_FEEDBACK_TITLE = (
@@ -330,6 +338,24 @@ class BlogComment(MPTTModel, TimeStampMixin):
         null=True,
         related_name="children",
     )
+
+
+class CTA(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+    button_text = models.CharField(max_length=100, null=True, blank=True)
+    button_link = models.URLField(null=True, blank=True)
+    image = models.ImageField(upload_to="cta_images/", null=True, blank=True)
+    blog = models.ForeignKey(
+        Blog, 
+        on_delete=models.CASCADE, 
+        related_name="ctas", 
+        null=True, 
+        blank=True
+    )
+
+    def __str__(self):
+        return self.title or "CTA"
 
 
 class FAQ(models.Model):
