@@ -112,7 +112,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     image = models.ImageField(upload_to="blog_images/", verbose_name="Banner Image")
     # video = models.FileField(upload_to="blog_video", blank=True, null=True)
     youtube_link = models.URLField(
-        null=True, blank=True, verbose_name="Banner Youtube Video Link"
+        null=True, blank=True, verbose_name="Banner Video Link"
     )
     category = models.ManyToManyField(Category, related_name="categories")
     tag = models.ManyToManyField(Tag, related_name="tags")
@@ -122,7 +122,7 @@ class Blog(AuthorMixin, TimeStampMixin):
         verbose_name="LinkedIn Marketing Content", blank=True, null=True
     )
     # active = models.BooleanField(default=False)
-    read_time_minute = models.IntegerField(default=1)
+    read_time_minute = models.IntegerField(default=1, null=True, blank=True)
     total_view = models.PositiveBigIntegerField(default=0, blank=True, null=True)
     status = models.CharField(
         max_length=20,
@@ -279,7 +279,7 @@ class BlogContext(AuthorMixin, TimeStampMixin):
 class BlogFAQ(AuthorMixin, TimeStampMixin):
     blogs = models.ForeignKey(Blog, on_delete=models.CASCADE, related_name="blog_faqs")
     question = models.CharField(max_length=255)
-    answer = models.TextField()
+    answer = HTMLField(null=True, blank=True)
 
 
 class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):

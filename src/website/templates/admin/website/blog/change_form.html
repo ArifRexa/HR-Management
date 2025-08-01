@@ -3,12 +3,12 @@
 {% block content_title %}
     {% if has_change_permission %}
         <div class="preview sticky-title">
-            <button style="margin-right: 15px;" type="button" class="preview-button extra-button">See Before Publish</button>
+            <button style="margin-right: 15px;" type="button" class="preview-button extra-button">Preview</button>
             <button type="submit" name="_save" class="save-button extra-button">Save</button>
         </div>
     {% elif not original %}
         <div class="preview sticky-title">
-            <button style="margin-right: 15px;" type="button" class="preview-button extra-button">See Before Publish</button>
+            <button style="margin-right: 15px;" type="button" class="preview-button extra-button">Preview</button>
             <button type="submit" name="_save" class="save-button extra-button">Save</button>
         </div>
     {% endif %}
@@ -33,10 +33,10 @@
             padding: 10px;
             margin-top: -20px;
             margin-left: -40px;
-            margin-right: -40px;
+            margin-right: -10px;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            /* align-items: center; */
+            justify-content: end;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
@@ -49,12 +49,12 @@
             color: white;
             border: none;
             outline: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             margin-top: -12px;
             cursor: pointer;
             border-radius: 4px;
             font-weight: bold;
-            font-size: 1.5rem;
+            font-size: 0.9rem;
         }
 
         .extra-button:hover {
