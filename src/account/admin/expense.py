@@ -1,18 +1,23 @@
 import datetime
-from django.contrib import admin
+import mimetypes
+from urllib.parse import urlparse
+
+import pandas as pd
+from django.conf import settings
+from django.contrib import admin, messages
 from django.contrib.auth.models import User
-from django.db.models import Sum
-from django.template.loader import get_template
+from django.db.models import F, Sum
+from django.http import HttpResponse
+from django.template.loader import get_template, render_to_string
 from django.utils import timezone
 from django.utils.html import format_html
+from weasyprint import CSS, HTML, default_url_fetcher
 
-from account.models import Expense, ExpenseCategory, ExpanseAttachment, ExpenseGroup
+from account.models import (ExpanseAttachment, Expense, ExpenseCategory,
+                            ExpenseGroup)
 from config.admin.utils import simple_request_filter
-from config.utils.pdf import PDF
 from employee.admin.employee._forms import DailyExpenseFilterForm
 from employee.models import Employee
-
-from django.contrib import messages
 
 
 @admin.register(ExpenseGroup)
@@ -20,12 +25,11 @@ class ExpenseGroupAdmin(admin.ModelAdmin):
     list_display = ("title", "account_code", "get_vds_rate", "get_tds_rate", "note")
     search_fields = ["title"]
     ordering = ["account_code"]
-    
-    
+
     @admin.display(description="VDS Rate (%)", ordering="vds_rate")
     def get_vds_rate(self, obj):
         return obj.vds_rate
-    
+
     @admin.display(description="TDS Rate (%)", ordering="tds_rate")
     def get_tds_rate(self, obj):
         return obj.tds_rate
@@ -69,11 +73,6 @@ class ActiveCreatedByFilter(admin.SimpleListFilter):
         return queryset
 
 
-
-from django.db.models import Prefetch, Sum
-from django.utils.html import format_html
-
-
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = (
@@ -100,6 +99,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     search_fields = ["note"]
     actions = (
         "print_voucher",
+        "print_voucher_attachment",
         "approve_expense",
         "add_to_balance_sheet",
         "remove_from_balance_sheet",
@@ -108,18 +108,18 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_select_related = ("expanse_group", "expense_category", "created_by")
     list_per_page = 20
 
-    
-    
     # ✅ OPTIMIZATION 1: Centralized data fetching
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        qs = qs.select_related("expanse_group", "expense_category", "created_by").prefetch_related("expanseattachment_set")
-        
+        qs = qs.select_related(
+            "expanse_group", "expense_category", "created_by"
+        ).prefetch_related("expanseattachment_set")
+
         if not request.user.has_perm(
             "account.can_approve_expense"
         ) and not request.user.has_perm("account.can_view_all_expenses"):
             return qs.filter(created_by__id=request.user.id)
-            
+
         return qs
 
     # ✅ OPTIMIZATION 2: Efficient amount display
@@ -127,19 +127,19 @@ class ExpenseAdmin(admin.ModelAdmin):
     def get_amount(self, obj):
         # Assumes you want to format it as a currency. Much faster than template rendering.
         return f"{obj.amount:,.2f}"
-    
+
     @admin.display(description="Approved", ordering="is_approved")
     def get_approved(self, obj):
         if obj.is_approved:
             return "✅"
         return "❌"
-    
+
     @admin.display(description="BS", ordering="add_to_balance_sheet")
     def get_add_to_balance_sheet(self, obj):
         if obj.add_to_balance_sheet:
             return "✅"
         return "❌"
-    
+
     @admin.display(description="Created By", ordering="created_by__employee__full_name")
     def get_created_by(self, obj):
         if obj.created_by:
@@ -241,14 +241,107 @@ class ExpenseAdmin(admin.ModelAdmin):
     def remove_from_balance_sheet(self, request, queryset):
         queryset.update(add_to_balance_sheet=False)
 
-    @admin.action()
+    # @admin.action()
+    # def print_voucher(self, request, queryset):
+    #     pdf = PDF()
+    #     pdf.context = dict(
+    #         expense_groups=self._get_mapped_expense_data(queryset=queryset)
+    #     )
+    #     pdf.template_path = "voucher/expense_voucher.html"
+    #     return pdf.render_to_pdf(download=False)
+
+    @admin.action(description="Print Voucher")
     def print_voucher(self, request, queryset):
-        pdf = PDF()
-        pdf.context = dict(
-            expense_groups=self._get_mapped_expense_data(queryset=queryset)
+        monthly_journal = queryset.first()
+        expense = queryset.values(
+            "date", "expanse_group__title", "expense_category__title", "amount"
         )
-        pdf.template_path = "voucher/expense_voucher.html"
-        return pdf.render_to_pdf(download=False)
+
+        df = pd.DataFrame(list(expense))
+        df.rename(
+            columns={
+                "date": "Date",
+                "expanse_group__title": "Expanse Group",
+                "expense_category__title": "Expanse Category",
+                "amount": "Amount",
+            },
+            inplace=True,
+        )
+        df.loc["Total"] = df.sum(numeric_only=True, axis=0)
+        df = df.fillna("")
+        df.at["Total", "Expanse Category"] = "Total"
+        template = get_template("pdf/monthly_expense.html")
+        context = {
+            "table": df.to_html(index=False),
+            "month": monthly_journal.date.strftime("%B"),
+            "year": monthly_journal.date.strftime("%Y"),
+        }
+        html_content = template.render(context)
+        month = monthly_journal.date.strftime("%B")
+        year = monthly_journal.date.strftime("%Y")
+        file_name_date = f"{month}/{year}"
+        file_name = f"{file_name_date}_ME.pdf"
+
+        # Generate PDF
+        html = HTML(string=html_content)
+        pdf_file = html.write_pdf()
+        response = HttpResponse(pdf_file, content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="{file_name}"'
+
+        return response
+
+    @admin.action(description="Print Voucher (Attachment)")
+    def print_voucher_attachment(self, request, queryset):
+        monthly_journal = queryset.first()
+        expense_paths = queryset.annotate(
+            file=F("expanseattachment__attachment")
+        ).values_list("file", flat=True)
+
+        absolute_urls = []
+        for relpath in expense_paths:
+            if relpath:
+                rel = (
+                    relpath if relpath.startswith("/") else settings.MEDIA_URL + relpath
+                )
+                absolute_urls.append(request.build_absolute_uri(rel))
+
+        context = {
+            "expenses": absolute_urls,
+            "month": monthly_journal.date.strftime("%B"),
+            "year": monthly_journal.date.strftime("%Y"),
+        }
+
+        html_str = render_to_string("pdf/monthly_expense_attachment.html", context)
+
+        def custom_fetcher(url, *args, **kwargs):
+            parsed = urlparse(url)
+            if parsed.path.startswith(settings.MEDIA_URL):
+                path = parsed.path.replace(
+                    settings.MEDIA_URL, settings.MEDIA_ROOT + "/", 1
+                )
+                mime, enc = mimetypes.guess_type(path)
+                return {
+                    "file_obj": open(path, "rb"),
+                    "mime_type": mime,
+                    "encoding": enc,
+                    "filename": path.split("/")[-1],
+                }
+            return default_url_fetcher(url, *args, **kwargs)
+
+        html = HTML(
+            string=html_str,
+            base_url=request.build_absolute_uri("/"),
+            url_fetcher=custom_fetcher,
+        )
+        css = CSS(string="@page { size: A4; margin: 1cm }")
+        pdf_bytes = html.write_pdf(stylesheets=[css])
+        month = monthly_journal.date.strftime("%B")
+        year = monthly_journal.date.strftime("%Y")
+        file_name = f"{month}/{year}"
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        # file_name = f"{monthly_journal.date.strftime("%B")}_{monthly_journal.date.strftime("%Y")}"
+        response["Content-Disposition"] = f'attachment; filename="{file_name}_MA.pdf"'
+        return response
 
     @admin.action()
     def approve_expense(self, request, queryset):

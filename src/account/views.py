@@ -305,13 +305,15 @@ def monthly_expense_statement(request, id, *args, **kwargs):
     template = get_template("pdf/monthly_expense.html")
     context = {
         "table": df.to_html(index=False),
-        "month": monthly_journal.created_at.strftime("%B"),
-        "year": monthly_journal.created_at.strftime("%Y"),
+        "month": monthly_journal.date.strftime("%B"),
+        "year": monthly_journal.date.strftime("%Y"),
     }
     html_content = template.render(context)
-    file_name_date = f"{monthly_journal.date.strftime("%B")}/{monthly_journal.created_at.strftime("%Y")}"
+    month = monthly_journal.date.strftime("%B")
+    year = monthly_journal.date.strftime("%Y")
+    file_name_date = f"{month}/{year}"
     file_name = (
-        f"{file_name_date} ME order by {order_by}.pdf"
+        f"{file_name_date}_ME_order_by_{order_by}.pdf"
     )
 
     # Generate PDF
@@ -345,8 +347,8 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
 
     context = {
         "expenses": absolute_urls,
-        "month": monthly_journal.created_at.strftime("%B"),
-        "year": monthly_journal.created_at.strftime("%Y"),
+        "month": monthly_journal.date.strftime("%B"),
+        "year": monthly_journal.date.strftime("%Y"),
     }
 
     html_str = render_to_string("pdf/monthly_expense_attachment.html", context)
@@ -373,8 +375,10 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
     pdf_bytes = html.write_pdf(stylesheets=[css])
 
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    file_name = f"{monthly_journal.date.strftime("%B")}/{monthly_journal.created_at.strftime("%Y")}"
+    month = monthly_journal.date.strftime("%B")
+    year = monthly_journal.date.strftime("%Y")
+    file_name = f"{month}/{year}"
     response["Content-Disposition"] = (
-        f'attachment; filename="{file_name} Ma order by {order_by}.pdf"'
+        f'attachment; filename="{file_name}_MA_order_by_{order_by}.pdf"'
     )
     return response
