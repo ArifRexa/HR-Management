@@ -309,8 +309,9 @@ def monthly_expense_statement(request, id, *args, **kwargs):
         "year": monthly_journal.created_at.strftime("%Y"),
     }
     html_content = template.render(context)
+    file_name_date = f"{monthly_journal.date.strftime("%B")}/{monthly_journal.created_at.strftime("%Y")}"
     file_name = (
-        f"Monthly Expense order by {order_by} - {monthly_journal.created_at.date()}.pdf"
+        f"{file_name_date} ME order by {order_by}.pdf"
     )
 
     # Generate PDF
@@ -372,7 +373,8 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
     pdf_bytes = html.write_pdf(stylesheets=[css])
 
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    file_name = f"{monthly_journal.date.strftime("%B")}/{monthly_journal.created_at.strftime("%Y")}"
     response["Content-Disposition"] = (
-        f'attachment; filename="Monthly Expense order by {order_by} - {monthly_journal.created_at.date()}.pdf"'
+        f'attachment; filename="{file_name} Ma order by {order_by}.pdf"'
     )
     return response
