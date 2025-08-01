@@ -22,6 +22,7 @@ from mptt.admin import MPTTModelAdmin
 from employee.models.employee import Employee
 from project_management.models import ProjectHour
 from website.models import (
+    CTA,
     FAQ,
     AllProjectsBanner,
     AllServicesTitle,
@@ -427,7 +428,7 @@ class BlogForm(forms.ModelForm):
     next_status = forms.ChoiceField(
         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
         required=False,  # Changed to False to allow "Select option" without forcing a choice
-        label="Next Status"
+        label="Status"
     )
 
     class Meta:
@@ -548,6 +549,12 @@ class BlogSEOEssentialForm(forms.ModelForm):
             )
         }
 
+        
+class CTAInline(nested_admin.NestedStackedInline):
+    model = CTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
 
 class BlogSEOEssentialInline(nested_admin.NestedStackedInline):
     model = BlogSEOEssential
@@ -564,6 +571,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         BlogContextInline,
         BlogSEOEssentialInline,
         BlogFAQInline,
+        CTAInline,
         # ReferenceBlogInline,
         # RelatedBlogInline,
         # BlogModeratorFeedbackInline,
@@ -594,7 +602,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     fields = (
         "title",
         "slug",
-        "status",
+        # "status",
+        "next_status",
         "image",
         # "video",
         "youtube_link",
@@ -604,7 +613,6 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "is_featured",
         # "content",
         # "read_time_minute",
-        "next_status",
     )
     form = BlogForm
     list_filter = ("status", BlogCategoryFilter, ActiveEmployeeFilter)
