@@ -106,6 +106,12 @@ class BlogSlugField(models.SlugField):
         self.max_length = 255
 
 
+class BlogSchemaType(models.TextChoices):
+    ARTICLE = "Article", "Article"
+    NEWS = "NewsArticle", "News"
+    HOWTO = "HowTo", "How-To"
+
+
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = BlogSlugField(unique=True)
@@ -132,6 +138,8 @@ class Blog(AuthorMixin, TimeStampMixin):
     )
     # is_posted = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True, editable=False, blank=True)
+    schema_type = models.CharField(max_length=20, choices=BlogSchemaType.choices, default=BlogSchemaType.ARTICLE, verbose_name="Schema Type")
+    main_body_schema = HTMLField(verbose_name="Main Body Schema", blank=True, null=True)
 
     def __str__(self):
         return self.title
