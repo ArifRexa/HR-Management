@@ -285,7 +285,7 @@ def monthly_expense_statement(request, id, *args, **kwargs):
     order_by = request.GET.get("order_by", "date")
     field_mapping = {"date": "created_at", "amount": "amount"}
     expense = (
-        Expense.objects.filter(created_at__date=monthly_journal.created_at.date())
+        Expense.objects.filter(date__month=monthly_journal.date.month)
         .order_by(field_mapping.get(order_by))
         .values("date", "expanse_group__title", "expense_category__title", "amount")
     )
@@ -330,7 +330,7 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
     field_mapping = {"date": "created_at", "amount": "amount"}
 
     expense_paths = (
-        Expense.objects.filter(created_at__date=monthly_journal.created_at.date())
+        Expense.objects.filter(date__month=monthly_journal.date.month)
         .order_by(field_mapping.get(order_by))
         .annotate(file=F("expanseattachment__attachment"))
         .values_list("file", flat=True)
