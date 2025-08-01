@@ -298,6 +298,23 @@ class BlogFAQ(AuthorMixin, TimeStampMixin):
     def __str__(self):
         return self.question or f"FAQ for {self.blogs.title if self.blogs else 'No Blog'}"
 
+class BlogFAQSchema(models.Model):
+    blog = models.OneToOneField(Blog, on_delete=models.CASCADE, related_name="faq_schema")
+    faq_schema = models.TextField(
+        null=True, blank=True, verbose_name="FAQ Schema",
+        help_text="JSON-LD format for FAQ schema, leave blank to disable schema"
+    )
+
+    class Meta:
+        verbose_name = "Blog FAQ Schema"
+        verbose_name_plural = "Blog FAQ Schemas"
+
+
+    def __str__(self):
+        return f"FAQ Schema for {self.blog.title if self.blog else 'No Blog'}"
+
+
+
 class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     MODERATOR_FEEDBACK_TITLE = (
         (1, "Moderator"),
