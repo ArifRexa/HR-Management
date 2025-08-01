@@ -1,0 +1,6 @@
+{% load static %}
+{% if blog.main_body_schema %}
+<script type="application/ld+json">
+{{ blog.main_body_schema|safe }}
+</script>
+{% endif %}
