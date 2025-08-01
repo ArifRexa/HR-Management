@@ -1,6 +1,9 @@
+import mimetypes
 from itertools import zip_longest
+from urllib.parse import urlparse
 
 import pandas as pd
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import (
     Count,
@@ -17,10 +20,9 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import get_template, render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from weasyprint import HTML
+from weasyprint import CSS, HTML, default_url_fetcher
 
 from account.models import AccountJournal, Expense, Income, MonthlyJournal
-from config.settings import MEDIA_URL
 
 
 def generate_voucher_pdf(voucher, voucher_type, template_name):
@@ -290,7 +292,7 @@ def monthly_expense_statement(request, id, *args, **kwargs):
     df = pd.DataFrame(list(expense))
     df.rename(
         columns={
-            "data": "Data",
+            "date": "Date",
             "expanse_group__title": "Expanse Group",
             "expense_category__title": "Expanse Category",
             "amount": "Amount",
@@ -326,36 +328,51 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
     monthly_journal = MonthlyJournal.objects.get(id=id)
     order_by = request.GET.get("order_by", "date")
     field_mapping = {"date": "created_at", "amount": "amount"}
-    expense = (
+
+    expense_paths = (
         Expense.objects.filter(created_at__date=monthly_journal.created_at.date())
         .order_by(field_mapping.get(order_by))
         .annotate(file=F("expanseattachment__attachment"))
         .values_list("file", flat=True)
     )
-    expense_attachment_list = []
-    for relpath in expense:
+
+    absolute_urls = []
+    for relpath in expense_paths:
         if relpath:
-            # Ensure a leading slash, in case MEDIA_URL doesn't
-            rel_url = relpath if relpath.startswith("/") else MEDIA_URL + relpath
-            abs_url = request.build_absolute_uri(rel_url)
-            expense_attachment_list.append(abs_url)
+            rel = relpath if relpath.startswith("/") else settings.MEDIA_URL + relpath
+            absolute_urls.append(request.build_absolute_uri(rel))
 
     context = {
-        "expenses": expense_attachment_list,
+        "expenses": absolute_urls,
         "month": monthly_journal.created_at.strftime("%B"),
         "year": monthly_journal.created_at.strftime("%Y"),
     }
-    html_content = render_to_string(
-        "pdf/monthly_expense_attachment.html", context=context, request=request
-    )
-    file_name = (
-        f"Monthly Expense order by {order_by} - {monthly_journal.created_at.date()}.pdf"
-    )
 
-    # Generate PDF
-    html = HTML(string=html_content, base_url=request.build_absolute_uri("/"))
-    pdf_file = html.write_pdf()
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = f'attachment; filename="{file_name}"'
+    html_str = render_to_string("pdf/monthly_expense_attachment.html", context)
 
+    def custom_fetcher(url, *args, **kwargs):
+        parsed = urlparse(url)
+        if parsed.path.startswith(settings.MEDIA_URL):
+            path = parsed.path.replace(settings.MEDIA_URL, settings.MEDIA_ROOT + "/", 1)
+            mime, enc = mimetypes.guess_type(path)
+            return {
+                "file_obj": open(path, "rb"),
+                "mime_type": mime,
+                "encoding": enc,
+                "filename": path.split("/")[-1],
+            }
+        return default_url_fetcher(url, *args, **kwargs)
+
+    html = HTML(
+        string=html_str,
+        base_url=request.build_absolute_uri("/"),
+        url_fetcher=custom_fetcher,
+    )
+    css = CSS(string="@page { size: A4; margin: 1cm }")
+    pdf_bytes = html.write_pdf(stylesheets=[css])
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = (
+        f'attachment; filename="Monthly Expense order by {order_by} - {monthly_journal.created_at.date()}.pdf"'
+    )
     return response

@@ -98,10 +98,9 @@
         <strong style="line-height: 2;">Monthly Expense ({{month}})</strong>
     </header>
     <div class="main">
-        
-        {% for img_url in attachments %}
-            <div style="margin-bottom: 10px;">
-                <img src="{{ img_url }}" alt="attachment" width="300px">
+        {% for img_url in expenses %}
+            <div style="margin: 10px;">
+                <img src="{{ img_url }}" style="max-width: 100%; height: auto" alt="Expense Attachment">
             </div>
         {% endfor %}
             

@@ -54,7 +54,7 @@ class MonthlyJournalAdmin(admin.ModelAdmin):
         group_costs = obj.group_cost_url()
         balance_sheet = obj.balance_sheet_url()
         monthly_expense = obj.get_monthly_expense_url()
-        # monthly_expense_attachment = obj.get_monthly_expense_attachment_url()
+        monthly_expense_attachment = obj.get_monthly_expense_attachment_url()
         btn = f"""
             <a href="{url}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Account Journal</a>
             <a href="{group_costs}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; Group Costs</a>
@@ -62,9 +62,9 @@ class MonthlyJournalAdmin(admin.ModelAdmin):
             <a href="{monthly_expense}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; ME - Date </a>
             <a href="{monthly_expense}?order_by=amount" class="button" style="padding: 6px;text-decoration: none;">&#x2913; ME - Amount </a>
             
+            <a href="{monthly_expense_attachment}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; MA - Date </a>
+            <a href="{monthly_expense_attachment}?order_by=amount" class="button" style="padding: 6px;text-decoration: none;">&#x2913; MA - Amount </a>
             """
-            # <a href="{monthly_expense_attachment}" class="button" style="padding: 6px;text-decoration: none;">&#x2913; MA - Date </a>
-            # <a href="{monthly_expense_attachment}?order_by=amount" class="button" style="padding: 6px;text-decoration: none;">&#x2913; MA - Amount </a>
     
         return format_html(btn)
     
