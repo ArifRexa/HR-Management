@@ -746,7 +746,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         # "content",
         # "read_time_minute",
         "schema_type", 
-        "main_body_schema"
+        "main_body_schema",
+        "hightlighted_text",
     )
     form = BlogForm
     list_filter = ("status", BlogCategoryFilter, ActiveEmployeeFilter)
