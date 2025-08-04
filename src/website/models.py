@@ -140,6 +140,12 @@ class Blog(AuthorMixin, TimeStampMixin):
     approved_at = models.DateTimeField(null=True, editable=False, blank=True)
     schema_type = models.CharField(max_length=20, choices=BlogSchemaType.choices, default=BlogSchemaType.ARTICLE, verbose_name="Schema Type")
     main_body_schema = HTMLField(verbose_name="Main Body Schema", blank=True, null=True)
+    hightlighted_text = HTMLField(
+        verbose_name="Highlighted Text",
+        blank=True,
+        null=True,
+        help_text="Text that will be highlighted in the blog content",
+    )
 
     def __str__(self):
         return self.title
