@@ -38,6 +38,7 @@ from website.models import (
     BlogComment,
     BlogContext,
     BlogFAQ,
+    BlogFAQSchema,
     BlogKeyword,
     BlogMeatadata,
     BlogModeratorFeedback,
@@ -251,7 +252,7 @@ class BlogFAQForm(forms.ModelForm):
         fields = ("question", "answer")
         widgets = {
             "question": forms.Textarea(
-                attrs={"rows": 2, "cols": 40, "style": "width: 95%;resize:none;"}
+                attrs={"rows": 2, "style": "width: 85%;"}
             ),
             # "answer": forms.Textarea(attrs={"style": "width: 95%;"}),
         }
@@ -281,14 +282,24 @@ class BlogFAQInline(nested_admin.NestedStackedInline):
     model = BlogFAQ
     extra = 1
     form = BlogFAQForm
-    verbose_name_plural = "Blog FAQ (NB:Minimum 3 faq required)"
+    verbose_name_plural = "Blog FAQ (NB: Minimum 3 FAQs required)"
     formset = BlogFaqFormSet
+    fields = ("question", "answer")
 
     def get_formset(self, request, obj=None, **kwargs):
         formset = super().get_formset(request, obj, **kwargs)
         formset.request = request
         return formset
 
+class BlogFAQSchemaInline(nested_admin.NestedStackedInline):
+    model = BlogFAQSchema
+    extra = 0
+    fields = ("faq_schema",)
+    # readonly_fields = ("faq_schema",)
+    can_delete = False
+    max_num = 1
+    verbose_name = "FAQ Schema"
+    verbose_name_plural = "FAQ Schema"
 
 class RelatedBlogInline(nested_admin.NestedStackedInline):
     model = RelatedBlogs
@@ -485,6 +496,63 @@ class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
 #                     self.instance.active = True
 #         return super().save(commit)
 
+# class BlogForm(forms.ModelForm):
+#     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
+#     class Meta:
+#         model = Blog
+#         fields = "__all__"
+#         widgets = {
+#             "title": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
+#             "slug": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
+#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
+#             "main_body_schema": forms.Textarea(attrs={"rows": 10, "cols": 80}),
+#         }
+#     def __init__(self, *args, **kwargs):
+#         self.request = kwargs.pop('request', None)
+#         super().__init__(*args, **kwargs)
+#         if self.instance and self.instance.pk:
+#             self.fields['next_status'].initial = self.instance.status
+#         if self.request and hasattr(self.request, 'user'):
+#             if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
+#                 self.fields["next_status"].choices = [('', 'Select option'), ("draft", "In Draft"), ("submit_for_review", "In Review")]
+#                 self.fields["main_body_schema"].widget.attrs['readonly'] = True
+#             elif not self.request.user.is_superuser and self.request.user.has_perm("website.can_approve"):
+#                 self.fields["next_status"].choices = [('', 'Select option'), ("need_revision", "In Revision"), ("approved", "Approved")]
+#     def save(self, commit=True):
+#         from django.utils.text import slugify
+#         if self.cleaned_data.get("next_status"):
+#             self.instance.status = self.cleaned_data["next_status"]
+#         if not self.instance.slug:
+#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
+#         if self.request and hasattr(self.request, 'user'):
+#             if self.request.user.is_superuser or self.request.user.has_perm("website.can_approve"):
+#                 if self.cleaned_data.get("next_status") == "approved":
+#                     self.instance.active = True
+#                     schema_data = {
+#                         "@context": "https://schema.org",
+#                         "@type": self.instance.schema_type,
+#                         "mainEntityOfPage": {
+#                             "@type": "WebPage",
+#                             "@id": f"https://mediusware.com/blog/{self.instance.slug}/"
+#                         },
+#                         "headline": self.instance.title,
+#                         "image": self.instance.image.url if self.instance.image else "/static/images/placeholder.jpg",
+#                         "author": {
+#                             "@type": "Person",
+#                             "name": f"{self.instance.created_by.first_name} {self.instance.created_by.last_name}"
+#                         },
+#                         "publisher": {
+#                             "@type": "Organization",
+#                             "name": "Mediusware",
+#                             "logo": {
+#                                 "@type": "ImageObject",
+#                                 "url": "/static/images/logo.png"
+#                             }
+#                         },
+#                         "datePublished": self.instance.approved_at.strftime("%Y-%m-%d") if self.instance.approved_at else ""
+#                     }
+#                     self.instance.main_body_schema = json.dumps(schema_data, indent=2)
+#         return super().save(commit)
 class BlogForm(forms.ModelForm):
     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
     class Meta:
@@ -513,34 +581,6 @@ class BlogForm(forms.ModelForm):
             self.instance.status = self.cleaned_data["next_status"]
         if not self.instance.slug:
             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-        if self.request and hasattr(self.request, 'user'):
-            if self.request.user.is_superuser or self.request.user.has_perm("website.can_approve"):
-                if self.cleaned_data.get("next_status") == "approved":
-                    self.instance.active = True
-                    schema_data = {
-                        "@context": "https://schema.org",
-                        "@type": self.instance.schema_type,
-                        "mainEntityOfPage": {
-                            "@type": "WebPage",
-                            "@id": f"https://mediusware.com/blog/{self.instance.slug}/"
-                        },
-                        "headline": self.instance.title,
-                        "image": self.instance.image.url if self.instance.image else "/static/images/placeholder.jpg",
-                        "author": {
-                            "@type": "Person",
-                            "name": f"{self.instance.created_by.first_name} {self.instance.created_by.last_name}"
-                        },
-                        "publisher": {
-                            "@type": "Organization",
-                            "name": "Mediusware",
-                            "logo": {
-                                "@type": "ImageObject",
-                                "url": "/static/images/logo.png"
-                            }
-                        },
-                        "datePublished": self.instance.approved_at.strftime("%Y-%m-%d") if self.instance.approved_at else ""
-                    }
-                    self.instance.main_body_schema = json.dumps(schema_data, indent=2)
         return super().save(commit)
 
 # class BlogForm(forms.ModelForm):
@@ -662,6 +702,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         BlogContextInline,
         BlogSEOEssentialInline,
         BlogFAQInline,
+        BlogFAQSchemaInline,
         CTAInline,
         # ReferenceBlogInline,
         # RelatedBlogInline,
@@ -705,7 +746,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         # "content",
         # "read_time_minute",
         "schema_type", 
-        "main_body_schema"
+        "main_body_schema",
+        "hightlighted_text",
     )
     form = BlogForm
     list_filter = ("status", BlogCategoryFilter, ActiveEmployeeFilter)
@@ -961,105 +1003,126 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         )
         return TemplateResponse(request, "blog/automate_post.html", context)
 
-    # def save_model(self, request, obj, form, change):
-    #     super().save_model(request, obj, form, change)
-    #     if obj and obj.status == BlogStatus.APPROVED:
-    #         if request.user.is_superuser or request.user.has_perm(
-    #             "website.can_approve"
-    #         ):
-    #             publish_blog_url = f"https://mediusware.com/blog/details/{obj.slug}/"
-    #             obj.approved_at = timezone.now()
-    #             obj.save()
-    #             async_task(
-    #                 # "website.tasks.thank_you_message_to_author",
-    #                 obj,
-    #                 publish_blog_url,
-    #             )
-    #             # automatic_blog_post_linkedin()
-    #             project_hour = ProjectHour.objects.create(
-    #                 project_id=20,
-    #                 manager_id=30,
-    #                 hour_type="bonus",
-    #                 date=timezone.now().date(),
-    #                 hours=15,
-    #                 status="approved",
-    #             )
-    #             # anouncement = Announcement.objects.create(
-    #             #     start_datetime=timezone.now(),
-    #             #     end_datetime=timezone.now()
-    #             #     + timedelta(days=1),  # Assuming the end is the next day
-    #             #     description=f"Cheers! {obj.created_by.employee.full_name} Stellar blog approved!",
-    #             # )
-    #             # employee_hour = EmployeeProjectHour.objects.create(
-    #             #     project_hour=project_hour,
-    #             #     employee=obj.created_by.employee,
-    #             #     hours=15,
-    #             # )
-    #             # print(project_hour, employee_hour)
-    #     else:
-    #         obj.approved_at = None
-    #         obj.save()
 
     # def save_model(self, request, obj, form, change):
+    #     # Ensure slug is set
+    #     if not obj.slug:
+    #         from django.utils.text import slugify
+    #         obj.slug = slugify(obj.title)[:50]
+
+    #     # # Save the object first to ensure inlines are processed
+    #     # super().save_model(request, obj, form, change)
+
+    #     # Get the first BlogSEOEssential object, if it exists
+    #     seo_essential = obj.blogseoessential_set.first()  # Use default reverse relation
+    #     seo_description = seo_essential.description if seo_essential else ""
+
     #     # Generate JSON-LD schema
     #     schema_data = {
     #         "@context": "https://schema.org",
-    #         "@type": obj.schema_type,  # Use the blog's schema_type (e.g., Article, NewsArticle, HowTo)
+    #         "@type": obj.schema_type,
     #         "mainEntityOfPage": {
     #             "@type": "WebPage",
-    #             "@id": f"https://www.mediusware.com/blog/{obj.slug}/"  # Construct publish URL
+    #             "@id": f"https://www.mediusware.com/blog/{obj.slug}/"
     #         },
-    #         "headline": obj.title,  # Use blog title
-    #         "image": obj.image.url if obj.image else "",  # Use image URL if available
+    #         "headline": obj.title,
+    #         "description": seo_description,
+    #         "image": obj.image.url if obj.image else "",
     #         "author": {
-    #             "@type": "Person",
-    #             "name": f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else ""  # Author name
+    #             "@type": "",
+    #             "name": f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else ""
     #         },
     #         "publisher": {
     #             "@type": "Organization",
-    #             "name": "Mediusware",
+    #             "name": "",
     #             "logo": {
     #                 "@type": "ImageObject",
-    #                 "url": "/static/images/logo.png"  # Default logo URL
+    #                 "url": ""
     #             }
     #         },
-    #         "datePublished": obj.approved_at.isoformat() if obj.approved_at else timezone.now().isoformat()  # Use approved_at or current time
+    #         "datePublished": obj.approved_at.isoformat() if obj.approved_at else obj.created_at.isoformat()  # Use created_at as fallback
     #     }
-        
-    #     # Store the schema as a JSON string in main_body_schema
-    #     obj.main_body_schema = json.dumps(schema_data, indent=2)
 
-    #     # Call the parent save_model to save the object
+    #     # Wrap the JSON in <script> tags
+    #     schema_html = mark_safe(
+    #         '<script type="application/ld+json">\n'
+    #         f'{json.dumps(schema_data, indent=2)}\n'
+    #         '</script>'
+    #     )
+
+    #     # Assign the schema to main_body_schema
+    #     obj.main_body_schema = schema_html
+
+    #     # Save the object
     #     super().save_model(request, obj, form, change)
 
-    #     # Handle additional logic for approved blogs
-    #     if obj and obj.status == BlogStatus.APPROVED:
-    #         if request.user.is_superuser or request.user.has_perm("website.can_approve"):
-    #             publish_blog_url = f"https://www.mediusware.com/blog/{obj.slug}/"
-    #             obj.approved_at = timezone.now()
-    #             obj.save()
-    #             async_task(
-    #                 obj,
-    #                 publish_blog_url,
-    #             )
-    #             project_hour = ProjectHour.objects.create(
-    #                 project_id=20,
-    #                 manager_id=30,
-    #                 hour_type="bonus",
-    #                 date=timezone.now().date(),
-    #                 hours=15,
-    #                 status="approved",
-    #             )
+    #     # Handle approval logic
+    #     if obj.status == BlogStatus.APPROVED and (request.user.is_superuser or request.user.has_perm("website.can_approve")):
+    #         obj.approved_at = timezone.now()
     #     else:
     #         obj.approved_at = None
-    #         obj.save()
+    #     obj.save()
+
+
+    # def save_related(self, request, form, formsets, change):
+    #     super().save_related(request, form, formsets, change)
+    #     blog = form.instance
+    #     faqs = blog.blog_faqs.all()
+    #     # Delete existing BlogFAQSchema if no FAQs
+    #     BlogFAQSchema.objects.filter(blog=blog).delete()
+    #     if faqs.exists():
+    #         faq_schema = {
+    #             "@context": "https://schema.org",
+    #             "@type": "FAQPage",
+    #             "mainEntity": [
+    #                 {
+    #                     "@type": "Question",
+    #                     "name": faq.question or "",
+    #                     "acceptedAnswer": {
+    #                         "@type": "Answer",
+    #                         "text": faq.answer or ""
+    #                     }
+    #                 }
+    #                 for faq in faqs
+    #             ]
+    #         }
+    #         BlogFAQSchema.objects.create(
+    #             blog=blog,
+    #             faq_schema=mark_safe(
+    #                 '<script type="application/ld+json">\n'
+    #                 f'{json.dumps(faq_schema, indent=2)}\n'
+    #                 '</script>'
+    #             )
+    #         )
+
 
     def save_model(self, request, obj, form, change):
         # Ensure slug is set
         if not obj.slug:
             from django.utils.text import slugify
             obj.slug = slugify(obj.title)[:50]
+        
+        # Save the object first
+        super().save_model(request, obj, form, change)
+        
+        # Handle approval logic
+        if obj.status == BlogStatus.APPROVED and (request.user.is_superuser or request.user.has_perm("website.can_approve")):
+            obj.approved_at = timezone.now()
+        else:
+            obj.approved_at = None
+        obj.save()
 
+    def save_related(self, request, form, formsets, change):
+        # First save all inlines
+        super().save_related(request, form, formsets, change)
+        
+        # Now get the main object
+        obj = form.instance
+        
+        # Get the first BlogSEOEssential object after inlines are saved
+        seo_essential = obj.blogseoessential_set.first()
+        seo_description = seo_essential.description if seo_essential else ""
+        
         # Generate JSON-LD schema
         schema_data = {
             "@context": "https://schema.org",
@@ -1069,6 +1132,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                 "@id": f"https://www.mediusware.com/blog/{obj.slug}/"
             },
             "headline": obj.title,
+            "description": seo_description,
             "image": obj.image.url if obj.image else "",
             "author": {
                 "@type": "",
@@ -1082,54 +1146,52 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     "url": ""
                 }
             },
-            "datePublished": obj.approved_at.isoformat() if obj.approved_at else obj.created_at.isoformat()  # Use created_at as fallback
+            "datePublished": obj.approved_at.isoformat() if obj.approved_at else obj.created_at.isoformat()
         }
-
+        
         # Wrap the JSON in <script> tags
         schema_html = mark_safe(
             '<script type="application/ld+json">\n'
             f'{json.dumps(schema_data, indent=2)}\n'
             '</script>'
         )
-
+        
         # Assign the schema to main_body_schema
         obj.main_body_schema = schema_html
-
-        # Save the object
-        super().save_model(request, obj, form, change)
-
-        # Handle approval logic
-        if obj.status == BlogStatus.APPROVED and (request.user.is_superuser or request.user.has_perm("website.can_approve")):
-            obj.approved_at = timezone.now()
-        else:
-            obj.approved_at = None
+        
+        # Save the main model again to update the schema
         obj.save()
 
+        # Handle FAQ schema (existing code)
+        faqs = obj.blog_faqs.all()
+        # Delete existing BlogFAQSchema if no FAQs
+        BlogFAQSchema.objects.filter(blog=obj).delete()
+        if faqs.exists():
+            faq_schema = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": faq.question or "",
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": faq.answer or ""
+                        }
+                    }
+                    for faq in faqs
+                ]
+            }
+            BlogFAQSchema.objects.create(
+                blog=obj,
+                faq_schema=mark_safe(
+                    '<script type="application/ld+json">\n'
+                    f'{json.dumps(faq_schema, indent=2)}\n'
+                    '</script>'
+                )
+            )
 
-
-    def save_related(self, request, form, formsets, change):
-        for formset in formsets:
-            for inline_form in formset.forms:
-                if (
-                    inline_form._meta.model == BlogModeratorFeedback
-                    and inline_form.instance.id is None
-                    and inline_form.cleaned_data
-                ):
-                    if request.user.is_superuser or request.user.has_perm(
-                        "website.can_approve"
-                    ):
-                        content = inline_form.cleaned_data.get("feedback")
-                        blog = inline_form.cleaned_data.get("blog")
-                        blog_url = request.build_absolute_uri(
-                            reverse("admin:website_blog_change", args=[blog.id])
-                        )
-                        async_task(
-                            "website.tasks.send_blog_moderator_feedback_email",
-                            content,
-                            blog,
-                            blog_url,
-                        )
-        super().save_related(request, form, formsets, change)
+    
 
 
 @admin.register(BlogComment)

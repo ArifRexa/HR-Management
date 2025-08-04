@@ -1,0 +1,18 @@
+{% extends "admin/edit_inline/stacked.html" %}
+{% load i18n admin_urls %}
+
+{% block inline_form %}
+{{ block.super }}
+{% if inline_admin_formset.formset.forms %}
+  {% with first_form=inline_admin_formset.formset.forms.0 %}
+    {% if first_form.instance.blog.blog_faqs.first == first_form.instance %}
+      <div class="form-row">
+        <h3>{% trans "FAQ Schema" %}</h3>
+        <div class="field-faq_schema_display">
+          {{ first_form.instance.faq_schema|safe }}
+        </div>
+      </div>
+    {% endif %}
+  {% endwith %}
+{% endif %}
+{% endblock %}

@@ -1132,6 +1132,10 @@ def send_absent_without_leave_email():
     """
     today = date.today()
 
+    # Exit early if today is Saturday (5) or Sunday (6)
+    if today.weekday() >= 5:
+        return
+
     # Query to get employee IDs who are on leave today
     employees_on_leave = Leave.objects.filter(
         start_date__lte=today,

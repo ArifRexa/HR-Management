@@ -140,6 +140,12 @@ class Blog(AuthorMixin, TimeStampMixin):
     approved_at = models.DateTimeField(null=True, editable=False, blank=True)
     schema_type = models.CharField(max_length=20, choices=BlogSchemaType.choices, default=BlogSchemaType.ARTICLE, verbose_name="Schema Type")
     main_body_schema = HTMLField(verbose_name="Main Body Schema", blank=True, null=True)
+    hightlighted_text = HTMLField(
+        verbose_name="Highlighted Text",
+        blank=True,
+        null=True,
+        help_text="Text that will be highlighted in the blog content",
+    )
 
     def __str__(self):
         return self.title
@@ -297,6 +303,23 @@ class BlogFAQ(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return self.question or f"FAQ for {self.blogs.title if self.blogs else 'No Blog'}"
+
+class BlogFAQSchema(models.Model):
+    blog = models.OneToOneField(Blog, on_delete=models.CASCADE, related_name="faq_schema")
+    faq_schema = models.TextField(
+        null=True, blank=True, verbose_name="FAQ Schema",
+        help_text="JSON-LD format for FAQ schema, leave blank to disable schema"
+    )
+
+    class Meta:
+        verbose_name = "Blog FAQ Schema"
+        verbose_name_plural = "Blog FAQ Schemas"
+
+
+    def __str__(self):
+        return f"FAQ Schema for {self.blog.title if self.blog else 'No Blog'}"
+
+
 
 class BlogModeratorFeedback(AuthorMixin, TimeStampMixin):
     MODERATOR_FEEDBACK_TITLE = (
