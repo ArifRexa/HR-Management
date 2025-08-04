@@ -252,7 +252,7 @@ class BlogFAQForm(forms.ModelForm):
         fields = ("question", "answer")
         widgets = {
             "question": forms.Textarea(
-                attrs={"rows": 2, "cols": 40, "style": "width: 95%;resize:none;"}
+                attrs={"rows": 2, "style": "width: 85%;"}
             ),
             # "answer": forms.Textarea(attrs={"style": "width: 95%;"}),
         }
@@ -1101,6 +1101,13 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             from django.utils.text import slugify
             obj.slug = slugify(obj.title)[:50]
 
+        # Save the object first to ensure inlines are processed
+        super().save_model(request, obj, form, change)
+
+        # Get the first BlogSEOEssential object, if it exists
+        seo_essential = obj.blogseoessential_set.first()  # Use default reverse relation
+        seo_description = seo_essential.description if seo_essential else ""
+
         # Generate JSON-LD schema
         schema_data = {
             "@context": "https://schema.org",
@@ -1110,6 +1117,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                 "@id": f"https://www.mediusware.com/blog/{obj.slug}/"
             },
             "headline": obj.title,
+            "description": seo_description,
             "image": obj.image.url if obj.image else "",
             "author": {
                 "@type": "",
