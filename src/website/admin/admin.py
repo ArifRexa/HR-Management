@@ -252,7 +252,7 @@ class BlogFAQForm(forms.ModelForm):
         fields = ("question", "answer")
         widgets = {
             "question": forms.Textarea(
-                attrs={"rows": 2, "cols": 40, "style": "width: 95%;resize:none;"}
+                attrs={"rows": 2, "style": "width: 85%;"}
             ),
             # "answer": forms.Textarea(attrs={"style": "width: 95%;"}),
         }
