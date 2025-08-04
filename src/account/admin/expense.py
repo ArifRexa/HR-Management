@@ -261,15 +261,15 @@ class ExpenseAdmin(admin.ModelAdmin):
         df.rename(
             columns={
                 "date": "Date",
-                "expanse_group__title": "Expanse Group",
-                "expense_category__title": "Expanse Category",
+                "expanse_group__title": "Expense Group",
+                "expense_category__title": "Expense Category",
                 "amount": "Amount",
             },
             inplace=True,
         )
         df.loc["Total"] = df.sum(numeric_only=True, axis=0)
         df = df.fillna("")
-        df.at["Total", "Expanse Category"] = "Total"
+        df.at["Total", "Expense Category"] = "Total"
         template = get_template("pdf/monthly_expense.html")
         context = {
             "table": df.to_html(index=False),

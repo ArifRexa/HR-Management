@@ -9,22 +9,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Voucher</title>
     <style>
-        header {
-            width: 90%;
-            margin: 0px auto;
-            text-align: center;
-            line-height: 0.5;
-        }
-
         @page {
-            size: A4;
-            /* You can also use other predefined sizes like 'letter', 'legal', etc. */
-            margin: 15mm;
-            /* Set your preferred margins */
-        }
-        body {
-            font-size: 12px; /* Adjust as needed */
-        }
+      size: A4;
+      margin: 15mm;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+    }
+    .cover-page {
+      page-break-after: always;
+    }
+    .cover-header {
+        text-align: center;
+        color: black;
+        position: absolute;
+        width: 100%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    }
+    .cover-header h1 {
+      margin: 0 0 10px;
+      font-size: 60px;
+    }
+    .cover-header p {
+      margin: 4px 0;
+      font-size: 18px;
+      line-height: 1.4;
+    }
+    .report-title {
+      margin-top: 15px;
+      font-size: 28px;
+    }
+    .attachments {
+      width: 100%;
+    }
+    .attachment {
+      margin: 10px 0;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .attachment img {
+      width: 100%;
+      display: block;
+    }
 
         table {
             border-collapse: collapse;
@@ -91,12 +121,14 @@
 </head>
 
 <body>
-    <header>
-        <h2>Mediusware</h2>
-        <p>24/1, Taj Mahal Road, Shiya Masjid mor,</p>
-        <p>Floor - 7th & 8th, Ring Road, 1207</p>
-        <strong style="line-height: 2;">Monthly Expense ({{month}})</strong>
-    </header>
+    <div class="cover-page" >
+    <div class="cover-header">
+      <h1>Mediusware</h1>
+      <p>24/1, Taj Mahal Road, Shiya Masjid Mor</p>
+      <p>7<sup>th</sup> &amp; 8<sup>th</sup> Floor, Ring Road, Dhaka 1207</p>
+      <div class="report-title">Monthly Expense ({{ month }})</div>
+    </div>
+  </div>
     <div class="main">
         {{table | safe}}
     </div>

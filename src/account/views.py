@@ -285,7 +285,9 @@ def monthly_expense_statement(request, id, *args, **kwargs):
     order_by = request.GET.get("order_by", "date")
     field_mapping = {"date": "created_at", "amount": "amount"}
     expense = (
-        Expense.objects.filter(date__month=monthly_journal.date.month)
+        Expense.objects.filter(
+            date__month=monthly_journal.date.month, date__year=monthly_journal.date.year
+        )
         .order_by(field_mapping.get(order_by))
         .values("date", "expanse_group__title", "expense_category__title", "amount")
     )
@@ -293,15 +295,15 @@ def monthly_expense_statement(request, id, *args, **kwargs):
     df.rename(
         columns={
             "date": "Date",
-            "expanse_group__title": "Expanse Group",
-            "expense_category__title": "Expanse Category",
+            "expanse_group__title": "Expense Group",
+            "expense_category__title": "Expense Category",
             "amount": "Amount",
         },
         inplace=True,
     )
     df.loc["Total"] = df.sum(numeric_only=True, axis=0)
     df = df.fillna("")
-    df.at["Total", "Expanse Category"] = "Total"
+    df.at["Total", "Expense Category"] = "Total"
     template = get_template("pdf/monthly_expense.html")
     context = {
         "table": df.to_html(index=False),
@@ -312,9 +314,7 @@ def monthly_expense_statement(request, id, *args, **kwargs):
     month = monthly_journal.date.strftime("%B")
     year = monthly_journal.date.strftime("%Y")
     file_name_date = f"{month}/{year}"
-    file_name = (
-        f"{file_name_date}_ME_order_by_{order_by}.pdf"
-    )
+    file_name = f"{file_name_date}_ME_order_by_{order_by}.pdf"
 
     # Generate PDF
     html = HTML(string=html_content)
@@ -333,7 +333,9 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
     field_mapping = {"date": "created_at", "amount": "amount"}
 
     expense_paths = (
-        Expense.objects.filter(date__month=monthly_journal.date.month)
+        Expense.objects.filter(
+            date__month=monthly_journal.date.month, date__year=monthly_journal.date.year
+        )
         .order_by(field_mapping.get(order_by))
         .annotate(file=F("expanseattachment__attachment"))
         .values_list("file", flat=True)
