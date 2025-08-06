@@ -44,3 +44,7 @@ class IndustryServe(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = "Industry"
+        verbose_name_plural = "Industries"

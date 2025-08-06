@@ -500,8 +500,13 @@ class Brand(models.Model):
 
 # Base model without any fields
 class WebsiteTitle(models.Model):
+    title = models.CharField(max_length=255, null=True, blank=True)
     def __str__(self):
         return f"WebsiteTitle {self.pk}"  # Optional for admin display purposes
+    
+    class Meta:
+        verbose_name = "Website Title"
+        verbose_name_plural = "Website Titles"
 
 
 # Abstract class to reduce repetition

@@ -164,9 +164,9 @@ class AwardAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(Gallery)
-class GalleryAdmin(admin.ModelAdmin):
-    list_display = ["image"]
+# @admin.register(Gallery)
+# class GalleryAdmin(admin.ModelAdmin):
+#     list_display = ["image"]
 
 
 class ServiceTechnologyInline(nested_admin.NestedTabularInline):
@@ -1194,10 +1194,10 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     
 
 
-@admin.register(BlogComment)
-class BlogCommentModelAdmin(MPTTModelAdmin):
-    mptt_level_indent = 20
-    list_display = ["id", "name"]
+# @admin.register(BlogComment)
+# class BlogCommentModelAdmin(MPTTModelAdmin):
+#     mptt_level_indent = 20
+#     list_display = ["id", "name"]
 
 
 @admin.register(FAQ)
@@ -1230,13 +1230,13 @@ class OurJourneyAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(EmployeePerspective)
-class EmployeePerspectiveAdmin(admin.ModelAdmin):
-    list_display = (
-        "employee",
-        "title",
-        "description",
-    )
+# @admin.register(EmployeePerspective)
+# class EmployeePerspectiveAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "employee",
+#         "title",
+#         "description",
+#     )
 
 
 @admin.register(Industry)
@@ -1253,14 +1253,14 @@ class IndustryAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(Lead)
-class LeadAdmin(admin.ModelAdmin):
-    list_display = ("name", "email", "message")
-    search_fields = ("name", "email")
-    list_filter = ("name", "email")
-    ordering = ("name",)
-    fields = ("name", "email", "message")
-    # date_hierarchy = "created_at"
+# @admin.register(Lead)
+# class LeadAdmin(admin.ModelAdmin):
+#     list_display = ("name", "email", "message")
+#     search_fields = ("name", "email")
+#     list_filter = ("name", "email")
+#     ordering = ("name",)
+#     fields = ("name", "email", "message")
+#     # date_hierarchy = "created_at"
 
 
 @admin.register(VideoTestimonial)
@@ -1439,6 +1439,7 @@ class BenefitsOfEmploymentTitleInline(admin.StackedInline):
 # Register the WebsiteTitle admin with all the inlines
 @admin.register(WebsiteTitle)
 class WebsiteTitleAdmin(admin.ModelAdmin):
+    list_display = ("title",)
     inlines = [
         AwardsTitleInline,
         WhyUsTitleInline,

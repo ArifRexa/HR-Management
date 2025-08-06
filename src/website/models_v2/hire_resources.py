@@ -61,9 +61,10 @@ class HireResourcePage(models.Model):
     def __str__(self):
         return self.title
 
+
     class Meta:
-        verbose_name = "Hire Resource"
-        verbose_name_plural = "Hire Resources"
+        verbose_name = "Hire Developer"
+        verbose_name_plural = "Hire Developers"
 
 class HireResourceServiceContent(models.Model):
     hire_resource = models.ForeignKey(HireResourcePage,related_name='hire_resource',null=True,blank=True,on_delete=models.CASCADE)
