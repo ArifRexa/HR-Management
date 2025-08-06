@@ -24,6 +24,7 @@ from mptt.admin import MPTTModelAdmin
 from employee.models.employee import Employee
 from project_management.models import ProjectHour
 from website.admin.industries_we_serve import ApplicationAreasInline, IndustryMetadataInline
+from website.admin.services import AdditionalServiceContentInline, ComparativeAnalysisInline, DevelopmentServiceProcessInline, DiscoverOurServiceInline, FAQQuestionInline, ServiceMetaDataInline
 from website.models import (
     CTA,
     FAQ,
@@ -112,6 +113,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.services import ServicePage
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -557,6 +559,7 @@ class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
 #         return super().save(commit)
 class BlogForm(forms.ModelForm):
     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
+    
     class Meta:
         model = Blog
         fields = "__all__"
@@ -565,25 +568,55 @@ class BlogForm(forms.ModelForm):
             "slug": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
             "main_body_schema": forms.Textarea(attrs={"rows": 10, "cols": 80}),
+            "parent_services": admin.widgets.AutocompleteSelectMultiple(
+                Blog._meta.get_field('parent_services'),
+                admin.site,
+                # attrs={'style': 'width: 45%; display: inline-block;'}
+            ),
+            "child_services": admin.widgets.AutocompleteSelectMultiple(
+                Blog._meta.get_field('child_services'),
+                admin.site,
+                # attrs={'style': 'width: 45%; display: inline-block; margin-left: 10px;'}
+            ),
         }
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
+        self.fields['parent_services'].queryset = ServicePage.objects.filter(is_parent=True)
+        self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
         if self.instance and self.instance.pk:
             self.fields['next_status'].initial = self.instance.status
+            self.fields['parent_services'].initial = self.instance.parent_services.all()
+            self.fields['child_services'].initial = self.instance.child_services.all()
         if self.request and hasattr(self.request, 'user'):
             if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
                 self.fields["next_status"].choices = [('', 'Select option'), ("draft", "In Draft"), ("submit_for_review", "In Review")]
                 self.fields["main_body_schema"].widget.attrs['readonly'] = True
             elif not self.request.user.is_superuser and self.request.user.has_perm("website.can_approve"):
                 self.fields["next_status"].choices = [('', 'Select option'), ("need_revision", "In Revision"), ("approved", "Approved")]
+        self.fields['parent_services'].queryset = ServicePage.objects.filter(is_parent=True)
+    
+    # def save(self, commit=True):
+    #     from django.utils.text import slugify
+    #     if self.cleaned_data.get("next_status"):
+    #         self.instance.status = self.cleaned_data["next_status"]
+    #     if not self.instance.slug:
+    #         self.instance.slug = slugify(self.cleaned_data["title"])[:50]
+    #     return super().save(commit)
+
     def save(self, commit=True):
         from django.utils.text import slugify
         if self.cleaned_data.get("next_status"):
             self.instance.status = self.cleaned_data["next_status"]
         if not self.instance.slug:
             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-        return super().save(commit)
+        instance = super().save(commit=False)
+        if commit:
+            instance.save()
+            self.instance.parent_services.set(self.cleaned_data['parent_services'])
+            self.instance.child_services.set(self.cleaned_data['child_services'])
+            self.save_m2m()
+        return instance
 
 # class BlogForm(forms.ModelForm):
 #     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
@@ -723,6 +756,61 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
 
+
+# @admin.register(ServicePage)
+# class ServicePageAdmin(admin.ModelAdmin):
+#     search_fields = ['title']
+#     prepopulated_fields = {"slug": ("title",)}
+#     list_display = ('title', 'slug', 'is_parent')
+#     list_filter = ('is_parent',)
+
+@admin.register(ServicePage)
+class ServicePageAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "is_parent",
+    )
+    search_fields = ("title",)
+    fieldsets = (
+        ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
+        (
+            "Banner",
+            {"fields": ("title", "sub_title", "banner_query", "slug", "description")},
+        ),
+        ("Explore Our Services", {"fields": ("icon", "feature_image")}),
+        ("Menu", {"fields": ("menu_title",)}),
+        ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
+        (
+            "Development Service Process",
+            {
+                "fields": (
+                    "development_services_title",
+                    "development_services_sub_title",
+                )
+            },
+        ),
+        (
+            "Comparative Analysis",
+            {
+                "fields": (
+                    "comparative_analysis_title",
+                    "comparative_analysis_sub_title",
+                )
+            },
+        ),
+        ("FAQ", {"fields": ("faq_short_description",)}),
+    )
+    prepopulated_fields = {"slug": ("title",)}
+    inlines = [
+        DiscoverOurServiceInline,
+        AdditionalServiceContentInline,
+        DevelopmentServiceProcessInline,
+        ComparativeAnalysisInline,
+        FAQQuestionInline,
+        ServiceMetaDataInline,
+    ]
+    list_per_page = 20
+
 @admin.register(Blog)
 class BlogAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -750,7 +838,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     search_fields = ("title",)
     date_hierarchy = "created_at"
     # autocomplete_fields = ["category", "tag"]
-    autocomplete_fields = ["industry_details", "tag"]  # Updated to industry_details
+    autocomplete_fields = ["industry_details", "category", "tag", "parent_services", "child_services"]  # Updated to industry_details
     list_display = (
         "title",
         "author",
@@ -769,8 +857,9 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "image",
         # "video",
         "youtube_link",
-        # "category",
+        "category",
         "industry_details",  # Updated to industry_details
+        ("parent_services", "child_services"),  # Display side by side
         # "tag",
         # "short_description",
         "is_featured",
@@ -785,7 +874,22 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_per_page = 20
 
     class Media:
-        js = ("js/blog_post_field_escape.js",)
+        js = ("js/blog_post_field_escape.js", "js/service_filter.js")
+
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # --- NEW CODE START: Add child_services data for JavaScript ---
+        context['child_services'] = ServicePage.objects.filter(is_parent=False).values('id', 'title', 'parent_id')
+        # --- NEW CODE END ---
+        return context
+    
+    def get_form(self, request, obj=None, **kwargs):
+        kwargs['form'] = BlogForm
+        form = super().get_form(request, obj, **kwargs)
+        form.request = request
+        form.change = obj is not None
+        return form
 
     # @admin.action(description="Deactivate selected blogs")
     # def unapprove_selected(self, request, queryset):
@@ -874,8 +978,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                         "id",
                         "pk",
                         "slug",
+                        "category",
                         "industry_details",  # Updated to industry_details
                         "tag",
+                        "parent_services",
+                        "child_services",
                         "created_at",
                         "updated_at",
                     ],
@@ -913,14 +1020,19 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     blogcontext.save()
 
                 # Now, add the many-to-many relationships
-                # for category in blog.category.all():
-                #     cloned_blog.category.add(category)
+                for category in blog.category.all():
+                    cloned_blog.category.add(category)
 
                 for industry in blog.industry_details.all():  # Updated to industry_details
                     cloned_blog.industry_details.add(industry)
 
                 for tag in blog.tag.all():
                     cloned_blog.tag.add(tag)
+
+                for parent_service in blog.parent_services.all():
+                    cloned_blog.parent_services.add(parent_service)
+                for child_service in blog.child_services.all():
+                    cloned_blog.child_services.add(child_service)
 
                 cloned_blogs.append(cloned_blog)
 
@@ -954,12 +1066,12 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         else:
             return querySet.filter(created_by=user)
 
-    def get_form(self, request, obj=None, **kwargs):
-        kwargs['form'] = BlogForm
-        form = super().get_form(request, obj, **kwargs)
-        form.request = request
-        form.change = obj is not None
-        return form
+    # def get_form(self, request, obj=None, **kwargs):
+    #     kwargs['form'] = BlogForm
+    #     form = super().get_form(request, obj, **kwargs)
+    #     form.request = request
+    #     form.change = obj is not None
+    #     return form
 
     def get_fields(self, request, obj):
         fields = super().get_fields(request, obj)

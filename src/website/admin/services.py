@@ -48,49 +48,50 @@ class FAQQuestionInline(admin.TabularInline):
 #     search_fields = ("title",)
 
 
-@admin.register(ServicePage)
-class ServicePageAdmin(admin.ModelAdmin):
-    list_display = (
-        "title",
-        "is_parent",
-    )
-    search_fields = ("title",)
-    fieldsets = (
-        ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
-        (
-            "Banner",
-            {"fields": ("title", "sub_title", "banner_query", "slug", "description")},
-        ),
-        ("Explore Our Services", {"fields": ("icon", "feature_image")}),
-        ("Menu", {"fields": ("menu_title",)}),
-        ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
-        (
-            "Development Service Process",
-            {
-                "fields": (
-                    "development_services_title",
-                    "development_services_sub_title",
-                )
-            },
-        ),
-        (
-            "Comparative Analysis",
-            {
-                "fields": (
-                    "comparative_analysis_title",
-                    "comparative_analysis_sub_title",
-                )
-            },
-        ),
-        ("FAQ", {"fields": ("faq_short_description",)}),
-    )
-    prepopulated_fields = {"slug": ("title",)}
-    inlines = [
-        DiscoverOurServiceInline,
-        AdditionalServiceContentInline,
-        DevelopmentServiceProcessInline,
-        ComparativeAnalysisInline,
-        FAQQuestionInline,
-        ServiceMetaDataInline,
-    ]
-    list_per_page = 20
+
+# @admin.register(ServicePage)
+# class ServicePageAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "title",
+#         "is_parent",
+#     )
+#     search_fields = ("title",)
+#     fieldsets = (
+#         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
+#         (
+#             "Banner",
+#             {"fields": ("title", "sub_title", "banner_query", "slug", "description")},
+#         ),
+#         ("Explore Our Services", {"fields": ("icon", "feature_image")}),
+#         ("Menu", {"fields": ("menu_title",)}),
+#         ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
+#         (
+#             "Development Service Process",
+#             {
+#                 "fields": (
+#                     "development_services_title",
+#                     "development_services_sub_title",
+#                 )
+#             },
+#         ),
+#         (
+#             "Comparative Analysis",
+#             {
+#                 "fields": (
+#                     "comparative_analysis_title",
+#                     "comparative_analysis_sub_title",
+#                 )
+#             },
+#         ),
+#         ("FAQ", {"fields": ("faq_short_description",)}),
+#     )
+#     prepopulated_fields = {"slug": ("title",)}
+#     inlines = [
+#         DiscoverOurServiceInline,
+#         AdditionalServiceContentInline,
+#         DevelopmentServiceProcessInline,
+#         ComparativeAnalysisInline,
+#         FAQQuestionInline,
+#         ServiceMetaDataInline,
+#     ]
+#     list_per_page = 20

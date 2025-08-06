@@ -1,0 +1,11 @@
+{% extends "admin/change_form.html" %}
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+        window.childServicesData = [
+            {% for service in child_services %}
+                {id: {{ service.id }}, title: "{{ service.title|escapejs }}", parent_id: {{ service.parent_id|default:"null" }}},
+            {% endfor %}
+        ];
+    </script>
+{% endblock %}

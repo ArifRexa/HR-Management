@@ -16,6 +16,7 @@ from employee.models import Employee
 from project_management.models import Client, Country, Project, Technology
 from website.models_v2.hire_resources import HireResourcePage
 from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.services import ServicePage
 
 from .hire_models import *  # noqa
 
@@ -121,9 +122,21 @@ class Blog(AuthorMixin, TimeStampMixin):
     youtube_link = models.URLField(
         null=True, blank=True, verbose_name="Banner Video Link"
     )
-    # category = models.ManyToManyField(Category, related_name="categories")
+    category = models.ManyToManyField(Category, related_name="categories")
     industry_details = models.ManyToManyField(ServeCategory, related_name="blogs", blank=True, verbose_name="Industry")
-
+    parent_services = models.ManyToManyField(
+        ServicePage,
+        related_name="blogs_as_parent",
+        limit_choices_to={"is_parent": True},
+        verbose_name="Parent Services"
+    )
+    child_services = models.ManyToManyField(
+        ServicePage,
+        related_name="blogs_as_child",
+        verbose_name="Child Services",
+        limit_choices_to={"is_parent": False},
+        blank=True
+    )
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
@@ -160,6 +173,14 @@ class Blog(AuthorMixin, TimeStampMixin):
                 raise ValidationError(
                     "Only up to 3 blogs can be featured.You have already added more than 3"
                 )
+        
+        if self.child_services.exists():
+            selected_parents = set(self.parent_services.values_list('id', flat=True))
+            for child in self.child_services.all():
+                if child.parent_id not in selected_parents:
+                    raise ValidationError(
+                        f"Child service '{child.title}' must belong to one of the selected parent services."
+                    )
 
     class Meta:
         permissions = [
