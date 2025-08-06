@@ -1543,6 +1543,7 @@ class CareerBannerInline(BaseInline):
 
 @admin.register(PageBanner)
 class PageBannerAdmin(admin.ModelAdmin):
+    list_display = ("title",)
     inlines = [
         HomeBannerBannerInline,
         WhyWeAreBannerInline,
@@ -1611,6 +1612,6 @@ class PublicImageAdmin(admin.ModelAdmin):
     list_display = ["title", "image"]
 
 
-@admin.register(PlagiarismInfo)
-class PlagiarismInfoAdmin(admin.ModelAdmin):
-    list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
+# @admin.register(PlagiarismInfo)
+# class PlagiarismInfoAdmin(admin.ModelAdmin):
+#     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
