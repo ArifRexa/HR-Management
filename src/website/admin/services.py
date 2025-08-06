@@ -42,10 +42,10 @@ class FAQQuestionInline(admin.TabularInline):
     extra = 1
 
 
-@admin.register(ServiceCriteria)
-class ServiceCriteriaAdmin(admin.ModelAdmin):
-    list_display = ("title",)
-    search_fields = ("title",)
+# @admin.register(ServiceCriteria)
+# class ServiceCriteriaAdmin(admin.ModelAdmin):
+#     list_display = ("title",)
+#     search_fields = ("title",)
 
 
 @admin.register(ServicePage)
