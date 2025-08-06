@@ -23,6 +23,7 @@ from mptt.admin import MPTTModelAdmin
 # Register your models here.
 from employee.models.employee import Employee
 from project_management.models import ProjectHour
+from website.admin.industries_we_serve import ApplicationAreasInline, IndustryMetadataInline
 from website.models import (
     CTA,
     FAQ,
@@ -110,6 +111,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
+from website.models_v2.industries_we_serve import ServeCategory
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -694,6 +696,33 @@ class BlogSEOEssentialInline(nested_admin.NestedStackedInline):
     # form = BlogSEOEssentialForm
 
 
+class BlogIndustryFilter(admin.SimpleListFilter):
+    title = "Industry"
+    parameter_name = "industry_details__id__exact"
+    def lookups(self, request, model_admin):
+        industries = ServeCategory.objects.annotate(total_blog=Count("blogs")).all()
+        lookup_list = []
+        for industry in list(industries):
+            if industry.total_blog == 0:
+                lookup_list.append((industry.pk, industry.title))
+            else:
+                lookup_list.append(
+                    (industry.pk, f"{industry.title} ({industry.total_blog})")
+                )
+        return tuple(lookup_list)
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(industry_details__id__exact=self.value())
+        return queryset
+
+@admin.register(ServeCategory)
+class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
+    search_fields = ['title']
+    list_display = ('title', 'slug',)
+    inlines = [ApplicationAreasInline,IndustryMetadataInline]
+    prepopulated_fields = {"slug": ("title",)}
+    list_filter = ('title',)
+
 @admin.register(Blog)
 class BlogAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -720,7 +749,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
     search_fields = ("title",)
     date_hierarchy = "created_at"
-    autocomplete_fields = ["category", "tag"]
+    # autocomplete_fields = ["category", "tag"]
+    autocomplete_fields = ["industry_details", "tag"]  # Updated to industry_details
     list_display = (
         "title",
         "author",
@@ -739,7 +769,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "image",
         # "video",
         "youtube_link",
-        "category",
+        # "category",
+        "industry_details",  # Updated to industry_details
         # "tag",
         # "short_description",
         "is_featured",
@@ -750,7 +781,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "hightlighted_text",
     )
     form = BlogForm
-    list_filter = ("status", BlogCategoryFilter, ActiveEmployeeFilter)
+    list_filter = ("status", BlogIndustryFilter, ActiveEmployeeFilter)
     list_per_page = 20
 
     class Media:
@@ -843,7 +874,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                         "id",
                         "pk",
                         "slug",
-                        "category",
+                        "industry_details",  # Updated to industry_details
                         "tag",
                         "created_at",
                         "updated_at",
@@ -882,8 +913,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     blogcontext.save()
 
                 # Now, add the many-to-many relationships
-                for category in blog.category.all():
-                    cloned_blog.category.add(category)
+                # for category in blog.category.all():
+                #     cloned_blog.category.add(category)
+
+                for industry in blog.industry_details.all():  # Updated to industry_details
+                    cloned_blog.industry_details.add(industry)
 
                 for tag in blog.tag.all():
                     cloned_blog.tag.add(tag)

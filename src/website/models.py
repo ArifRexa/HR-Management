@@ -15,6 +15,7 @@ from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 from project_management.models import Client, Country, Project, Technology
 from website.models_v2.hire_resources import HireResourcePage
+from website.models_v2.industries_we_serve import ServeCategory
 
 from .hire_models import *  # noqa
 
@@ -120,7 +121,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     youtube_link = models.URLField(
         null=True, blank=True, verbose_name="Banner Video Link"
     )
-    category = models.ManyToManyField(Category, related_name="categories")
+    # category = models.ManyToManyField(Category, related_name="categories")
+    industry_details = models.ManyToManyField(ServeCategory, related_name="blogs", blank=True, verbose_name="Industry")
+
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)

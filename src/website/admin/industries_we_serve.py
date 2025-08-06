@@ -16,11 +16,11 @@ class IndustryMetadataInline(nested_admin.NestedStackedInline):
     extra = 1
     inlines = [IndustryKeywordInline]
 
-@admin.register(ServeCategory)
-class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
-    list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline,IndustryMetadataInline]
-    prepopulated_fields = {'slug': ('title',)}
+# @admin.register(ServeCategory)
+# class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
+#     list_display = ('title', 'slug',)
+#     inlines = [ApplicationAreasInline,IndustryMetadataInline]
+#     prepopulated_fields = {'slug': ('title',)}
 
 class ServeCategoryInline(admin.TabularInline):
     model = IndustryServe.serve_categories.through
