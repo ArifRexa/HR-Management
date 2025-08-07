@@ -63,9 +63,23 @@
 
             <div class="label">Excuse Acts</div>
             <div class="value">{{ note.excuse_acts|default:"N/A" }}</div>
-
+            {% if note.action_taken %}
             <div class="label">Action Taken</div>
             <div class="value">{{ note.action_taken|default:"N/A" }}</div>
+            {% endif %}
+
+            {% if include_attachments and note.excusenoteattachment_set.all %}
+                <p><strong>Attachments:</strong></p>
+                <ul>
+                    {% for attachment in note.excusenoteattachment_set.all %}
+                        <li>
+                            <a href="{{ host }}{{ attachment.attachment.url }}">
+                                {{ attachment.attachment.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
         {% if not forloop.last %}
             <div class="record-separator"></div>
