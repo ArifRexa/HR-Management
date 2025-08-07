@@ -140,7 +140,7 @@ TEMPLATES = [
                 "config.context_processors.employees.can_show_permanent_increment",
                 "config.context_processors.employees.all_notices",
                 "config.context_processors.employees.unread_inbox",
-                "client_management.context_processors.get_all_meetings",
+                # "client_management.context_processors.get_all_meetings",
             ],
         },
     },

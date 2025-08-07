@@ -1,4 +1,5 @@
 from ast import mod
+from collections import defaultdict
 import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
@@ -464,50 +465,55 @@ class Employee(TimeStampMixin, AuthorMixin):
         from project_management.models import EmployeeProjectHour
 
         today = timezone.now().date()
-
-        # Calculate the most recent Thursday
         days_since_thursday = (today.weekday() - 4) % 7
         most_recent_thursday = today - timedelta(days=days_since_thursday)
 
-        weekly_totals = []
-        total_sum = 0.0  # Initialize total sum of hours
-
-        # Calculate weekly expected hours
         weekly_expected_hour = (
             int(self.monthly_expected_hours / 4) if self.monthly_expected_hours else 0
         )
 
-        # Calculate the total hours for each of the last four weeks
+        # Start of 4th week before most recent Thursday (i.e. 4 weeks ago Friday)
+        start_date = most_recent_thursday - timedelta(weeks=4) + timedelta(days=1)
+
+        # Fetch all hours for last 4 weeks in a single query
+        hours_qs = (
+            EmployeeProjectHour.objects
+            .filter(
+                employee=self,
+                project_hour__date__gte=start_date,
+                project_hour__date__lte=most_recent_thursday,
+            )
+            .exclude(project_hour__hour_type="bonus")
+            .values("project_hour__date")
+            .annotate(total=Coalesce(Sum("hours"), 0.0))
+            .order_by("project_hour__date")
+        )
+
+        # Organize totals by week ending (Thursday)
+        weekly_data = defaultdict(float)
+
+        for entry in hours_qs:
+            entry_date = entry["project_hour__date"]
+            # Calculate corresponding Thursday (end of week)
+            days_to_thursday = (4 - entry_date.weekday()) % 7
+            week_thursday = entry_date + timedelta(days=days_to_thursday)
+            weekly_data[week_thursday] += entry["total"]
+
+        # Build the result for the last 4 weeks (from most recent Thursday going back)
+        weekly_totals = []
+        total_sum = 0.0
+
         for i in range(4):
-            start_of_range = (
-                most_recent_thursday - timedelta(weeks=i + 1) + timedelta(days=1)
-            )  # Start of the week (Friday)
-            end_of_range = most_recent_thursday - timedelta(
-                weeks=i
-            )  # End of the week (Thursday)
-
-            weekly_total = (
-                EmployeeProjectHour.objects.filter(
-                    employee=self,
-                    project_hour__date__range=[start_of_range, end_of_range],
-                )
-                .exclude(project_hour__hour_type="bonus")
-                .aggregate(total_hours=Coalesce(Sum("hours"), 0.0))
-                .get("total_hours")
-                or 0.0
+            week_thursday = most_recent_thursday - timedelta(weeks=i)
+            total = weekly_data.get(week_thursday, 0.0)
+            total_sum += total
+            display = (
+                f"<span style='color: red;'>{int(total)}</span>"
+                if total < weekly_expected_hour
+                else str(int(total))
             )
+            weekly_totals.append(display)
 
-            # Check if the weekly total is less than the weekly expected hours
-            weekly_total_display = (
-                f"<span style='color: red;'>{int(weekly_total)}</span>"
-                if weekly_total < weekly_expected_hour
-                else str(int(weekly_total))
-            )
-
-            weekly_totals.append(weekly_total_display)
-            total_sum += weekly_total
-
-        # Join the weekly totals into a comma-separated string
         formatted_totals = ",".join(weekly_totals)
 
         return formatted_totals, int(total_sum)

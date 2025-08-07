@@ -37,7 +37,7 @@ from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from project_management.models import DailyProjectUpdate, Project
 from settings.models import Announcement, Notice
-
+from collections import defaultdict
 
 def formal_summery(request):
     if not request.path == "/admin/":
@@ -45,7 +45,7 @@ def formal_summery(request):
     if not request.user.is_authenticated:
         return {}
 
-    employee_id = request.user.employee.id
+    employee = request.user.employee
 
     employee_formal_summery = EmployeeNearbySummery()
 
@@ -75,10 +75,12 @@ def formal_summery(request):
         .order_by("-percentage")
         .values("skill__title")[:1]
     )
+    employee_filter = Q(employee__active=True) & Q(employee__project_eligibility=True)
+    if not employee.operation:
+        employee_filter &=Q(employee=employee)
     employee_projects = (
         EmployeeProject.objects.filter(
-            employee__active=True,
-            employee__project_eligibility=True,
+            employee_filter
         )
         .exclude(employee_id__in=management_ids)
         .annotate(
@@ -128,9 +130,9 @@ def formal_summery(request):
         employee_projects = employee_projects.order_by(*order_by_list)
 
     current_month_feedback_done = True
-    if str(employee_id) not in management_ids:
+    if str(employee.id) not in management_ids:
         current_month_feedback_done = EmployeeFeedback.objects.filter(
-            employee_id=employee_id,
+            employee_id=employee.id,
             created_at__date__month=timezone.now().date().month,
         ).exists()
 
@@ -148,7 +150,7 @@ def formal_summery(request):
         "permanents_count": permanents_count,
         "anniversaries": anniversaries,
         "anniversaries_count": anniversaries_count,
-        "is_management": str(employee_id) in management_ids,
+        "is_management": str(employee.id) in management_ids,
         # TODO: Need Optimization
         "birthdays": employee_formal_summery.birthdays,
         "new_employees": employee_formal_summery.new_employee,
@@ -184,38 +186,44 @@ def total_attendance_fine(request):
 
 
 def total_late_entry_count(request):
+    current_date = timezone.now()
+    current_month = current_date.month
+    current_year = current_date.year
+
+    last_month_date = current_date - timedelta(days=30)
+    last_month = last_month_date.month
+    last_year = last_month_date.year
+
+    current_month_name = current_date.strftime("%b").lower()
+    last_month_name = last_month_date.strftime("%b").lower()
+
     if not request.user.is_authenticated:
-        current_date = timezone.now()
-        current_month_name = current_date.strftime("%b").lower()
-        last_month_date = current_date - timedelta(days=30)
-        last_month_name = last_month_date.strftime("%b").lower()
         html = f"0 ({current_month_name})<br>0 ({last_month_name})"
         return {"is_super": False, "late_attendance_count": format_html(html)}
 
-    obj = getattr(request.user, "employee", None)
-    current_date = timezone.now()
-    current_month = current_date.month
-    last_month = current_date.month - 1 or 12
-    current_year = current_date.year
-    last_year = current_year if last_month != 12 else current_year - 1
-
-    current_month_name = current_date.strftime("%b").lower()
-    last_month_date = current_date - timedelta(days=30)
-    last_month_name = last_month_date.strftime("%b").lower()
-
-    if not obj:
+    employee = getattr(request.user, "employee", None)
+    if not employee:
         html = f"0 ({current_month_name})<br>0 ({last_month_name})"
-    else:
-        current_late_count = LateAttendanceFine.objects.filter(
-            employee=obj, month=current_month, year=current_year
-        ).count()
-        last_late_count = LateAttendanceFine.objects.filter(
-            employee=obj, month=last_month, year=last_year
-        ).count()
-        html = f"{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})"
+        return {"is_super": request.user.is_superuser, "late_attendance_count": format_html(html)}
 
-    is_super = request.user.is_superuser
-    return {"is_super": is_super, "late_attendance_count": format_html(html)}
+    # Single DB query for both months
+    fines = LateAttendanceFine.objects.filter(
+        employee=employee,
+        year__in=[current_year, last_year],
+        month__in=[current_month, last_month]
+    ).values("month", "year")
+
+    # Count occurrences
+    count_map = defaultdict(int)
+    for fine in fines:
+        key = (fine["month"], fine["year"])
+        count_map[key] += 1
+
+    current_late_count = count_map.get((current_month, current_year), 0)
+    last_late_count = count_map.get((last_month, last_year), 0)
+
+    html = f"{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})"
+    return {"is_super": request.user.is_superuser, "late_attendance_count": format_html(html)}
 
 
 def employee_status_form(request):
@@ -531,7 +539,8 @@ def employee_project_list(request):
         proj = cache.get(key)
         if proj is None:
             try:
-                emp = Employee.objects.select_related("user").prefetch_related(
+                if user.employee.operation:
+                    emp = Employee.objects.filter(user=user).select_related("user").prefetch_related(
                     # "employeeproject_set__project",
                     Prefetch(
                         "employeeproject__project",
@@ -539,6 +548,15 @@ def employee_project_list(request):
                         to_attr="project_list",
                     )
                 )
+                else:
+                    emp = Employee.objects.select_related("user").prefetch_related(
+                        # "employeeproject_set__project",
+                        Prefetch(
+                            "employeeproject__project",
+                            queryset=Project.objects.all(),
+                            to_attr="project_list",
+                        )
+                    )
                 p = getattr(emp.get(user=user), "project_list", [])
                 print(p)
                 emp = emp.get(user=user)
