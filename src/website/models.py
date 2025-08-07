@@ -19,6 +19,7 @@ from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 
 from .hire_models import *  # noqa
+from smart_selects.db_fields import ChainedManyToManyField
 
 
 class ServiceProcess(models.Model):
@@ -114,6 +115,33 @@ class BlogSchemaType(models.TextChoices):
     HOWTO = "HowTo", "How-To"
 
 
+class TechnologyType(TimeStampMixin):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        if Technology.objects.filter(name=self.name).exists():
+            raise ValidationError(f"Technology with name '{self.name}' already exists.")
+
+
+class Technology(TimeStampMixin):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+    type = models.ForeignKey(
+        TechnologyType, related_name="technologies", on_delete=models.CASCADE
+    )
+    icon = models.ImageField(upload_to="technology_icons/", null=True, blank=True)
+
+    def clean(self):
+        if Technology.objects.filter(name=self.name).exists():
+            raise ValidationError(f"Technology with name '{self.name}' already exists.")
+
+    def __str__(self):
+        return self.name
+    
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = BlogSlugField(unique=True)
@@ -137,6 +165,22 @@ class Blog(AuthorMixin, TimeStampMixin):
         limit_choices_to={"is_parent": False},
         blank=True
     )
+    technology_type = models.ForeignKey(
+        TechnologyType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Technology Type",
+    )
+    technology = ChainedManyToManyField(
+        Technology,
+        chained_field="technology_type",  # Field on Blog model to chain with
+        chained_model_field="type",  # Field on Technology model to filter by
+        auto_choose=False,  # Allow multiple selections without auto-choosing
+        verbose_name="Technologies",
+        blank=True
+    )
+
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)

@@ -103,7 +103,9 @@ from website.models import (
     ServiceTechnology,
     SpecialProjectsTitle,
     Tag,
+    Technology,
     TechnologyTitle,
+    TechnologyType,
     TextualTestimonialTitle,
     VideoTestimonial,
     VideoTestimonialTitle,
@@ -811,6 +813,21 @@ class ServicePageAdmin(admin.ModelAdmin):
     ]
     list_per_page = 20
 
+@admin.register(TechnologyType)
+class TechnologyTypeAdmin(admin.ModelAdmin):
+    list_display = ("name", )
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = ("name",)
+    list_filter = ("name",)
+
+@admin.register(Technology)
+class TechnologyAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug")
+    prepopulated_fields = {"slug": ("name",)}
+    search_fields = ("name",)
+
+
+
 @admin.register(Blog)
 class BlogAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -838,7 +855,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     search_fields = ("title",)
     date_hierarchy = "created_at"
     # autocomplete_fields = ["category", "tag"]
-    autocomplete_fields = ["industry_details", "category", "tag", "parent_services", "child_services"]  # Updated to industry_details
+    autocomplete_fields = ["industry_details", "category", "tag", "parent_services", "child_services", "technology"]  # Updated to industry_details
     list_display = (
         "title",
         "author",
@@ -860,6 +877,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "category",
         "industry_details",  # Updated to industry_details
         ("parent_services", "child_services"),  # Display side by side
+        ("technology_type",
+        "technology"),
         # "tag",
         # "short_description",
         "is_featured",
@@ -983,6 +1002,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                         "tag",
                         "parent_services",
                         "child_services",
+                        "technology",
                         "created_at",
                         "updated_at",
                     ],
@@ -1033,6 +1053,9 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                     cloned_blog.parent_services.add(parent_service)
                 for child_service in blog.child_services.all():
                     cloned_blog.child_services.add(child_service)
+
+                for technology in blog.technology.all():
+                    cloned_blog.technology.add(technology)
 
                 cloned_blogs.append(cloned_blog)
 
