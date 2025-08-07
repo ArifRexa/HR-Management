@@ -19,7 +19,7 @@ class ExcuseNoteAttachmentInline(admin.TabularInline):
 
 @admin.register(ExcuseNote)
 class ExcuseNoteAdmin(admin.ModelAdmin):
-    list_display = ('get_date', 'employee', 'category', 'severity', 'status')
+    list_display = ('get_date', 'employee', 'category', 'severity', 'status', "get_short_excuse_acts")
     search_fields = ('employee__full_name', 'category__title', 'excuse_acts', 'status')
     list_filter = ('status', 'severity', 'category', 'employee' )
     date_hierarchy = 'created_at'
@@ -43,11 +43,12 @@ class ExcuseNoteAdmin(admin.ModelAdmin):
         # return obj.created_at
 
     
-    @admin.display(description="Excuse/Acts:")
+    @admin.display(description="Excuse/Acts")
     def get_short_excuse_acts(self, obj):
         html_template = get_template('admin/excuse_note/col_excuse_note.html')
         html_content = html_template.render({
             'excuse_acts': obj.excuse_acts,
+            'action_taken': obj.action_taken if obj.action_taken else None,
         })
         return format_html(html_content)
     
