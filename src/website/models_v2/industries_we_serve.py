@@ -19,6 +19,10 @@ class ServeCategory(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = "Industry Detail"
+        verbose_name_plural = "Industry Details"
 
 class ApplicationAreas(models.Model):
     serve_category = models.ForeignKey(ServeCategory, related_name='application_areas', on_delete=models.CASCADE)
@@ -40,3 +44,7 @@ class IndustryServe(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = "Industry"
+        verbose_name_plural = "Industries"

@@ -2,11 +2,11 @@ import datetime
 from decimal import Decimal
 import functools
 import operator
-from django.db.models.functions import ExtractMonth, ExtractYear
+from django.db.models.functions import ExtractMonth, ExtractYear, Least
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db import models
-from django.db.models import Q, Case, When, Value, Count, Max, Subquery, OuterRef, Sum
+from django.db.models import Q, Case, When, Value, Count, Max, Subquery, OuterRef, Sum, F
 from django.template.response import TemplateResponse
 from django.utils import timezone
 
@@ -15,7 +15,7 @@ from employee.models import Employee, Leave
 from employee.models.employee import LateAttendanceFine, Observation
 
 from project_management.models import Project
-
+from django.db.models import OuterRef, Sum, Count, Case, When, Value, IntegerField
 
 class FormalView(admin.ModelAdmin):
     def notice_bord(self, request, *args, **kwargs):
@@ -80,12 +80,33 @@ class FormalView(admin.ModelAdmin):
         employee = Employee.objects.get(id=employee_id)
 
         #Calculate Late Attendance Fine
+        # late_fine_subquery = LateAttendanceFine.objects.filter(
+        #         employee_id=OuterRef('employee_id'),  # Match employee
+        #         date__month=OuterRef('month')  # Match month of late fine and salary sheet
+        #         ).values('employee_id').annotate(
+        #             total_fine=Sum('total_late_attendance_fine')
+        #         ).values('total_fine')
+        
+
         late_fine_subquery = LateAttendanceFine.objects.filter(
                 employee_id=OuterRef('employee_id'),  # Match employee
                 date__month=OuterRef('month')  # Match month of late fine and salary sheet
                 ).values('employee_id').annotate(
-                    total_fine=Sum('total_late_attendance_fine')
-                ).values('total_fine')
+                late_count=Count('id'),  # Count late entries
+                total_fine=Case(
+                    # If late_count > 3, calculate fine
+                    When(late_count__gt=3, then=Case(
+                        # For 4th to 6th late entries: min(late_count, 6) - 3 * 80
+                        When(late_count__lte=6, then=(Least(Value(6), F('late_count')) - Value(3)) * Value(80.00)),
+                        # For 7th and above: (min(late_count, 6) - 3) * 80 + (late_count - 6) * 500
+                        When(late_count__gt=6, then=((Least(Value(6), F('late_count')) - Value(3)) * Value(80.00)) + ((F('late_count') - Value(6)) * Value(500.00))),
+                        output_field=IntegerField()
+                    )),
+                    # If late_count <= 3, no fine
+                    default=Value(0),
+                    output_field=IntegerField()
+                )
+            ).values('total_fine')
         
         #Calculate Salary Loan
         salary_loan_subquery = Loan.objects.filter( 

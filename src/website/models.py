@@ -15,8 +15,11 @@ from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 from project_management.models import Client, Country, Project, Technology
 from website.models_v2.hire_resources import HireResourcePage
+from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.services import ServicePage
 
 from .hire_models import *  # noqa
+from smart_selects.db_fields import ChainedManyToManyField
 
 
 class ServiceProcess(models.Model):
@@ -112,6 +115,33 @@ class BlogSchemaType(models.TextChoices):
     HOWTO = "HowTo", "How-To"
 
 
+class TechnologyType(TimeStampMixin):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        if Technology.objects.filter(name=self.name).exists():
+            raise ValidationError(f"Technology with name '{self.name}' already exists.")
+
+
+class Technology(TimeStampMixin):
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(unique=True, null=True, blank=True)
+    type = models.ForeignKey(
+        TechnologyType, related_name="technologies", on_delete=models.CASCADE
+    )
+    icon = models.ImageField(upload_to="technology_icons/", null=True, blank=True)
+
+    def clean(self):
+        if Technology.objects.filter(name=self.name).exists():
+            raise ValidationError(f"Technology with name '{self.name}' already exists.")
+
+    def __str__(self):
+        return self.name
+    
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = BlogSlugField(unique=True)
@@ -121,6 +151,36 @@ class Blog(AuthorMixin, TimeStampMixin):
         null=True, blank=True, verbose_name="Banner Video Link"
     )
     category = models.ManyToManyField(Category, related_name="categories")
+    industry_details = models.ManyToManyField(ServeCategory, related_name="blogs", blank=True, verbose_name="Industry")
+    parent_services = models.ManyToManyField(
+        ServicePage,
+        related_name="blogs_as_parent",
+        limit_choices_to={"is_parent": True},
+        verbose_name="Parent Services"
+    )
+    child_services = models.ManyToManyField(
+        ServicePage,
+        related_name="blogs_as_child",
+        verbose_name="Child Services",
+        limit_choices_to={"is_parent": False},
+        blank=True
+    )
+    technology_type = models.ForeignKey(
+        TechnologyType,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Technology Type",
+    )
+    technology = ChainedManyToManyField(
+        Technology,
+        chained_field="technology_type",  # Field on Blog model to chain with
+        chained_model_field="type",  # Field on Technology model to filter by
+        auto_choose=False,  # Allow multiple selections without auto-choosing
+        verbose_name="Technologies",
+        blank=True
+    )
+
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)
@@ -157,6 +217,14 @@ class Blog(AuthorMixin, TimeStampMixin):
                 raise ValidationError(
                     "Only up to 3 blogs can be featured.You have already added more than 3"
                 )
+        
+        if self.child_services.exists():
+            selected_parents = set(self.parent_services.values_list('id', flat=True))
+            for child in self.child_services.all():
+                if child.parent_id not in selected_parents:
+                    raise ValidationError(
+                        f"Child service '{child.title}' must belong to one of the selected parent services."
+                    )
 
     class Meta:
         permissions = [
@@ -500,8 +568,13 @@ class Brand(models.Model):
 
 # Base model without any fields
 class WebsiteTitle(models.Model):
+    title = models.CharField(max_length=255, null=True, blank=True)
     def __str__(self):
         return f"WebsiteTitle {self.pk}"  # Optional for admin display purposes
+    
+    class Meta:
+        verbose_name = "Website Title"
+        verbose_name_plural = "Website Titles"
 
 
 # Abstract class to reduce repetition
@@ -605,6 +678,7 @@ class BenefitsOfEmploymentTitle(BaseModelTitle):
 
 
 class PageBanner(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
     def __str__(self):
         return str(self.id)
 

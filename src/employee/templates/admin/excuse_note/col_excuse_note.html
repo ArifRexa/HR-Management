@@ -4,5 +4,9 @@
     </div>
     <div class="popover-message">
         {{ excuse_acts | linebreaks }}
+        {% if action_taken %}
+            <div class="label" style="padding: 10px; text-justify: auto;">Action Taken</div>
+            <div class="value" style="padding: 10px; text-justify: auto;">{{ action_taken }}</div>
+        {% endif %}
     </div>
 </div>

@@ -235,43 +235,43 @@ class OnDemandTeamInAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
 
 
-@admin.register(HireResourceContent)
-class HireResourceContentAdmin(HireResourceAdminMixin):
-    inlines = [
-        HireTechnologyInlineAdmin,
-        whyWeAreInlineAdmin,
-    ]
-    list_display = (
-        "resource",
-        "tag",
-        "title",
-        "sub_title",
-        "description",
-    )
-    search_fields = ("title", "sub_title", "tag", "description")
-    fields = (
-        "resource",
-        "service",
-        "pricing",
-        "statistic",
-        "feature",
-        "hire_process",
-        "engagement",
-        "faq",
-        "tag",
-        "title",
-        "slug",
-        "sub_title",
-        "description",
-        "awards",
-        "world_class_talent",
-        "on_demand_team",
-        "quote",
-    )
-    form = HireResourceForm
+# @admin.register(HireResourceContent)
+# class HireResourceContentAdmin(HireResourceAdminMixin):
+#     inlines = [
+#         HireTechnologyInlineAdmin,
+#         whyWeAreInlineAdmin,
+#     ]
+#     list_display = (
+#         "resource",
+#         "tag",
+#         "title",
+#         "sub_title",
+#         "description",
+#     )
+#     search_fields = ("title", "sub_title", "tag", "description")
+#     fields = (
+#         "resource",
+#         "service",
+#         "pricing",
+#         "statistic",
+#         "feature",
+#         "hire_process",
+#         "engagement",
+#         "faq",
+#         "tag",
+#         "title",
+#         "slug",
+#         "sub_title",
+#         "description",
+#         "awards",
+#         "world_class_talent",
+#         "on_demand_team",
+#         "quote",
+#     )
+#     form = HireResourceForm
 
-    def has_module_permission(self, request: HttpRequest) -> bool:
-        return True
+#     def has_module_permission(self, request: HttpRequest) -> bool:
+#         return True
 
 
 @admin.register(HireEngagement)

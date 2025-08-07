@@ -27,7 +27,8 @@ class ExcuseNote(AuthorMixin, TimeStampMixin):
         )
     STATUS = (
         ('pending', 'Pending'),
-        ('resolved', 'Resolved')
+        ('resolved', 'Resolved'),
+        ('note', 'Note'),
     )
     incedent_date = models.DateField(help_text='Date of the incident', null=True, blank=True, verbose_name='incident_date', default=timezone.now)
     reported_by = models.ForeignKey(Employee, on_delete=models.CASCADE, related_name='reported_excuse_notes', null=True, blank=True)
