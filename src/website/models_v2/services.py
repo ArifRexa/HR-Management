@@ -126,7 +126,7 @@ class ServiceFAQQuestion(models.Model):
         ServicePage, related_name="questions", on_delete=models.SET_NULL, null=True
     )
     question = models.CharField(max_length=255)
-    answer = models.TextField()
+    answer = HTMLField()
 
     def __str__(self):
         return self.question

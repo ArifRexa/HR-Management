@@ -146,6 +146,20 @@ class Technology(TimeStampMixin):
         verbose_name = "Technology"
         verbose_name_plural = "Technologies"
         
+class TechnologyFAQ(models.Model):
+    technology = models.ForeignKey(Technology, on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=255)
+    answer = HTMLField()
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for FAQs")
+
+    def __str__(self):
+        return self.question
+
+    class Meta:
+        verbose_name = "Technology FAQ"
+        verbose_name_plural = "Technology FAQs"
+        ordering = ['order']
+
     
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)

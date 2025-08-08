@@ -247,7 +247,7 @@ class TechnologyTypeSerializer(serializers.ModelSerializer):
         model = TechnologyType
         fields = ['name', 'slug']
 
-class TechnologySerializer(serializers.ModelSerializer):
+class NewTechnologySerializer(serializers.ModelSerializer):
     type = TechnologyTypeSerializer(read_only=True)
     
     class Meta:

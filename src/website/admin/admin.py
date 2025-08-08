@@ -105,6 +105,7 @@ from website.models import (
     SpecialProjectsTitle,
     Tag,
     Technology,
+    TechnologyFAQ,
     TechnologyTitle,
     TechnologyType,
     TextualTestimonialTitle,
@@ -828,11 +829,18 @@ class TechnologyTypeAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     list_filter = ("name",)
 
+class TechnologyFAQInline(nested_admin.NestedTabularInline):
+    model = TechnologyFAQ
+    extra = 1  # Number of empty FAQ forms to display by default
+    fields = ('question', 'answer', 'order')
+    ordering = ['order']
+
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
     list_display = ("name", "slug", "type")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
+    inlines = [TechnologyFAQInline]
 
 
 

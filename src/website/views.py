@@ -87,6 +87,7 @@ from website.serializers import (
     LeadershipSerializer,
     LeadSerializer,
     LifeAtMediuswareSerializer,
+    NewTechnologySerializer,
     OfficeLocationSerializer,
     OurAchievementSerializer,
     OurClientsFeedbackSerializer,
@@ -969,10 +970,11 @@ class ContactFormView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+
 # class TechnologyNavigationView(APIView):
 class TechnologyNavigationView(APIView):
     permission_classes = [AllowAny]
-    serializer_class = TechnologySerializer
+    serializer_class = NewTechnologySerializer
     def get(self, request):
         from website.models import Technology
         technologies = Technology.objects.values('name', 'slug')
