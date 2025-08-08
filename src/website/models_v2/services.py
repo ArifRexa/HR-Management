@@ -21,8 +21,8 @@ class ServicePage(TimeStampMixin):
     title = models.CharField(max_length=255)
     h1_title = models.CharField(max_length=255, verbose_name="H1 Title", null=True, blank=True)
     slug = models.SlugField(unique=True)
-    sub_title = models.TextField(verbose_name="H2 Tagline")
-    description = HTMLField(null=True, blank=True, verbose_name="Intro Paragraph")
+    sub_title = models.TextField(verbose_name="Section Title")
+    description = HTMLField(null=True, blank=True, verbose_name="Section Paragraph")
     menu_title = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Menu Title"
     )
