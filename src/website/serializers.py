@@ -80,6 +80,7 @@ from website.models import (
     SpecialProjectsTitle,
     Subscription,
     TechnologyTitle,
+    TechnologyType,
     TextualTestimonialTitle,
     VideoTestimonial,
     VideoTestimonialTitle,
@@ -240,6 +241,19 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
             "metadata",
         )
 
+
+class TechnologyTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyType
+        fields = ['name', 'slug']
+
+class TechnologySerializer(serializers.ModelSerializer):
+    type = TechnologyTypeSerializer(read_only=True)
+    
+    class Meta:
+        from website.models import Technology
+        model = Technology
+        fields = ['name', 'slug', 'type'] 
 
 class ProjectTechnologySerializer(serializers.ModelSerializer):
     technologies = TechnologySerializer(many=True)

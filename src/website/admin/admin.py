@@ -115,7 +115,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.industries_we_serve import ServeCategory, ServiceCategoryFAQ
 from website.models_v2.services import ServicePage
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -751,10 +751,18 @@ class BlogIndustryFilter(admin.SimpleListFilter):
             return queryset.filter(industry_details__id__exact=self.value())
         return queryset
 
+# class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
+#     model = ServiceCategoryFAQ
+#     extra = 1  # Number of empty FAQ forms to display by default
+#     fields = ('question', 'answer', 'order')
+#     ordering = ['order']
+
+
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
+    # inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline]
     inlines = [ApplicationAreasInline,IndustryMetadataInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)

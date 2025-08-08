@@ -24,6 +24,22 @@ class ServeCategory(models.Model):
         verbose_name = "Industry Detail"
         verbose_name_plural = "Industry Details"
 
+class ServiceCategoryFAQ(models.Model):
+    serve_category = models.ForeignKey(ServeCategory, on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=255)
+    answer = HTMLField()
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for FAQs")
+
+    def __str__(self):
+        return self.question
+
+    class Meta:
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQ's"
+
+        ordering = ['order']
+
+
 class ApplicationAreas(models.Model):
     serve_category = models.ForeignKey(ServeCategory, related_name='application_areas', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)

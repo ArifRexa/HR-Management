@@ -30,6 +30,7 @@ from website.views import (
     ProjectDetails,
     EmployeeList,
     SubscriptionModelViewSet,
+    TechnologyNavigationView,
     VideoTestimonialListAPIView,
     index,
     EmployeeDetails,
@@ -252,6 +253,7 @@ urlpatterns = [
     path("plagiarism/webhook/export/", plagiarism_webhook_export, name="plagiarism_webhook_export"),
     path("export/<slug:scan_id>/<slug:export_id>/pdf-report/", export_pdf, name="pdf_export"),
     path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
+    path("website/technology-navigation/", TechnologyNavigationView.as_view(), name="technology_navigation"),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
