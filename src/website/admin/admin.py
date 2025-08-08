@@ -751,19 +751,18 @@ class BlogIndustryFilter(admin.SimpleListFilter):
             return queryset.filter(industry_details__id__exact=self.value())
         return queryset
 
-# class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
-#     model = ServiceCategoryFAQ
-#     extra = 1  # Number of empty FAQ forms to display by default
-#     fields = ('question', 'answer', 'order')
-#     ordering = ['order']
+class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
+    model = ServiceCategoryFAQ
+    extra = 1  # Number of empty FAQ forms to display by default
+    fields = ('question', 'answer', 'order')
+    ordering = ['order']
 
 
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    # inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline]
-    inlines = [ApplicationAreasInline,IndustryMetadataInline]
+    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
 
@@ -831,7 +830,7 @@ class TechnologyTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug")
+    list_display = ("name", "slug", "type")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
 

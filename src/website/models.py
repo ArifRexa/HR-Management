@@ -142,6 +142,11 @@ class Technology(TimeStampMixin):
     def __str__(self):
         return self.name
     
+    class Meta:
+        verbose_name = "Technology"
+        verbose_name_plural = "Technologies"
+        
+    
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = BlogSlugField(unique=True)
