@@ -9,6 +9,7 @@ from website.views import (
     ClientListAPIView,
     ClientLogoListView,
     ClientReviewListAPIView,
+    ContactFormView,
     ContactModelViewSet,
     EmployeeTestimonialListAPIView,
     GalleryListView,
@@ -250,6 +251,7 @@ urlpatterns = [
     path("plagiarism/webhook/", plagiarism_webhook, name="plagiarism_webhook"),
     path("plagiarism/webhook/export/", plagiarism_webhook_export, name="plagiarism_webhook_export"),
     path("export/<slug:scan_id>/<slug:export_id>/pdf-report/", export_pdf, name="pdf_export"),
+    path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

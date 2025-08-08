@@ -47,6 +47,7 @@ from website.models import (
     Brand,
     Category,
     Contact,
+    ContactForm,
     EmployeePerspective,
     EmployeeTestimonial,
     FAQHomeTitle,
@@ -1321,6 +1322,33 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contact
         fields = "__all__"
 
+class ContactFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactForm
+        fields = "__all__"
+
+    def validate(self, data):
+        form_type = data.get('form_type')
+        full_name = data.get('full_name')
+        email = data.get('email')
+        service_require = data.get('service_require')
+        client_query = data.get('client_query')
+
+        # Common required fields
+        if not full_name:
+            raise serializers.ValidationError({"full_name": "This field is required."})
+        if not email:
+            raise serializers.ValidationError({"email": "This field is required."})
+
+        # Conditional required fields based on form_type
+        if form_type == 'discuss':
+            if not service_require:
+                raise serializers.ValidationError({"service_require": "This field is required for Discuss Service form type."})
+        elif form_type == 'general':
+            if not client_query:
+                raise serializers.ValidationError({"client_query": "This field is required for General Inquiry form type."})
+
+        return data
 
 class InquirySerializer(serializers.ModelSerializer):
     class Meta:

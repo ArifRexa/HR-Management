@@ -55,6 +55,7 @@ from website.models import (
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
+    ContactForm,
     CSRBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
@@ -777,7 +778,7 @@ class ServicePageAdmin(admin.ModelAdmin):
         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
         (
             "Banner",
-            {"fields": ("title", "sub_title", "banner_query", "slug", "description")},
+            {"fields": ("title", "slug", "h1_title", "sub_title", "description")},
         ),
         ("Explore Our Services", {"fields": ("icon", "feature_image")}),
         ("Menu", {"fields": ("menu_title",)}),
@@ -1785,3 +1786,9 @@ class PublicImageAdmin(admin.ModelAdmin):
 # @admin.register(PlagiarismInfo)
 # class PlagiarismInfoAdmin(admin.ModelAdmin):
 #     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
+
+
+@admin.register(ContactForm)
+class ContactFormAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "email", "form_type", "created_at")
+    readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
