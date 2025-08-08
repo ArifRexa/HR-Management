@@ -974,6 +974,22 @@ class Contact(BaseContact):
         return self.name
 
 
+class ContactForm(TimeStampMixin):
+    TYPE_CHOICES = (
+        ("general", "General Inquiry"),
+        ("discuss", "Discuss Service"),
+    )
+    form_type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="discuss")
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    service_require = models.CharField(max_length=255, null=True, blank=True)
+    project_details = models.TextField(null=True, blank=True)
+    client_query = models.TextField(null=True, blank=True)  # Client Query
+    attached_file = models.FileField(upload_to="contact_files/", null=True, blank=True)
+
+
+
+
 class Inquiry(BaseContact):
     def __str__(self):
         return self.name

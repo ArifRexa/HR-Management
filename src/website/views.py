@@ -13,6 +13,8 @@ from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from drf_yasg.utils import swagger_auto_schema
 
 from employee.models import Employee, EmployeeNOC, Skill
 from project_management.models import (
@@ -34,6 +36,7 @@ from website.models import (
     Brand,
     Category,
     Contact,
+    ContactForm,
     EmployeePerspective,
     EmployeeTestimonial,
     Gallery,
@@ -68,6 +71,7 @@ from website.serializers import (
     ClientLogoSerializer,
     ClientReviewSerializer,
     ClientSerializer,
+    ContactFormSerializer,
     ContactSerializer,
     DesignationSetSerializer,
     EmployeeDetailsSerializer,
@@ -945,3 +949,20 @@ class InquiryModelViewSet(viewsets.ModelViewSet):
 class SubscriptionModelViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
+
+
+class ContactFormView(APIView):
+    serializer_class = ContactFormSerializer
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        request_body=ContactFormSerializer,
+        tags=["Contact"],
+        operation_description="Create a new contact form entry"
+    )
+    def post(self, request):
+        serializer = ContactFormSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
