@@ -22,19 +22,19 @@ class ServicePage(TimeStampMixin):
     h1_title = models.CharField(max_length=255, verbose_name="H1 Title", null=True, blank=True)
     slug = models.SlugField(unique=True)
     sub_title = models.TextField(verbose_name="Section Title")
-    description = HTMLField(null=True, blank=True, verbose_name="Section Paragraph")
+    description = HTMLField(null=True, blank=True, verbose_name="Section Description")
     menu_title = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Menu Title"
+        max_length=255, null=True, blank=True, verbose_name="Section Title"
     )
     # image = models.ImageField(upload_to="service_page_image")
     banner_query = models.CharField(max_length=255)
-    development_services_title = models.CharField(max_length=255, verbose_name="Title")
-    development_services_sub_title = models.TextField(verbose_name="Sub Title")
+    development_services_title = models.CharField(max_length=255, verbose_name="Section Title")
+    development_services_sub_title = models.TextField(verbose_name="Section Description")
     faq_short_description = models.TextField(verbose_name="Short Description")
-    comparative_analysis_title = models.CharField(max_length=255, verbose_name="Title")
-    comparative_analysis_sub_title = models.TextField(verbose_name="Sub Title")
+    comparative_analysis_title = models.CharField(max_length=255, verbose_name="Section Title")
+    comparative_analysis_sub_title = models.TextField(verbose_name="Section Description")
     why_choose_us_sub_title = models.TextField(
-        verbose_name="Sub Title", null=True, blank=True
+        verbose_name="Section Description", null=True, blank=True
     )
 
     def __str__(self):
@@ -52,8 +52,8 @@ class DiscoverOurService(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    title = models.CharField(max_length=255)
-    short_description = models.TextField()
+    title = models.CharField(max_length=255, verbose_name="Section Title")
+    short_description = models.TextField(verbose_name="Section Description")
     description = HTMLField()
 
     def __str__(self):
@@ -68,7 +68,7 @@ class AdditionalServiceContent(models.Model):
         blank=True,
         on_delete=models.CASCADE,
     )
-    title = models.CharField(max_length=255, null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Section Title")
     content = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="service_content_image", null=True, blank=True)
 
@@ -83,7 +83,7 @@ class DevelopmentServiceProcess(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, verbose_name="Section Title")
     short_description = models.TextField()
     icon = models.ImageField(upload_to="development_service_icon")
 
@@ -140,7 +140,7 @@ class ServiceMetaData(models.Model):
     services = models.OneToOneField(
         ServicePage, related_name="service_meta_data", on_delete=models.CASCADE
     )
-    title = models.CharField(max_length=255)
+    title = models.CharField(max_length=255, verbose_name="Section Title")
     description = models.TextField()
 
     def __str__(self):
