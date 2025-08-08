@@ -829,6 +829,10 @@ class TechnologyTypeAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     list_filter = ("name",)
 
+# @admin.register(TechnologyFAQ)
+# class TechnologyFAQAdmin(admin.ModelAdmin):
+#     pass
+
 class TechnologyFAQInline(nested_admin.NestedTabularInline):
     model = TechnologyFAQ
     extra = 1  # Number of empty FAQ forms to display by default

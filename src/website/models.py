@@ -169,7 +169,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     youtube_link = models.URLField(
         null=True, blank=True, verbose_name="Banner Video Link"
     )
-    category = models.ManyToManyField(Category, related_name="categories")
+    category = models.ManyToManyField(Category, related_name="categories", verbose_name="tags")
     industry_details = models.ManyToManyField(ServeCategory, related_name="blogs", blank=True, verbose_name="Industry")
     parent_services = models.ManyToManyField(
         ServicePage,
