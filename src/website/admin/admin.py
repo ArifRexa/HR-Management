@@ -587,11 +587,11 @@ class BlogForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
         self.fields['parent_services'].queryset = ServicePage.objects.filter(is_parent=True)
-        self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
+        # self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
         if self.instance and self.instance.pk:
             self.fields['next_status'].initial = self.instance.status
             self.fields['parent_services'].initial = self.instance.parent_services.all()
-            self.fields['child_services'].initial = self.instance.child_services.all()
+            # self.fields['child_services'].initial = self.instance.child_services.all()
         if self.request and hasattr(self.request, 'user'):
             if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
                 self.fields["next_status"].choices = [('', 'Select option'), ("draft", "In Draft"), ("submit_for_review", "In Review")]
@@ -896,9 +896,10 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "youtube_link",
         "category",
         "industry_details",  # Updated to industry_details
-        ("parent_services", "child_services"),  # Display side by side
-        ("technology_type",
-        "technology"),
+        # ("parent_services", "child_services"),  # Display side by side
+        "parent_services",
+        # "technology_type",
+        "technology",
         # "tag",
         # "short_description",
         "is_featured",
@@ -1022,7 +1023,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                         "industry_details",  # Updated to industry_details
                         "tag",
                         "parent_services",
-                        "child_services",
+                        # "child_services",
                         "technology",
                         "created_at",
                         "updated_at",
@@ -1072,8 +1073,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
                 for parent_service in blog.parent_services.all():
                     cloned_blog.parent_services.add(parent_service)
-                for child_service in blog.child_services.all():
-                    cloned_blog.child_services.add(child_service)
+                # for child_service in blog.child_services.all():
+                #     cloned_blog.child_services.add(child_service)
 
                 for technology in blog.technology.all():
                     cloned_blog.technology.add(technology)
