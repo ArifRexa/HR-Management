@@ -1342,15 +1342,15 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             "description": seo_description,
             "image": obj.image.url if obj.image else "",
             "author": {
-                "@type": "",
+                "@type": "Person",
                 "name": f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else ""
             },
             "publisher": {
                 "@type": "Organization",
-                "name": "",
+                "name": "Mediusware LTD.",
                 "logo": {
                     "@type": "ImageObject",
-                    "url": ""
+                    "url": "https://mediusware.com/brand.svg"
                 }
             },
             "datePublished": obj.approved_at.isoformat() if obj.approved_at else obj.created_at.isoformat()
