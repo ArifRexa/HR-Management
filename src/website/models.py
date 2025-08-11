@@ -160,6 +160,25 @@ class TechnologyFAQ(models.Model):
         verbose_name_plural = "Technology FAQs"
         ordering = ['order']
 
+
+class TechnologyCTA(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+    button_text = models.CharField(max_length=100, null=True, blank=True)
+    button_link = models.URLField(null=True, blank=True)
+    image = models.ImageField(upload_to="cta_images/", null=True, blank=True)
+    blog = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE, 
+        related_name="ctas", 
+        null=True, 
+        blank=True
+    )
+
+    def __str__(self):
+        return self.title or "CTA"
+
+
     
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)

@@ -105,6 +105,7 @@ from website.models import (
     SpecialProjectsTitle,
     Tag,
     Technology,
+    TechnologyCTA,
     TechnologyFAQ,
     TechnologyTitle,
     TechnologyType,
@@ -116,8 +117,8 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import ServeCategory, ServiceCategoryFAQ
-from website.models_v2.services import ServicePage
+from website.models_v2.industries_we_serve import ServeCategory, ServeCategoryCTA, ServiceCategoryFAQ
+from website.models_v2.services import ServicePage, ServicePageCTA
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -758,12 +759,16 @@ class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
     fields = ('question', 'answer', 'order')
     ordering = ['order']
 
-
+class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
+    model = ServeCategoryCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline]
+    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline, ServeCategoryCTAInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
 
@@ -774,7 +779,11 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
 #     prepopulated_fields = {"slug": ("title",)}
 #     list_display = ('title', 'slug', 'is_parent')
 #     list_filter = ('is_parent',)
-
+class ServicePageCTAInline(nested_admin.NestedStackedInline):
+    model = ServicePageCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
 @admin.register(ServicePage)
 class ServicePageAdmin(admin.ModelAdmin):
     list_display = (
@@ -819,6 +828,7 @@ class ServicePageAdmin(admin.ModelAdmin):
         ComparativeAnalysisInline,
         FAQQuestionInline,
         ServiceMetaDataInline,
+        ServicePageCTAInline
     ]
     list_per_page = 20
 
@@ -839,12 +849,18 @@ class TechnologyFAQInline(nested_admin.NestedTabularInline):
     fields = ('question', 'answer', 'order')
     ordering = ['order']
 
+class TechnologyCTAInline(nested_admin.NestedStackedInline):
+    model = TechnologyCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
+
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
     list_display = ("name", "slug", "type")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
-    inlines = [TechnologyFAQInline]
+    inlines = [TechnologyFAQInline, TechnologyCTAInline]
 
 
 

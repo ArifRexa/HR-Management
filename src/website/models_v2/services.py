@@ -44,6 +44,23 @@ class ServicePage(TimeStampMixin):
         verbose_name = "Service"
         verbose_name_plural = "Services"
 
+class ServicePageCTA(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+    button_text = models.CharField(max_length=100, null=True, blank=True)
+    button_link = models.URLField(null=True, blank=True)
+    image = models.ImageField(upload_to="cta_images/", null=True, blank=True)
+    blog = models.ForeignKey(
+        ServicePage, 
+        on_delete=models.CASCADE, 
+        related_name="ctas", 
+        null=True, 
+        blank=True
+    )
+
+    def __str__(self):
+        return self.title or "CTA"
+
 
 class DiscoverOurService(TimeStampMixin):
     services = models.ForeignKey(
