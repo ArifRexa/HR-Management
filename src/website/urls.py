@@ -6,6 +6,7 @@ from website.models import LifeAtMediusware
 from website.views import (
     AwardListView,
     BenefitsOfEmploymentListAPIView,
+    BlogListAPIView,
     ClientListAPIView,
     ClientLogoListView,
     ClientReviewListAPIView,
@@ -254,6 +255,7 @@ urlpatterns = [
     path("export/<slug:scan_id>/<slug:export_id>/pdf-report/", export_pdf, name="pdf_export"),
     path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
     path("website/technology-navigation/", TechnologyNavigationView.as_view(), name="technology_navigation"),
+    path('website/blogs/', BlogListAPIView.as_view(), name='blog-list'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
