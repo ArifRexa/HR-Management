@@ -44,6 +44,22 @@ class ServicePage(TimeStampMixin):
         verbose_name = "Service"
         verbose_name_plural = "Services"
 
+
+class ServicePageFAQSchema(models.Model):
+    service_page = models.OneToOneField(
+        ServicePage, 
+        on_delete=models.CASCADE, 
+        related_name='faq_schema'
+    )
+    faq_schema = models.TextField(
+        help_text="JSON-LD schema for FAQs"
+    )
+
+    def __str__(self):
+        return f"FAQ Schema for {self.service_page.title}"
+
+
+
 class ServicePageCTA(TimeStampMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
     description = HTMLField(null=True, blank=True)
