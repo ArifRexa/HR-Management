@@ -348,3 +348,15 @@ class TodoRetriveUpdateDeleteAPIView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return super().get_queryset().filter(created_by=self.request.user)
+
+
+
+def employee_project_select_form(request, employee_id):
+    employee_project = EmployeeProject.objects.get(
+            employee_id=employee_id
+        )
+    context = {
+        "show_form": True,
+        "employee_project_form": EmployeeProjectForm(instance=employee_project)
+    }
+    return render(request, "admin/form/employee_project_form.html", context=context)

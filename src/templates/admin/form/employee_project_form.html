@@ -1,44 +1,65 @@
 {% if user.employee.project_eligibility and employee_project_form%}
 
-<form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
-    {% csrf_token %}
-    <div class="d-flex align-items-center">
-    {% for field in employee_project_form.visible_fields %}
-        <label for="" class="me-2">{{ field.label }}</label>
-        <select name="" id="id_project_s" style="max-width: 13rem;">
-            <option value>-----</option>
-            {% for option in field %}
-                {{ option }}
+    {% if show_form %}
+
+        <form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
+            {% csrf_token %}
+            <div class="d-flex align-items-center">
+            {% for field in employee_project_form.visible_fields %}
+                <label for="" class="me-2">{{ field.label }}</label>
+                <select name="" id="id_project_s" style="max-width: 13rem;">
+                    <option value>-----</option>
+                    {% for option in field %}
+                        {{ option }}
+                    {% endfor %}
+                </select>
+                {{ field }}
             {% endfor %}
-        </select>
-        {{ field }}
-    {% endfor %}
-    <div class="text-lg-center">
-        <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1 my-1 my-xl-0 px-sm-2">
-    </div>
-    </div> 
-</form>
+            <div class="text-lg-center">
+                <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1 my-1 my-xl-0 px-sm-2">
+            </div>
+            </div> 
+        </form>
 
-<script>
-    const id_project = document.getElementById('id_project');
-    const id_project_s = document.getElementById('id_project_s');
+        <script>
+            const id_project = document.getElementById('id_project');
+            const id_project_s = document.getElementById('id_project_s');
 
-    id_project_s.addEventListener('change', (event) => {
-        event.preventDefault()
+            id_project_s.addEventListener('change', (event) => {
+                event.preventDefault()
 
-        for(let i=0; i<id_project.length; i++) {
-            const option = id_project[i];
-            if(option.value == event.target.value) {
-                option.selected = !option.selected;
-                event.target[i+1].text = event.target[i+1].text.replace('✓ ', '');
-                if(option.selected)
-                    event.target[i+1].text = '✓ ' + event.target[i+1].text;
-            }
-        }
-    });
+                for(let i=0; i<id_project.length; i++) {
+                    const option = id_project[i];
+                    if(option.value == event.target.value) {
+                        option.selected = !option.selected;
+                        event.target[i+1].text = event.target[i+1].text.replace('✓ ', '');
+                        if(option.selected)
+                            event.target[i+1].text = '✓ ' + event.target[i+1].text;
+                    }
+                }
+            });
 
-    id_project_s.selectedIndex = 0;
-    for(let i=0; i<id_project.length; i++)
-        if(id_project[i].selected) id_project_s[i+1].text = '✓ ' + id_project_s[i+1].text
-</script>
+            id_project_s.selectedIndex = 0;
+            for(let i=0; i<id_project.length; i++)
+                if(id_project[i].selected) id_project_s[i+1].text = '✓ ' + id_project_s[i+1].text
+        </script>
+    {% else %}
+
+        <div id="projectForm" class="m-1">
+            {% csrf_token %}
+            <div class="d-flex align-items-center">
+            <span class="me-2">Project</span>
+            <div id="id_project_s" style="width: 10rem; border: 1px solid black; padding-left:8px; border-radius:8px" hx-get="{% url 'employee_project_form' request.user.employee.id %}" hx-trigger="click" hx-target="#projectForm">
+                    <span>-----</span>
+    
+                    
+            </div>
+            <div class="text-lg-center">
+                <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1 my-1 my-xl-0 px-sm-2">
+            </div>
+            </div> 
+        </div>
+
+        <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    {% endif %}
 {% endif %}
