@@ -76,7 +76,7 @@ def formal_summery(request):
         .values("skill__title")[:1]
     )
     employee_filter = Q(employee__active=True) & Q(employee__project_eligibility=True)
-    if not employee.operation:
+    if not employee.operation and not employee.is_tpm:
         employee_filter &=Q(employee=employee)
     employee_projects = (
         EmployeeProject.objects.filter(
