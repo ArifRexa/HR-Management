@@ -1486,6 +1486,7 @@ class BlogSerializer(serializers.ModelSerializer):
     moderator_feedbacks = BlogModeratorFeedbackSerializer(source='blogmoderatorfeedback_set', many=True, read_only=True)
     ctas = CTASerializer(many=True, read_only=True)
     author = serializers.SerializerMethodField()
+    table_of_contents = serializers.SerializerMethodField()
 
 
     class Meta:
@@ -1496,10 +1497,20 @@ class BlogSerializer(serializers.ModelSerializer):
             'is_featured', 'schema_type', 'main_body_schema', 'hightlighted_text', 'status',
             'total_view', 'created_at', 'updated_at', 'approved_at', 'read_time_minute',
             'author', 'blog_contexts', 'blog_faqs', 'seo_essential',
-            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'ctas'
+            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'ctas', 'table_of_contents'
         ]
         ref_name = 'website_blog'
 
     def get_author(self, obj):
         author = obj.created_by
         return f"{author.first_name} {author.last_name}" if author else ""
+    
+    def get_table_of_contents(self, obj):
+        """
+        Returns a list of all titles from this blog's contexts
+        """
+        # Get all contexts for this blog ordered by their sequence or creation date
+        contexts = obj.blog_contexts.all()
+        
+        # Extract just titles titles from each context
+        return [context.title for context in contexts]
