@@ -107,6 +107,7 @@ from website.models import (
     Technology,
     TechnologyCTA,
     TechnologyFAQ,
+    TechnologyFAQSchema,
     TechnologyTitle,
     TechnologyType,
     TextualTestimonialTitle,
@@ -907,7 +908,7 @@ class TechnologyTypeAdmin(admin.ModelAdmin):
 
 class TechnologyFAQInline(nested_admin.NestedTabularInline):
     model = TechnologyFAQ
-    extra = 1  # Number of empty FAQ forms to display by default
+    extra = 1
     fields = ('question', 'answer', 'order')
     ordering = ['order']
 
@@ -917,12 +918,54 @@ class TechnologyCTAInline(nested_admin.NestedStackedInline):
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
 
+class TechnologyFAQSchemaInline(nested_admin.NestedStackedInline):
+    model = TechnologyFAQSchema
+    extra = 0
+    can_delete = True
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+    
 @admin.register(Technology)
-class TechnologyAdmin(admin.ModelAdmin):
+class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelAdmin
     list_display = ("name", "slug", "type")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
-    inlines = [TechnologyFAQInline, TechnologyCTAInline]
+    inlines = [TechnologyFAQInline, TechnologyCTAInline, TechnologyFAQSchemaInline]
+    
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        
+        technology = form.instance
+        faqs = technology.faqs.all().order_by('order')
+        
+        TechnologyFAQSchema.objects.filter(technology=technology).delete()
+        
+        if faqs.exists():
+            faq_schema = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": faq.question,
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": faq.answer
+                        }
+                    }
+                    for faq in faqs
+                ]
+            }
+            
+            TechnologyFAQSchema.objects.create(
+                technology=technology,
+                faq_schema=mark_safe(
+                    '<script type="application/ld+json">\n'
+                    f'{json.dumps(faq_schema, indent=2)}\n'
+                    '</script>'
+                )
+            )
 
 
 

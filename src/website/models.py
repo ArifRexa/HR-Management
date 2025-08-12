@@ -135,9 +135,9 @@ class Technology(TimeStampMixin):
     )
     icon = models.ImageField(upload_to="technology_icons/", null=True, blank=True)
 
-    def clean(self):
-        if Technology.objects.filter(name=self.name).exists():
-            raise ValidationError(f"Technology with name '{self.name}' already exists.")
+    # def clean(self):
+    #     if Technology.objects.filter(name=self.name).exists():
+    #         raise ValidationError(f"Technology with name '{self.name}' already exists.")
 
     def __str__(self):
         return self.name
@@ -178,6 +178,18 @@ class TechnologyCTA(TimeStampMixin):
     def __str__(self):
         return self.title or "CTA"
 
+class TechnologyFAQSchema(models.Model):
+    technology = models.OneToOneField(
+        Technology, 
+        on_delete=models.CASCADE, 
+        related_name='faq_schema'
+    )
+    faq_schema = models.TextField(
+        help_text="JSON-LD schema for FAQs"
+    )
+
+    def __str__(self):
+        return f"FAQ Schema for {self.technology.name}"
 
     
 class Blog(AuthorMixin, TimeStampMixin):
