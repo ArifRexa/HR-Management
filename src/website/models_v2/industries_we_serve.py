@@ -63,6 +63,21 @@ class ServiceCategoryFAQ(models.Model):
         ordering = ['order']
 
 
+class ServeCategoryFAQSchema(models.Model):
+    serve_category = models.OneToOneField(
+        ServeCategory, 
+        on_delete=models.CASCADE, 
+        related_name='faq_schema'
+    )
+    faq_schema = models.TextField(
+        help_text="JSON-LD schema for FAQs"
+    )
+
+    def __str__(self):
+        return f"FAQ Schema for {self.serve_category.title}"
+
+
+
 class ApplicationAreas(models.Model):
     serve_category = models.ForeignKey(ServeCategory, related_name='application_areas', on_delete=models.CASCADE)
     title = models.CharField(max_length=100)

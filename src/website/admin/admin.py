@@ -117,7 +117,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import ServeCategory, ServeCategoryCTA, ServiceCategoryFAQ
+from website.models_v2.industries_we_serve import ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ
 from website.models_v2.services import ServicePage, ServicePageCTA
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -759,6 +759,27 @@ class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
     fields = ('question', 'answer', 'order')
     ordering = ['order']
 
+
+class ServeCategoryFAQSchemaInline(nested_admin.NestedStackedInline):
+    model = ServeCategoryFAQSchema
+    extra = 0  # Don't show empty form
+    # readonly_fields = ('faq_schema_display',)
+    can_delete = False
+    # fields = ('faq_schema_display',)
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+    
+    # def faq_schema_display(self, obj):
+    #     if obj and obj.faq_schema:
+    #         return format_html(
+    #             '<div style="max-height: 200px; overflow-y: auto; background: #f8f8f8; padding: 10px; border: 1px solid #ddd;">{}</div>',
+    #             obj.faq_schema
+    #         )
+    #     return "No FAQ schema generated yet"
+    # faq_schema_display.short_description = "FAQ Schema"
+
+
 class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
     model = ServeCategoryCTA
     extra = 1
@@ -768,9 +789,50 @@ class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline, ServeCategoryCTAInline]
+    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline, ServeCategoryCTAInline, ServeCategoryFAQSchemaInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
+
+    def save_related(self, request, form, formsets, change):
+        # First save all inlines
+        super().save_related(request, form, formsets, change)
+        
+        # Get the main object
+        serve_category = form.instance
+        
+        # Get all FAQs for this serve_category
+        faqs = serve_category.faqs.all().order_by('order')
+        
+        # Delete existing FAQ schema if no FAQs
+        ServeCategoryFAQSchema.objects.filter(serve_category=serve_category).delete()
+        
+        if faqs.exists():
+            # Generate FAQ schema
+            faq_schema = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": faq.question,
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": faq.answer
+                        }
+                    }
+                    for faq in faqs
+                ]
+            }
+            
+            # Create new FAQ schema
+            ServeCategoryFAQSchema.objects.create(
+                serve_category=serve_category,
+                faq_schema=mark_safe(
+                    '<script type="application/ld+json">\n'
+                    f'{json.dumps(faq_schema, indent=2)}\n'
+                    '</script>'
+                )
+            )
 
 
 # @admin.register(ServicePage)
