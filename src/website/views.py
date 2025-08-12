@@ -13,6 +13,9 @@ from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 from employee.models import Employee, EmployeeNOC, Skill
 from project_management.models import (
@@ -34,6 +37,7 @@ from website.models import (
     Brand,
     Category,
     Contact,
+    ContactForm,
     EmployeePerspective,
     EmployeeTestimonial,
     Gallery,
@@ -55,6 +59,8 @@ from website.models import (
     VideoTestimonial,
     WebsiteTitle,
 )
+from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.services import ServicePage
 from website.serializers import (
     AvailableTagSerializer,
     AwardSerializer,
@@ -62,12 +68,14 @@ from website.serializers import (
     BlogCommentSerializer,
     BlogDetailsSerializer,
     BlogListSerializer,
+    BlogSerializer,
     BlogSitemapSerializer,
     BrandSerializer,
     CategoryListSerializer,
     ClientLogoSerializer,
     ClientReviewSerializer,
     ClientSerializer,
+    ContactFormSerializer,
     ContactSerializer,
     DesignationSetSerializer,
     EmployeeDetailsSerializer,
@@ -83,6 +91,7 @@ from website.serializers import (
     LeadershipSerializer,
     LeadSerializer,
     LifeAtMediuswareSerializer,
+    NewTechnologySerializer,
     OfficeLocationSerializer,
     OurAchievementSerializer,
     OurClientsFeedbackSerializer,
@@ -95,12 +104,15 @@ from website.serializers import (
     ProjectListSerializer,
     ProjectSerializer,
     ProjectSitemapSerializer,
+    ServeCategorySerializer,
     ServiceDetailsSerializer,
+    ServicePageSerializer,
     ServiceSerializer,
     SkillSerializer,
     SpecialProjectSerializer,
     SubscriptionSerializer,
     TagListSerializer,
+    TechnologySerializer,
     VideoTestimonialSerializer,
     WebsiteTitleSerializer,
 )
@@ -945,3 +957,304 @@ class InquiryModelViewSet(viewsets.ModelViewSet):
 class SubscriptionModelViewSet(viewsets.ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
+
+
+class ContactFormView(APIView):
+    serializer_class = ContactFormSerializer
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        request_body=ContactFormSerializer,
+        tags=["Contact"],
+        operation_description="Create a new contact form entry"
+    )
+    def post(self, request):
+        serializer = ContactFormSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+# class TechnologyNavigationView(APIView):
+class TechnologyNavigationView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = NewTechnologySerializer
+    def get(self, request):
+        from website.models import Technology
+        technologies = Technology.objects.values('name', 'slug')
+        return Response(technologies, status=status.HTTP_200_OK)
+    
+
+
+
+
+# class BlogFilter(django_filters.FilterSet):
+#     services = django_filters.BooleanFilter(
+#         method='filter_has_services',
+#         label='Has Parent Services'
+#     )
+#     industry = django_filters.BooleanFilter(
+#         method='filter_has_industry',
+#         label='Has Industry Details'
+#     )
+#     technology = django_filters.BooleanFilter(
+#         method='filter_has_technology',
+#         label='Has Technology'
+#     )
+
+#     def filter_has_services(self, queryset, name, value):
+#         if value:
+#             return queryset.filter(parent_services__isnull=False).distinct()
+#         return queryset
+
+#     def filter_has_industry(self, queryset, name, value):
+#         if value:
+#             return queryset.filter(industry_details__isnull=False).distinct()
+#         return queryset
+
+#     def filter_has_technology(self, queryset, name, value):
+#         if value:
+#             return queryset.filter(technology__isnull=False).distinct()
+#         return queryset
+
+#     class Meta:
+#         model = Blog
+#         fields = ['services', 'industry', 'technology']
+
+
+# class BlogListAPIView(ListAPIView):
+#     queryset = Blog.objects.all().order_by('-created_at')
+#     serializer_class = BlogSerializer
+#     filterset_class = BlogFilter
+#     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+#     search_fields = ['category__name']  # Search only on category (verbose name: tags)
+
+#     @swagger_auto_schema(
+#             tags=
+#             ["Blog List"],
+#         manual_parameters=[
+#             openapi.Parameter(
+#                 'services',
+#                 openapi.IN_QUERY,
+#                 description="Filter blogs that have at least one parent service (true/false)",
+#                 type=openapi.TYPE_BOOLEAN
+#             ),
+#             openapi.Parameter(
+#                 'industry',
+#                 openapi.IN_QUERY,
+#                 description="Filter blogs that have at least one industry detail (true/false)",
+#                 type=openapi.TYPE_BOOLEAN
+#             ),
+#             openapi.Parameter(
+#                 'technology',
+#                 openapi.IN_QUERY,
+#                 description="Filter blogs that have at least one technology (true/false)",
+#                 type=openapi.TYPE_BOOLEAN
+#             ),
+#             openapi.Parameter(
+#                 'search',
+#                 openapi.IN_QUERY,
+#                 description="Search across category name (verbose name: tags)",
+#                 type=openapi.TYPE_STRING
+#             ),
+#         ],
+#         responses={
+#             200: BlogSerializer(many=True),
+#             400: 'Bad Request'
+#         }
+#     )
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
+
+
+
+
+
+# testing news
+
+class BlogFilter(django_filters.FilterSet):
+    services = django_filters.BooleanFilter(
+        method='filter_has_services',
+        label='Has Parent Services'
+    )
+    industry = django_filters.BooleanFilter(
+        method='filter_has_industry',
+        label='Has Industry Details'
+    )
+    technology = django_filters.BooleanFilter(
+        method='filter_has_technology',
+        label='Has Technology'
+    )
+
+    def filter_has_services(self, queryset, name, value):
+        if value:
+            return queryset.filter(parent_services__isnull=False).distinct()
+        return queryset
+
+    def filter_has_industry(self, queryset, name, value):
+        if value:
+            return queryset.filter(industry_details__isnull=False).distinct()
+        return queryset
+
+    def filter_has_technology(self, queryset, name, value):
+        if value:
+            return queryset.filter(technology__isnull=False).distinct()
+        return queryset
+
+    class Meta:
+        model = Blog
+        fields = ['services', 'industry', 'technology']
+
+
+class BlogPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class BlogListAPIView(ListAPIView):
+    queryset = Blog.objects.all().order_by('-created_at')
+    serializer_class = BlogSerializer
+    filterset_class = BlogFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['category__name']
+    pagination_class = BlogPagination
+    
+    @swagger_auto_schema(
+        tags=["Blog List"],
+        manual_parameters=[
+            openapi.Parameter(
+                'services',
+                openapi.IN_QUERY,
+                description="Filter blogs that have at least one parent service and include all parent services in response (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'industry',
+                openapi.IN_QUERY,
+                description="Filter blogs that have at least one industry detail and include all industry details in response (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'technology',
+                openapi.IN_QUERY,
+                description="Filter blogs that have at least one technology and include all technologies in response (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Search across category name (verbose name: tags)",
+                type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'page',
+                openapi.IN_QUERY,
+                description="Page number for pagination",
+                type=openapi.TYPE_INTEGER
+            ),
+            openapi.Parameter(
+                'page_size',
+                openapi.IN_QUERY,
+                description="Number of items per page",
+                type=openapi.TYPE_INTEGER
+            ),
+        ],
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'count': openapi.Schema(
+                        type=openapi.TYPE_INTEGER,
+                        description='Total number of blogs'
+                    ),
+                    'next': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='URL for next page'
+                    ),
+                    'previous': openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description='URL for previous page'
+                    ),
+                    'services': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            ref='#/definitions/website_servicepage'
+                        ),
+                        description='List of all parent services when services=true'
+                    ),
+                    'industry': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            ref='#/definitions/website_servecategory'
+                        ),
+                        description='List of all industry details when industry=true'
+                    ),
+                    'technology': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            ref='#/definitions/website_technology'
+                        ),
+                        description='List of all technologies when technology=true'
+                    ),
+                    'results': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            ref='#/definitions/website_blog'
+                        ),
+                        description='List of filtered blogs for current page'
+                    ),
+                }
+            ),
+            400: 'Bad Request'
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        # Apply filters
+        filterset = self.filterset_class(request.GET, queryset=self.get_queryset())
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=400)
+        queryset = filterset.qs
+        
+        # Apply search
+        queryset = self.filter_queryset(queryset)
+        
+        # Paginate the queryset
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            paginated_data = self.get_paginated_response(serializer.data).data
+        else:
+            serializer = self.get_serializer(queryset, many=True)
+            paginated_data = {
+                'count': queryset.count(),
+                'next': None,
+                'previous': None,
+                'results': serializer.data
+            }
+        
+        # Prepare response with additional data
+        response_data = paginated_data.copy()
+        
+        # Include parent services if services=true
+        if request.GET.get('services') == 'true':
+            services = ServicePage.objects.filter(is_parent=True)
+            response_data['services'] = ServicePageSerializer(services, many=True).data
+        
+        # Include industry details if industry=true
+        if request.GET.get('industry') == 'true':
+            industries = ServeCategory.objects.all()
+            response_data['industry'] = ServeCategorySerializer(industries, many=True).data
+        
+        # Include technologies if technology=true
+        from website.models import Technology
+        if request.GET.get('technology') == 'true':
+            technologies = Technology.objects.all()
+            response_data['technology'] = TechnologySerializer(technologies, many=True).data
+        
+        return Response(response_data)

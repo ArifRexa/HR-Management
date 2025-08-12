@@ -142,6 +142,44 @@ class Technology(TimeStampMixin):
     def __str__(self):
         return self.name
     
+    class Meta:
+        verbose_name = "Technology"
+        verbose_name_plural = "Technologies"
+        
+class TechnologyFAQ(models.Model):
+    technology = models.ForeignKey(Technology, on_delete=models.CASCADE, related_name='faqs')
+    question = models.CharField(max_length=255)
+    answer = HTMLField()
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for FAQs")
+
+    def __str__(self):
+        return self.question
+
+    class Meta:
+        verbose_name = "Technology FAQ"
+        verbose_name_plural = "Technology FAQs"
+        ordering = ['order']
+
+
+class TechnologyCTA(TimeStampMixin):
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+    button_text = models.CharField(max_length=100, null=True, blank=True)
+    button_link = models.URLField(null=True, blank=True)
+    image = models.ImageField(upload_to="cta_images/", null=True, blank=True)
+    blog = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE, 
+        related_name="ctas", 
+        null=True, 
+        blank=True
+    )
+
+    def __str__(self):
+        return self.title or "CTA"
+
+
+    
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = BlogSlugField(unique=True)
@@ -150,7 +188,7 @@ class Blog(AuthorMixin, TimeStampMixin):
     youtube_link = models.URLField(
         null=True, blank=True, verbose_name="Banner Video Link"
     )
-    category = models.ManyToManyField(Category, related_name="categories")
+    category = models.ManyToManyField(Category, related_name="categories", verbose_name="tags", blank=True)
     industry_details = models.ManyToManyField(ServeCategory, related_name="blogs", blank=True, verbose_name="Industry")
     parent_services = models.ManyToManyField(
         ServicePage,
@@ -972,6 +1010,22 @@ class Contact(BaseContact):
 
     def __str__(self):
         return self.name
+
+
+class ContactForm(TimeStampMixin):
+    TYPE_CHOICES = (
+        ("general", "General Inquiry"),
+        ("discuss", "Discuss Service"),
+    )
+    form_type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="discuss")
+    full_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    service_require = models.CharField(max_length=255, null=True, blank=True)
+    project_details = models.TextField(null=True, blank=True)
+    client_query = models.TextField(null=True, blank=True)  # Client Query
+    attached_file = models.FileField(upload_to="contact_files/", null=True, blank=True)
+
+
 
 
 class Inquiry(BaseContact):

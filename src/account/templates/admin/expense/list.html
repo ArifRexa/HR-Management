@@ -10,3 +10,22 @@
     </div>
 {% endblock %}
 
+
+{% block search %}
+    <hr>
+    <div style="padding-top: 5px;">
+        <form action="" method="get" style="padding: 2px 7px 0px;">
+            <p style="padding-left: 0; color: #666666;">From &nbsp
+                <span style="border-radius: 4px;">
+                    {{ filter_form.date__gte }}
+                </span>&nbsp&nbsp&nbsp&nbsp To &nbsp
+                <span>
+                    {{ filter_form.date__lte }}
+                </span>
+                <button type="submit" style="margin-left: 5px; padding: 4px 8px; border: 1px solid #c6ccc6; border-radius: 5px; color: #333333;">Filter</button>
+            </p>
+        </form>
+    </div>
+    {% search_form cl %}
+{% endblock %}
+

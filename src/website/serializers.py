@@ -29,6 +29,7 @@ from project_management.models import (
 )
 from settings.models import Designation
 from website.models import (
+    CTA,
     FAQ,
     AllServicesTitle,
     Award,
@@ -39,7 +40,9 @@ from website.models import (
     BlogComment,
     BlogContext,
     BlogFAQ,
+    BlogFAQSchema,
     BlogMeatadata,
+    BlogModeratorFeedback,
     BlogSEOEssential,
     BlogStatus,
     BlogTag,
@@ -47,6 +50,7 @@ from website.models import (
     Brand,
     Category,
     Contact,
+    ContactForm,
     EmployeePerspective,
     EmployeeTestimonial,
     FAQHomeTitle,
@@ -72,6 +76,8 @@ from website.models import (
     ProjectMetadata,
     ProjectServiceSolutionTitle,
     ProjectsVideoTitle,
+    ReferenceBlogs,
+    RelatedBlogs,
     Service,
     ServiceContent,
     ServiceMeatadata,
@@ -79,12 +85,14 @@ from website.models import (
     SpecialProjectsTitle,
     Subscription,
     TechnologyTitle,
+    TechnologyType,
     TextualTestimonialTitle,
     VideoTestimonial,
     VideoTestimonialTitle,
     WebsiteTitle,
     WhyUsTitle,
 )
+from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 
 
@@ -239,6 +247,19 @@ class ServiceDetailsSerializer(serializers.ModelSerializer):
             "metadata",
         )
 
+
+class TechnologyTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyType
+        fields = ['name', 'slug']
+
+class NewTechnologySerializer(serializers.ModelSerializer):
+    type = TechnologyTypeSerializer(read_only=True)
+    
+    class Meta:
+        from website.models import Technology
+        model = Technology
+        fields = ['name', 'slug', 'type'] 
 
 class ProjectTechnologySerializer(serializers.ModelSerializer):
     technologies = TechnologySerializer(many=True)
@@ -1321,6 +1342,33 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contact
         fields = "__all__"
 
+class ContactFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactForm
+        fields = "__all__"
+
+    def validate(self, data):
+        form_type = data.get('form_type')
+        full_name = data.get('full_name')
+        email = data.get('email')
+        service_require = data.get('service_require')
+        client_query = data.get('client_query')
+
+        # Common required fields
+        if not full_name:
+            raise serializers.ValidationError({"full_name": "This field is required."})
+        if not email:
+            raise serializers.ValidationError({"email": "This field is required."})
+
+        # Conditional required fields based on form_type
+        if form_type == 'discuss':
+            if not service_require:
+                raise serializers.ValidationError({"service_require": "This field is required for Discuss Service form type."})
+        elif form_type == 'general':
+            if not client_query:
+                raise serializers.ValidationError({"client_query": "This field is required for General Inquiry form type."})
+
+        return data
 
 class InquirySerializer(serializers.ModelSerializer):
     class Meta:
@@ -1333,3 +1381,125 @@ class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
         fields = "__all__"
+
+
+
+# ==================================== Blog API Serializers ================================
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = ['id', 'name', 'slug']
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        from website.models import Tag
+        model = Tag
+        fields = ['id', 'name', 'slug']
+        ref_name = 'website_tag'
+
+
+class ServicePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePage
+        fields = ['id', 'title', 'slug', 'is_parent', 'h1_title', 'sub_title', 'description']
+        ref_name = 'website_servicepage'
+
+class ServeCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategory
+        fields = ['id', 'title', 'slug', 'short_description']
+        ref_name = 'website_servecategory'
+
+class TechnologyTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyType
+        fields = ['id', 'name', 'slug']
+
+class TechnologySerializer(serializers.ModelSerializer):
+    class Meta:
+        from website.models import Technology
+        model = Technology
+        fields = ['id', 'name', 'slug', 'icon']  # Include icon if needed
+        ref_name = 'website_technology'
+
+class BlogContextSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogContext
+        fields = '__all__'
+        ref_name = 'website_blogcontext'
+
+class BlogFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogFAQ
+        fields = '__all__'
+        ref_name = 'website_blogfaq'
+
+class BlogSEOEssentialSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = BlogSEOEssential
+        fields = ['id', 'title', 'description', 'keywords', 'created_at', 'updated_at']
+        ref_name = 'website_blogseoessential'
+
+class ReferenceBlogsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReferenceBlogs
+        fields = ['id', 'reference_blog_title', 'reference_blog_link']
+        ref_name = 'website_referenceblog'
+
+class RelatedBlogsSerializer(serializers.ModelSerializer):
+    releted_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+
+    class Meta:
+        model = RelatedBlogs
+        fields = ['id', 'releted_blog']
+        ref_name = 'website_relatedblogs'
+
+class BlogFAQSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogFAQSchema
+        fields = '__all__'
+
+class BlogModeratorFeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogModeratorFeedback
+        fields = '__all__'
+
+class CTASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CTA
+        fields = '__all__'
+
+class BlogSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=True, read_only=True)
+    tag = TagSerializer(many=True, read_only=True)
+    parent_services = ServicePageSerializer(many=True, read_only=True)
+    child_services = ServicePageSerializer(many=True, read_only=True)
+    industry_details = ServeCategorySerializer(many=True, read_only=True)
+    technology_type = TechnologyTypeSerializer(read_only=True)
+    technology = TechnologySerializer(many=True, read_only=True)
+    blog_contexts = BlogContextSerializer(many=True, read_only=True)
+    blog_faqs = BlogFAQSerializer(many=True, read_only=True)
+    seo_essential = BlogSEOEssentialSerializers(source='blogseoessential_set', many=True, read_only=True)
+    reference_blogs = ReferenceBlogsSerializer(source='reference_blog', many=True, read_only=True)
+    related_blogs = RelatedBlogsSerializer(source='relatedblogs_set', many=True, read_only=True)
+    faq_schema = BlogFAQSchemaSerializer(read_only=True)
+    moderator_feedbacks = BlogModeratorFeedbackSerializer(source='blogmoderatorfeedback_set', many=True, read_only=True)
+    ctas = CTASerializer(many=True, read_only=True)
+    author = serializers.SerializerMethodField()
+
+
+    class Meta:
+        model = Blog
+        fields = [
+            'id', 'title', 'slug', 'image', 'youtube_link', 'category', 'industry_details',
+            'parent_services', 'child_services', 'technology_type', 'technology', 'tag',
+            'is_featured', 'schema_type', 'main_body_schema', 'hightlighted_text', 'status',
+            'total_view', 'created_at', 'updated_at', 'approved_at', 'read_time_minute',
+            'author', 'blog_contexts', 'blog_faqs', 'seo_essential',
+            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'ctas'
+        ]
+        ref_name = 'website_blog'
+
+    def get_author(self, obj):
+        author = obj.created_by
+        return f"{author.first_name} {author.last_name}" if author else ""

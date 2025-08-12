@@ -55,6 +55,7 @@ from website.models import (
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
+    ContactForm,
     CSRBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
@@ -104,6 +105,8 @@ from website.models import (
     SpecialProjectsTitle,
     Tag,
     Technology,
+    TechnologyCTA,
+    TechnologyFAQ,
     TechnologyTitle,
     TechnologyType,
     TextualTestimonialTitle,
@@ -114,8 +117,8 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import ServeCategory
-from website.models_v2.services import ServicePage
+from website.models_v2.industries_we_serve import ServeCategory, ServeCategoryCTA, ServiceCategoryFAQ
+from website.models_v2.services import ServicePage, ServicePageCTA
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -585,11 +588,11 @@ class BlogForm(forms.ModelForm):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
         self.fields['parent_services'].queryset = ServicePage.objects.filter(is_parent=True)
-        self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
+        # self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
         if self.instance and self.instance.pk:
             self.fields['next_status'].initial = self.instance.status
             self.fields['parent_services'].initial = self.instance.parent_services.all()
-            self.fields['child_services'].initial = self.instance.child_services.all()
+            # self.fields['child_services'].initial = self.instance.child_services.all()
         if self.request and hasattr(self.request, 'user'):
             if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
                 self.fields["next_status"].choices = [('', 'Select option'), ("draft", "In Draft"), ("submit_for_review", "In Review")]
@@ -750,11 +753,22 @@ class BlogIndustryFilter(admin.SimpleListFilter):
             return queryset.filter(industry_details__id__exact=self.value())
         return queryset
 
+class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
+    model = ServiceCategoryFAQ
+    extra = 1  # Number of empty FAQ forms to display by default
+    fields = ('question', 'answer', 'order')
+    ordering = ['order']
+
+class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
+    model = ServeCategoryCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline,IndustryMetadataInline]
+    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline, ServeCategoryCTAInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
 
@@ -765,7 +779,11 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
 #     prepopulated_fields = {"slug": ("title",)}
 #     list_display = ('title', 'slug', 'is_parent')
 #     list_filter = ('is_parent',)
-
+class ServicePageCTAInline(nested_admin.NestedStackedInline):
+    model = ServicePageCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
 @admin.register(ServicePage)
 class ServicePageAdmin(admin.ModelAdmin):
     list_display = (
@@ -777,7 +795,7 @@ class ServicePageAdmin(admin.ModelAdmin):
         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
         (
             "Banner",
-            {"fields": ("title", "sub_title", "banner_query", "slug", "description")},
+            {"fields": ("title", "slug", "h1_title", "sub_title", "description")},
         ),
         ("Explore Our Services", {"fields": ("icon", "feature_image")}),
         ("Menu", {"fields": ("menu_title",)}),
@@ -810,6 +828,7 @@ class ServicePageAdmin(admin.ModelAdmin):
         ComparativeAnalysisInline,
         FAQQuestionInline,
         ServiceMetaDataInline,
+        ServicePageCTAInline
     ]
     list_per_page = 20
 
@@ -820,11 +839,28 @@ class TechnologyTypeAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     list_filter = ("name",)
 
+# @admin.register(TechnologyFAQ)
+# class TechnologyFAQAdmin(admin.ModelAdmin):
+#     pass
+
+class TechnologyFAQInline(nested_admin.NestedTabularInline):
+    model = TechnologyFAQ
+    extra = 1  # Number of empty FAQ forms to display by default
+    fields = ('question', 'answer', 'order')
+    ordering = ['order']
+
+class TechnologyCTAInline(nested_admin.NestedStackedInline):
+    model = TechnologyCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
+
 @admin.register(Technology)
 class TechnologyAdmin(admin.ModelAdmin):
-    list_display = ("name", "slug")
+    list_display = ("name", "slug", "type")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
+    inlines = [TechnologyFAQInline, TechnologyCTAInline]
 
 
 
@@ -876,9 +912,10 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "youtube_link",
         "category",
         "industry_details",  # Updated to industry_details
-        ("parent_services", "child_services"),  # Display side by side
-        ("technology_type",
-        "technology"),
+        # ("parent_services", "child_services"),  # Display side by side
+        "parent_services",
+        # "technology_type",
+        "technology",
         # "tag",
         # "short_description",
         "is_featured",
@@ -977,6 +1014,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                 level="ERROR",
             )
 
+
     # @admin.display(description="Plagiarism(%)")
     # def get_plagiarism_percentage(self, obj):
     #     plagiarism_objects = obj.plagiarism_info.order_by("-created_at")
@@ -1001,7 +1039,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
                         "industry_details",  # Updated to industry_details
                         "tag",
                         "parent_services",
-                        "child_services",
+                        # "child_services",
                         "technology",
                         "created_at",
                         "updated_at",
@@ -1051,8 +1089,8 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
                 for parent_service in blog.parent_services.all():
                     cloned_blog.parent_services.add(parent_service)
-                for child_service in blog.child_services.all():
-                    cloned_blog.child_services.add(child_service)
+                # for child_service in blog.child_services.all():
+                #     cloned_blog.child_services.add(child_service)
 
                 for technology in blog.technology.all():
                     cloned_blog.technology.add(technology)
@@ -1304,15 +1342,15 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             "description": seo_description,
             "image": obj.image.url if obj.image else "",
             "author": {
-                "@type": "",
+                "@type": "Person",
                 "name": f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else ""
             },
             "publisher": {
                 "@type": "Organization",
-                "name": "",
+                "name": "Mediusware LTD.",
                 "logo": {
                     "@type": "ImageObject",
-                    "url": ""
+                    "url": "https://mediusware.com/brand.svg"
                 }
             },
             "datePublished": obj.approved_at.isoformat() if obj.approved_at else obj.created_at.isoformat()
@@ -1785,3 +1823,9 @@ class PublicImageAdmin(admin.ModelAdmin):
 # @admin.register(PlagiarismInfo)
 # class PlagiarismInfoAdmin(admin.ModelAdmin):
 #     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
+
+
+@admin.register(ContactForm)
+class ContactFormAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "email", "form_type", "created_at")
+    readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
