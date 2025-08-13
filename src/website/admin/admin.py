@@ -118,7 +118,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ
+from website.models_v2.industries_we_serve import Benefits, CustomSolutions, IndustryDetailsHeading, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs
 from website.models_v2.services import ServicePage, ServicePageCTA, ServicePageFAQSchema
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -515,11 +515,44 @@ class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
     extra = 1
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
+
+
+class OurProcessInline(nested_admin.NestedStackedInline):
+    model = OurProcess
+    extra = 1
+
+class CustomSolutionsInline(nested_admin.NestedStackedInline):
+    model = CustomSolutions
+    extra = 1
+
+class BenefitsInline(nested_admin.NestedStackedInline):
+    model = Benefits
+    extra = 1
+
+class WhyChooseUsInline(nested_admin.NestedStackedInline):
+    model = WhyChooseUs
+    extra = 1
+
+class IndustryDetailsHeadingInline(nested_admin.NestedStackedInline):
+    model = IndustryDetailsHeading
+    extra = 1
+    max_num = 1
+    min_num = 1  # Ensures at least one instance must exist
+
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline, ServeCategoryCTAInline, ServeCategoryFAQSchemaInline]
+    inlines = [ApplicationAreasInline, 
+               IndustryMetadataInline,
+               IndustryDetailsHeadingInline,
+               OurProcessInline,
+               CustomSolutionsInline, 
+               BenefitsInline,
+               WhyChooseUsInline,
+               ServiceCategoryFAQInline, 
+               ServeCategoryCTAInline, 
+               ServeCategoryFAQSchemaInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
 

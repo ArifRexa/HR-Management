@@ -92,7 +92,7 @@ from website.models import (
     WebsiteTitle,
     WhyUsTitle,
 )
-from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, CustomSolutions, IndustryDetailsHeading, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs
 from website.models_v2.services import ServicePage
 
 
@@ -1514,3 +1514,90 @@ class BlogSerializer(serializers.ModelSerializer):
         
         # Extract just titles titles from each context
         return [context.title for context in contexts]
+    
+
+
+
+
+# ============================== Industry Details ==================================
+
+class OurProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurProcess
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeOurProcess'
+
+class IndustryDetailsHeadingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryDetailsHeading
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeIndustryDetailsHeading'
+
+class CustomSolutionsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomSolutions
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeCustomSolutions'
+
+class BenefitsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Benefits
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeBenefits'
+
+class WhyChooseUsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WhyChooseUs
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeWhyChooseUs'
+
+class ServeCategoryCTASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategoryCTA
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeServeCategoryCTA'
+
+class ServiceCategoryFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceCategoryFAQ
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeServiceCategoryFAQ'
+
+class ServeCategoryFAQSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategoryFAQSchema
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeServeCategoryFAQSchema'
+
+class ApplicationAreasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ApplicationAreas
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeApplicationAreas'
+
+class IndustryServeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryServe
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeIndustryServe'
+
+
+
+
+class ServeCategorySerializer(serializers.ModelSerializer):
+    our_process = OurProcessSerializer(many=True, read_only=True)
+    industry_details_heading = IndustryDetailsHeadingSerializer(many=True, read_only=True)
+    custom_solutions = CustomSolutionsSerializer(many=True, read_only=True)
+    benefits = BenefitsSerializer(many=True, read_only=True)
+    why_choose_us = WhyChooseUsSerializer(many=True, read_only=True)
+    ctas = ServeCategoryCTASerializer(many=True, read_only=True)
+    faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
+    faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
+    application_areas = ApplicationAreasSerializer(many=True, read_only=True)
+    industries = IndustryServeSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ServeCategory
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeServeCategory'
+
