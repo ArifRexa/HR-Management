@@ -982,7 +982,7 @@ class TechnologyNavigationView(APIView):
     serializer_class = NewTechnologySerializer
     def get(self, request):
         from website.models import Technology
-        technologies = Technology.objects.values('name', 'slug')
+        technologies = Technology.objects.filter(show_in_menu=True).values('name', 'slug')
         return Response(technologies, status=status.HTTP_200_OK)
     
 
@@ -1464,11 +1464,11 @@ class BlogListAPIView(ListAPIView):
                     technology_ids = [int(id) for id in technology_ids]
                 except ValueError:
                     technology_ids = []
-                technologies = Technology.objects.filter(id__in=technology_ids, show_in_menu=True).all()
+                technologies = Technology.objects.filter(id__in=technology_ids)
             else:
-                technologies = Technology.objects.filter(show_in_menu=True).all()
+                technologies = Technology.objects.all()
             response_data['technology'] = TechnologySerializer(technologies, many=True).data
-
+        
         return Response(response_data)
     
     
