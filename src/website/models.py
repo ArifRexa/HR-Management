@@ -87,6 +87,11 @@ class Category(AuthorMixin, TimeStampMixin):
         return self.name
 
 
+    class Meta:
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+
+
 class Tag(AuthorMixin, TimeStampMixin):
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)

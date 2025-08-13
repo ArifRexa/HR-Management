@@ -212,8 +212,8 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
 
-    def has_module_permission(self, request):
-        return False
+    # def has_module_permission(self, request):
+    #     return False
 
 
 @admin.register(Tag)
