@@ -118,8 +118,8 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ
-from website.models_v2.services import ServicePage, ServicePageCTA
+from website.models_v2.industries_we_serve import Benefits, CustomSolutions, IndustryDetailsHeading, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs
+from website.models_v2.services import ServicePage, ServicePageCTA, ServicePageFAQSchema
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -212,8 +212,8 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
 
-    def has_module_permission(self, request):
-        return False
+    # def has_module_permission(self, request):
+    #     return False
 
 
 @admin.register(Tag)
@@ -332,237 +332,6 @@ class BlogModeratorFeedbackInline(nested_admin.NestedStackedInline):
     readonly_fields = ("created_by_title",)
 
 
-# class BlogForm(forms.ModelForm):
-#     next_status = forms.ChoiceField(
-#         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
-#         required=True,
-#         label="Next Status"
-#     )
-
-#     class Meta:
-#         model = Blog
-#         fields = "__all__"
-#         widgets = {
-#             "title": forms.Textarea(
-#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
-#             ),
-#             "slug": forms.Textarea(
-#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
-#             ),
-#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
-#         }
-
-#     def __init__(self, *args, **kwargs):
-#         self.request = kwargs.pop('request', None)
-#         super().__init__(*args, **kwargs)
-#         if self.request:
-#             if not self.request.user.is_superuser and not self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 self.fields["next_status"].choices = [
-#                     ('', 'Select option'),
-#                     ("draft", "In Draft"),
-#                     ("submit_for_review", "In Review"),
-#                 ]
-#             elif not self.request.user.is_superuser and self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 self.fields["next_status"].choices = [
-#                     ('', 'Select option'),
-#                     ("need_revision", "In Revision"),
-#                     ("approved", "Approved"),
-#                 ]
-
-#     def save(self, commit=True):
-#         from django.utils.text import slugify
-
-#         if self.cleaned_data.get("next_status"):
-#             self.instance.status = self.cleaned_data["next_status"]
-#         if not self.instance.slug:
-#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-#         if self.request.user.is_superuser or self.request.user.has_perm(
-#             "website.can_approve"
-#         ):
-#             if self.cleaned_data.get("next_status") == "approved":
-#                 self.instance.active = True
-#         return super().save(commit)
-
-
-
-# In BlogForm class
-# class BlogForm(forms.ModelForm):
-#     next_status = forms.ChoiceField(
-#         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
-#         required=True,
-#         label="Next Status"
-#     )
-
-#     class Meta:
-#         model = Blog
-#         fields = "__all__"
-#         widgets = {
-#             "title": forms.Textarea(
-#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
-#             ),
-#             "slug": forms.Textarea(
-#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
-#             ),
-#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
-#         }
-
-#     def __init__(self, *args, **kwargs):
-#         self.request = kwargs.pop('request', None)  # Safely pop request
-#         super().__init__(*args, **kwargs)
-#         if self.request and hasattr(self.request, 'user'):
-#             if not self.request.user.is_superuser and not self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 self.fields["next_status"].choices = [
-#                     ('', 'Select option'),
-#                     ("draft", "In Draft"),
-#                     ("submit_for_review", "In Review"),
-#                 ]
-#             elif not self.request.user.is_superuser and self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 self.fields["next_status"].choices = [
-#                     ('', 'Select option'),
-#                     ("need_revision", "In Revision"),
-#                     ("approved", "Approved"),
-#                 ]
-
-#     def save(self, commit=True):
-#         from django.utils.text import slugify
-
-#         if self.cleaned_data.get("next_status"):
-#             self.instance.status = self.cleaned_data["next_status"]
-#         if not self.instance.slug:
-#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-#         if self.request and hasattr(self.request, 'user'):
-#             if self.request.user.is_superuser or self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 if self.cleaned_data.get("next_status") == "approved":
-#                     self.instance.active = True
-#         return super().save(commit)
-
-
-# class BlogForm(forms.ModelForm):
-#     next_status = forms.ChoiceField(
-#         choices=[('', 'Select option')] + BlogStatus.choices[:-1],
-#         required=False,  # Changed to False to allow "Select option" without forcing a choice
-#         label="Status"
-#     )
-
-#     class Meta:
-#         model = Blog
-#         fields = "__all__"
-#         widgets = {
-#             "title": forms.Textarea(
-#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
-#             ),
-#             "slug": forms.Textarea(
-#                 attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}
-#             ),
-#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
-#         }
-
-#     def __init__(self, *args, **kwargs):
-#         self.request = kwargs.pop('request', None)  # Safely pop request
-#         super().__init__(*args, **kwargs)
-#         if self.instance and self.instance.pk:  # Check if editing an existing blog
-#             self.fields['next_status'].initial = self.instance.status  # Set current status as initial value
-#         if self.request and hasattr(self.request, 'user'):
-#             if not self.request.user.is_superuser and not self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 self.fields["next_status"].choices = [
-#                     ('', 'Select option'),
-#                     ("draft", "In Draft"),
-#                     ("submit_for_review", "In Review"),
-#                 ]
-#             elif not self.request.user.is_superuser and self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 self.fields["next_status"].choices = [
-#                     ('', 'Select option'),
-#                     ("need_revision", "In Revision"),
-#                     ("approved", "Approved"),
-#                 ]
-
-#     def save(self, commit=True):
-#         from django.utils.text import slugify
-
-#         if self.cleaned_data.get("next_status"):
-#             self.instance.status = self.cleaned_data["next_status"]
-#         # If no next_status is selected, retain the current status (no change)
-#         if not self.instance.slug:
-#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-#         if self.request and hasattr(self.request, 'user'):
-#             if self.request.user.is_superuser or self.request.user.has_perm(
-#                 "website.can_approve"
-#             ):
-#                 if self.cleaned_data.get("next_status") == "approved":
-#                     self.instance.active = True
-#         return super().save(commit)
-
-# class BlogForm(forms.ModelForm):
-#     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
-#     class Meta:
-#         model = Blog
-#         fields = "__all__"
-#         widgets = {
-#             "title": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
-#             "slug": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
-#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
-#             "main_body_schema": forms.Textarea(attrs={"rows": 10, "cols": 80}),
-#         }
-#     def __init__(self, *args, **kwargs):
-#         self.request = kwargs.pop('request', None)
-#         super().__init__(*args, **kwargs)
-#         if self.instance and self.instance.pk:
-#             self.fields['next_status'].initial = self.instance.status
-#         if self.request and hasattr(self.request, 'user'):
-#             if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
-#                 self.fields["next_status"].choices = [('', 'Select option'), ("draft", "In Draft"), ("submit_for_review", "In Review")]
-#                 self.fields["main_body_schema"].widget.attrs['readonly'] = True
-#             elif not self.request.user.is_superuser and self.request.user.has_perm("website.can_approve"):
-#                 self.fields["next_status"].choices = [('', 'Select option'), ("need_revision", "In Revision"), ("approved", "Approved")]
-#     def save(self, commit=True):
-#         from django.utils.text import slugify
-#         if self.cleaned_data.get("next_status"):
-#             self.instance.status = self.cleaned_data["next_status"]
-#         if not self.instance.slug:
-#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-#         if self.request and hasattr(self.request, 'user'):
-#             if self.request.user.is_superuser or self.request.user.has_perm("website.can_approve"):
-#                 if self.cleaned_data.get("next_status") == "approved":
-#                     self.instance.active = True
-#                     schema_data = {
-#                         "@context": "https://schema.org",
-#                         "@type": self.instance.schema_type,
-#                         "mainEntityOfPage": {
-#                             "@type": "WebPage",
-#                             "@id": f"https://mediusware.com/blog/{self.instance.slug}/"
-#                         },
-#                         "headline": self.instance.title,
-#                         "image": self.instance.image.url if self.instance.image else "/static/images/placeholder.jpg",
-#                         "author": {
-#                             "@type": "Person",
-#                             "name": f"{self.instance.created_by.first_name} {self.instance.created_by.last_name}"
-#                         },
-#                         "publisher": {
-#                             "@type": "Organization",
-#                             "name": "Mediusware",
-#                             "logo": {
-#                                 "@type": "ImageObject",
-#                                 "url": "/static/images/logo.png"
-#                             }
-#                         },
-#                         "datePublished": self.instance.approved_at.strftime("%Y-%m-%d") if self.instance.approved_at else ""
-#                     }
-#                     self.instance.main_body_schema = json.dumps(schema_data, indent=2)
-#         return super().save(commit)
 class BlogForm(forms.ModelForm):
     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
     
@@ -623,36 +392,6 @@ class BlogForm(forms.ModelForm):
             self.instance.child_services.set(self.cleaned_data['child_services'])
             self.save_m2m()
         return instance
-
-# class BlogForm(forms.ModelForm):
-#     next_status = forms.ChoiceField(choices=[('', 'Select option')] + BlogStatus.choices[:-1], required=False, label="Status")
-#     class Meta:
-#         model = Blog
-#         fields = "__all__"
-#         widgets = {
-#             "title": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
-#             "slug": forms.Textarea(attrs={"rows": 2, "cols": 40, "style": "width: 70%;resize:none;"}),
-#             "content": forms.Textarea(attrs={"rows": 20, "style": "width: 80%;"}),
-#             "main_body_schema": forms.Textarea(attrs={"rows": 10, "cols": 80}),  # Plain textarea to avoid WYSIWYG issues
-#         }
-#     def __init__(self, *args, **kwargs):
-#         self.request = kwargs.pop('request', None)
-#         super().__init__(*args, **kwargs)
-#         if self.instance and self.instance.pk:
-#             self.fields['next_status'].initial = self.instance.status
-#         if self.request and hasattr(self.request, 'user'):
-#             if not self.request.user.is_superuser and not self.request.user.has_perm("website.can_approve"):
-#                 self.fields["next_status"].choices = [('', 'Select option'), ("draft", "In Draft"), ("submit_for_review", "In Review")]
-#                 self.fields["main_body_schema"].widget.attrs['readonly'] = True
-#             elif not self.request.user.is_superuser and self.request.user.has_perm("website.can_approve"):
-#                 self.fields["next_status"].choices = [('', 'Select option'), ("need_revision", "In Revision"), ("approved", "Approved")]
-#     def save(self, commit=True):
-#         from django.utils.text import slugify
-#         if self.cleaned_data.get("next_status"):
-#             self.instance.status = self.cleaned_data["next_status"]
-#         if not self.instance.slug:
-#             self.instance.slug = slugify(self.cleaned_data["title"])[:50]
-#         return super().save(commit)
 
 
 
@@ -764,21 +503,11 @@ class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
 class ServeCategoryFAQSchemaInline(nested_admin.NestedStackedInline):
     model = ServeCategoryFAQSchema
     extra = 0  # Don't show empty form
-    # readonly_fields = ('faq_schema_display',)
     can_delete = False
-    # fields = ('faq_schema_display',)
     
     def has_add_permission(self, request, obj=None):
         return False
     
-    # def faq_schema_display(self, obj):
-    #     if obj and obj.faq_schema:
-    #         return format_html(
-    #             '<div style="max-height: 200px; overflow-y: auto; background: #f8f8f8; padding: 10px; border: 1px solid #ddd;">{}</div>',
-    #             obj.faq_schema
-    #         )
-    #     return "No FAQ schema generated yet"
-    # faq_schema_display.short_description = "FAQ Schema"
 
 
 class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
@@ -786,11 +515,44 @@ class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
     extra = 1
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
+
+
+class OurProcessInline(nested_admin.NestedStackedInline):
+    model = OurProcess
+    extra = 1
+
+class CustomSolutionsInline(nested_admin.NestedStackedInline):
+    model = CustomSolutions
+    extra = 1
+
+class BenefitsInline(nested_admin.NestedStackedInline):
+    model = Benefits
+    extra = 1
+
+class WhyChooseUsInline(nested_admin.NestedStackedInline):
+    model = WhyChooseUs
+    extra = 1
+
+class IndustryDetailsHeadingInline(nested_admin.NestedStackedInline):
+    model = IndustryDetailsHeading
+    extra = 1
+    max_num = 1
+    min_num = 1  # Ensures at least one instance must exist
+
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline,IndustryMetadataInline, ServiceCategoryFAQInline, ServeCategoryCTAInline, ServeCategoryFAQSchemaInline]
+    inlines = [ApplicationAreasInline, 
+               IndustryMetadataInline,
+               IndustryDetailsHeadingInline,
+               OurProcessInline,
+               CustomSolutionsInline, 
+               BenefitsInline,
+               WhyChooseUsInline,
+               ServiceCategoryFAQInline, 
+               ServeCategoryCTAInline, 
+               ServeCategoryFAQSchemaInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
 
@@ -847,6 +609,18 @@ class ServicePageCTAInline(nested_admin.NestedStackedInline):
     extra = 1
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
+
+
+class ServicePageFAQSchemaInline(nested_admin.NestedStackedInline):
+    model = ServicePageFAQSchema
+    extra = 0
+    can_delete = True
+    
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+
 @admin.register(ServicePage)
 class ServicePageAdmin(admin.ModelAdmin):
     list_display = (
@@ -890,10 +664,52 @@ class ServicePageAdmin(admin.ModelAdmin):
         DevelopmentServiceProcessInline,
         ComparativeAnalysisInline,
         FAQQuestionInline,
+        ServicePageFAQSchemaInline,
         ServiceMetaDataInline,
         ServicePageCTAInline
     ]
     list_per_page = 20
+
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        
+        # Fixed: Changed from technology to service_page
+        service_page = form.instance
+        
+        # Fixed: Changed from faqs to questions
+        faqs = service_page.questions.all().order_by('id')  # ServiceFAQQuestion doesn't have an order field
+        
+        # Fixed: Changed from technology to service_page
+        ServicePageFAQSchema.objects.filter(service_page=service_page).delete()
+        
+        if faqs.exists():
+            faq_schema = {
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": faq.question,
+                        "acceptedAnswer": {
+                            "@type": "Answer",
+                            "text": faq.answer
+                        }
+                    }
+                    for faq in faqs
+                ]
+            }
+            
+            # Fixed: Changed from technology to service_page
+            ServicePageFAQSchema.objects.create(
+                service_page=service_page,
+                faq_schema=mark_safe(
+                    '<script type="application/ld+json">\n'
+                    f'{json.dumps(faq_schema, indent=2)}\n'
+                    '</script>'
+                )
+            )
+
 
 @admin.register(TechnologyType)
 class TechnologyTypeAdmin(admin.ModelAdmin):
@@ -928,7 +744,7 @@ class TechnologyFAQSchemaInline(nested_admin.NestedStackedInline):
     
 @admin.register(Technology)
 class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelAdmin
-    list_display = ("name", "slug", "type")
+    list_display = ("name", "slug", "type", "show_in_menu")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
     inlines = [TechnologyFAQInline, TechnologyCTAInline, TechnologyFAQSchemaInline]

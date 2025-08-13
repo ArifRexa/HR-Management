@@ -4,6 +4,8 @@ from tinymce.models import HTMLField
 
 from config.model import TimeStampMixin
 
+
+# ===================================Industry Details====================================
 class ServeCategory(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
@@ -25,6 +27,119 @@ class ServeCategory(models.Model):
     class Meta:
         verbose_name = "Industry Detail"
         verbose_name_plural = "Industry Details"
+
+
+
+
+class OurProcess(models.Model):
+    industry = models.ForeignKey(
+        ServeCategory, 
+        on_delete=models.CASCADE,
+        related_name='our_process',
+        null=True,
+        blank=True
+    )
+    section_title = models.CharField(max_length=200)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+
+    def __str__(self):
+        return self.section_title
+    
+    class Meta:
+        verbose_name = "Our Process"
+        verbose_name_plural = "Our Processes"
+        ordering = ['order']
+    
+class IndustryDetailsHeading(models.Model):
+    industry = models.ForeignKey(
+        ServeCategory, 
+        on_delete=models.CASCADE,
+        related_name='industry_details_heading',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Industry Details Heading"
+    
+    class Meta:
+        verbose_name = "Industry Details Heading"
+        verbose_name_plural = "Industry Details Headings"
+    
+
+class CustomSolutions(models.Model):
+    industry = models.ForeignKey(
+        ServeCategory, 
+        on_delete=models.CASCADE,
+        related_name='custom_solutions',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Custom Solutions"
+    
+    class Meta:
+        verbose_name = "Custom Solution"
+        verbose_name_plural = "Custom Solutions"
+    
+
+class Benefits(models.Model):
+    industry = models.ForeignKey(
+        ServeCategory, 
+        on_delete=models.CASCADE,
+        related_name='benefits',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
+
+
+    def __str__(self):
+        return self.section_title or "Benefits"
+    
+    class Meta:
+        verbose_name = "Benefit"
+        verbose_name_plural = "Benefits"
+    
+    
+class WhyChooseUs(models.Model):
+    industry = models.ForeignKey(
+        ServeCategory, 
+        on_delete=models.CASCADE,
+        related_name='why_choose_us',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Why Choose Us"
+    
+    class Meta:
+        verbose_name = "Why Choose Us"
+        verbose_name_plural = "Why Choose Us"
+
+
+    
+
+
+
 
 class ServeCategoryCTA(models.Model):
     title = models.CharField(max_length=255, null=True, blank=True)

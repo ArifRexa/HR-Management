@@ -24,6 +24,7 @@ from website.views import (
     PreviewBlogRetrieveAPIView,
     ProjectTechnologyListAPIView,
     ProjectVideoListAPIView,
+    ServeCategoryAPIView,
     ServiceList,
     ServiceDetails,
     ProjectList,
@@ -256,6 +257,8 @@ urlpatterns = [
     path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
     path("website/technology-navigation/", TechnologyNavigationView.as_view(), name="technology_navigation"),
     path('website/blogs/', BlogListAPIView.as_view(), name='blog-list'),
+    # path('api/industry-details/', ServeCategoryAPIView.as_view(), name='serve-category-list'),
+    path('api/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
