@@ -1,34 +1,13 @@
-{% load daily_expense %}
-{% load humanize %}
-{% load humanize_extra %}
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'compliance/base/layout.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Voucher</title>
-    <style>
-        @page {
-      size: A4;
-      margin: 15mm;
-    }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .cover-page {
-      page-break-after: always;
-    }
+{% block content %}
+    
+<style>
     .cover-header {
         text-align: center;
         color: black;
-        position: absolute;
-        width: 100%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
+        position: relative;
+        margin-top:200px;
     }
     .cover-header h1 {
       margin: 0 0 10px;
@@ -43,96 +22,86 @@
       margin-top: 15px;
       font-size: 28px;
     }
-    .attachments {
-      width: 100%;
-    }
-    .attachment {
-      margin: 10px 0;
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-    .attachment img {
-      width: 100%;
-      display: block;
-    }
 
         table {
             border-collapse: collapse;
             width: 100%;
         }
 
-        th,
+        th{
+          border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            margin-bottom: -50px;
+        }
         td {
             border: 1px solid black;
             padding: 8px;
             text-align: left;
         }
 
-        th {
-            background-color: #fafafa;
-        }
+        /* ------------- centering trick ------------- */
+.center-table {
+    width: 750px;
+    height: 750px;
 
-        .table-sm {
-            width: 40% !important;
-            margin-top: 25px !important;
-        }
+}
+.center-table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 0px;
+}
 
-        .float-right {
-            float: right !important;
-        }
+/* ------------- your text ------------- */
 
-        .head-container {
-            display: flex;
-            justify-content: space-between;
-            margin: 25px 0px;
-        }
+.report-title {
+    margin-top: 15px;
+    font-size: 28px;
+}
 
-        .my-30 {
-            margin: 25px 0px;
-        }
-
-        .my-25 {
-            margin: 25px 0px;
-        }
-
-        .my-20 {
-            margin: 20px 0px;
-        }
-        .my-10 {
-            margin: 10px 0px;
-        }
-
-
-        .my-50 {
-            margin: 50px 0px;
-        }
-
-        .report-by {
-            margin-top: 80px;
-            margin-bottom: 50px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .footer {
-            margin-top: 100px;
-        }
     </style>
-</head>
+    
 
-<body>
-    <div class="cover-page" >
-    <div class="cover-header">
-      <h1>Mediusware</h1>
-      <p>24/1, Taj Mahal Road, Shiya Masjid Mor</p>
-      <p>7<sup>th</sup> &amp; 8<sup>th</sup> Floor, Ring Road, Dhaka 1207</p>
-      <div class="report-title">Monthly Expense ({{ month }})</div>
-    </div>
-  </div>
-    <div class="main">
-        {{table | safe}}
-    </div>
 
-</body>
+    <div class="cover-page page-break">
+    <table class="center-table" style="border: none;">
+        <tr>
+            <td style="border: none; padding: 0;">
+                <div class="cover-header">
+                    <h1>Mediusware</h1>
+                    <p>24/1, Taj Mahal Road, Shiya Masjid Mor</p>
+                    <p>7<sup>th</sup> &amp; 8<sup>th</sup> Floor, Ring Road, Dhaka&nbsp;1207</p>
+                    <div class="report-title">Monthly Expense ({{ month }})</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
 
-</html>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Expense Group</th>
+            <th>Expense Category</th>
+            <th>Amount</th>
+          <tr>
+        </thead>
+        <tbody>
+          {% for expense in expenses %}
+          <tr>
+            <td>{{ expense.date|date:"d M Y" }}</td>
+            <td>{{ expense.expanse_group__title }}</td>
+            <td>{{ expense.expense_category__title }}</td>
+            <td>{{ expense.amount|floatformat:2 }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td colspan="3" style="text-align: right; font-weight: bold;">Total</td>
+            <td>{{ total_amount|floatformat:2 }}</td>
+        </tbody>
+      </table>
+      
+
+
+{% endblock %}

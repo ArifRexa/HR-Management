@@ -1,30 +1,12 @@
-{% load daily_expense humanize humanize_extra %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8"/>
-  <title>Monthly Expense</title>
-  <style>
-    @page {
-      size: A4;
-      margin: 15mm;
-    }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-    }
-    .cover-page {
-      page-break-after: always;
-    }
+{% extends 'compliance/base/layout.html' %}
+
+{% block content %}
+<style>
     .cover-header {
         text-align: center;
         color: black;
-        position: absolute;
-        width: 100%;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        text-align: center;
+        position: relative;
+        margin-top:200px;
     }
     .cover-header h1 {
       margin: 0 0 10px;
@@ -39,30 +21,60 @@
       margin-top: 15px;
       font-size: 28px;
     }
-    .attachments {
-      width: 100%;
-    }
-    .attachment {
-      margin: 10px 0;
-      break-inside: avoid;
-      page-break-inside: avoid;
-    }
-    .attachment img {
-      width: 100%;
-      display: block;
-    }
-  </style>
-</head>
-<body>
 
-  <div class="cover-page" >
-    <div class="cover-header">
-      <h1>Mediusware</h1>
-      <p>24/1, Taj Mahal Road, Shiya Masjid Mor</p>
-      <p>7<sup>th</sup> &amp; 8<sup>th</sup> Floor, Ring Road, Dhaka 1207</p>
-      <div class="report-title">Monthly Expense ({{ month }})</div>
-    </div>
-  </div>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th{
+          border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+            margin-bottom: -50px;
+        }
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+
+        /* ------------- centering trick ------------- */
+.center-table {
+    width: 750px;
+    height: 750px;
+
+}
+.center-table td {
+    vertical-align: middle;
+    text-align: center;
+    padding: 0px;
+}
+
+/* ------------- your text ------------- */
+
+.report-title {
+    margin-top: 15px;
+    font-size: 28px;
+}
+
+    </style>
+
+
+  <div class="cover-page page-break">
+    <table class="center-table" style="border: none;">
+        <tr>
+            <td style="border: none; padding: 0;">
+                <div class="cover-header">
+                    <h1>Mediusware</h1>
+                    <p>24/1, Taj Mahal Road, Shiya Masjid Mor</p>
+                    <p>7<sup>th</sup> &amp; 8<sup>th</sup> Floor, Ring Road, Dhaka&nbsp;1207</p>
+                    <div class="report-title">Monthly Expense ({{ month }})</div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
 
   <div class="attachments">
     {% for img_url in expenses %}
@@ -72,5 +84,4 @@
     {% endfor %}
   </div>
 
-</body>
-</html>
+{% endblock %}
