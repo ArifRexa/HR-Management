@@ -134,6 +134,10 @@ class Technology(TimeStampMixin):
         TechnologyType, related_name="technologies", on_delete=models.CASCADE
     )
     icon = models.ImageField(upload_to="technology_icons/", null=True, blank=True)
+    show_in_menu = models.BooleanField(
+        default=False,
+        help_text="If checked, this technology will be displayed in the main menu.",
+    )
 
     # def clean(self):
     #     if Technology.objects.filter(name=self.name).exists():

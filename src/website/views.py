@@ -1464,11 +1464,11 @@ class BlogListAPIView(ListAPIView):
                     technology_ids = [int(id) for id in technology_ids]
                 except ValueError:
                     technology_ids = []
-                technologies = Technology.objects.filter(id__in=technology_ids)
+                technologies = Technology.objects.filter(id__in=technology_ids, show_in_menu=True).all()
             else:
-                technologies = Technology.objects.all()
+                technologies = Technology.objects.filter(show_in_menu=True).all()
             response_data['technology'] = TechnologySerializer(technologies, many=True).data
-        
+
         return Response(response_data)
     
     

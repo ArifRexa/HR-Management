@@ -711,7 +711,7 @@ class TechnologyFAQSchemaInline(nested_admin.NestedStackedInline):
     
 @admin.register(Technology)
 class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelAdmin
-    list_display = ("name", "slug", "type")
+    list_display = ("name", "slug", "type", "show_in_menu")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
     inlines = [TechnologyFAQInline, TechnologyCTAInline, TechnologyFAQSchemaInline]
