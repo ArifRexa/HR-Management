@@ -25,43 +25,43 @@ class ProjectTechnologyInlineForm(forms.ModelForm):
         )  # Optional: Add CSS class for better UI
 
 
-class ProjectAdminForm(forms.ModelForm):
-    # services = forms.ModelChoiceField(
-    #     queryset=ServicePage.objects.all(),
-    #     required=False,
-    #     widget=forms.Select(
-    #         attrs={
-    #             "class": "select2",
-    #         }
-    #     ),
-    #     empty_label='------'
-    # )
+# class ProjectAdminForm(forms.ModelForm):
+#     # services = forms.ModelChoiceField(
+#     #     queryset=ServicePage.objects.all(),
+#     #     required=False,
+#     #     widget=forms.Select(
+#     #         attrs={
+#     #             "class": "select2",
+#     #         }
+#     #     ),
+#     #     empty_label='------'
+#     # )
 
-    class Meta:
-        model = Project
-        fields = "__all__"
-        # exclude = ['hourly_rate']
-        widgets = {
-            "description": forms.Textarea(
-                attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
-            )
-        }
+#     class Meta:
+#         model = Project
+#         fields = "__all__"
+#         # exclude = ['hourly_rate']
+#         widgets = {
+#             "description": forms.Textarea(
+#                 attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
+#             )
+#         }
 
-    def __init__(self, *args, **kwargs):
-        super(ProjectAdminForm, self).__init__(*args, **kwargs)
-        self.fields['services'].label_from_instance = self.custom_service_label
+#     def __init__(self, *args, **kwargs):
+#         super(ProjectAdminForm, self).__init__(*args, **kwargs)
+#         self.fields['services'].label_from_instance = self.custom_service_label
 
-    def custom_service_label(self, obj):
-        return obj.menu_title
+#     def custom_service_label(self, obj):
+#         return obj.menu_title
 
-    def clean(self):
-        if self.cleaned_data.get("featured_video") and not self.cleaned_data.get(
-            "thumbnail"
-        ):
-            raise forms.ValidationError(
-                "Thumbnail Required when Featured Video is Provided"
-            )
-        return super().clean()
+#     def clean(self):
+#         if self.cleaned_data.get("featured_video") and not self.cleaned_data.get(
+#             "thumbnail"
+#         ):
+#             raise forms.ValidationError(
+#                 "Thumbnail Required when Featured Video is Provided"
+#             )
+#         return super().clean()
 
 # class ProjectAdminForm(forms.ModelForm):
 #     class Meta:
