@@ -441,7 +441,8 @@ class Project(TimeStampMixin, AuthorMixin):
         ServicePage,
         related_name="projects",
         limit_choices_to={"is_parent": True},
-        verbose_name="Services"
+        verbose_name="Services",
+        blank=True
     )
     technology = models.ManyToManyField(
         'website.Technology',
