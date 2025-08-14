@@ -431,7 +431,25 @@ class Project(TimeStampMixin, AuthorMixin):
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
-
+    categories_tags = models.ManyToManyField('website.Category', related_name="projects", verbose_name="tags", blank=True)
+    industries = models.ManyToManyField(
+        ServeCategory,
+        related_name="projects",
+        blank=True,
+    )
+    services = models.ManyToManyField(
+        ServicePage,
+        related_name="projects",
+        limit_choices_to={"is_parent": True},
+        verbose_name="Services",
+        blank=True
+    )
+    technology = models.ManyToManyField(
+        'website.Technology',
+        verbose_name="Technologies",
+        blank=True,
+        related_name='projects',
+    )
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     country = models.ForeignKey(
