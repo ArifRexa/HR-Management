@@ -191,6 +191,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     # form = ProjectAdminForm
     fields = (
         "title",
+        # "slug",
         # "web_title",
         "description",
         "client",

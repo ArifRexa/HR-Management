@@ -11,7 +11,11 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 
 from project_management.models import DailyProjectUpdate, Project, ProjectHour
+from project_management.serializers import ProjectDetailSerializer, ProjectListSerializer
 from project_management.utils.auto_client_weekly_report import ClientWeeklyUpdate
+from rest_framework.generics import RetrieveAPIView, ListAPIView
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class GroupConcat(Aggregate):
@@ -256,3 +260,66 @@ def generate_pdf(request, *args, **kwargs):
     html = HTML(string=html_content)
     pdf_file = html.write_pdf()
     return HttpResponse(pdf_file, content_type="application/pdf")
+
+
+class ProjectListView(ListAPIView):
+    """List all projects with basic information"""
+    queryset = Project.objects.all()
+    serializer_class = ProjectListSerializer
+    
+    @swagger_auto_schema(
+        tags=["Case Study"],
+        operation_description="Retrieve a list of all projects",
+        responses={
+            200: ProjectListSerializer(many=True),
+            401: "Unauthorized"
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        return Project.objects.select_related('client').prefetch_related(
+            'platforms', 'categories_tags', 'industries', 'services', 'technology'
+        )
+
+class ProjectDetailView(RetrieveAPIView):
+    """Retrieve project details by slug with all nested data"""
+    queryset = Project.objects.all()
+    serializer_class = ProjectDetailSerializer
+    lookup_field = 'slug'
+    
+    @swagger_auto_schema(
+        tags=["Case Study"],
+        operation_description="Retrieve detailed project information by slug",
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Unique slug identifier of the project",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={
+            200: ProjectDetailSerializer,
+            404: "Project not found",
+            401: "Unauthorized"
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        # Use the correct relation names based on the error message
+        return Project.objects.select_related(
+            'client', 'country'
+        ).prefetch_related(
+            'projectkeypoint_set',
+            'projectcontent_set',
+            'platforms',
+            'categories_tags',
+            'industries',
+            'services',
+            'technology'
+        )
