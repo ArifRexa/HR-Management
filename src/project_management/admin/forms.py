@@ -25,99 +25,99 @@ class ProjectTechnologyInlineForm(forms.ModelForm):
         )  # Optional: Add CSS class for better UI
 
 
-# class ProjectAdminForm(forms.ModelForm):
-#     services = forms.ModelChoiceField(
-#         queryset=ServicePage.objects.all(),
-#         required=False,
-#         widget=forms.Select(
-#             attrs={
-#                 "class": "select2",
-#             }
-#         ),
-#         empty_label='------'
-#     )
-
-#     class Meta:
-#         model = Project
-#         fields = "__all__"
-#         # exclude = ['hourly_rate']
-#         widgets = {
-#             "description": forms.Textarea(
-#                 attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
-#             )
-#         }
-
-#     def __init__(self, *args, **kwargs):
-#         super(ProjectAdminForm, self).__init__(*args, **kwargs)
-#         self.fields['services'].label_from_instance = self.custom_service_label
-
-#     def custom_service_label(self, obj):
-#         return obj.menu_title
-
-#     def clean(self):
-#         if self.cleaned_data.get("featured_video") and not self.cleaned_data.get(
-#             "thumbnail"
-#         ):
-#             raise forms.ValidationError(
-#                 "Thumbnail Required when Featured Video is Provided"
-#             )
-#         return super().clean()
-
 class ProjectAdminForm(forms.ModelForm):
+    # services = forms.ModelChoiceField(
+    #     queryset=ServicePage.objects.all(),
+    #     required=False,
+    #     widget=forms.Select(
+    #         attrs={
+    #             "class": "select2",
+    #         }
+    #     ),
+    #     empty_label='------'
+    # )
+
     class Meta:
         model = Project
         fields = "__all__"
+        # exclude = ['hourly_rate']
         widgets = {
             "description": forms.Textarea(
                 attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
-            ),
-            "category": admin.widgets.AutocompleteSelectMultiple(
-                Project._meta.get_field('category'),
-                admin.site,
-            ),
-            "industries": admin.widgets.AutocompleteSelectMultiple(
-                Project._meta.get_field('industries'),
-                admin.site,
-            ),
-            "services": admin.widgets.AutocompleteSelectMultiple(
-                Project._meta.get_field('services'),
-                admin.site,
-            ),
-            "technology": admin.widgets.AutocompleteSelectMultiple(
-                Project._meta.get_field('technology'),
-                admin.site,
-            ),
+            )
         }
-    
+
     def __init__(self, *args, **kwargs):
         super(ProjectAdminForm, self).__init__(*args, **kwargs)
-        
-        # Filter services to only show parent services
-        self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
-        
-        # Customize the label for services if needed
         self.fields['services'].label_from_instance = self.custom_service_label
-    
+
     def custom_service_label(self, obj):
-        return obj.menu_title if obj.menu_title else obj.title
-    
+        return obj.menu_title
+
     def clean(self):
-        cleaned_data = super().clean()
-        
-        # Validate featured video and thumbnail relationship
-        if cleaned_data.get("featured_video") and not cleaned_data.get("thumbnail"):
+        if self.cleaned_data.get("featured_video") and not self.cleaned_data.get(
+            "thumbnail"
+        ):
             raise forms.ValidationError(
                 "Thumbnail Required when Featured Video is Provided"
             )
+        return super().clean()
+
+# class ProjectAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Project
+#         fields = "__all__"
+#         widgets = {
+#             "description": forms.Textarea(
+#                 attrs={"cols": 100, "rows": 2, "style": "resize: none;"}
+#             ),
+#             "category": admin.widgets.AutocompleteSelectMultiple(
+#                 Project._meta.get_field('category'),
+#                 admin.site,
+#             ),
+#             "industries": admin.widgets.AutocompleteSelectMultiple(
+#                 Project._meta.get_field('industries'),
+#                 admin.site,
+#             ),
+#             "services": admin.widgets.AutocompleteSelectMultiple(
+#                 Project._meta.get_field('services'),
+#                 admin.site,
+#             ),
+#             "technology": admin.widgets.AutocompleteSelectMultiple(
+#                 Project._meta.get_field('technology'),
+#                 admin.site,
+#             ),
+#         }
+    
+#     def __init__(self, *args, **kwargs):
+#         super(ProjectAdminForm, self).__init__(*args, **kwargs)
         
-        # Validate that selected services are parent services
-        services = cleaned_data.get("services")
-        if services:
-            non_parent_services = [s for s in services if not s.is_parent]
-            if non_parent_services:
-                service_names = ", ".join([s.title for s in non_parent_services])
-                raise forms.ValidationError(
-                    f"The following services are not parent services: {service_names}"
-                )
+#         # Filter services to only show parent services
+#         self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
         
-        return cleaned_data
+#         # Customize the label for services if needed
+#         self.fields['services'].label_from_instance = self.custom_service_label
+    
+#     def custom_service_label(self, obj):
+#         return obj.menu_title if obj.menu_title else obj.title
+    
+#     def clean(self):
+#         cleaned_data = super().clean()
+        
+#         # Validate featured video and thumbnail relationship
+#         if cleaned_data.get("featured_video") and not cleaned_data.get("thumbnail"):
+#             raise forms.ValidationError(
+#                 "Thumbnail Required when Featured Video is Provided"
+#             )
+        
+#         # Validate that selected services are parent services
+#         services = cleaned_data.get("services")
+#         if services:
+#             non_parent_services = [s for s in services if not s.is_parent]
+#             if non_parent_services:
+#                 service_names = ", ".join([s.title for s in non_parent_services])
+#                 raise forms.ValidationError(
+#                     f"The following services are not parent services: {service_names}"
+#                 )
+        
+#         return cleaned_data
