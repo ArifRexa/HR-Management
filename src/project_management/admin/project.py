@@ -187,7 +187,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     list_per_page = 20
     ordering = ("pk",)
     # autocomplete_fields = ["client"]
-    autocomplete_fields = ["client", "category", "industries", "services", "technology"]
+    autocomplete_fields = ["client"]
     # form = ProjectAdminForm
     fields = (
         "title",
