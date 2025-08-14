@@ -345,8 +345,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     )
     project_results = ProjectResultStatisticsSerializer(many=True)
     platforms = ProjectPlatformSerializer(many=True)
-    industries = ProjectIndustrySerializer()
-    services = ProjectServiceSerializer()
+    industries = ProjectIndustrySerializer(many=True)  # Added many=True
+    services = ProjectServiceSerializer(many=True)
     title = serializers.SerializerMethodField()
     service_solution_title = serializers.SerializerMethodField()
 
