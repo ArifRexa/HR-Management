@@ -19,7 +19,10 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 
+from smart_selects.db_fields import ChainedManyToManyField
+
 # from employee.models import LeaveManagement
+from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 
 
@@ -428,19 +431,23 @@ class Project(TimeStampMixin, AuthorMixin):
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
-    industries = models.ForeignKey(
-        "website.IndustryWeServe",
+    category = models.ManyToManyField('website.Category', related_name="projects", verbose_name="tags", blank=True)
+    industries = models.ManyToManyField(
+        ServeCategory,
         related_name="projects",
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
     )
-    services = models.ForeignKey(
+    services = models.ManyToManyField(
         ServicePage,
         related_name="projects",
+        limit_choices_to={"is_parent": True},
+        verbose_name="Services"
+    )
+    technology = models.ManyToManyField(
+        'website.Technology',
+        verbose_name="Technologies",
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
+        related_name='projects',
     )
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
