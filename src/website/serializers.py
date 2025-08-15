@@ -1413,7 +1413,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
 class SimpleServeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServeCategory
-        fields = ['title', 'slug']
+        fields = ['id', 'title', 'slug']
 
 
 
