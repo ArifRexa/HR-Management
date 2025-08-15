@@ -115,11 +115,17 @@ class EmployeeAdmin(
         return all_fields
 
     def get_search_results(self, request, queryset, search_term):
+        query_params = request.GET
         qs, use_distinct = super().get_search_results(
             request, queryset, search_term
         )
 
         # Override select2 auto relation to employee
+        if (
+            query_params.get("model_name")
+            and query_params.get("model_name") == "tdschallan"
+        ):
+            return qs, use_distinct
         if (
             request.user.is_authenticated
             and "autocomplete" in request.get_full_path()
