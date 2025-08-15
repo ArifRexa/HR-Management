@@ -11,24 +11,24 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # migrations.AddField(
-        #     model_name='project',
-        #     name='categories_tags',
-        #     field=models.ManyToManyField(blank=True, related_name='projects', to='website.Category', verbose_name='tags'),
-        # ),
-        # migrations.AddField(
-        #     model_name='project',
-        #     name='industries',
-        #     field=models.ManyToManyField(blank=True, related_name='projects', to='website.ServeCategory'),
-        # ),
-        # migrations.AddField(
-        #     model_name='project',
-        #     name='services',
-        #     field=models.ManyToManyField(blank=True, limit_choices_to={'is_parent': True}, related_name='projects', to='website.ServicePage', verbose_name='Services'),
-        # ),
-        # migrations.AddField(
-        #     model_name='project',
-        #     name='technology',
-        #     field=models.ManyToManyField(blank=True, related_name='projects', to='website.Technology', verbose_name='Technologies'),
-        # ),
+        migrations.AddField(
+            model_name='project',
+            name='categories_tags',
+            field=models.ManyToManyField(blank=True, related_name='projects', to='website.Category', verbose_name='tags'),
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='industries',
+            field=models.ManyToManyField(blank=True, related_name='projects', to='website.ServeCategory'),
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='services',
+            field=models.ManyToManyField(blank=True, limit_choices_to={'is_parent': True}, related_name='projects', to='website.ServicePage', verbose_name='Services'),
+        ),
+        migrations.AddField(
+            model_name='project',
+            name='technology',
+            field=models.ManyToManyField(blank=True, related_name='projects', to='website.Technology', verbose_name='Technologies'),
+        ),
     ]
