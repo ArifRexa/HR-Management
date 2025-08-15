@@ -492,4 +492,4 @@ def expense_attachments(self, id, *args, **kwargs):
         "expense_attachments": [attachment.attachment.url for attachment in attachments]
     }
     pdf.file_name = "expense.pdf"
-    return pdf.render_to_pdf()
+    return pdf.render_to_pdf(download=False)

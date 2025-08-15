@@ -217,16 +217,22 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     @admin.action()
     def change_authorized_status(self, request, queryset):
-        try:
-            approve = queryset.filter(is_authorized=True).update(
-                is_authorized=False
-            )
-            unapprove = queryset.filter(is_authorized=False).update(
-                is_authorized=True
-            )
-            self.message_user(request, "authorized status change successfully")
-        except Exception:
-            self.message_user(request, "some things wrong")
+        total = queryset.count()
+        toggled_to_true = 0
+        toggled_to_false = 0
+        
+        for obj in queryset:
+            obj.is_authorized = not obj.is_authorized
+            obj.save(update_fields=['is_authorized'])
+            if obj.is_authorized:
+                toggled_to_true += 1
+            else:
+                toggled_to_false += 1
+        
+        self.message_user(
+            request,
+            f"Toggled {total} items: {toggled_to_true} set to True, {toggled_to_false} set to False."
+        )
 
     def lookup_allowed(self, lookup, value):
         if lookup in ["created_by__employee__id__exact"]:
