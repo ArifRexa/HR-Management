@@ -92,7 +92,7 @@ from website.models import (
     WebsiteTitle,
     WhyUsTitle,
 )
-from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, CustomSolutions, IndustryDetailsHeading, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
 from website.models_v2.services import ServicePage
 
 
@@ -1521,6 +1521,37 @@ class BlogSerializer(serializers.ModelSerializer):
 
 # ============================== Industry Details ==================================
 
+
+class IndustryDetailsHeroSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryDetailsHeroSection
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeIndustryDetailsHeroSection'
+
+class IndustryDetailsHeadingCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryDetailsHeadingCards
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeIndustryDetailsHeadingCards'
+
+class CustomSolutionsCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomSolutionsCards
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeCustomSolutionsCards'
+
+class BenefitsQASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BenefitsQA
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeBenefitsQA'
+
+class WhyChooseUsCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WhyChooseUsCards
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeWhyChooseUsCards'
+
 class OurProcessSerializer(serializers.ModelSerializer):
     class Meta:
         model = OurProcess
@@ -1528,24 +1559,32 @@ class OurProcessSerializer(serializers.ModelSerializer):
         ref_name = 'IndustriesWeServeOurProcess'
 
 class IndustryDetailsHeadingSerializer(serializers.ModelSerializer):
+    industry_details_sub_heading = IndustryDetailsHeadingCardsSerializer(many=True, read_only=True)
+    
     class Meta:
         model = IndustryDetailsHeading
         fields = '__all__'
         ref_name = 'IndustriesWeServeIndustryDetailsHeading'
 
 class CustomSolutionsSerializer(serializers.ModelSerializer):
+    custom_solutions_cards = CustomSolutionsCardsSerializer(many=True, read_only=True)
+    
     class Meta:
         model = CustomSolutions
         fields = '__all__'
         ref_name = 'IndustriesWeServeCustomSolutions'
 
 class BenefitsSerializer(serializers.ModelSerializer):
+    benefits_cards = BenefitsQASerializer(many=True, read_only=True)
+    
     class Meta:
         model = Benefits
         fields = '__all__'
         ref_name = 'IndustriesWeServeBenefits'
 
 class WhyChooseUsSerializer(serializers.ModelSerializer):
+    why_choose_us_cards = WhyChooseUsCardsSerializer(many=True, read_only=True)
+    
     class Meta:
         model = WhyChooseUs
         fields = '__all__'
@@ -1585,6 +1624,7 @@ class IndustryServeSerializer(serializers.ModelSerializer):
 
 
 class ServeCategorySerializer(serializers.ModelSerializer):
+    industry_details_hero_section = IndustryDetailsHeroSectionSerializer(many=True, read_only=True)
     our_process = OurProcessSerializer(many=True, read_only=True)
     industry_details_heading = IndustryDetailsHeadingSerializer(many=True, read_only=True)
     custom_solutions = CustomSolutionsSerializer(many=True, read_only=True)
@@ -1595,7 +1635,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
     application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
-
+    
     class Meta:
         model = ServeCategory
         fields = '__all__'
