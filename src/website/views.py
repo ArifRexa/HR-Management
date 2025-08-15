@@ -107,6 +107,7 @@ from website.serializers import (
     ServiceDetailsSerializer,
     ServicePageSerializer,
     ServiceSerializer,
+    SimpleServeCategorySerializer,
     SkillSerializer,
     SpecialProjectSerializer,
     SubscriptionSerializer,
@@ -1319,6 +1320,62 @@ class BlogListAPIView(ListAPIView):
         return Response(response_data)
     
     
+
+
+class ServiceListAPIView(ListAPIView):
+    queryset = ServicePage.objects.filter(is_parent=True)
+    serializer_class = ServicePageSerializer
+    pagination_class = None  # No pagination needed for this endpoint
+
+    @swagger_auto_schema(
+        tags=["Blog List"],
+        operation_description="List all parent services",
+        responses={
+            200: ServicePageSerializer(many=True)
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class IndustryListAPIView(ListAPIView):
+    queryset = ServeCategory.objects.all()
+    serializer_class = SimpleServeCategorySerializer
+    pagination_class = None  # No pagination needed for this endpoint
+
+    @swagger_auto_schema(
+        tags=["Blog List"],
+        operation_description="List all industries",
+        responses={
+            200: SimpleServeCategorySerializer(many=True)
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+class TechnologyListAPIView(ListAPIView):
+    from website.models import Technology
+    queryset = Technology.objects.all()
+    serializer_class = TechnologySerializer
+    pagination_class = None  # No pagination needed for this endpoint
+
+    @swagger_auto_schema(
+        tags=["Blog List"],
+        operation_description="List all technologies",
+        responses={
+            200: TechnologySerializer(many=True)
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+
 
 
     
