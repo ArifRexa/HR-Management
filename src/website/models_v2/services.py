@@ -44,6 +44,85 @@ class ServicePage(TimeStampMixin):
         verbose_name = "Service"
         verbose_name_plural = "Services"
 
+# ======================= SolutionsAndServices =======================
+class SolutionsAndServices(TimeStampMixin):
+    services = models.ForeignKey(
+        ServicePage,
+        related_name="solutions_and_services",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.title
+    
+class SolutionsAndServicesCards(TimeStampMixin):
+    solutions_and_services = models.ForeignKey(
+        SolutionsAndServices,
+        related_name="cards",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+
+# =====================================Key Things======================================
+
+class KeyThings(models.Model):
+    industry = models.ForeignKey(
+        ServicePage, 
+        on_delete=models.CASCADE,
+        related_name='KeyThings',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
+
+
+    def __str__(self):
+        return self.section_title or "Benefits"
+    
+    class Meta:
+        verbose_name = "Key Things"
+        verbose_name_plural = "Key Things"
+
+class KeyThingsQA(models.Model):
+    benefits = models.ForeignKey(
+        KeyThings, 
+        on_delete=models.CASCADE,
+        related_name='KeyThings_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    def __str__(self):
+        return self.card_title
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class ServicePageFAQSchema(models.Model):
     service_page = models.OneToOneField(

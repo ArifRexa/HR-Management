@@ -120,7 +120,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
-from website.models_v2.services import ServicePage, ServicePageCTA, ServicePageFAQSchema
+from website.models_v2.services import KeyThings, KeyThingsQA, ServicePage, ServicePageCTA, ServicePageFAQSchema, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -654,12 +654,43 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
             )
 
 
+
+# ================================================================Service Page(Services)=============================================================
 # @admin.register(ServicePage)
 # class ServicePageAdmin(admin.ModelAdmin):
 #     search_fields = ['title']
 #     prepopulated_fields = {"slug": ("title",)}
 #     list_display = ('title', 'slug', 'is_parent')
 #     list_filter = ('is_parent',)
+
+# ===========================SolutionsAndServices======================
+class SolutionsAndServicesCardsInline(nested_admin.NestedStackedInline):
+    model = SolutionsAndServicesCards
+    extra = 1
+    fields = ('card_title', 'card_description')
+    verbose_name = "Solution Card"
+    verbose_name_plural = "Solution Cards"
+    
+class SolutionsAndServicesInline(nested_admin.NestedStackedInline):
+    model = SolutionsAndServices
+    extra = 1
+    inlines = [SolutionsAndServicesCardsInline]
+
+
+class KeyThingsQAInline(nested_admin.NestedStackedInline):
+    model = KeyThingsQA
+    extra = 1
+
+
+class KeyThingsInline(nested_admin.NestedStackedInline):
+    model = KeyThings
+    extra = 1
+    inlines = [KeyThingsQAInline]
+
+
+
+
+
 class ServicePageCTAInline(nested_admin.NestedStackedInline):
     model = ServicePageCTA
     extra = 1
@@ -678,7 +709,7 @@ class ServicePageFAQSchemaInline(nested_admin.NestedStackedInline):
 
 
 @admin.register(ServicePage)
-class ServicePageAdmin(admin.ModelAdmin):
+class ServicePageAdmin(nested_admin.NestedModelAdmin):
     list_display = (
         "title",
         "is_parent",
@@ -715,13 +746,18 @@ class ServicePageAdmin(admin.ModelAdmin):
     )
     prepopulated_fields = {"slug": ("title",)}
     inlines = [
-        DiscoverOurServiceInline,
-        AdditionalServiceContentInline,
-        DevelopmentServiceProcessInline,
-        ComparativeAnalysisInline,
-        FAQQuestionInline,
+        # DiscoverOurServiceInline,
+        # AdditionalServiceContentInline,
+        # DevelopmentServiceProcessInline,
+        # ComparativeAnalysisInline,
+        SolutionsAndServicesInline,
+        KeyThingsInline,
+
+
+
+        # FAQQuestionInline,
         ServicePageFAQSchemaInline,
-        ServiceMetaDataInline,
+        # ServiceMetaDataInline,
         ServicePageCTAInline
     ]
     list_per_page = 20
