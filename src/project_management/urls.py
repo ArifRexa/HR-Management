@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from django.urls import path
-from project_management.views import get_this_week_hour, slack_callback, generate_client_weekly_report, generate_pdf
+from project_management.views import  ProjectDetailView, ProjectListView, get_this_week_hour, slack_callback, generate_client_weekly_report, generate_pdf
 
 from django.urls import path, register_converter
 
@@ -25,4 +25,6 @@ urlpatterns = [
     path('slack/', slack_callback),
     # path('project-weekly-report/<int:project_id>/<date:hour_date>/', generate_pdf, name='generate_client_weekly_report'),
     path('project-weekly-report/', generate_pdf, name='generate_client_weekly_report'),
+    path('projects/', ProjectListView.as_view(), name='project-list'),
+    path('projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
 ]

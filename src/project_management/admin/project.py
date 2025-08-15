@@ -35,7 +35,7 @@ from project_management.models import (
 )
 from website.models import ProjectKeyword, ProjectMetadata
 
-from .forms import ProjectAdminForm, ProjectTechnologyInlineForm
+from .forms import ProjectTechnologyInlineForm
 
 
 @admin.register(Technology)
@@ -182,13 +182,16 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # ProjectPlatformImageInline,
         ProjectMetadataInline,
     )
+
     list_filter = ("active", "show_in_website")
     list_per_page = 20
     ordering = ("pk",)
-    autocomplete_fields = ["client"]
-    form = ProjectAdminForm
+    # autocomplete_fields = ["client"]
+    autocomplete_fields = ["client", "categories_tags", "industries", "services", "technology"]
+    # form = ProjectAdminForm
     fields = (
         "title",
+        # "slug",
         # "web_title",
         "description",
         "client",
@@ -196,8 +199,10 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "client_image",
         "client_review",
         "platforms",
-        # "industries",
-        # "services",
+        "categories_tags",
+        "industries",
+        "services",
+        "technology",
         "live_link",
         # "location",
         "country",

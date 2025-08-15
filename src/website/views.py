@@ -1073,38 +1073,11 @@ class TechnologyNavigationView(APIView):
 
 # testing news
 
-# class BlogFilter(django_filters.FilterSet):
-#     services = django_filters.BooleanFilter(
-#         method='filter_has_services',
-#         label='Has Parent Services'
-#     )
-#     industry = django_filters.BooleanFilter(
-#         method='filter_has_industry',
-#         label='Has Industry Details'
-#     )
-#     technology = django_filters.BooleanFilter(
-#         method='filter_has_technology',
-#         label='Has Technology'
-#     )
+class BlogPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
-#     def filter_has_services(self, queryset, name, value):
-#         if value:
-#             return queryset.filter(parent_services__isnull=False).distinct()
-#         return queryset
-
-#     def filter_has_industry(self, queryset, name, value):
-#         if value:
-#             return queryset.filter(industry_details__isnull=False).distinct()
-#         return queryset
-
-#     def filter_has_technology(self, queryset, name, value):
-#         if value:
-#             return queryset.filter(technology__isnull=False).distinct()
-#         return queryset
-
-#     class Meta:
-#         model = Blog
-#         fields = ['services', 'industry', 'technology']
 
 
 class BlogFilter(django_filters.FilterSet):
@@ -1120,18 +1093,18 @@ class BlogFilter(django_filters.FilterSet):
         method='filter_has_technology',
         label='Has Technology'
     )
-    # Updated filters for specific IDs
-    service_ids = django_filters.NumberFilter(
+    # Updated filters for comma-separated IDs
+    service_ids = django_filters.CharFilter(
         method='filter_by_service_ids',
-        label='Filter by specific service ID'
+        label='Filter by specific service IDs (comma separated)'
     )
-    industry_ids = django_filters.NumberFilter(
+    industry_ids = django_filters.CharFilter(
         method='filter_by_industry_ids',
-        label='Filter by specific industry ID'
+        label='Filter by specific industry IDs (comma separated)'
     )
-    technology_ids = django_filters.NumberFilter(
+    technology_ids = django_filters.CharFilter(
         method='filter_by_technology_ids',
-        label='Filter by specific technology ID'
+        label='Filter by specific technology IDs (comma separated)'
     )
 
     def filter_has_services(self, queryset, name, value):
@@ -1151,35 +1124,35 @@ class BlogFilter(django_filters.FilterSet):
 
     def filter_by_service_ids(self, queryset, name, value):
         if value:
-            return queryset.filter(parent_services__id=value).distinct()
+            try:
+                ids = [int(i.strip()) for i in value.split(',') if i.strip()]
+                return queryset.filter(parent_services__id__in=ids).distinct()
+            except ValueError:
+                return queryset.none()
         return queryset
 
     def filter_by_industry_ids(self, queryset, name, value):
         if value:
-            return queryset.filter(industry_details__id=value).distinct()
+            try:
+                ids = [int(i.strip()) for i in value.split(',') if i.strip()]
+                return queryset.filter(industry_details__id__in=ids).distinct()
+            except ValueError:
+                return queryset.none()
         return queryset
 
     def filter_by_technology_ids(self, queryset, name, value):
         if value:
-            return queryset.filter(technology__id=value).distinct()
+            try:
+                ids = [int(i.strip()) for i in value.split(',') if i.strip()]
+                return queryset.filter(technology__id__in=ids).distinct()
+            except ValueError:
+                return queryset.none()
         return queryset
 
     class Meta:
         model = Blog
         fields = ['services', 'industry', 'technology', 'service_ids', 'industry_ids', 'technology_ids']
 
-
-
-
-
-
-
-
-
-class BlogPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'page_size'
-    max_page_size = 100
 
 class BlogListAPIView(ListAPIView):
     queryset = Blog.objects.all().order_by('-created_at')
@@ -1189,102 +1162,6 @@ class BlogListAPIView(ListAPIView):
     search_fields = ['category__name']
     pagination_class = BlogPagination
     
-    # @swagger_auto_schema(
-    #     tags=["Blog List"],
-    #     manual_parameters=[
-    #         openapi.Parameter(
-    #             'services',
-    #             openapi.IN_QUERY,
-    #             description="Filter blogs that have at least one parent service and include all parent services in response (true/false)",
-    #             type=openapi.TYPE_BOOLEAN
-    #         ),
-    #         openapi.Parameter(
-    #             'industry',
-    #             openapi.IN_QUERY,
-    #             description="Filter blogs that have at least one industry detail and include all industry details in response (true/false)",
-    #             type=openapi.TYPE_BOOLEAN
-    #         ),
-    #         openapi.Parameter(
-    #             'technology',
-    #             openapi.IN_QUERY,
-    #             description="Filter blogs that have at least one technology and include all technologies in response (true/false)",
-    #             type=openapi.TYPE_BOOLEAN
-    #         ),
-    #         openapi.Parameter(
-    #             'search',
-    #             openapi.IN_QUERY,
-    #             description="Search across category name (verbose name: tags)",
-    #             type=openapi.TYPE_STRING
-    #         ),
-    #         openapi.Parameter(
-    #             'page',
-    #             openapi.IN_QUERY,
-    #             description="Page number for pagination",
-    #             type=openapi.TYPE_INTEGER
-    #         ),
-    #         openapi.Parameter(
-    #             'page_size',
-    #             openapi.IN_QUERY,
-    #             description="Number of items per page",
-    #             type=openapi.TYPE_INTEGER
-    #         ),
-    #     ],
-    #     responses={
-    #         200: openapi.Schema(
-    #             type=openapi.TYPE_OBJECT,
-    #             properties={
-    #                 'count': openapi.Schema(
-    #                     type=openapi.TYPE_INTEGER,
-    #                     description='Total number of blogs'
-    #                 ),
-    #                 'next': openapi.Schema(
-    #                     type=openapi.TYPE_STRING,
-    #                     description='URL for next page'
-    #                 ),
-    #                 'previous': openapi.Schema(
-    #                     type=openapi.TYPE_STRING,
-    #                     description='URL for previous page'
-    #                 ),
-    #                 'services': openapi.Schema(
-    #                     type=openapi.TYPE_ARRAY,
-    #                     items=openapi.Schema(
-    #                         type=openapi.TYPE_OBJECT,
-    #                         ref='#/definitions/website_servicepage'
-    #                     ),
-    #                     description='List of all parent services when services=true'
-    #                 ),
-    #                 'industry': openapi.Schema(
-    #                     type=openapi.TYPE_ARRAY,
-    #                     items=openapi.Schema(
-    #                         type=openapi.TYPE_OBJECT,
-    #                         ref='#/definitions/website_servecategory'
-    #                     ),
-    #                     description='List of all industry details when industry=true'
-    #                 ),
-    #                 'technology': openapi.Schema(
-    #                     type=openapi.TYPE_ARRAY,
-    #                     items=openapi.Schema(
-    #                         type=openapi.TYPE_OBJECT,
-    #                         ref='#/definitions/website_technology'
-    #                     ),
-    #                     description='List of all technologies when technology=true'
-    #                 ),
-    #                 'results': openapi.Schema(
-    #                     type=openapi.TYPE_ARRAY,
-    #                     items=openapi.Schema(
-    #                         type=openapi.TYPE_OBJECT,
-    #                         ref='#/definitions/website_blog'
-    #                     ),
-    #                     description='List of filtered blogs for current page'
-    #                 ),
-    #             }
-    #         ),
-    #         400: 'Bad Request'
-    #     }
-    # )
-    
-    
-
     @swagger_auto_schema(
         tags=["Blog List"],
         manual_parameters=[
@@ -1423,50 +1300,20 @@ class BlogListAPIView(ListAPIView):
         # Prepare response with additional data
         response_data = paginated_data.copy()
         
-        # Include parent services if services=true
+        # Include all parent services if services=true
         if request.GET.get('services') == 'true':
-            # Get filtered service IDs if provided
-            service_ids = request.GET.getlist('service_ids')
-            if service_ids:
-                # Convert string IDs to integers
-                try:
-                    service_ids = [int(id) for id in service_ids]
-                except ValueError:
-                    service_ids = []
-                services = ServicePage.objects.filter(is_parent=True, id__in=service_ids)
-            else:
-                services = ServicePage.objects.filter(is_parent=True)
+            services = ServicePage.objects.filter(is_parent=True)
             response_data['services'] = ServicePageSerializer(services, many=True).data
         
-        # Include industry details if industry=true
+        # Include all industry details if industry=true
         if request.GET.get('industry') == 'true':
-            # Get filtered industry IDs if provided
-            industry_ids = request.GET.getlist('industry_ids')
-            if industry_ids:
-                # Convert string IDs to integers
-                try:
-                    industry_ids = [int(id) for id in industry_ids]
-                except ValueError:
-                    industry_ids = []
-                industries = ServeCategory.objects.filter(id__in=industry_ids)
-            else:
-                industries = ServeCategory.objects.all()
+            industries = ServeCategory.objects.all()
             response_data['industry'] = ServeCategorySerializer(industries, many=True).data
         
-        # Include technologies if technology=true
+        # Include all technologies if technology=true
         from website.models import Technology
         if request.GET.get('technology') == 'true':
-            # Get filtered technology IDs if provided
-            technology_ids = request.GET.getlist('technology_ids')
-            if technology_ids:
-                # Convert string IDs to integers
-                try:
-                    technology_ids = [int(id) for id in technology_ids]
-                except ValueError:
-                    technology_ids = []
-                technologies = Technology.objects.filter(id__in=technology_ids)
-            else:
-                technologies = Technology.objects.all()
+            technologies = Technology.objects.all()
             response_data['technology'] = TechnologySerializer(technologies, many=True).data
         
         return Response(response_data)
@@ -1474,51 +1321,6 @@ class BlogListAPIView(ListAPIView):
     
 
 
-    
-    # def get(self, request, *args, **kwargs):
-    #     # Apply filters
-    #     filterset = self.filterset_class(request.GET, queryset=self.get_queryset())
-    #     if not filterset.is_valid():
-    #         return Response(filterset.errors, status=400)
-    #     queryset = filterset.qs
-        
-    #     # Apply search
-    #     queryset = self.filter_queryset(queryset)
-        
-    #     # Paginate the queryset
-    #     page = self.paginate_queryset(queryset)
-    #     if page is not None:
-    #         serializer = self.get_serializer(page, many=True)
-    #         paginated_data = self.get_paginated_response(serializer.data).data
-    #     else:
-    #         serializer = self.get_serializer(queryset, many=True)
-    #         paginated_data = {
-    #             'count': queryset.count(),
-    #             'next': None,
-    #             'previous': None,
-    #             'results': serializer.data
-    #         }
-        
-    #     # Prepare response with additional data
-    #     response_data = paginated_data.copy()
-        
-    #     # Include parent services if services=true
-    #     if request.GET.get('services') == 'true':
-    #         services = ServicePage.objects.filter(is_parent=True)
-    #         response_data['services'] = ServicePageSerializer(services, many=True).data
-        
-    #     # Include industry details if industry=true
-    #     if request.GET.get('industry') == 'true':
-    #         industries = ServeCategory.objects.all()
-    #         response_data['industry'] = ServeCategorySerializer(industries, many=True).data
-        
-    #     # Include technologies if technology=true
-    #     from website.models import Technology
-    #     if request.GET.get('technology') == 'true':
-    #         technologies = Technology.objects.all()
-    #         response_data['technology'] = TechnologySerializer(technologies, many=True).data
-        
-    #     return Response(response_data)
     
 
 

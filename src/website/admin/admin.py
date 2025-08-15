@@ -19,6 +19,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_q.tasks import async_task
 from mptt.admin import MPTTModelAdmin
+from django.contrib.admin import SimpleListFilter
 
 # Register your models here.
 from employee.models.employee import Employee
@@ -118,7 +119,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, CustomSolutions, IndustryDetailsHeading, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs
+from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
 from website.models_v2.services import ServicePage, ServicePageCTA, ServicePageFAQSchema
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -516,35 +517,90 @@ class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
 
+# ================================= Our Process =================================
 
 class OurProcessInline(nested_admin.NestedStackedInline):
     model = OurProcess
     extra = 1
 
+#================================= CustomSolutions =================================
+class CustomSolutionsCardsInline(nested_admin.NestedStackedInline):
+    model = CustomSolutionsCards
+    extra = 1
+    verbose_name = "Solution Card"
+    verbose_name_plural = "Solution Cards"
+    fields = ('card_title', 'card_description')
+
 class CustomSolutionsInline(nested_admin.NestedStackedInline):
     model = CustomSolutions
     extra = 1
+    inlines = [CustomSolutionsCardsInline]
+
+#================================= Benifits =================================
+class BenefitsQAInline(nested_admin.NestedStackedInline):
+    model = BenefitsQA
+    extra = 1
+    fields = ('card_title', 'card_description')
+    verbose_name = "Benefit QA"
+    verbose_name_plural = "Benefit QA's"
 
 class BenefitsInline(nested_admin.NestedStackedInline):
     model = Benefits
     extra = 1
+    inlines = [BenefitsQAInline]
+
+#================================= Why Choose Us =================================
+
+class WhyChooseUsCardsInline(nested_admin.NestedStackedInline):
+    model = WhyChooseUsCards
+    extra = 1
+    verbose_name = "Why Choose Us Card"
+    verbose_name_plural = "Why Choose Us Cards"
+    fields = ('card_title', 'card_description')
 
 class WhyChooseUsInline(nested_admin.NestedStackedInline):
     model = WhyChooseUs
     extra = 1
+    inlines = [WhyChooseUsCardsInline]
+
+#================================= Industry Details Hero Section =================================
+
+class IndustryDetailsHeroSectionInline(nested_admin.NestedStackedInline):
+    model = IndustryDetailsHeroSection
+    extra = 1
+    max_num = 1
+    min_num = 1
+    verbose_name = "Hero Section"
+    verbose_name_plural = "Hero Sections"
+
+# ================================= IndustryDetailsHeading =================================
+class IndustryDetailsHeadingCardsInline(nested_admin.NestedStackedInline):
+    model = IndustryDetailsHeadingCards
+    extra = 1
+    verbose_name = "Solution & Service Card"
+    verbose_name_plural = "Solution & Service Cards"
+    fields = ('card_title', 'card_description', 'image')
+
 
 class IndustryDetailsHeadingInline(nested_admin.NestedStackedInline):
     model = IndustryDetailsHeading
     extra = 1
-    max_num = 1
-    min_num = 1  # Ensures at least one instance must exist
+    # max_num = 1
+    # min_num = 1  # Ensures at least one instance must exist
+    verbose_name = "Software Development Solution & Service"
+    verbose_name_plural = "Software Development Solutions & Services"
+    inlines = [IndustryDetailsHeadingCardsInline]  # This nests the cards inline
+    fields = ('seo_title', 'section_title', 'section_description', 'image')
+    # You can add more customization here if needed
 
+# ================================= ServeCategoryAdmin (Industry Details) =================================
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
     inlines = [ApplicationAreasInline, 
                IndustryMetadataInline,
+               IndustryDetailsHeroSectionInline,
                IndustryDetailsHeadingInline,
                OurProcessInline,
                CustomSolutionsInline, 
@@ -782,7 +838,29 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
                     '</script>'
                 )
             )
+class BlogStatusFilter(SimpleListFilter):
+    title = 'status'
+    parameter_name = 'status'
 
+    def lookups(self, request, model_admin):
+        # Get the queryset that the user is allowed to see
+        qs = model_admin.get_queryset(request)
+        
+        # Get counts for each status
+        status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+        count_dict = {item['status']: item['count'] for item in status_counts}
+        
+        # Create lookups with counts
+        lookups = []
+        for status_value, status_label in BlogStatus.choices:
+            count = count_dict.get(status_value, 0)
+            lookups.append((status_value, f"{status_label} ({count})"))
+        return lookups
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(status=self.value())
+        return queryset
 
 
 @admin.register(Blog)
@@ -847,7 +925,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "hightlighted_text",
     )
     form = BlogForm
-    list_filter = ("status", BlogIndustryFilter, ActiveEmployeeFilter)
+    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter)
     list_per_page = 20
 
     class Media:
