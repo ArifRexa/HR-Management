@@ -1410,6 +1410,13 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'slug', 'short_description']
         ref_name = 'website_servecategory'
 
+class SimpleServeCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategory
+        fields = ['title', 'slug']
+
+
+
 class TechnologyTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TechnologyType
