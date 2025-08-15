@@ -1327,6 +1327,49 @@ class BlogListAPIView(ListAPIView):
 
 
 
+# class ServeCategoryAPIView(APIView):
+#     @swagger_auto_schema(
+#         tags=["Industry Details"],
+#         operation_description="Retrieve serve categories or a specific category by slug",
+#         manual_parameters=[
+#             openapi.Parameter(
+#                 'slug',
+#                 openapi.IN_PATH,
+#                 type=openapi.TYPE_STRING,
+#                 description='Slug of the category to retrieve',
+#                 # required=False
+#             ),
+#         ],
+#         responses={
+#             200: ServeCategorySerializer(many=True),
+#             404: "Category not found",
+#         },
+#     )
+#     def get(self, request, slug=None):
+#         try:
+#             if slug:
+#                 # Use correct related names for prefetch_related
+#                 category = ServeCategory.objects.prefetch_related(
+#                     'our_process', 'industry_details_heading', 'custom_solutions',
+#                     'benefits', 'why_choose_us', 'ctas', 'faqs', 'application_areas', 'industries'
+#                 ).select_related('faq_schema').get(slug=slug)
+#                 serializer = ServeCategorySerializer(category, context={'request': request})
+#                 return Response(serializer.data)
+#             else:
+#                 # Use correct related names for prefetch_related
+#                 categories = ServeCategory.objects.prefetch_related(
+#                     'our_process', 'industry_details_heading', 'custom_solutions',
+#                     'benefits', 'why_choose_us', 'ctas', 'faqs', 'application_areas', 'industries'
+#                 ).select_related('faq_schema').all()
+                
+#                 serializer = ServeCategorySerializer(categories, many=True, context={'request': request})
+#                 return Response(serializer.data)
+#         except Exception as e:
+#             return Response(
+#                 {"error": str(e)}, 
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
+
 class ServeCategoryAPIView(APIView):
     @swagger_auto_schema(
         tags=["Industry Details"],
@@ -1337,7 +1380,6 @@ class ServeCategoryAPIView(APIView):
                 openapi.IN_PATH,
                 type=openapi.TYPE_STRING,
                 description='Slug of the category to retrieve',
-                # required=False
             ),
         ],
         responses={
@@ -1348,22 +1390,35 @@ class ServeCategoryAPIView(APIView):
     def get(self, request, slug=None):
         try:
             if slug:
-                # Use correct related names for prefetch_related
+                # Include all related fields in prefetch_related
                 category = ServeCategory.objects.prefetch_related(
-                    'our_process', 'industry_details_heading', 'custom_solutions',
-                    'benefits', 'why_choose_us', 'ctas', 'faqs', 'application_areas', 'industries'
+                    'industry_details_hero_section', 'our_process', 'industry_details_heading',
+                    'industry_details_heading__industry_details_sub_heading',
+                    'custom_solutions', 'custom_solutions__custom_solutions_cards',
+                    'benefits', 'benefits__benefits_cards',
+                    'why_choose_us', 'why_choose_us__why_choose_us_cards',
+                    'ctas', 'faqs', 'application_areas', 'industries'
                 ).select_related('faq_schema').get(slug=slug)
                 serializer = ServeCategorySerializer(category, context={'request': request})
                 return Response(serializer.data)
             else:
-                # Use correct related names for prefetch_related
+                # Include all related fields in prefetch_related
                 categories = ServeCategory.objects.prefetch_related(
-                    'our_process', 'industry_details_heading', 'custom_solutions',
-                    'benefits', 'why_choose_us', 'ctas', 'faqs', 'application_areas', 'industries'
+                    'industry_details_hero_section', 'our_process', 'industry_details_heading',
+                    'industry_details_heading__industry_details_sub_heading',
+                    'custom_solutions', 'custom_solutions__custom_solutions_cards',
+                    'benefits', 'benefits__benefits_cards',
+                    'why_choose_us', 'why_choose_us__why_choose_us_cards',
+                    'ctas', 'faqs', 'application_areas', 'industries'
                 ).select_related('faq_schema').all()
                 
                 serializer = ServeCategorySerializer(categories, many=True, context={'request': request})
                 return Response(serializer.data)
+        except ServeCategory.DoesNotExist:
+            return Response(
+                {"error": "Category not found"}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             return Response(
                 {"error": str(e)}, 
