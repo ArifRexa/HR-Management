@@ -480,3 +480,16 @@ def monthly_expense_attachment(request, id, *args, **kwargs):
     pdf.file_name = f"{month}/{year}"
 
     return pdf.render_to_pdf(download=True)
+
+
+
+def expense_attachments(self, id, *args, **kwargs):
+    expense = Expense.objects.prefetch_related("expanseattachment_set").get(id=id)
+    attachments = expense.expanseattachment_set.all()
+    pdf = PDF()
+    pdf.template_path = "pdf/expense_attachment.html"
+    pdf.context = {
+        "expense_attachments": [attachment.attachment.url for attachment in attachments]
+    }
+    pdf.file_name = "expense.pdf"
+    return pdf.render_to_pdf()

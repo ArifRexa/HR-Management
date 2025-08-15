@@ -8,6 +8,7 @@ from account.views import (
     monthly_expense_attachment,
     monthly_expense_statement,
     payment_voucher,
+    expense_attachments
 )
 
 app_name = "account"
@@ -25,5 +26,11 @@ urlpatterns = [
         "monthly-expense-attachment/<int:id>/",
         monthly_expense_attachment,
         name="monthly_expense_attachment",
+    ),
+    
+    path(
+        "expense-attachment/<int:id>/",
+        expense_attachments,
+        name="expense_attachment",
     ),
 ]

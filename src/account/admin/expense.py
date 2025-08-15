@@ -6,15 +6,20 @@ import pandas as pd
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
-from django.db.models import F, Sum
+from django.db.models import F, Prefetch, Sum
 from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from weasyprint import CSS, HTML, default_url_fetcher
 
-from account.models import (ExpanseAttachment, Expense, ExpenseCategory,
-                            ExpenseGroup)
+from account.models import (
+    ExpanseAttachment,
+    Expense,
+    ExpenseCategory,
+    ExpenseGroup,
+)
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._forms import DailyExpenseFilterForm
 from employee.models import Employee
@@ -22,7 +27,13 @@ from employee.models import Employee
 
 @admin.register(ExpenseGroup)
 class ExpenseGroupAdmin(admin.ModelAdmin):
-    list_display = ("title", "account_code", "get_vds_rate", "get_tds_rate", "note")
+    list_display = (
+        "title",
+        "account_code",
+        "get_vds_rate",
+        "get_tds_rate",
+        "note",
+    )
     search_fields = ["title"]
     ordering = ["account_code"]
 
@@ -113,7 +124,13 @@ class ExpenseAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         qs = qs.select_related(
             "expanse_group", "expense_category", "created_by"
-        ).prefetch_related("expanseattachment_set")
+        ).prefetch_related(
+            Prefetch(
+                "expanseattachment_set",
+                queryset=ExpanseAttachment.objects.all(),
+                to_attr="expense_attachment",
+            )
+        )
 
         if not request.user.has_perm(
             "account.can_approve_expense"
@@ -140,23 +157,25 @@ class ExpenseAdmin(admin.ModelAdmin):
             return "✅"
         return "❌"
 
-    @admin.display(description="Created By", ordering="created_by__employee__full_name")
+    @admin.display(
+        description="Created By", ordering="created_by__employee__full_name"
+    )
     def get_created_by(self, obj):
         if obj.created_by:
             return obj.created_by.employee.full_name
         return "Unknown"
 
     # This method is now efficient because of get_queryset's prefetch_related
-    @admin.display(description="Attachments", ordering="expanseattachment__count")
+    @admin.display(
+        description="Attachments", ordering="expanseattachment__count"
+    )
     def get_attachments(self, obj):
-        # .all() here uses the prefetched cache, so no new DB query is made
-        attachments = obj.expanseattachment_set.all()
+        attachments = getattr(obj, "expense_attachment", None)
         if not attachments:
             return "-"
-        html = "".join(
-            f'<a href="{attachment.attachment.url}" target="_blank">📄</a>'
-            for attachment in attachments
-        )
+        url = reverse("account:expense_attachment", kwargs={"id": obj.id})
+        html = f'<a href="{url}" target="_blank">📄</a>'
+
         return format_html(html)
 
     # ✅ OPTIMIZATION 3: Efficient voucher data mapping
@@ -170,7 +189,8 @@ class ExpenseAdmin(admin.ModelAdmin):
                 created_at=expense_info["date"],
                 created_by=users.get(expense_info["created_by"]),
                 data=queryset.filter(
-                    date=expense_info["date"], created_by=expense_info["created_by"]
+                    date=expense_info["date"],
+                    created_by=expense_info["created_by"],
                 ),
             )
             mapped_data.append(context)
@@ -221,9 +241,12 @@ class ExpenseAdmin(admin.ModelAdmin):
         filter_form = DailyExpenseFilterForm(
             initial={
                 "date__gte": request.GET.get(
-                    "date__gte", timezone.now().date() - datetime.timedelta(days=7)
+                    "date__gte",
+                    timezone.now().date() - datetime.timedelta(days=7),
                 ),
-                "date__lte": request.GET.get("date__lte", timezone.now().date()),
+                "date__lte": request.GET.get(
+                    "date__lte", timezone.now().date()
+                ),
             }
         )
         if request.GET:
@@ -301,7 +324,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         for relpath in expense_paths:
             if relpath:
                 rel = (
-                    relpath if relpath.startswith("/") else settings.MEDIA_URL + relpath
+                    relpath
+                    if relpath.startswith("/")
+                    else settings.MEDIA_URL + relpath
                 )
                 absolute_urls.append(request.build_absolute_uri(rel))
 
@@ -311,7 +336,9 @@ class ExpenseAdmin(admin.ModelAdmin):
             "year": monthly_journal.date.strftime("%Y"),
         }
 
-        html_str = render_to_string("pdf/monthly_expense_attachment.html", context)
+        html_str = render_to_string(
+            "pdf/monthly_expense_attachment.html", context
+        )
 
         def custom_fetcher(url, *args, **kwargs):
             parsed = urlparse(url)
@@ -340,7 +367,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         file_name = f"{month}/{year}"
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         # file_name = f"{monthly_journal.date.strftime("%B")}_{monthly_journal.date.strftime("%Y")}"
-        response["Content-Disposition"] = f'attachment; filename="{file_name}_MA.pdf"'
+        response["Content-Disposition"] = (
+            f'attachment; filename="{file_name}_MA.pdf"'
+        )
         return response
 
     @admin.action()

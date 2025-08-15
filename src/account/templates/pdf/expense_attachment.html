@@ -1,0 +1,14 @@
+{% extends 'compliance/base/layout.html' %}
+
+{% block content %}
+
+
+  <div class="attachments">
+    {% for img_url in expense_attachments %}
+      <div class="attachment">
+        <img src="{{ img_url }}" alt="Expense Attachment">
+      </div>
+    {% endfor %}
+  </div>
+
+{% endblock %}
