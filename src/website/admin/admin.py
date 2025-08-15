@@ -19,6 +19,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django_q.tasks import async_task
 from mptt.admin import MPTTModelAdmin
+from django.contrib.admin import SimpleListFilter
 
 # Register your models here.
 from employee.models.employee import Employee
@@ -782,7 +783,29 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
                     '</script>'
                 )
             )
+class BlogStatusFilter(SimpleListFilter):
+    title = 'status'
+    parameter_name = 'status'
 
+    def lookups(self, request, model_admin):
+        # Get the queryset that the user is allowed to see
+        qs = model_admin.get_queryset(request)
+        
+        # Get counts for each status
+        status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+        count_dict = {item['status']: item['count'] for item in status_counts}
+        
+        # Create lookups with counts
+        lookups = []
+        for status_value, status_label in BlogStatus.choices:
+            count = count_dict.get(status_value, 0)
+            lookups.append((status_value, f"{status_label} ({count})"))
+        return lookups
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(status=self.value())
+        return queryset
 
 
 @admin.register(Blog)
@@ -847,7 +870,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "hightlighted_text",
     )
     form = BlogForm
-    list_filter = ("status", BlogIndustryFilter, ActiveEmployeeFilter)
+    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter)
     list_per_page = 20
 
     class Media:
