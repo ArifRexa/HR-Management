@@ -28,8 +28,29 @@ class ServeCategory(models.Model):
         verbose_name = "Industry Detail"
         verbose_name_plural = "Industry Details"
 
+#================================= Industry Details Hero Section =================================
+
+class IndustryDetailsHeroSection(models.Model):
+    industry = models.ForeignKey(
+        ServeCategory, 
+        on_delete=models.CASCADE,
+        related_name='industry_details_hero_section',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.section_title or "Industry Details Hero Section"
 
 
+
+# ================================= Our Process =================================
 
 class OurProcess(models.Model):
     industry = models.ForeignKey(
@@ -50,7 +71,10 @@ class OurProcess(models.Model):
         verbose_name = "Our Process"
         verbose_name_plural = "Our Processes"
         ordering = ['order']
-    
+
+
+# ================================= IndustryDetailsHeading =================================
+
 class IndustryDetailsHeading(models.Model):
     industry = models.ForeignKey(
         ServeCategory, 
@@ -70,8 +94,25 @@ class IndustryDetailsHeading(models.Model):
     class Meta:
         verbose_name = "Industry Details Heading"
         verbose_name_plural = "Industry Details Headings"
-    
 
+
+class IndustryDetailsHeadingCards(models.Model):
+    industry = models.ForeignKey(
+        IndustryDetailsHeading, 
+        on_delete=models.CASCADE,
+        related_name='industry_details_sub_heading',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+    
+    
+#================================= CustomSolutions =================================
 class CustomSolutions(models.Model):
     industry = models.ForeignKey(
         ServeCategory, 
@@ -91,8 +132,27 @@ class CustomSolutions(models.Model):
     class Meta:
         verbose_name = "Custom Solution"
         verbose_name_plural = "Custom Solutions"
-    
 
+
+class CustomSolutionsCards(models.Model):
+    custom_solutions = models.ForeignKey(
+        CustomSolutions, 
+        on_delete=models.CASCADE,
+        related_name='custom_solutions_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+
+
+
+    
+#================================= Benifits =================================
 class Benefits(models.Model):
     industry = models.ForeignKey(
         ServeCategory, 
@@ -113,8 +173,23 @@ class Benefits(models.Model):
     class Meta:
         verbose_name = "Benefit"
         verbose_name_plural = "Benefits"
+
+class BenefitsQA(models.Model):
+    benefits = models.ForeignKey(
+        Benefits, 
+        on_delete=models.CASCADE,
+        related_name='benefits_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    def __str__(self):
+        return self.card_title
+
     
-    
+#================================= Why Choose Us =================================
+
 class WhyChooseUs(models.Model):
     industry = models.ForeignKey(
         ServeCategory, 
@@ -134,6 +209,20 @@ class WhyChooseUs(models.Model):
     class Meta:
         verbose_name = "Why Choose Us"
         verbose_name_plural = "Why Choose Us"
+
+class WhyChooseUsCards(models.Model):
+    why_choose_us = models.ForeignKey(
+        WhyChooseUs, 
+        on_delete=models.CASCADE,
+        related_name='why_choose_us_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
 
 
     

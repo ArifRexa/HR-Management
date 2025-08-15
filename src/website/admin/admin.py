@@ -119,7 +119,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, CustomSolutions, IndustryDetailsHeading, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs
+from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
 from website.models_v2.services import ServicePage, ServicePageCTA, ServicePageFAQSchema
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -517,35 +517,90 @@ class ServeCategoryCTAInline(nested_admin.NestedStackedInline):
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
 
+# ================================= Our Process =================================
 
 class OurProcessInline(nested_admin.NestedStackedInline):
     model = OurProcess
     extra = 1
 
+#================================= CustomSolutions =================================
+class CustomSolutionsCardsInline(nested_admin.NestedStackedInline):
+    model = CustomSolutionsCards
+    extra = 1
+    verbose_name = "Solution Card"
+    verbose_name_plural = "Solution Cards"
+    fields = ('card_title', 'card_description')
+
 class CustomSolutionsInline(nested_admin.NestedStackedInline):
     model = CustomSolutions
     extra = 1
+    inlines = [CustomSolutionsCardsInline]
+
+#================================= Benifits =================================
+class BenefitsQAInline(nested_admin.NestedStackedInline):
+    model = BenefitsQA
+    extra = 1
+    fields = ('card_title', 'card_description')
+    verbose_name = "Benefit QA"
+    verbose_name_plural = "Benefit QA's"
 
 class BenefitsInline(nested_admin.NestedStackedInline):
     model = Benefits
     extra = 1
+    inlines = [BenefitsQAInline]
+
+#================================= Why Choose Us =================================
+
+class WhyChooseUsCardsInline(nested_admin.NestedStackedInline):
+    model = WhyChooseUsCards
+    extra = 1
+    verbose_name = "Why Choose Us Card"
+    verbose_name_plural = "Why Choose Us Cards"
+    fields = ('card_title', 'card_description')
 
 class WhyChooseUsInline(nested_admin.NestedStackedInline):
     model = WhyChooseUs
     extra = 1
+    inlines = [WhyChooseUsCardsInline]
+
+#================================= Industry Details Hero Section =================================
+
+class IndustryDetailsHeroSectionInline(nested_admin.NestedStackedInline):
+    model = IndustryDetailsHeroSection
+    extra = 1
+    max_num = 1
+    min_num = 1
+    verbose_name = "Hero Section"
+    verbose_name_plural = "Hero Sections"
+
+# ================================= IndustryDetailsHeading =================================
+class IndustryDetailsHeadingCardsInline(nested_admin.NestedStackedInline):
+    model = IndustryDetailsHeadingCards
+    extra = 1
+    verbose_name = "Solution & Service Card"
+    verbose_name_plural = "Solution & Service Cards"
+    fields = ('card_title', 'card_description', 'image')
+
 
 class IndustryDetailsHeadingInline(nested_admin.NestedStackedInline):
     model = IndustryDetailsHeading
     extra = 1
-    max_num = 1
-    min_num = 1  # Ensures at least one instance must exist
+    # max_num = 1
+    # min_num = 1  # Ensures at least one instance must exist
+    verbose_name = "Software Development Solution & Service"
+    verbose_name_plural = "Software Development Solutions & Services"
+    inlines = [IndustryDetailsHeadingCardsInline]  # This nests the cards inline
+    fields = ('seo_title', 'section_title', 'section_description', 'image')
+    # You can add more customization here if needed
 
+# ================================= ServeCategoryAdmin (Industry Details) =================================
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
     inlines = [ApplicationAreasInline, 
                IndustryMetadataInline,
+               IndustryDetailsHeroSectionInline,
                IndustryDetailsHeadingInline,
                OurProcessInline,
                CustomSolutionsInline, 
