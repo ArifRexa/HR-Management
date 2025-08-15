@@ -101,6 +101,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     )
     date_hierarchy = "date"
     list_filter = [
+        "is_authorized",
         "is_approved",
         ActiveCreatedByFilter,
         "expanse_group",
@@ -220,18 +221,18 @@ class ExpenseAdmin(admin.ModelAdmin):
         total = queryset.count()
         toggled_to_true = 0
         toggled_to_false = 0
-        
+
         for obj in queryset:
             obj.is_authorized = not obj.is_authorized
-            obj.save(update_fields=['is_authorized'])
+            obj.save(update_fields=["is_authorized"])
             if obj.is_authorized:
                 toggled_to_true += 1
             else:
                 toggled_to_false += 1
-        
+
         self.message_user(
             request,
-            f"Toggled {total} items: {toggled_to_true} set to True, {toggled_to_false} set to False."
+            f"Toggled {total} items: {toggled_to_true} set to True, {toggled_to_false} set to False.",
         )
 
     def lookup_allowed(self, lookup, value):
