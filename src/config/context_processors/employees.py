@@ -186,44 +186,39 @@ def total_attendance_fine(request):
 
 
 def total_late_entry_count(request):
-    current_date = timezone.now()
-    current_month = current_date.month
-    current_year = current_date.year
-
-    last_month_date = current_date - timedelta(days=30)
-    last_month = last_month_date.month
-    last_year = last_month_date.year
-
-    current_month_name = current_date.strftime("%b").lower()
-    last_month_name = last_month_date.strftime("%b").lower()
 
     if not request.user.is_authenticated:
-        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
+        current_date = timezone.now()
+        current_month_name = current_date.strftime("%b").lower()
+        last_month_date = current_date - timedelta(days=30)
+        last_month_name = last_month_date.strftime("%b").lower()
+        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
         return {"is_super": False, "late_attendance_count": format_html(html)}
 
-    employee = getattr(request.user, "employee", None)
-    if not employee:
-        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
-        return {"is_super": request.user.is_superuser, "late_attendance_count": format_html(html)}
+    obj = getattr(request.user, 'employee', None)
+    current_date = timezone.now()
+    current_month = current_date.month
+    last_month = current_date.month - 1 or 12
+    current_year = current_date.year
+    last_year = current_year if last_month != 12 else current_year - 1
 
-    # Single DB query for both months
-    fines = LateAttendanceFine.objects.filter(
-        employee=employee,
-        year__in=[current_year, last_year],
-        month__in=[current_month, last_month]
-    ).values("month", "year")
+    current_month_name = current_date.strftime("%b").lower()
+    last_month_date = current_date - timedelta(days=30)
+    last_month_name = last_month_date.strftime("%b").lower()
 
-    # Count occurrences
-    count_map = defaultdict(int)
-    for fine in fines:
-        key = (fine["month"], fine["year"])
-        count_map[key] += 1
+    if not obj:
+        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+    else:
+        current_late_count = LateAttendanceFine.objects.filter(
+            employee=obj, month=current_month, year=current_year
+        ).count()
+        last_late_count = LateAttendanceFine.objects.filter(
+            employee=obj, month=last_month, year=last_year
+        ).count()
+        html = f'{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})'
 
-    current_late_count = count_map.get((current_month, current_year), 0)
-    last_late_count = count_map.get((last_month, last_year), 0)
-
-    html = f"{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})"
-    return {"is_super": request.user.is_superuser, "late_attendance_count": format_html(html)}
+    is_super = request.user.is_superuser
+    return {"is_super": is_super, "late_attendance_count": format_html(html)}
 
 
 def employee_status_form(request):
