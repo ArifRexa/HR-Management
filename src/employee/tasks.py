@@ -1130,10 +1130,11 @@ def send_absent_without_leave_email():
     Sends an email to HR with a list of employees who are absent without leave for today
     and creates system-generated leave applications in bulk.
     """
-    today = date.today()
-
-    # Exit early if today is Saturday (5) or Sunday (6)
-    if today.weekday() >= 5:
+    today = datetime.now()
+    print(today.strftime("%A"))
+    
+    # if today.strftime("%A") == "Friday":
+    if today.strftime("%A") == "Saturday" or today.strftime("%A") == "Sunday":
         return
 
     # Query to get employee IDs who are on leave today
