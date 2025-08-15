@@ -644,7 +644,7 @@ class TDSChallan(TimeStampMixin):
         Employee,
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.RESTRICT,
     )
 
     def __str__(self):
