@@ -3,30 +3,23 @@ from datetime import datetime
 from decimal import Decimal
 from math import floor
 
-from django.db import transaction
-
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.db import models
+from django.core.validators import MinValueValidator
+from django.db import models, transaction
 
 # Create your models here.
-
 from django.db.models import Sum
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils import timezone
 from django_userforeignkey.models.fields import UserForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-
-
-
 from employee.models.employee import Employee, LateAttendanceFine
-from project_management.models import Project, Client
-
-from django.core.validators import MinValueValidator
-from django.urls import reverse
+from project_management.models import Client, Project
 
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
@@ -38,7 +31,9 @@ class SalarySheet(TimeStampMixin, AuthorMixin):
     @property
     def total(self):
         return floor(
-            self.employeesalary_set.aggregate(Sum("gross_salary"))["gross_salary__sum"]
+            self.employeesalary_set.aggregate(Sum("gross_salary"))[
+                "gross_salary__sum"
+            ]
         )
 
     class Meta:
@@ -88,7 +83,9 @@ class EmployeeSalary(TimeStampMixin):
     def salary_loan_total(self):
         print(self.salary_sheet.date.month, "Salary sheet month")
         salary_date = self.salary_sheet.date
-        salary_month_start = datetime(salary_date.year, salary_date.month, 1).date()
+        salary_month_start = datetime(
+            salary_date.year, salary_date.month, 1
+        ).date()
         salary_month_end = datetime(
             salary_date.year,
             salary_date.month,
@@ -111,7 +108,9 @@ class EmployeeSalary(TimeStampMixin):
                 employee=self.employee,
                 month=self.salary_sheet.date.month,
                 year=self.salary_sheet.date.year,
-            ).aggregate(total_fine=Sum("total_late_attendance_fine"))["total_fine"]
+            ).aggregate(total_fine=Sum("total_late_attendance_fine"))[
+                "total_fine"
+            ]
             or 0
         )
         return -late_fee
@@ -135,7 +134,9 @@ class FestivalBonusSheet(TimeStampMixin, AuthorMixin):
     @property
     def total(self):
         return floor(
-            self.employeefestivalbonus_set.aggregate(Sum("amount"))["amount__sum"]
+            self.employeefestivalbonus_set.aggregate(Sum("amount"))[
+                "amount__sum"
+            ]
         )
 
 
@@ -155,7 +156,9 @@ class SalaryDisbursement(TimeStampMixin, AuthorMixin):
     )
     title = models.CharField(max_length=100)
     employee = models.ManyToManyField(Employee)
-    disbursement_type = models.CharField(choices=disbursement_choice, max_length=50)
+    disbursement_type = models.CharField(
+        choices=disbursement_choice, max_length=50
+    )
 
 
 class ExpenseGroup(TimeStampMixin, AuthorMixin):
@@ -163,10 +166,16 @@ class ExpenseGroup(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
     account_code = models.IntegerField(null=True, blank=True)
     vds_rate = models.DecimalField(
-        max_digits=4, decimal_places=2, validators=[MinValueValidator(0)], default=0.00
+        max_digits=4,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0.00,
     )
     tds_rate = models.DecimalField(
-        max_digits=4, decimal_places=2, validators=[MinValueValidator(0)], default=0.00
+        max_digits=4,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0.00,
     )
 
     def __str__(self):
@@ -183,13 +192,23 @@ class ExpenseCategory(TimeStampMixin, AuthorMixin):
 
 class Expense(TimeStampMixin, AuthorMixin):
     expanse_group = models.ForeignKey(ExpenseGroup, on_delete=models.RESTRICT)
-    expense_category = models.ForeignKey(ExpenseCategory, on_delete=models.RESTRICT)
+    expense_category = models.ForeignKey(
+        ExpenseCategory, on_delete=models.RESTRICT
+    )
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField()
     date = models.DateField(default=timezone.now)
-    is_approved = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False, verbose_name="Is Checked")
+    is_authorized = models.BooleanField(
+        default=True, verbose_name="Is Authorized"
+    )
     approved_by = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="approve_by", null=True, blank=True
+        User,
+        on_delete=models.CASCADE,
+        related_name="approve_by",
+        null=True,
+        blank=True,
+        verbose_name="Checked By",
     )
     add_to_balance_sheet = models.BooleanField(default=True)
 
@@ -210,7 +229,11 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
 
 
 class Income(TimeStampMixin, AuthorMixin):
-    STATUS_CHOICE = (("pending", "⌛ Pending"), ("hold", "✋ Hold"), ("approved", "✔ Approved"))
+    STATUS_CHOICE = (
+        ("pending", "⌛ Pending"),
+        ("hold", "✋ Hold"),
+        ("approved", "✔ Approved"),
+    )
     EMAIL_SEND_STATUS = (("yes", "Yes"), ("no", "No"))
     project = models.ForeignKey(
         Project, on_delete=models.RESTRICT, limit_choices_to={"active": True}
@@ -222,9 +245,13 @@ class Income(TimeStampMixin, AuthorMixin):
     payment = models.FloatField()
     date = models.DateField(default=timezone.now)
     note = models.TextField(null=True, blank=True, verbose_name="Client Note")
-    description = models.TextField(null=True, blank=True, verbose_name="Hours Description")
+    description = models.TextField(
+        null=True, blank=True, verbose_name="Hours Description"
+    )
     pdf_url = models.URLField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICE, default="pending"
+    )
     add_to_balance_sheet = models.BooleanField(default=False)
     is_send_clients = models.BooleanField(default=False)
     is_send_invoice_email = models.CharField(
@@ -272,12 +299,16 @@ class Fund(TimeStampMixin, AuthorMixin):
     )
     date = models.DateField(null=True, blank=True)
     amount = models.FloatField(default=0.0)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.RESTRICT
+    )
     fund_category = models.ForeignKey(
         FundCategory, on_delete=models.RESTRICT, null=True, blank=True
     )
     note = models.TextField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICE, default="pending"
+    )
 
 
 class Loan(TimeStampMixin, AuthorMixin):
@@ -404,12 +435,14 @@ class AccountJournal(AuthorMixin, TimeStampMixin):
 
     def balance_sheet_url(self):
         return reverse("account:balance_sheet", args=[str(self.id)])
-    
+
     def get_monthly_expense_url(self):
         return reverse("account:monthly_expense", args=[str(self.id)])
-    
+
     def get_monthly_expense_attachment_url(self):
-        return reverse("account:monthly_expense_attachment", args=[str(self.id)])
+        return reverse(
+            "account:monthly_expense_attachment", args=[str(self.id)]
+        )
 
 
 class DailyPaymentVoucher(AccountJournal):
@@ -445,7 +478,9 @@ class SalarySheetTaxLoan(models.Model):
 @receiver(pre_delete, sender=SalarySheet)
 @transaction.atomic
 def delete_related_loans(sender, instance, **kwargs):
-    related_loans = Loan.objects.filter(salarysheettaxloan__salarysheet=instance)
+    related_loans = Loan.objects.filter(
+        salarysheettaxloan__salarysheet=instance
+    )
     related_loans.delete()
     related_salary_sheet_tax_loans = SalarySheetTaxLoan.objects.filter(
         salarysheet=instance
@@ -461,7 +496,10 @@ class TaxDocumentInformation(TimeStampMixin):
         limit_choices_to={"active": True},
     )
     amount = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="Investment Amount", default=0.00
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Investment Amount",
+        default=0.00,
     )
     # approved = models.BooleanField(default=False)
 
@@ -505,10 +543,6 @@ class VehicleRebateAttachment(TimeStampMixin):
 
 
 from django.db import models
-from django.http import HttpResponse
-from openpyxl import Workbook
-from openpyxl.writer.excel import save_virtual_workbook
-from math import floor
 
 
 class SalaryReport(models.Model):
@@ -595,3 +629,24 @@ class SalaryReport(models.Model):
     #     response = HttpResponse(content=save_virtual_workbook(wb), content_type='application/ms-excel')
     #     response['Content-Disposition'] = f'attachment; filename=SalaryReport_{start_date}_to_{end_date}.xlsx'
     #     return response
+
+
+class TDSChallan(TimeStampMixin):
+    date = models.DateField(verbose_name="Challan Date")
+    tds_type = models.CharField(
+        max_length=10,
+        choices=(("group", "Group"), ("individual", "Individual")),
+        default="group",
+    )
+    challan_no = models.CharField(max_length=50)
+    amount = models.PositiveIntegerField()
+    employee = models.ForeignKey(
+        Employee,
+        limit_choices_to={"active": True},
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        return self.challan_no

@@ -19,6 +19,7 @@ from account.models import (
     Expense,
     ExpenseCategory,
     ExpenseGroup,
+    TDSChallan,
 )
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._forms import DailyExpenseFilterForm
@@ -94,6 +95,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         "note",
         "get_attachments",
         "get_approved",
+        "get_authorized",
         "get_add_to_balance_sheet",
         "get_created_by",
     )
@@ -114,6 +116,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         "approve_expense",
         "add_to_balance_sheet",
         "remove_from_balance_sheet",
+        "change_authorized_status",
     )
     autocomplete_fields = ("expanse_group", "expense_category")
     list_select_related = ("expanse_group", "expense_category", "created_by")
@@ -145,9 +148,15 @@ class ExpenseAdmin(admin.ModelAdmin):
         # Assumes you want to format it as a currency. Much faster than template rendering.
         return f"{obj.amount:,.2f}"
 
-    @admin.display(description="Approved", ordering="is_approved")
+    @admin.display(description="Checked", ordering="is_approved")
     def get_approved(self, obj):
         if obj.is_approved:
+            return "✅"
+        return "❌"
+
+    @admin.display(description="Authorized", ordering="is_authorized")
+    def get_authorized(self, obj):
+        if obj.is_authorized:
             return "✅"
         return "❌"
 
@@ -205,6 +214,19 @@ class ExpenseAdmin(admin.ModelAdmin):
             actions.pop("add_to_balance_sheet")
             actions.pop("remove_from_balance_sheet")
         return actions
+
+    @admin.action()
+    def change_authorized_status(self, request, queryset):
+        try:
+            approve = queryset.filter(is_authorized=True).update(
+                is_authorized=False
+            )
+            unapprove = queryset.filter(is_authorized=False).update(
+                is_authorized=True
+            )
+            self.message_user(request, "authorized status change successfully")
+        except Exception:
+            self.message_user(request, "some things wrong")
 
     def lookup_allowed(self, lookup, value):
         if lookup in ["created_by__employee__id__exact"]:
@@ -394,3 +416,10 @@ class ExpenseAdmin(admin.ModelAdmin):
         else:
             obj.approved_by = None
         return super().save_model(request, obj, form, change)
+
+
+@admin.register(TDSChallan)
+class TDSChallanAdmin(admin.ModelAdmin):
+    list_display = ("date", "tds_type", "challan_no", "amount", "employee")
+    list_filter = ("tds_type", "employee")
+    autocomplete_fields = ("employee",)
