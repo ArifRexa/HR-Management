@@ -125,7 +125,13 @@ class EmployeeAdmin(
             query_params.get("model_name")
             and query_params.get("model_name") == "tdschallan"
         ):
-            return qs, use_distinct
+            return (
+                Employee.objects.filter(
+                    Q(full_name__icontains=search_term)
+                    | Q(email__icontains=search_term),
+                ),
+                use_distinct,
+            )
         if (
             request.user.is_authenticated
             and "autocomplete" in request.get_full_path()
