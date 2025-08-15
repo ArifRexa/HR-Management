@@ -642,7 +642,6 @@ class TDSChallan(TimeStampMixin):
     amount = models.PositiveIntegerField()
     employee = models.ForeignKey(
         Employee,
-        limit_choices_to={"active": True},
         blank=True,
         null=True,
         on_delete=models.CASCADE,
