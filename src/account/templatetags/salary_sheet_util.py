@@ -2,7 +2,7 @@ from datetime import datetime
 from math import floor
 
 from django import template
-from django.db.models import Sum
+from django.db.models import Sum, functions
 from dateutil.relativedelta import relativedelta
 from account.models import EmployeeSalary, Invoice, SalaryReport
 from employee.models import Employee
@@ -71,7 +71,7 @@ def _in_dollar(value):
 def sum_invoice_details(invoice: Invoice, column: str):
     return invoice.invoicedetail_set.all().aggregate(total=Sum(column))['total']
 
-
+from num2words import num2words
 
 @register.filter
 def abs(value):
@@ -81,7 +81,12 @@ def abs(value):
         return value
     
 @register.simple_tag
-def employee_total_tds(obj: SalaryReport, emp: Employee):
-    total_tds = EmployeeSalary.objects.filter(employee=emp, created_at__year__in=[obj.start_date.year, obj.end_date.year])
-    print(total_tds)
-    return 0
+def employee_total_tds(obj: SalaryReport, emp: Employee, type="num"):
+    total_tds = EmployeeSalary.objects.filter(employee=emp, created_at__year__in=[obj.start_date.year, obj.end_date.year]).aggregate(
+        total_tds=functions.Abs(Sum("loan_emi"))
+    )
+    if type == "word":
+        return num2words(total_tds.get("total_tds", 0) or 0)
+    return total_tds.get("total_tds", 0) or 0
+
+

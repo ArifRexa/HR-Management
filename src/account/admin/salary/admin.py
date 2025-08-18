@@ -532,6 +532,8 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
 #             return response
 
 from django.contrib import admin
+from django.db.models import OuterRef, Prefetch, Subquery
+from django.db.models.functions import ExtractMonth, ExtractYear
 
 
 @admin.register(SalaryReport)
@@ -545,46 +547,105 @@ class SalaryReportAdmin(admin.ModelAdmin):
         "export_tds_pdf_for_active_employee",
         "export_tds_pdf_for_inactive_employee",
     ]
-    
-    def _get_employee_salary_with_tds(self, emp_ids: list[int], obj: SalaryReport):
-        from django.db.models import OuterRef, Subquery, Sum, Prefetch
-        from django.db.models.functions import Abs, ExtractYear, ExtractMonth
 
-        # Define salary queryset with month/year annotations and TDS challan subquery
-        salary_with_tds = (
+    def get_employee_salary_with_challan(self, obj, active_only: bool):
+        """
+        Returns Employee queryset.
+        Every Employee instance has an attribute `salary` (list of EmployeeSalary rows).
+        Every salary row has three extra attributes:
+            challan_date, challan_amount, challan_no, tds_type
+        (all taken from the TDSChallan whose date month/year matches salary.created_at)
+        """
+
+        # 1) sub-query that returns the matching challan row
+        challan_sub = (
+            TDSChallan.objects.filter(
+                # employee=OuterRef("employee"),  # same employee
+                date__year=OuterRef("created_at__year"),  # same year
+                date__month=OuterRef("created_at__month"),  # same month
+            )[:1]  # keep first challan if several exist
+        )
+
+        # 2) salaries annotated with the four challan columns
+        salaries_qs = (
             EmployeeSalary.objects.filter(
-                employee__in=emp_ids,
-                created_at__year__range=[obj.start_date.year, obj.end_date.year]
-            )
-            .select_related("employee", "salary_sheet")
-            .annotate(
-                total_tds=Sum("loan_emi"),
-                tds=Abs("loan_emi"),
-                salary_year=ExtractYear('created_at'),  # Extract year from salary date
-                salary_month=ExtractMonth('created_at')  # Extract month from salary date
+                created_at__year__in=[obj.start_date.year, obj.end_date.year],
             )
             .annotate(
-                tds_challan=Subquery(
-                    TDSChallan.objects.filter(
-                        employee_id=OuterRef('employee_id'),  # Match employee
-                        date__year=OuterRef('salary_year'),    # Match year
-                        date__month=OuterRef('salary_month')   # Match month
-                    )
-                    .order_by('date')  # Ensure consistent ordering
-                    .values('id')[:1]  # Return first matching challan ID
+                tds_amount=Abs("loan_emi"),
+                challan_date=Subquery(challan_sub.values("date")),
+                challan_amount=Subquery(challan_sub.values("amount")),
+                challan_no=Subquery(challan_sub.values("challan_no")),
+                tds_type=Subquery(challan_sub.values("tds_type")),
+            )
+            .select_related("salary_sheet")
+            .order_by("created_at")
+        )
+
+        # 3) employees + their annotated salaries
+        return (
+            Employee.objects.filter(active=active_only)
+            .order_by("full_name")
+            .prefetch_related(
+                Prefetch(
+                    "employeesalary_set", queryset=salaries_qs, to_attr="salary"
                 )
             )
         )
 
-        # Prefetch TDS challans to minimize database hits
-        prefetched_salaries = salary_with_tds.prefetch_related(
+        # 1) Employees (active or inactive)
+        qs = Employee.objects.filter(active=active_only)
+
+        # 2) Prefetch salaries that fall in the period
+        salaries_qs = (
+            EmployeeSalary.objects.filter(
+                employee=OuterRef("pk"),
+                created_at__date__range=(obj.start_date, obj.end_date),
+            )
+            .annotate(
+                sal_month=ExtractMonth("created_at"),
+                sal_year=ExtractYear("created_at"),
+                # Subquery to pull the single matching challan row
+                challan_date=Subquery(
+                    TDSChallan.objects.filter(
+                        employee=OuterRef("employee"),
+                        date__year=OuterRef("sal_year"),
+                        date__month=OuterRef("sal_month"),
+                    ).values("date")[:1]
+                ),
+                challan_amount=Subquery(
+                    TDSChallan.objects.filter(
+                        employee=OuterRef("employee"),
+                        date__year=OuterRef("sal_year"),
+                        date__month=OuterRef("sal_month"),
+                    ).values("amount")[:1]
+                ),
+                challan_no=Subquery(
+                    TDSChallan.objects.filter(
+                        employee=OuterRef("employee"),
+                        date__year=OuterRef("sal_year"),
+                        date__month=OuterRef("sal_month"),
+                    ).values("challan_no")[:1]
+                ),
+                tds_type=Subquery(
+                    TDSChallan.objects.filter(
+                        employee=OuterRef("employee"),
+                        date__year=OuterRef("sal_year"),
+                        date__month=OuterRef("sal_month"),
+                    ).values("tds_type")[:1]
+                ),
+                tds_amount=Abs("loan_emi"),
+            )
+            .select_related("salary_sheet")
+            .order_by("created_at")
+        )
+
+        # 3) Attach the annotated salaries to each employee
+        return qs.prefetch_related(
             Prefetch(
-                'tds_challan',
-                queryset=TDSChallan.objects.all(),
-                to_attr='prefetched_tds_challan'
+                "employeesalary_set", queryset=salaries_qs, to_attr="salary"
             )
         )
-        return prefetched_salaries
 
     @admin.action(description="Export TDS PDF (Active)")
     def export_tds_pdf_for_active_employee(self, request, queryset):
@@ -597,7 +658,10 @@ class SalaryReportAdmin(admin.ModelAdmin):
             "id", flat=True
         )
         salary_with_tds = (
-            EmployeeSalary.objects.filter(employee__in=inactive_employee, created_at__year__in=[obj.start_date.year, obj.end_date.year])
+            EmployeeSalary.objects.filter(
+                employee__in=inactive_employee,
+                created_at__year__in=[obj.start_date.year, obj.end_date.year],
+            )
             .select_related("employee", "salary_sheet")
             .annotate(total_tds=Sum("loan_emi"), tds=Abs("loan_emi"))
         )
@@ -608,7 +672,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
         pdf.template_path = "pdf/tds_report.html"
         pdf.file_name = "tds_report"
         pdf.context = {
-            "salary": salary_with_tds,
+            "employees": self.get_employee_salary_with_challan(obj, True),
             "obj": obj,
             "tds_challan": tds_challan,
         }
@@ -635,7 +699,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
         pdf.template_path = "pdf/tds_report.html"
         pdf.file_name = "tds_report"
         pdf.context = {
-            "salary": salary_with_tds,
+            "employees": self.get_employee_salary_with_challan(obj, False),
             "obj": obj,
             "tds_challan": tds_challan,
         }
