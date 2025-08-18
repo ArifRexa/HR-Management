@@ -186,10 +186,186 @@ class TechnologySolutionsAndServicesCards(TimeStampMixin):
         return self.card_title
 
 
+class ServicesWeProvide(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE,
+        related_name='services_we_provide',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Services We Provide Heading"
+    
+    class Meta:
+        verbose_name = "Services We Provide Heading"
+        verbose_name_plural = "Services We Provide Headings"
 
 
+class ServicesWeProvideCards(models.Model):
+    provides = models.ForeignKey(
+        ServicesWeProvide, 
+        on_delete=models.CASCADE,
+        related_name='services_we_provide_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
 
 
+class EcoSystem(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE,
+        related_name='ecosystem',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "EcoSystem Heading"
+    
+    class Meta:
+        verbose_name = "EcoSystem Heading"
+        verbose_name_plural = "EcoSystem Headings"
+
+class EcoSystemCards(models.Model):
+    ecosystem = models.ForeignKey(
+        EcoSystem, 
+        on_delete=models.CASCADE,
+        related_name='ecosystem_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+    
+class EcoSystemCardTags(models.Model):
+    ecosystem_card = models.ForeignKey(
+        EcoSystemCards, 
+        on_delete=models.CASCADE,
+        related_name='ecosystem_card_tags',
+        null=True,
+        blank=True
+    )
+    tag = models.CharField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+        return self.tag
+
+# =====================================Key Things======================================
+
+class TechnologyKeyThings(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE,
+        related_name='KeyThings',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Benefits"
+    
+    class Meta:
+        verbose_name = "Key Things"
+        verbose_name_plural = "Key Things"
+
+class TechnologyKeyThingsQA(models.Model):
+    key_things = models.ForeignKey(
+        TechnologyKeyThings, 
+        on_delete=models.CASCADE,
+        related_name='Tech_KeyThings_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    def __str__(self):
+        return self.card_title
+
+
+# ================================= Why choose us =================================
+
+
+class TechnologyWhyChooseUs(TimeStampMixin):
+    technology = models.ForeignKey(
+        Technology,
+        related_name="Tech_why_choose_us",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Why Choose Us"
+    
+class TechnologyWhyChooseUsCards(TimeStampMixin):
+    tech_why_choose_us = models.ForeignKey(
+        TechnologyWhyChooseUs,
+        related_name="Tech_why_choose_us_cards",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+    def __str__(self):
+        return self.card_title
+    
+class TechnologyWhyChooseUsCardsDetails(TimeStampMixin):
+    tech_why_choose_us_cards = models.ForeignKey(
+        TechnologyWhyChooseUsCards,
+        related_name="tech_why_choose_us_card_details",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_description
+
+
+# ================================= Our Process =================================
+
+class TechnologyOurProcess(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE,
+        related_name='our_process',
+        null=True,
+        blank=True
+    )
+    section_title = models.CharField(max_length=200)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+
+    def __str__(self):
+        return self.section_title
+    
+    class Meta:
+        verbose_name = "Our Process"
+        verbose_name_plural = "Our Processes"
+        ordering = ['order']
 
 
         
