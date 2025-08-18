@@ -1,12 +1,12 @@
-from datetime import datetime
+from datetime import date
 from math import floor
 
+from dateutil.relativedelta import relativedelta
 from django import template
 from django.db.models import Sum, functions
-from dateutil.relativedelta import relativedelta
+
 from account.models import EmployeeSalary, Invoice, SalaryReport
 from employee.models import Employee
-from website.serializers import EmployeeSocialSerializer
 
 register = template.Library()
 
@@ -21,20 +21,22 @@ def get_account_number(employee: Employee):
     bank_account = employee.bankaccount_set.filter(default=True).first()
     if bank_account:
         return bank_account.account_number
-    return 'bank account number not found'
+    return "bank account number not found"
 
 
-@register.filter(name='strip_last_newline')
+@register.filter(name="strip_last_newline")
 def strip_last_newline(value):
     if not value:
         return value
-    if value.endswith('\n'):
+    if value.endswith("\n"):
         value = value[:-1]
-    return value.replace('\n', '<br />')
+    return value.replace("\n", "<br />")
+
 
 @register.filter(name="last_week")
 def last_week(value):
     return value - relativedelta(days=6)
+
 
 @register.filter
 def _total_by_des_type(employee_salary_set):
@@ -54,7 +56,9 @@ def _total_bonus(employee_salary_set):
 
 @register.filter
 def _total_festival_bonus(employee_festival_bonus_set):
-    return floor(employee_festival_bonus_set.aggregate(Sum('amount'))['amount__sum'])
+    return floor(
+        employee_festival_bonus_set.aggregate(Sum("amount"))["amount__sum"]
+    )
 
     total = 0
     for employee_festival_bonus in employee_festival_bonus_set:
@@ -69,9 +73,11 @@ def _in_dollar(value):
 
 @register.filter
 def sum_invoice_details(invoice: Invoice, column: str):
-    return invoice.invoicedetail_set.all().aggregate(total=Sum(column))['total']
+    return invoice.invoicedetail_set.all().aggregate(total=Sum(column))["total"]
+
 
 from num2words import num2words
+
 
 @register.filter
 def abs(value):
@@ -79,14 +85,28 @@ def abs(value):
         return abs(value)
     except TypeError:
         return value
-    
+
+
 @register.simple_tag
 def employee_total_tds(obj: SalaryReport, emp: Employee, type="num"):
-    total_tds = EmployeeSalary.objects.filter(employee=emp, created_at__year__in=[obj.start_date.year, obj.end_date.year]).aggregate(
-        total_tds=functions.Abs(Sum("loan_emi"))
-    )
+    total_tds = EmployeeSalary.objects.filter(
+        employee=emp,
+        created_at__year__in=[obj.start_date.year, obj.end_date.year],
+    ).aggregate(total_tds=functions.Abs(Sum("loan_emi")))
     if type == "word":
         return num2words(total_tds.get("total_tds", 0) or 0)
     return total_tds.get("total_tds", 0) or 0
 
 
+@register.simple_tag
+def employee_monthly_tds(emp: Employee, date: date):
+    year = date.year
+    month = date.month
+    tds = (
+        EmployeeSalary.objects.filter(
+            employee=emp, created_at__year=year, created_at__month=month
+        )
+        .annotate(employee_tds=functions.Abs("loan_emi"))
+        .first()
+    )
+    return tds.employee_tds if tds else 0

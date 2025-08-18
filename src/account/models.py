@@ -640,11 +640,11 @@ class TDSChallan(TimeStampMixin):
     )
     challan_no = models.CharField(max_length=50)
     amount = models.PositiveIntegerField()
-    employee = models.ForeignKey(
+    employee = models.ManyToManyField(
         Employee,
         blank=True,
-        null=True,
-        on_delete=models.RESTRICT,
+        # null=True,
+        # on_delete=models.RESTRICT,
     )
 
     def __str__(self):

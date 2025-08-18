@@ -427,6 +427,12 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 @admin.register(TDSChallan)
 class TDSChallanAdmin(admin.ModelAdmin):
-    list_display = ("date", "tds_type", "challan_no", "amount", "employee")
+    list_display = ("date", "tds_type", "challan_no", "amount")
     list_filter = ("tds_type", "employee")
     autocomplete_fields = ("employee",)
+    
+    
+    def save_model(self, request, obj, form, change):
+        employee = Employee.objects.filter(tax_info__isnull=True)
+        form.cleaned_data["employee"] = employee
+        return super().save_model(request, obj, form, change)

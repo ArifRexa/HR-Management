@@ -80,21 +80,21 @@
         </tr>
       </thead>
       <tbody>
-        {% for tds in employee.salary %}
+        {% for tds in employee.tdschallan_set.all %}
         {% if tds.tds_type == "group" %}
           <tr>
-            <td>{{ tds.challan_date }}</td>
+            <td>{{ tds.date }}</td>
             <td>{{ tds.challan_no }}</td>
-            <td>{{ tds.challan_amount }}</td>
-            <td>{{ tds.tds_amount }}</td>
+            <td>{{ tds.amount }}</td>
+            <td>{% employee_monthly_tds employee tds.date %}</td>
           </tr>
         
         {% elif tds.tds_type == "individual" and employee == tds.employee %}
           <tr>
-            <td>{{ tds.challan_date }}</td>
+            <td>{{ tds.date }}</td>
             <td>{{ tds.challan_no }}</td>
-            <td>{{ tds.challan_amount }}</td>
-            <td>{{ tds.tds_amount }}</td>
+            <td>{{ tds.amount }}</td>
+            <td>{{ tds.mount }}</td>
           </tr>
         
           
