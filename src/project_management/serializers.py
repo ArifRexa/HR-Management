@@ -54,7 +54,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'description', 'client_name', 
-            'client_image', 'featured_image', 'thumbnail', 'live_link',
+            'client_image', 'featured_image', 'thumbnail', 'live_link', 'industries', 'services', 'technology',
             'active', 'show_in_website', 'created_at', 'updated_at'
         ]
         ref_name = 'ProjectListReadOnly'

@@ -17,6 +17,12 @@ from rest_framework.generics import RetrieveAPIView, ListAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
+from django_filters import rest_framework as django_filters
+from rest_framework import filters
+from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
+
+
 
 class GroupConcat(Aggregate):
     function = "GROUP_CONCAT"
@@ -262,26 +268,204 @@ def generate_pdf(request, *args, **kwargs):
     return HttpResponse(pdf_file, content_type="application/pdf")
 
 
-class ProjectListView(ListAPIView):
-    """List all projects with basic information"""
-    queryset = Project.objects.all()
-    serializer_class = ProjectListSerializer
+# class ProjectListView(ListAPIView):
+#     """List all projects with basic information"""
+#     queryset = Project.objects.all()
+#     serializer_class = ProjectListSerializer
     
+#     @swagger_auto_schema(
+#         tags=["Case Study"],
+#         operation_description="Retrieve a list of all projects",
+#         responses={
+#             200: ProjectListSerializer(many=True),
+#             401: "Unauthorized"
+#         }
+#     )
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
+    
+#     def get_queryset(self):
+#         return Project.objects.select_related('client').prefetch_related(
+#             'platforms', 'categories_tags', 'industries', 'services', 'technology'
+#         )
+
+
+class ProjectPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+class ProjectFilter(django_filters.FilterSet):
+    has_services = django_filters.BooleanFilter(
+        method='filter_has_services', label='Has Services'
+    )
+    has_industry = django_filters.BooleanFilter(
+        method='filter_has_industry', label='Has Industry'
+    )
+    has_technology = django_filters.BooleanFilter(
+        method='filter_has_technology', label='Has Technology'
+    )
+    service_ids = django_filters.CharFilter(
+        method='filter_by_service_ids', label='Filter by specific service IDs (comma separated)'
+    )
+    industry_ids = django_filters.CharFilter(
+        method='filter_by_industry_ids', label='Filter by specific industry IDs (comma separated)'
+    )
+    technology_ids = django_filters.CharFilter(
+        method='filter_by_technology_ids', label='Filter by specific technology IDs (comma separated)'
+    )
+
+    def filter_has_services(self, queryset, name, value):
+        if value:
+            return queryset.filter(services__isnull=False).distinct()
+        return queryset
+
+    def filter_has_industry(self, queryset, name, value):
+        if value:
+            return queryset.filter(industries__isnull=False).distinct()
+        return queryset
+
+    def filter_has_technology(self, queryset, name, value):
+        if value:
+            return queryset.filter(technology__isnull=False).distinct()
+        return queryset
+
+    def filter_by_service_ids(self, queryset, name, value):
+        if value:
+            try:
+                ids = [int(i.strip()) for i in value.split(',') if i.strip()]
+                return queryset.filter(services__id__in=ids).distinct()
+            except ValueError:
+                return queryset.none()
+        return queryset
+
+    def filter_by_industry_ids(self, queryset, name, value):
+        if value:
+            try:
+                ids = [int(i.strip()) for i in value.split(',') if i.strip()]
+                return queryset.filter(industries__id__in=ids).distinct()
+            except ValueError:
+                return queryset.none()
+        return queryset
+
+    def filter_by_technology_ids(self, queryset, name, value):
+        if value:
+            try:
+                ids = [int(i.strip()) for i in value.split(',') if i.strip()]
+                return queryset.filter(technology__id__in=ids).distinct()
+            except ValueError:
+                return queryset.none()
+        return queryset
+
+    class Meta:
+        model = Project
+        fields = ['has_services', 'has_industry', 'has_technology',
+                  'service_ids', 'industry_ids', 'technology_ids']
+
+class ProjectListView(ListAPIView):
+    """List all projects with filtering options"""
+    queryset = Project.objects.all().order_by('-created_at')
+    serializer_class = ProjectListSerializer
+    filterset_class = ProjectFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['title', 'client__name', 'description']
+    pagination_class = ProjectPagination
+
     @swagger_auto_schema(
         tags=["Case Study"],
-        operation_description="Retrieve a list of all projects",
+        manual_parameters=[
+            openapi.Parameter(
+                'has_services', openapi.IN_QUERY,
+                description="Filter projects that have at least one service (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'has_industry', openapi.IN_QUERY,
+                description="Filter projects that have at least one industry (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'has_technology', openapi.IN_QUERY,
+                description="Filter projects that have at least one technology (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+            openapi.Parameter(
+                'search', openapi.IN_QUERY,
+                description="Search across title, client name, and description",
+                type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'page', openapi.IN_QUERY,
+                description="Page number for pagination",
+                type=openapi.TYPE_INTEGER
+            ),
+            openapi.Parameter(
+                'page_size', openapi.IN_QUERY,
+                description="Number of items per page",
+                type=openapi.TYPE_INTEGER
+            ),
+            openapi.Parameter(
+                'service_ids', openapi.IN_QUERY,
+                description="Filter projects by specific service IDs (comma separated)",
+                type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'industry_ids', openapi.IN_QUERY,
+                description="Filter projects by specific industry IDs (comma separated)",
+                type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'technology_ids', openapi.IN_QUERY,
+                description="Filter projects by specific technology IDs (comma separated)",
+                type=openapi.TYPE_STRING
+            ),
+        ],
         responses={
-            200: ProjectListSerializer(many=True),
-            401: "Unauthorized"
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                properties={
+                    'count': openapi.Schema(type=openapi.TYPE_INTEGER, description='Total number of projects'),
+                    'next': openapi.Schema(type=openapi.TYPE_STRING, description='URL for next page'),
+                    'previous': openapi.Schema(type=openapi.TYPE_STRING, description='URL for previous page'),
+                    'results': openapi.Schema(
+                        type=openapi.TYPE_ARRAY,
+                        items=openapi.Schema(
+                            type=openapi.TYPE_OBJECT,
+                            properties={
+                                'id': openapi.Schema(type=openapi.TYPE_INTEGER),
+                                'title': openapi.Schema(type=openapi.TYPE_STRING),
+                                'slug': openapi.Schema(type=openapi.TYPE_STRING),
+                                'description': openapi.Schema(type=openapi.TYPE_STRING),
+                                'client_name': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'client_image': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'featured_image': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'thumbnail': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'live_link': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                                'active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                                'show_in_website': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                                'created_at': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
+                                'updated_at': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
+                            }
+                        ),
+                        description='List of filtered projects for current page'
+                    ),
+                }
+            ),
+            400: 'Bad Request'
         }
     )
     def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-    
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        serializer = self.get_serializer(page, many=True)
+        print(serializer.data)
+        return self.get_paginated_response(serializer.data)
+
     def get_queryset(self):
         return Project.objects.select_related('client').prefetch_related(
             'platforms', 'categories_tags', 'industries', 'services', 'technology'
-        )
+        ).filter(active=True)
+    
 
 class ProjectDetailView(RetrieveAPIView):
     """Retrieve project details by slug with all nested data"""
