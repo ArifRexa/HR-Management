@@ -25,7 +25,7 @@ from django.contrib.admin import SimpleListFilter
 from employee.models.employee import Employee
 from project_management.models import ProjectHour
 from website.admin.industries_we_serve import ApplicationAreasInline, IndustryMetadataInline
-from website.admin.services import AdditionalServiceContentInline, ComparativeAnalysisInline, DevelopmentServiceProcessInline, DiscoverOurServiceInline, FAQQuestionInline, ServiceMetaDataInline
+from website.admin.services import AdditionalServiceContentInline, ComparativeAnalysisInline, DevelopmentServiceProcessInline, DiscoverOurServiceInline, ServiceMetaDataInline
 from website.models import (
     CTA,
     FAQ,
@@ -120,7 +120,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
-from website.models_v2.services import KeyThings, KeyThingsQA, ServicePage, ServicePageCTA, ServicePageFAQSchema, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -676,7 +676,7 @@ class SolutionsAndServicesInline(nested_admin.NestedStackedInline):
     extra = 1
     inlines = [SolutionsAndServicesCardsInline]
 
-
+# ===========================Key Things======================
 class KeyThingsQAInline(nested_admin.NestedStackedInline):
     model = KeyThingsQA
     extra = 1
@@ -687,16 +687,66 @@ class KeyThingsInline(nested_admin.NestedStackedInline):
     extra = 1
     inlines = [KeyThingsQAInline]
 
+# ===========================Best Practices======================
 
+class BestPracticesCardsDetailsInline(nested_admin.NestedStackedInline):
+    model = BestPracticesCardsDetails
+    extra = 1
+    verbose_name = "Best Practices Card Details"
+    verbose_name_plural = "Best Practices Card Details"
+class BestPracticesCardsInline(nested_admin.NestedStackedInline):
+    model = BestPracticesCards
+    extra = 1
+    inlines = [BestPracticesCardsDetailsInline]
+    verbose_name = "Best Practices Card"
+    verbose_name_plural = "Best Practices Cards"
+class BestPracticesHeadingsInline(nested_admin.NestedStackedInline):
+    model = BestPracticesHeadings
+    extra = 1
+    inlines = [BestPracticesCardsInline]
+    max_num = 1
+    min_num = 1
+    verbose_name = "Best Practices"
+    verbose_name_plural = "Best Practices"
 
+# ===========================Why Choose Us======================
+class ServicesWhyChooseUsCardsDetailsInline(nested_admin.NestedStackedInline):
+    model = ServicesWhyChooseUsCardsDetails
+    extra = 1
+    verbose_name = "Why Choose Us Card Details"
+    verbose_name_plural = "Why Choose Us Card Details"
 
+class ServicesWhyChooseUsCardsInline(nested_admin.NestedStackedInline):
+    model = ServicesWhyChooseUsCards
+    extra = 1
+    inlines = [ServicesWhyChooseUsCardsDetailsInline]
+    verbose_name = "Why Choose Us Card"
+    verbose_name_plural = "Why Choose Us Cards"
 
+class ServicesWhyChooseUsInline(nested_admin.NestedStackedInline):
+    model = ServicesWhyChooseUs
+    extra = 1
+    inlines = [ServicesWhyChooseUsCardsInline]
+    max_num = 1
+    min_num = 1
+    verbose_name = "Why Choose Us"
+    verbose_name_plural = "Why Choose Us"
+
+# ===========================Our Process======================
+class ServicesOurProcessInline(nested_admin.NestedStackedInline):
+    model = ServicesOurProcess
+    extra = 1
+
+# ===========================service page faq and cta======================
 class ServicePageCTAInline(nested_admin.NestedStackedInline):
     model = ServicePageCTA
     extra = 1
     verbose_name = "Call to Action"
     verbose_name_plural = "Calls to Action"
 
+class FAQQuestionInline(nested_admin.NestedStackedInline):
+    model = ServiceFAQQuestion
+    extra = 1
 
 class ServicePageFAQSchemaInline(nested_admin.NestedStackedInline):
     model = ServicePageFAQSchema
@@ -723,7 +773,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         ),
         ("Explore Our Services", {"fields": ("icon", "feature_image")}),
         ("Menu", {"fields": ("menu_title",)}),
-        ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
+        # ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
         (
             "Development Service Process",
             {
@@ -752,10 +802,13 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         # ComparativeAnalysisInline,
         SolutionsAndServicesInline,
         KeyThingsInline,
+        BestPracticesHeadingsInline,
+        ServicesWhyChooseUsInline,
+        ServicesOurProcessInline,
 
 
 
-        # FAQQuestionInline,
+        FAQQuestionInline,
         ServicePageFAQSchemaInline,
         # ServiceMetaDataInline,
         ServicePageCTAInline
