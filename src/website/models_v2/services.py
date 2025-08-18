@@ -44,6 +44,184 @@ class ServicePage(TimeStampMixin):
         verbose_name = "Service"
         verbose_name_plural = "Services"
 
+# ======================= SolutionsAndServices =======================
+class SolutionsAndServices(TimeStampMixin):
+    services = models.ForeignKey(
+        ServicePage,
+        related_name="solutions_and_services",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title
+    
+
+class SolutionsAndServicesCards(TimeStampMixin):
+    solutions_and_services = models.ForeignKey(
+        SolutionsAndServices,
+        related_name="cards",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+
+# =====================================Key Things======================================
+
+class KeyThings(models.Model):
+    industry = models.ForeignKey(
+        ServicePage, 
+        on_delete=models.CASCADE,
+        related_name='KeyThings',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
+
+
+    def __str__(self):
+        return self.section_title or "Benefits"
+    
+    class Meta:
+        verbose_name = "Key Things"
+        verbose_name_plural = "Key Things"
+
+class KeyThingsQA(models.Model):
+    benefits = models.ForeignKey(
+        KeyThings, 
+        on_delete=models.CASCADE,
+        related_name='KeyThings_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+    def __str__(self):
+        return self.card_title
+
+
+
+# ========================== Best Practices ==========================
+class BestPracticesHeadings(TimeStampMixin):
+    service_page = models.ForeignKey(
+        ServicePage,
+        related_name="best_practices",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.title      
+
+class BestPracticesCards(TimeStampMixin):
+    best_practices = models.ForeignKey(
+        BestPracticesHeadings,
+        related_name="cards",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+    
+class BestPracticesCardsDetails(TimeStampMixin):
+    best_practices_cards = models.ForeignKey(
+        BestPracticesCards,
+        related_name="details",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+
+# ================================= Why choose us =================================
+
+
+class ServicesWhyChooseUs(TimeStampMixin):
+    service_page = models.ForeignKey(
+        ServicePage,
+        related_name="why_choose_us",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Why Choose Us"
+    
+class ServicesWhyChooseUsCards(TimeStampMixin):
+    services_why_choose_us = models.ForeignKey(
+        ServicesWhyChooseUs,
+        related_name="cards",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+    def __str__(self):
+        return self.card_title
+    
+class ServicesWhyChooseUsCardsDetails(TimeStampMixin):
+    services_why_choose_us_cards = models.ForeignKey(
+        ServicesWhyChooseUsCards,
+        related_name="details",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_description
+
+# ================================= Our Process =================================
+
+class ServicesOurProcess(models.Model):
+    industry = models.ForeignKey(
+        ServicePage, 
+        on_delete=models.CASCADE,
+        related_name='our_process',
+        null=True,
+        blank=True
+    )
+    section_title = models.CharField(max_length=200)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+
+    def __str__(self):
+        return self.section_title
+    
+    class Meta:
+        verbose_name = "Our Process"
+        verbose_name_plural = "Our Processes"
+        ordering = ['order']
+
+
+
+
+
+
+
 
 class ServicePageFAQSchema(models.Model):
     service_page = models.OneToOneField(

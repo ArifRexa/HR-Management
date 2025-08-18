@@ -93,7 +93,7 @@ from website.models import (
     WhyUsTitle,
 )
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
-from website.models_v2.services import ServicePage
+from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
 class PostCredentialSerializer(serializers.ModelSerializer):
@@ -1413,7 +1413,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
 class SimpleServeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServeCategory
-        fields = ['title', 'slug']
+        fields = ['id', 'title', 'slug']
 
 
 
@@ -1648,3 +1648,165 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'IndustriesWeServeServeCategory'
 
+
+
+# ===================================================== ServicesPage =====================================================
+
+
+# Base serializers for nested models
+class SolutionsAndServicesCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SolutionsAndServicesCards
+        fields = '__all__'
+        ref_name = 'SolutionServiceCard'
+
+class SolutionsAndServicesSerializer(serializers.ModelSerializer):
+    cards = SolutionsAndServicesCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = SolutionsAndServices
+        fields = '__all__'
+        ref_name = 'SolutionService'
+
+class KeyThingsQASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KeyThingsQA
+        fields = '__all__'
+        ref_name = 'KeyThingQA'
+
+class KeyThingsSerializer(serializers.ModelSerializer):
+    KeyThings_cards = KeyThingsQASerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = KeyThings
+        fields = '__all__'
+        ref_name = 'KeyThing'
+
+class BestPracticesCardsDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BestPracticesCardsDetails
+        fields = '__all__'
+        ref_name = 'BestPracticeCardDetail'
+
+class BestPracticesCardsSerializer(serializers.ModelSerializer):
+    details = BestPracticesCardsDetailsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = BestPracticesCards
+        fields = '__all__'
+        ref_name = 'BestPracticeCard'
+
+class BestPracticesHeadingsSerializer(serializers.ModelSerializer):
+    cards = BestPracticesCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = BestPracticesHeadings
+        fields = '__all__'
+        ref_name = 'BestPracticeHeading'
+
+class ServicesWhyChooseUsCardsDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicesWhyChooseUsCardsDetails
+        fields = '__all__'
+        ref_name = 'WhyChooseUsCardDetail'
+
+class ServicesWhyChooseUsCardsSerializer(serializers.ModelSerializer):
+    details = ServicesWhyChooseUsCardsDetailsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ServicesWhyChooseUsCards
+        fields = '__all__'
+        ref_name = 'WhyChooseUsCard'
+
+class ServicesWhyChooseUsSerializer(serializers.ModelSerializer):
+    cards = ServicesWhyChooseUsCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ServicesWhyChooseUs
+        fields = '__all__'
+        ref_name = 'WhyChooseUs'
+
+class ServicesOurProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicesOurProcess
+        fields = '__all__'
+        ref_name = 'ServiceProcess'
+
+class ServicePageFAQSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePageFAQSchema
+        fields = '__all__'
+        ref_name = 'ServiceFAQSchema'
+
+class ServicePageCTASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePageCTA
+        fields = '__all__'
+        ref_name = 'ServiceCTA'
+
+class ServiceFAQQuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceFAQQuestion
+        fields = '__all__'
+        ref_name = 'ServiceFAQ'
+
+class DiscoverOurServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiscoverOurService
+        fields = '__all__'
+        ref_name = 'DiscoverService'
+
+class AdditionalServiceContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalServiceContent
+        fields = '__all__'
+        ref_name = 'AdditionalServiceContents'
+
+class DevelopmentServiceProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DevelopmentServiceProcess
+        fields = '__all__'
+        ref_name = 'DevelopmentProcess'
+
+class ServiceCriteriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceCriteria
+        fields = '__all__'
+        ref_name = 'ServiceCriteria'
+
+class ComparativeAnalysisSerializer(serializers.ModelSerializer):
+    criteria = ServiceCriteriaSerializer(read_only=True)
+    
+    class Meta:
+        model = ComparativeAnalysis
+        fields = '__all__'
+        ref_name = 'ComparativeAnalys'
+
+class ServiceMetaDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServiceMetaData
+        fields = '__all__'
+        ref_name = 'ServiceMetaData'
+
+# Main ServicePage serializer with all nested relationships
+class ServicePageDetailSerializer(serializers.ModelSerializer):
+    # children = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    solutions_and_services = SolutionsAndServicesSerializer(many=True, read_only=True)
+    KeyThings = KeyThingsSerializer(many=True, read_only=True)
+    best_practices = BestPracticesHeadingsSerializer(many=True, read_only=True)
+    why_choose_us = ServicesWhyChooseUsSerializer(many=True, read_only=True)
+    our_process = ServicesOurProcessSerializer(many=True, read_only=True)
+    faq_schema = ServicePageFAQSchemaSerializer(read_only=True)
+    ctas = ServicePageCTASerializer(many=True, read_only=True)
+    questions = ServiceFAQQuestionSerializer(many=True, read_only=True)
+    discover_services = DiscoverOurServiceSerializer(many=True, read_only=True)
+    additional_service_content = AdditionalServiceContentSerializer(many=True, read_only=True)
+    development_services_process = DevelopmentServiceProcessSerializer(many=True, read_only=True)
+    comparative_analysis = ComparativeAnalysisSerializer(many=True, read_only=True)
+    service_meta_data = ServiceMetaDataSerializer(read_only=True)
+    
+    class Meta:
+        model = ServicePage
+        fields = '__all__'
+        depth = 1
+        ref_name = 'ServicePageDetails'

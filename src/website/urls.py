@@ -2,10 +2,12 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIView
 from rest_framework.routers import DefaultRouter
+from project_management.views import ProjectDetailView, ProjectListView
 from website.models import LifeAtMediusware
 from website.views import (
     AwardListView,
     BenefitsOfEmploymentListAPIView,
+    BlogDetailAPIView,
     BlogListAPIView,
     ClientListAPIView,
     ClientLogoListView,
@@ -33,6 +35,8 @@ from website.views import (
     ProjectDetails,
     EmployeeList,
     ServiceListAPIView,
+    ServicePageListView,
+    ServicePageDetailView as ServicePageDetailViewV2,
     SubscriptionModelViewSet,
     TechnologyListAPIView,
     TechnologyNavigationView,
@@ -260,11 +264,17 @@ urlpatterns = [
     path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
     path("website/technology-navigation/", TechnologyNavigationView.as_view(), name="technology_navigation"),
     path('website/blogs/', BlogListAPIView.as_view(), name='blog-list'),
-    path('services/', ServiceListAPIView.as_view(), name='service-list'),
-    path('industries/', IndustryListAPIView.as_view(), name='industry-list'),
-    path('technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
+    path('website/blogs/<slug:slug>/', BlogDetailAPIView.as_view(), name='blog-detail'),
+    path('website/services/', ServiceListAPIView.as_view(), name='service-list'),
+    path('website/industries/', IndustryListAPIView.as_view(), name='industry-list'),
+    path('website/technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
     # path('api/industry-details/', ServeCategoryAPIView.as_view(), name='serve-category-list'),
     path('api/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
+    path('website/projects/', ProjectListView.as_view(), name='project-list'),
+    path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
+
+    path('website/services-list/', ServicePageListView.as_view(), name='service-list'),
+    path('website/services/<slug:slug>/', ServicePageDetailViewV2.as_view(), name='service-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

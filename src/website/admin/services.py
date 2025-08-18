@@ -37,9 +37,9 @@ class ComparativeAnalysisInline(admin.TabularInline):
     extra = 1
 
 
-class FAQQuestionInline(admin.TabularInline):
-    model = ServiceFAQQuestion
-    extra = 1
+# class FAQQuestionInline(admin.TabularInline):
+#     model = ServiceFAQQuestion
+#     extra = 1
 
 
 # @admin.register(ServiceCriteria)

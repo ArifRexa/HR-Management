@@ -25,6 +25,6 @@ urlpatterns = [
     path('slack/', slack_callback),
     # path('project-weekly-report/<int:project_id>/<date:hour_date>/', generate_pdf, name='generate_client_weekly_report'),
     path('project-weekly-report/', generate_pdf, name='generate_client_weekly_report'),
-    path('projects/', ProjectListView.as_view(), name='project-list'),
-    path('projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
+    # path('projects/', ProjectListView.as_view(), name='project-list'),
+    # path('projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
 ]
