@@ -57,8 +57,9 @@ class SolutionsAndServices(TimeStampMixin):
     section_description = HTMLField(blank=True, null=True)
 
     def __str__(self):
-        return self.title
+        return self.section_title
     
+
 class SolutionsAndServicesCards(TimeStampMixin):
     solutions_and_services = models.ForeignKey(
         SolutionsAndServices,
@@ -191,8 +192,7 @@ class ServicesWhyChooseUsCardsDetails(TimeStampMixin):
     card_description = HTMLField(blank=True, null=True)
 
     def __str__(self):
-        return self.card_title
-
+        return self.card_description
 
 # ================================= Our Process =================================
 
