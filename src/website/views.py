@@ -16,7 +16,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from rest_framework.exceptions import NotFound
 from employee.models import Employee, EmployeeNOC, Skill
 from project_management.models import (
     Client,
@@ -1165,7 +1165,7 @@ class BlogListAPIView(ListAPIView):
     pagination_class = BlogPagination
     
     @swagger_auto_schema(
-        tags=["Blog List"],
+        tags=["Blogs"],
         manual_parameters=[
             openapi.Parameter(
                 'services',
@@ -1320,7 +1320,40 @@ class BlogListAPIView(ListAPIView):
         
         return Response(response_data)
     
+
+class BlogDetailAPIView(RetrieveAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    lookup_field = 'slug'  # Use slug instead of default 'pk'
     
+    @swagger_auto_schema(
+        tags=["Blogs"],
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Unique slug identifier for the blog post",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+        ],
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_OBJECT,
+                ref='#/definitions/website_blog'
+            ),
+            404: 'Blog not found'
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        try:
+            return super().get(request, *args, **kwargs)
+        except Blog.DoesNotExist:
+            raise NotFound("Blog post not found")
+
+
+
+
 
 
 class ServiceListAPIView(ListAPIView):

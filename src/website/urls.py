@@ -7,6 +7,7 @@ from website.models import LifeAtMediusware
 from website.views import (
     AwardListView,
     BenefitsOfEmploymentListAPIView,
+    BlogDetailAPIView,
     BlogListAPIView,
     ClientListAPIView,
     ClientLogoListView,
@@ -263,6 +264,7 @@ urlpatterns = [
     path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
     path("website/technology-navigation/", TechnologyNavigationView.as_view(), name="technology_navigation"),
     path('website/blogs/', BlogListAPIView.as_view(), name='blog-list'),
+    path('website/blogs/<slug:slug>/', BlogDetailAPIView.as_view(), name='blog-detail'),
     path('website/services/', ServiceListAPIView.as_view(), name='service-list'),
     path('website/industries/', IndustryListAPIView.as_view(), name='industry-list'),
     path('website/technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
