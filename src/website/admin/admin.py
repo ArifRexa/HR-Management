@@ -109,6 +109,8 @@ from website.models import (
     TechnologyCTA,
     TechnologyFAQ,
     TechnologyFAQSchema,
+    TechnologySolutionsAndServices,
+    TechnologySolutionsAndServicesCards,
     TechnologyTitle,
     TechnologyType,
     TextualTestimonialTitle,
@@ -855,7 +857,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
                 )
             )
 
-
+# ================================================================ Technology ====================================================================
 @admin.register(TechnologyType)
 class TechnologyTypeAdmin(admin.ModelAdmin):
     list_display = ("name", )
@@ -887,12 +889,32 @@ class TechnologyFAQSchemaInline(nested_admin.NestedStackedInline):
     def has_add_permission(self, request, obj=None):
         return False
     
+
+class TechnologySolutionsAndServicesCardsInline(nested_admin.NestedTabularInline):
+    model = TechnologySolutionsAndServicesCards
+    extra = 1
+
+class TechnologySolutionsAndServicesInline(nested_admin.NestedStackedInline):
+    model = TechnologySolutionsAndServices
+    extra = 1
+    inlines = [TechnologySolutionsAndServicesCardsInline]
+    max_num = 1
+    min_num = 1
+
+
+
+
+
 @admin.register(Technology)
 class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelAdmin
     list_display = ("name", "slug", "type", "show_in_menu")
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
-    inlines = [TechnologyFAQInline, TechnologyCTAInline, TechnologyFAQSchemaInline]
+    inlines = [
+        TechnologySolutionsAndServicesInline,
+        TechnologyFAQInline, 
+        TechnologyCTAInline, 
+        TechnologyFAQSchemaInline]
     
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)

@@ -144,6 +144,7 @@ class Technology(TimeStampMixin):
         help_text="If checked, this technology will be displayed in the main menu.",
     )
 
+
     # def clean(self):
     #     if Technology.objects.filter(name=self.name).exists():
     #         raise ValidationError(f"Technology with name '{self.name}' already exists.")
@@ -154,6 +155,43 @@ class Technology(TimeStampMixin):
     class Meta:
         verbose_name = "Technology"
         verbose_name_plural = "Technologies"
+
+
+class TechnologySolutionsAndServices(TimeStampMixin):
+    services = models.ForeignKey(
+        Technology,
+        related_name="solutions_and_services",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title
+    
+
+class TechnologySolutionsAndServicesCards(TimeStampMixin):
+    solutions_and_services = models.ForeignKey(
+        TechnologySolutionsAndServices,
+        related_name="cards",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_title
+
+
+
+
+
+
+
+
         
 class TechnologyFAQ(models.Model):
     technology = models.ForeignKey(Technology, on_delete=models.CASCADE, related_name='faqs')
