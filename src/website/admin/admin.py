@@ -60,6 +60,9 @@ from website.models import (
     CSRBanner,
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
+    EcoSystem,
+    EcoSystemCardTags,
+    EcoSystemCards,
     EmployeePerspective,
     EmployeeTestimonial,
     EmployeeTestimonialTitle,
@@ -103,16 +106,24 @@ from website.models import (
     ServiceMeatadata,
     ServiceProcess,
     ServiceTechnology,
+    ServicesWeProvide,
+    ServicesWeProvideCards,
     SpecialProjectsTitle,
     Tag,
     Technology,
     TechnologyCTA,
     TechnologyFAQ,
     TechnologyFAQSchema,
+    TechnologyKeyThings,
+    TechnologyKeyThingsQA,
+    TechnologyOurProcess,
     TechnologySolutionsAndServices,
     TechnologySolutionsAndServicesCards,
     TechnologyTitle,
     TechnologyType,
+    TechnologyWhyChooseUs,
+    TechnologyWhyChooseUsCards,
+    TechnologyWhyChooseUsCardsDetails,
     TextualTestimonialTitle,
     VideoTestimonial,
     VideoTestimonialTitle,
@@ -902,6 +913,78 @@ class TechnologySolutionsAndServicesInline(nested_admin.NestedStackedInline):
     min_num = 1
 
 
+class ServicesWeProvideCardsInline(nested_admin.NestedTabularInline):
+    model = ServicesWeProvideCards
+    extra = 1
+
+class ServicesWeProvideInline(nested_admin.NestedStackedInline):
+    model = ServicesWeProvide
+    extra = 1
+    inlines = [ServicesWeProvideCardsInline]
+    max_num = 1
+    min_num = 1
+
+
+class EcoSystemCardTagsInline(nested_admin.NestedTabularInline):
+    model = EcoSystemCardTags
+    extra = 1
+
+class EcoSystemCardsInline(nested_admin.NestedTabularInline):
+    model = EcoSystemCards
+    extra = 1
+    inlines = [EcoSystemCardTagsInline]
+
+class EcoSystemInline(nested_admin.NestedStackedInline):
+    model = EcoSystem
+    extra = 1
+    inlines = [EcoSystemCardsInline]
+    max_num = 1
+    min_num = 1
+
+
+class TechnologyKeyThingsQAInline(nested_admin.NestedTabularInline):
+    model = TechnologyKeyThingsQA
+    extra = 1
+
+class TechnologyKeyThingsInline(nested_admin.NestedStackedInline):
+    model = TechnologyKeyThings
+    extra = 1
+    inlines = [TechnologyKeyThingsQAInline]
+    max_num = 1
+    min_num = 1
+
+
+# ===========================Why Choose Us======================
+class TechnologyWhyChooseUsCardsDetailsInline(nested_admin.NestedStackedInline):
+    model = TechnologyWhyChooseUsCardsDetails
+    extra = 1
+    verbose_name = "Why Choose Us Card Details"
+    verbose_name_plural = "Why Choose Us Card Details"
+
+class TechnologyWhyChooseUsCardsInline(nested_admin.NestedStackedInline):
+    model = TechnologyWhyChooseUsCards
+    extra = 1
+    inlines = [TechnologyWhyChooseUsCardsDetailsInline]
+    verbose_name = "Why Choose Us Card"
+    verbose_name_plural = "Why Choose Us Cards"
+
+class TechnologyWhyChooseUsInline(nested_admin.NestedStackedInline):
+    model = TechnologyWhyChooseUs
+    extra = 1
+    inlines = [TechnologyWhyChooseUsCardsInline]
+    max_num = 1
+    min_num = 1
+    verbose_name = "Why Choose Us"
+    verbose_name_plural = "Why Choose Us"
+
+
+class TechnologyOurProcessInline(nested_admin.NestedStackedInline):
+    model=TechnologyOurProcess
+    extra=1
+    verbose_name="Our Process"
+    verbose_name_plural="Our Processes"
+    ordering=['order']
+
 
 
 
@@ -912,6 +995,14 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
     search_fields = ("name",)
     inlines = [
         TechnologySolutionsAndServicesInline,
+        ServicesWeProvideInline,
+        EcoSystemInline,
+        TechnologyKeyThingsInline,
+        TechnologyWhyChooseUsInline,
+        TechnologyOurProcessInline,
+
+
+
         TechnologyFAQInline, 
         TechnologyCTAInline, 
         TechnologyFAQSchemaInline]
