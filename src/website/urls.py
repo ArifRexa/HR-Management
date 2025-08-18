@@ -260,9 +260,9 @@ urlpatterns = [
     path("website/contact-form/", ContactFormView.as_view(), name="contact_form"),
     path("website/technology-navigation/", TechnologyNavigationView.as_view(), name="technology_navigation"),
     path('website/blogs/', BlogListAPIView.as_view(), name='blog-list'),
-    path('services/', ServiceListAPIView.as_view(), name='service-list'),
-    path('industries/', IndustryListAPIView.as_view(), name='industry-list'),
-    path('technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
+    path('website/services/', ServiceListAPIView.as_view(), name='service-list'),
+    path('website/industries/', IndustryListAPIView.as_view(), name='industry-list'),
+    path('website/technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
     # path('api/industry-details/', ServeCategoryAPIView.as_view(), name='serve-category-list'),
     path('api/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
 ]
