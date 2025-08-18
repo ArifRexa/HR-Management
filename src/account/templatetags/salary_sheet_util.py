@@ -4,8 +4,9 @@ from math import floor
 from django import template
 from django.db.models import Sum
 from dateutil.relativedelta import relativedelta
-from account.models import Invoice
+from account.models import EmployeeSalary, Invoice, SalaryReport
 from employee.models import Employee
+from website.serializers import EmployeeSocialSerializer
 
 register = template.Library()
 
@@ -69,3 +70,18 @@ def _in_dollar(value):
 @register.filter
 def sum_invoice_details(invoice: Invoice, column: str):
     return invoice.invoicedetail_set.all().aggregate(total=Sum(column))['total']
+
+
+
+@register.filter
+def abs(value):
+    try:
+        return abs(value)
+    except TypeError:
+        return value
+    
+@register.simple_tag
+def employee_total_tds(obj: SalaryReport, emp: Employee):
+    total_tds = EmployeeSalary.objects.filter(employee=emp, created_at__year__in=[obj.start_date.year, obj.end_date.year])
+    print(total_tds)
+    return 0

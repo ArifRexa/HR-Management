@@ -7,6 +7,7 @@ import openpyxl
 from django.contrib import admin
 from django.contrib.humanize.templatetags.humanize import intcomma
 from django.db.models import Count, Sum
+from django.db.models.functions import Abs
 from django.http import HttpResponse
 from django.utils.html import format_html
 from num2words import num2words
@@ -17,8 +18,10 @@ from account.models import (
     Loan,
     SalaryReport,
     SalarySheet,
+    TDSChallan,
 )
 from account.repository.SalarySheetRepository import SalarySheetRepository
+from config.utils.pdf import PDF
 from employee.models import Employee
 from employee.models.employee import LateAttendanceFine
 
@@ -528,6 +531,8 @@ class SalarySheetAdmin(SalarySheetAction, admin.ModelAdmin):
 #             wb.save(response)
 #             return response
 
+from django.contrib import admin
+
 
 @admin.register(SalaryReport)
 class SalaryReportAdmin(admin.ModelAdmin):
@@ -537,139 +542,181 @@ class SalaryReportAdmin(admin.ModelAdmin):
         "export_as_excel",
         "export_employee_tds_report",
         "export_employee_tds_report_inactive",
+        "export_tds_pdf_for_active_employee",
+        "export_tds_pdf_for_inactive_employee",
     ]
+    
+    def _get_employee_salary_with_tds(self, emp_ids: list[int], obj: SalaryReport):
+        from django.db.models import OuterRef, Subquery, Sum, Prefetch
+        from django.db.models.functions import Abs, ExtractYear, ExtractMonth
+
+        # Define salary queryset with month/year annotations and TDS challan subquery
+        salary_with_tds = (
+            EmployeeSalary.objects.filter(
+                employee__in=emp_ids,
+                created_at__year__range=[obj.start_date.year, obj.end_date.year]
+            )
+            .select_related("employee", "salary_sheet")
+            .annotate(
+                total_tds=Sum("loan_emi"),
+                tds=Abs("loan_emi"),
+                salary_year=ExtractYear('created_at'),  # Extract year from salary date
+                salary_month=ExtractMonth('created_at')  # Extract month from salary date
+            )
+            .annotate(
+                tds_challan=Subquery(
+                    TDSChallan.objects.filter(
+                        employee_id=OuterRef('employee_id'),  # Match employee
+                        date__year=OuterRef('salary_year'),    # Match year
+                        date__month=OuterRef('salary_month')   # Match month
+                    )
+                    .order_by('date')  # Ensure consistent ordering
+                    .values('id')[:1]  # Return first matching challan ID
+                )
+            )
+        )
+
+        # Prefetch TDS challans to minimize database hits
+        prefetched_salaries = salary_with_tds.prefetch_related(
+            Prefetch(
+                'tds_challan',
+                queryset=TDSChallan.objects.all(),
+                to_attr='prefetched_tds_challan'
+            )
+        )
+        return prefetched_salaries
+
+    @admin.action(description="Export TDS PDF (Active)")
+    def export_tds_pdf_for_active_employee(self, request, queryset):
+        obj = queryset.first()
+        if not obj:
+            self.message_user(request, "No record selected.")
+            return
+
+        inactive_employee = Employee.objects.filter(active=True).values_list(
+            "id", flat=True
+        )
+        salary_with_tds = (
+            EmployeeSalary.objects.filter(employee__in=inactive_employee, created_at__year__in=[obj.start_date.year, obj.end_date.year])
+            .select_related("employee", "salary_sheet")
+            .annotate(total_tds=Sum("loan_emi"), tds=Abs("loan_emi"))
+        )
+        tds_challan = TDSChallan.objects.filter(
+            date__year__range=[obj.start_date.year, obj.end_date.year]
+        )
+        pdf = PDF()
+        pdf.template_path = "pdf/tds_report.html"
+        pdf.file_name = "tds_report"
+        pdf.context = {
+            "salary": salary_with_tds,
+            "obj": obj,
+            "tds_challan": tds_challan,
+        }
+        return pdf.render_to_pdf(download=False)
+
+    @admin.action(description="Export TDS PDF (InActive)")
+    def export_tds_pdf_for_inactive_employee(self, request, queryset):
+        obj = queryset.first()
+        if not obj:
+            self.message_user(request, "No record selected.")
+            return
+        inactive_employee = Employee.objects.filter(active=False).values_list(
+            "id", flat=True
+        )
+        salary_with_tds = (
+            EmployeeSalary.objects.filter(employee__in=inactive_employee)
+            .select_related("employee", "salary_sheet")
+            .annotate(total_tds=Abs(Sum("loan_emi")), tds=Abs("loan_emi"))
+        )
+        tds_challan = TDSChallan.objects.filter(
+            date__year__range=[obj.start_date.year, obj.end_date.year]
+        )
+        pdf = PDF()
+        pdf.template_path = "pdf/tds_report.html"
+        pdf.file_name = "tds_report"
+        pdf.context = {
+            "salary": salary_with_tds,
+            "obj": obj,
+            "tds_challan": tds_challan,
+        }
+        return pdf.render_to_pdf(download=False)
+
+    def _export_employee_tds_report(self, request, queryset, active_status):
+        """Helper function to generate TDS report for specified employee status"""
+        obj = queryset.first()
+        if not obj:
+            self.message_user(request, "No record selected")
+            return
+
+        # Create workbook and sheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Salary Report"
+
+        # Define headers
+        headers = ["Employee Name"] + [
+            month[:3]
+            for month in [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ]
+        ]
+        ws.append(headers)
+
+        # Filter employees based on active status
+        employees = Employee.objects.filter(active=active_status)
+
+        for emp in employees:
+            row = [emp.full_name]
+
+            # Fetch relevant salary records
+            salaries = EmployeeSalary.objects.filter(
+                employee=emp,
+                salary_sheet__date__range=(obj.start_date, obj.end_date),
+            ).order_by("salary_sheet__date")
+
+            # Map months to values (taking last occurrence per month)
+            month_values = {}
+            for sal in salaries:
+                month_num = sal.salary_sheet.date.month
+                month_values[month_num] = abs(
+                    sal.loan_emi
+                )  # Adjust calculation as needed
+
+            # Populate row with monthly values
+            for m in range(1, 13):
+                row.append(month_values.get(m, ""))
+
+            ws.append(row)
+
+        # Prepare response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f"Salary_Report_{obj.start_date.strftime('%Y%m%d')}_to_{obj.end_date.strftime('%Y%m%d')}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        # Save workbook
+        wb.save(response)
+        return response
 
     @admin.action(description="Export TDS Excel (Active)")
     def export_employee_tds_report(self, request, queryset):
-        obj = queryset.first()
-        if obj is None:
-            self.message_user(request, "No record selected")
-            return
+        return self._export_employee_tds_report(request, queryset, True)
 
-        # Create workbook and sheet
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Salary Report"
-
-        # Excel header
-        headers = [
-            "Employee Name",
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ]
-        ws.append(headers)
-
-        # Query active employees once
-        employees = Employee.objects.filter(active=True)
-
-        for emp in employees:
-            row = [emp.full_name]
-            salaries = EmployeeSalary.objects.filter(
-                employee=emp,
-                salary_sheet__date__range=(obj.start_date, obj.end_date),
-            ).order_by("salary_sheet__date")
-
-            # Build a dict of month → tax_loan_total
-            month_map = {}
-            for sal in salaries:
-                month_num = sal.salary_sheet.date.month
-                # If multiple entries per month, adjust as needed (sum, max, etc.)
-                month_map[month_num] = abs(
-                    sal.loan_emi
-                )  # TODO: if not calculate proper then add tax_loan_total
-
-            # Fill months
-            for m in range(1, 13):
-                row.append(month_map.get(m, ""))
-
-            ws.append(row)
-
-        # Setup HTTP response
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        filename = f"Salary_Report_{obj.start_date.isoformat()}_to_{obj.end_date.isoformat()}.xlsx"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        # Save workbook to response
-        wb.save(response)
-        return response
-
-    @admin.action(description="Export TDS Excel (InActive)")
+    @admin.action(description="Export TDS Excel (Inactive)")
     def export_employee_tds_report_inactive(self, request, queryset):
-        obj = queryset.first()
-        if obj is None:
-            self.message_user(request, "No record selected")
-            return
-
-        # Create workbook and sheet
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = "Salary Report"
-
-        # Excel header
-        headers = [
-            "Employee Name",
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December",
-        ]
-        ws.append(headers)
-
-        # Query active employees once
-        employees = Employee.objects.filter(active=False)
-
-        for emp in employees:
-            row = [emp.full_name]
-            salaries = EmployeeSalary.objects.filter(
-                employee=emp,
-                salary_sheet__date__range=(obj.start_date, obj.end_date),
-            ).order_by("salary_sheet__date")
-
-            # Build a dict of month → tax_loan_total
-            month_map = {}
-            for sal in salaries:
-                month_num = sal.salary_sheet.date.month
-                # If multiple entries per month, adjust as needed (sum, max, etc.)
-                month_map[month_num] = abs(
-                    sal.loan_emi
-                )  # TODO: if not calculate proper then add tax_loan_total
-
-            # Fill months
-            for m in range(1, 13):
-                row.append(month_map.get(m, ""))
-
-            ws.append(row)
-
-        # Setup HTTP response
-        response = HttpResponse(
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        filename = f"Salary_Report_{obj.start_date.isoformat()}_to_{obj.end_date.isoformat()}.xlsx"
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-        # Save workbook to response
-        wb.save(response)
-        return response
+        return self._export_employee_tds_report(request, queryset, False)
 
     def change_view(self, request, object_id, form_url="", extra_context=None):
         salary_report = self.get_object(request, object_id)

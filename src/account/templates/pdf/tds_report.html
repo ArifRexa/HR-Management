@@ -1,0 +1,120 @@
+{% extends 'compliance/base/layout.html' %}
+{% load salary_sheet_util %}
+
+{% block content %}
+  
+
+  
+  <style>
+
+    .page-break{page-break-after:always;}
+    .center{
+  text-align:center;
+  margin:0;          /* no outer gap */
+  padding:0;         /* no inner gap  */
+}
+
+    h1{font-size:24px;margin-bottom:10px;font-weight:bold;}
+    h2{font-size:18px;margin:10px 0 5px;font-weight:bold;}
+    .subtitle{font-size:16px;margin-bottom:20px;font-weight:bold;}
+
+    .info{margin-bottom:20px;font-size:14px;}
+    .employee-info{margin-bottom:20px;}
+    .employee-info table{border:none;width:100%;}
+    .employee-info td{border:none;padding:2px 0;vertical-align:top;}
+    .employee-info .label{font-weight:bold;width:300px;}
+
+    table.main-table{
+      margin-top: -100px;
+    }
+
+    table.main-table,
+    table.main-table th,
+    table.main-table td{border:1px solid #000;}
+    table.main-table th{padding:4px 2px;text-align:left;font-weight:bold;background:#f5f5f5;}
+    table.main-table td{padding:2px 4px;text-align:left;}
+    .total-row{font-weight:bold;}
+
+    .signature{margin-top:50px;font-size:14px;}
+    .signature p{margin:5px 0;}
+  </style>
+
+
+{% for employee_salary in salary %}
+<div class="page-break">
+
+  <div class="center">
+    <h1>MEDIUSWARE LTD.</h1>
+    <h2 style="margin-top: -150px;">Certificate of Deduction of Tax from Salary</h2>
+    <p class="subtitle"><em>To Whom It May Concern</em></p>
+  </div>
+
+  <div class="employee-info">
+    <table>
+      <tr>
+        <td class="label">Name of Employee:</td>
+        <td>{{ employee_salary.employee.full_name }}</td>
+      </tr>
+      <tr>
+        <td class="label">Employee ID:</td>
+        <td>{{ employee_salary.employee.employee_id }}</td>
+      </tr>
+      <tr>
+        <td class="label">Designation:</td>
+        <td>{{ employee_salary.employee.designation.title }}</td>
+      </tr>
+      <tr>
+        <td class="label">TIN No:</td>
+        <td>{{ employee_salary.employee.tax_info }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <table class="main-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Challan No.</th>
+        <th>Challan Amount</th>
+        <th>Claimed Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tds in tds_challan %}
+      
+      {% if tds.tds_type == "group" %}
+        <tr>
+          <td>{{ tds.date }}</td>
+          <td>{{ tds.challan_no }}</td>
+          <td>{{ tds.amount }}</td>
+          <td>{{ employee_salary.tds }}</td>
+        </tr>
+      
+      {% elif tds.tds_type == "individual" and employee_salary.employee == tds.employee%}
+        <tr>
+          <td>{{ tds.date }}</td>
+          <td>{{ tds.challan_no }}</td>
+          <td>{{ tds.amount }}</td>
+          <td>{{ employee_salary.tds }}</td>
+        </tr>
+      
+        
+      {% endif %}
+        
+      {% endfor %}
+      <tr class="total-row">
+        <td colspan="3" style="text-align:right;"><strong>Total</strong></td>
+        <td><strong>{% employee_total_tds obj employee_salary.employee%}</strong></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="signature">
+    <p><strong>Name:</strong> Md. Nurul Islam</p>
+    <p><strong>Designation:</strong> Manager (Accounts &amp; Taxation)</p>
+  </div>
+
+</div>
+{% endfor %}
+
+{% endblock content %}
