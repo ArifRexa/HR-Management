@@ -34,6 +34,8 @@ from website.views import (
     ProjectDetails,
     EmployeeList,
     ServiceListAPIView,
+    ServicePageListView,
+    ServicePageDetailView as ServicePageDetailViewV2,
     SubscriptionModelViewSet,
     TechnologyListAPIView,
     TechnologyNavigationView,
@@ -268,6 +270,9 @@ urlpatterns = [
     path('api/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
     path('website/projects/', ProjectListView.as_view(), name='project-list'),
     path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
+
+    path('website/services-list/', ServicePageListView.as_view(), name='service-list'),
+    path('website/services/<slug:slug>/', ServicePageDetailViewV2.as_view(), name='service-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)

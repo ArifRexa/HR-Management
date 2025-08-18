@@ -105,6 +105,7 @@ from website.serializers import (
     ProjectSitemapSerializer,
     ServeCategorySerializer,
     ServiceDetailsSerializer,
+    ServicePageDetailSerializer,
     ServicePageSerializer,
     ServiceSerializer,
     SimpleServeCategorySerializer,
@@ -1481,3 +1482,46 @@ class ServeCategoryAPIView(APIView):
                 {"error": str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+
+
+# ======================================= Service Page ===========================================
+
+class ServicePageDetailView(RetrieveAPIView):
+    queryset = ServicePage.objects.filter(is_parent=True).all()
+    serializer_class = ServicePageDetailSerializer
+    lookup_field = 'slug'
+    
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a service page including all related content",
+        tags=["Service Details"],
+        responses={
+            200: ServicePageDetailSerializer,
+            404: "Service not found"
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Unique slug identifier for the service page",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+class ServicePageListView(ListAPIView):
+    queryset = ServicePage.objects.filter(is_parent=True).all()
+    serializer_class = ServicePageDetailSerializer
+    
+    @swagger_auto_schema(
+        operation_description="List all service pages with their detailed information",
+        tags=["Service Details"],
+        responses={
+            200: ServicePageDetailSerializer(many=True)
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
