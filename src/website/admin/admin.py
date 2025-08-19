@@ -70,6 +70,7 @@ from website.models import (
     EventCalender,
     FAQHomeTitle,
     Gallery,
+    HistoryOfTech,
     HomeBanner,
     Industry,
     IndustryTitle,
@@ -880,17 +881,13 @@ class TechnologyTypeAdmin(admin.ModelAdmin):
 # class TechnologyFAQAdmin(admin.ModelAdmin):
 #     pass
 
+# ==================== Technology FAQ ====================
 class TechnologyFAQInline(nested_admin.NestedTabularInline):
     model = TechnologyFAQ
     extra = 1
     fields = ('question', 'answer', 'order')
     ordering = ['order']
 
-class TechnologyCTAInline(nested_admin.NestedStackedInline):
-    model = TechnologyCTA
-    extra = 1
-    verbose_name = "Call to Action"
-    verbose_name_plural = "Calls to Action"
 
 class TechnologyFAQSchemaInline(nested_admin.NestedStackedInline):
     model = TechnologyFAQSchema
@@ -899,8 +896,17 @@ class TechnologyFAQSchemaInline(nested_admin.NestedStackedInline):
     
     def has_add_permission(self, request, obj=None):
         return False
-    
 
+# =================== Technology CTA ===================
+class TechnologyCTAInline(nested_admin.NestedStackedInline):
+    model = TechnologyCTA
+    extra = 1
+    verbose_name = "Call to Action"
+    verbose_name_plural = "Calls to Action"
+
+
+    
+# =============Technology Solution and Services Section================
 class TechnologySolutionsAndServicesCardsInline(nested_admin.NestedTabularInline):
     model = TechnologySolutionsAndServicesCards
     extra = 1
@@ -912,7 +918,7 @@ class TechnologySolutionsAndServicesInline(nested_admin.NestedStackedInline):
     max_num = 1
     min_num = 1
 
-
+# ===================Technology Services We Provide Section=====================
 class ServicesWeProvideCardsInline(nested_admin.NestedTabularInline):
     model = ServicesWeProvideCards
     extra = 1
@@ -924,7 +930,7 @@ class ServicesWeProvideInline(nested_admin.NestedStackedInline):
     max_num = 1
     min_num = 1
 
-
+# ===================Technology EcoSystem Section=====================
 class EcoSystemCardTagsInline(nested_admin.NestedTabularInline):
     model = EcoSystemCardTags
     extra = 1
@@ -941,7 +947,7 @@ class EcoSystemInline(nested_admin.NestedStackedInline):
     max_num = 1
     min_num = 1
 
-
+# ===================== Technology Key Things ======================
 class TechnologyKeyThingsQAInline(nested_admin.NestedTabularInline):
     model = TechnologyKeyThingsQA
     extra = 1
@@ -977,7 +983,7 @@ class TechnologyWhyChooseUsInline(nested_admin.NestedStackedInline):
     verbose_name = "Why Choose Us"
     verbose_name_plural = "Why Choose Us"
 
-
+# ================= Our Process of Technology =================
 class TechnologyOurProcessInline(nested_admin.NestedStackedInline):
     model=TechnologyOurProcess
     extra=1
@@ -985,7 +991,12 @@ class TechnologyOurProcessInline(nested_admin.NestedStackedInline):
     verbose_name_plural="Our Processes"
     ordering=['order']
 
-
+# ================= History of Technology =================
+class HistoryOfTechInline(nested_admin.NestedStackedInline):
+    model = HistoryOfTech
+    extra = 1
+    min_num = 1
+    max_num = 1
 
 
 @admin.register(Technology)
@@ -1000,6 +1011,7 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
         TechnologyKeyThingsInline,
         TechnologyWhyChooseUsInline,
         TechnologyOurProcessInline,
+        HistoryOfTechInline,
 
 
 
@@ -1040,6 +1052,8 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
                     '</script>'
                 )
             )
+
+# =========================================== Blog Status Filter ===========================================
 class BlogStatusFilter(SimpleListFilter):
     title = 'status'
     parameter_name = 'status'
