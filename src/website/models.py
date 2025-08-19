@@ -119,7 +119,7 @@ class BlogSchemaType(models.TextChoices):
     NEWS = "NewsArticle", "News"
     HOWTO = "HowTo", "How-To"
 
-
+# ========================================================== Technology Section ======================================================
 class TechnologyType(TimeStampMixin):
     name = models.CharField(max_length=255, null=True, blank=True)
     slug = models.SlugField(unique=True, null=True, blank=True)
@@ -156,7 +156,7 @@ class Technology(TimeStampMixin):
         verbose_name = "Technology"
         verbose_name_plural = "Technologies"
 
-
+# =============Technology Solution and Services Section================
 class TechnologySolutionsAndServices(TimeStampMixin):
     services = models.ForeignKey(
         Technology,
@@ -185,7 +185,7 @@ class TechnologySolutionsAndServicesCards(TimeStampMixin):
     def __str__(self):
         return self.card_title
 
-
+# ===================Technology Services We Provide Section=====================
 class ServicesWeProvide(models.Model):
     technology = models.ForeignKey(
         Technology, 
@@ -220,7 +220,7 @@ class ServicesWeProvideCards(models.Model):
     def __str__(self):
         return self.card_title
 
-
+# ===================Technology EcoSystem Section=====================
 class EcoSystem(models.Model):
     technology = models.ForeignKey(
         Technology, 
@@ -267,7 +267,7 @@ class EcoSystemCardTags(models.Model):
     def __str__(self):
         return self.tag
 
-# =====================================Key Things======================================
+# =====================================Technology Key Things======================================
 
 class TechnologyKeyThings(models.Model):
     technology = models.ForeignKey(
@@ -302,8 +302,7 @@ class TechnologyKeyThingsQA(models.Model):
         return self.card_title
 
 
-# ================================= Why choose us =================================
-
+# ================================= Technology Why choose us =================================
 
 class TechnologyWhyChooseUs(TimeStampMixin):
     technology = models.ForeignKey(
@@ -345,7 +344,7 @@ class TechnologyWhyChooseUsCardsDetails(TimeStampMixin):
         return self.card_description
 
 
-# ================================= Our Process =================================
+# ================================= Our Process of Technology =================================
 
 class TechnologyOurProcess(models.Model):
     technology = models.ForeignKey(
@@ -367,7 +366,29 @@ class TechnologyOurProcess(models.Model):
         verbose_name_plural = "Our Processes"
         ordering = ['order']
 
+# ================================= History of Technology =================================
+class HistoryOfTech(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE,
+        related_name='history_of_tech',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    section_title = models.CharField(max_length=200)
+    section_description = HTMLField(blank=True, null=True)
+    image = models.ImageField(upload_to="history_of_tech_images/", null=True, blank=True)
 
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        verbose_name = "History of Technology"
+        verbose_name_plural = "History of Technologies"
+
+
+# ================================= Technology FAQ =================================
         
 class TechnologyFAQ(models.Model):
     technology = models.ForeignKey(Technology, on_delete=models.CASCADE, related_name='faqs')
@@ -384,6 +405,20 @@ class TechnologyFAQ(models.Model):
         ordering = ['order']
 
 
+class TechnologyFAQSchema(models.Model):
+    technology = models.OneToOneField(
+        Technology, 
+        on_delete=models.CASCADE, 
+        related_name='faq_schema'
+    )
+    faq_schema = models.TextField(
+        help_text="JSON-LD schema for FAQs"
+    )
+
+    def __str__(self):
+        return f"FAQ Schema for {self.technology.name}"
+
+# =================== Technology CTA ===================
 class TechnologyCTA(TimeStampMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
     description = HTMLField(null=True, blank=True)
@@ -401,20 +436,10 @@ class TechnologyCTA(TimeStampMixin):
     def __str__(self):
         return self.title or "CTA"
 
-class TechnologyFAQSchema(models.Model):
-    technology = models.OneToOneField(
-        Technology, 
-        on_delete=models.CASCADE, 
-        related_name='faq_schema'
-    )
-    faq_schema = models.TextField(
-        help_text="JSON-LD schema for FAQs"
-    )
 
-    def __str__(self):
-        return f"FAQ Schema for {self.technology.name}"
 
-    
+
+# ========================================================== Blog Section ======================================================
 class Blog(AuthorMixin, TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = BlogSlugField(unique=True)
