@@ -203,35 +203,35 @@ class ClientAdmin(admin.ModelAdmin):
         "get_remark",
         # "get_client_review",
     )
-    fields = (
-        "name",
-        "active",
-        "source",
-        "hourly_rate",
-        # "inactive_from",
-        "refered_by",
-        "payment_method",
-        "invoice_type",
-        "remark",
-        "email",
-        "country",
-        "review",
-        "invoice_cc_email",
-        "designation",
-        "company_name",
-        "logo",
-        # "is_need_feedback",
-        "client_feedback",
-        "image",
-        "linkedin_url",
-        "bill_from",
-        # "cc_email",
-        "address",
-        # "active_from",
-        "notes",
-        "is_hour_breakdown",
-        "currency",
-    )
+    # fields = (
+    #     "name",
+    #     "active",
+    #     "source",
+    #     "hourly_rate",
+    #     # "inactive_from",
+    #     "refered_by",
+    #     "payment_method",
+    #     "invoice_type",
+    #     "remark",
+    #     "email",
+    #     "country",
+    #     "review",
+    #     "invoice_cc_email",
+    #     "designation",
+    #     "company_name",
+    #     "logo",
+    #     # "is_need_feedback",
+    #     "client_feedback",
+    #     "image",
+    #     "linkedin_url",
+    #     "bill_from",
+    #     # "cc_email",
+    #     "address",
+    #     # "active_from",
+    #     "notes",
+    #     "is_hour_breakdown",
+    #     "currency",
+    # )
     list_filter = [
         "is_need_feedback",
         "active",
@@ -253,6 +253,80 @@ class ClientAdmin(admin.ModelAdmin):
     actions = ["mark_as_in_active", "export_to_excel", "export_to_pdf"]
 
     custom_filters = ["from_date", "to_date"]
+    fieldsets = (
+        (
+            "Identification Information",
+            {
+                "fields": (
+                    "name",
+                    "status",
+                    "source",
+                    "refered_by",
+                    "email",
+                    "country",
+                    "company_name",
+                    "linkedin_url",
+                ),
+            },
+        ),
+        (
+            "Billing Information",
+            {
+                "fields": (
+                    "hourly_rate",
+                    "payment_method",
+                    "invoice_type",
+                    "currency",
+                ),
+            },
+        ),
+        (
+            "Engagement & Relationship",
+            {
+                "fields": (
+                    "remark",           # Issues / Concerns Raised
+                    "client_feedback",  # Client Feedback / Testimonial
+                    "decision_maker",
+                ),
+            },
+        ),
+        
+        (
+            "Follow-up & Opportunities",
+            {
+                "fields": (
+                    "meeting_date",          # Last Engagement Date
+                    "next_follow_up_date",   # Next Follow-up Date
+                    "upsell_opportunity",    # Multi-select checkboxes
+                    "referral_potential",    # Yes/No/Maybe dropdown
+                ),
+            },
+        ),
+        (
+            "Other",
+            {
+                "fields": (
+                    "active",
+                    "logo",
+                    "image",
+                    "notes",
+                    "is_need_feedback",
+                    "is_hour_breakdown",
+                    "active_from",
+                    "inactive_from",
+                    "follow_up_date",
+                    "web_name",
+                    "address",
+                    "bill_from",
+                    "invoice_cc_email",
+                    "designation",
+                    "review",
+                ),
+                "classes": ("collapse",),   # optional – collapsible section
+            },
+        ),
+        # …additional fieldsets go here…
+    )
 
     # Restrict actions based on permissions
     def get_actions(self, request):
