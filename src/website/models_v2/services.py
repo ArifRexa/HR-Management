@@ -125,7 +125,7 @@ class BestPracticesHeadings(TimeStampMixin):
     section_description = HTMLField(blank=True, null=True)
 
     def __str__(self):
-        return self.title      
+        return self.section_title   
 
 class BestPracticesCards(TimeStampMixin):
     best_practices = models.ForeignKey(
@@ -153,7 +153,6 @@ class BestPracticesCardsDetails(TimeStampMixin):
         return self.card_title
 
 # ================================= Why choose us =================================
-
 
 class ServicesWhyChooseUs(TimeStampMixin):
     service_page = models.ForeignKey(
