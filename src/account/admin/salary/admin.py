@@ -614,7 +614,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
             "obj": obj,
             # "tds_challan": tds_challan,
         }
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf(download=True)
 
     @admin.action(description="Export TDS PDF (InActive)")
     def export_tds_pdf_for_inactive_employee(self, request, queryset):
@@ -641,7 +641,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
             "obj": obj,
             "tds_challan": tds_challan,
         }
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf(download=True)
 
     def _export_employee_tds_report(self, request, queryset, active_status):
         """Helper function to generate TDS report for specified employee status"""

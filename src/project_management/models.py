@@ -19,8 +19,6 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
 
-from smart_selects.db_fields import ChainedManyToManyField
-
 # from employee.models import LeaveManagement
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
@@ -83,13 +81,23 @@ class CurrencyType(TimeStampMixin):
         null=True,
     )
     currency_code = models.CharField(
-        max_length=10, help_text="Example: USD, EUR, etc.", blank=True, null=True
+        max_length=10,
+        help_text="Example: USD, EUR, etc.",
+        blank=True,
+        null=True,
     )
     icon = models.CharField(
-        max_length=10, help_text="Currency symbol like $, €, £", blank=False, null=False
+        max_length=10,
+        help_text="Currency symbol like $, €, £",
+        blank=False,
+        null=False,
     )
-    is_active = models.BooleanField(default=True, help_text="Set as active currency")
-    is_default = models.BooleanField(default=False, help_text="Set as default currency")
+    is_active = models.BooleanField(
+        default=True, help_text="Set as active currency"
+    )
+    is_default = models.BooleanField(
+        default=False, help_text="Set as default currency"
+    )
     exchange_rate = models.DecimalField(
         max_digits=10,
         decimal_places=4,
@@ -236,7 +244,9 @@ class Client(TimeStampMixin, AuthorMixin):
     designation = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(max_length=80, null=True, blank=True)
     invoice_cc_email = models.TextField(
-        null=True, blank=True, help_text="Comma-separated email addresses for CC"
+        null=True,
+        blank=True,
+        help_text="Comma-separated email addresses for CC",
     )
     bill_from = models.TextField(null=True, blank=True)
     # cc_email = models.TextField(
@@ -247,12 +257,17 @@ class Client(TimeStampMixin, AuthorMixin):
         Country, on_delete=models.SET_NULL, null=True, blank=True
     )
     logo = models.ImageField(null=True, blank=True, verbose_name="Company Logo")
-    is_need_feedback = models.BooleanField(default=False, verbose_name="Need Feedback")
+    is_need_feedback = models.BooleanField(
+        default=False, verbose_name="Need Feedback"
+    )
     # show_in_web = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
     client_feedback = HTMLField(null=True, blank=True)
     image = models.ImageField(
-        upload_to="client_images", null=True, blank=True, verbose_name="Client Image"
+        upload_to="client_images",
+        null=True,
+        blank=True,
+        verbose_name="Client Image",
     )
     linkedin_url = models.URLField(null=True, blank=True)
     notes = models.TextField(null=True, blank=True)
@@ -269,12 +284,20 @@ class Client(TimeStampMixin, AuthorMixin):
         null=True,
     )
     review = models.ManyToManyField(
-        ClientReview, blank=True, verbose_name="Client Review", related_name="clients"
+        ClientReview,
+        blank=True,
+        verbose_name="Client Review",
+        related_name="clients",
     )
     currency = models.ForeignKey(
-        CurrencyType, on_delete=models.SET_NULL, null=True, related_name="clients"
+        CurrencyType,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="clients",
     )
-    hourly_rate = models.DecimalField(decimal_places=2, max_digits=10, null=True)
+    hourly_rate = models.DecimalField(
+        decimal_places=2, max_digits=10, null=True
+    )
     active_from = models.DateField(null=True, blank=True)
     inactive_from = models.DateField(null=True, blank=True)
     status = models.PositiveSmallIntegerField(
@@ -284,12 +307,42 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     follow_up_date = models.DateField(null=True, blank=True)
     meeting_date = models.DateField(null=True, blank=True)
-    remark = models.TextField(null=True, blank=True)
+    remark = models.TextField(null=True, blank=True, verbose_name="Issues / Concerns Raised")
     refered_by = models.ForeignKey(
         "self",
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
+    )
+    # issue = models.TextField(
+    #     null=True,
+    #     blank=True,
+    #     help_text="Describe the issue or problem faced by the client",
+    # )
+    decision_maker = models.CharField(
+        max_length=50,
+        choices=(
+            ("ceo", "CEO"),
+            ("cto", "CTO"),
+            ("mm", "Marketing Manager"),
+        ),
+        default="ceo",
+    )
+    next_follow_up_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Next follow-up date for the client",
+    )
+    upsell_opportunity = models.ManyToManyField(
+        "website.ServicePage",
+        blank=True,
+        related_name="upsell_opportunities",
+        verbose_name="Upsell Opportunities",
+    )
+    referral_potential = models.CharField(
+        max_length=50,
+        choices=(("yes", "Yes"), ("no", "No"), ("maybe", "May Be")),
+        default="maybe",
     )
 
     def __str__(self):
@@ -307,6 +360,7 @@ class Client(TimeStampMixin, AuthorMixin):
             ("exclude_income", "Client income exclude."),
             ("can_mark_as_inactive", "Can mark clients as inactive"),
             ("can_export_to_excel", "Can export clients to Excel"),
+            ( "can_export_to_pdf", "Can export clients to PDF"),
         ]
 
 
@@ -417,7 +471,9 @@ class Project(TimeStampMixin, AuthorMixin):
     )
     slug = models.SlugField(null=True, blank=True, unique=True)
     description = models.TextField(verbose_name="Sub Title")
-    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True, blank=True)
+    client = models.ForeignKey(
+        Client, on_delete=models.SET_NULL, null=True, blank=True
+    )
     client_web_name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Client Web Name"
     )
@@ -431,7 +487,12 @@ class Project(TimeStampMixin, AuthorMixin):
     platforms = models.ManyToManyField(
         ProjectPlatform, related_name="projects", blank=True
     )
-    categories_tags = models.ManyToManyField('website.Category', related_name="projects", verbose_name="tags", blank=True)
+    categories_tags = models.ManyToManyField(
+        "website.Category",
+        related_name="projects",
+        verbose_name="tags",
+        blank=True,
+    )
     industries = models.ManyToManyField(
         ServeCategory,
         related_name="projects",
@@ -442,13 +503,13 @@ class Project(TimeStampMixin, AuthorMixin):
         related_name="projects",
         limit_choices_to={"is_parent": True},
         verbose_name="Services",
-        blank=True
+        blank=True,
     )
     technology = models.ManyToManyField(
-        'website.Technology',
+        "website.Technology",
         verbose_name="Technologies",
         blank=True,
-        related_name='projects',
+        related_name="projects",
     )
     live_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
@@ -468,9 +529,15 @@ class Project(TimeStampMixin, AuthorMixin):
     display_image = models.ImageField(
         null=True, blank=True, upload_to="project/display_image"
     )
-    project_logo = models.ImageField(upload_to="project_logo", null=True, blank=True)
-    special_image = models.ImageField(upload_to="special_image", null=True, blank=True)
-    thumbnail = models.ImageField(upload_to="project_thumbnails", null=True, blank=True)
+    project_logo = models.ImageField(
+        upload_to="project_logo", null=True, blank=True
+    )
+    special_image = models.ImageField(
+        upload_to="special_image", null=True, blank=True
+    )
+    thumbnail = models.ImageField(
+        upload_to="project_thumbnails", null=True, blank=True
+    )
     featured_video = models.URLField(null=True, blank=True)
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="projects")
@@ -478,7 +545,9 @@ class Project(TimeStampMixin, AuthorMixin):
         max_length=50,
         default=uuid4,
     )
-    is_highlighted = models.BooleanField(verbose_name="Is Highlighted?", default=False)
+    is_highlighted = models.BooleanField(
+        verbose_name="Is Highlighted?", default=False
+    )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
     # case_study_pdf = models.FileField(
     #     verbose_name="Case Study File (PDF)",
@@ -553,7 +622,9 @@ class Project(TimeStampMixin, AuthorMixin):
 
     def last_x_weeks_feedback(self, x):
         today = datetime.datetime.today()
-        last_xth_friday = datetime.datetime.today() + relativedelta(weekday=FR(-x))
+        last_xth_friday = datetime.datetime.today() + relativedelta(
+            weekday=FR(-x)
+        )
 
         return (
             self.clientfeedback_set.filter(
@@ -589,7 +660,9 @@ class Project(TimeStampMixin, AuthorMixin):
     @property
     def check_is_weekly_project_hour_generated(self):
         latest_project_hour = (
-            ProjectHour.objects.filter(project=self).order_by("created_at").last()
+            ProjectHour.objects.filter(project=self)
+            .order_by("created_at")
+            .last()
         )
         if latest_project_hour:
             latest_project_hour_date = latest_project_hour.created_at.date()
@@ -619,7 +692,10 @@ class Project(TimeStampMixin, AuthorMixin):
 
 class ProjectResultStatistic(TimeStampMixin):
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="project_results", null=True
+        Project,
+        on_delete=models.CASCADE,
+        related_name="project_results",
+        null=True,
     )
     title = models.CharField(max_length=255)
     result = models.CharField(max_length=20)
@@ -705,8 +781,12 @@ class ProjectContent(SortableMixin, TimeStampMixin, AuthorMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     title = models.CharField(max_length=200, null=True, blank=True)
     content = HTMLField(null=True, blank=True)
-    image = models.ImageField(upload_to="project_images/", null=True, blank=True)
-    image2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
+    image = models.ImageField(
+        upload_to="project_images/", null=True, blank=True
+    )
+    image2 = models.ImageField(
+        upload_to="project_images/", null=True, blank=True
+    )
     video_url = models.URLField(null=True, blank=True)
     iframe = HTMLField(null=True, blank=True)
 
@@ -722,7 +802,10 @@ class ProjectKeyFeature(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=300, null=True, blank=True)
     description = HTMLField()
     img = models.ImageField(
-        verbose_name="Image", upload_to="projects/key_features/", null=True, blank=True
+        verbose_name="Image",
+        upload_to="projects/key_features/",
+        null=True,
+        blank=True,
     )
     img2 = models.ImageField(upload_to="project_images/", null=True, blank=True)
 
@@ -816,7 +899,9 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         ):
             raise ValidationError({"date": "Today is not Friday"})
         if not self.project:
-            raise ValidationError({"project": "You have to must assign any project"})
+            raise ValidationError(
+                {"project": "You have to must assign any project"}
+            )
 
     def save(self, *args, **kwargs):
         # if not self.manager.manager:
@@ -833,9 +918,9 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         super(ProjectHour, self).save(*args, **kwargs)
 
     def employee_hour(self, employee_id):
-        total = self.employeeprojecthour_set.filter(employee_id=employee_id).aggregate(
-            Sum("hours")
-        )
+        total = self.employeeprojecthour_set.filter(
+            employee_id=employee_id
+        ).aggregate(Sum("hours"))
         return employee_id, total["hours__sum"] or 0
 
     class Meta:
@@ -843,7 +928,10 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
         permissions = [
             ("show_all_hours", "Can show all hours just like admin"),
             ("select_hour_type", "Can select Project Hour type"),
-            ("weekly_project_hours_approve", "Can approved and give feedback from CTO"),
+            (
+                "weekly_project_hours_approve",
+                "Can approved and give feedback from CTO",
+            ),
         ]
 
 
@@ -875,7 +963,10 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
 
     class Meta:
         permissions = [
-            ("change_recent_activity", "Can change if inserted recently (3days)"),
+            (
+                "change_recent_activity",
+                "Can change if inserted recently (3days)",
+            ),
             ("see_all_employee_hour", "Can see all emploployee project hour"),
         ]
         verbose_name = "Employee Project Hour"
@@ -938,8 +1029,12 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
         ("pending", "⌛ Pending"),
         ("approved", "✔ Approved"),
     )
-    status = models.CharField(max_length=20, choices=STATUS_CHOICE, default="pending")
-    note = models.TextField(null=True, blank=True, help_text="Manager's note / remarks")
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICE, default="pending"
+    )
+    note = models.TextField(
+        null=True, blank=True, help_text="Manager's note / remarks"
+    )
 
     # def clean(self):
     #     if self.hours < 4 and self.description == "":
@@ -1096,7 +1191,9 @@ class ProjectResource(TimeStampMixin, AuthorMixin):
 
 class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
     project_resource = models.ForeignKey(
-        ProjectResource, limit_choices_to={"active": True}, on_delete=models.CASCADE
+        ProjectResource,
+        limit_choices_to={"active": True},
+        on_delete=models.CASCADE,
     )
     employee = models.ForeignKey(
         Employee,
@@ -1111,7 +1208,9 @@ class ProjectResourceEmployee(TimeStampMixin, AuthorMixin):
         max_length=200, help_text="Estimated Project End Duration"
     )
     duration_unit = models.ForeignKey(
-        DurationUnit, limit_choices_to={"active": True}, on_delete=models.CASCADE
+        DurationUnit,
+        limit_choices_to={"active": True},
+        on_delete=models.CASCADE,
     )
     duration_hour = models.FloatField()
     hour = models.FloatField(
@@ -1211,7 +1310,9 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
     rating_communication = models.FloatField(blank=True, null=True)
     rating_quality_of_work = models.FloatField(blank=True, null=True)
     rating_time_management = models.FloatField(blank=True, null=True)
-    rating_understanding_of_requirements = models.FloatField(blank=True, null=True)
+    rating_understanding_of_requirements = models.FloatField(
+        blank=True, null=True
+    )
     rating_value_for_money = models.FloatField(blank=True, null=True)
     rating_recommendations = models.FloatField(blank=True, null=True)
 
@@ -1275,12 +1376,16 @@ class ClientFeedback(AuthorMixin, TimeStampMixin):
         today = timezone.now().date()
         current_month = today.replace(day=1)
         last_month = (current_month - relativedelta(months=1)).replace(day=1)
-        two_months_ago = (current_month - relativedelta(months=2)).replace(day=1)
+        two_months_ago = (current_month - relativedelta(months=2)).replace(
+            day=1
+        )
         return [current_month, last_month, two_months_ago]
 
     @staticmethod
     def get_feedback_for_recent_months():
-        current_month, last_month, two_months_ago = ClientFeedback.get_last_two_months()
+        current_month, last_month, two_months_ago = (
+            ClientFeedback.get_last_two_months()
+        )
         return ClientFeedback.objects.filter(
             feedback_month__in=[current_month, last_month, two_months_ago]
         )
@@ -1356,7 +1461,9 @@ class ProjectReport(TimeStampMixin):
         limit_choices_to={"active": True},
         on_delete=models.CASCADE,
     )
-    type = models.CharField(max_length=10, choices=TYPE_CHOICE, default="manager")
+    type = models.CharField(
+        max_length=10, choices=TYPE_CHOICE, default="manager"
+    )
     send_to = models.CharField(verbose_name="Send To", max_length=255)
     api_token = models.TextField(verbose_name="API Token")
 
@@ -1465,7 +1572,10 @@ class Teams(TimeStampMixin):
         blank=True,
     )
     team_image = models.ImageField(
-        upload_to="team_images/", null=True, blank=True, help_text="Upload team image"
+        upload_to="team_images/",
+        null=True,
+        blank=True,
+        help_text="Upload team image",
     )
     employees = models.ManyToManyField(
         Employee,

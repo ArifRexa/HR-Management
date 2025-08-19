@@ -1,0 +1,222 @@
+{% extends 'compliance/base/layout.html' %}
+{% block content %}
+
+
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+            padding: 20px;
+            background: #fff;
+        }
+
+        /* --- PAGE ------------------------------------------------------ */
+        .page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* --- HEADER ---------------------------------------------------- */
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .header p {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* --- SECTION --------------------------------------------------- */
+        .section {
+            margin-bottom: 25px;
+        }
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+        }
+
+        /* --- TABLE ----------------------------------------------------- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        td {
+            vertical-align: top;
+            padding: 4px 0;
+        }
+        td.label {
+            width: 30%;
+            font-weight: bold;
+            padding-right: 10px;
+        }
+        td.value {
+            width: 70%;
+        }
+
+        /* --- FOOTER ---------------------------------------------------- */
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+        }
+
+</style>
+
+<div class="page">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>Mediusware Ltd</h1>
+            <h3>Client Details</h3>
+            <p>Generated on {{ today|date:"d M Y" }}</p>
+        </div>
+
+        <!-- IDENTIFICATION INFORMATION -->
+        <div class="section">
+            <div class="section-title">1. Identification Information</div>
+            <table>
+                <tr>
+                    <td class="label">Full Name</td>
+                    <td class="value">{{ client.name }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Client Status</td>
+                    <td class="value">{{ client.status|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Source</td>
+                    <td class="value">{{ client.source.name|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Referred By</td>
+                    <td class="value">{{ client.referred_by.name|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Email</td>
+                    <td class="value">{{ client.email|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Phone/WhatsApp</td>
+                    <td class="value">{{ client.phone|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Country</td>
+                    <td class="value">{{ client.country.name|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Company / Website</td>
+                    <td class="value">{{ client.company_name|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">LinkedIn Profile</td>
+                    <td class="value">{{ client.linkedin_url|default:"—" }}</td>
+                </tr>
+            </table>
+        </div>
+        <br>
+
+        <!-- BILLING INFORMATION -->
+        <div class="section">
+            <div class="section-title">2. Billing Information</div>
+            <table>
+                <tr>
+                    <td class="label">Hourly Rate</td>
+                    <td class="value">{{ client.hourly_rate|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Preferred Payment Method</td>
+                    <td class="value">{{ client.payment_method.name|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Invoice Type</td>
+                    <td class="value">{{ client.invoice_type.name|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Currency</td>
+                    <td class="value">{{ client.currency.icon|default:"" }} {{ client.currency.currency_name|default:"—" }}</td>
+                </tr>
+            </table>
+        </div>
+        <br>
+
+        <!-- PROJECT INFORMATION -->
+        <div class="section">
+            <div class="section-title">3. Project Information</div>
+            <table>
+                <tr>
+                    <td class="label">Projects Name</td>
+                    <td class="value">{{ project_names|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Services</td>
+                    <td class="value">{{ services|default:"—" }}</td>
+                </tr>
+
+
+            </table>
+        </div>
+
+        <br>
+        <!-- Engagement & Relationship -->
+        <div class="section">
+            <div class="section-title">4. Engagement & Relationship</div>
+            <table>
+                <tr>
+                    <td class="label">Issues / Concerns Raised</td>
+                    <td class="value">{{ client.remark|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Client Feedback</td>
+                    <td class="value">{{ client.client_feedback|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Decision Maker</td>
+                    <td class="value">{{ client.get_decision_maker_display|default:"—" }}</td>
+                </tr>
+            </table>
+        </div>
+        <br>
+
+        <!-- Engagement & Relationship -->
+        <div class="section">
+            <div class="section-title">5. Follow-up & Opportunities</div>
+            <table>
+                <tr>
+                    <td class="label">Last Engagement Date</td>
+                    <td class="value">{{ client.inactive_from|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Next Follow-up Date</td>
+                    <td class="value">{{ client.next_follow_up_date|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Upsell / Cross-sell Opportunities</td>
+                    <td class="value">{{ upsell_services|default:"—" }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Referral Potential</td>
+                    <td class="value">{{ referral_potential|default:"—" }}</td>
+                </tr>
+            </table>
+        </div>
+
+
+    </div>
+
+
+{% endblock content %}
