@@ -284,21 +284,20 @@ class ClientAdmin(admin.ModelAdmin):
             "Engagement & Relationship",
             {
                 "fields": (
-                    "remark",           # Issues / Concerns Raised
+                    "remark",  # Issues / Concerns Raised
                     "client_feedback",  # Client Feedback / Testimonial
                     "decision_maker",
                 ),
             },
         ),
-        
         (
             "Follow-up & Opportunities",
             {
                 "fields": (
-                    "meeting_date",          # Last Engagement Date
-                    "next_follow_up_date",   # Next Follow-up Date
-                    "upsell_opportunity",    # Multi-select checkboxes
-                    "referral_potential",    # Yes/No/Maybe dropdown
+                    "meeting_date",  # Last Engagement Date
+                    "next_follow_up_date",  # Next Follow-up Date
+                    "upsell_opportunity",  # Multi-select checkboxes
+                    "referral_potential",  # Yes/No/Maybe dropdown
                 ),
             },
         ),
@@ -322,7 +321,7 @@ class ClientAdmin(admin.ModelAdmin):
                     "designation",
                     "review",
                 ),
-                "classes": ("collapse",),   # optional – collapsible section
+                "classes": ("collapse",),  # optional – collapsible section
             },
         ),
         # …additional fieldsets go here…
@@ -400,6 +399,7 @@ class ClientAdmin(admin.ModelAdmin):
             "today": date.today(),
             "upsell_services": "\n".join(upsell_list),
         }
+        pdf.file_name = f"{queryset.first().name}_client_info"
 
         return pdf.render_to_pdf(download=True)
 
