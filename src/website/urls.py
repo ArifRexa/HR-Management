@@ -279,9 +279,9 @@ urlpatterns = [
     path('website/services-list/', ServicePageListView.as_view(), name='service-list'),
     path('website/services/<slug:slug>/', ServicePageDetailViewV2.as_view(), name='service-detail'),
 
-    path('technologies/', TechnologyListView.as_view(), name='technology-list'),
-    path('technologies/<int:pk>/', TechnologyDetailView.as_view(), name='technology-detail'),
-    path('technologies/slug/<slug:slug>/', TechnologySlugDetailView.as_view(), name='technology-detail-slug'),
+    path('website/technology-list/', TechnologyListView.as_view(), name='technology-list'),
+    # path('website/technologies/<int:pk>/', TechnologyDetailView.as_view(), name='technology-detail'),
+    path('website/technologies/<slug:slug>/', TechnologySlugDetailView.as_view(), name='technology-detail-slug'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
