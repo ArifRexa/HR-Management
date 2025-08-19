@@ -541,14 +541,16 @@ class OurProcessInline(nested_admin.NestedStackedInline):
 class CustomSolutionsCardsInline(nested_admin.NestedStackedInline):
     model = CustomSolutionsCards
     extra = 1
-    verbose_name = "Solution Card"
-    verbose_name_plural = "Solution Cards"
+    verbose_name = "Benifit Card"
+    verbose_name_plural = "Benifit Cards"
     fields = ('card_title', 'card_description')
 
 class CustomSolutionsInline(nested_admin.NestedStackedInline):
     model = CustomSolutions
     extra = 1
     inlines = [CustomSolutionsCardsInline]
+    verbose_name = "Benifit"
+    verbose_name_plural = "Benifits"
 
 #================================= Benifits =================================
 class BenefitsQAInline(nested_admin.NestedStackedInline):
@@ -562,6 +564,8 @@ class BenefitsInline(nested_admin.NestedStackedInline):
     model = Benefits
     extra = 1
     inlines = [BenefitsQAInline]
+    verbose_name = "Benifited Organization"
+    verbose_name_plural = "Benifited Organizations"
 
 #================================= Why Choose Us =================================
 
