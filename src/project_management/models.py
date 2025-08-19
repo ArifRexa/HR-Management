@@ -262,7 +262,7 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     # show_in_web = models.BooleanField(default=False)
     company_name = models.CharField(max_length=255, null=True, blank=True)
-    client_feedback = HTMLField(null=True, blank=True)
+    client_feedback = models.TextField(null=True, blank=True)
     image = models.ImageField(
         upload_to="client_images",
         null=True,
@@ -307,7 +307,9 @@ class Client(TimeStampMixin, AuthorMixin):
     )
     follow_up_date = models.DateField(null=True, blank=True)
     meeting_date = models.DateField(null=True, blank=True)
-    remark = models.TextField(null=True, blank=True, verbose_name="Issues / Concerns Raised")
+    remark = models.TextField(
+        null=True, blank=True, verbose_name="Issues / Concerns Raised"
+    )
     refered_by = models.ForeignKey(
         "self",
         blank=True,
@@ -360,7 +362,7 @@ class Client(TimeStampMixin, AuthorMixin):
             ("exclude_income", "Client income exclude."),
             ("can_mark_as_inactive", "Can mark clients as inactive"),
             ("can_export_to_excel", "Can export clients to Excel"),
-            ( "can_export_to_pdf", "Can export clients to PDF"),
+            ("can_export_to_pdf", "Can export clients to PDF"),
         ]
 
 
