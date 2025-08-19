@@ -2,6 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
 from website.models import ProjectKeyword, ProjectMetadata
+from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.services import ServicePage
 from .models import (
     Project, ProjectKeyPoint, ProjectContent
 )
@@ -45,16 +47,53 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         ref_name = 'ProjectDetailReadOnly'
 
 
+# class ProjectListSerializer(serializers.ModelSerializer):
+#     """Lightweight serializer for project list"""
+#     client_name = serializers.CharField(source='client.name', read_only=True)
+#     client_image = serializers.ImageField(source='client.image', read_only=True)
+    
+#     class Meta:
+#         model = Project
+#         fields = [
+#             'id', 'title', 'slug', 'description', 'client_name', 
+#             'client_image', 'featured_image', 'thumbnail', 'live_link', 'industries', 'services', 'technology',
+#             'active', 'show_in_website', 'created_at', 'updated_at'
+#         ]
+#         ref_name = 'ProjectListReadOnly'
+
+class IndustrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategory
+        fields = ['id', 'title', 'slug', 'title_in_detail_page', 'short_description', 'industry_field_image', 'industry_banner', 'impressive_title', 'impressive_description']
+        ref_name = 'ProjectIndustryReadOnly'
+
+class ServiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePage
+        fields = ['id', 'title', 'slug', 'h1_title', 'sub_title', 'description', 'menu_title']
+        ref_name = 'ProjectServiceReadOnly'
+
+class TechnologySerializer(serializers.ModelSerializer):
+    class Meta:
+        from website.models import Technology
+        model = Technology
+        fields = ['id', 'name', 'slug', 'type', 'icon']
+        ref_name = 'ProjectTechnologyReadOnly'
+
 class ProjectListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for project list"""
     client_name = serializers.CharField(source='client.name', read_only=True)
     client_image = serializers.ImageField(source='client.image', read_only=True)
+    industries = IndustrySerializer(many=True, read_only=True)
+    services = ServiceSerializer(many=True, read_only=True)
+    technology = TechnologySerializer(many=True, read_only=True)
     
     class Meta:
         model = Project
         fields = [
             'id', 'title', 'slug', 'description', 'client_name', 
-            'client_image', 'featured_image', 'thumbnail', 'live_link', 'industries', 'services', 'technology',
+            'client_image', 'featured_image', 'thumbnail', 'live_link', 
+            'industries', 'services', 'technology',
             'active', 'show_in_website', 'created_at', 'updated_at'
         ]
         ref_name = 'ProjectListReadOnly'
