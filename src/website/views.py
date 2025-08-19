@@ -113,6 +113,8 @@ from website.serializers import (
     SpecialProjectSerializer,
     SubscriptionSerializer,
     TagListSerializer,
+    TechnologyDetailSerializer,
+    TechnologyListSerializer,
     TechnologySerializer,
     VideoTestimonialSerializer,
     WebsiteTitleSerializer,
@@ -1558,3 +1560,69 @@ class ServicePageListView(ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+    
+
+
+# ======================================= Technology ===========================================
+
+
+class TechnologyListView(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all technologies",
+        responses={200: TechnologyListSerializer(many=True)},
+        tags=['Technologies']
+    )
+    def get(self, request):
+        from website.models import Technology
+        technologies = Technology.objects.all()
+        serializer = TechnologyListSerializer(technologies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class TechnologyDetailView(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a specific technology",
+        manual_parameters=[
+            openapi.Parameter(
+                'id',
+                openapi.IN_PATH,
+                description="ID of the technology to retrieve",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            )
+        ],
+        responses={200: TechnologyDetailSerializer},
+        tags=['Technologies']
+    )
+    def get(self, request, pk):
+        from website.models import Technology
+        try:
+            technology = Technology.objects.get(pk=pk)
+        except Technology.DoesNotExist:
+            return Response(
+                {"error": "Technology not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        serializer = TechnologyDetailSerializer(technology)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class TechnologySlugDetailView(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a specific technology by slug",
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Slug of the technology to retrieve",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ],
+        responses={200: TechnologyDetailSerializer},
+        tags=['Technologies']
+    )
+    def get(self, request, slug):
+        from website.models import Technology
+        technology = get_object_or_404(Technology, slug=slug)
+        serializer = TechnologyDetailSerializer(technology)
+        return Response(serializer.data, status=status.HTTP_200_OK)
