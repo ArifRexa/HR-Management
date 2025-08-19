@@ -1659,11 +1659,82 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
     application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
+    table_of_contents = serializers.SerializerMethodField()
+
     
     class Meta:
         model = ServeCategory
         fields = '__all__'
         ref_name = 'IndustriesWeServeServeCategory'
+
+    def get_table_of_contents(self, obj):
+        toc = []
+        
+        # Add section titles from Industry Details Hero Section
+        try:
+            for item in obj.industry_details_hero_section.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Our Process
+        # try:
+        #     for item in obj.our_process.all():
+        #         if item.section_title:
+        #             toc.append(item.section_title)
+        # except AttributeError:
+        #     pass
+        
+        # Add section titles from Industry Details Heading
+        try:
+            for item in obj.industry_details_heading.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Custom Solutions
+        try:
+            for item in obj.custom_solutions.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Benefits
+        try:
+            for item in obj.benefits.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Why Choose Us
+        try:
+            for item in obj.why_choose_us.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add titles from Application Areas
+        try:
+            for item in obj.application_areas.all():
+                if item.title:
+                    toc.append(item.title)
+        except AttributeError:
+            pass
+        
+        # Add titles from Industries
+        try:
+            for item in obj.industries.all():
+                if item.title:
+                    toc.append(item.title)
+        except AttributeError:
+            pass
+        
+        return toc
 
 
 
@@ -1828,12 +1899,82 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
     development_services_process = DevelopmentServiceProcessSerializer(many=True, read_only=True)
     comparative_analysis = ComparativeAnalysisSerializer(many=True, read_only=True)
     service_meta_data = ServiceMetaDataSerializer(read_only=True)
+    table_of_contents = serializers.SerializerMethodField()
     
     class Meta:
         model = ServicePage
         fields = '__all__'
         depth = 1
         ref_name = 'ServicePageDetails'
+
+    def get_table_of_contents(self, obj):
+        toc = []
+        
+        # Add section titles from Solutions and Services
+        try:
+            for item in obj.solutions_and_services.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Key Things
+        try:
+            for item in obj.KeyThings.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Best Practices
+        try:
+            for item in obj.best_practices.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Why Choose Us
+        try:
+            for item in obj.why_choose_us.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add section titles from Our Process
+        try:
+            for item in obj.our_process.all():
+                if item.section_title:
+                    toc.append(item.section_title)
+        except AttributeError:
+            pass
+        
+        # Add titles from Discover Our Service
+        try:
+            for item in obj.discover_services.all():
+                if item.title:
+                    toc.append(item.title)
+        except AttributeError:
+            pass
+        
+        # Add titles from Additional Service Content
+        try:
+            for item in obj.additional_service_content.all():
+                if item.title:
+                    toc.append(item.title)
+        except AttributeError:
+            pass
+        
+        # Add titles from Development Service Process
+        try:
+            for item in obj.development_services_process.all():
+                if item.title:
+                    toc.append(item.title)
+        except AttributeError:
+            pass
+        
+        return toc
 
 
 # ======================================== Technology API Serializers =========================================
@@ -1981,6 +2122,48 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     faqs = TechnologyFAQSerializer(many=True, read_only=True)
     faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
     ctas = TechnologyCTASerializer(many=True, read_only=True)
+    table_of_contents = serializers.SerializerMethodField()
+
+    def get_table_of_contents(self, obj):
+        toc = []
+        
+        # Add section titles from Solutions and Services
+        for item in obj.solutions_and_services.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Services We Provide
+        for item in obj.services_we_provide.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from EcoSystem
+        for item in obj.ecosystem.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Key Things
+        for item in obj.KeyThings.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Why Choose Us
+        for item in obj.Tech_why_choose_us.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Our Process
+        for item in obj.our_process.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from History of Tech
+        for item in obj.history_of_tech.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        return toc
+
     
     class Meta:
         model = Technology
