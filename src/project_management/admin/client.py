@@ -401,7 +401,7 @@ class ClientAdmin(admin.ModelAdmin):
             "upsell_services": "\n".join(upsell_list),
         }
 
-        return pdf.render_to_pdf(download=False)
+        return pdf.render_to_pdf(download=True)
 
     # Dynamically exclude hourly_rate field in detail view for users with exclude_hourly_rate permission
     def get_fields(self, request, obj=None):
