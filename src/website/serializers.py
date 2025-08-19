@@ -1788,9 +1788,16 @@ class ServiceMetaDataSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'ServiceMetaData'
 
+
+class ServicePageChildrenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePage
+        fields = ['id', 'title', 'h1_title', 'slug', 'sub_title', 'description']
+        ref_name = 'ServicePageChild'
+        
 # Main ServicePage serializer with all nested relationships
 class ServicePageDetailSerializer(serializers.ModelSerializer):
-    # children = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    children = ServicePageChildrenSerializer(many=True, read_only=True, source='children.all')
     solutions_and_services = SolutionsAndServicesSerializer(many=True, read_only=True)
     KeyThings = KeyThingsSerializer(many=True, read_only=True)
     best_practices = BestPracticesHeadingsSerializer(many=True, read_only=True)
