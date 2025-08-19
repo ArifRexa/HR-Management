@@ -1,3 +1,4 @@
+import calendar
 from datetime import date
 from math import floor
 
@@ -99,9 +100,7 @@ def employee_total_tds(obj: SalaryReport, emp: Employee, type="num"):
 
 
 @register.simple_tag
-def employee_monthly_tds(emp: Employee, date: date):
-    year = date.year
-    month = date.month
+def employee_monthly_tds(emp: Employee, month, year):
     tds = (
         EmployeeSalary.objects.filter(
             employee=emp, created_at__year=year, created_at__month=month
@@ -110,3 +109,12 @@ def employee_monthly_tds(emp: Employee, date: date):
         .first()
     )
     return tds.employee_tds if tds else 0
+
+
+@register.filter
+def month_name(value):
+    """
+    value: integer 1-12
+    returns: full month name
+    """
+    return calendar.month_name[value]

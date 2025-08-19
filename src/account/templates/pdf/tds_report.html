@@ -74,6 +74,7 @@
       <thead>
         <tr>
           <th>Date</th>
+          <th>TDS Month</th>
           <th>Challan No.</th>
           <th>Challan Amount</th>
           <th>Claimed Amount</th>
@@ -84,17 +85,19 @@
         {% if tds.tds_type == "group" %}
           <tr>
             <td>{{ tds.date }}</td>
+            <td>{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
-            <td>{% employee_monthly_tds employee tds.date %}</td>
+            <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
           </tr>
         
         {% elif tds.tds_type == "individual" and employee == tds.employee %}
           <tr>
             <td>{{ tds.date }}</td>
+            <td>{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
-            <td>{{ tds.mount }}</td>
+            <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
           </tr>
         
           
@@ -102,7 +105,7 @@
           
         {% endfor %}
         <tr class="total-row">
-          <td colspan="3" style="text-align:right;"><strong>Total</strong></td>
+          <td colspan="4" style="text-align:right;"><strong>Total</strong></td>
           <td><strong>{% employee_total_tds obj employee %}</strong></td>
         </tr>
       </tbody>

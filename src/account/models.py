@@ -2,6 +2,7 @@ import calendar
 from datetime import datetime
 from decimal import Decimal
 from math import floor
+from tabnanny import verbose
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -632,7 +633,14 @@ class SalaryReport(models.Model):
 
 
 class TDSChallan(TimeStampMixin):
+    MONTH_CHOICES = [(i, calendar.month_name[i]) for i in range(1, 13)]
     date = models.DateField(verbose_name="Challan Date")
+    tds_month = models.PositiveSmallIntegerField(
+        choices=MONTH_CHOICES,
+        default=0,
+        verbose_name="TDS Month",
+        help_text="Select the month for which TDS is applicable",
+    )
     tds_type = models.CharField(
         max_length=10,
         choices=(("group", "Group"), ("individual", "Individual")),
@@ -646,6 +654,10 @@ class TDSChallan(TimeStampMixin):
         # null=True,
         # on_delete=models.RESTRICT,
     )
+    
+    class Meta:
+        verbose_name = "TDS Challan"
+        verbose_name_plural = "TDS Challans"
 
     def __str__(self):
         return self.challan_no

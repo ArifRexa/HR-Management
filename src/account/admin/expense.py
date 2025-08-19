@@ -15,6 +15,7 @@ from django.utils.html import format_html
 from weasyprint import CSS, HTML, default_url_fetcher
 
 from account.models import (
+    EmployeeSalary,
     ExpanseAttachment,
     Expense,
     ExpenseCategory,
@@ -427,12 +428,33 @@ class ExpenseAdmin(admin.ModelAdmin):
 
 @admin.register(TDSChallan)
 class TDSChallanAdmin(admin.ModelAdmin):
-    list_display = ("date", "tds_type", "challan_no", "amount")
-    list_filter = ("tds_type", "employee")
+    list_display = (
+        "date",
+        "tds_month",
+        "tds_type",
+        "challan_no",
+        "amount",
+        "get_employee",
+    )
+    list_filter = ("tds_type", "tds_month", "employee")
     autocomplete_fields = ("employee",)
-    
-    
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).prefetch_related("employee")
+
+    @admin.display(description="Employee", ordering="employee__full_name")
+    def get_employee(self, obj):
+        if obj.tds_type == "individual":
+            return obj.employee.first().full_name
+        return ""
+
     def save_model(self, request, obj, form, change):
-        employee = Employee.objects.filter(tax_info__isnull=True)
+        tax_applied_employee_ids = EmployeeSalary.objects.filter(
+            created_at__month=form.cleaned_data["tds_month"],
+            created_at__year=form.cleaned_data["date"].year,
+            loan_emi__lt=0,
+        ).values_list("employee__id", flat=True)
+        employee = Employee.objects.filter(id__in=tax_applied_employee_ids)
+
         form.cleaned_data["employee"] = employee
         return super().save_model(request, obj, form, change)
