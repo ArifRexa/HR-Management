@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "inventory_management",
     "website",
     "provident_fund",
+    "haq_tower",
     # Custom App
     # "silk",
     "debug_toolbar",
@@ -84,7 +85,7 @@ INSTALLED_APPS = [
     "smart_selects",
     "rest_framework_simplejwt",
     "drf_yasg",
-    'adminsortable',
+    "adminsortable",
 ] + API_APPS
 
 
@@ -228,7 +229,9 @@ MESSAGE_TAGS = {
 GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE = os.environ.get(
     "GOOGLE_DRIVE_STORAGE_JSON_KEY_FILE"
 )
-GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = os.environ.get("GOOGLE_DRIVE_STORAGE_MEDIA_ROOT ")
+GOOGLE_DRIVE_STORAGE_MEDIA_ROOT = os.environ.get(
+    "GOOGLE_DRIVE_STORAGE_MEDIA_ROOT "
+)
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
 EMAIL_PORT = os.environ.get("EMAIL_PORT")
@@ -239,7 +242,9 @@ EMAIL_USE_TLS = True
 SMS_API_KEY = os.environ.get("SMS_API_KEY")
 SMS_SENDER_ID = os.environ.get("SMS_SENDER_ID")
 CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS").split(" ")
-CORS_ALLOW_ALL_ORIGINS = eval(os.environ.get("CORS_ALLOW_ALL_ORIGINS", default="False"))
+CORS_ALLOW_ALL_ORIGINS = eval(
+    os.environ.get("CORS_ALLOW_ALL_ORIGINS", default="False")
+)
 
 CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS").split(" ")
 
@@ -293,14 +298,12 @@ TINYMCE_DEFAULT_CONFIG = {
     },
     # "content_style": "blockquote.custom-quote { border-left: 4px solid #888; padding-left: 1em; color: #555; font-style: italic; }",
     # Optionally define style_formats too:
-    "style_formats": [
-        {"title": "Custom Quote", "format": "blockquote"}
-    ],
+    "style_formats": [{"title": "Custom Quote", "format": "blockquote"}],
     "rel_list": [
         {"title": "None (Dofollow)", "value": ""},
         {"title": "Nofollow", "value": "nofollow"},
         {"title": "Noopener", "value": "noopener"},
-        {"title": "Noreferrer", "value": "noreferrer"}
+        {"title": "Noreferrer", "value": "noreferrer"},
     ],
 }
 
@@ -333,12 +336,16 @@ X_FRAME_OPTIONS = "ALLOW-FROM http://localhost"
 DOWNLOAD_PDF = os.environ.get("DOWNLOAD_PDF", True).lower() in ("true", 1, "t")
 
 white_listed_ips = os.environ.get(
-    "WHITELISTED_IP", "103.180.244.213, 127.0.0.1, 134.209.155.127, 45.248.151.196"
+    "WHITELISTED_IP",
+    "103.180.244.213, 127.0.0.1, 134.209.155.127, 45.248.151.196",
 ).split(", ")
-employee_ids = os.environ.get("MANAGEMENT_EMPLOYEE_IDS", "7, 30, 76, 49, 1").split(", ")
+employee_ids = os.environ.get(
+    "MANAGEMENT_EMPLOYEE_IDS", "7, 30, 76, 49, 1"
+).split(", ")
 
 CLIENT_FEEDBACK_VIDEO_EMBED_URL = os.environ.get(
-    "CLIENT_FEEDBACK_VIDEO_EMBED_URL", "https://www.youtube.com/embed/zrt7SWJXriY"
+    "CLIENT_FEEDBACK_VIDEO_EMBED_URL",
+    "https://www.youtube.com/embed/zrt7SWJXriY",
 )
 
 
@@ -346,7 +353,6 @@ COMPANY_ACCOUNT_NAME = os.environ.get("COMPANY_ACCOUNT_NAME", "Mediusware Ltd")
 COMPANY_ACCOUNT_NO = os.environ.get("COMPANY_ACCOUNT_NO", "-")
 
 MACHINE_SECRETS = os.environ.get("MACHINE_SECRETS")
-
 
 
 REST_FRAMEWORK = {
@@ -361,7 +367,6 @@ REST_FRAMEWORK = {
     #     "rest_framework.permissions.IsAuthenticated",
     #     "apps.mixin.permission.ModelPermission"
     # ],
-
 }
 # CRON_CLASSES = [
 #     'project_management.cron.CleanDataTask',  # Replace 'yourapp' with the name of your Django app
@@ -407,7 +412,9 @@ if os.environ.get("AWS_ACCESS_KEY_ID"):
     AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME")
     AWS_S3_REGION_NAME = os.environ.get("REGION_NAME")  # e.g., 'us-west-2'
-    AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com"
+    AWS_S3_CUSTOM_DOMAIN = (
+        f"{AWS_STORAGE_BUCKET_NAME}.sgp1.digitaloceanspaces.com"
+    )
     AWS_S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL")
 
     # Optional: Specify different locations within the bucket for static and media files

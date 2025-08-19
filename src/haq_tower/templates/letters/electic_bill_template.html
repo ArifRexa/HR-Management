@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monthly Bill</title>
+    {% load static %}
+    <style>
+        @page {
+            background-image: url("{{ bill_bg }}");
+            @frame content_frame {
+              left:40px;
+              right:40px;
+              top:245px;
+            }
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+        .renter-table {
+            {% comment %} width: 100%; {% endcomment %}
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        .renter-table th,
+        .renter-table td {
+            text-align: left;
+            padding: 1.2px;
+        }
+    </style>
+</head>
+<body>
+    {% for mother_bill, renters in mother_renters %}
+        <p style="text-align: right; font-size: 20px;">{{ mother_bill.formatted_date }}</p>
+        {% for renter in renters %}
+        <table class="renter-table" {% if forloop.counter == 4 %}style="page-break-after: always;"{% endif %}>
+            <tr>
+                <td colspan="6"><strong>Name:</strong> <strong style="color: green; font-size: 17px;">{{ renter.renter.name }}</strong></td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Current Reading:</strong> {{ renter.total_current_meter_reading }}</td>
+                <td colspan="2"><strong>Previous Reading:</strong> {{ renter.previous_meter_reading }}</td>
+                <td colspan="2"><strong>Usage Unit:</strong> {{renter.total_unit}}</td>
+            </tr>
+            <tr>
+                <td colspan="2"><strong>Total Amount:</strong> {{ mother_bill.total_amount_bill }}</td>
+                <td colspan="2"><strong>Total Unit:</strong> {{ mother_bill.renters_total_unit }}</td>
+                <td colspan="2"><strong>Per Unit:</strong> {{ mother_bill.per_unit_price }}</td>
+            </tr>
+            <!-- <tr>
+                <td colspan="6"><strong>Amount to be paid (Word):</strong> {{ renter.amount_in_words }}</td>
+            </tr> -->
+            <tr>
+                <td colspan="5"><strong>TK: </strong> {% widthratio mother_bill.per_unit_price 1 renter.total_unit %} <span style="font-size: 0.8rem;">({{ renter.amount_in_words }})</span></td>
+                <td colspan="1" style="text-align: right; padding-right:15px; height: 40px;">
+                    {% if renter.renter_logo %}
+                        <img src="{{ renter.renter_logo }}" alt="Renter Logo" class="renter-logo"/>
+                    {% else %}
+                        {% comment %} logo {% endcomment %}
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+        {% if not forloop.last %}
+            <p>--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------</p>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+</body>
+</html>
