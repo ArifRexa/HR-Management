@@ -1981,6 +1981,48 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     faqs = TechnologyFAQSerializer(many=True, read_only=True)
     faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
     ctas = TechnologyCTASerializer(many=True, read_only=True)
+    table_of_contents = serializers.SerializerMethodField()
+
+    def get_table_of_contents(self, obj):
+        toc = []
+        
+        # Add section titles from Solutions and Services
+        for item in obj.solutions_and_services.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Services We Provide
+        for item in obj.services_we_provide.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from EcoSystem
+        for item in obj.ecosystem.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Key Things
+        for item in obj.KeyThings.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Why Choose Us
+        for item in obj.Tech_why_choose_us.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from Our Process
+        for item in obj.our_process.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        # Add section titles from History of Tech
+        for item in obj.history_of_tech.all():
+            if item.section_title:
+                toc.append(item.section_title)
+        
+        return toc
+
     
     class Meta:
         model = Technology

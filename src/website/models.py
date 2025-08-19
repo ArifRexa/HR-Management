@@ -381,8 +381,7 @@ class HistoryOfTech(models.Model):
     image = models.ImageField(upload_to="history_of_tech_images/", null=True, blank=True)
 
     def __str__(self):
-        return self.title
-    
+        return self.section_title    
     class Meta:
         verbose_name = "History of Technology"
         verbose_name_plural = "History of Technologies"
