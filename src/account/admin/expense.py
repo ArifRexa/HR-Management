@@ -445,7 +445,7 @@ class TDSChallanAdmin(admin.ModelAdmin):
     @admin.display(description="Employee", ordering="employee__full_name")
     def get_employee(self, obj):
         if obj.tds_type == "individual":
-            return obj.employee.first().full_name
+            return obj.employee.first().full_name if obj.employee.first() else ""
         return ""
 
     def save_model(self, request, obj, form, change):
