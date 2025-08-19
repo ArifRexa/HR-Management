@@ -51,10 +51,14 @@ from website.models import (
     Category,
     Contact,
     ContactForm,
+    EcoSystem,
+    EcoSystemCardTags,
+    EcoSystemCards,
     EmployeePerspective,
     EmployeeTestimonial,
     FAQHomeTitle,
     Gallery,
+    HistoryOfTech,
     HomeBanner,
     Industry,
     IndustryTitle,
@@ -82,10 +86,23 @@ from website.models import (
     ServiceContent,
     ServiceMeatadata,
     ServiceProcess,
+    ServicesWeProvide,
+    ServicesWeProvideCards,
     SpecialProjectsTitle,
     Subscription,
+    TechnologyCTA,
+    TechnologyFAQ,
+    TechnologyFAQSchema,
+    TechnologyKeyThings,
+    TechnologyKeyThingsQA,
+    TechnologyOurProcess,
+    TechnologySolutionsAndServices,
+    TechnologySolutionsAndServicesCards,
     TechnologyTitle,
     TechnologyType,
+    TechnologyWhyChooseUs,
+    TechnologyWhyChooseUsCards,
+    TechnologyWhyChooseUsCardsDetails,
     TextualTestimonialTitle,
     VideoTestimonial,
     VideoTestimonialTitle,
@@ -1817,3 +1834,155 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
         depth = 1
         ref_name = 'ServicePageDetails'
+
+
+# ======================================== Technology API Serializers =========================================
+
+class TechnologyTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyType
+        fields = '__all__'
+        ref_name = 'TechnologyTypeSerializer'
+
+class TechnologySolutionsAndServicesCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologySolutionsAndServicesCards
+        fields = '__all__'
+        ref_name = 'TechnologySolutionsAndServicesCardsSerializer'
+
+class TechnologySolutionsAndServicesSerializer(serializers.ModelSerializer):
+    cards = TechnologySolutionsAndServicesCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = TechnologySolutionsAndServices
+        fields = '__all__'
+        ref_name = 'TechnologySolutionsAndServicesSerializer'
+
+class ServicesWeProvideCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicesWeProvideCards
+        fields = '__all__'
+        ref_name = 'ServicesWeProvideCardsSerializer'
+
+class ServicesWeProvideSerializer(serializers.ModelSerializer):
+    services_we_provide_cards = ServicesWeProvideCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = ServicesWeProvide
+        fields = '__all__'
+        ref_name = 'ServicesWeProvideSerializer'
+
+class EcoSystemCardTagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EcoSystemCardTags
+        fields = '__all__'
+        ref_name = 'EcoSystemCardTagsSerializer'
+
+class EcoSystemCardsSerializer(serializers.ModelSerializer):
+    ecosystem_card_tags = EcoSystemCardTagsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = EcoSystemCards
+        fields = '__all__'
+        ref_name = 'EcoSystemCardsSerializer'
+
+class EcoSystemSerializer(serializers.ModelSerializer):
+    ecosystem_cards = EcoSystemCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = EcoSystem
+        fields = '__all__'
+        ref_name = 'EcoSystemSerializer'
+
+class TechnologyKeyThingsQASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyKeyThingsQA
+        fields = '__all__'
+        ref_name = 'TechnologyKeyThingsQASerializer'
+
+class TechnologyKeyThingsSerializer(serializers.ModelSerializer):
+    tech_keythings_cards = TechnologyKeyThingsQASerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = TechnologyKeyThings
+        fields = '__all__'
+        ref_name = 'TechnologyKeyThingsSerializer'
+
+class TechnologyWhyChooseUsCardsDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyWhyChooseUsCardsDetails
+        fields = '__all__'
+        ref_name = 'TechnologyWhyChooseUsCardsDetailsSerializer'
+
+class TechnologyWhyChooseUsCardsSerializer(serializers.ModelSerializer):
+    tech_why_choose_us_card_details = TechnologyWhyChooseUsCardsDetailsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = TechnologyWhyChooseUsCards
+        fields = '__all__'
+        ref_name = 'TechnologyWhyChooseUsCardsSerializer'
+
+class TechnologyWhyChooseUsSerializer(serializers.ModelSerializer):
+    tech_why_choose_us_cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = TechnologyWhyChooseUs
+        fields = '__all__'
+        ref_name = 'TechnologyWhyChooseUsSerializer'
+
+class TechnologyOurProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyOurProcess
+        fields = '__all__'
+        ref_name = 'TechnologyOurProcessSerializer'
+
+class HistoryOfTechSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HistoryOfTech
+        fields = '__all__'
+        ref_name = 'HistoryOfTechSerializer'
+
+class TechnologyFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyFAQ
+        fields = '__all__'
+        ref_name = 'TechnologyFAQSerializer'
+
+class TechnologyCTASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyCTA
+        fields = '__all__'
+        ref_name = 'TechnologyCTASerializer'
+
+class TechnologyFAQSchemaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyFAQSchema
+        fields = '__all__'
+        ref_name = 'TechnologyFAQSchemaSerializer'
+
+class TechnologyListSerializer(serializers.ModelSerializer):
+    type = TechnologyTypeSerializer(read_only=True)
+    
+    class Meta:
+        from website.models import Technology
+        model = Technology
+        fields = ['id', 'name', 'slug', 'type', 'icon', 'show_in_menu']
+        ref_name = 'TechnologyListSerializer'
+
+class TechnologyDetailSerializer(serializers.ModelSerializer):
+    type = TechnologyTypeSerializer(read_only=True)
+    solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
+    services_we_provide = ServicesWeProvideSerializer(many=True, read_only=True)
+    ecosystem = EcoSystemSerializer(many=True, read_only=True)
+    key_things = TechnologyKeyThingsSerializer(many=True, read_only=True)
+    tech_why_choose_us = TechnologyWhyChooseUsSerializer(many=True, read_only=True)
+    our_process = TechnologyOurProcessSerializer(many=True, read_only=True)
+    history_of_tech = HistoryOfTechSerializer(many=True, read_only=True)
+    faqs = TechnologyFAQSerializer(many=True, read_only=True)
+    faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
+    ctas = TechnologyCTASerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Technology
+        fields = '__all__'
+        ref_name = 'TechnologyDetailSerializer'
