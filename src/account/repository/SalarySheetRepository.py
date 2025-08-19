@@ -94,7 +94,8 @@ class EmployeeTaxLoanRepository:
             (100000, 0.05),
             (400000, 0.10),
             (500000, 0.15),
-            (500000, 0.20),
+            (500000, 0.15),
+            (2000000, 0.25),
         ]
 
         female_brackets = [
@@ -102,7 +103,8 @@ class EmployeeTaxLoanRepository:
             (100000, 0.05),
             (400000, 0.10),
             (500000, 0.15),
-            (500000, 0.20),
+            (500000, 0.15),
+            (2000000, 0.25)
         ]
         if self.employee.gender == "female":
             brackets = female_brackets
@@ -120,7 +122,7 @@ class EmployeeTaxLoanRepository:
 
         # If there's any remaining income above the last bracket
         if income:
-            tax += income * 0.25
+            tax += income * 0.30
 
         return tax
 
