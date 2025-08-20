@@ -480,6 +480,7 @@ class TDSChallanAdmin(admin.ModelAdmin):
     list_filter = ("tds_type", "tds_month", TDSEmployeeFilter)
     autocomplete_fields = ("employee",)
     actions = ("add_individual_employee",)
+    date_hierarchy = "date"
 
     def get_queryset(self, request):
         return (

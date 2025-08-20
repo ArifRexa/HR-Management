@@ -91,7 +91,7 @@
             <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
           </tr>
         
-        {% elif tds.tds_type == "individual" and employee == tds.employee %}
+        {% elif tds.tds_type == "individual" and employee == tds.individual_employee %}
           <tr>
             <td>{{ tds.date }}</td>
             <td>{{ tds.tds_month|month_name|default:"-" }}</td>
