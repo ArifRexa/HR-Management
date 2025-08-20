@@ -1092,7 +1092,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         BlogSEOEssentialInline,
         BlogFAQInline,
         BlogFAQSchemaInline,
-        CTAInline,
+        # CTAInline,
         # ReferenceBlogInline,
         # RelatedBlogInline,
         # BlogModeratorFeedbackInline,
@@ -1143,6 +1143,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "schema_type", 
         "main_body_schema",
         "hightlighted_text",
+        "cta_title",
     )
     form = BlogForm
     list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter)

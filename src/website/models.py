@@ -503,6 +503,7 @@ class Blog(AuthorMixin, TimeStampMixin):
         null=True,
         help_text="Text that will be highlighted in the blog content",
     )
+    cta_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="CTA Title")
 
     def __str__(self):
         return self.title
