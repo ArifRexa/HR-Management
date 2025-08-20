@@ -2110,6 +2110,15 @@ class TechnologyListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'slug', 'type', 'icon', 'show_in_menu']
         ref_name = 'TechnologyListSerializer'
 
+
+class TechnologySiteMapSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        from website.models import Technology
+        model = Technology
+        fields = ['slug', 'updated_at']
+        ref_name = 'TechnologySiteMapSerializer'
+
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     type = TechnologyTypeSerializer(read_only=True)
     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
