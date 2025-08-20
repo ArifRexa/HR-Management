@@ -1488,10 +1488,10 @@ class BlogModeratorFeedbackSerializer(serializers.ModelSerializer):
         model = BlogModeratorFeedback
         fields = '__all__'
 
-class CTASerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CTA
-        fields = '__all__'
+# class CTASerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = CTA
+#         fields = '__all__'
 
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
@@ -1508,7 +1508,7 @@ class BlogSerializer(serializers.ModelSerializer):
     related_blogs = RelatedBlogsSerializer(source='relatedblogs_set', many=True, read_only=True)
     faq_schema = BlogFAQSchemaSerializer(read_only=True)
     moderator_feedbacks = BlogModeratorFeedbackSerializer(source='blogmoderatorfeedback_set', many=True, read_only=True)
-    ctas = CTASerializer(many=True, read_only=True)
+    # ctas = CTASerializer(many=True, read_only=True)
     author = serializers.SerializerMethodField()
     table_of_contents = serializers.SerializerMethodField()
 
@@ -1518,10 +1518,10 @@ class BlogSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'image', 'youtube_link', 'category', 'industry_details',
             'parent_services', 'child_services', 'technology_type', 'technology', 'tag',
-            'is_featured', 'schema_type', 'main_body_schema', 'hightlighted_text', 'status',
+            'is_featured', 'schema_type', 'main_body_schema', 'hightlighted_text', 'cta_title', 'status',
             'total_view', 'created_at', 'updated_at', 'approved_at', 'read_time_minute',
             'author', 'blog_contexts', 'blog_faqs', 'seo_essential',
-            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'ctas', 'table_of_contents'
+            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'table_of_contents'
         ]
         ref_name = 'website_blog'
 
