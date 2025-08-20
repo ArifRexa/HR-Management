@@ -420,7 +420,7 @@ class TechnologyFAQSchema(models.Model):
 # =================== Technology CTA ===================
 class TechnologyCTA(TimeStampMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
-    description = HTMLField(null=True, blank=True)
+    # description = HTMLField(null=True, blank=True)
     button_text = models.CharField(max_length=100, null=True, blank=True)
     button_link = models.URLField(null=True, blank=True)
     image = models.ImageField(upload_to="cta_images/", null=True, blank=True)
@@ -739,7 +739,7 @@ class BlogComment(MPTTModel, TimeStampMixin):
 
 class CTA(TimeStampMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
-    description = HTMLField(null=True, blank=True)
+    # description = HTMLField(null=True, blank=True)
     button_text = models.CharField(max_length=100, null=True, blank=True)
     button_link = models.URLField(null=True, blank=True)
     image = models.ImageField(upload_to="cta_images/", null=True, blank=True)

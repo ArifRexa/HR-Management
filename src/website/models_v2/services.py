@@ -150,8 +150,8 @@ class BestPracticesCardsDetails(TimeStampMixin):
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 # ================================= Why choose us =================================
 
@@ -240,7 +240,7 @@ class ServicePageFAQSchema(models.Model):
 
 class ServicePageCTA(TimeStampMixin):
     title = models.CharField(max_length=255, null=True, blank=True)
-    description = HTMLField(null=True, blank=True)
+    # description = HTMLField(null=True, blank=True)
     button_text = models.CharField(max_length=100, null=True, blank=True)
     button_link = models.URLField(null=True, blank=True)
     image = models.ImageField(upload_to="cta_images/", null=True, blank=True)
