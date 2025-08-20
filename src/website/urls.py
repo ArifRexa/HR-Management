@@ -42,6 +42,7 @@ from website.views import (
     TechnologyListAPIView,
     TechnologyListView,
     TechnologyNavigationView,
+    TechnologySiteMapView,
     TechnologySlugDetailView,
     VideoTestimonialListAPIView,
     index,
@@ -280,6 +281,7 @@ urlpatterns = [
     path('website/services/<slug:slug>/', ServicePageDetailViewV2.as_view(), name='service-detail'),
 
     path('website/technology-list/', TechnologyListView.as_view(), name='technology-list'),
+    path('website/technologies/sitemap/', TechnologySiteMapView.as_view(), name='technology-sitemap'),
     # path('website/technologies/<int:pk>/', TechnologyDetailView.as_view(), name='technology-detail'),
     path('website/technologies/<slug:slug>/', TechnologySlugDetailView.as_view(), name='technology-detail-slug'),
 ]
