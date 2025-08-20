@@ -232,6 +232,13 @@ class ClientSource(TimeStampMixin, AuthorMixin):
         verbose_name_plural = "Client Sources"
 
 
+class DecisionMaker(TimeStampMixin):
+    name = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Client(TimeStampMixin, AuthorMixin):
     name = models.CharField(max_length=200)
     source = models.ForeignKey(
@@ -261,7 +268,9 @@ class Client(TimeStampMixin, AuthorMixin):
         default=False, verbose_name="Need Feedback"
     )
     # show_in_web = models.BooleanField(default=False)
-    company_name = models.CharField(max_length=255, null=True, blank=True)
+    company_name = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Website URL"
+    )
     client_feedback = models.TextField(null=True, blank=True)
     image = models.ImageField(
         upload_to="client_images",
@@ -269,7 +278,9 @@ class Client(TimeStampMixin, AuthorMixin):
         blank=True,
         verbose_name="Client Image",
     )
-    linkedin_url = models.URLField(null=True, blank=True)
+    linkedin_url = models.URLField(
+        null=True, blank=True, verbose_name="LinkedIn URL"
+    )
     notes = models.TextField(null=True, blank=True)
     is_hour_breakdown = models.BooleanField(default=False)
     payment_method = models.ForeignKey(
@@ -316,19 +327,19 @@ class Client(TimeStampMixin, AuthorMixin):
         null=True,
         on_delete=models.SET_NULL,
     )
-    # issue = models.TextField(
-    #     null=True,
-    #     blank=True,
-    #     help_text="Describe the issue or problem faced by the client",
-    # )
-    decision_maker = models.CharField(
+    client_value = models.CharField(
         max_length=50,
-        choices=(
-            ("ceo", "CEO"),
-            ("cto", "CTO"),
-            ("mm", "Marketing Manager"),
-        ),
-        default="ceo",
+        null=True,
+        blank=True,
+        choices=(("high", "High"), ("medium", "Medium"), ("low", "Low")),
+    )
+    decision_maker = models.ForeignKey(
+        DecisionMaker,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="clients",
+        # to_field="name",
     )
     next_follow_up_date = models.DateField(
         null=True,

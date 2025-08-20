@@ -42,6 +42,7 @@ from project_management.models import (
     ClientStatus,
     Country,
     CurrencyType,
+    DecisionMaker,
     InvoiceType,
     PaymentMethod,
     Project,
@@ -181,6 +182,15 @@ class ClientSourceAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(DecisionMaker)
+class DecisionMakerAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ["name"]
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
+
+
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
@@ -259,13 +269,15 @@ class ClientAdmin(admin.ModelAdmin):
             {
                 "fields": (
                     "name",
-                    "status",
+                    "active",
                     "source",
+                    "client_value",
                     "refered_by",
                     "email",
                     "country",
                     "company_name",
                     "linkedin_url",
+                    "decision_maker",
                 ),
             },
         ),
@@ -277,6 +289,8 @@ class ClientAdmin(admin.ModelAdmin):
                     "payment_method",
                     "invoice_type",
                     "currency",
+                    "bill_from",
+                    "invoice_cc_email",
                 ),
             },
         ),
@@ -286,26 +300,25 @@ class ClientAdmin(admin.ModelAdmin):
                 "fields": (
                     "remark",  # Issues / Concerns Raised
                     "client_feedback",  # Client Feedback / Testimonial
-                    "decision_maker",
                 ),
             },
         ),
-        (
-            "Follow-up & Opportunities",
-            {
-                "fields": (
-                    "meeting_date",  # Last Engagement Date
-                    "next_follow_up_date",  # Next Follow-up Date
-                    "upsell_opportunity",  # Multi-select checkboxes
-                    "referral_potential",  # Yes/No/Maybe dropdown
-                ),
-            },
-        ),
+        # (
+        #     "Follow-up & Opportunities",
+        #     {
+        #         "fields": (
+        #             "meeting_date",  # Last Engagement Date
+        #             "next_follow_up_date",  # Next Follow-up Date
+        #             "upsell_opportunity",  # Multi-select checkboxes
+        #             "referral_potential",  # Yes/No/Maybe dropdown
+        #         ),
+        #     },
+        # ),
         (
             "Other",
             {
                 "fields": (
-                    "active",
+                    # "active",
                     "logo",
                     "image",
                     "notes",
@@ -316,8 +329,6 @@ class ClientAdmin(admin.ModelAdmin):
                     "follow_up_date",
                     "web_name",
                     "address",
-                    "bill_from",
-                    "invoice_cc_email",
                     "designation",
                     "review",
                 ),
