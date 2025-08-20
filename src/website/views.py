@@ -116,6 +116,7 @@ from website.serializers import (
     TechnologyDetailSerializer,
     TechnologyListSerializer,
     TechnologySerializer,
+    TechnologySiteMapSerializer,
     VideoTestimonialSerializer,
     WebsiteTitleSerializer,
 )
@@ -1523,7 +1524,7 @@ class ServeCategoryAPIView(APIView):
 # ======================================= Service Page ===========================================
 
 class ServicePageDetailView(RetrieveAPIView):
-    queryset = ServicePage.objects.filter(is_parent=True).all()
+    queryset = ServicePage.objects.filter().all()
     serializer_class = ServicePageDetailSerializer
     lookup_field = 'slug'
     
@@ -1577,6 +1578,19 @@ class TechnologyListView(APIView):
         technologies = Technology.objects.all()
         serializer = TechnologyListSerializer(technologies, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class TechnologySiteMapView(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all technologies for sitemap",
+        responses={200: TechnologySiteMapSerializer(many=True)},
+        tags=['Technologies']
+    )
+    def get(self, request):
+        from website.models import Technology
+        technologies = Technology.objects.all()
+        serializer = TechnologySiteMapSerializer(technologies, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class TechnologyDetailView(APIView):
     @swagger_auto_schema(
