@@ -1524,7 +1524,7 @@ class ServeCategoryAPIView(APIView):
 # ======================================= Service Page ===========================================
 
 class ServicePageDetailView(RetrieveAPIView):
-    queryset = ServicePage.objects.filter(is_parent=True).all()
+    queryset = ServicePage.objects.filter().all()
     serializer_class = ServicePageDetailSerializer
     lookup_field = 'slug'
     
