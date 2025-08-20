@@ -150,8 +150,8 @@ class BestPracticesCardsDetails(TimeStampMixin):
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 # ================================= Why choose us =================================
 
