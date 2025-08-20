@@ -2,7 +2,6 @@ import calendar
 from datetime import datetime
 from decimal import Decimal
 from math import floor
-from tabnanny import verbose
 
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -645,6 +644,7 @@ class TDSChallan(TimeStampMixin):
         max_length=10,
         choices=(("group", "Group"), ("individual", "Individual")),
         default="group",
+        verbose_name="TDS Type",
     )
     challan_no = models.CharField(max_length=50)
     amount = models.PositiveIntegerField()
@@ -654,7 +654,14 @@ class TDSChallan(TimeStampMixin):
         # null=True,
         # on_delete=models.RESTRICT,
     )
-    
+    individual_employee = models.ForeignKey(
+        Employee,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="individual_employee_tds_challan",
+    )
+
     class Meta:
         verbose_name = "TDS Challan"
         verbose_name_plural = "TDS Challans"

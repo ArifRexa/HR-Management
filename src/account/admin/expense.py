@@ -426,6 +426,26 @@ class ExpenseAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+class TDSEmployeeFilter(admin.SimpleListFilter):
+    title = "Employee"
+    parameter_name = "individual_employee_id__exact"
+
+    def lookups(self, request, model_admin):
+        employees = (
+            TDSChallan.objects.filter(individual_employee__isnull=False)
+            .values_list(
+                "individual_employee_id", "individual_employee__full_name"
+            )
+            .distinct()
+        )
+        return tuple((employee[0], employee[1]) for employee in employees)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(individual_employee_id__exact=self.value())
+        return queryset
+
+
 @admin.register(TDSChallan)
 class TDSChallanAdmin(admin.ModelAdmin):
     list_display = (
@@ -436,19 +456,23 @@ class TDSChallanAdmin(admin.ModelAdmin):
         "amount",
         "get_employee",
     )
-    list_filter = ("tds_type", "tds_month", "employee")
+    exclude = ("individual_employee",)
+    list_filter = ("tds_type", "tds_month", TDSEmployeeFilter)
     autocomplete_fields = ("employee",)
 
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related("employee")
+        return (
+            super()
+            .get_queryset(request)
+            .prefetch_related("employee")
+            .select_related("individual_employee")
+        )
 
-    @admin.display(description="Employee", ordering="employee__full_name")
+    @admin.display(
+        description="Employee", ordering="individual_employee__full_name"
+    )
     def get_employee(self, obj):
-        if obj.tds_type == "individual":
-            return (
-                obj.employee.first().full_name if obj.employee.first() else ""
-            )
-        return ""
+        return obj.individual_employee
 
     def save_model(self, request, obj, form, change):
         if form.cleaned_data["tds_type"] == "group":
@@ -458,5 +482,8 @@ class TDSChallanAdmin(admin.ModelAdmin):
                 loan_emi__lt=0,
             ).values_list("employee__id", flat=True)
             employee = Employee.objects.filter(id__in=tax_applied_employee_ids)
-            form.cleaned_data["employee"] = employee
+            obj.employee.set(employee)
+            obj.individual_employee = None
+        if form.cleaned_data["tds_type"] == "individual":
+            obj.individual_employee = form.cleaned_data["employee"][0]
         return super().save_model(request, obj, form, change)

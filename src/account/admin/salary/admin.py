@@ -608,7 +608,7 @@ class SalaryReportAdmin(admin.ModelAdmin):
 
         pdf = PDF()
         pdf.template_path = "pdf/tds_report.html"
-        pdf.file_name = "tds_report"
+        pdf.file_name = f"{obj.start_date.year}_{obj.end_date.year}_tds_report"
         pdf.context = {
             "employees": Employee.objects.filter(active=True),
             "obj": obj,
