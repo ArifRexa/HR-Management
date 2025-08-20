@@ -787,7 +787,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         ("Page Hierarchy", {"fields": ("is_parent", "parent")}),
         (
             "Banner",
-            {"fields": ("title", "slug", "h1_title", "sub_title", "description")},
+            {"fields": ("title", "secondary_title", "slug", "h1_title", "sub_title", "description")},
         ),
         ("Explore Our Services", {"fields": ("icon", "feature_image")}),
         ("Menu", {"fields": ("menu_title",)}),
