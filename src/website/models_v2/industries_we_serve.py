@@ -8,6 +8,7 @@ from config.model import TimeStampMixin
 # ===================================Industry Details====================================
 class ServeCategory(models.Model):
     title = models.CharField(max_length=100)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     slug = models.SlugField(unique=True)
     title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
