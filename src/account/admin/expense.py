@@ -6,6 +6,7 @@ import pandas as pd
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import F, Prefetch, Sum
 from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
@@ -459,6 +460,7 @@ class TDSChallanAdmin(admin.ModelAdmin):
     exclude = ("individual_employee",)
     list_filter = ("tds_type", "tds_month", TDSEmployeeFilter)
     autocomplete_fields = ("employee",)
+    actions = ("add_individual_employee",)
 
     def get_queryset(self, request):
         return (
@@ -473,6 +475,47 @@ class TDSChallanAdmin(admin.ModelAdmin):
     )
     def get_employee(self, obj):
         return obj.individual_employee
+
+    @admin.action(description="Add Individual Employee")
+    def add_individual_employee(self, request, queryset):
+        # 1. Grab only the records that still need the fix.
+        with transaction.atomic():
+            to_fix = (
+                queryset.select_for_update(skip_locked=True)
+                .filter(
+                    tds_type="individual",
+                    individual_employee__isnull=True,
+                    employee__isnull=False,
+                )
+                .distinct()
+            )
+
+            if not to_fix:
+                messages.warning(
+                    request, "No valid TDS challans need updating."
+                )
+                return
+
+            # 2. Prefetch the employee list so we don't hit the DB in the loop.
+            to_fix = to_fix.prefetch_related("employee")
+
+            updated = 0
+            updates = []
+
+            for challan in to_fix:
+                first_emp = challan.employee.first()
+                if first_emp:
+                    challan.individual_employee = first_emp
+                    updates.append(challan)
+                    updated += 1
+
+            # 3. One UPDATE statement for all rows.
+            if updates:
+                TDSChallan.objects.bulk_update(updates, ["individual_employee"])
+
+        messages.success(
+            request, f"Individual employee added to {updated} TDS challan(s)."
+        )
 
     def save_model(self, request, obj, form, change):
         if form.cleaned_data["tds_type"] == "group":
