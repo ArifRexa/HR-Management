@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import F, Prefetch, Sum
+from django.db.models import F, Prefetch, Q, Sum
 from django.http import HttpResponse
 from django.template.loader import get_template, render_to_string
 from django.urls import reverse
@@ -427,24 +427,43 @@ class ExpenseAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+from django.db.models import Q, F, Value, CharField
+from django.db.models.functions import Coalesce, NullIf
+from django.contrib import admin
+
+
 class TDSEmployeeFilter(admin.SimpleListFilter):
     title = "Employee"
-    parameter_name = "individual_employee_id__exact"
+    parameter_name = "employee"
 
+    # ------------------------------------------------------------------
+    # 1. Build the list of choices (unique, already sorted by DB)
+    # ------------------------------------------------------------------
     def lookups(self, request, model_admin):
-        employees = (
-            TDSChallan.objects.filter(individual_employee__isnull=False)
-            .values_list(
-                "individual_employee_id", "individual_employee__full_name"
-            )
-            .distinct()
+        individual_qs = (
+            TDSChallan.objects
+            .filter(individual_employee__isnull=False)
+            .values_list("individual_employee_id", "individual_employee__full_name")
         )
-        return tuple((employee[0], employee[1]) for employee in employees)
+
+        group_qs = (
+            TDSChallan.objects
+            .values_list("employee__id", "employee__full_name")
+        )
+
+        choices = individual_qs.union(group_qs, all=False)
+        return tuple(choices)
+
 
     def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(individual_employee_id__exact=self.value())
-        return queryset
+        emp_id = self.value()
+        if not emp_id:
+            return queryset
+
+        # single WHERE clause with OR
+        return queryset.filter(
+            Q(individual_employee_id=emp_id) | Q(employee__id=emp_id)
+        )
 
 
 @admin.register(TDSChallan)
