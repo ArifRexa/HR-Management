@@ -427,8 +427,6 @@ class ExpenseAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-from django.db.models import Q, F, Value, CharField
-from django.db.models.functions import Coalesce, NullIf
 from django.contrib import admin
 
 
@@ -440,20 +438,18 @@ class TDSEmployeeFilter(admin.SimpleListFilter):
     # 1. Build the list of choices (unique, already sorted by DB)
     # ------------------------------------------------------------------
     def lookups(self, request, model_admin):
-        individual_qs = (
-            TDSChallan.objects
-            .filter(individual_employee__isnull=False)
-            .values_list("individual_employee_id", "individual_employee__full_name")
+        individual_qs = TDSChallan.objects.filter(
+            individual_employee__isnull=False
+        ).values_list(
+            "individual_employee_id", "individual_employee__full_name"
         )
 
-        group_qs = (
-            TDSChallan.objects
-            .values_list("employee__id", "employee__full_name")
+        group_qs = TDSChallan.objects.values_list(
+            "employee__id", "employee__full_name"
         )
 
         choices = individual_qs.union(group_qs, all=False)
         return tuple(choices)
-
 
     def queryset(self, request, queryset):
         emp_id = self.value()
@@ -465,6 +461,39 @@ class TDSEmployeeFilter(admin.SimpleListFilter):
             Q(individual_employee_id=emp_id) | Q(employee__id=emp_id)
         )
 
+from django.core.exceptions import ValidationError
+from django import forms
+
+class TDSChallanForm(forms.ModelForm):
+    class Meta:
+        model = TDSChallan
+        exclude = ("individual_employee",)
+
+    def clean(self):
+        cleaned = super().clean()
+        tds_type = cleaned.get("tds_type")
+        employees = cleaned.get("employee")
+
+        if tds_type == "individual":
+            if not employees:
+                raise ValidationError({
+                    "employee": "Individual TDS type must have an employee selected."
+                })
+        elif tds_type == "group":
+            if not employees:
+                # Find eligible employees based on logic
+                tax_applied_ids = EmployeeSalary.objects.filter(
+                    created_at__month=cleaned.get("tds_month"),
+                    created_at__year=cleaned.get("date").year,
+                    loan_emi__lt=0,
+                ).values_list("employee__id", flat=True)
+                if not tax_applied_ids:
+                    raise ValidationError(
+                        "No eligible employees found for the selected month and year."
+                    )
+                cleaned["employee"] = Employee.objects.filter(id__in=tax_applied_ids)
+
+        return cleaned
 
 @admin.register(TDSChallan)
 class TDSChallanAdmin(admin.ModelAdmin):
@@ -477,9 +506,11 @@ class TDSChallanAdmin(admin.ModelAdmin):
         "get_employee",
     )
     exclude = ("individual_employee",)
+    form = TDSChallanForm
     list_filter = ("tds_type", "tds_month", TDSEmployeeFilter)
     autocomplete_fields = ("employee",)
     actions = ("add_individual_employee",)
+    search_fields = ("challan_no", "employee__full_name", "individual_employee__full_name")
     date_hierarchy = "date"
 
     def get_queryset(self, request):
@@ -538,15 +569,7 @@ class TDSChallanAdmin(admin.ModelAdmin):
         )
 
     def save_model(self, request, obj, form, change):
-        if form.cleaned_data["tds_type"] == "group":
-            tax_applied_employee_ids = EmployeeSalary.objects.filter(
-                created_at__month=form.cleaned_data["tds_month"],
-                created_at__year=form.cleaned_data["date"].year,
-                loan_emi__lt=0,
-            ).values_list("employee__id", flat=True)
-            employee = Employee.objects.filter(id__in=tax_applied_employee_ids)
-            obj.employee.set(employee)
-            obj.individual_employee = None
+        obj.individual_employee = None
         if form.cleaned_data["tds_type"] == "individual":
             obj.individual_employee = form.cleaned_data["employee"][0]
         return super().save_model(request, obj, form, change)
