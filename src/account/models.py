@@ -1,5 +1,5 @@
 import calendar
-from datetime import datetime
+from datetime import datetime, date as dt
 from decimal import Decimal
 from math import floor
 
@@ -690,7 +690,7 @@ class TDSChallan(TimeStampMixin):
             else:
                 year = fy_start_year + 1
 
-            self.tds_order = datetime.date(year, self.tds_month, 1)
+            self.tds_order = dt(year, self.tds_month, 1)
         super().save(*args, **kwargs)
 
     class Meta:

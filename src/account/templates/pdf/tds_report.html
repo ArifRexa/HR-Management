@@ -76,7 +76,7 @@
           <th>SL No</th>
           <th>TDS Year</th>
           <th>TDS Month</th>
-          <th>Date</th>
+          <th>Challan Date</th>
           <th>Challan No.</th>
           <th>Challan Amount</th>
           <th>Claimed Amount</th>
@@ -88,9 +88,9 @@
           <tr>
             <td style="width: 40px; text-align: center;">{{ forloop.counter }}</td>
             <td>{{ tds.tds_year.start_date.year }} - {{ tds.tds_year.end_date.year|slice:"-2:" }}</td>
-            <td style="width: 60px;">{{ tds.tds_month|month_name|default:"-" }}</td>
+            <td>{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.date }}</td>
-            <td>{{ tds.challan_no }}</td>
+            <td style="width: 110px; text-align: center;">{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
             <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
           </tr>
@@ -99,9 +99,9 @@
           <tr>
             <td style="width: 40px; text-align: center;">{{ forloop.counter }}</td>
             <td>{{ tds.tds_year.start_date.year }} - {{ tds.tds_year.end_date.year|slice:"-2:" }}</td>
-            <td style="width: 60px;">{{ tds.tds_month|month_name|default:"-" }}</td>
+            <td>{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.date }}</td>
-            <td>{{ tds.challan_no }}</td>
+            <td style="width: 110px; text-align: center;">{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
             <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
           </tr>
