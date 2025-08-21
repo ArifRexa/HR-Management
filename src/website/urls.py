@@ -273,7 +273,7 @@ urlpatterns = [
     path('website/industries/', IndustryListAPIView.as_view(), name='industry-list'),
     path('website/technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
     # path('api/industry-details/', ServeCategoryAPIView.as_view(), name='serve-category-list'),
-    path('api/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
+    path('website/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
     path('website/projects/', ProjectListView.as_view(), name='project-list'),
     path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
 

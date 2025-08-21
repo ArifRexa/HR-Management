@@ -363,11 +363,11 @@ class BlogForm(forms.ModelForm):
                 admin.site,
                 # attrs={'style': 'width: 45%; display: inline-block;'}
             ),
-            "child_services": admin.widgets.AutocompleteSelectMultiple(
-                Blog._meta.get_field('child_services'),
-                admin.site,
-                # attrs={'style': 'width: 45%; display: inline-block; margin-left: 10px;'}
-            ),
+            # "child_services": admin.widgets.AutocompleteSelectMultiple(
+            #     Blog._meta.get_field('child_services'),
+            #     admin.site,
+            #     # attrs={'style': 'width: 45%; display: inline-block; margin-left: 10px;'}
+            # ),
         }
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
@@ -1111,7 +1111,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     search_fields = ("title",)
     date_hierarchy = "created_at"
     # autocomplete_fields = ["category", "tag"]
-    autocomplete_fields = ["industry_details", "category", "tag", "parent_services", "child_services", "technology"]  # Updated to industry_details
+    autocomplete_fields = ["industry_details", "category", "tag", "parent_services", "technology"]  # Updated to industry_details
     list_display = (
         "title",
         "author",

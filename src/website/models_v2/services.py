@@ -41,7 +41,7 @@ class ServicePage(TimeStampMixin):
     # )
 
     def __str__(self):
-        return self.sub_title
+        return self.title
 
     class Meta:
         verbose_name = "Service"
