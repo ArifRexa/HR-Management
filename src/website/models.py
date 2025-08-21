@@ -516,13 +516,13 @@ class Blog(AuthorMixin, TimeStampMixin):
                     "Only up to 3 blogs can be featured.You have already added more than 3"
                 )
         
-        if self.child_services.exists():
-            selected_parents = set(self.parent_services.values_list('id', flat=True))
-            for child in self.child_services.all():
-                if child.parent_id not in selected_parents:
-                    raise ValidationError(
-                        f"Child service '{child.title}' must belong to one of the selected parent services."
-                    )
+        # if self.child_services.exists():
+        #     selected_parents = set(self.parent_services.values_list('id', flat=True))
+        #     for child in self.child_services.all():
+        #         if child.parent_id not in selected_parents:
+        #             raise ValidationError(
+        #                 f"Child service '{child.title}' must belong to one of the selected parent services."
+        #             )
 
     class Meta:
         permissions = [
