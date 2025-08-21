@@ -1649,13 +1649,13 @@ class IndustryServeSerializer(serializers.ModelSerializer):
 
 class ServeCategorySerializer(serializers.ModelSerializer):
     industry_details_hero_section = IndustryDetailsHeroSectionSerializer(many=True, read_only=True)
-    our_process = OurProcessSerializer(many=True, read_only=True)
-    industry_details_heading = IndustryDetailsHeadingSerializer(many=True, read_only=True)
-    custom_solutions = CustomSolutionsSerializer(many=True, read_only=True)
-    benefits = BenefitsSerializer(many=True, read_only=True)
+    industry_solutions_and_services = IndustryDetailsHeadingSerializer(many=True, read_only=True)
+    industry_benifits = CustomSolutionsSerializer(many=True, read_only=True)
+    benifited_organizations = BenefitsSerializer(many=True, read_only=True)
     why_choose_us = WhyChooseUsSerializer(many=True, read_only=True)
-    ctas = ServeCategoryCTASerializer(many=True, read_only=True)
+    our_process = OurProcessSerializer(many=True, read_only=True)
     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
+    ctas = ServeCategoryCTASerializer(many=True, read_only=True)
     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
     application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
