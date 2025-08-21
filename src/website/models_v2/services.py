@@ -18,28 +18,30 @@ class ServicePage(TimeStampMixin):
     feature_image = models.ImageField(
         upload_to="service_page/feature_images", null=True, blank=True
     )
-    title = models.CharField(max_length=255)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
+    title = models.CharField(max_length=255, verbose_name="Menu Title")
+    show_in_menu = models.BooleanField(default=False, verbose_name="Show in Menu")
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     h1_title = models.CharField(max_length=255, verbose_name="H1 Title", null=True, blank=True)
     slug = models.SlugField(unique=True)
     sub_title = models.TextField(verbose_name="Section Title")
     description = HTMLField(null=True, blank=True, verbose_name="Section Description")
-    menu_title = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Section Title"
-    )
+    # menu_title = models.CharField(
+    #     max_length=255, null=True, blank=True, verbose_name="Menu Title2"
+    # )
     # image = models.ImageField(upload_to="service_page_image")
     banner_query = models.CharField(max_length=255)
-    development_services_title = models.CharField(max_length=255, verbose_name="Section Title")
-    development_services_sub_title = models.TextField(verbose_name="Section Description")
-    faq_short_description = models.TextField(verbose_name="Short Description")
-    comparative_analysis_title = models.CharField(max_length=255, verbose_name="Section Title")
-    comparative_analysis_sub_title = models.TextField(verbose_name="Section Description")
-    why_choose_us_sub_title = models.TextField(
-        verbose_name="Section Description", null=True, blank=True
-    )
+    # development_services_title = models.CharField(max_length=255, verbose_name="Section Title")
+    # development_services_sub_title = models.TextField(verbose_name="Section Description")
+    # faq_short_description = models.TextField(verbose_name="Short Description")
+    # comparative_analysis_title = models.CharField(max_length=255, verbose_name="Section Title")
+    # comparative_analysis_sub_title = models.TextField(verbose_name="Section Description")
+    # why_choose_us_sub_title = models.TextField(
+    #     verbose_name="Section Description", null=True, blank=True
+    # )
 
     def __str__(self):
-        return self.title
+        return self.sub_title
 
     class Meta:
         verbose_name = "Service"
