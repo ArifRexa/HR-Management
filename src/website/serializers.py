@@ -1647,11 +1647,100 @@ class IndustryServeSerializer(serializers.ModelSerializer):
 
 
 
+# class ServeCategorySerializer(serializers.ModelSerializer):
+#     industry_details_hero_section = IndustryDetailsHeroSectionSerializer(many=True, read_only=True)
+#     industry_solutions_and_services = IndustryDetailsHeadingSerializer(many=True, read_only=True)
+#     industry_benifits = CustomSolutionsSerializer(many=True, read_only=True)
+#     benifited_organizations = BenefitsSerializer(many=True, read_only=True)
+#     why_choose_us = WhyChooseUsSerializer(many=True, read_only=True)
+#     our_process = OurProcessSerializer(many=True, read_only=True)
+#     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
+#     ctas = ServeCategoryCTASerializer(many=True, read_only=True)
+#     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
+#     application_areas = ApplicationAreasSerializer(many=True, read_only=True)
+#     industries = IndustryServeSerializer(many=True, read_only=True)
+#     table_of_contents = serializers.SerializerMethodField()
+
+    
+#     class Meta:
+#         model = ServeCategory
+#         fields = '__all__'
+#         ref_name = 'IndustriesWeServeServeCategory'
+
+#     def get_table_of_contents(self, obj):
+#         toc = []
+        
+#         # Add section titles from Industry Details Hero Section
+#         try:
+#             for item in obj.industry_details_hero_section.all():
+#                 if item.section_title:
+#                     toc.append(item.section_title)
+#         except AttributeError:
+#             pass
+        
+#         # Add section titles from Our Process
+#         # try:
+#         #     for item in obj.our_process.all():
+#         #         if item.section_title:
+#         #             toc.append(item.section_title)
+#         # except AttributeError:
+#         #     pass
+        
+#         # Add section titles from Industry Details Heading
+#         try:
+#             for item in obj.industry_solutions_and_services.all():
+#                 if item.section_title:
+#                     toc.append(item.section_title)
+#         except AttributeError:
+#             pass
+        
+#         # Add section titles from Custom Solutions
+#         try:
+#             for item in obj.industry_benifits.all():
+#                 if item.section_title:
+#                     toc.append(item.section_title)
+#         except AttributeError:
+#             pass
+        
+#         # Add section titles from Benefits
+#         try:
+#             for item in obj.benifited_organizations.all():
+#                 if item.section_title:
+#                     toc.append(item.section_title)
+#         except AttributeError:
+#             pass
+        
+#         # Add section titles from Why Choose Us
+#         try:
+#             for item in obj.why_choose_us.all():
+#                 if item.section_title:
+#                     toc.append(item.section_title)
+#         except AttributeError:
+#             pass
+        
+#         # Add titles from Application Areas
+#         try:
+#             for item in obj.application_areas.all():
+#                 if item.title:
+#                     toc.append(item.title)
+#         except AttributeError:
+#             pass
+        
+#         # Add titles from Industries
+#         try:
+#             for item in obj.industries.all():
+#                 if item.title:
+#                     toc.append(item.title)
+#         except AttributeError:
+#             pass
+        
+#         return toc
 class ServeCategorySerializer(serializers.ModelSerializer):
     industry_details_hero_section = IndustryDetailsHeroSectionSerializer(many=True, read_only=True)
-    industry_solutions_and_services = IndustryDetailsHeadingSerializer(many=True, read_only=True)
-    industry_benifits = CustomSolutionsSerializer(many=True, read_only=True)
-    benifited_organizations = BenefitsSerializer(many=True, read_only=True)
+    # Changed field names to match the model relationships
+    industry_solutions_and_services = IndustryDetailsHeadingSerializer(source='industry_details_heading', many=True, read_only=True)
+    industry_benifits = CustomSolutionsSerializer(source='custom_solutions', many=True, read_only=True)
+    benifited_organizations = BenefitsSerializer(source='benefits', many=True, read_only=True)
     why_choose_us = WhyChooseUsSerializer(many=True, read_only=True)
     our_process = OurProcessSerializer(many=True, read_only=True)
     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
@@ -1660,13 +1749,12 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
-
     
     class Meta:
         model = ServeCategory
         fields = '__all__'
         ref_name = 'IndustriesWeServeServeCategory'
-
+    
     def get_table_of_contents(self, obj):
         toc = []
         
@@ -1686,7 +1774,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         # except AttributeError:
         #     pass
         
-        # Add section titles from Industry Details Heading
+        # Add section titles from Industry Solutions and Services (using model field name)
         try:
             for item in obj.industry_details_heading.all():
                 if item.section_title:
@@ -1694,7 +1782,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         
-        # Add section titles from Custom Solutions
+        # Add section titles from Industry Benefits (using model field name)
         try:
             for item in obj.custom_solutions.all():
                 if item.section_title:
@@ -1702,7 +1790,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         
-        # Add section titles from Benefits
+        # Add section titles from Benefited Organizations (using model field name)
         try:
             for item in obj.benefits.all():
                 if item.section_title:
