@@ -211,6 +211,8 @@ class ExpenseAdmin(admin.ModelAdmin):
     # ... (the rest of your methods like get_actions, save_model, etc., remain the same)
     def get_actions(self, request):
         actions = super().get_actions(request)
+        if not request.user.is_superuser:
+            actions.pop("change_authorized_status")
         if not request.user.is_superuser and not request.user.has_perm(
             "account.can_add_balance_sheet"
         ):
@@ -417,6 +419,8 @@ class ExpenseAdmin(admin.ModelAdmin):
     def get_form(self, request, obj, **kwargs):
         if not request.user.has_perm("account.can_approve_expense"):
             self.exclude = ["is_approved"]
+        if not request.user.is_superuser:
+            self.exclude += ["add_to_balance_sheet", "is_authorized"]
         return super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change) -> None:

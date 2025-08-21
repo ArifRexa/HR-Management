@@ -291,6 +291,7 @@ class ClientAdmin(admin.ModelAdmin):
                     "currency",
                     "bill_from",
                     "invoice_cc_email",
+                    "notes",
                 ),
             },
         ),
@@ -321,7 +322,7 @@ class ClientAdmin(admin.ModelAdmin):
                     # "active",
                     "logo",
                     "image",
-                    "notes",
+                    
                     "is_need_feedback",
                     "is_hour_breakdown",
                     "active_from",

@@ -271,7 +271,7 @@ class Client(TimeStampMixin, AuthorMixin):
     company_name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Website URL"
     )
-    client_feedback = models.TextField(null=True, blank=True)
+    client_feedback = models.TextField(null=True, blank=True, verbose_name="Closing Summary/Future Scope")
     image = models.ImageField(
         upload_to="client_images",
         null=True,
@@ -281,7 +281,7 @@ class Client(TimeStampMixin, AuthorMixin):
     linkedin_url = models.URLField(
         null=True, blank=True, verbose_name="LinkedIn URL"
     )
-    notes = models.TextField(null=True, blank=True)
+    notes = models.TextField(null=True, blank=True, verbose_name="Billing Notes")
     is_hour_breakdown = models.BooleanField(default=False)
     payment_method = models.ForeignKey(
         PaymentMethod,
