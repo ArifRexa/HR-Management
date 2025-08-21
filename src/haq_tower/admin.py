@@ -73,7 +73,7 @@ class MotherBillAdmin(admin.ModelAdmin):
             "mother_renters": mother_renters,
             # "bill_date": queryset.first().date,
             "letter_type": letter_type,
-            "bill_bg": f"{config.settings.STATIC_ROOT}/stationary/haq_electric_bill_bg.png",
+            "bill_bg": f"{config.settings.STATIC_URL}stationary/haq_electric_bill_bg.png",
         }
 
         generated_pdf = pdf.render_to_pdf(download=True)
