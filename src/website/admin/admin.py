@@ -785,7 +785,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
     
     search_fields = ("title",)
     fieldsets = (
-        ("Page Hierarchy", {"fields": ("is_parent", "parent", "title")}),
+        ("Page Hierarchy", {"fields": ("is_parent", "parent", "title", "show_in_menu")}),
         (
             "Banner",
             {"fields": ("seo_title", "sub_title", "secondary_title", "slug", "description")},

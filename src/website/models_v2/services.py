@@ -26,19 +26,19 @@ class ServicePage(TimeStampMixin):
     slug = models.SlugField(unique=True)
     sub_title = models.TextField(verbose_name="Section Title")
     description = HTMLField(null=True, blank=True, verbose_name="Section Description")
-    menu_title = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Menu Title2"
-    )
+    # menu_title = models.CharField(
+    #     max_length=255, null=True, blank=True, verbose_name="Menu Title2"
+    # )
     # image = models.ImageField(upload_to="service_page_image")
     banner_query = models.CharField(max_length=255)
-    development_services_title = models.CharField(max_length=255, verbose_name="Section Title")
-    development_services_sub_title = models.TextField(verbose_name="Section Description")
-    faq_short_description = models.TextField(verbose_name="Short Description")
-    comparative_analysis_title = models.CharField(max_length=255, verbose_name="Section Title")
-    comparative_analysis_sub_title = models.TextField(verbose_name="Section Description")
-    why_choose_us_sub_title = models.TextField(
-        verbose_name="Section Description", null=True, blank=True
-    )
+    # development_services_title = models.CharField(max_length=255, verbose_name="Section Title")
+    # development_services_sub_title = models.TextField(verbose_name="Section Description")
+    # faq_short_description = models.TextField(verbose_name="Short Description")
+    # comparative_analysis_title = models.CharField(max_length=255, verbose_name="Section Title")
+    # comparative_analysis_sub_title = models.TextField(verbose_name="Section Description")
+    # why_choose_us_sub_title = models.TextField(
+    #     verbose_name="Section Description", null=True, blank=True
+    # )
 
     def __str__(self):
         return self.sub_title
