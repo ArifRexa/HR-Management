@@ -610,7 +610,15 @@ class SalaryReportAdmin(admin.ModelAdmin):
         pdf.template_path = "pdf/tds_report.html"
         pdf.file_name = f"{obj.start_date.year}_{obj.end_date.year}_tds_report"
         pdf.context = {
-            "employees": Employee.objects.filter(active=True),
+            "employees": Employee.objects.filter(active=True).select_related()
+            .prefetch_related(
+                "individual_employee_tds_challan",
+                Prefetch(
+                    "tdschallan_set",
+                    queryset=TDSChallan.objects.all().order_by("tds_order"),
+                    to_attr="tds_challans",
+                )
+            ),
             "obj": obj,
             # "tds_challan": tds_challan,
         }

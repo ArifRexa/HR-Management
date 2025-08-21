@@ -20,6 +20,7 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.employee import Employee, LateAttendanceFine
 from project_management.models import Client, Project
+from settings.models import FinancialYear
 
 
 class SalarySheet(TimeStampMixin, AuthorMixin):
@@ -631,9 +632,21 @@ class SalaryReport(models.Model):
     #     return response
 
 
+def get_current_financial_year():
+    active_year = FinancialYear.objects.filter(active=True).first()
+    return active_year.id if active_year else None
+
+
 class TDSChallan(TimeStampMixin):
     MONTH_CHOICES = [(i, calendar.month_name[i]) for i in range(1, 13)]
-    date = models.DateField(verbose_name="Challan Date")
+    tds_year = models.ForeignKey(
+        FinancialYear,
+        on_delete=models.SET_NULL,
+        null=True,
+        default=get_current_financial_year,
+        verbose_name="TDS Year",
+        help_text="Select the financial year for which TDS is applicable",
+    )
     tds_month = models.PositiveSmallIntegerField(
         choices=MONTH_CHOICES,
         default=0,
@@ -646,6 +659,7 @@ class TDSChallan(TimeStampMixin):
         default="group",
         verbose_name="TDS Type",
     )
+    date = models.DateField(verbose_name="Challan Date")
     challan_no = models.CharField(max_length=50)
     amount = models.PositiveIntegerField()
     employee = models.ManyToManyField(
@@ -661,6 +675,23 @@ class TDSChallan(TimeStampMixin):
         on_delete=models.SET_NULL,
         related_name="individual_employee_tds_challan",
     )
+    tds_order = models.DateField(null=True, blank=True)
+
+    def save(self, *args, **kwargs):
+        # Build the 1st day of the correct fiscal month
+        if self.tds_year and self.tds_month and self.tds_order is None:
+            fy_start_year = (
+                self.tds_year.start_date.year
+            )  # FinancialYear must expose .start_date
+            # Months 7-12 belong to the same calendar year,
+            # months 1-6 belong to the next calendar year
+            if 7 <= self.tds_month <= 12:
+                year = fy_start_year
+            else:
+                year = fy_start_year + 1
+
+            self.tds_order = datetime.date(year, self.tds_month, 1)
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "TDS Challan"

@@ -26,6 +26,7 @@ from account.models import (
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._forms import DailyExpenseFilterForm
 from employee.models import Employee
+from settings.models import FinancialYear
 
 
 @admin.register(ExpenseGroup)
@@ -465,8 +466,10 @@ class TDSEmployeeFilter(admin.SimpleListFilter):
             Q(individual_employee_id=emp_id) | Q(employee__id=emp_id)
         )
 
-from django.core.exceptions import ValidationError
+
 from django import forms
+from django.core.exceptions import ValidationError
+
 
 class TDSChallanForm(forms.ModelForm):
     class Meta:
@@ -480,9 +483,11 @@ class TDSChallanForm(forms.ModelForm):
 
         if tds_type == "individual":
             if not employees:
-                raise ValidationError({
-                    "employee": "Individual TDS type must have an employee selected."
-                })
+                raise ValidationError(
+                    {
+                        "employee": "Individual TDS type must have an employee selected."
+                    }
+                )
         elif tds_type == "group":
             if not employees:
                 # Find eligible employees based on logic
@@ -495,26 +500,34 @@ class TDSChallanForm(forms.ModelForm):
                     raise ValidationError(
                         "No eligible employees found for the selected month and year."
                     )
-                cleaned["employee"] = Employee.objects.filter(id__in=tax_applied_ids)
+                cleaned["employee"] = Employee.objects.filter(
+                    id__in=tax_applied_ids
+                )
 
         return cleaned
+
 
 @admin.register(TDSChallan)
 class TDSChallanAdmin(admin.ModelAdmin):
     list_display = (
-        "date",
+        "tds_year",
         "tds_month",
         "tds_type",
+        "date",
         "challan_no",
         "amount",
         "get_employee",
     )
-    exclude = ("individual_employee",)
+    exclude = ("individual_employee", "tds_order")
     form = TDSChallanForm
-    list_filter = ("tds_type", "tds_month", TDSEmployeeFilter)
+    list_filter = ("tds_type", "tds_year", "tds_month", TDSEmployeeFilter)
     autocomplete_fields = ("employee",)
-    actions = ("add_individual_employee",)
-    search_fields = ("challan_no", "employee__full_name", "individual_employee__full_name")
+    actions = ("add_individual_employee", "set_tds_year", "ordered_tds_challan")
+    search_fields = (
+        "challan_no",
+        "employee__full_name",
+        "individual_employee__full_name",
+    )
     date_hierarchy = "date"
 
     def get_queryset(self, request):
@@ -571,6 +584,54 @@ class TDSChallanAdmin(admin.ModelAdmin):
         messages.success(
             request, f"Individual employee added to {updated} TDS challan(s)."
         )
+
+    @admin.action(description="Ordered TDS challans")
+    def ordered_tds_challan(self, request, queryset):
+        import datetime
+
+        updated = 0
+        with transaction.atomic():
+            for ch in queryset.filter(tds_order__isnull=True):
+                if ch.tds_year and ch.tds_month:
+                    fy_start_year = ch.tds_year.start_date.year
+                    year = (
+                        fy_start_year
+                        if 7 <= ch.tds_month <= 12
+                        else fy_start_year + 1
+                    )
+                    ch.tds_order = datetime.date(year, ch.tds_month, 1)
+                    ch.save(update_fields=["tds_order"])
+                    updated += 1
+
+        self.message_user(
+            request,
+            f"{updated} TDS challan(s) now have a TDS-order date.",
+            messages.SUCCESS,
+        )
+
+    @admin.action(description="Set TDS Year")
+    def set_tds_year(self, request, queryset):
+        active_year = FinancialYear.objects.filter(active=True).first()
+        qs = queryset.filter(tds_year__isnull=True)
+        if not active_year:
+            self.message_user(
+                request,
+                "No active financial year found. Please set one in settings.",
+                messages.ERROR,
+            )
+
+        else:
+            updated = qs.update(tds_year=active_year)
+            if updated:
+                self.message_user(
+                    request,
+                    f"Set TDS Year to {active_year} for {updated} TDS challan(s).",
+                    messages.SUCCESS,
+                )
+            else:
+                self.message_user(
+                    request, "No TDS challans needed updating.", messages.INFO
+                )
 
     def save_model(self, request, obj, form, change):
         obj.individual_employee = None

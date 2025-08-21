@@ -1,9 +1,8 @@
-from django.contrib.auth.models import User
 from django.db import models
-from tinymce import models as tinymce_models
 
 # Create your models here.
 from django.utils import timezone
+from tinymce import models as tinymce_models
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -14,6 +13,12 @@ class FinancialYear(TimeStampMixin, AuthorMixin):
     end_date = models.DateField()
     description = models.TextField(null=True, blank=True)
     active = models.BooleanField(default=False)
+
+    def __str__(self):
+        end = self.end_date.strftime('%Y')[-2:]
+        return (
+            f"{self.start_date.strftime('%Y')} - {end}"
+        )
 
 
 class Designation(TimeStampMixin, AuthorMixin):
@@ -110,8 +115,8 @@ class Announcement(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return self.description
-    
-    
+
+
 class Notice(TimeStampMixin, AuthorMixin):
     start_date = models.DateField(default=timezone.now)
     end_date = models.DateField(default=timezone.now)
@@ -120,8 +125,7 @@ class Notice(TimeStampMixin, AuthorMixin):
 
     title = models.CharField(max_length=255)
 
-    file = models.FileField(upload_to='notices/')
-
+    file = models.FileField(upload_to="notices/")
 
     def __str__(self):
         return self.title
@@ -168,6 +172,9 @@ class EmailAnnouncement(TimeStampMixin, AuthorMixin):
 
 
 class EmailAnnouncementAttatchment(TimeStampMixin, AuthorMixin):
-    email_announcement = models.ForeignKey(EmailAnnouncement, on_delete=models.CASCADE, null=True, blank=True)
-    attachments = models.FileField(upload_to='email_attachments/', null=True, blank=True)
-
+    email_announcement = models.ForeignKey(
+        EmailAnnouncement, on_delete=models.CASCADE, null=True, blank=True
+    )
+    attachments = models.FileField(
+        upload_to="email_attachments/", null=True, blank=True
+    )

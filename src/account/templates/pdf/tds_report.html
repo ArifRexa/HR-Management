@@ -73,19 +73,23 @@
     <table class="main-table">
       <thead>
         <tr>
-          <th>Date</th>
+          <th>SL No</th>
+          <th>TDS Year</th>
           <th>TDS Month</th>
+          <th>Date</th>
           <th>Challan No.</th>
           <th>Challan Amount</th>
           <th>Claimed Amount</th>
         </tr>
       </thead>
       <tbody>
-        {% for tds in employee.tdschallan_set.all %}
+        {% for tds in employee.tds_challans %}
         {% if tds.tds_type == "group" %}
           <tr>
+            <td style="width: 40px; text-align: center;">{{ forloop.counter }}</td>
+            <td>{{ tds.tds_year.start_date.year }} - {{ tds.tds_year.end_date.year|slice:"-2:" }}</td>
+            <td style="width: 60px;">{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.date }}</td>
-            <td>{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
             <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
@@ -93,8 +97,10 @@
         
         {% elif tds.tds_type == "individual" and employee == tds.individual_employee %}
           <tr>
+            <td style="width: 40px; text-align: center;">{{ forloop.counter }}</td>
+            <td>{{ tds.tds_year.start_date.year }} - {{ tds.tds_year.end_date.year|slice:"-2:" }}</td>
+            <td style="width: 60px;">{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.date }}</td>
-            <td>{{ tds.tds_month|month_name|default:"-" }}</td>
             <td>{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
             <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
@@ -105,7 +111,7 @@
           
         {% endfor %}
         <tr class="total-row">
-          <td colspan="4" style="text-align:right;"><strong>Total</strong></td>
+          <td colspan="6" style="text-align:right;"><strong>Total</strong></td>
           <td><strong>{% employee_total_tds obj employee %}</strong></td>
         </tr>
       </tbody>
