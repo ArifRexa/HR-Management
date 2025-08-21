@@ -455,13 +455,13 @@ class Blog(AuthorMixin, TimeStampMixin):
         limit_choices_to={"is_parent": True},
         verbose_name="Parent Services"
     )
-    child_services = models.ManyToManyField(
-        ServicePage,
-        related_name="blogs_as_child",
-        verbose_name="Child Services",
-        limit_choices_to={"is_parent": False},
-        blank=True
-    )
+    # child_services = models.ManyToManyField(
+    #     ServicePage,
+    #     related_name="blogs_as_child",
+    #     verbose_name="Child Services",
+    #     limit_choices_to={"is_parent": False},
+    #     blank=True
+    # )
     technology_type = models.ForeignKey(
         TechnologyType,
         on_delete=models.SET_NULL,
