@@ -139,7 +139,7 @@ class ProjectIndustrySerializer(serializers.ModelSerializer):
 class ProjectServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServicePage
-        fields = ("menu_title",)
+        fields = ("title",)
 
 
 class TechnologySerializer(serializers.ModelSerializer):

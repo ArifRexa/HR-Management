@@ -15,7 +15,7 @@ class ServicePageChildSerializer(serializers.ModelSerializer):
         fields = (
             "title",
             "sub_title",
-            "menu_title",
+            # "menu_title",
             "slug",
         )
 
@@ -26,7 +26,7 @@ class ServicePageSerializer(serializers.ModelSerializer):
         fields = (
             "title",
             "sub_title",
-            "menu_title",
+            # "menu_title",
             "banner_query",
             "feature_image",
             "description",
