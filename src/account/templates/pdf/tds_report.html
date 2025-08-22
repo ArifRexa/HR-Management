@@ -92,7 +92,7 @@
             <td>{{ tds.date }}</td>
             <td style="width: 110px; text-align: center;">{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
-            <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
+            <td>{% employee_monthly_tds employee tds.tds_month tds.tds_year.year %}</td>
           </tr>
         
         {% elif tds.tds_type == "individual" and employee == tds.individual_employee %}
@@ -103,7 +103,7 @@
             <td>{{ tds.date }}</td>
             <td style="width: 110px; text-align: center;">{{ tds.challan_no }}</td>
             <td>{{ tds.amount }}</td>
-            <td>{% employee_monthly_tds employee tds.tds_month tds.date.year %}</td>
+            <td>{% employee_monthly_tds employee tds.tds_month tds.tds_year.year %}</td>
           </tr>
         
           
@@ -112,7 +112,7 @@
         {% endfor %}
         <tr class="total-row">
           <td colspan="6" style="text-align:right;"><strong>Total</strong></td>
-          <td><strong>{% employee_total_tds obj employee %}</strong></td>
+          <td><strong>{% employee_total_tds obj.tds_year employee %}</strong></td>
         </tr>
       </tbody>
     </table>

@@ -101,6 +101,11 @@ def employee_total_tds(obj: SalaryReport, emp: Employee, type="num"):
 
 @register.simple_tag
 def employee_monthly_tds(emp: Employee, month, year):
+
+    if 7 <= month <= 12:
+        year = year
+    else:
+        year = year + 1
     tds = (
         EmployeeSalary.objects.filter(
             employee=emp, created_at__year=year, created_at__month=month
