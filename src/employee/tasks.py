@@ -861,9 +861,90 @@ from datetime import time
 #                 email.send()
 
 
+# def late_attendance_calculate(late_entry_time=None):
+#     employees = Employee.objects.filter(
+#         active=True, show_in_attendance_list=True, exception_la=False  #exception_la = exception_late_attendance if true then thats are not counted as late
+#     ).exclude(salaryhistory__isnull=True)
+#     late_entry = late_entry_time if late_entry_time else time(hour=11, minute=11)
+
+#     current_date = datetime.now()
+#     current_month = current_date.month
+#     current_year = current_date.year
+
+#     for employee in employees:
+#         total_consider = LateAttendanceFine.objects.filter(
+#             employee=employee,
+#             date__year=current_year,
+#             date__month=current_month,
+#             is_consider=True,
+#         ).count()
+
+#         # Count late entries for the current month
+#         total_late_entry = (
+#             EmployeeAttendance.objects.filter(
+#                 employee=employee,
+#                 date__year=current_year,
+#                 date__month=current_month,
+#                 entry_time__gt=late_entry,
+#             ).count()
+#             - total_consider
+#         )
+
+#         # Check if there is a late entry for today
+#         today_late_entry = EmployeeAttendance.objects.filter(
+#             employee=employee, date=current_date, entry_time__gt=late_entry
+#         )
+
+#         if not LateAttendanceFine.objects.filter(
+#             employee=employee, date=current_date
+#         ).exists() and today_late_entry.exists():
+#             entry_time = today_late_entry.first().entry_time
+#             late_count = total_late_entry + 1  # Include today's late entry
+
+#             if total_late_entry > 6:
+#                 fine_amount = 500.00
+#             elif total_late_entry > 3:
+#                 fine_amount = 80.00
+#             else:
+#                 fine_amount = 0.00
+
+#             LateAttendanceFine.objects.create(
+#                 employee=employee,
+#                 month=current_month,
+#                 year=current_year,
+#                 date=current_date,
+#                 is_consider=False,
+#                 total_late_attendance_fine=fine_amount,
+#                 entry_time=entry_time,
+#             )
+
+#             html_body = loader.render_to_string(
+#                 "mails/late_entry_mail.html",
+#                 context={
+#                     "employee": employee,
+#                     "entry_time": entry_time,
+#                     "late_count": late_count,
+#                 },
+#             )
+#             email = EmailMultiAlternatives(
+#                 subject=f"Attention Required: Late Entry Logged {current_date}",
+#                 from_email='"Mediusware-HR" <hr@mediusware.com>',
+#                 to=[employee.email],
+#             )
+#             email.attach_alternative(html_body, "text/html")
+#             try:
+#                 email.send()
+#             except Exception as e:
+#                 # Log the error (e.g., using logging module) instead of raising
+#                 print(f"Failed to send email to {employee.email}: {str(e)}")
+
+
+
+
+
 def late_attendance_calculate(late_entry_time=None):
     employees = Employee.objects.filter(
-        active=True, show_in_attendance_list=True, exception_la=False  #exception_la = exception_late_attendance if true then thats are not counted as late
+        active=True, show_in_attendance_list=True, exception_la=False   
     ).exclude(salaryhistory__isnull=True)
     late_entry = late_entry_time if late_entry_time else time(hour=11, minute=11)
 
@@ -872,6 +953,7 @@ def late_attendance_calculate(late_entry_time=None):
     current_year = current_date.year
 
     for employee in employees:
+        # Get considered late entries for current month
         total_consider = LateAttendanceFine.objects.filter(
             employee=employee,
             date__year=current_year,
@@ -879,7 +961,7 @@ def late_attendance_calculate(late_entry_time=None):
             is_consider=True,
         ).count()
 
-        # Count late entries for the current month
+        # Count late entries for current month (including today)
         total_late_entry = (
             EmployeeAttendance.objects.filter(
                 employee=employee,
@@ -890,7 +972,7 @@ def late_attendance_calculate(late_entry_time=None):
             - total_consider
         )
 
-        # Check if there is a late entry for today
+        # Check today's late entry
         today_late_entry = EmployeeAttendance.objects.filter(
             employee=employee, date=current_date, entry_time__gt=late_entry
         )
@@ -899,7 +981,8 @@ def late_attendance_calculate(late_entry_time=None):
             employee=employee, date=current_date
         ).exists() and today_late_entry.exists():
             entry_time = today_late_entry.first().entry_time
-            late_count = total_late_entry + 1  # Include today's late entry
+            # Use total_late_entry directly (already includes today)
+            late_count = total_late_entry  # FIX: Removed +1
 
             if total_late_entry > 6:
                 fine_amount = 500.00
@@ -935,7 +1018,6 @@ def late_attendance_calculate(late_entry_time=None):
             try:
                 email.send()
             except Exception as e:
-                # Log the error (e.g., using logging module) instead of raising
                 print(f"Failed to send email to {employee.email}: {str(e)}")
 
 
