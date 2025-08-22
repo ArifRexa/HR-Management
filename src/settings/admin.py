@@ -1,48 +1,50 @@
-import re
-from typing import Any
+from datetime import datetime, timedelta
+
+import openpyxl
 from django import forms
 from django.contrib import admin, messages
+from django.db.models import Prefetch, Sum
+from django.db.models.functions import Abs
+from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.urls import path
-from django.template import loader
-from django.core.mail import EmailMessage
-from datetime import timedelta
-from django.utils import timezone
-from django_q.tasks import async_task, schedule
-from django_q.models import Schedule
-from datetime import datetime
 
 # Register your models here.
 from django.template.defaultfilters import (
     truncatechars_html,
 )
-from django.utils.html import strip_tags, format_html
+from django.urls import path
+from django.utils import timezone
+from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
+from django_q import admin as q_admin
+from django_q import models as q_models
+from django_q.models import Schedule
+from django_q.tasks import async_task, schedule
 
+from account.models import (
+    EmployeeSalary,
+    TDSChallan,
+)
 from config.utils.pdf import PDF
-from employee.models import Employee
+from employee.models import Employee, EmployeeAttendance
 from project_management.models import Client
+from settings.models import LeaveManagement
+
 from .models import (
+    Announcement,
+    Bank,
     Designation,
+    EmailAnnouncement,
+    EmailAnnouncementAttatchment,
+    EmployeeFoodAllowance,
+    FinancialYear,
+    Letter,
     Notice,
+    OpenLetter,
     PayScale,
     PublicHoliday,
     PublicHolidayDate,
-    Bank,
-    Letter,
-    OpenLetter,
-    FinancialYear,
-    Announcement,
-    EmployeeFoodAllowance,
-    EmailAnnouncement,
-    EmailAnnouncementAttatchment,
 )
-from django_q import models as q_models
-from django_q import admin as q_admin
-from datetime import timedelta
-from django.db.models import Q
-from employee.models import EmployeeAttendance
-from settings.models import LeaveManagement
 
 
 @admin.register(PayScale)
@@ -70,8 +72,195 @@ class DesignationAdmin(admin.ModelAdmin):
 class FinancialYearAdmin(admin.ModelAdmin):
     list_display = ("start_date", "end_date", "active")
 
-    def has_module_permission(self, request):
-        return False
+    actions = [
+        "export_employee_tds_report",
+        "export_employee_tds_report_inactive",
+        "export_tds_pdf_for_active_employee",
+        "export_tds_pdf_for_inactive_employee",
+    ]
+
+    def get_employee_salary_with_challan(self, obj, active_only: bool):
+        """
+        Returns Employee queryset.
+        Each employee has:
+            salary          -> list[EmployeeSalary]
+            salary.challans -> list[TDSChallan]  (zero-to-many)
+        """
+        # helper: salaries in the period
+        salaries_qs = (
+            EmployeeSalary.objects.filter(
+                created_at__date__range=(obj.start_date, obj.end_date)
+            )
+            .annotate(tds_amount=Abs("loan_emi"))
+            .order_by("created_at")
+        )
+
+        # helper: annotate each salary with the related year/month
+        for sal in salaries_qs:
+            sal.year = sal.created_at.year
+            sal.month = sal.created_at.month
+
+        # employees + salaries
+        employees = (
+            Employee.objects.filter(active=active_only)
+            .order_by("full_name")
+            .prefetch_related(
+                Prefetch(
+                    "employeesalary_set", queryset=salaries_qs, to_attr="salary"
+                )
+            )
+        )
+
+        # attach the challans manually in Python (single DB hit)
+        challan_map = {}
+        challans = TDSChallan.objects.filter(
+            date__year__range=[obj.start_date.year, obj.end_date.year]
+        ).prefetch_related("employee")
+
+        # build { (emp_id, year, month): [challan, challan, …] }
+        for ch in challans:
+            y, m = ch.date.year, ch.date.month
+            for emp in ch.employee.all():
+                challan_map.setdefault((emp.id, y, m), []).append(ch)
+
+        # glue everything together
+        for emp in employees:
+            for sal in emp.salary:
+                key = (emp.id, sal.created_at.year, sal.created_at.month)
+                sal.challans = challan_map.get(key, [])
+
+        return employees
+
+    @admin.action(description="Export TDS PDF (Active)")
+    def export_tds_pdf_for_active_employee(self, request, queryset):
+        obj = queryset.first()
+        if not obj:
+            self.message_user(request, "No record selected.")
+            return
+
+        pdf = PDF()
+        pdf.template_path = "pdf/tds_report.html"
+        pdf.file_name = f"{obj.start_date.year}_{obj.end_date.year}_tds_report"
+        pdf.context = {
+            "employees": Employee.objects.filter(active=True)
+            .select_related()
+            .prefetch_related(
+                "individual_employee_tds_challan",
+                Prefetch(
+                    "tdschallan_set",
+                    queryset=TDSChallan.objects.filter(tds_order__gte=obj.start_date, tds_order__lte=obj.end_date).order_by("tds_order"),
+                    to_attr="tds_challans",
+                ),
+            ),
+            "obj": obj,
+            # "tds_challan": tds_challan,
+        }
+        return pdf.render_to_pdf(download=True)
+
+    @admin.action(description="Export TDS PDF (InActive)")
+    def export_tds_pdf_for_inactive_employee(self, request, queryset):
+        obj = queryset.first()
+        if not obj:
+            self.message_user(request, "No record selected.")
+            return
+
+        pdf = PDF()
+        pdf.template_path = "pdf/tds_report.html"
+        pdf.file_name = f"{obj.start_date.year}_{obj.end_date.year}_tds_report"
+        pdf.context = {
+            "employees": Employee.objects.filter(active=False)
+            .select_related()
+            .prefetch_related(
+                "individual_employee_tds_challan",
+                Prefetch(
+                    "tdschallan_set",
+                    queryset=TDSChallan.objects.all().order_by("tds_order"),
+                    to_attr="tds_challans",
+                ),
+            ),
+            "obj": obj
+        }
+        return pdf.render_to_pdf(download=True)
+
+    def _export_employee_tds_report(self, request, queryset, active_status):
+        """Helper function to generate TDS report for specified employee status"""
+        obj = queryset.first()
+        if not obj:
+            self.message_user(request, "No record selected")
+            return
+
+        # Create workbook and sheet
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Salary Report"
+
+        # Define headers
+        headers = ["Employee Name"] + [
+            month[:3]
+            for month in [
+                "January",
+                "February",
+                "March",
+                "April",
+                "May",
+                "June",
+                "July",
+                "August",
+                "September",
+                "October",
+                "November",
+                "December",
+            ]
+        ]
+        ws.append(headers)
+
+        # Filter employees based on active status
+        employees = Employee.objects.filter(active=active_status)
+
+        for emp in employees:
+            row = [emp.full_name]
+
+            # Fetch relevant salary records
+            salaries = EmployeeSalary.objects.filter(
+                employee=emp,
+                salary_sheet__date__range=(obj.start_date, obj.end_date),
+            ).order_by("salary_sheet__date")
+
+            # Map months to values (taking last occurrence per month)
+            month_values = {}
+            for sal in salaries:
+                month_num = sal.salary_sheet.date.month
+                month_values[month_num] = abs(
+                    sal.loan_emi
+                )  # Adjust calculation as needed
+
+            # Populate row with monthly values
+            for m in range(1, 13):
+                row.append(month_values.get(m, ""))
+
+            ws.append(row)
+
+        # Prepare response
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        filename = f"Salary_Report_{obj.start_date.strftime('%Y%m%d')}_to_{obj.end_date.strftime('%Y%m%d')}.xlsx"
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+        # Save workbook
+        wb.save(response)
+        return response
+
+    @admin.action(description="Export TDS Excel (Active)")
+    def export_employee_tds_report(self, request, queryset):
+        return self._export_employee_tds_report(request, queryset, True)
+
+    @admin.action(description="Export TDS Excel (Inactive)")
+    def export_employee_tds_report_inactive(self, request, queryset):
+        return self._export_employee_tds_report(request, queryset, False)
+
+    # def has_module_permission(self, request):
+    #     return False
 
 
 class PublicHolidayDateInline(admin.TabularInline):
@@ -86,7 +275,9 @@ class PublicHolidayAdmin(admin.ModelAdmin):
 
     def days(self, obj):
         total_days = obj.public_holiday.count()
-        date_list = [dt for dt in obj.public_holiday.values_list("date", flat=True)]
+        date_list = [
+            dt for dt in obj.public_holiday.values_list("date", flat=True)
+        ]
         print(date_list)
         return "({}) \n {}".format(total_days, date_list)
 
@@ -202,7 +393,9 @@ class AnnouncementAdmin(admin.ModelAdmin):
         for announcement in queryset:
             for employee_email in employee_email_list:
                 async_task(
-                    "settings.tasks.announcement_mail", employee_email, announcement
+                    "settings.tasks.announcement_mail",
+                    employee_email,
+                    announcement,
                 )
         if queryset:
             messages.success(request, "Email sent successfully.")
@@ -229,9 +422,10 @@ class EmailAnnouncementAdmin(admin.ModelAdmin):
         hour = 0
         cc_email = request.user.employee.email
         for announcement in queryset:
-
             employee_email_list = list(
-                Employee.objects.filter(active=True).values_list("email", flat=True)
+                Employee.objects.filter(active=True).values_list(
+                    "email", flat=True
+                )
             )
             for i in range(0, len(employee_email_list), chunk_size):
                 chunk_emails = employee_email_list[i : i + chunk_size]
@@ -318,16 +512,18 @@ class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
                 # amount = form.cleaned_data.get("amount")
 
                 # Get all active employees eligible for lunch allowance
-                employees = Employee.objects.filter(active=True, lunch_allowance=True)
+                employees = Employee.objects.filter(
+                    active=True, lunch_allowance=True
+                )
 
                 year = date.year
                 month = date.month
 
                 # Calculate the first and last date of the month
                 first_day_of_month = datetime(year, month, 1).date()
-                last_day_of_month = datetime(year, month + 1, 1).date() - timedelta(
-                    days=1
-                )
+                last_day_of_month = datetime(
+                    year, month + 1, 1
+                ).date() - timedelta(days=1)
 
                 print(first_day_of_month)
                 print(last_day_of_month)

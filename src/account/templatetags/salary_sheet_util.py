@@ -1,13 +1,13 @@
 import calendar
-from datetime import date
 from math import floor
 
 from dateutil.relativedelta import relativedelta
 from django import template
 from django.db.models import Sum, functions
 
-from account.models import EmployeeSalary, Invoice, SalaryReport
+from account.models import EmployeeSalary, Invoice
 from employee.models import Employee
+from settings.models import FinancialYear
 
 register = template.Library()
 
@@ -89,11 +89,12 @@ def abs(value):
 
 
 @register.simple_tag
-def employee_total_tds(obj: SalaryReport, emp: Employee, type="num"):
+def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
     total_tds = EmployeeSalary.objects.filter(
         employee=emp,
-        created_at__year__in=[obj.start_date.year, obj.end_date.year],
-    ).aggregate(total_tds=functions.Abs(Sum("loan_emi")))
+        created_at__range=[obj.start_date, obj.end_date],
+    )
+    total_tds = total_tds.aggregate(total_tds=functions.Abs(Sum("loan_emi")))
     if type == "word":
         return num2words(total_tds.get("total_tds", 0) or 0)
     return total_tds.get("total_tds", 0) or 0
@@ -101,7 +102,6 @@ def employee_total_tds(obj: SalaryReport, emp: Employee, type="num"):
 
 @register.simple_tag
 def employee_monthly_tds(emp: Employee, month, year):
-
     if 7 <= month <= 12:
         year = year
     else:

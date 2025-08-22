@@ -591,7 +591,7 @@ class TDSChallanAdmin(admin.ModelAdmin):
 
         updated = 0
         with transaction.atomic():
-            for ch in queryset.filter(tds_order__isnull=True):
+            for ch in queryset:
                 if ch.tds_year and ch.tds_month:
                     fy_start_year = ch.tds_year.start_date.year
                     year = (
