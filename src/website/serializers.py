@@ -2165,8 +2165,15 @@ class TechnologyKeyThingsQASerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'TechnologyKeyThingsQASerializer'
 
+# class TechnologyKeyThingsSerializer(serializers.ModelSerializer):
+#     tech_keythings_cards = TechnologyKeyThingsQASerializer(many=True, read_only=True)
+    
+#     class Meta:
+#         model = TechnologyKeyThings
+#         fields = '__all__'
+#         ref_name = 'TechnologyKeyThingsSerializer'
 class TechnologyKeyThingsSerializer(serializers.ModelSerializer):
-    tech_keythings_cards = TechnologyKeyThingsQASerializer(many=True, read_only=True)
+    Tech_KeyThings_cards = TechnologyKeyThingsQASerializer(many=True, read_only=True)  # Changed from tech_keythings_cards
     
     class Meta:
         model = TechnologyKeyThings
@@ -2187,8 +2194,15 @@ class TechnologyWhyChooseUsCardsSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'TechnologyWhyChooseUsCardsSerializer'
 
+# class TechnologyWhyChooseUsSerializer(serializers.ModelSerializer):
+#     tech_why_choose_us_cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True)
+    
+#     class Meta:
+#         model = TechnologyWhyChooseUs
+#         fields = '__all__'
+#         ref_name = 'TechnologyWhyChooseUsSerializer'
 class TechnologyWhyChooseUsSerializer(serializers.ModelSerializer):
-    tech_why_choose_us_cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True)
+    Tech_why_choose_us_cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True)  # Changed from tech_why_choose_us_cards
     
     class Meta:
         model = TechnologyWhyChooseUs
@@ -2243,20 +2257,80 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
         fields = ['slug', 'updated_at']
         ref_name = 'TechnologySiteMapSerializer'
 
+# class TechnologyDetailSerializer(serializers.ModelSerializer):
+#     type = TechnologyTypeSerializer(read_only=True)
+#     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
+#     services_we_provide = ServicesWeProvideSerializer(many=True, read_only=True)
+#     ecosystem = EcoSystemSerializer(many=True, read_only=True)
+#     key_things = TechnologyKeyThingsSerializer(many=True, read_only=True)
+#     tech_why_choose_us = TechnologyWhyChooseUsSerializer(many=True, read_only=True)
+#     our_process = TechnologyOurProcessSerializer(many=True, read_only=True)
+#     history_of_tech = HistoryOfTechSerializer(many=True, read_only=True)
+#     faqs = TechnologyFAQSerializer(many=True, read_only=True)
+#     faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
+#     ctas = TechnologyCTASerializer(many=True, read_only=True)
+#     table_of_contents = serializers.SerializerMethodField()
+
+#     def get_table_of_contents(self, obj):
+#         toc = []
+        
+#         # Add section titles from Solutions and Services
+#         for item in obj.solutions_and_services.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         # Add section titles from Services We Provide
+#         for item in obj.services_we_provide.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         # Add section titles from EcoSystem
+#         for item in obj.ecosystem.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         # Add section titles from Key Things
+#         for item in obj.KeyThings.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         # Add section titles from Why Choose Us
+#         for item in obj.Tech_why_choose_us.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         # Add section titles from Our Process
+#         for item in obj.our_process.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         # Add section titles from History of Tech
+#         for item in obj.history_of_tech.all():
+#             if item.section_title:
+#                 toc.append(item.section_title)
+        
+#         return toc
+
+    
+#     class Meta:
+#         model = Technology
+#         fields = '__all__'
+#         ref_name = 'TechnologyDetailSerializer'
+
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     type = TechnologyTypeSerializer(read_only=True)
     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
     services_we_provide = ServicesWeProvideSerializer(many=True, read_only=True)
     ecosystem = EcoSystemSerializer(many=True, read_only=True)
-    key_things = TechnologyKeyThingsSerializer(many=True, read_only=True)
-    tech_why_choose_us = TechnologyWhyChooseUsSerializer(many=True, read_only=True)
+    KeyThings = TechnologyKeyThingsSerializer(many=True, read_only=True)  # Changed from key_things
+    Tech_why_choose_us = TechnologyWhyChooseUsSerializer(many=True, read_only=True)  # Changed from tech_why_choose_us
     our_process = TechnologyOurProcessSerializer(many=True, read_only=True)
     history_of_tech = HistoryOfTechSerializer(many=True, read_only=True)
     faqs = TechnologyFAQSerializer(many=True, read_only=True)
     faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
     ctas = TechnologyCTASerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
-
+    
     def get_table_of_contents(self, obj):
         toc = []
         
@@ -2276,12 +2350,12 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
                 toc.append(item.section_title)
         
         # Add section titles from Key Things
-        for item in obj.KeyThings.all():
+        for item in obj.KeyThings.all():  # Changed from key_things
             if item.section_title:
                 toc.append(item.section_title)
         
         # Add section titles from Why Choose Us
-        for item in obj.Tech_why_choose_us.all():
+        for item in obj.Tech_why_choose_us.all():  # Changed from tech_why_choose_us
             if item.section_title:
                 toc.append(item.section_title)
         
@@ -2296,7 +2370,6 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
                 toc.append(item.section_title)
         
         return toc
-
     
     class Meta:
         model = Technology
