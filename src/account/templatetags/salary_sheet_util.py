@@ -1,11 +1,13 @@
 import calendar
+from datetime import date
 from math import floor
 
 from dateutil.relativedelta import relativedelta
 from django import template
-from django.db.models import Sum, functions
+from django.db.models import Sum
+from django.db.models.functions import Abs
 
-from account.models import EmployeeSalary, Invoice
+from account.models import EmployeeSalary, Invoice, SalarySheet
 from employee.models import Employee
 from settings.models import FinancialYear
 
@@ -94,7 +96,7 @@ def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
         employee=emp,
         created_at__range=[obj.start_date, obj.end_date],
     )
-    total_tds = total_tds.aggregate(total_tds=functions.Abs(Sum("loan_emi")))
+    total_tds = total_tds.aggregate(total_tds=Abs(Sum("loan_emi")))
     if type == "word":
         return num2words(total_tds.get("total_tds", 0) or 0)
     return total_tds.get("total_tds", 0) or 0
@@ -103,17 +105,22 @@ def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
 @register.simple_tag
 def employee_monthly_tds(emp: Employee, month, year):
     if 7 <= month <= 12:
-        year = year
+        _year = year
     else:
-        year = year + 1
-    tds = (
-        EmployeeSalary.objects.filter(
-            employee=emp, created_at__year=year, created_at__month=month
-        )
-        .annotate(employee_tds=functions.Abs("loan_emi"))
-        .first()
-    )
-    return tds.employee_tds if tds else 0
+        _year = year + 1
+    first_day = date(int(_year), int(month), 1)
+    last_day = date(int(_year), int(month), calendar.monthrange(year, month)[1])
+    salary_sheet = SalarySheet.objects.filter(
+        date__range=[first_day, last_day],
+    ).first()
+    if not salary_sheet:
+        return 0
+    employee_salary = salary_sheet.employeesalary_set.filter(
+        employee=emp,
+    ).first()
+    if not employee_salary:
+        return 0
+    return employee_salary.loan_emi or 0
 
 
 @register.filter
