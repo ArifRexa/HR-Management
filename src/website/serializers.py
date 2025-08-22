@@ -1736,11 +1736,11 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         
 #         return toc
 class ServeCategorySerializer(serializers.ModelSerializer):
-    industry_details_hero_section = IndustryDetailsHeroSectionSerializer(many=True, read_only=True)
-    # Changed field names to match the model relationships
-    industry_solutions_and_services = IndustryDetailsHeadingSerializer(source='industry_details_heading', many=True, read_only=True)
-    industry_benifits = CustomSolutionsSerializer(source='custom_solutions', many=True, read_only=True)
-    benifited_organizations = BenefitsSerializer(source='benefits', many=True, read_only=True)
+    # Change these fields to return single objects instead of arrays
+    industry_details_hero_section = serializers.SerializerMethodField()
+    industry_solutions_and_services = serializers.SerializerMethodField()
+    industry_benifits = serializers.SerializerMethodField()
+    benifited_organizations = serializers.SerializerMethodField()
     why_choose_us = WhyChooseUsSerializer(many=True, read_only=True)
     our_process = OurProcessSerializer(many=True, read_only=True)
     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
@@ -1754,6 +1754,42 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         model = ServeCategory
         fields = '__all__'
         ref_name = 'IndustriesWeServeServeCategory'
+
+    def get_industry_details_hero_section(self, obj):
+        try:
+            item = obj.industry_details_hero_section.first()
+            if item:
+                return IndustryDetailsHeroSectionSerializer(item, context=self.context).data
+            return None
+        except AttributeError:
+            return None
+    
+    def get_industry_solutions_and_services(self, obj):
+        try:
+            item = obj.industry_details_heading.first()
+            if item:
+                return IndustryDetailsHeadingSerializer(item, context=self.context).data
+            return None
+        except AttributeError:
+            return None
+    
+    def get_industry_benifits(self, obj):
+        try:
+            item = obj.custom_solutions.first()
+            if item:
+                return CustomSolutionsSerializer(item, context=self.context).data
+            return None
+        except AttributeError:
+            return None
+    
+    def get_benifited_organizations(self, obj):
+        try:
+            item = obj.benefits.first()
+            if item:
+                return BenefitsSerializer(item, context=self.context).data
+            return None
+        except AttributeError:
+            return None
     
     def get_table_of_contents(self, obj):
         toc = []
