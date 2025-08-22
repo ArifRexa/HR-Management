@@ -70,7 +70,7 @@ class IndustrySerializer(serializers.ModelSerializer):
 class ServiceSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServicePage
-        fields = ['id', 'title', 'slug', 'h1_title', 'sub_title', 'description', 'menu_title']
+        fields = ['id', 'title', 'slug', 'h1_title', 'sub_title', 'description']
         ref_name = 'ProjectServiceReadOnly'
 
 class TechnologySerializer(serializers.ModelSerializer):

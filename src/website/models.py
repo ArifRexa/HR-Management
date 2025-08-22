@@ -376,7 +376,7 @@ class HistoryOfTech(models.Model):
         blank=True
     )
     seo_title = models.CharField(max_length=200, blank=True, null=True)
-    section_title = models.CharField(max_length=200)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to="history_of_tech_images/", null=True, blank=True)
 
