@@ -142,7 +142,7 @@ class FinancialYearAdmin(admin.ModelAdmin):
         pdf.template_path = "pdf/tds_report.html"
         pdf.file_name = f"{obj.start_date.year}_{obj.end_date.year}_tds_report"
         pdf.context = {
-            "employees": Employee.objects.filter(active=True)
+            "employees": Employee.objects.filter(active=True, tax_info__isnull=False)
             .select_related()
             .prefetch_related(
                 "individual_employee_tds_challan",
@@ -168,7 +168,7 @@ class FinancialYearAdmin(admin.ModelAdmin):
         pdf.template_path = "pdf/tds_report.html"
         pdf.file_name = f"{obj.start_date.year}_{obj.end_date.year}_tds_report"
         pdf.context = {
-            "employees": Employee.objects.filter(active=False)
+            "employees": Employee.objects.filter(active=False, tax_info__isnull=False)
             .select_related()
             .prefetch_related(
                 "individual_employee_tds_challan",

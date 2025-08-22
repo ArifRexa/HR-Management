@@ -92,14 +92,15 @@ def abs(value):
 
 @register.simple_tag
 def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
-    total_tds = EmployeeSalary.objects.filter(
+    employee_tds = EmployeeSalary.objects.filter(
         employee=emp,
         created_at__range=[obj.start_date, obj.end_date],
     )
-    total_tds = total_tds.aggregate(total_tds=Abs(Sum("loan_emi")))
+    total_tds = sum(tds.tax_loan_total for tds in employee_tds)
+    total_tds = total_tds*-1 if total_tds < 0 else total_tds
     if type == "word":
-        return num2words(total_tds.get("total_tds", 0) or 0)
-    return total_tds.get("total_tds", 0) or 0
+        return num2words(total_tds)
+    return total_tds
 
 
 @register.simple_tag
@@ -115,12 +116,19 @@ def employee_monthly_tds(emp: Employee, month, year):
     ).first()
     if not salary_sheet:
         return 0
-    employee_salary = salary_sheet.employeesalary_set.filter(
-        employee=emp,
-    ).first()
+    employee_salary = (
+        salary_sheet.employeesalary_set.filter(
+            employee=emp,
+        )
+        .annotate(employee_tds=Abs("loan_emi"))
+        .first()
+    )
     if not employee_salary:
         return 0
-    return employee_salary.loan_emi or 0
+    if employee_salary:
+        s = str(employee_salary.tax_loan_total)
+        return s[1:] if s.startswith("-") else s
+    return 0
 
 
 @register.filter
