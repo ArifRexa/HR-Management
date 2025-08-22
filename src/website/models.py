@@ -171,6 +171,21 @@ class TechnologySolutionsAndServices(TimeStampMixin):
     def __str__(self):
         return self.section_title
     
+# =============Technology Creators Quotes Section================
+class TechnologyCreatorsQuotes(TimeStampMixin):
+    technology = models.ForeignKey(
+        Technology,
+        related_name="creators_quotes",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    quote = models.TextField(blank=True, null=True)
+    author_name = models.CharField(max_length=200, blank=True, null=True)
+    author_designation = models.CharField(max_length=200, blank=True, null=True)
+    author_image = models.ImageField(upload_to='creator_quotes_images/', blank=True, null=True)
+
+    def __str__(self):
+        return self.author_name or "Creator's Quote"
 
 class TechnologySolutionsAndServicesCards(TimeStampMixin):
     solutions_and_services = models.ForeignKey(
