@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import openpyxl
 from django import forms
 from django.contrib import admin, messages
-from django.db.models import Prefetch, Sum
+from django.db.models import Prefetch
 from django.db.models.functions import Abs
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -148,7 +148,7 @@ class FinancialYearAdmin(admin.ModelAdmin):
                 "individual_employee_tds_challan",
                 Prefetch(
                     "tdschallan_set",
-                    queryset=TDSChallan.objects.filter(tds_order__gte=obj.start_date, tds_order__lte=obj.end_date).order_by("tds_order"),
+                    queryset=obj.tdschallan_set.all().order_by("tds_order"),
                     to_attr="tds_challans",
                 ),
             ),
@@ -178,7 +178,7 @@ class FinancialYearAdmin(admin.ModelAdmin):
                     to_attr="tds_challans",
                 ),
             ),
-            "obj": obj
+            "obj": obj,
         }
         return pdf.render_to_pdf(download=True)
 
