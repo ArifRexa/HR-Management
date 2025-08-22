@@ -110,7 +110,7 @@ from website.models import (
     WhyUsTitle,
 )
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
-from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
 class PostCredentialSerializer(serializers.ModelSerializer):
@@ -2006,6 +2006,13 @@ class ServicePageChildrenSerializer(serializers.ModelSerializer):
         model = ServicePage
         fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description']
         ref_name = 'ServicePageChild'
+
+
+class MetaDescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MetaDescription
+        fields = '__all__'
+        ref_name = 'MetaDescription'
         
 # Main ServicePage serializer with all nested relationships
 class ServicePageDetailSerializer(serializers.ModelSerializer):
@@ -2024,6 +2031,7 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
     comparative_analysis = ComparativeAnalysisSerializer(many=True, read_only=True)
     service_meta_data = ServiceMetaDataSerializer(read_only=True)
     table_of_contents = serializers.SerializerMethodField()
+    meta_description = MetaDescriptionSerializer()
     
     class Meta:
         model = ServicePage
@@ -2093,6 +2101,13 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
         # Add titles from Development Service Process
         try:
             for item in obj.development_services_process.all():
+                if item.title:
+                    toc.append(item.title)
+        except AttributeError:
+            pass
+
+        try:
+            for item in obj.meta_description.all():
                 if item.title:
                     toc.append(item.title)
         except AttributeError:
