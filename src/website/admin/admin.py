@@ -113,6 +113,7 @@ from website.models import (
     Tag,
     Technology,
     TechnologyCTA,
+    TechnologyCreatorsQuotes,
     TechnologyFAQ,
     TechnologyFAQSchema,
     TechnologyKeyThings,
@@ -929,6 +930,13 @@ class TechnologySolutionsAndServicesInline(nested_admin.NestedStackedInline):
     max_num = 1
     min_num = 1
 
+
+class TechnologyCreatorsQuotesInline(nested_admin.NestedTabularInline):
+    model = TechnologyCreatorsQuotes
+    extra = 1
+    verbose_name = "Creator's Quote"
+    verbose_name_plural = "Creator's Quotes"
+
 # ===================Technology Services We Provide Section=====================
 class ServicesWeProvideCardsInline(nested_admin.NestedTabularInline):
     model = ServicesWeProvideCards
@@ -1017,6 +1025,7 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
     search_fields = ("name",)
     inlines = [
         TechnologySolutionsAndServicesInline,
+        TechnologyCreatorsQuotesInline,
         ServicesWeProvideInline,
         EcoSystemInline,
         TechnologyKeyThingsInline,
