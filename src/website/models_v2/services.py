@@ -219,6 +219,20 @@ class ServicesOurProcess(models.Model):
         ordering = ['order']
 
 
+class MetaDescription(models.Model):
+    service_page = models.OneToOneField(
+        ServicePage, 
+        on_delete=models.CASCADE, 
+        related_name='meta_description'
+    )
+    meta_title = models.CharField(max_length=255, help_text="Meta title for SEO purposes", blank=True, null=True)
+    meta_description = models.TextField(
+        help_text="Meta description for SEO purposes", 
+        blank=True, null=True
+    )
+
+    def __str__(self):
+        return f"Meta Description for {self.service_page.title}"
 
 
 
