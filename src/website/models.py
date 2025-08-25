@@ -134,7 +134,7 @@ class TechnologyType(TimeStampMixin):
 
 class Technology(TimeStampMixin):
     name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Title")
-    secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
+    # secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     slug = models.SlugField(unique=True, null=True, blank=True)
     type = models.ForeignKey(
         TechnologyType, related_name="technologies", on_delete=models.CASCADE
@@ -167,10 +167,15 @@ class TechnologySolutionsAndServices(TimeStampMixin):
     )
     seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
+    secondary_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="Secondary Title")
     section_description = HTMLField(blank=True, null=True)
 
     def __str__(self):
         return self.section_title
+    
+    class Meta:
+        verbose_name = "Hero Section"
+        verbose_name_plural = "Hero Section"
     
 # =============Technology Creators Quotes Section================
 class TechnologyCreatorsQuotes(TimeStampMixin):
