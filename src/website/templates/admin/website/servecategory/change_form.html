@@ -1,12 +1,7 @@
 {% extends "admin/change_form.html" %}
 
 {% block content_title %}
-    {% if has_change_permission %}
-        <div class="preview sticky-title">
-            <button style="margin-right: 15px;" type="button" class="save-edit-button extra-button">Save & Edit</button>
-            <button type="submit" name="_save" class="save-button extra-button">Save</button>
-        </div>
-    {% elif not original %}
+    {% if has_change_permission or not original %}
         <div class="preview sticky-title">
             <button style="margin-right: 15px;" type="button" class="save-edit-button extra-button">Save & Edit</button>
             <button type="submit" name="_save" class="save-button extra-button">Save</button>
@@ -35,7 +30,6 @@
             margin-left: -40px;
             margin-right: -10px;
             display: flex;
-            /* align-items: center; */
             justify-content: end;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
@@ -109,50 +103,42 @@
     </style>
 
     <script>
-        document.querySelector('.save-edit-button').addEventListener('click', function() {
-            // Find the main form and submit it
+        document.addEventListener('DOMContentLoaded', function() {
             const form = document.querySelector('#content-main form');
-            if (form) {
-                // Create a hidden input to ensure the save action is triggered
-                const saveInput = document.createElement('input');
-                saveInput.type = 'hidden';
-                saveInput.name = '_save_and_continue';
-                saveInput.value = 'Save and continue editing';
-                form.appendChild(saveInput);
-                
-                // Submit the form
-                form.submit();
-                
-                // Show loader
+            if (!form) return;
+
+            // Handle Save & Edit button click
+            document.querySelector('.save-edit-button').addEventListener('click', function() {
+                // Add hidden input for "Save and continue editing"
+                const continueInput = document.createElement('input');
+                continueInput.type = 'hidden';
+                continueInput.name = '_continue';
+                continueInput.value = 'Save and continue editing';
+                form.appendChild(continueInput);
+
+                // Show loader and submit form
                 document.getElementById('loader-overlay').style.display = 'flex';
-            }
-        })
-        
-        
-        // Handle save button click
-        document.querySelector('.save-button').addEventListener('click', function() {
-            // Find the main form and submit it
-            const form = document.querySelector('#content-main form');
-            if (form) {
-                // Create a hidden input to ensure the save action is triggered
+                form.submit();
+            });
+
+            // Handle Save button click
+            document.querySelector('.save-button').addEventListener('click', function() {
+                // Add hidden input for "Save"
                 const saveInput = document.createElement('input');
                 saveInput.type = 'hidden';
                 saveInput.name = '_save';
                 saveInput.value = 'Save';
                 form.appendChild(saveInput);
-                
-                // Submit the form
-                form.submit();
-                
-                // Show loader
+
+                // Show loader and submit form
                 document.getElementById('loader-overlay').style.display = 'flex';
-            }
-        });
-        
-        // Loader functionality on form submit
-        document.querySelector('#content-main form').addEventListener('submit', function(event) {
-            // Show loader and disable form submission clicks
-            document.getElementById('loader-overlay').style.display = 'flex';
+                form.submit();
+            });
+
+            // Show loader on any form submission
+            form.addEventListener('submit', function() {
+                document.getElementById('loader-overlay').style.display = 'flex';
+            });
         });
     </script>
 {% endblock %}

@@ -842,6 +842,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         MetaDescriptionInline
     ]
     list_per_page = 20
+    change_form_template = 'admin/website/servecategory/change_form.html'
 
 
     def save_related(self, request, form, formsets, change):
@@ -1044,6 +1045,7 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
         TechnologyFAQSchemaInline,
         TechnologyMetaDataInline,
     ]
+    change_form_template = 'admin/website/servecategory/change_form.html'
     
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
