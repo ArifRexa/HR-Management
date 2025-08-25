@@ -541,7 +541,7 @@ from calendar import month_name
 #             obj.month = obj.date.month
 #         obj.save()
 from django.core.mail import send_mail
-
+import datetime as dt  # For parsing date strings
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = (
@@ -558,18 +558,6 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
     change_list_template = "admin/total_fine.html"
     # =======================================from here===================================
     actions = ["create_late_fines_for_current_month"]
-
-    # def changelist_view(self, request, extra_context=None):
-    #     """
-    #     Override changelist_view to allow the action to run without selected items.
-    #     """
-    #     if request.method == 'POST' and '_selected_action' in request.POST:
-    #         action = request.POST.get('action')
-    #         if action == 'create_late_fines_for_current_month':
-    #             # If no items are selected, set an empty queryset to allow the action to proceed
-    #             if not request.POST.getlist('_selected_action'):
-    #                 return self.create_late_fines_for_current_month(request, None)
-    #     return super().changelist_view(request, extra_context)
 
     def create_late_fines_for_current_month(self, request, queryset=None):
         """
@@ -650,50 +638,63 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             subject,
             email_body,
             from_email='"Mediusware-HR" <hr@mediusware.com>',
-            recipient_list=["mailarif3126@gmail.com"],
+            recipient_list=["hr@mediusware.com"],
             fail_silently=False,
         )
         email_sent = True
         
         
-        # If email was sent successfully, proceed to create fine records
-        if email_sent:
-            if late_attendance_details:
-                # Get employees who don't have a fine record for current month
-                employees_without_fine = Employee.objects.filter(
-                    id__in=late_attendance_details.keys()
-                ).exclude(
-                    id__in=LateAttendanceFine.objects.filter(
-                        month=current_month,
-                        year=current_year
-                    ).values_list('employee_id', flat=True)
-                )
+        # # If email was sent successfully, proceed to create fine records
+        # if email_sent:
+        # try:
+        #     if late_attendance_details:
+        #         # Get employees who don't have a fine record for current month
+        #         employees_without_fine = Employee.objects.filter(
+        #             id__in=late_attendance_details.keys()
+        #         ).exclude(
+        #             id__in=LateAttendanceFine.objects.filter(
+        #                 month=current_month,
+        #                 year=current_year
+        #             ).values_list('employee_id', flat=True)
+        #         )
                 
-                # Create fine records for eligible employees
-                for employee in employees_without_fine:
-                    LateAttendanceFine.objects.create(
-                        employee=employee,
-                        month=current_month,
-                        year=current_year,
-                        total_late_days=late_attendance_details[employee.id]['total_late_days']
-                    )
+        #         # Create fine records for eligible employees
+        #         # for employee in employees_without_fine:
+        #         #     LateAttendanceFine.objects.create(
+        #         #         employee=employee,
+        #         #         month=current_month,
+        #         #         year=current_year,
+        #         #         total_late_days=late_attendance_details[employee.id]['total_late_days']
+        #         #     )
+        #         print(employees_without_fine)
+        #         for employee in employees_without_fine:
+        #             total_late_days = late_attendance_details[employee.id]['total_late_days']
+        #             total_late_days = late_attendance_details[employee.id]['total_late_days']
+        #             # Get the latest date from the list of late dates
+        #             latest_date_str = max(late_attendance_details[employee.id]['dates'])
+        #             latest_date = dt.datetime.strptime(latest_date_str, '%Y-%m-%d').date()
+        #             LateAttendanceFine.objects.create(
+        #                 employee=employee,
+        #                 month=current_month,
+        #                 year=current_year,
+        #                 date=latest_date,  # Set to current date
+        #                 is_consider=True,   # Default value from model
+        #                 entry_time=None     # Optional field, set to None as it's not provided
+        #             )
+        #             print(entry_time.date())
                 
-                self.message_user(
-                    request, 
-                    f"Email sent successfully. Created late attendance fine records for {current_month}/{current_year}.",
+        #         self.message_user(
+        #             request, 
+        #             f"Email sent successfully. Created late attendance fine records for {current_month}/{current_year}.",
                     
-                )
-            else:
-                self.message_user(
-                    request, 
-                    "Email sent successfully, but no late attendances found to create fine records.",
-                )
-        else:
-            self.message_user(
-                request, 
-                "No fine records were created due to email sending failure.",
-                level=messages.ERROR
-            )
+        #         )
+            
+        # except Exception as e:
+        #     self.message_user(
+        #         request, 
+        #         f"An error occurred while creating fine records: {str(e)}",
+        #     )
+        
         
         # Redirect back to the changelist view to avoid resubmission
         return HttpResponseRedirect(request.get_full_path())
