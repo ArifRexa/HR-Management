@@ -2202,7 +2202,7 @@ class TechnologyWhyChooseUsCardsDetailsSerializer(serializers.ModelSerializer):
         ref_name = 'TechnologyWhyChooseUsCardsDetailsSerializer'
 
 class TechnologyWhyChooseUsCardsSerializer(serializers.ModelSerializer):
-    why_choose_us_card_details = TechnologyWhyChooseUsCardsDetailsSerializer(many=True, read_only=True, source = 'tech_why_choose_us_card_details')
+    details = TechnologyWhyChooseUsCardsDetailsSerializer(many=True, read_only=True, source = 'tech_why_choose_us_card_details')
     
     class Meta:
         model = TechnologyWhyChooseUsCards
@@ -2217,8 +2217,8 @@ class TechnologyWhyChooseUsCardsSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 #         ref_name = 'TechnologyWhyChooseUsSerializer'
 class TechnologyWhyChooseUsSerializer(serializers.ModelSerializer):
-    why_choose_us_cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True, source='Tech_why_choose_us_cards')  # Changed from tech_why_choose_us_cards
-    
+    cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True, source='Tech_why_choose_us_cards')  # Changed from tech_why_choose_us_cards
+
     class Meta:
         model = TechnologyWhyChooseUs
         fields = '__all__'
