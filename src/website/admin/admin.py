@@ -631,6 +631,7 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
                ServeCategoryFAQSchemaInline]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
+    change_form_template = 'admin/website/servecategory/change_form.html'
 
     def save_related(self, request, form, formsets, change):
         # First save all inlines
