@@ -457,7 +457,19 @@ class TechnologyCTA(TimeStampMixin):
         return self.title or "CTA"
 
 
+class TechnologyMetaData(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE, 
+        related_name="metadata", 
+        null=True, 
+        blank=True
+    )
+    meta_title = models.CharField(max_length=255, null=True, blank=True)
+    meta_description = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return self.title or f"MetaData for {self.technology.name if self.technology else 'No Technology'}"
 
 # ========================================================== Blog Section ======================================================
 class Blog(AuthorMixin, TimeStampMixin):
