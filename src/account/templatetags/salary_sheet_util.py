@@ -92,9 +92,11 @@ def abs(value):
 
 @register.simple_tag
 def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
+    start_date = date(obj.start_date.year-1, 1, 1)
+    end_date = date(obj.end_date.year, 12, 31)
     employee_tds = EmployeeSalary.objects.filter(
         employee=emp,
-        created_at__range=[obj.start_date, obj.end_date],
+        created_at__range=[start_date, end_date],
     )
     total_tds = sum(tds.tax_loan_total for tds in employee_tds)
     total_tds = total_tds*-1 if total_tds < 0 else total_tds
@@ -105,10 +107,14 @@ def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
 
 @register.simple_tag
 def employee_monthly_tds(emp: Employee, month, year):
+    """
+    calculate employee monthly tds for before year for given year
+    """
+    start_date = date(year-1, 1,1)
     if 7 <= month <= 12:
-        _year = year
+        _year = start_date.year
     else:
-        _year = year + 1
+        _year = start_date.year + 1
     first_day = date(int(_year), int(month), 1)
     last_day = date(int(_year), int(month), calendar.monthrange(year, month)[1])
     salary_sheet = SalarySheet.objects.filter(
