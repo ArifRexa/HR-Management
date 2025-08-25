@@ -164,7 +164,7 @@ class TechnologySolutionsAndServices(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -209,7 +209,7 @@ class ServicesWeProvide(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -244,7 +244,7 @@ class EcoSystem(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -292,7 +292,7 @@ class TechnologyKeyThings(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -326,7 +326,7 @@ class TechnologyWhyChooseUs(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -390,7 +390,7 @@ class HistoryOfTech(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to="history_of_tech_images/", null=True, blank=True)

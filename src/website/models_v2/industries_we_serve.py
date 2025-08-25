@@ -39,7 +39,7 @@ class IndustryDetailsHeroSection(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     secondary_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
@@ -85,7 +85,7 @@ class IndustryDetailsHeading(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
@@ -123,7 +123,7 @@ class CustomSolutions(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
@@ -163,7 +163,7 @@ class Benefits(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
@@ -200,7 +200,7 @@ class WhyChooseUs(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)

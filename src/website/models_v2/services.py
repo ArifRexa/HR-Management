@@ -55,7 +55,7 @@ class SolutionsAndServices(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -87,7 +87,7 @@ class KeyThings(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
@@ -123,7 +123,7 @@ class BestPracticesHeadings(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -164,7 +164,7 @@ class ServicesWhyChooseUs(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
