@@ -1588,6 +1588,22 @@ class ServeCategoryAPIView(APIView):
     #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
     #         )
         
+class ServeCategoryListView(ListAPIView):
+    queryset = ServeCategory.objects.all()
+    serializer_class = ServeCategorySerializer
+    pagination_class = None  # No pagination needed for this endpoint
+
+    @swagger_auto_schema(
+        tags=["Industry Details"],
+        operation_description="List all serve categories",
+        responses={
+            200: ServeCategorySerializer(many=True)
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 # ======================================= Service Page ===========================================
