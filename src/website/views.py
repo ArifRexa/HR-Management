@@ -1498,7 +1498,7 @@ class ServeCategoryAPIView(APIView):
                     'why_choose_us__why_choose_us_cards',
                     'ctas', 
                     'faqs', 
-                    'application_areas', 
+                    # 'application_areas', 
                     'industries'
                 ).select_related('faq_schema').get(slug=slug)
                 serializer = ServeCategorySerializer(category, context={'request': request})
@@ -1518,7 +1518,7 @@ class ServeCategoryAPIView(APIView):
                     'why_choose_us__why_choose_us_cards',
                     'ctas', 
                     'faqs', 
-                    'application_areas', 
+                    # 'application_areas', 
                     'industries'
                 ).select_related('faq_schema').all()
                 

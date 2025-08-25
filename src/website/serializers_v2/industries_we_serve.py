@@ -18,12 +18,12 @@ class IndustryMetadataSerializer(serializers.ModelSerializer):
     
 
 class ServeCategorySerializer(serializers.ModelSerializer):
-    application_areas = ApplicationAreasSerializer(many=True, read_only=True)
+    # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     metadata = IndustryMetadataSerializer(many=True,source='industrymetadata_set')
 
     class Meta:
         model = ServeCategory
-        fields = ['title', 'slug', 'title_in_detail_page', 'short_description', 'industry_field_image', 'industry_banner', 'impressive_title', 'impressive_description', 'application_areas','metadata']
+        fields = ['title', 'slug', 'metadata']
 
 class ServeCategorySitemapSerializer(serializers.ModelSerializer):
     class Meta:

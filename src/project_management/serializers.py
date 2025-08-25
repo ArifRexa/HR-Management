@@ -64,7 +64,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 class IndustrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServeCategory
-        fields = ['id', 'title', 'slug', 'title_in_detail_page', 'short_description', 'industry_field_image', 'industry_banner', 'impressive_title', 'impressive_description']
+        fields = ['id', 'title', 'slug']
         ref_name = 'ProjectIndustryReadOnly'
 
 class ServiceSerializer(serializers.ModelSerializer):

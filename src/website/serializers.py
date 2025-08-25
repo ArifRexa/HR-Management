@@ -1746,7 +1746,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
     ctas = ServeCategoryCTASerializer(many=True, read_only=True)
     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
-    application_areas = ApplicationAreasSerializer(many=True, read_only=True)
+    # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     
