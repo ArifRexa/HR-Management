@@ -636,7 +636,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             email_body += "No late attendances found for this month.\n"
         else:
             for employee_id, details in late_attendance_details.items():
-                email_body += f"Employee: {details['name']}\n"
+                email_body += f"Employee: {details['name']} ({details['email']} - {details['phone']})\n"
                 email_body += "Late Dates:\n"
                 for date, time in zip(details['dates'], details['entry_times']):
                     email_body += f"  - {date} (Entry Time: {time})\n"
@@ -670,15 +670,13 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
                 )
                 
                 # Create fine records for eligible employees
-                # created_count = 0
-                # for employee in employees_without_fine:
-                #     LateAttendanceFine.objects.create(
-                #         employee=employee,
-                #         month=current_month,
-                #         year=current_year,
-                #         total_late_days=late_attendance_details[employee.id]['total_late_days']
-                #     )
-                #     created_count += 1
+                for employee in employees_without_fine:
+                    LateAttendanceFine.objects.create(
+                        employee=employee,
+                        month=current_month,
+                        year=current_year,
+                        total_late_days=late_attendance_details[employee.id]['total_late_days']
+                    )
                 
                 self.message_user(
                     request, 
@@ -701,7 +699,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         return HttpResponseRedirect(request.get_full_path())
 
     create_late_fines_for_current_month.short_description = (
-        "Create late fines for current month (with email report)"
+        "Create late fines for current month"
     )
 
     # def create_late_fines_for_current_month(self, request, queryset):
