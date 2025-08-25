@@ -1228,14 +1228,14 @@ class ProjectKeyword(models.Model):
     name = models.CharField(max_length=255)
 
 
-class IndustryKeyword(models.Model):
-    keyword = models.ForeignKey(
-        IndustryMetadata, on_delete=models.CASCADE, null=True, blank=True
-    )
-    name = models.CharField(max_length=255)
+# class IndustryKeyword(models.Model):
+#     keyword = models.ForeignKey(
+#         IndustryMetadata, on_delete=models.CASCADE, null=True, blank=True
+#     )
+#     name = models.CharField(max_length=255)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 class ServiceKeyword(models.Model):

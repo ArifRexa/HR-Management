@@ -1,20 +1,20 @@
 from django.contrib import admin
 import nested_admin
 
-from website.models import IndustryKeyword, IndustryMetadata
+from website.models import IndustryMetadata
 from website.models_v2.industries_we_serve import ApplicationAreas, IndustryServe, ServeCategory
 
 class ApplicationAreasInline(nested_admin.NestedStackedInline):
     model = ApplicationAreas
     extra = 0
 
-class IndustryKeywordInline(nested_admin.NestedStackedInline):
-    model = IndustryKeyword
-    extra = 1
+# class IndustryKeywordInline(nested_admin.NestedStackedInline):
+#     model = IndustryKeyword
+#     extra = 1
 class IndustryMetadataInline(nested_admin.NestedStackedInline):
     model = IndustryMetadata
     extra = 1
-    inlines = [IndustryKeywordInline]
+    # inlines = [IndustryKeywordInline]
 
 # @admin.register(ServeCategory)
 # class ServeCategoryAdmin(nested_admin.NestedModelAdmin):

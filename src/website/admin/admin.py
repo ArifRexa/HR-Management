@@ -617,7 +617,7 @@ class IndustryDetailsHeadingInline(nested_admin.NestedStackedInline):
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
     search_fields = ['title']
     list_display = ('title', 'slug',)
-    inlines = [ApplicationAreasInline, 
+    inlines = [
                IndustryMetadataInline,
                IndustryDetailsHeroSectionInline,
                IndustryDetailsHeadingInline,
