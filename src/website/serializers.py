@@ -1735,6 +1735,13 @@ class IndustryServeSerializer(serializers.ModelSerializer):
 #             pass
         
 #         return toc
+
+class ServeCategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategory
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeServeCategoryList'
+
 class ServeCategorySerializer(serializers.ModelSerializer):
     # Change these fields to return single objects instead of arrays
     industry_details_hero_section = serializers.SerializerMethodField()
