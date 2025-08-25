@@ -587,7 +587,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             date__year=current_year,
             date__month=current_month,
             entry_time__isnull=False,
-            employee__is_active=True,
+            employee__active=True,
             employee__show_in_attendance_list=True,
             employee__exception_la=False
         ).select_related('employee')
@@ -650,7 +650,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             subject,
             email_body,
             from_email='"Mediusware-HR" <hr@mediusware.com>',
-            recipient_list=["mailarif3126@gmail.com", "hr@mediusware.com"],
+            recipient_list=["mailarif3126@gmail.com"],
             fail_silently=False,
         )
         email_sent = True
