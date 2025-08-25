@@ -97,9 +97,10 @@ def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
     employee_tds = EmployeeSalary.objects.filter(
         employee=emp,
         created_at__range=[start_date, end_date],
-    )
-    total_tds = sum(tds.tax_loan_total for tds in employee_tds)
-    total_tds = total_tds*-1 if total_tds < 0 else total_tds
+    ).aggregate(emi=Abs(Sum("loan_emi")))
+    # total_tds = sum(tds.loan_emi for tds in employee_tds)
+    # total_tds = total_tds*-1 if total_tds < 0 else total_tds
+    total_tds = employee_tds["emi"] or 0
     if type == "word":
         return num2words(total_tds)
     return total_tds
