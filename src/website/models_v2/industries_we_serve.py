@@ -9,13 +9,13 @@ from config.model import TimeStampMixin
 class ServeCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name="Section Title")
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
-    # short_description = models.TextField(blank=True, null=True)
+    short_description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True)
-    # title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
-    # industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
-    # industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
-    # impressive_title = models.CharField(max_length=200, blank=True, null=True)
-    # impressive_description = models.TextField(blank=True, null=True)
+    title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
+    industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
+    industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
+    impressive_title = models.CharField(max_length=200, blank=True, null=True)
+    impressive_description = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
