@@ -133,7 +133,8 @@ class TechnologyType(TimeStampMixin):
 
 
 class Technology(TimeStampMixin):
-    name = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Title")
+    secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     slug = models.SlugField(unique=True, null=True, blank=True)
     type = models.ForeignKey(
         TechnologyType, related_name="technologies", on_delete=models.CASCADE
