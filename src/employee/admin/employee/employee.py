@@ -586,7 +586,10 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         attendances = EmployeeAttendance.objects.filter(
             date__year=current_year,
             date__month=current_month,
-            entry_time__isnull=False
+            entry_time__isnull=False,
+            employee__is_active=True,
+            employee__show_in_attendance_list=True,
+            employee__exception_la=False
         ).select_related('employee')
         
         # Dictionary to store late attendance details per employee
@@ -611,6 +614,8 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
                 if employee_id not in late_attendance_details:
                     late_attendance_details[employee_id] = {
                         'name': att.employee.full_name,
+                        'email': att.employee.email,
+                        'phone': att.employee.phone,
                         'dates': [],
                         'entry_times': [],
                         'total_late_days': 0
@@ -645,7 +650,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             subject,
             email_body,
             from_email='"Mediusware-HR" <hr@mediusware.com>',
-            recipient_list=["mailarif3126@gmail.com"],
+            recipient_list=["mailarif3126@gmail.com", "hr@mediusware.com"],
             fail_silently=False,
         )
         email_sent = True
