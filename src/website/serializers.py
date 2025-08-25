@@ -1746,7 +1746,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
     ctas = ServeCategoryCTASerializer(many=True, read_only=True)
     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
-    application_areas = ApplicationAreasSerializer(many=True, read_only=True)
+    # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     
@@ -2188,7 +2188,7 @@ class TechnologyKeyThingsQASerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 #         ref_name = 'TechnologyKeyThingsSerializer'
 class TechnologyKeyThingsSerializer(serializers.ModelSerializer):
-    Tech_KeyThings_cards = TechnologyKeyThingsQASerializer(many=True, read_only=True)  # Changed from tech_keythings_cards
+    KeyThings_cards = TechnologyKeyThingsQASerializer(many=True, read_only=True, source='Tech_KeyThings_cards')  # Changed from tech_keythings_cards
     
     class Meta:
         model = TechnologyKeyThings
@@ -2202,7 +2202,7 @@ class TechnologyWhyChooseUsCardsDetailsSerializer(serializers.ModelSerializer):
         ref_name = 'TechnologyWhyChooseUsCardsDetailsSerializer'
 
 class TechnologyWhyChooseUsCardsSerializer(serializers.ModelSerializer):
-    tech_why_choose_us_card_details = TechnologyWhyChooseUsCardsDetailsSerializer(many=True, read_only=True)
+    details = TechnologyWhyChooseUsCardsDetailsSerializer(many=True, read_only=True, source = 'tech_why_choose_us_card_details')
     
     class Meta:
         model = TechnologyWhyChooseUsCards
@@ -2217,8 +2217,8 @@ class TechnologyWhyChooseUsCardsSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 #         ref_name = 'TechnologyWhyChooseUsSerializer'
 class TechnologyWhyChooseUsSerializer(serializers.ModelSerializer):
-    Tech_why_choose_us_cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True)  # Changed from tech_why_choose_us_cards
-    
+    cards = TechnologyWhyChooseUsCardsSerializer(many=True, read_only=True, source='Tech_why_choose_us_cards')  # Changed from tech_why_choose_us_cards
+
     class Meta:
         model = TechnologyWhyChooseUs
         fields = '__all__'
@@ -2338,7 +2338,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     services_we_provide = ServicesWeProvideSerializer(many=True, read_only=True)
     ecosystem = EcoSystemSerializer(many=True, read_only=True)
     KeyThings = TechnologyKeyThingsSerializer(many=True, read_only=True)  # Changed from key_things
-    Tech_why_choose_us = TechnologyWhyChooseUsSerializer(many=True, read_only=True)  # Changed from tech_why_choose_us
+    why_choose_us = TechnologyWhyChooseUsSerializer(many=True, read_only=True, source='Tech_why_choose_us')  # Changed from tech_why_choose_us
     our_process = TechnologyOurProcessSerializer(many=True, read_only=True)
     history_of_tech = HistoryOfTechSerializer(many=True, read_only=True)
     faqs = TechnologyFAQSerializer(many=True, read_only=True)

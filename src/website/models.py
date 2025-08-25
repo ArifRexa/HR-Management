@@ -133,7 +133,8 @@ class TechnologyType(TimeStampMixin):
 
 
 class Technology(TimeStampMixin):
-    name = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255, null=True, blank=True, verbose_name="Title")
+    # secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     slug = models.SlugField(unique=True, null=True, blank=True)
     type = models.ForeignKey(
         TechnologyType, related_name="technologies", on_delete=models.CASCADE
@@ -164,12 +165,17 @@ class TechnologySolutionsAndServices(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
+    secondary_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="Secondary Title")
     section_description = HTMLField(blank=True, null=True)
 
     def __str__(self):
         return self.section_title
+    
+    class Meta:
+        verbose_name = "Hero Section"
+        verbose_name_plural = "Hero Section"
     
 # =============Technology Creators Quotes Section================
 class TechnologyCreatorsQuotes(TimeStampMixin):
@@ -209,7 +215,7 @@ class ServicesWeProvide(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -244,7 +250,7 @@ class EcoSystem(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -292,7 +298,7 @@ class TechnologyKeyThings(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -326,7 +332,7 @@ class TechnologyWhyChooseUs(TimeStampMixin):
         on_delete=models.SET_NULL,
         null=True,
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
@@ -390,7 +396,7 @@ class HistoryOfTech(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to="history_of_tech_images/", null=True, blank=True)
@@ -451,7 +457,19 @@ class TechnologyCTA(TimeStampMixin):
         return self.title or "CTA"
 
 
+class TechnologyMetaData(models.Model):
+    technology = models.ForeignKey(
+        Technology, 
+        on_delete=models.CASCADE, 
+        related_name="metadata", 
+        null=True, 
+        blank=True
+    )
+    meta_title = models.CharField(max_length=255, null=True, blank=True)
+    meta_description = models.TextField(null=True, blank=True)
 
+    def __str__(self):
+        return self.title or f"MetaData for {self.technology.name if self.technology else 'No Technology'}"
 
 # ========================================================== Blog Section ======================================================
 class Blog(AuthorMixin, TimeStampMixin):
@@ -1228,14 +1246,14 @@ class ProjectKeyword(models.Model):
     name = models.CharField(max_length=255)
 
 
-class IndustryKeyword(models.Model):
-    keyword = models.ForeignKey(
-        IndustryMetadata, on_delete=models.CASCADE, null=True, blank=True
-    )
-    name = models.CharField(max_length=255)
+# class IndustryKeyword(models.Model):
+#     keyword = models.ForeignKey(
+#         IndustryMetadata, on_delete=models.CASCADE, null=True, blank=True
+#     )
+#     name = models.CharField(max_length=255)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 class ServiceKeyword(models.Model):

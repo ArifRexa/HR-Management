@@ -7,11 +7,11 @@ from config.model import TimeStampMixin
 
 # ===================================Industry Details====================================
 class ServeCategory(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, verbose_name="Section Title")
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
+    short_description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True)
     title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
-    short_description = models.TextField(blank=True, null=True)
     industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
     industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
     impressive_title = models.CharField(max_length=200, blank=True, null=True)
@@ -39,7 +39,7 @@ class IndustryDetailsHeroSection(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     secondary_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
@@ -85,7 +85,7 @@ class IndustryDetailsHeading(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
@@ -123,7 +123,7 @@ class CustomSolutions(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
@@ -163,7 +163,7 @@ class Benefits(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
@@ -200,7 +200,7 @@ class WhyChooseUs(models.Model):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=200, blank=True, null=True)
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)

@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+from pyexpat.errors import messages
 
 from django import forms
 from django.contrib import admin
 from django.db.models import Q, Sum
 from django.forms import ValidationError
+from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import path
 from django.utils import timezone
@@ -32,6 +34,7 @@ from employee.models.employee import (
     Observation,
     TPMComplain,
 )
+from employee.models.employee_activity import EmployeeAttendance
 from project_management.models import EmployeeProjectHour, Project
 from user_auth.models import UserLogs
 
@@ -537,8 +540,8 @@ from calendar import month_name
 #         if not obj.month:
 #             obj.month = obj.date.month
 #         obj.save()
-
-
+from django.core.mail import send_mail
+import datetime as dt  # For parsing date strings
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = (
@@ -553,6 +556,228 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
     date_hierarchy = "date"
     autocomplete_fields = ("employee",)
     change_list_template = "admin/total_fine.html"
+    # =======================================from here===================================
+    actions = ["create_late_fines_for_current_month"]
+
+    def create_late_fines_for_current_month(self, request, queryset=None):
+        """
+        Create LateAttendanceFine records for employees who have late entries 
+        in the current month but don't already have a fine record.
+        First sends an email with the list of late attendance details.
+        No selection of items from the admin table is required.
+        """
+        now = datetime.now()
+        current_month = now.month
+        current_year = now.year
+        
+        # Get all attendance records for current month
+        attendances = EmployeeAttendance.objects.filter(
+            date__year=current_year,
+            date__month=current_month,
+            entry_time__isnull=False,
+            employee__active=True,
+            employee__show_in_attendance_list=True,
+            employee__exception_la=False
+        ).select_related('employee')
+        
+        # Dictionary to store late attendance details per employee
+        late_attendance_details = {}
+        
+        for att in attendances:
+            entry_time = att.entry_time
+            hour = entry_time.hour
+            minute = entry_time.minute
+            employee_is_lead = att.employee.lead or att.employee.manager
+            
+            # Determine if attendance is late (using 10-minute rule for all dates)
+            is_late = (
+                (employee_is_lead and 
+                 ((hour == 11 and minute > 10) or hour >= 12)) or
+                (not employee_is_lead and 
+                 ((hour >= 11 and minute > 10) or hour >= 12))
+            )
+            
+            if is_late:
+                employee_id = att.employee.id
+                if employee_id not in late_attendance_details:
+                    late_attendance_details[employee_id] = {
+                        'name': att.employee.full_name,
+                        'email': att.employee.email,
+                        'phone': att.employee.phone,
+                        'dates': [],
+                        'entry_times': [],
+                        'total_late_days': 0
+                    }
+                
+                late_attendance_details[employee_id]['dates'].append(att.date.strftime('%Y-%m-%d'))
+                late_attendance_details[employee_id]['entry_times'].append(entry_time.strftime('%H:%M'))
+                late_attendance_details[employee_id]['total_late_days'] += 1
+        
+        # Prepare email content
+        subject = f"Late Attendance Report - {current_month}/{current_year}"
+        
+        # Create email body
+        email_body = f"Late Attendance Report - {current_month}/{current_year}\n\n"
+        email_body += "This report contains details of employees with late attendance in the current month who don't have a fine record yet.\n\n"
+        
+        if not late_attendance_details:
+            email_body += "No late attendances found for this month.\n"
+        else:
+            for employee_id, details in late_attendance_details.items():
+                email_body += f"Employee: {details['name']} ({details['email']} - {details['phone']})\n"
+                email_body += "Late Dates:\n"
+                for date, time in zip(details['dates'], details['entry_times']):
+                    email_body += f"  - {date} (Entry Time: {time})\n"
+                email_body += f"Total Late Days: {details['total_late_days']}\n\n"
+        
+        email_body += "This is an automated notification from the Employee Management System."
+        
+        # Send email
+        
+        send_mail(
+            subject,
+            email_body,
+            from_email='"Mediusware-HR" <hr@mediusware.com>',
+            recipient_list=["hr@mediusware.com"],
+            fail_silently=False,
+        )
+        email_sent = True
+        
+        
+        # # If email was sent successfully, proceed to create fine records
+        # if email_sent:
+        # try:
+        #     if late_attendance_details:
+        #         # Get employees who don't have a fine record for current month
+        #         employees_without_fine = Employee.objects.filter(
+        #             id__in=late_attendance_details.keys()
+        #         ).exclude(
+        #             id__in=LateAttendanceFine.objects.filter(
+        #                 month=current_month,
+        #                 year=current_year
+        #             ).values_list('employee_id', flat=True)
+        #         )
+                
+        #         # Create fine records for eligible employees
+        #         # for employee in employees_without_fine:
+        #         #     LateAttendanceFine.objects.create(
+        #         #         employee=employee,
+        #         #         month=current_month,
+        #         #         year=current_year,
+        #         #         total_late_days=late_attendance_details[employee.id]['total_late_days']
+        #         #     )
+        #         print(employees_without_fine)
+        #         for employee in employees_without_fine:
+        #             total_late_days = late_attendance_details[employee.id]['total_late_days']
+        #             total_late_days = late_attendance_details[employee.id]['total_late_days']
+        #             # Get the latest date from the list of late dates
+        #             latest_date_str = max(late_attendance_details[employee.id]['dates'])
+        #             latest_date = dt.datetime.strptime(latest_date_str, '%Y-%m-%d').date()
+        #             LateAttendanceFine.objects.create(
+        #                 employee=employee,
+        #                 month=current_month,
+        #                 year=current_year,
+        #                 date=latest_date,  # Set to current date
+        #                 is_consider=True,   # Default value from model
+        #                 entry_time=None     # Optional field, set to None as it's not provided
+        #             )
+        #             print(entry_time.date())
+                
+        #         self.message_user(
+        #             request, 
+        #             f"Email sent successfully. Created late attendance fine records for {current_month}/{current_year}.",
+                    
+        #         )
+            
+        # except Exception as e:
+        #     self.message_user(
+        #         request, 
+        #         f"An error occurred while creating fine records: {str(e)}",
+        #     )
+        
+        
+        # Redirect back to the changelist view to avoid resubmission
+        return HttpResponseRedirect(request.get_full_path())
+
+    create_late_fines_for_current_month.short_description = (
+        "Create late fines for current month"
+    )
+
+    # def create_late_fines_for_current_month(self, request, queryset):
+    #     """
+    #     Create LateAttendanceFine records for employees who have late entries 
+    #     in the current month but don't already have a fine record.
+    #     """
+    #     from datetime import datetime, date
+    #     from django.db.models import Q
+        
+    #     now = datetime.now()
+    #     current_month = now.month
+    #     current_year = now.year
+    #     late_time_change_date = date(2025, 2, 11)  # as defined in your code
+        
+    #     # Get all attendance records for current month
+    #     attendances = EmployeeAttendance.objects.filter(
+    #         date__year=current_year,
+    #         date__month=current_month,
+    #         entry_time__isnull=False
+    #     ).select_related('employee')
+        
+    #     # Identify employees with late attendance
+    #     late_employee_ids = set()
+        
+    #     for att in attendances:
+    #         entry_time = att.entry_time
+    #         hour = entry_time.hour
+    #         minute = entry_time.minute
+    #         employee_is_lead = att.employee.lead or att.employee.manager
+            
+    #         # Determine if attendance is late based on date and employee type
+    #         if att.date >= late_time_change_date:
+    #             # After 2025-02-11: 10-minute rule
+    #             is_late = (
+    #                 (employee_is_lead and 
+    #                  ((hour == 11 and minute > 11) or hour >= 12)) or
+    #                 (not employee_is_lead and 
+    #                  ((hour >= 11 and minute > 11) or hour >= 12))
+    #             )
+            
+    #         if is_late:
+    #             late_employee_ids.add(att.employee.id)
+        
+    #     # Get employees who don't have a fine record for current month
+    #     employees_without_fine = Employee.objects.filter(
+    #         id__in=late_employee_ids
+    #     ).exclude(
+    #         id__in=LateAttendanceFine.objects.filter(
+    #             month=current_month,
+    #             year=current_year
+    #         ).values_list('employee_id', flat=True)
+    #     )
+        
+    #     # Create fine records
+    #     fines_created = 0
+    #     for employee in employees_without_fine:
+    #         LateAttendanceFine.objects.create(
+    #             employee=employee,
+    #             month=current_month,
+    #             year=current_year,
+    #             total_late_attendance_fine=0.00,  # Default value
+    #             date=now.date(),
+    #             is_consider=True
+    #         )
+    #         fines_created += 1
+        
+    #     self.message_user(
+    #         request, 
+    #         f"Successfully created {fines_created} late attendance fine records for {current_month}/{current_year}."
+    #     )
+    
+    # create_late_fines_for_current_month.short_description = (
+    #     "Create late fines for current month"
+    # )
+    # =======================================To here===================================
+
 
     @admin.display(description="Employee", ordering="employee__full_name")
     def get_employee(self, obj):
