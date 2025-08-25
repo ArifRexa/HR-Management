@@ -92,8 +92,8 @@ def abs(value):
 
 @register.simple_tag
 def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
-    start_date = date(obj.start_date.year-1, 1, 1)
-    end_date = date(obj.start_date.year, 12, 31)
+    start_date = date(obj.start_date.year - 1, 7, 1)
+    end_date = date(obj.start_date.year, 6, 30)
     employee_tds = EmployeeSalary.objects.filter(
         employee=emp,
         created_at__range=[start_date, end_date],
