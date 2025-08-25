@@ -678,7 +678,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
                 self.message_user(
                     request, 
                     f"Email sent successfully. Created late attendance fine records for {current_month}/{current_year}.",
-                    level=messages.SUCCESS
+                    
                 )
             else:
                 self.message_user(
