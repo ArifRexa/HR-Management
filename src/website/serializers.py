@@ -91,6 +91,7 @@ from website.models import (
     SpecialProjectsTitle,
     Subscription,
     TechnologyCTA,
+    TechnologyCreatorsQuotes,
     TechnologyFAQ,
     TechnologyFAQSchema,
     TechnologyKeyThings,
@@ -1736,11 +1737,6 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         
 #         return toc
 
-class ServeCategoryListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServeCategory
-        fields = '__all__'
-        ref_name = 'IndustriesWeServeServeCategoryList'
 
 class ServeCategorySerializer(serializers.ModelSerializer):
     # Change these fields to return single objects instead of arrays
@@ -2125,6 +2121,12 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
 
 # ======================================== Technology API Serializers =========================================
 
+class TechnologyCreatorsQuotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyCreatorsQuotes
+        fields = '__all__'
+        ref_name = 'TechnologyCreatorsQuotesSerializer'
+
 class TechnologyTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TechnologyType
@@ -2342,6 +2344,7 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     type = TechnologyTypeSerializer(read_only=True)
     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
+    creators_quotes = TechnologyCreatorsQuotesSerializer(many=True, read_only=True)
     services_we_provide = ServicesWeProvideSerializer(many=True, read_only=True)
     ecosystem = EcoSystemSerializer(many=True, read_only=True)
     KeyThings = TechnologyKeyThingsSerializer(many=True, read_only=True)  # Changed from key_things

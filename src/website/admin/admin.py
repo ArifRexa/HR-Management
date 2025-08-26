@@ -793,7 +793,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
     
     search_fields = ("title",)
     fieldsets = (
-        ("Page Hierarchy", {"fields": ("is_parent", "parent", "title", "show_in_menu")}),
+        ("Page Hierarchy", {"fields": ("is_parent", "parent", "title", "show_in_menu", "services_body_schema")}),
         (
             "Banner",
             {"fields": ("seo_title", "sub_title", "secondary_title", "slug", "description")},
@@ -883,6 +883,40 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
                     '</script>'
                 )
             )
+        
+        # Services Body Schema generation (new code)
+        try:
+            meta_desc = service_page.meta_description
+            if meta_desc and (meta_desc.meta_title or meta_desc.meta_description):
+                # Get the service page URL
+                service_url = request.build_absolute_uri(service_page.get_absolute_url()) if hasattr(service_page, 'get_absolute_url') else f"https://mediusware.com/services/{service_page.slug}"
+                
+                services_body_schema = {
+                    "@context": "https://schema.org",
+                    "@graph": [
+                        {
+                            "@type": "Service",
+                            "name": meta_desc.meta_title or service_page.title,
+                            "description": meta_desc.meta_description or service_page.description,
+                            "provider": "Mediusware LTD",
+                            "url": service_url,
+                            "termsOfService": "https://mediusware.com/terms"
+                        }
+                    ]
+                }
+                
+                # Save the schema to the services_body_schema field
+                service_page.services_body_schema = mark_safe(
+                    '<script type="application/ld+json">\n'
+                    f'{json.dumps(services_body_schema, indent=2)}\n'
+                    '</script>'
+                )
+                service_page.save(update_fields=['services_body_schema'])
+        except Exception as e:
+            # Handle any exceptions, e.g., if meta_description doesn't exist
+            print(f"Error generating services body schema: {e}")
+
+
 
 # ================================================================ Technology ====================================================================
 @admin.register(TechnologyType)
