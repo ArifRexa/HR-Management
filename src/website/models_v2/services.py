@@ -39,6 +39,9 @@ class ServicePage(TimeStampMixin):
     # why_choose_us_sub_title = models.TextField(
     #     verbose_name="Section Description", null=True, blank=True
     # )
+    services_body_schema = models.TextField(
+        help_text="JSON-LD schema for Service Page body", blank=True, null=True
+    )
 
     def __str__(self):
         return self.title
