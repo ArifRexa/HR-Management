@@ -622,10 +622,10 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
                IndustryMetadataInline,
                IndustryDetailsHeroSectionInline,
                IndustryDetailsHeadingInline,
-               OurProcessInline,
                CustomSolutionsInline, 
                BenefitsInline,
                WhyChooseUsInline,
+               OurProcessInline,
                ServiceCategoryFAQInline, 
                ServeCategoryCTAInline, 
                ServeCategoryFAQSchemaInline]
@@ -827,19 +827,17 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         # AdditionalServiceContentInline,
         # DevelopmentServiceProcessInline,
         # ComparativeAnalysisInline,
+        MetaDescriptionInline,
         SolutionsAndServicesInline,
         KeyThingsInline,
         BestPracticesHeadingsInline,
         ServicesWhyChooseUsInline,
         ServicesOurProcessInline,
 
-
-
         FAQQuestionInline,
         ServicePageFAQSchemaInline,
         # ServiceMetaDataInline,
         ServicePageCTAInline,
-        MetaDescriptionInline
     ]
     list_per_page = 20
     change_form_template = 'admin/website/servecategory/change_form.html'
@@ -963,7 +961,7 @@ class TechnologySolutionsAndServicesCardsInline(nested_admin.NestedTabularInline
 class TechnologySolutionsAndServicesInline(nested_admin.NestedStackedInline):
     model = TechnologySolutionsAndServices
     extra = 1
-    inlines = [TechnologySolutionsAndServicesCardsInline]
+    # inlines = [TechnologySolutionsAndServicesCardsInline]
     max_num = 1
     min_num = 1
 
@@ -1063,6 +1061,7 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
     inlines = [
+        TechnologyMetaDataInline,
         TechnologySolutionsAndServicesInline,
         TechnologyCreatorsQuotesInline,
         ServicesWeProvideInline,
@@ -1071,13 +1070,9 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
         TechnologyWhyChooseUsInline,
         TechnologyOurProcessInline,
         HistoryOfTechInline,
-
-
-
         TechnologyFAQInline, 
         TechnologyCTAInline, 
         TechnologyFAQSchemaInline,
-        TechnologyMetaDataInline,
     ]
     change_form_template = 'admin/website/servecategory/change_form.html'
     
