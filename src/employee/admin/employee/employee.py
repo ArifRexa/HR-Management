@@ -606,43 +606,89 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
                         'phone': att.employee.phone,
                         'dates': [],
                         'entry_times': [],
-                        'total_late_days': 0
+                        'total_late_days': 0,
+                        'employee': att.employee
                     }
                 
                 late_attendance_details[employee_id]['dates'].append(att.date.strftime('%Y-%m-%d'))
                 late_attendance_details[employee_id]['entry_times'].append(entry_time.strftime('%H:%M'))
                 late_attendance_details[employee_id]['total_late_days'] += 1
         
-        # Prepare email content
-        subject = f"Late Attendance Report - {current_month}/{current_year}"
+        # # Prepare email content
+        # subject = f"Late Attendance Report - {current_month}/{current_year}"
         
-        # Create email body
-        email_body = f"Late Attendance Report - {current_month}/{current_year}\n\n"
-        email_body += "This report contains details of employees with late attendance in the current month who don't have a fine record yet.\n\n"
+        # # Create email body
+        # email_body = f"Late Attendance Report - {current_month}/{current_year}\n\n"
+        # email_body += "This report contains details of employees with late attendance in the current month who don't have a fine record yet.\n\n"
         
-        if not late_attendance_details:
-            email_body += "No late attendances found for this month.\n"
+        # if not late_attendance_details:
+        #     email_body += "No late attendances found for this month.\n"
+        # else:
+        #     for employee_id, details in late_attendance_details.items():
+        #         email_body += f"Employee: {details['name']} ({details['email']} - {details['phone']})\n"
+        #         email_body += "Late Dates:\n"
+        #         for date, time in zip(details['dates'], details['entry_times']):
+        #             email_body += f"  - {date} (Entry Time: {time})\n"
+        #         email_body += f"Total Late Days: {details['total_late_days']}\n\n"
+        
+        # email_body += "This is an automated notification from the Employee Management System."
+        
+        # # Send email
+        
+        # send_mail(
+        #     subject,
+        #     email_body,
+        #     from_email='"Mediusware-HR" <hr@mediusware.com>',
+        #     recipient_list=["hr@mediusware.com"],
+        #     fail_silently=False,
+        # )
+        # email_sent = True
+
+        # Create LateAttendanceFine records for each unique late date
+        created_fines = []
+        for employee_id, details in late_attendance_details.items():
+            for late_date, entry_time in zip(details['dates'], details['entry_times']):
+                # Check if a fine already exists for this employee and specific date
+                existing_fine = LateAttendanceFine.objects.filter(
+                    employee=details['employee'],  # Use 'employee' key
+                    month=current_month,
+                    year=current_year,
+                    date=late_date
+                ).exists()
+                
+                if not existing_fine:
+                    # Create a new LateAttendanceFine record for this date
+                    fine = LateAttendanceFine(
+                        employee=details['employee'],
+                        month=current_month,
+                        year=current_year,
+                        total_late_attendance_fine=0.00,  # Ignored as per request
+                        date=late_date,
+                        is_consider=True,
+                        entry_time=entry_time
+                    )
+                    fine.save()
+                    created_fines.append(fine)
+        
+        # Provide feedback to the user
+        if created_fines:
+            self.message_user(request, f"Created {len(created_fines)} new LateAttendanceFine records.")
         else:
-            for employee_id, details in late_attendance_details.items():
-                email_body += f"Employee: {details['name']} ({details['email']} - {details['phone']})\n"
-                email_body += "Late Dates:\n"
-                for date, time in zip(details['dates'], details['entry_times']):
-                    email_body += f"  - {date} (Entry Time: {time})\n"
-                email_body += f"Total Late Days: {details['total_late_days']}\n\n"
+            self.message_user(request, "No new LateAttendanceFine records were created.")
         
-        email_body += "This is an automated notification from the Employee Management System."
-        
-        # Send email
-        
-        send_mail(
-            subject,
-            email_body,
-            from_email='"Mediusware-HR" <hr@mediusware.com>',
-            recipient_list=["hr@mediusware.com"],
-            fail_silently=False,
-        )
-        email_sent = True
-        
+
+
+
+
+
+
+
+
+
+
+
+
+
         
         # # If email was sent successfully, proceed to create fine records
         # if email_sent:
