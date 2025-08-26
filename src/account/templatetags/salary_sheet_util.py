@@ -7,7 +7,7 @@ from django import template
 from django.db.models import Sum
 from django.db.models.functions import Abs
 
-from account.models import EmployeeSalary, Invoice, SalarySheet
+from account.models import EmployeeSalary, Invoice, SalarySheet, TDSChallan
 from employee.models import Employee
 from settings.models import FinancialYear
 
@@ -88,10 +88,52 @@ def abs(value):
         return abs(value)
     except TypeError:
         return value
+    
+    
+    
+def employee_tax_by_tds(emp: Employee, month, year):
+    """
+    calculate employee monthly tds for before year for given year
+    """
+    start_date = date(year-1, 1,1)
+    if 7 <= month <= 12:
+        _year = start_date.year
+    else:
+        _year = start_date.year + 1
+    first_day = date(int(_year), int(month), 1)
+    last_day = date(int(_year), int(month), calendar.monthrange(year, month)[1])
+    salary_sheet = SalarySheet.objects.filter(
+        date__range=[first_day, last_day],
+    ).first()
+    if not salary_sheet:
+        return 0
+    employee_salary = (
+        salary_sheet.employeesalary_set.filter(
+            employee=emp,
+        )
+        .annotate(employee_tds=Abs("loan_emi"))
+        .first()
+    )
+    if not employee_salary:
+        return 0
+    if employee_salary:
+        s = str(employee_salary.tax_loan_total)
+        return s[1:] if s.startswith("-") else s
+    return 0
 
 
 @register.simple_tag
 def employee_total_tds(obj: FinancialYear, emp: Employee, type="num"):
+    tds = TDSChallan.objects.filter(
+        employee=emp,
+        tds_year=obj,
+    )
+    total_tds = 0
+    for t in tds:
+        total_tds += float(employee_tax_by_tds(emp, t.tds_month, t.tds_year.start_date.year))
+    if type == "word":
+        return num2words(total_tds)
+    return total_tds
     start_date = date(obj.start_date.year - 1, 7, 1)
     end_date = date(obj.start_date.year, 6, 30)
     employee_tds = EmployeeSalary.objects.filter(
