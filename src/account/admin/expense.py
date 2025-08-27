@@ -139,7 +139,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     ]
     change_list_template = "admin/expense/list.html"
     inlines = [ExpanseAttachmentInline]
-    search_fields = ["note"]
+    search_fields = ["note", "id"]
     actions = (
         "print_voucher",
         "print_voucher_attachment",
