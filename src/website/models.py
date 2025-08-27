@@ -469,7 +469,7 @@ class TechnologyMetaData(models.Model):
     meta_description = models.TextField(null=True, blank=True)
 
     def __str__(self):
-        return self.title or f"MetaData for {self.technology.name if self.technology else 'No Technology'}"
+        return self.meta_title or f"MetaData for {self.technology.name if self.technology else 'No Technology'}"
 
 # ========================================================== Blog Section ======================================================
 class Blog(AuthorMixin, TimeStampMixin):
