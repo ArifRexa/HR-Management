@@ -1,11 +1,14 @@
 import datetime
 import mimetypes
+import os
 from urllib.parse import urlparse
 
 import pandas as pd
+from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import F, Prefetch, Q, Sum
 from django.http import HttpResponse
@@ -67,9 +70,32 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
         return False
 
 
+class ExpenseAttachmentForm(forms.ModelForm):
+    class Meta:
+        model = ExpanseAttachment
+        fields = "__all__"
+        widgets = {
+            "attachment": forms.ClearableFileInput(attrs={"accept": "image/*"})
+        }
+    
+    def clean_attachment(self):
+        attachment = self.cleaned_data.get('attachment')
+        
+        if attachment:
+            # Basic image validation (handled by ImageField)
+            # Add custom format restrictions if needed
+            allowed_formats = ['jpg', 'jpeg', 'png', 'gif']
+            ext = os.path.splitext(attachment.name)[1][1:].lower()
+            if ext not in allowed_formats:
+                raise ValidationError(f"Only {', '.join(allowed_formats)} files are allowed")
+                
+        return attachment
+
+
 class ExpanseAttachmentInline(admin.TabularInline):
     model = ExpanseAttachment
     extra = 1
+    form = ExpenseAttachmentForm
 
 
 class ActiveCreatedByFilter(admin.SimpleListFilter):
@@ -465,10 +491,6 @@ class TDSEmployeeFilter(admin.SimpleListFilter):
         return queryset.filter(
             Q(individual_employee_id=emp_id) | Q(employee__id=emp_id)
         )
-
-
-from django import forms
-from django.core.exceptions import ValidationError
 
 
 class TDSChallanForm(forms.ModelForm):
