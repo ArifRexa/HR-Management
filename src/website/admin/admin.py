@@ -29,6 +29,13 @@ from website.admin.services import AdditionalServiceContentInline, ComparativeAn
 from website.models import (
     CTA,
     FAQ,
+    AdditionalPageFAQ,
+    AdditionalPageHeroSection,
+    AdditionalPageKeyThings,
+    AdditionalPageKeyThingsCards,
+    AdditionalPageOurProcess,
+    AdditionalPageWhyChooseUs,
+    AdditionalPages,
     AllProjectsBanner,
     AllServicesTitle,
     Award,
@@ -131,6 +138,7 @@ from website.models import (
     VideoTestimonial,
     VideoTestimonialTitle,
     WebsiteTitle,
+    WhatIs,
     WhyUsTitle,
     WhyWeAreBanner,
     WomenEmpowermentBanner,
@@ -1686,6 +1694,116 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 # class BlogCommentModelAdmin(MPTTModelAdmin):
 #     mptt_level_indent = 20
 #     list_display = ["id", "name"]
+
+
+
+
+
+
+
+
+
+
+
+
+class AdditionalPageHeroSectionInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageHeroSection
+    extra = 1
+    max_num = 1
+    min_num = 1
+    verbose_name = "Hero Section"
+    verbose_name_plural = "Hero Section"
+
+
+class WhatIsInline(nested_admin.NestedStackedInline):
+    model = WhatIs
+    extra = 1
+    max_num = 1
+    min_num = 1
+    verbose_name = "What Is"
+    verbose_name_plural = "What Is"
+
+
+class AdditionalPageKeyThingsCardsInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageKeyThingsCards
+    extra = 1
+    verbose_name = "Key Things Card"
+    verbose_name_plural = "Key Things Cards"
+
+class AdditionalPageKeyThingsInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageKeyThings
+    extra = 1
+    inlines = [AdditionalPageKeyThingsCardsInline]
+    max_num = 1
+    min_num = 1
+    verbose_name = "Key Things"
+    verbose_name_plural = "Key Things"
+
+class AdditionalPageWhyChooseUsInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageWhyChooseUs
+    extra = 1
+    verbose_name = "Why Choose Us"
+    verbose_name_plural = "Why Choose Us"
+    max_num = 1
+    min_num = 1
+
+class AdditionalPageOurProcessInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageOurProcess
+    extra = 1
+    verbose_name = "Our Process"
+    verbose_name_plural = "Our Processes"
+
+class AdditionalPageFAQInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageFAQ
+    extra = 1
+    verbose_name = "FAQ"
+    verbose_name_plural = "FAQ's"
+
+
+@admin.register(AdditionalPages)
+class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
+    prepopulated_fields = {"slug": ("title",)}
+    list_display = ["title", "slug"]
+    inlines = [
+        AdditionalPageHeroSectionInline,
+        WhatIsInline,
+        AdditionalPageKeyThingsInline,
+        AdditionalPageWhyChooseUsInline,
+        AdditionalPageOurProcessInline,
+        AdditionalPageFAQInline,
+
+        
+        
+        
+        
+    ]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @admin.register(FAQ)

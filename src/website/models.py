@@ -1331,3 +1331,142 @@ class Subscription(TimeStampMixin):
 
     def __str__(self):
         return self.email
+
+
+class AdditionalPages(TimeStampMixin):
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(unique=True)
+    description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.title
+    
+class AdditionalPageHeroSection(TimeStampMixin):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='additional_page_hero_section',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secodary_title = models.CharField(max_length=255, null=True, blank=True)
+    # slug = models.SlugField(unique=True)
+    section_description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.section_title or "Hero Section"
+    
+class WhatIs(TimeStampMixin):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='what_is_next',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255)
+    section_description = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.section_title
+    
+class AdditionalPageKeyThings(TimeStampMixin):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='additional_page_key_things',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title
+
+class AdditionalPageKeyThingsCards(TimeStampMixin):
+    additional_page_key_things = models.ForeignKey(
+        AdditionalPageKeyThings, 
+        on_delete=models.CASCADE,
+        related_name='additional_page_key_things_cards',
+        null=True,
+        blank=True
+    )
+    card_title = models.CharField(max_length=200, blank=True, null=True)
+    card_description = models.TextField(blank=True, null=True)
+    def __str__(self):
+        return self.card_title
+    
+class AdditionalPageWhyChooseUs(TimeStampMixin):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='additional_page_why_choose_us',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title or "Why Choose Us"
+    
+# class AdditionalPageWhyChooseUsTableHeadings(TimeStampMixin):
+#     additional_page_why_choose_us = models.ForeignKey(
+#         AdditionalPageWhyChooseUs,
+#         related_name="additional_page_why_choose_us_table_headings",
+#         on_delete=models.SET_NULL,
+#         null=True,
+#     )
+#     heading = models.CharField(max_length=200, blank=True, null=True)
+#     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+#     def __str__(self):
+#         return self.heading
+
+
+
+class AdditionalPageOurProcess(models.Model):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='our_process',
+        null=True,
+        blank=True
+    )
+    section_title = models.CharField(max_length=200)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+
+    def __str__(self):
+        return self.section_title
+    
+    class Meta:
+        verbose_name = "Our Process"
+        verbose_name_plural = "Our Processes"
+        ordering = ['order']
+
+
+class AdditionalPageFAQ(models.Model):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='faqs',
+        null=True,
+        blank=True
+    )
+    question = models.CharField(max_length=255)
+    answer = HTMLField()
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for FAQs")
+
+    def __str__(self):
+        return self.question
+
+    class Meta:
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQs"
+        ordering = ['order']
