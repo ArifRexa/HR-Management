@@ -9,13 +9,13 @@ from config.model import TimeStampMixin
 class ServeCategory(models.Model):
     title = models.CharField(max_length=100, verbose_name="Section Title")
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
-    short_description = models.TextField(blank=True, null=True)
+    # short_description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True)
-    title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
-    industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
-    industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
-    impressive_title = models.CharField(max_length=200, blank=True, null=True)
-    impressive_description = models.TextField(blank=True, null=True)
+    # title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
+    # industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
+    # industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
+    # impressive_title = models.CharField(max_length=200, blank=True, null=True)
+    # impressive_description = models.TextField(blank=True, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -220,13 +220,27 @@ class WhyChooseUsCards(models.Model):
         null=True,
         blank=True
     )
+    icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
     card_title = models.CharField(max_length=200, blank=True, null=True)
-    card_description = HTMLField(blank=True, null=True)
+    # card_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
     def __str__(self):
         return self.card_title
 
 
+class WhyChooseUsCardsDetails(models.Model):
+    why_choose_us_cards = models.ForeignKey(
+        WhyChooseUsCards, 
+        on_delete=models.CASCADE,
+        related_name='why_choose_us_cards_details',
+        null=True,
+        blank=True
+    )
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_description
     
 
 

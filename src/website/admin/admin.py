@@ -135,7 +135,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
+from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -570,18 +570,26 @@ class BenefitsInline(nested_admin.NestedStackedInline):
     verbose_name_plural = "Benifited Organizations"
 
 #================================= Why Choose Us =================================
+class WhyChooseUsCardsDetailsInline(nested_admin.NestedStackedInline):
+    model = WhyChooseUsCardsDetails
+    extra = 1
+    verbose_name = "Why Choose Us Card Details"
+    verbose_name_plural = "Why Choose Us Card Details"
+
 
 class WhyChooseUsCardsInline(nested_admin.NestedStackedInline):
     model = WhyChooseUsCards
     extra = 1
+    inlines = [WhyChooseUsCardsDetailsInline]
     verbose_name = "Why Choose Us Card"
     verbose_name_plural = "Why Choose Us Cards"
-    fields = ('card_title', 'card_description')
 
 class WhyChooseUsInline(nested_admin.NestedStackedInline):
     model = WhyChooseUs
     extra = 1
     inlines = [WhyChooseUsCardsInline]
+    max_num = 1
+    min_num = 1
 
 #================================= Industry Details Hero Section =================================
 
@@ -622,10 +630,10 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
                IndustryMetadataInline,
                IndustryDetailsHeroSectionInline,
                IndustryDetailsHeadingInline,
-               OurProcessInline,
                CustomSolutionsInline, 
                BenefitsInline,
                WhyChooseUsInline,
+               OurProcessInline,
                ServiceCategoryFAQInline, 
                ServeCategoryCTAInline, 
                ServeCategoryFAQSchemaInline]
@@ -793,7 +801,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
     
     search_fields = ("title",)
     fieldsets = (
-        ("Page Hierarchy", {"fields": ("is_parent", "parent", "title", "show_in_menu")}),
+        ("Page Hierarchy", {"fields": ("is_parent", "parent", "title", "show_in_menu", "services_body_schema")}),
         (
             "Banner",
             {"fields": ("seo_title", "sub_title", "secondary_title", "slug", "description")},
@@ -827,19 +835,17 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         # AdditionalServiceContentInline,
         # DevelopmentServiceProcessInline,
         # ComparativeAnalysisInline,
+        MetaDescriptionInline,
         SolutionsAndServicesInline,
         KeyThingsInline,
         BestPracticesHeadingsInline,
         ServicesWhyChooseUsInline,
         ServicesOurProcessInline,
 
-
-
         FAQQuestionInline,
         ServicePageFAQSchemaInline,
         # ServiceMetaDataInline,
         ServicePageCTAInline,
-        MetaDescriptionInline
     ]
     list_per_page = 20
     change_form_template = 'admin/website/servecategory/change_form.html'
@@ -883,6 +889,40 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
                     '</script>'
                 )
             )
+        
+        # Services Body Schema generation (new code)
+        try:
+            meta_desc = service_page.meta_description
+            if meta_desc and (meta_desc.meta_title or meta_desc.meta_description):
+                # Get the service page URL
+                service_url = request.build_absolute_uri(service_page.get_absolute_url()) if hasattr(service_page, 'get_absolute_url') else f"https://mediusware.com/services/{service_page.slug}"
+                
+                services_body_schema = {
+                    "@context": "https://schema.org",
+                    "@graph": [
+                        {
+                            "@type": "Service",
+                            "name": meta_desc.meta_title or service_page.title,
+                            "description": meta_desc.meta_description or service_page.description,
+                            "provider": "Mediusware LTD",
+                            "url": service_url,
+                            "termsOfService": "https://mediusware.com/terms"
+                        }
+                    ]
+                }
+                
+                # Save the schema to the services_body_schema field
+                service_page.services_body_schema = mark_safe(
+                    '<script type="application/ld+json">\n'
+                    f'{json.dumps(services_body_schema, indent=2)}\n'
+                    '</script>'
+                )
+                service_page.save(update_fields=['services_body_schema'])
+        except Exception as e:
+            # Handle any exceptions, e.g., if meta_description doesn't exist
+            print(f"Error generating services body schema: {e}")
+
+
 
 # ================================================================ Technology ====================================================================
 @admin.register(TechnologyType)
@@ -929,7 +969,7 @@ class TechnologySolutionsAndServicesCardsInline(nested_admin.NestedTabularInline
 class TechnologySolutionsAndServicesInline(nested_admin.NestedStackedInline):
     model = TechnologySolutionsAndServices
     extra = 1
-    inlines = [TechnologySolutionsAndServicesCardsInline]
+    # inlines = [TechnologySolutionsAndServicesCardsInline]
     max_num = 1
     min_num = 1
 
@@ -1029,6 +1069,7 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
     prepopulated_fields = {"slug": ("name",)}
     search_fields = ("name",)
     inlines = [
+        TechnologyMetaDataInline,
         TechnologySolutionsAndServicesInline,
         TechnologyCreatorsQuotesInline,
         ServicesWeProvideInline,
@@ -1037,13 +1078,9 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
         TechnologyWhyChooseUsInline,
         TechnologyOurProcessInline,
         HistoryOfTechInline,
-
-
-
         TechnologyFAQInline, 
         TechnologyCTAInline, 
         TechnologyFAQSchemaInline,
-        TechnologyMetaDataInline,
     ]
     change_form_template = 'admin/website/servecategory/change_form.html'
     

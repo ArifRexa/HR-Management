@@ -91,6 +91,7 @@ from website.models import (
     SpecialProjectsTitle,
     Subscription,
     TechnologyCTA,
+    TechnologyCreatorsQuotes,
     TechnologyFAQ,
     TechnologyFAQSchema,
     TechnologyKeyThings,
@@ -109,7 +110,7 @@ from website.models import (
     WebsiteTitle,
     WhyUsTitle,
 )
-from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
@@ -1570,7 +1571,16 @@ class BenefitsQASerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'IndustriesWeServeBenefitsQA'
 
+
+class WhyChooseUsCardsDetailsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WhyChooseUsCardsDetails
+        fields = '__all__'
+        ref_name = 'IndustriesWeServeWhyChooseUsCardsDetails'
+
+
 class WhyChooseUsCardsSerializer(serializers.ModelSerializer):
+    details = WhyChooseUsCardsDetailsSerializer(many=True, read_only=True, source='why_choose_us_cards_details.all')
     class Meta:
         model = WhyChooseUsCards
         fields = '__all__'
@@ -1607,7 +1617,7 @@ class BenefitsSerializer(serializers.ModelSerializer):
         ref_name = 'IndustriesWeServeBenefits'
 
 class WhyChooseUsSerializer(serializers.ModelSerializer):
-    why_choose_us_cards = WhyChooseUsCardsSerializer(many=True, read_only=True)
+    cards = WhyChooseUsCardsSerializer(many=True, read_only=True, source='why_choose_us_cards.all')
     
     class Meta:
         model = WhyChooseUs
@@ -1645,102 +1655,6 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         ref_name = 'IndustriesWeServeIndustryServe'
 
 
-
-
-# class ServeCategorySerializer(serializers.ModelSerializer):
-#     industry_details_hero_section = IndustryDetailsHeroSectionSerializer(many=True, read_only=True)
-#     industry_solutions_and_services = IndustryDetailsHeadingSerializer(many=True, read_only=True)
-#     industry_benifits = CustomSolutionsSerializer(many=True, read_only=True)
-#     benifited_organizations = BenefitsSerializer(many=True, read_only=True)
-#     why_choose_us = WhyChooseUsSerializer(many=True, read_only=True)
-#     our_process = OurProcessSerializer(many=True, read_only=True)
-#     faqs = ServiceCategoryFAQSerializer(many=True, read_only=True)
-#     ctas = ServeCategoryCTASerializer(many=True, read_only=True)
-#     faq_schema = ServeCategoryFAQSchemaSerializer(read_only=True)
-#     application_areas = ApplicationAreasSerializer(many=True, read_only=True)
-#     industries = IndustryServeSerializer(many=True, read_only=True)
-#     table_of_contents = serializers.SerializerMethodField()
-
-    
-#     class Meta:
-#         model = ServeCategory
-#         fields = '__all__'
-#         ref_name = 'IndustriesWeServeServeCategory'
-
-#     def get_table_of_contents(self, obj):
-#         toc = []
-        
-#         # Add section titles from Industry Details Hero Section
-#         try:
-#             for item in obj.industry_details_hero_section.all():
-#                 if item.section_title:
-#                     toc.append(item.section_title)
-#         except AttributeError:
-#             pass
-        
-#         # Add section titles from Our Process
-#         # try:
-#         #     for item in obj.our_process.all():
-#         #         if item.section_title:
-#         #             toc.append(item.section_title)
-#         # except AttributeError:
-#         #     pass
-        
-#         # Add section titles from Industry Details Heading
-#         try:
-#             for item in obj.industry_solutions_and_services.all():
-#                 if item.section_title:
-#                     toc.append(item.section_title)
-#         except AttributeError:
-#             pass
-        
-#         # Add section titles from Custom Solutions
-#         try:
-#             for item in obj.industry_benifits.all():
-#                 if item.section_title:
-#                     toc.append(item.section_title)
-#         except AttributeError:
-#             pass
-        
-#         # Add section titles from Benefits
-#         try:
-#             for item in obj.benifited_organizations.all():
-#                 if item.section_title:
-#                     toc.append(item.section_title)
-#         except AttributeError:
-#             pass
-        
-#         # Add section titles from Why Choose Us
-#         try:
-#             for item in obj.why_choose_us.all():
-#                 if item.section_title:
-#                     toc.append(item.section_title)
-#         except AttributeError:
-#             pass
-        
-#         # Add titles from Application Areas
-#         try:
-#             for item in obj.application_areas.all():
-#                 if item.title:
-#                     toc.append(item.title)
-#         except AttributeError:
-#             pass
-        
-#         # Add titles from Industries
-#         try:
-#             for item in obj.industries.all():
-#                 if item.title:
-#                     toc.append(item.title)
-#         except AttributeError:
-#             pass
-        
-#         return toc
-
-class ServeCategoryListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ServeCategory
-        fields = '__all__'
-        ref_name = 'IndustriesWeServeServeCategoryList'
 
 class ServeCategorySerializer(serializers.ModelSerializer):
     # Change these fields to return single objects instead of arrays
@@ -2125,6 +2039,12 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
 
 # ======================================== Technology API Serializers =========================================
 
+class TechnologyCreatorsQuotesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyCreatorsQuotes
+        fields = '__all__'
+        ref_name = 'TechnologyCreatorsQuotesSerializer'
+
 class TechnologyTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = TechnologyType
@@ -2342,6 +2262,7 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     type = TechnologyTypeSerializer(read_only=True)
     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
+    creators_quotes = TechnologyCreatorsQuotesSerializer(many=True, read_only=True)
     services_we_provide = ServicesWeProvideSerializer(many=True, read_only=True)
     ecosystem = EcoSystemSerializer(many=True, read_only=True)
     KeyThings = TechnologyKeyThingsSerializer(many=True, read_only=True)  # Changed from key_things
