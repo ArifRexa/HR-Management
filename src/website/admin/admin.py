@@ -135,7 +135,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards
+from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -570,18 +570,26 @@ class BenefitsInline(nested_admin.NestedStackedInline):
     verbose_name_plural = "Benifited Organizations"
 
 #================================= Why Choose Us =================================
+class WhyChooseUsCardsDetailsInline(nested_admin.NestedStackedInline):
+    model = WhyChooseUsCardsDetails
+    extra = 1
+    verbose_name = "Why Choose Us Card Details"
+    verbose_name_plural = "Why Choose Us Card Details"
+
 
 class WhyChooseUsCardsInline(nested_admin.NestedStackedInline):
     model = WhyChooseUsCards
     extra = 1
+    inlines = [WhyChooseUsCardsDetailsInline]
     verbose_name = "Why Choose Us Card"
     verbose_name_plural = "Why Choose Us Cards"
-    fields = ('card_title', 'card_description')
 
 class WhyChooseUsInline(nested_admin.NestedStackedInline):
     model = WhyChooseUs
     extra = 1
     inlines = [WhyChooseUsCardsInline]
+    max_num = 1
+    min_num = 1
 
 #================================= Industry Details Hero Section =================================
 

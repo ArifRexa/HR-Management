@@ -220,13 +220,27 @@ class WhyChooseUsCards(models.Model):
         null=True,
         blank=True
     )
+    icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
     card_title = models.CharField(max_length=200, blank=True, null=True)
-    card_description = HTMLField(blank=True, null=True)
+    # card_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
     def __str__(self):
         return self.card_title
 
 
+class WhyChooseUsCardsDetails(models.Model):
+    why_choose_us_cards = models.ForeignKey(
+        WhyChooseUsCards, 
+        on_delete=models.CASCADE,
+        related_name='why_choose_us_cards_details',
+        null=True,
+        blank=True
+    )
+    card_description = HTMLField(blank=True, null=True)
+
+    def __str__(self):
+        return self.card_description
     
 
 
