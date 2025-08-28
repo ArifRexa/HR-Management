@@ -65,6 +65,7 @@ from website.models_v2.services import ServicePage
 from website.serializers import (
     AdditionalPagesSerializer,
     AvailableTagSerializer,
+    AwardCategoryListResponseSerializer,
     AwardCategorySerializer,
     AwardSerializer,
     BenefitsOfEmploymentSerializer,
@@ -1729,15 +1730,27 @@ class AdditionalPageSlugDetailView(RetrieveAPIView):
     
 
 # ======================================= Awards ===========================================
-class AwardsListView(APIView):
+class AwardCategoryListView(APIView):
     @swagger_auto_schema(
         operation_description="Retrieve a list of all awards",
-        responses={200: AwardCategorySerializer(many=True)},
+        responses={200: AwardCategoryListResponseSerializer()},
         tags=['Awards']
     )
     def get(self, request):
         categories = AwardCategory.objects.prefetch_related(
             'year_groups__awards'
         ).all()
-        serializer = AwardCategorySerializer(categories, many=True)
-        return Response(serializer.data)
+        
+        # Create table of contents with all section titles
+        table_of_content = [category.section_title for category in categories]
+        
+        # Serialize the categories
+        category_serializer = AwardCategorySerializer(categories, many=True)
+        
+        # Create the response data
+        response_data = {
+            'table_of_content': table_of_content,
+            'categories': category_serializer.data
+        }
+        
+        return Response(response_data)

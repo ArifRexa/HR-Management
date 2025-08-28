@@ -2448,7 +2448,7 @@ class AwardsSerializer(serializers.ModelSerializer):
         ref_name = 'CategoryAward'
 
 class AwardYearGroupSerializer(serializers.ModelSerializer):
-    awards = AwardSerializer(many=True, read_only=True)
+    awards = AwardsSerializer(many=True, read_only=True)
     
     class Meta:
         model = AwardYearGroup
@@ -2462,3 +2462,7 @@ class AwardCategorySerializer(serializers.ModelSerializer):
         model = AwardCategory
         fields = ['id', 'section_title', 'section_description', 'awards']
         ref_name = 'AwardCategoryDetail'
+        
+class AwardCategoryListResponseSerializer(serializers.Serializer):
+    table_of_content = serializers.ListField(child=serializers.CharField())
+    categories = AwardCategorySerializer(many=True)
