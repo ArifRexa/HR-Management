@@ -29,6 +29,7 @@ from project_management.models import (
 from settings.models import Designation
 from website.models import (
     FAQ,
+    AdditionalPages,
     Award,
     BenefitsOfEmployment,
     Blog,
@@ -61,6 +62,7 @@ from website.models import (
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 from website.serializers import (
+    AdditionalPagesSerializer,
     AvailableTagSerializer,
     AwardSerializer,
     BenefitsOfEmploymentSerializer,
@@ -1708,3 +1710,17 @@ class TechnologySlugDetailView(APIView):
         technology = get_object_or_404(Technology, slug=slug)
         serializer = TechnologyDetailSerializer(technology)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class AdditionalPageSlugDetailView(RetrieveAPIView):
+    queryset = AdditionalPages.objects.all()
+    serializer_class = AdditionalPagesSerializer
+    lookup_field = 'slug'
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a specific additional page by slug",
+        responses={200: AdditionalPagesSerializer},
+        tags=['Additional Pages']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

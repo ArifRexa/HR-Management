@@ -5,6 +5,8 @@ from rest_framework.routers import DefaultRouter
 from project_management.views import ProjectDetailView, ProjectListView
 from website.models import LifeAtMediusware
 from website.views import (
+    AdditionalPageSlugDetailView,
+    # AdditionalPagesListView,
     AwardListView,
     BenefitsOfEmploymentListAPIView,
     BlogDetailAPIView,
@@ -284,6 +286,7 @@ urlpatterns = [
     path('website/technologies/sitemap/', TechnologySiteMapView.as_view(), name='technology-sitemap'),
     # path('website/technologies/<int:pk>/', TechnologyDetailView.as_view(), name='technology-detail'),
     path('website/technologies/<slug:slug>/', TechnologySlugDetailView.as_view(), name='technology-detail-slug'),
+    path('website/additional-pages/<slug:slug>/', AdditionalPageSlugDetailView.as_view(), name='additional-page-detail'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
