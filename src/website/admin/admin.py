@@ -39,6 +39,9 @@ from website.models import (
     AllProjectsBanner,
     AllServicesTitle,
     Award,
+    AwardCategory,
+    AwardYearGroup,
+    Awards,
     AwardsBanner,
     AwardsTitle,
     BenefitsOfEmployment,
@@ -1769,6 +1772,25 @@ class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
         
         
     ]
+
+# ===================================================== Awards Admin ============================================================
+
+class AwardsInline(nested_admin.NestedStackedInline):
+    model = Awards
+    extra = 1
+    verbose_name = "Award"
+    verbose_name_plural = "Awards"
+
+class AwardYearGroupInline(nested_admin.NestedStackedInline):
+    model = AwardYearGroup
+    extra = 1
+    inlines = [AwardsInline]
+
+@admin.register(AwardCategory)
+class AwardCategoryAdmin(nested_admin.NestedModelAdmin):
+    list_display = ('id', 'section_title', 'section_description')
+    search_fields = ('section_title',)
+    inlines = [AwardYearGroupInline]
 
 
 
