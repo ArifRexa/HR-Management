@@ -1,5 +1,6 @@
 import calendar
-from datetime import datetime, date as dt
+from datetime import date as dt
+from datetime import datetime
 from decimal import Decimal
 from math import floor
 
@@ -227,6 +228,11 @@ class Expense(TimeStampMixin, AuthorMixin):
 class ExpanseAttachment(TimeStampMixin, AuthorMixin):
     expanse = models.ForeignKey(Expense, on_delete=models.CASCADE)
     attachment = models.FileField(upload_to="uploads/expanse/%y/%m")
+    note = models.TextField(null=True, blank=True)
+    amount = models.FloatField(default=0.00)
+
+    def __str__(self):
+        return f"{self.expanse.expanse_group.title} ({self.amount})"
 
 
 class Income(TimeStampMixin, AuthorMixin):

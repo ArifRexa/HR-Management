@@ -1,0 +1,35 @@
+
+<div class="popover-wrapper" style="padding: 8px;">
+
+    <div class="popover-title">
+        
+        {{obj.note}}
+    </div>
+    <div class="popover-message">
+        <strong>Boss Note</strong>
+        <hr>
+        <span style="color: red;margin-bottom: 10px; display: block;">
+            {{obj.note}}
+        </span>
+
+        <hr>
+        
+        {% for attachment in obj.expanseattachment_set.all %}
+            
+            {% if attachment.note %}
+                <span style="margin-bottom: 10px; display: block;">
+
+                    {{attachment.note}}
+                </span>
+                <hr>
+                
+            {% endif %}
+                
+        {% endfor %}
+            
+        
+    </div>
+
+</div>
+
+

@@ -73,22 +73,24 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
 class ExpenseAttachmentForm(forms.ModelForm):
     class Meta:
         model = ExpanseAttachment
-        fields = "__all__"
+        fields = ("note", "amount", "attachment")
         widgets = {
             "attachment": forms.ClearableFileInput(attrs={"accept": "image/*"})
         }
-    
+
     def clean_attachment(self):
-        attachment = self.cleaned_data.get('attachment')
-        
+        attachment = self.cleaned_data.get("attachment")
+
         if attachment:
             # Basic image validation (handled by ImageField)
             # Add custom format restrictions if needed
-            allowed_formats = ['jpg', 'jpeg', 'png', 'gif']
+            allowed_formats = ["jpg", "jpeg", "png", "gif"]
             ext = os.path.splitext(attachment.name)[1][1:].lower()
             if ext not in allowed_formats:
-                raise ValidationError(f"Only {', '.join(allowed_formats)} files are allowed")
-                
+                raise ValidationError(
+                    f"Only {', '.join(allowed_formats)} files are allowed"
+                )
+
         return attachment
 
 
@@ -121,7 +123,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         "expanse_group",
         "expense_category",
         "get_amount",
-        "note",
+        "get_notes",
         "get_attachments",
         "get_approved",
         "get_authorized",
@@ -151,6 +153,27 @@ class ExpenseAdmin(admin.ModelAdmin):
     autocomplete_fields = ("expanse_group", "expense_category")
     list_select_related = ("expanse_group", "expense_category", "created_by")
     list_per_page = 20
+    readonly_fields = ("amount",)
+
+    class Media:
+        css = {"all": ("css/list.css", "css/daily-update.css")}
+
+    @admin.display(description="Notes")
+    def get_notes(self, obj):
+        html_template = get_template("admin/expense/list/col_note.html")
+
+        html_content = html_template.render(
+            {
+                "obj": obj,
+            }
+        )
+
+        try:
+            data = format_html(html_content)
+        except:
+            data = "-"
+
+        return data
 
     # ✅ OPTIMIZATION 1: Centralized data fetching
     def get_queryset(self, request):
@@ -447,7 +470,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         if not request.user.has_perm("account.can_approve_expense"):
             self.exclude = ["is_approved"]
         if not request.user.is_superuser:
-            self.exclude += ["add_to_balance_sheet", "is_authorized"]
+            if self.exclude is None:
+                self.exclude = []
+            self.exclude += ["add_to_balance_sheet", "is_authorized", "note"]
         return super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change) -> None:
