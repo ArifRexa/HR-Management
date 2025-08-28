@@ -1,35 +1,38 @@
 from django.contrib import admin, messages
-from django.utils import timezone
 from django.utils.html import format_html
+
+from inventory_management.forms import (
+    InventoryItemForm,
+    InventoryTransactionForm,
+)
 from inventory_management.models import (
     InventoryItem,
     InventoryItemHead,
     InventoryTransaction,
     InventoryUnit,
 )
-from inventory_management.forms import InventoryTransactionForm, InventoryItemForm
 
 # Register your models here.
 
+
 @admin.register(InventoryItemHead)
 class InventoryItemHeadAdmin(admin.ModelAdmin):
-    list_display = ("title", )
+    list_display = ("title",)
     search_fields = ("title",)
-    
-    
+
+
 @admin.register(InventoryItem)
 class InventoryItemAdmin(admin.ModelAdmin):
-    list_display = ("get_head","show_item_name", "show_quantity", "unit")
+    list_display = ("get_head", "show_item_name", "show_quantity", "unit")
     readonly_fields = ["quantity"]
     search_fields = ("name",)
     form = InventoryItemForm
-    autocomplete_fields = ("head", )
+    autocomplete_fields = ("head",)
     list_filter = ("head", "unit")
-    
-    
+
     @admin.display(description="head", ordering="head.title")
     def get_head(self, obj):
-        return obj.head.title
+        return obj.head.title or "-"
 
     @admin.display(description="item name", ordering="name")
     def show_item_name(self, obj):
@@ -54,7 +57,8 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
         "quantity",
         "transaction_type",
         "colored_status",
-        "created_by",
+        "verification_code",
+        "get_created_by",
     )
     list_filter = (
         "status",
@@ -62,22 +66,30 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
         "transaction_type",
     )
     search_fields = ("inventory_item",)
-    exclude = ("updated_by",)
+    exclude = ("updated_by", "verification_code")
     actions = ["mark_as_approved", "mark_as_pending"]
     date_hierarchy = "transaction_date"
     autocomplete_fields = ("inventory_item",)
     form = InventoryTransactionForm
-    
+
+    @admin.display(description="Created By")
+    def get_created_by(self, obj):
+        return (
+            obj.created_by.employee.full_name
+            if obj.created_by.employee
+            else obj.created_by.username
+        )
+
     @admin.display(description="status", ordering="status")
     def colored_status(self, obj):
         colors = {
-            'pending': '#FF0000',  # Orange
-            'approved': '#28a745'  # Green
+            "pending": "#FF0000",  # Orange
+            "approved": "#28a745",  # Green
         }
         return format_html(
             '<span style="color: {}; font-weight: bold;">{}</span>',
-            colors.get(obj.status, 'black'),
-            obj.get_status_display()
+            colors.get(obj.status, "black"),
+            obj.get_status_display(),
         )
 
     def save_model(self, request, obj, form, change):
@@ -104,7 +116,9 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
         #         item.quantity = item.quantity-transaction.quantity
         #         item.save()
         self.message_user(
-            request, "Selected transactions approved successfully", messages.SUCCESS
+            request,
+            "Selected transactions approved successfully",
+            messages.SUCCESS,
         )
 
     @admin.action(description="Mark Selected Inventory as Pending")
@@ -122,7 +136,9 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
             actions.pop(
                 "mark_as_approved", None
             )  # Remove the "Mark as Approved" action
-            actions.pop("mark_as_pending", None)  # Remove the "Mark as Pending" action
+            actions.pop(
+                "mark_as_pending", None
+            )  # Remove the "Mark as Pending" action
         return actions
 
     def get_fields(self, request, obj=...):

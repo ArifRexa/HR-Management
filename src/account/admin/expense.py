@@ -29,6 +29,7 @@ from account.models import (
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._forms import DailyExpenseFilterForm
 from employee.models import Employee
+from inventory_management.models import InventoryTransaction
 from settings.models import FinancialYear
 
 
@@ -70,13 +71,80 @@ class ExpenseCategoryAdmin(admin.ModelAdmin):
         return False
 
 
+class InventoryIdLinkWidget(forms.TextInput):
+    def render(self, name, value, attrs=None, renderer=None):
+        # Convert stored value to list of IDs
+        ids = value.split(",") if value else []
+        links = []
+
+        for id_val in ids:
+            try:
+                # Fetch the actual object to build the link
+                obj = InventoryTransaction.objects.get(
+                    verification_code=id_val.strip()
+                )
+                link = f'<a href="/admin/inventory_management/inventorytransaction/{obj.pk}/change/" target="_blank">{id_val}</a>'
+                links.append(link)
+            except InventoryTransaction.DoesNotExist:
+                links.append(f"{id_val} (invalid)")
+
+        # Combine links into a single string
+        links_html = ", ".join(links)
+
+        # Render the base input field
+        input_html = super().render(name, value, attrs, renderer)
+
+        # Append links below the input field
+        return f"""
+            {input_html}
+            <div class="inventory-links">
+                {links_html}
+            </div>
+        """
+
+
 class ExpenseAttachmentForm(forms.ModelForm):
     class Meta:
         model = ExpanseAttachment
-        fields = ("note", "amount", "attachment")
+        fields = ("note", "amount", "attachment", "inventory_ids")
         widgets = {
-            "attachment": forms.ClearableFileInput(attrs={"accept": "image/*"})
+            "attachment": forms.ClearableFileInput(attrs={"accept": "image/*"}),
+            "note": forms.Textarea(attrs={"rows": 3, "cols": 50}),
+            "inventory_ids": InventoryIdLinkWidget(),
         }
+
+    def clean_inventory_ids(self):
+        inventory_ids = self.cleaned_data.get("inventory_ids", None)
+        if not inventory_ids:
+            raise ValidationError("Inventory IDs are required")
+        id_list = [id.strip() for id in inventory_ids.split(",")]
+
+        inventories = InventoryTransaction.objects.filter(
+            verification_code__in=id_list, transaction_type="i"
+        )
+        if len(id_list) > inventories.count():
+            raise ValidationError(
+                "One of the Inventory Id Not exist in Inventory Item Table"
+            )
+        self.cleaned_data["inventory"] = inventories.values_list(
+            "id", flat=True
+        )
+        return inventory_ids
+
+    def save(self, commit=True, **kwargs):
+        # Save the base object first
+        instance = super().save(commit=False, **kwargs)
+        instance.save()
+        # Get validated inventory objects from cleaned data
+        inventory_objects = self.cleaned_data.get("inventory", [])
+
+        # Set the Many-to-Many relationship
+        instance.inventory.set(inventory_objects)
+
+        if commit:
+            instance.save()
+
+        return instance
 
     def clean_attachment(self):
         attachment = self.cleaned_data.get("attachment")
@@ -98,6 +166,15 @@ class ExpanseAttachmentInline(admin.TabularInline):
     model = ExpanseAttachment
     extra = 1
     form = ExpenseAttachmentForm
+
+    # def get_readonly_fields(self, request, obj=None):
+    #     d = request.user.has_perm("account.can_update_expense_attachment")
+    #     f = super().get_readonly_fields(request, obj)
+    #     if obj.is_approved and not request.user.has_perm(
+    #         "account.can_update_expense_attachment"
+    #     ):
+    #         return ["note", "amount", "attachment", "inventory_ids"]
+    #     return f
 
 
 class ActiveCreatedByFilter(admin.SimpleListFilter):
@@ -157,6 +234,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
+        js = ("expense_total_amount.js",)
 
     @admin.display(description="Notes")
     def get_notes(self, obj):
@@ -310,6 +388,9 @@ class ExpenseAdmin(admin.ModelAdmin):
                 not request.user.is_superuser
                 and not request.user.has_perm("account.can_approve_expense")
                 and obj.is_approved
+                and not request.user.has_perm(
+                    "account.can_update_expense_attachment"
+                )
             ):
                 perm = False
         return perm
@@ -467,12 +548,18 @@ class ExpenseAdmin(admin.ModelAdmin):
             messages.error(request, "You don't have enough permission")
 
     def get_form(self, request, obj, **kwargs):
-        if not request.user.has_perm("account.can_approve_expense"):
+        if self.exclude is None:
+            self.exclude = []
+        if not request.user.is_superuser and not request.user.has_perm(
+            "account.can_approve_expense"
+        ):
             self.exclude = ["is_approved"]
         if not request.user.is_superuser:
-            if self.exclude is None:
-                self.exclude = []
-            self.exclude += ["add_to_balance_sheet", "is_authorized", "note"]
+            self.exclude += ["add_to_balance_sheet", "is_authorized"]
+        if not request.user.is_superuser and not request.user.has_perm(
+            "account.can_see_note_field"
+        ):
+            self.exclude += ["note"]
         return super(ExpenseAdmin, self).get_form(request, obj, **kwargs)
 
     def save_model(self, request, obj, form, change) -> None:

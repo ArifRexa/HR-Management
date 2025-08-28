@@ -20,6 +20,7 @@ from django_userforeignkey.models.fields import UserForeignKey
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models.employee import Employee, LateAttendanceFine
+from inventory_management.models import InventoryTransaction
 from project_management.models import Client, Project
 from settings.models import FinancialYear
 
@@ -213,6 +214,13 @@ class Expense(TimeStampMixin, AuthorMixin):
         verbose_name="Checked By",
     )
     add_to_balance_sheet = models.BooleanField(default=True)
+    
+    def save(self, *args, **kwargs):
+
+        total = self.expanseattachment_set.aggregate(Sum('amount'))['amount__sum'] or 0
+        self.amount = total
+        
+        super().save(*args, **kwargs)
 
     class Meta:
         permissions = (
@@ -222,6 +230,7 @@ class Expense(TimeStampMixin, AuthorMixin):
             ),
             ("can_view_all_expenses", "Can View All Expenses"),
             ("can_add_balance_sheet", "Can Add Balance Sheet"),
+            ("can_see_note_field", "Can See note field")
         )
 
 
@@ -230,9 +239,35 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
     attachment = models.FileField(upload_to="uploads/expanse/%y/%m")
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField(default=0.00)
+    inventory_ids = models.CharField(
+        null=True,
+        max_length=255,
+        help_text="Inventory Transaction verification ID With Comma Separate Value",
+    )
+    inventory = models.ManyToManyField(
+        "inventory_management.InventoryItem",
+        blank=True,
+    )
+
+    # def save(self, *args, **kwargs):
+    #     inventory_ids = self.inventory_ids
+    #     id_list = inventory_ids.split(",")
+    #     inventories = InventoryTransaction.objects.filter(
+    #         verification_code__in=id_list, transaction_type="i"
+    #     )
+    #     self.inventory = inventories
+    #     super().save(args, kwargs)
 
     def __str__(self):
         return f"{self.expanse.expanse_group.title} ({self.amount})"
+    
+    class Meta:
+        permissions = (
+            (
+                "can_update_expense_attachment",
+                "Can Update Expense Attachment",
+            ),
+        )
 
 
 class Income(TimeStampMixin, AuthorMixin):

@@ -51,7 +51,7 @@ class InventoryTransactionForm(forms.ModelForm):
 class InventoryItemForm(forms.ModelForm):
     class Meta:
         model = InventoryItem
-        fields = '__all__'
+        exclude = ("verification_code",)
 
     def clean(self):
         cleaned_data = super().clean()

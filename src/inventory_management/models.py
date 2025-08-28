@@ -6,6 +6,9 @@ from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from django.core.exceptions import ValidationError
 from django_userforeignkey.models.fields import UserForeignKey
+from django.utils.crypto import get_random_string
+
+
 TRANSACTION_CHOICES = [
     ("i", "IN"),
     ("o", "OUT"),
@@ -44,7 +47,7 @@ class InventoryItem(TimeStampMixin, AuthorMixin):
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=5
     )
     unit = models.ForeignKey(InventoryUnit, on_delete=models.CASCADE, null=True)
-
+    
     class Meta:
         verbose_name = "Inventory Item"
         verbose_name_plural = "Inventory Items"
@@ -68,6 +71,13 @@ class InventoryTransaction(TimeStampMixin, AuthorMixin):
     )
     updated_by = UserForeignKey(auto_user_add=True, verbose_name="Updated By",
                                 related_name="%(app_label)s_%(class)s_update_by")
+    
+    verification_code = models.CharField(max_length=50, null=True, blank=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.verification_code:
+            self.verification_code = get_random_string(length=6).lower()
+        super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Inventory Transaction"
