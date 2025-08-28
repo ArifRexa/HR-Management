@@ -1498,7 +1498,9 @@ class AwardYearGroup(models.Model):
 class Awards(models.Model):
     year_group = models.ForeignKey(AwardYearGroup, related_name='awards', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    image_url = models.URLField(max_length=500)
+    is_featured = models.BooleanField(default=False)
+    image = models.ImageField(upload_to='awards/', null=True, blank=True)
+    image_url = models.URLField(max_length=500, verbose_name="Award URL", null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     
     def __str__(self):

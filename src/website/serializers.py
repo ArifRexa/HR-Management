@@ -2444,7 +2444,8 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
 class AwardsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Awards
-        fields = ['title', 'image_url', 'description']
+        # fields = ['title', 'image_url', 'description']
+        fields = '__all__'
         ref_name = 'CategoryAward'
 
 class AwardYearGroupSerializer(serializers.ModelSerializer):
