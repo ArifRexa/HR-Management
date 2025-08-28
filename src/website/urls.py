@@ -22,6 +22,7 @@ from website.views import (
     IndustryListAPIView,
     IndustryWeServeListAPIView,
     InquiryModelViewSet,
+    IsFeaturedAwardListView,
     LeadershipAPIView,
     LifeAtMediuswareListView,
     OfficeLocationListView,
@@ -290,6 +291,7 @@ urlpatterns = [
     path('website/additional-pages/<slug:slug>/', AdditionalPageSlugDetailView.as_view(), name='additional-page-detail'),
     
     path('website/awards/', AwardCategoryListView.as_view(), name='award-categories'),
+    path('website/featured-awards/', IsFeaturedAwardListView.as_view(), name='featured-awards'),
 
 ]
 

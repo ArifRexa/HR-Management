@@ -32,6 +32,7 @@ from website.models import (
     AdditionalPages,
     Award,
     AwardCategory,
+    Awards,
     BenefitsOfEmployment,
     Blog,
     BlogComment,
@@ -68,6 +69,7 @@ from website.serializers import (
     AwardCategoryListResponseSerializer,
     AwardCategorySerializer,
     AwardSerializer,
+    AwardsSerializer,
     BenefitsOfEmploymentSerializer,
     BlogCommentSerializer,
     BlogDetailsSerializer,
@@ -1754,3 +1756,14 @@ class AwardCategoryListView(APIView):
         }
         
         return Response(response_data)
+    
+class IsFeaturedAwardListView(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of featured awards",
+        responses={200: AwardsSerializer(many=True)},
+        tags=['Awards']
+    )
+    def get(self, request):
+        featured_awards = Awards.objects.filter(is_featured=True)
+        serializer = AwardsSerializer(featured_awards, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
