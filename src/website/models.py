@@ -1470,3 +1470,35 @@ class AdditionalPageFAQ(models.Model):
         verbose_name = "FAQ"
         verbose_name_plural = "FAQs"
         ordering = ['order']
+
+# ================================ Award Section =================================
+
+class AwardCategory(models.Model):
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=100)
+    section_description = models.CharField(max_length=255, blank=True, null=True)
+    
+    class Meta:
+        verbose_name_plural = "Award Categories"
+    
+    def __str__(self):
+        return self.section_title
+
+class AwardYearGroup(models.Model):
+    category = models.ForeignKey(AwardCategory, related_name='year_groups', on_delete=models.CASCADE)
+    year = models.PositiveIntegerField()
+    
+    class Meta:
+        ordering = ['-year']
+    
+    def __str__(self):
+        return f"{self.category.section_title} - {self.year}"
+
+class Awards(models.Model):
+    year_group = models.ForeignKey(AwardYearGroup, related_name='awards', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    image_url = models.URLField(max_length=500)
+    description = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return self.title

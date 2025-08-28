@@ -29,7 +29,9 @@ from project_management.models import (
 from settings.models import Designation
 from website.models import (
     FAQ,
+    AdditionalPages,
     Award,
+    AwardCategory,
     BenefitsOfEmployment,
     Blog,
     BlogComment,
@@ -61,7 +63,10 @@ from website.models import (
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 from website.serializers import (
+    AdditionalPagesSerializer,
     AvailableTagSerializer,
+    AwardCategoryListResponseSerializer,
+    AwardCategorySerializer,
     AwardSerializer,
     BenefitsOfEmploymentSerializer,
     BlogCommentSerializer,
@@ -1708,3 +1713,44 @@ class TechnologySlugDetailView(APIView):
         technology = get_object_or_404(Technology, slug=slug)
         serializer = TechnologyDetailSerializer(technology)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class AdditionalPageSlugDetailView(RetrieveAPIView):
+    queryset = AdditionalPages.objects.all()
+    serializer_class = AdditionalPagesSerializer
+    lookup_field = 'slug'
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about a specific additional page by slug",
+        responses={200: AdditionalPagesSerializer},
+        tags=['Additional Pages']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+    
+
+# ======================================= Awards ===========================================
+class AwardCategoryListView(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all awards",
+        responses={200: AwardCategoryListResponseSerializer()},
+        tags=['Awards']
+    )
+    def get(self, request):
+        categories = AwardCategory.objects.prefetch_related(
+            'year_groups__awards'
+        ).all()
+        
+        # Create table of contents with all section titles
+        table_of_content = [category.section_title for category in categories]
+        
+        # Serialize the categories
+        category_serializer = AwardCategorySerializer(categories, many=True)
+        
+        # Create the response data
+        response_data = {
+            'table_of_content': table_of_content,
+            'categories': category_serializer.data
+        }
+        
+        return Response(response_data)

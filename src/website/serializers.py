@@ -31,8 +31,18 @@ from settings.models import Designation
 from website.models import (
     CTA,
     FAQ,
+    AdditionalPageFAQ,
+    AdditionalPageHeroSection,
+    AdditionalPageKeyThings,
+    AdditionalPageKeyThingsCards,
+    AdditionalPageOurProcess,
+    AdditionalPageWhyChooseUs,
+    AdditionalPages,
     AllServicesTitle,
     Award,
+    AwardCategory,
+    AwardYearGroup,
+    Awards,
     AwardsTitle,
     BenefitsOfEmployment,
     Blog,
@@ -108,6 +118,7 @@ from website.models import (
     VideoTestimonial,
     VideoTestimonialTitle,
     WebsiteTitle,
+    WhatIs,
     WhyUsTitle,
 )
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
@@ -2318,3 +2329,140 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
         model = Technology
         fields = '__all__'
         ref_name = 'TechnologyDetailSerializer'
+
+
+
+
+# ==================================== Additional Page Serializers ====================================
+
+
+class AdditionalPageKeyThingsCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageKeyThingsCards
+        fields = '__all__'
+        ref_name = 'AdditionalPageKeyThingsCards'
+
+class AdditionalPageKeyThingsSerializer(serializers.ModelSerializer):
+    key_things_cards = AdditionalPageKeyThingsCardsSerializer(many=True, read_only=True, source='additional_page_key_things_cards.all')
+    
+    class Meta:
+        model = AdditionalPageKeyThings
+        fields = '__all__'
+        ref_name = 'AdditionalPageKeyThings'
+
+class AdditionalPageHeroSectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageHeroSection
+        fields = '__all__'
+        ref_name = 'AdditionalPageHeroSection'
+
+class WhatIsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WhatIs
+        fields = '__all__'
+        ref_name = 'WhatIs'
+
+class AdditionalPageWhyChooseUsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageWhyChooseUs
+        fields = '__all__'
+        ref_name = 'AdditionalPageWhyChooseUs'
+
+class AdditionalPageOurProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageOurProcess
+        fields = '__all__'
+        ref_name = 'AdditionalPageOurProcess'
+
+class AdditionalPageFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageFAQ
+        fields = '__all__'
+        ref_name = 'AdditionalPageFAQ'
+
+class AdditionalPagesSerializer(serializers.ModelSerializer):
+    hero_section = serializers.SerializerMethodField()
+    what_is = serializers.SerializerMethodField()
+    key_things = serializers.SerializerMethodField()
+    why_choose_us = serializers.SerializerMethodField()
+    our_process = AdditionalPageOurProcessSerializer(many=True, read_only=True)
+    faqs = AdditionalPageFAQSerializer(many=True, read_only=True)
+    
+       
+    class Meta:
+        model = AdditionalPages
+        fields = [
+            'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
+            'hero_section', 'what_is', 'key_things', 'why_choose_us', 
+            'our_process', 'faqs'
+        ]
+        ref_name = 'AdditionalPages'
+    
+    def get_hero_section(self, obj):
+        try:
+            section = obj.additional_page_hero_section.first()
+            if section:
+                return AdditionalPageHeroSectionSerializer(section).data
+        except Exception:
+            pass
+        return None
+    
+    def get_what_is(self, obj):
+        try:
+            what_is = obj.what_is_next.first()
+            if what_is:
+                return WhatIsSerializer(what_is).data
+        except Exception:
+            pass
+        return None
+    
+    def get_key_things(self, obj):
+        try:
+            key_things = obj.additional_page_key_things.first()
+            if key_things:
+                return AdditionalPageKeyThingsSerializer(key_things).data
+        except Exception:
+            pass
+        return None
+    
+    def get_why_choose_us(self, obj):
+        try:
+            why_choose = obj.additional_page_why_choose_us.first()
+            if why_choose:
+                return AdditionalPageWhyChooseUsSerializer(why_choose).data
+        except Exception:
+            pass
+        return None
+    
+
+
+
+
+
+# ===================================== Award Serializers ======================================
+
+class AwardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Awards
+        fields = ['title', 'image_url', 'description']
+        ref_name = 'CategoryAward'
+
+class AwardYearGroupSerializer(serializers.ModelSerializer):
+    awards = AwardsSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = AwardYearGroup
+        fields = ['year', 'awards']
+        ref_name = 'CategoryYearGroup'
+
+class AwardCategorySerializer(serializers.ModelSerializer):
+    awards = AwardYearGroupSerializer(source='year_groups', many=True, read_only=True)
+    
+    class Meta:
+        model = AwardCategory
+        fields = ['id', 'section_title', 'section_description', 'awards']
+        ref_name = 'AwardCategoryDetail'
+        
+class AwardCategoryListResponseSerializer(serializers.Serializer):
+    table_of_content = serializers.ListField(child=serializers.CharField())
+    categories = AwardCategorySerializer(many=True)
