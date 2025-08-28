@@ -1778,6 +1778,8 @@ class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
 class AwardsInline(nested_admin.NestedStackedInline):
     model = Awards
     extra = 1
+    verbose_name = "Award"
+    verbose_name_plural = "Awards"
 
 class AwardYearGroupInline(nested_admin.NestedStackedInline):
     model = AwardYearGroup

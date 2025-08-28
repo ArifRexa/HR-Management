@@ -40,6 +40,9 @@ from website.models import (
     AdditionalPages,
     AllServicesTitle,
     Award,
+    AwardCategory,
+    AwardYearGroup,
+    Awards,
     AwardsTitle,
     BenefitsOfEmployment,
     Blog,
@@ -2430,3 +2433,32 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
         except Exception:
             pass
         return None
+    
+
+
+
+
+
+# ===================================== Award Serializers ======================================
+
+class AwardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Awards
+        fields = ['title', 'image_url', 'description']
+        ref_name = 'CategoryAward'
+
+class AwardYearGroupSerializer(serializers.ModelSerializer):
+    awards = AwardSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = AwardYearGroup
+        fields = ['year', 'awards']
+        ref_name = 'CategoryYearGroup'
+
+class AwardCategorySerializer(serializers.ModelSerializer):
+    awards = AwardYearGroupSerializer(source='year_groups', many=True, read_only=True)
+    
+    class Meta:
+        model = AwardCategory
+        fields = ['id', 'section_title', 'section_description', 'awards']
+        ref_name = 'AwardCategoryDetail'
