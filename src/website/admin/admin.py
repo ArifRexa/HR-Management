@@ -1697,15 +1697,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
 
 
-
-
-
-
-
-
-
-
-
+# ================================================ Additional Page Admin ================================================================
 class AdditionalPageHeroSectionInline(nested_admin.NestedStackedInline):
     model = AdditionalPageHeroSection
     extra = 1
@@ -1777,32 +1769,6 @@ class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
         
         
     ]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
