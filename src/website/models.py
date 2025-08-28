@@ -1479,7 +1479,8 @@ class AwardCategory(models.Model):
     section_description = models.CharField(max_length=255, blank=True, null=True)
     
     class Meta:
-        verbose_name_plural = "Award Categories"
+        verbose_name = "Award"
+        verbose_name_plural = "Awards"
     
     def __str__(self):
         return self.section_title
