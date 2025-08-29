@@ -104,6 +104,8 @@ class InventoryIdLinkWidget(forms.TextInput):
 
 
 class ExpenseAttachmentForm(forms.ModelForm):
+    inventory_ids = forms.CharField(max_length=255, required=False)
+
     class Meta:
         model = ExpanseAttachment
         fields = ("note", "amount", "attachment", "inventory_ids")
@@ -115,20 +117,19 @@ class ExpenseAttachmentForm(forms.ModelForm):
 
     def clean_inventory_ids(self):
         inventory_ids = self.cleaned_data.get("inventory_ids", None)
-        if not inventory_ids:
-            raise ValidationError("Inventory IDs are required")
-        id_list = [id.strip() for id in inventory_ids.split(",")]
+        if inventory_ids:
+            id_list = [id.strip() for id in inventory_ids.split(",")]
 
-        inventories = InventoryTransaction.objects.filter(
-            verification_code__in=id_list, transaction_type="i"
-        )
-        if len(id_list) > inventories.count():
-            raise ValidationError(
-                "One of the Inventory Id Not exist in Inventory Item Table"
+            inventories = InventoryTransaction.objects.filter(
+                verification_code__in=id_list, transaction_type="i"
             )
-        self.cleaned_data["inventory"] = inventories.values_list(
-            "id", flat=True
-        )
+            if len(id_list) > inventories.count():
+                raise ValidationError(
+                    "One of the Inventory Id Not exist in Inventory Item Table"
+                )
+            self.cleaned_data["inventory"] = inventories.values_list(
+                "id", flat=True
+            )
         return inventory_ids
 
     def save(self, commit=True, **kwargs):
