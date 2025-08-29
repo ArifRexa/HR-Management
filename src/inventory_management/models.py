@@ -38,7 +38,7 @@ class InventoryItemHead(TimeStampMixin, AuthorMixin):
         return self.title
 
 class InventoryItem(TimeStampMixin, AuthorMixin):
-    head = models.ForeignKey(InventoryItemHead, on_delete=models.CASCADE, null=True)
+    # head = models.ForeignKey(InventoryItemHead, on_delete=models.CASCADE, null=True)
     name = models.CharField(max_length=50)
     quantity = models.DecimalField(
         max_digits=10, decimal_places=2, validators=[MinValueValidator(0)], default=0

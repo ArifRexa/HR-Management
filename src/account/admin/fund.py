@@ -7,6 +7,7 @@ from django.db.models.functions import Coalesce
 from django.core.exceptions import PermissionDenied
 from django.utils.html import format_html
 from django.contrib import messages
+from django.contrib.admin import SimpleListFilter
 
 from account.models import Expense, Fund, FundCategory
 from config.admin import RecentEdit
@@ -148,10 +149,25 @@ class FundCategoryAdmin(admin.ModelAdmin):
 #         return super().has_change_permission(request, obj)
 
 
+class FundUserFilter(SimpleListFilter):
+    title = 'user'
+    parameter_name = 'user'
+
+    def lookups(self, request, model_admin):
+        # Get users who have created funds
+        users = Fund.objects.values_list('user', 'user__first_name', 'user__last_name').distinct()
+        return [(user[0], f"{user[1]} {user[2]}".strip()) for user in users]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(user_id=self.value())
+        return queryset
+
+
 @admin.register(Fund)
 class FundAdmin(RecentEdit, admin.ModelAdmin):
     list_display = ['date', 'amount', 'user_full_name', 'note', 'fund_category', 'get_fund', 'colored_status']
-    list_filter = ['status', 'date', 'user']
+    list_filter = ['status', 'date',  FundUserFilter]
     autocomplete_fields = ['user', 'fund_category']
     actions = ['approve_selected_funds']
 

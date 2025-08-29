@@ -240,6 +240,7 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField(default=0.00)
     inventory_ids = models.CharField(
+        blank=True,
         null=True,
         max_length=255,
         help_text="Inventory Transaction verification ID With Comma Separate Value",

@@ -23,12 +23,12 @@ class InventoryItemHeadAdmin(admin.ModelAdmin):
 
 @admin.register(InventoryItem)
 class InventoryItemAdmin(admin.ModelAdmin):
-    list_display = ("get_head", "show_item_name", "show_quantity", "unit")
+    list_display = ("show_item_name", "show_quantity", "unit")
     readonly_fields = ["quantity"]
     search_fields = ("name",)
     form = InventoryItemForm
-    autocomplete_fields = ("head",)
-    list_filter = ("head", "unit")
+    # autocomplete_fields = ("head",)
+    list_filter = ("unit",)
 
     @admin.display(description="head", ordering="head.title")
     def get_head(self, obj):
