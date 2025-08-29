@@ -416,8 +416,8 @@ class TechnologyFAQ(models.Model):
     answer = HTMLField()
     order = models.PositiveIntegerField(default=0, help_text="Order of display for FAQs")
 
-    def __str__(self):
-        return self.question
+    # def __str__(self):
+    #     return self.question
 
     class Meta:
         verbose_name = "Technology FAQ"
