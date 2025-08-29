@@ -170,8 +170,8 @@ class TechnologySolutionsAndServices(TimeStampMixin):
     secondary_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="Secondary Title")
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title
+    # def __str__(self):
+    #     return self.section_title
     
     class Meta:
         verbose_name = "Hero Section"
@@ -190,8 +190,8 @@ class TechnologyCreatorsQuotes(TimeStampMixin):
     author_designation = models.CharField(max_length=200, blank=True, null=True)
     author_image = models.ImageField(upload_to='creator_quotes_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.author_name or "Creator's Quote"
+    # def __str__(self):
+    #     return self.author_name or "Creator's Quote"
 
 class TechnologySolutionsAndServicesCards(TimeStampMixin):
     solutions_and_services = models.ForeignKey(
@@ -203,8 +203,8 @@ class TechnologySolutionsAndServicesCards(TimeStampMixin):
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 # ===================Technology Services We Provide Section=====================
 class ServicesWeProvide(models.Model):
@@ -219,8 +219,8 @@ class ServicesWeProvide(models.Model):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Services We Provide Heading"
+    # def __str__(self):
+    #     return self.section_title or "Services We Provide Heading"
     
     class Meta:
         verbose_name = "Services We Provide Heading"
@@ -238,8 +238,8 @@ class ServicesWeProvideCards(models.Model):
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 # ===================Technology EcoSystem Section=====================
 class EcoSystem(models.Model):
@@ -254,8 +254,8 @@ class EcoSystem(models.Model):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "EcoSystem Heading"
+    # def __str__(self):
+    #     return self.section_title or "EcoSystem Heading"
     
     class Meta:
         verbose_name = "EcoSystem Heading"
@@ -272,8 +272,8 @@ class EcoSystemCards(models.Model):
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
     
 class EcoSystemCardTags(models.Model):
     ecosystem_card = models.ForeignKey(
@@ -285,8 +285,8 @@ class EcoSystemCardTags(models.Model):
     )
     tag = models.CharField(max_length=200, blank=True, null=True)
 
-    def __str__(self):
-        return self.tag
+    # def __str__(self):
+    #     return self.tag
 
 # =====================================Technology Key Things======================================
 
@@ -302,8 +302,8 @@ class TechnologyKeyThings(models.Model):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Benefits"
+    # def __str__(self):
+    #     return self.section_title or "Benefits"
     
     class Meta:
         verbose_name = "Key Things"
@@ -319,8 +319,8 @@ class TechnologyKeyThingsQA(models.Model):
     )
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 
 # ================================= Technology Why choose us =================================
@@ -336,8 +336,8 @@ class TechnologyWhyChooseUs(TimeStampMixin):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Why Choose Us"
+    # def __str__(self):
+    #     return self.section_title or "Why Choose Us"
     
 class TechnologyWhyChooseUsCards(TimeStampMixin):
     tech_why_choose_us = models.ForeignKey(
@@ -349,8 +349,8 @@ class TechnologyWhyChooseUsCards(TimeStampMixin):
     icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
     card_title = models.CharField(max_length=200, blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
     
 class TechnologyWhyChooseUsCardsDetails(TimeStampMixin):
     tech_why_choose_us_cards = models.ForeignKey(
@@ -361,8 +361,8 @@ class TechnologyWhyChooseUsCardsDetails(TimeStampMixin):
     )
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_description
+    # def __str__(self):
+    #     return self.card_description
 
 
 # ================================= Our Process of Technology =================================
@@ -379,8 +379,8 @@ class TechnologyOurProcess(models.Model):
     section_description = HTMLField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
-    def __str__(self):
-        return self.section_title
+    # def __str__(self):
+    #     return self.section_title
     
     class Meta:
         verbose_name = "Our Process"
@@ -401,8 +401,8 @@ class HistoryOfTech(models.Model):
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to="history_of_tech_images/", null=True, blank=True)
 
-    def __str__(self):
-        return self.section_title    
+    # def __str__(self):
+    #     return self.section_title    
     class Meta:
         verbose_name = "History of Technology"
         verbose_name_plural = "History of Technologies"
