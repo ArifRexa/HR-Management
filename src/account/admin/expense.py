@@ -119,19 +119,6 @@ class ExpenseAttachmentForm(forms.ModelForm):
         inventory_ids = self.cleaned_data.get("inventory_ids", None)
 
         if inventory_ids:
-            if self.instance.expanse.is_approved:
-                inventory_ids = (
-                    self.instance.expanse.expanseattachment_set.values_list(
-                        "inventory_ids", flat=True
-                    )
-                )
-                if any(inventory_ids):
-                    if InventoryTransaction.objects.filter(
-                        verification_code__in=inventory_ids, status="pending"
-                    ).exists():
-                        raise ValidationError(
-                            "first accept inventory transaction"
-                        )
             id_list = [id.strip() for id in inventory_ids.split(",")]
 
             inventories = InventoryTransaction.objects.filter(
