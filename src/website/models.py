@@ -435,8 +435,8 @@ class TechnologyFAQSchema(models.Model):
         help_text="JSON-LD schema for FAQs"
     )
 
-    def __str__(self):
-        return f"FAQ Schema for {self.technology.name}"
+    # def __str__(self):
+    #     return f"FAQ Schema for {self.technology.name}"
 
 # =================== Technology CTA ===================
 class TechnologyCTA(TimeStampMixin):
@@ -453,8 +453,8 @@ class TechnologyCTA(TimeStampMixin):
         blank=True
     )
 
-    def __str__(self):
-        return self.title or "CTA"
+    # def __str__(self):
+    #     return self.title or "CTA"
 
 
 class TechnologyMetaData(models.Model):
@@ -468,8 +468,8 @@ class TechnologyMetaData(models.Model):
     meta_title = models.CharField(max_length=255, null=True, blank=True)
     meta_description = models.TextField(null=True, blank=True)
 
-    def __str__(self):
-        return self.meta_title or f"MetaData for {self.technology.name if self.technology else 'No Technology'}"
+    # def __str__(self):
+    #     return self.meta_title or f"MetaData for {self.technology.name if self.technology else 'No Technology'}"
 
 # ========================================================== Blog Section ======================================================
 class Blog(AuthorMixin, TimeStampMixin):
