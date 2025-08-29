@@ -117,7 +117,21 @@ class ExpenseAttachmentForm(forms.ModelForm):
 
     def clean_inventory_ids(self):
         inventory_ids = self.cleaned_data.get("inventory_ids", None)
+
         if inventory_ids:
+            if self.instance.expanse.is_approved:
+                inventory_ids = (
+                    self.instance.expanse.expanseattachment_set.values_list(
+                        "inventory_ids", flat=True
+                    )
+                )
+                if any(inventory_ids):
+                    if InventoryTransaction.objects.filter(
+                        verification_code__in=inventory_ids, status="pending"
+                    ).exists():
+                        raise ValidationError(
+                            "first accept inventory transaction"
+                        )
             id_list = [id.strip() for id in inventory_ids.split(",")]
 
             inventories = InventoryTransaction.objects.filter(
@@ -194,6 +208,56 @@ class ActiveCreatedByFilter(admin.SimpleListFilter):
         return queryset
 
 
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        is_approved = cleaned_data.get("is_approved")
+        obj = self.instance
+        attachments = obj.expanseattachment_set.all()
+        for attachment in obj.expanseattachment_set.all():
+            group_title = obj.expanse_group.title.lower()
+            if not attachment.inventory_ids and group_title in [
+                "office expense",
+                "office supplies & stationery",
+                "entertainment",
+            ]:
+                raise ValidationError(f"you must give inventory ids for {group_title} group")
+        # Only validate if the object is approved
+        if is_approved:
+            # Current model instance (unsaved/new)
+
+            # Get inventory IDs from related ExpanseAttachments
+            inventory_ids = []
+            for attachment in attachments:
+                # Handle different data types (list/JSON/string)
+                if isinstance(attachment.inventory_ids, str):
+                    inventory_ids.extend(
+                        [
+                            id.strip()
+                            for id in attachment.inventory_ids.split(",")
+                        ]
+                    )
+                else:
+                    inventory_ids.extend(attachment.inventory_ids)
+
+            # Check for pending inventory transactions
+            if (
+                inventory_ids
+                and InventoryTransaction.objects.filter(
+                    verification_code__in=inventory_ids, status="pending"
+                ).exists()
+            ):
+                raise ValidationError(
+                    {"is_approved": "First accept inventory transactions."}
+                )
+
+        return cleaned_data
+
+
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
     list_display = (
@@ -232,6 +296,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_select_related = ("expanse_group", "expense_category", "created_by")
     list_per_page = 20
     readonly_fields = ("amount",)
+    form = ExpenseForm
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
@@ -554,7 +619,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         if not request.user.is_superuser and not request.user.has_perm(
             "account.can_approve_expense"
         ):
-            self.exclude = ["is_approved"]
+            self.exclude += ["is_approved"]
         if not request.user.is_superuser:
             self.exclude += ["add_to_balance_sheet", "is_authorized"]
         if not request.user.is_superuser and not request.user.has_perm(
