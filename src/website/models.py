@@ -182,7 +182,7 @@ class TechnologyCreatorsQuotes(TimeStampMixin):
     technology = models.ForeignKey(
         Technology,
         related_name="creators_quotes",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
     )
     quote = models.TextField(blank=True, null=True)
@@ -197,7 +197,7 @@ class TechnologySolutionsAndServicesCards(TimeStampMixin):
     solutions_and_services = models.ForeignKey(
         TechnologySolutionsAndServices,
         related_name="cards",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
     )
     card_title = models.CharField(max_length=200, blank=True, null=True)
@@ -329,7 +329,7 @@ class TechnologyWhyChooseUs(TimeStampMixin):
     technology = models.ForeignKey(
         Technology,
         related_name="Tech_why_choose_us",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
     )
     seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
@@ -343,7 +343,7 @@ class TechnologyWhyChooseUsCards(TimeStampMixin):
     tech_why_choose_us = models.ForeignKey(
         TechnologyWhyChooseUs,
         related_name="Tech_why_choose_us_cards",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
     )
     icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
@@ -356,7 +356,7 @@ class TechnologyWhyChooseUsCardsDetails(TimeStampMixin):
     tech_why_choose_us_cards = models.ForeignKey(
         TechnologyWhyChooseUsCards,
         related_name="tech_why_choose_us_card_details",
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
     )
     card_description = HTMLField(blank=True, null=True)
