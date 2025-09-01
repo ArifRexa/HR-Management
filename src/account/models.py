@@ -259,6 +259,22 @@ class ExpanseAttachment(TimeStampMixin, AuthorMixin):
     #     self.inventory = inventories
     #     super().save(args, kwargs)
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Update the parent expense's total amount
+        expense = self.expanse
+        total = expense.expanseattachment_set.aggregate(Sum('amount'))['amount__sum'] or 0
+        expense.amount = total
+        expense.save(update_fields=['amount'])
+
+    def delete(self, *args, **kwargs):
+        expense = self.expanse
+        super().delete(*args, **kwargs)
+        # Update the parent expense's total amount after deletion
+        total = expense.expanseattachment_set.aggregate(Sum('amount'))['amount__sum'] or 0
+        expense.amount = total
+        expense.save(update_fields=['amount'])
+
     def __str__(self):
         return f"{self.expanse.expanse_group.title} ({self.amount})"
     

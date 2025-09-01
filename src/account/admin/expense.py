@@ -168,7 +168,6 @@ class ExpanseAttachmentInline(admin.TabularInline):
     model = ExpanseAttachment
     extra = 1
     form = ExpenseAttachmentForm
-    fields = ("note", "amount", "attachment")
 
     # def get_readonly_fields(self, request, obj=None):
     #     d = request.user.has_perm("account.can_update_expense_attachment")
@@ -201,88 +200,37 @@ class ExpenseForm(forms.ModelForm):
         model = Expense
         fields = "__all__"
 
-    # def clean(self):
-    #     cleaned_data = super().clean()
-    #     is_approved = cleaned_data.get("is_approved")
-    #     obj = self.instance
-    #     attachments = obj.expanseattachment_set.all()
-    #     for attachment in obj.expanseattachment_set.all():
-    #         group_title = obj.expanse_group.title.lower()
-    #         if not attachment.inventory_ids and group_title in [
-    #             "office expense",
-    #             "office supplies & stationery",
-    #             "entertainment",
-    #         ]:
-    #             raise ValidationError(f"you must give inventory ids for {group_title} group")
-    #     # Only validate if the object is approved
-    #     if is_approved:
-    #         # Current model instance (unsaved/new)
-
-    #         # Get inventory IDs from related ExpanseAttachments
-    #         inventory_ids = []
-    #         for attachment in attachments:
-    #             # Handle different data types (list/JSON/string)
-    #             if isinstance(attachment.inventory_ids, str):
-    #                 inventory_ids.extend(
-    #                     [
-    #                         id.strip()
-    #                         for id in attachment.inventory_ids.split(",")
-    #                     ]
-    #                 )
-    #             else:
-    #                 inventory_ids.extend(attachment.inventory_ids)
-
-    #         # Check for pending inventory transactions
-    #         if (
-    #             inventory_ids
-    #             and InventoryTransaction.objects.filter(
-    #                 verification_code__in=inventory_ids, status="pending"
-    #             ).exists()
-    #         ):
-    #             raise ValidationError(
-    #                 {"is_approved": "First accept inventory transactions."}
-    #             )
-
-    #     return cleaned_data
     def clean(self):
         cleaned_data = super().clean()
         is_approved = cleaned_data.get("is_approved")
         obj = self.instance
-        
-        # Check if expanse_group is set before accessing its title
-        if not obj.expanse_group:
-            raise ValidationError({"expanse_group": "Expense group must be set."})
-        
-        group_title = obj.expanse_group.title.lower()
-        
         attachments = obj.expanseattachment_set.all()
-        for attachment in attachments:
-            # First check if inventory_ids exists and is not empty
+        for attachment in obj.expanseattachment_set.all():
+            group_title = obj.expanse_group.title.lower()
             if not attachment.inventory_ids and group_title in [
                 "office expense",
                 "office supplies & stationery",
                 "entertainment",
             ]:
                 raise ValidationError(f"you must give inventory ids for {group_title} group")
-        
         # Only validate if the object is approved
         if is_approved:
+            # Current model instance (unsaved/new)
+
             # Get inventory IDs from related ExpanseAttachments
             inventory_ids = []
             for attachment in attachments:
-                # Skip if inventory_ids is None
-                if attachment.inventory_ids is None:
-                    continue
-                    
                 # Handle different data types (list/JSON/string)
                 if isinstance(attachment.inventory_ids, str):
-                    # Split the string and ensure we don't have empty strings
-                    ids = [id.strip() for id in attachment.inventory_ids.split(",") if id.strip()]
-                    inventory_ids.extend(ids)
-                elif isinstance(attachment.inventory_ids, (list, tuple)):
-                    # Only extend if it's a list or tuple
+                    inventory_ids.extend(
+                        [
+                            id.strip()
+                            for id in attachment.inventory_ids.split(",")
+                        ]
+                    )
+                else:
                     inventory_ids.extend(attachment.inventory_ids)
-            
+
             # Check for pending inventory transactions
             if (
                 inventory_ids
@@ -293,7 +241,58 @@ class ExpenseForm(forms.ModelForm):
                 raise ValidationError(
                     {"is_approved": "First accept inventory transactions."}
                 )
+
         return cleaned_data
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     is_approved = cleaned_data.get("is_approved")
+    #     obj = self.instance
+        
+    #     # Check if expanse_group is set before accessing its title
+    #     if not obj.expanse_group:
+    #         raise ValidationError({"expanse_group": "Expense group must be set."})
+        
+    #     group_title = obj.expanse_group.title.lower()
+        
+    #     attachments = obj.expanseattachment_set.all()
+    #     for attachment in attachments:
+    #         # First check if inventory_ids exists and is not empty
+    #         if not attachment.inventory_ids and group_title in [
+    #             "office expense",
+    #             "office supplies & stationery",
+    #             "entertainment",
+    #         ]:
+    #             raise ValidationError(f"you must give inventory ids for {group_title} group")
+        
+    #     # Only validate if the object is approved
+    #     if is_approved:
+    #         # Get inventory IDs from related ExpanseAttachments
+    #         inventory_ids = []
+    #         for attachment in attachments:
+    #             # Skip if inventory_ids is None
+    #             if attachment.inventory_ids is None:
+    #                 continue
+                    
+    #             # Handle different data types (list/JSON/string)
+    #             if isinstance(attachment.inventory_ids, str):
+    #                 # Split the string and ensure we don't have empty strings
+    #                 ids = [id.strip() for id in attachment.inventory_ids.split(",") if id.strip()]
+    #                 inventory_ids.extend(ids)
+    #             elif isinstance(attachment.inventory_ids, (list, tuple)):
+    #                 # Only extend if it's a list or tuple
+    #                 inventory_ids.extend(attachment.inventory_ids)
+            
+    #         # Check for pending inventory transactions
+    #         if (
+    #             inventory_ids
+    #             and InventoryTransaction.objects.filter(
+    #                 verification_code__in=inventory_ids, status="pending"
+    #             ).exists()
+    #         ):
+    #             raise ValidationError(
+    #                 {"is_approved": "First accept inventory transactions."}
+    #             )
+    #     return cleaned_data
 
 
 @admin.register(Expense)
