@@ -259,7 +259,8 @@ class Client(TimeStampMixin, AuthorMixin):
     # cc_email = models.TextField(
     #     null=True, blank=True, help_text="Comma-separated email addresses for CC"
     # )
-    address = models.TextField(null=True, blank=True)
+    address = models.TextField(null=True, blank=True, verbose_name="Billing Address")
+    exclude_client_name = models.BooleanField(default=False)
     country = models.ForeignKey(
         Country, on_delete=models.SET_NULL, null=True, blank=True
     )

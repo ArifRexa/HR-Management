@@ -96,7 +96,12 @@
                         <td>
                             <br>
                             Bill to<br>
-                            <b>{{invoice.project.client.name}}</b><br>
+                            
+                            {% if not invoice.project.client.exclude_client_name %}
+                                
+                                <b>{{invoice.project.client.name}}</b><br>
+                            {% endif %}
+                                
                             <span>{{invoice.project.client.address|strip_last_newline|safe}}<span><br>
                             <span>{{invoice.project.client.country}}</span>
                         
