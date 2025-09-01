@@ -369,6 +369,12 @@ class Fund(TimeStampMixin, AuthorMixin):
         max_length=20, choices=STATUS_CHOICE, default="pending"
     )
 
+    class Meta:
+        permissions = [
+            ("view_fund_user", "Can view fund user in admin"),
+            ("change_fund_user", "Can change fund user in admin"),
+        ]
+
 
 class Loan(TimeStampMixin, AuthorMixin):
     PAYMENT_METHOD = (("salary", "Bank/Cash/Salary"),)

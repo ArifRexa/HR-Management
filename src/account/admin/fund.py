@@ -188,16 +188,29 @@ class FundAdmin(RecentEdit, admin.ModelAdmin):
             return format_html('<span style="color: red; font-weight: bold;">{}</span>', obj.get_status_display())
         return obj.get_status_display()
     
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+    #     if not request.user.is_superuser:
+    #         return qs.filter(user=request.user)
+    #     return qs
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if not request.user.is_superuser:
-            return qs.filter(user=request.user)
-        return qs
+        if request.user.is_superuser or self._has_user_permission(request):
+            return qs
+        return qs.filter(user=request.user)
 
+    # def get_exclude(self, request, obj=None):
+    #     excluded = super().get_exclude(request, obj) or []
+    #     if not request.user.is_superuser:
+    #         return excluded + ['user']
+    #     return excluded
     def get_exclude(self, request, obj=None):
         excluded = super().get_exclude(request, obj) or []
-        if not request.user.is_superuser:
-            return excluded + ['user']
+        
+        # Only exclude 'user' field if user doesn't have permission
+        if not request.user.is_superuser and not self._has_user_permission(request):
+            excluded.append('user')
+            
         return excluded
 
     def get_readonly_fields(self, request, obj=None):
@@ -213,8 +226,16 @@ class FundAdmin(RecentEdit, admin.ModelAdmin):
             
         return readonly_fields
 
+    # def save_model(self, request, obj, form, change):
+    #     if not change and not request.user.is_superuser:
+    #         obj.user = request.user
+            
+    #     # Check if status is being changed to 'approved' by non-superuser
+    #     if change and 'status' in form.changed_data and obj.status == 'approved' and not request.user.is_superuser:
+    #         raise PermissionDenied("Only superusers can approve funds.")
     def save_model(self, request, obj, form, change):
-        if not change and not request.user.is_superuser:
+        # Only set user automatically for non-permitted users
+        if not change and not request.user.is_superuser and not self._has_user_permission(request):
             obj.user = request.user
             
         # Check if status is being changed to 'approved' by non-superuser
@@ -259,15 +280,31 @@ class FundAdmin(RecentEdit, admin.ModelAdmin):
         )['total_amount']
         return fund_added - fund_subtract
     
+    # def has_change_permission(self, request, obj=None):
+    #     # Superusers can change any fund
+    #     if request.user.is_superuser:
+    #         return True
+            
+    #     # Non-superusers can only change their own pending funds
+    #     if obj:
+    #         return obj.user == request.user and obj.status == 'pending'
+    #     return super().has_change_permission(request, obj)
     def has_change_permission(self, request, obj=None):
         # Superusers can change any fund
         if request.user.is_superuser:
             return True
             
-        # Non-superusers can only change their own pending funds
+        if self._has_user_permission(request):
+            return True
+            
         if obj:
             return obj.user == request.user and obj.status == 'pending'
         return super().has_change_permission(request, obj)
+    
+    def _has_user_permission(self, request):
+        """Check if user has permission to view/change fund user"""
+        return (request.user.has_perm('account.view_fund_user') or 
+                request.user.has_perm('account.change_fund_user'))
     
     @admin.action(description='Approve selected funds')
     def approve_selected_funds(self, request, queryset):
@@ -315,3 +352,5 @@ class FundAdmin(RecentEdit, admin.ModelAdmin):
                 "No funds were approved (they may already be approved).",
                 messages.WARNING
             )
+
+            
