@@ -105,16 +105,16 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark Selected Inventory as Approved")
     def mark_as_approved(self, request, queryset):
+        for obj in queryset:
+            if obj.transaction_type == "i" and obj.status == "approved":  # IN
+                item = InventoryItem.objects.get(id=obj.inventory_item.id)
+                item.quantity = item.quantity + obj.quantity
+                item.save()
+            elif obj.transaction_type == "o" and obj.status == "approved":  # OUT
+                item = InventoryItem.objects.get(id=obj.inventory_item.id)
+                item.quantity = item.quantity - obj.quantity
+                item.save()
         queryset.update(status="approved")
-        # for transaction in queryset:
-        #     if transaction.transaction_type == "i": #IN
-        #         item = InventoryItem.objects.get(id=transaction.inventory_item.id)
-        #         item.quantity = item.quantity+transaction.quantity
-        #         item.save()
-        #     elif transaction.transaction_type == "o": #OUT
-        #         item = InventoryItem.objects.get(id=transaction.inventory_item.id)
-        #         item.quantity = item.quantity-transaction.quantity
-        #         item.save()
         self.message_user(
             request,
             "Selected transactions approved successfully",
