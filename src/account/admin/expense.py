@@ -75,6 +75,7 @@ class InventoryIdLinkWidget(forms.TextInput):
     def render(self, name, value, attrs=None, renderer=None):
         # Convert stored value to list of IDs
         ids = value.split(",") if value else []
+        print("IDs:", ids)
         links = []
 
         for id_val in ids:
@@ -90,6 +91,7 @@ class InventoryIdLinkWidget(forms.TextInput):
 
         # Combine links into a single string
         links_html = ", ".join(links)
+        print(links_html)
 
         # Render the base input field
         input_html = super().render(name, value, attrs, renderer)
@@ -104,7 +106,7 @@ class InventoryIdLinkWidget(forms.TextInput):
 
 
 class ExpenseAttachmentForm(forms.ModelForm):
-    inventory_ids = forms.CharField(max_length=255, required=False)
+    inventory_ids = forms.CharField(max_length=255, required=False, widget=InventoryIdLinkWidget())
 
     class Meta:
         model = ExpanseAttachment
@@ -112,7 +114,7 @@ class ExpenseAttachmentForm(forms.ModelForm):
         widgets = {
             "attachment": forms.ClearableFileInput(attrs={"accept": "image/*"}),
             "note": forms.Textarea(attrs={"rows": 3, "cols": 50}),
-            "inventory_ids": InventoryIdLinkWidget(),
+            # "inventory_ids": InventoryIdLinkWidget(),
         }
 
     def clean_inventory_ids(self):
@@ -409,17 +411,51 @@ class ExpenseAdmin(admin.ModelAdmin):
         return "Unknown"
 
     # This method is now efficient because of get_queryset's prefetch_related
-    @admin.display(
-        description="Attachments", ordering="expanseattachment__count"
-    )
+    # @admin.display(
+    #     description="Attachments", ordering="expanseattachment__count"
+    # )
+    # def get_attachments(self, obj):
+    #     attachments = getattr(obj, "expense_attachment", None)
+    #     if not attachments:
+    #         return "-"
+    #     url = reverse("account:expense_attachment", kwargs={"id": obj.id})
+    #     html = f'<a href="{url}" target="_blank">📄</a>'
+
+    #     return format_html(html)
+    @admin.display(description="Attachments", ordering="expanseattachment__count")
     def get_attachments(self, obj):
-        attachments = getattr(obj, "expense_attachment", None)
+        attachments = getattr(obj, "expense_attachment", [])
         if not attachments:
             return "-"
-        url = reverse("account:expense_attachment", kwargs={"id": obj.id})
-        html = f'<a href="{url}" target="_blank">📄</a>'
 
-        return format_html(html)
+        # Base URL for the attachment list view
+        url = reverse("account:expense_attachment", kwargs={"id": obj.id})
+        lines = [f'<a href="{url}" target="_blank">📄</a> <br>']  # Keep the file icon
+
+        # Process inventory IDs from each attachment
+        for attachment in attachments:
+            inv_ids_str = attachment.inventory_ids
+            if not inv_ids_str:
+                continue
+
+            # Split and clean IDs
+            inv_ids = [id.strip() for id in inv_ids_str.split(",") if id.strip()]
+            for inv_id in inv_ids:
+                try:
+                    # Try to find the InventoryTransaction by verification_code
+                    inv_transaction = InventoryTransaction.objects.get(
+                        verification_code=inv_id, transaction_type="i"
+                    )
+                    link = (
+                        f'<a href="/admin/inventory_management/inventorytransaction/'
+                        f'{inv_transaction.pk}/change/" '
+                        f'target="_blank" style="font-size:11px;">{inv_id}</a>'
+                    )
+                except InventoryTransaction.DoesNotExist:
+                    link = f'<span style="font-size:11px; color:#999;">{inv_id} (invalid)</span>'
+                lines.append(link)
+
+        return format_html("<br>".join(lines))
 
     # ✅ OPTIMIZATION 3: Efficient voucher data mapping
     def _get_mapped_expense_data(self, queryset):
