@@ -22,6 +22,11 @@ class InventoryTransactionForm(forms.ModelForm):
             )
 
         inventory_item = InventoryItem.objects.get(id=item.id)
+        
+        if InventoryTransaction.objects.filter(inventory_item=inventory_item, status="pending", transaction_type="o").exists():
+            raise forms.ValidationError(
+                {"inventory_item": "There is already a pending transaction for this item."}
+            )
 
         if quantity is None:
             raise forms.ValidationError(

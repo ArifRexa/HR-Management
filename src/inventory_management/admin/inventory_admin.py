@@ -93,11 +93,11 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
         )
 
     def save_model(self, request, obj, form, change):
-        if obj.transaction_type == "i":  # IN
+        if obj.transaction_type == "i" and obj.status == "approved":  # IN
             item = InventoryItem.objects.get(id=obj.inventory_item.id)
             item.quantity = item.quantity + obj.quantity
             item.save()
-        elif obj.transaction_type == "o":  # OUT
+        elif obj.transaction_type == "o" and obj.status == "approved":  # OUT
             item = InventoryItem.objects.get(id=obj.inventory_item.id)
             item.quantity = item.quantity - obj.quantity
             item.save()
