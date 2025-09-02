@@ -62,8 +62,8 @@ class SolutionsAndServices(TimeStampMixin):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title
+    # def __str__(self):
+    #     return self.section_title
     
 
 class SolutionsAndServicesCards(TimeStampMixin):
@@ -77,8 +77,8 @@ class SolutionsAndServicesCards(TimeStampMixin):
     card_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 # =====================================Key Things======================================
 
@@ -96,8 +96,8 @@ class KeyThings(models.Model):
     image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
 
 
-    def __str__(self):
-        return self.section_title or "Benefits"
+    # def __str__(self):
+    #     return self.section_title or "Benefits"
     
     class Meta:
         verbose_name = "Key Things"
@@ -113,8 +113,8 @@ class KeyThingsQA(models.Model):
     )
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 
 
@@ -130,8 +130,8 @@ class BestPracticesHeadings(TimeStampMixin):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title   
+    # def __str__(self):
+    #     return self.section_title   
 
 class BestPracticesCards(TimeStampMixin):
     best_practices = models.ForeignKey(
@@ -142,8 +142,8 @@ class BestPracticesCards(TimeStampMixin):
     )
     card_title = models.CharField(max_length=200, blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
     
 class BestPracticesCardsDetails(TimeStampMixin):
     best_practices_cards = models.ForeignKey(
@@ -171,8 +171,8 @@ class ServicesWhyChooseUs(TimeStampMixin):
     section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Why Choose Us"
+    # def __str__(self):
+    #     return self.section_title or "Why Choose Us"
     
 class ServicesWhyChooseUsCards(TimeStampMixin):
     services_why_choose_us = models.ForeignKey(
@@ -184,8 +184,8 @@ class ServicesWhyChooseUsCards(TimeStampMixin):
     icon = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
     card_title = models.CharField(max_length=200, blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
     
 class ServicesWhyChooseUsCardsDetails(TimeStampMixin):
     services_why_choose_us_cards = models.ForeignKey(
@@ -196,8 +196,8 @@ class ServicesWhyChooseUsCardsDetails(TimeStampMixin):
     )
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_description
+    # def __str__(self):
+    #     return self.card_description
 
 # ================================= Our Process =================================
 
@@ -213,8 +213,8 @@ class ServicesOurProcess(models.Model):
     section_description = HTMLField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
-    def __str__(self):
-        return self.section_title
+    # def __str__(self):
+    #     return self.section_title
     
     class Meta:
         verbose_name = "Our Process"
@@ -234,8 +234,8 @@ class MetaDescription(models.Model):
         blank=True, null=True
     )
 
-    def __str__(self):
-        return f"Meta Description for {self.service_page.title}"
+    # def __str__(self):
+    #     return f"Meta Description for {self.service_page.title}"
 
 
 
@@ -252,8 +252,8 @@ class ServicePageFAQSchema(models.Model):
         help_text="JSON-LD schema for FAQs"
     )
 
-    def __str__(self):
-        return f"FAQ Schema for {self.service_page.title}"
+    # def __str__(self):
+    #     return f"FAQ Schema for {self.service_page.title}"
 
 
 
@@ -271,8 +271,8 @@ class ServicePageCTA(TimeStampMixin):
         blank=True
     )
 
-    def __str__(self):
-        return self.title or "CTA"
+    # def __str__(self):
+    #     return self.title or "CTA"
 
 
 class DiscoverOurService(TimeStampMixin):
@@ -286,8 +286,8 @@ class DiscoverOurService(TimeStampMixin):
     short_description = models.TextField(verbose_name="Section Description")
     description = HTMLField()
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
 
 
 class AdditionalServiceContent(models.Model):
@@ -302,8 +302,8 @@ class AdditionalServiceContent(models.Model):
     content = HTMLField(null=True, blank=True)
     image = models.ImageField(upload_to="service_content_image", null=True, blank=True)
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
 
 
 class DevelopmentServiceProcess(TimeStampMixin):
@@ -317,15 +317,15 @@ class DevelopmentServiceProcess(TimeStampMixin):
     short_description = models.TextField()
     icon = models.ImageField(upload_to="development_service_icon")
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
 
 
 class ServiceCriteria(TimeStampMixin):
     title = models.CharField(max_length=255)
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
 
 
 class ComparativeAnalysis(TimeStampMixin):
@@ -347,8 +347,8 @@ class ComparativeAnalysis(TimeStampMixin):
     in_house = models.CharField(max_length=255, verbose_name="In-House")
     freelance = models.CharField(max_length=255, verbose_name="Freelance")
 
-    def __str__(self):
-        return self.criteria.title
+    # def __str__(self):
+    #     return self.criteria.title
 
 
 class ServiceFAQQuestion(models.Model):
@@ -358,8 +358,8 @@ class ServiceFAQQuestion(models.Model):
     question = models.CharField(max_length=255)
     answer = HTMLField()
 
-    def __str__(self):
-        return self.question
+    # def __str__(self):
+    #     return self.question
 
     class Meta:
         verbose_name = "Service FAQ"
@@ -373,5 +373,5 @@ class ServiceMetaData(models.Model):
     title = models.CharField(max_length=255, verbose_name="Section Title")
     description = models.TextField()
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
