@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.db.models import Q, Sum
 from django.utils.html import format_html
 
 from inventory_management.forms import (
@@ -8,6 +9,7 @@ from inventory_management.forms import (
 from inventory_management.models import (
     InventoryItem,
     InventoryItemHead,
+    InventorySummary,
     InventoryTransaction,
     InventoryUnit,
 )
@@ -170,3 +172,85 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
 
 
 admin.site.register(InventoryUnit)
+
+
+import calendar
+from datetime import datetime
+
+from dateutil.relativedelta import relativedelta
+
+
+def get_current_month_range(date):
+    first_day = date.replace(day=1)
+    last_day = date.replace(day=calendar.monthrange(date.year, date.month)[1])
+    return first_day.date(), last_day.date()
+
+
+def get_start_of_month_n_months_ago(n=0):
+    today = datetime.today()
+    if n == 0:
+        return get_current_month_range(today)
+    start_of_previous_month = today - relativedelta(months=n)
+    return get_current_month_range(start_of_previous_month)
+
+
+@admin.register(InventorySummary)
+class InventorySummaryAdmin(admin.ModelAdmin):
+    change_list_template = "admin/inventory/inventory_summary.html"
+    date_hierarchy = "transaction_date"
+    list_filter = ("inventory_item",)
+
+
+    def changelist_view(self, request, extra_context=None):
+        current_month = get_start_of_month_n_months_ago()
+        before_1_month = get_start_of_month_n_months_ago(1)
+        before_2_month = get_start_of_month_n_months_ago(2)
+        today = datetime.today()
+        start_data = today.replace(day=calendar.monthrange(today.year, today.month)[1]).date()
+        before_2 = today - relativedelta(months=2)
+        end_date = before_2.replace(
+            day=1
+        )
+        extra_context = extra_context or {}
+        qs = self.get_queryset(request)
+        extra_context["qs"] = (
+            qs.filter(
+                transaction_type="o",
+                status="approved",
+                transaction_date__lte=start_data,
+                transaction_date__gte=end_date,
+            )
+            .values("inventory_item")
+            .annotate(
+                current_total_out=Sum(
+                    "quantity",
+                    filter=(
+                        Q(transaction_date__gte=current_month[0])
+                        & Q(transaction_date__lte=current_month[1])
+                    ),
+                ),
+                before_1_total_out=Sum(
+                    "quantity",
+                    filter=(
+                        Q(transaction_date__gte=before_1_month[0])
+                        & Q(transaction_date__lte=before_1_month[1])
+                    ),
+                ),
+                before_2_total_out=Sum(
+                    "quantity",
+                    filter=(
+                        Q(transaction_date__gte=before_2_month[0])
+                        & Q(transaction_date__lte=before_2_month[1])
+                    ),
+                ),
+            )
+            .order_by("-current_total_out")
+            .values(
+                "inventory_item__name",
+                "current_total_out",
+                "inventory_item__quantity",
+                "before_1_total_out",
+                "before_2_total_out",
+            )
+        )
+        return super().changelist_view(request, extra_context)

@@ -86,3 +86,13 @@ class InventoryTransaction(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return f"{self.inventory_item.name} | {self.quantity} | {self.transaction_date}"
+
+
+
+class InventorySummary(InventoryTransaction):
+    
+    
+    class Meta:
+        proxy = True
+        verbose_name = "Inventory Summary"
+        verbose_name_plural = "Inventory Summary"
