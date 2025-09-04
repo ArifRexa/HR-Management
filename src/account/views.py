@@ -385,7 +385,8 @@ def expense_attachment(request, id):
     pdf = html.write_pdf(stylesheets=[css])
 
     response = HttpResponse(pdf, content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="expense_{expense.id}_attachments.pdf"'
+    # response['Content-Disposition'] = f'attachment; filename="expense_{expense.id}_attachments.pdf"'
+    response['Content-Disposition'] = f'inline; filename="expense_{expense.id}_attachments.pdf"'
     return response
 
 from django.templatetags.static import static
