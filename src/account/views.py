@@ -13,13 +13,14 @@ from django.db.models import (
     Q,
     Sum,
 )
+import os
 from django.db.models.functions import ExtractYear, TruncDate
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
-from weasyprint import HTML, default_url_fetcher
+from weasyprint import CSS, HTML, default_url_fetcher
 
 from account.models import AccountJournal, Expense, Income, MonthlyJournal
 from config.utils.pdf import PDF
@@ -294,6 +295,98 @@ def balance_sheet(request, id):
     )
     return response
 
+
+
+
+def expense_attachment(request, id):
+    expense = get_object_or_404(Expense, id=id)
+    attachments = expense.expanseattachment_set.all()
+
+    if not attachments:
+        return HttpResponse("No attachments found.", status=404)
+
+    # Calculate total and breakdown
+    amounts = [float(a.amount) for a in attachments]
+    total = sum(amounts)
+    breakdown = "+".join(f"{amt}" for amt in amounts)
+    amount_header = f"{total}({breakdown})"
+
+    attachment_data = []
+    for attachment in attachments:
+        file_url = request.build_absolute_uri(attachment.attachment.url)
+        filename = attachment.attachment.name
+        ext = filename.split('.')[-1].lower()
+        is_image = ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp']
+
+        attachment_data.append({
+            'amount_header': amount_header,
+            'file_url': file_url,
+            'is_image': is_image,
+            'filename': os.path.basename(filename),
+        })
+
+    # Render HTML template
+    html_string = render_to_string('pdf/expense_attachment_sheet.html', {
+        'expense': expense,
+        'attachments': attachment_data,
+    })
+
+    # ✅ Custom URL fetcher for media files
+    def custom_fetcher(url, *args, **kwargs):
+        parsed = urlparse(url)
+        if parsed.path.startswith(settings.MEDIA_URL):
+            # Convert relative path to absolute file path
+            path = os.path.join(settings.MEDIA_ROOT, parsed.path[len(settings.MEDIA_URL):])
+            mime, enc = mimetypes.guess_type(path)
+            if os.path.exists(path):
+                return {
+                    "file_obj": open(path, "rb"),
+                    "mime_type": mime,
+                    "encoding": enc,
+                    "filename": os.path.basename(path),
+                }
+            else:
+                print(f"File not found: {path}")
+                return None
+        return default_url_fetcher(url, *args, **kwargs)
+
+    # Generate PDF with custom fetcher
+    html = HTML(
+        string=html_string,
+        base_url=request.build_absolute_uri('/'),
+        url_fetcher=custom_fetcher,
+    )
+    css = CSS(string='''
+        @page { size: A4; margin: 1cm }
+        body { font-family: sans-serif }
+        .attachment-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .amount-header {
+            font-size: 14px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 8px;
+        }
+        img {
+            max-width: 100%;
+            max-height: 18cm;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .file-link {
+            font-size: 14px;
+            color: #007BFF;
+            text-decoration: underline;
+        }
+    ''')
+
+    pdf = html.write_pdf(stylesheets=[css])
+
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="expense_{expense.id}_attachments.pdf"'
+    return response
 
 from django.templatetags.static import static
 
