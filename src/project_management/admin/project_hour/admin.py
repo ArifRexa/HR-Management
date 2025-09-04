@@ -1,13 +1,12 @@
 import datetime
 from datetime import timedelta
 
-from django.contrib import admin
-
-from django.core.exceptions import ValidationError
 from django import forms
+from django.contrib import admin
+from django.core.exceptions import ValidationError
 
 # Register your models here.
-from django.db.models import Sum, F, Prefetch
+from django.db.models import F, Prefetch, Sum
 
 # from django.template.context_processors import request
 from django.utils import timezone
@@ -20,9 +19,9 @@ from project_management.admin.project_hour.options import ProjectHourOptions
 from project_management.forms import ProjectHourFilterForm
 from project_management.models import (
     DailyProjectUpdate,
+    EmployeeProjectHour,
     Project,
     ProjectHour,
-    EmployeeProjectHour,
 )
 
 
@@ -60,7 +59,10 @@ class EmployeeHourAdmin(admin.TabularInline):
             )
             if tpm_project.exists():
                 return ()
-            if obj.created_at <= three_day_earlier and not request.user.is_superuser:
+            if (
+                obj.created_at <= three_day_earlier
+                and not request.user.is_superuser
+            ):
                 return (
                     "hours",
                     "employee",
@@ -69,6 +71,10 @@ class EmployeeHourAdmin(admin.TabularInline):
 
 
 class ProjectHourAdminForm(forms.ModelForm):
+    class Meta:
+        model = ProjectHour
+        fields = "__all__"
+
     def clean(self):
         data = super(ProjectHourAdminForm, self).clean()
         if data.get("hour_type") != "bonus":
@@ -96,10 +102,13 @@ class ProjectHourAdminForm(forms.ModelForm):
                 if (
                     self.request.user.employee.is_tpm
                     and not EmployeeUnderTPM.objects.filter(
-                        tpm=self.request.user.employee, project=data.get("project")
+                        tpm=self.request.user.employee,
+                        project=data.get("project"),
                     ).exists()
                 ):
-                    raise ValidationError("You are not assign TPM for this project")
+                    raise ValidationError(
+                        "You are not assign TPM for this project"
+                    )
         return data
 
 
@@ -119,7 +128,15 @@ class ProjectHourAdmin(
     fieldsets = (
         (
             "Standard info",
-            {"fields": ("hour_type", "project", "date", "hours", "report_file")},
+            {
+                "fields": (
+                    "hour_type",
+                    "project",
+                    "date",
+                    "hours",
+                    "report_file",
+                )
+            },
         ),
         (
             "Administration Process",
@@ -141,7 +158,9 @@ class ProjectHourAdmin(
 
         tpm_id = request.GET.get("tpm_id__exact")
         if tpm_id:
-            project_ids = EmployeeUnderTPM.objects.filter(tpm_id=tpm_id).values_list("project_id", flat=True)
+            project_ids = EmployeeUnderTPM.objects.filter(
+                tpm_id=tpm_id
+            ).values_list("project_id", flat=True)
             filters.pop("tpm_id__exact")
             filters["project_id__in"] = list(project_ids)
 
@@ -161,41 +180,63 @@ class ProjectHourAdmin(
             "project__client__payment_method__isnull",
         ):
             return True
-        return super(ProjectHourAdmin, self).lookup_allowed(key, *args, **kwargs)
+        return super(ProjectHourAdmin, self).lookup_allowed(
+            key, *args, **kwargs
+        )
 
     # override change list view
     # return total hour count
     def changelist_view(self, request, extra_context=None):
         initial = {
-            "created_at__date__gte": request.GET.get("created_at__date__gte", timezone.now().date() - timedelta(days=7)),
-            "created_at__date__lte": request.GET.get("created_at__date__lte", timezone.now().date()),
+            "created_at__date__gte": request.GET.get(
+                "created_at__date__gte",
+                timezone.now().date() - timedelta(days=7),
+            ),
+            "created_at__date__lte": request.GET.get(
+                "created_at__date__lte", timezone.now().date()
+            ),
         }
 
         extra_context = extra_context or {}
-        extra_context.update({
-            "total": self.get_total_hour(request),
-            "filter_form": ProjectHourFilterForm(initial=initial),
-        })
+        extra_context.update(
+            {
+                "total": self.get_total_hour(request),
+                "filter_form": ProjectHourFilterForm(initial=initial),
+            }
+        )
 
         return super().changelist_view(request, extra_context=extra_context)
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request).prefetch_related("projecthourhistry_set",Prefetch(
-            "employeeprojecthour_set",
-            queryset=EmployeeProjectHour.objects.select_related("employee")
-        ))
-        
-        if not request.GET.get("created_at__date__gte") and not request.GET.get("q"):
+        qs = (
+            super()
+            .get_queryset(request)
+            .prefetch_related(
+                "projecthourhistry_set",
+                Prefetch(
+                    "employeeprojecthour_set",
+                    queryset=EmployeeProjectHour.objects.select_related(
+                        "employee"
+                    ),
+                ),
+            )
+        )
+
+        if not request.GET.get("created_at__date__gte") and not request.GET.get(
+            "q"
+        ):
             qs = qs.filter(created_at__gte=timezone.now() - timedelta(days=60))
-        
+
         if not request.GET:
             qs = qs.filter(hour_type="project")
 
-        if request.user.is_superuser or request.user.has_perm("project_management.show_all_hours"):
+        if request.user.is_superuser or request.user.has_perm(
+            "project_management.show_all_hours"
+        ):
             return qs
-        
+
         return qs.filter(manager_id=request.user.employee.id)
-    
+
     # def get_queryset(self, request):
     #     """Return query_set
 
@@ -229,7 +270,11 @@ class ProjectHourAdmin(
         if not obj.manager_id:
             obj.manager_id = request.user.employee.id
 
-        tpm_record = EmployeeUnderTPM.objects.filter(project=obj.project).select_related("tpm").first()
+        tpm_record = (
+            EmployeeUnderTPM.objects.filter(project=obj.project)
+            .select_related("tpm")
+            .first()
+        )
         if tpm_record:
             obj.tpm = tpm_record.tpm
         else:
@@ -253,6 +298,7 @@ class ProjectHourAdmin(
         #     return (fieldsets[0],)
 
         return fieldsets
+
     def get_data(self, request):
         print("******************* get_data has called")
 
@@ -266,21 +312,27 @@ class ProjectHourAdmin(
             .get("project__id__exact")
         )
 
-        print("************** Selected project id is *************", selected_project_id)
+        print(
+            "************** Selected project id is *************",
+            selected_project_id,
+        )
 
         # Filter projects
         if selected_project_id:
-            projects = Project.objects.filter(id=selected_project_id, active=True)
+            projects = Project.objects.filter(
+                id=selected_project_id, active=True
+            )
         else:
             projects = Project.objects.filter(active=True)
 
         # Get project-wise series
         for project in projects:
             data = (
-                project.projecthour_set
-                .filter(date__gte=date_to_check)
+                project.projecthour_set.filter(date__gte=date_to_check)
                 .annotate(date_str=F("date"))
-                .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})  # Still using extra for JS compatibility
+                .extra(
+                    select={"date_str": "UNIX_TIMESTAMP(date)*1000"}
+                )  # Still using extra for JS compatibility
                 .values("date_str")
                 .annotate(total_hours=Sum("hours"))
                 .values_list("date_str", "total_hours")
@@ -289,11 +341,13 @@ class ProjectHourAdmin(
 
             array_date = [list(row) for row in data]
 
-            series.append({
-                "type": "spline",
-                "name": project.title,
-                "data": array_date,
-            })
+            series.append(
+                {
+                    "type": "spline",
+                    "name": project.title,
+                    "data": array_date,
+                }
+            )
 
         # Prepare total project hour summary
         sum_query = ProjectHour.objects.filter(date__gte=date_to_check)
@@ -301,8 +355,7 @@ class ProjectHourAdmin(
             sum_query = sum_query.filter(project_id=selected_project_id)
 
         sum_hours = (
-            sum_query
-            .extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
+            sum_query.extra(select={"date_str": "UNIX_TIMESTAMP(date)*1000"})
             .values("date_str")
             .annotate(total=Sum("hours"))
             .order_by("date_str")
@@ -311,11 +364,12 @@ class ProjectHourAdmin(
 
         sum_array = [list(row) for row in sum_hours]
 
-        series.append({
-            "type": "spline",
-            "name": "Total Project Hours",
-            "data": sum_array,
-        })
+        series.append(
+            {
+                "type": "spline",
+                "name": "Total Project Hours",
+                "data": sum_array,
+            }
+        )
 
         return series
-
