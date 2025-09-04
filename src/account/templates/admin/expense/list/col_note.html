@@ -6,11 +6,13 @@
         {{obj.note}}
     </div>
     <div class="popover-message">
-        <strong>Boss Note</strong>
-        <hr>
-        <span style="color: red;margin-bottom: 10px; display: block;">
-            {{obj.note}}
-        </span>
+        <!-- <strong>Boss Note</strong> -->
+        <!-- <hr> -->
+        {% if obj.note %}
+            <span style="color: red;margin-bottom: 10px; display: block;">
+                {{obj.note}}
+            </span>
+        {% endif %}
 
         <hr>
         
