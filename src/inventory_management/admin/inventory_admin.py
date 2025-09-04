@@ -175,82 +175,105 @@ admin.site.register(InventoryUnit)
 
 
 import calendar
-from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
+from django.utils import timezone
 
 
-def get_current_month_range(date):
-    first_day = date.replace(day=1)
-    last_day = date.replace(day=calendar.monthrange(date.year, date.month)[1])
-    return first_day.date(), last_day.date()
-
-
-def get_start_of_month_n_months_ago(n=0):
-    today = datetime.today()
-    if n == 0:
-        return get_current_month_range(today)
-    start_of_previous_month = today - relativedelta(months=n)
-    return get_current_month_range(start_of_previous_month)
+# Helper function to get start/end dates for n months ago
+def get_start_end_dates(n_months_ago):
+    today = timezone.now().date()
+    target_month = today - relativedelta(months=n_months_ago)
+    start_date = target_month.replace(day=1)
+    end_date = target_month.replace(
+        day=calendar.monthrange(target_month.year, target_month.month)[1]
+    )
+    return start_date, end_date
 
 
 @admin.register(InventorySummary)
 class InventorySummaryAdmin(admin.ModelAdmin):
     change_list_template = "admin/inventory/inventory_summary.html"
-    date_hierarchy = "transaction_date"
-    list_filter = ("inventory_item",)
-
+    # date_hierarchy = "transaction_date"
+    # list_filter = ("inventory_item",)
 
     def changelist_view(self, request, extra_context=None):
-        current_month = get_start_of_month_n_months_ago()
-        before_1_month = get_start_of_month_n_months_ago(1)
-        before_2_month = get_start_of_month_n_months_ago(2)
-        today = datetime.today()
-        start_data = today.replace(day=calendar.monthrange(today.year, today.month)[1]).date()
-        before_2 = today - relativedelta(months=2)
-        end_date = before_2.replace(
-            day=1
+        # Get start/end dates for the last 4 months
+        current_month = get_start_end_dates(0)
+        one_month_ago = get_start_end_dates(1)
+        two_months_ago = get_start_end_dates(2)
+        three_months_ago = get_start_end_dates(3)
+
+        # Generate month names for headers
+        today = timezone.now().date()
+        month_names = ["Inventory Item", "Current Stock"]
+        for i in range(4):
+            month_date = today - relativedelta(months=i)
+            month_names.append(month_date.strftime("%b %Y"))
+
+        # Calculate overall date range (from 3 months ago to current month)
+        start_date_overall = today - relativedelta(months=3)
+        start_date_overall = start_date_overall.replace(day=1)
+        end_date_overall = today.replace(
+            day=calendar.monthrange(today.year, today.month)[1]
         )
+
         extra_context = extra_context or {}
         qs = self.get_queryset(request)
-        extra_context["qs"] = (
-            qs.filter(
-                transaction_type="o",
-                status="approved",
-                transaction_date__lte=start_data,
-                transaction_date__gte=end_date,
-            )
-            .values("inventory_item")
-            .annotate(
-                current_total_out=Sum(
-                    "quantity",
-                    filter=(
-                        Q(transaction_date__gte=current_month[0])
-                        & Q(transaction_date__lte=current_month[1])
-                    ),
+        
+
+        extra_context.update(
+            {
+                "month_headers": month_names,
+                "qs": (
+                    qs.filter(
+                        transaction_type="o",
+                        status="approved",
+                        transaction_date__lte=end_date_overall,
+                        transaction_date__gte=start_date_overall,
+                    )
+                    .values("inventory_item")
+                    .annotate(
+                        current_total_out=Sum(
+                            "quantity",
+                            filter=Q(
+                                transaction_date__gte=current_month[0],
+                                transaction_date__lte=current_month[1],
+                            ),
+                        ),
+                        one_month_ago_total_out=Sum(
+                            "quantity",
+                            filter=Q(
+                                transaction_date__gte=one_month_ago[0],
+                                transaction_date__lte=one_month_ago[1],
+                            ),
+                        ),
+                        two_months_ago_total_out=Sum(
+                            "quantity",
+                            filter=Q(
+                                transaction_date__gte=two_months_ago[0],
+                                transaction_date__lte=two_months_ago[1],
+                            ),
+                        ),
+                        three_months_ago_total_out=Sum(
+                            "quantity",
+                            filter=Q(
+                                transaction_date__gte=three_months_ago[0],
+                                transaction_date__lte=three_months_ago[1],
+                            ),
+                        ),
+                    )
+                    .order_by("-current_total_out")
+                    .values(
+                        "inventory_item__name",
+                        "current_total_out",
+                        "inventory_item__quantity",
+                        "one_month_ago_total_out",
+                        "two_months_ago_total_out",
+                        "three_months_ago_total_out",
+                    )
                 ),
-                before_1_total_out=Sum(
-                    "quantity",
-                    filter=(
-                        Q(transaction_date__gte=before_1_month[0])
-                        & Q(transaction_date__lte=before_1_month[1])
-                    ),
-                ),
-                before_2_total_out=Sum(
-                    "quantity",
-                    filter=(
-                        Q(transaction_date__gte=before_2_month[0])
-                        & Q(transaction_date__lte=before_2_month[1])
-                    ),
-                ),
-            )
-            .order_by("-current_total_out")
-            .values(
-                "inventory_item__name",
-                "current_total_out",
-                "inventory_item__quantity",
-                "before_1_total_out",
-                "before_2_total_out",
-            )
+            }
         )
+
         return super().changelist_view(request, extra_context)

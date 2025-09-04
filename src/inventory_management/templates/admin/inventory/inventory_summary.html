@@ -74,41 +74,16 @@
             <div class="text"><span><input type="checkbox" id="action-toggle"></span></div>
             <div class="clear"></div>
             </th>
-            <th scope="col" class="sortable column-transaction_date">
             
-                
+            {% for header in month_headers %}
+              
+              <th scope="col" class="sortable column-transaction_date">            
+                <div class="text">{{header}}</div>
+                <div class="clear"></div>
+              </th>
+            {% endfor %}
+              
             
-            <div class="text">Inventory Item</div>
-            <div class="clear"></div>
-            </th>
-            <th scope="col" class="sortable column-transaction_date">
-            
-                
-            
-            <div class="text">Current Stock</div>
-            <div class="clear"></div>
-            </th>
-            <th scope="col" class="sortable column-inventory_item">
-            
-                
-            
-            <div class="text"><a href="?o=2">Total Out</a></div>
-            <div class="clear"></div>
-            </th>
-            <th scope="col" class="sortable column-inventory_item">
-            
-                
-            
-            <div class="text"><a href="?o=2">Before 1 Month</a></div>
-            <div class="clear"></div>
-            </th>
-            <th scope="col" class="sortable column-inventory_item">
-            
-                
-            
-            <div class="text"><a href="?o=2">Before 2 Month</a></div>
-            <div class="clear"></div>
-            </th>
             
             </tr>
             </thead>
@@ -127,13 +102,16 @@
                     {{obj.inventory_item__quantity}}
                     </th>
                     <td class="field-inventory_item nowrap">
-                        {{obj.current_total_out}}
+                        {{obj.current_total_out | default:"0"}}
                     </td>
                     <td class="field-inventory_item nowrap">
-                        {{obj.before_1_month}}
+                        {{obj.one_month_ago_total_out | default:"0"}}
                     </td>
                     <td class="field-inventory_item nowrap">
-                        {{obj.before_2_month}}
+                        {{obj.two_months_ago_total_out | default:"0"}}
+                    </td>
+                    <td class="field-inventory_item nowrap">
+                        {{obj.three_months_ago_total_out | default:"0"}}
                     </td>
                     
                 {% endfor %}
