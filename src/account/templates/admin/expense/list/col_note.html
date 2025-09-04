@@ -2,8 +2,9 @@
 <div class="popover-wrapper" style="padding: 8px;">
 
     <div class="popover-title">
-        
-        {{obj.note}}
+        {% if obj.note %}
+           {{obj.note}}
+        {% endif %}
     </div>
     <div class="popover-message">
         <!-- <strong>Boss Note</strong> -->
