@@ -1,38 +1,24 @@
-
 <div class="popover-wrapper" style="padding: 8px;">
 
+    <!-- Column text -->
     <div class="popover-title">
-        {% if obj.note %}
-           {{obj.note}}
-        {% endif %}
+        {{ display_note }}
     </div>
+
+    <!-- Popover message (full details) -->
     <div class="popover-message">
-        <!-- <strong>Boss Note</strong> -->
-        <!-- <hr> -->
         {% if obj.note %}
             <span style="color: red;margin-bottom: 10px; display: block;">
                 {{obj.note}}
+                <hr>
             </span>
         {% endif %}
-
-        <hr>
-        
-        {% for attachment in obj.expanseattachment_set.all %}
-            
+        {% for attachment in obj.expense_attachment %}
             {% if attachment.note %}
-                <span style="margin-bottom: 10px; display: block;">
-
-                    {{attachment.note}}
-                </span>
+                <p>{{ attachment.note }}</p>
                 <hr>
-                
             {% endif %}
-                
         {% endfor %}
-            
-        
     </div>
 
 </div>
-
-

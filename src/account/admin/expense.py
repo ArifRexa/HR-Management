@@ -342,22 +342,45 @@ class ExpenseAdmin(admin.ModelAdmin):
         css = {"all": ("css/list.css", "css/daily-update.css")}
         js = ("expense_total_amount.js",)
 
+    # @admin.display(description="Notes")
+    # def get_notes(self, obj):
+    #     html_template = get_template("admin/expense/list/col_note.html")
+
+    #     html_content = html_template.render(
+    #         {
+    #             "obj": obj,
+    #         }
+    #     )
+
+    #     try:
+    #         data = format_html(html_content)
+    #     except:
+    #         data = "-"
+
+    #     return data
     @admin.display(description="Notes")
     def get_notes(self, obj):
-        html_template = get_template("admin/expense/list/col_note.html")
+        # Determine the note to display
+        display_note = obj.note
+        if not display_note:
+            for attachment in obj.expense_attachment:
+                if attachment.note:
+                    display_note = attachment.note
+                    break
+        if not display_note:
+            display_note = "-"
 
-        html_content = html_template.render(
-            {
-                "obj": obj,
-            }
-        )
+        # Pass it to template
+        html_template = get_template("admin/expense/list/col_note.html")
+        html_content = html_template.render({
+            "obj": obj,
+            "display_note": display_note,  # Add this
+        })
 
         try:
-            data = format_html(html_content)
-        except:
-            data = "-"
-
-        return data
+            return format_html(html_content)
+        except Exception:
+            return "-"
 
     # ✅ OPTIMIZATION 1: Centralized data fetching
     def get_queryset(self, request):
