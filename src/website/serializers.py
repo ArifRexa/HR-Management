@@ -134,7 +134,11 @@ class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
         fields = ("title",)
 
 class HomePageSerializer(serializers.ModelSerializer):
-    animated_titles = HomePageAnimateTitleSerializer(many=True, source='homepageheroanimatedtitle_set')
+    animated_titles = HomePageAnimateTitleSerializer(
+        many=True, 
+        source='hero_animated_titles',
+        read_only=True
+    )
     
     class Meta:
         model = HomePage
