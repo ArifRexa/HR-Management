@@ -1,4 +1,4 @@
-<div class="popover-wrapper" style="padding: 8px;">
+<div class="popover-wrapper">
 
     <!-- Column text -->
     <div class="popover-title">
@@ -6,9 +6,9 @@
     </div>
 
     <!-- Popover message (full details) -->
-    <div class="popover-message">
+    <div class="popover-message" style="width: 450px;">
         {% if obj.note %}
-            <span style="color: red;margin-bottom: 10px; display: block;">
+            <span style="color: red;margin-bottom: 10px; display: block; padding-left: 5px;">
                 {{obj.note}}
                 <hr>
             </span>
@@ -22,3 +22,5 @@
     </div>
 
 </div>
+
+<!-- ============================================================ -->
