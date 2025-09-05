@@ -308,6 +308,8 @@ def expense_attachment(request, id):
     # Calculate total and breakdown
     amounts = [float(a.amount) for a in attachments]
     total = sum(amounts)
+    if total == 0.0:
+        total = expense.amount
     breakdown = "+".join(f"{amt}" for amt in amounts)
     amount_header = f"{total}({breakdown})"
 
