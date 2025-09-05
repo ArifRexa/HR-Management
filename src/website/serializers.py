@@ -70,6 +70,8 @@ from website.models import (
     Gallery,
     HistoryOfTech,
     HomeBanner,
+    HomePage,
+    HomePageHeroAnimatedTitle,
     Industry,
     IndustryTitle,
     IndustryWeServe,
@@ -123,6 +125,35 @@ from website.models import (
 )
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+
+
+
+class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomePageHeroAnimatedTitle
+        fields = ("title",)
+
+class HomePageSerializer(serializers.ModelSerializer):
+    animated_titles = HomePageAnimateTitleSerializer(many=True, source='homepageheroanimatedtitle_set')
+    
+    class Meta:
+        model = HomePage
+        fields = (
+            "id",
+            "seo_title",
+            "section_title",
+            "section_description",
+            "button_text",
+            "button_url",
+            "animated_titles",
+        )
+
+
+
+
+
+
+
 
 
 class PostCredentialSerializer(serializers.ModelSerializer):
