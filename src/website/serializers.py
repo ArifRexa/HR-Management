@@ -283,6 +283,31 @@ class ServiceMetadataSerializer(serializers.ModelSerializer):
 
     def get_keywords(self, obj):
         return [keyword.name for keyword in obj.servicekeyword_set.all()]
+    
+
+class CardTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SolutionsAndServicesCards
+        fields = ['card_title']
+
+class ServicePageCardTitlesSerializer(serializers.ModelSerializer):
+    card_titles = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ServicePage
+        fields = ['card_titles']
+    
+    def get_card_titles(self, obj):
+        # Get all related SolutionsAndServices
+        solutions_services = obj.solutions_and_services.all()
+        
+        # Get all cards from all solutions services
+        cards = SolutionsAndServicesCards.objects.filter(
+            solutions_and_services__in=solutions_services
+        )
+        
+        # Extract all card titles
+        return [card.card_title for card in cards]
 
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):

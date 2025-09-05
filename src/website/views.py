@@ -114,6 +114,7 @@ from website.serializers import (
     ProjectSitemapSerializer,
     ServeCategorySerializer,
     ServiceDetailsSerializer,
+    ServicePageCardTitlesSerializer,
     ServicePageDetailSerializer,
     ServicePageSerializer,
     ServiceSerializer,
@@ -1668,7 +1669,26 @@ class ServicePageListView(ListAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
-
+class ServicePageCardTitlesView(RetrieveAPIView):
+    queryset = ServicePage.objects.all()
+    serializer_class = ServicePageCardTitlesSerializer
+    lookup_field = 'slug'
+    @swagger_auto_schema(
+        operation_description="Retrieve card titles for a specific service page by slug",
+        tags=["Service Details"],
+        responses={200: ServicePageCardTitlesSerializer},
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Slug of the service page to retrieve card titles for",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 # ======================================= Technology ===========================================
 
