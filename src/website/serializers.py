@@ -1996,7 +1996,7 @@ class ServiceMetaDataSerializer(serializers.ModelSerializer):
 class ServicePageChildrenSerializer(serializers.ModelSerializer):
     class Meta:
         model = ServicePage
-        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description']
+        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description', 'show_in_menu']
         ref_name = 'ServicePageChild'
 
 
