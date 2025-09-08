@@ -243,7 +243,7 @@ class ClientAdmin(admin.ModelAdmin):
     #     "currency",
     # )
     list_filter = [
-        "is_need_feedback",
+        # "is_need_feedback",
         "active",
         "review",
         "payment_method",
