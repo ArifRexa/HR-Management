@@ -722,6 +722,7 @@ class GalleryListView(APIView):
 
 
 class LifeAtMediuswareListView(APIView):
+    permission_classes = [AllowAny]
     serializer_class = LifeAtMediuswareSerializer
 
     def get(self, request, *args, **kwargs):
