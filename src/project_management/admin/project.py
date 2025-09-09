@@ -16,6 +16,7 @@ from project_management.models import (
     Project,
     ProjectContent,
     ProjectDocument,
+    ProjectEstimation,
     ProjectIndustry,
     ProjectKeyFeature,
     ProjectKeyPoint,
@@ -89,7 +90,9 @@ class ProjectDocumentAdmin(admin.StackedInline):
     extra = 0
 
 
-class ProjectContentAdmin(SortableStackedInline, nested_admin.NestedStackedInline):
+class ProjectContentAdmin(
+    SortableStackedInline, nested_admin.NestedStackedInline
+):
     model = ProjectContent
     extra = 1
     # fields = ("title", "content", "image", "iframe")
@@ -159,6 +162,8 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "hourly_rate",
         "last_increased",
         "active",
+        "get_estimate_hours",
+        "get_used_hours",
         "get_report_url",
         "get_live_link",
         "client_feedback_link",
@@ -187,7 +192,13 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     list_per_page = 20
     ordering = ("pk",)
     # autocomplete_fields = ["client"]
-    autocomplete_fields = ["client", "categories_tags", "industries", "services", "technology"]
+    autocomplete_fields = [
+        "client",
+        "categories_tags",
+        "industries",
+        "services",
+        "technology",
+    ]
     # form = ProjectAdminForm
     fields = (
         "title",
@@ -240,6 +251,20 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     #         )
     #     return form
 
+    @admin.display(description="Estimate Hours")
+    def get_estimate_hours(self, obj):
+        estimate = obj.project_estimations.filter(project=obj, is_active=True)
+        if not estimate.exists():
+            return 0
+        return estimate.first().hours
+
+    @admin.display(description="Used Hours")
+    def get_used_hours(self, obj):
+        estimate = obj.project_estimations.filter(project=obj, is_active=True)
+        if not estimate.exists():
+            return 0
+        return estimate.first().total_hours_used
+
     def get_fields(self, request, obj):
         fields = super().get_fields(request, obj)
         remove_fields = list(fields)
@@ -253,14 +278,18 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         return ["title"]
 
     def get_report_url(self, obj):
-        html_template = get_template("admin/project_management/list/col_reporturl.html")
+        html_template = get_template(
+            "admin/project_management/list/col_reporturl.html"
+        )
         html_content = html_template.render({"identifier": obj.identifier})
         return format_html(html_content)
 
     get_report_url.short_description = "hours_breakdown"
 
     def get_live_link(self, obj):
-        html_template = get_template("admin/project_management/list/live_link.html")
+        html_template = get_template(
+            "admin/project_management/list/live_link.html"
+        )
         html_content = html_template.render({"project": obj})
         return format_html(html_content)
 
@@ -289,7 +318,9 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         six_month_ago = datetime.now().date() - relativedelta(months=6)
         if obj.activate_from and obj.activate_from > six_month_ago:
             return obj.activate_from
-        return format_html('<span style="color:red;">{}</span>', obj.activate_from)
+        return format_html(
+            '<span style="color:red;">{}</span>', obj.activate_from
+        )
 
     def project_title_with_client(self, obj):
         client_name = obj.client.name if obj.client else "No Client"
@@ -314,9 +345,9 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         return list_display
 
     def client_invoice_date(self, obj):
-        client_date = ClientInvoiceDate.objects.filter(clients=obj.client).values_list(
-            "invoice_date", flat=True
-        )
+        client_date = ClientInvoiceDate.objects.filter(
+            clients=obj.client
+        ).values_list("invoice_date", flat=True)
 
         formatted_dates = "<br/>".join(str(date) for date in client_date)
         return format_html(formatted_dates)
@@ -411,3 +442,25 @@ class ProjectTechnologyAdmin(admin.ModelAdmin):
 @admin.register(Teams)
 class TeamsAdmin(admin.ModelAdmin):
     pass
+
+
+@admin.register(ProjectEstimation)
+class ProjectEstimationAdmin(admin.ModelAdmin):
+    list_display = ("project", "date", "hours", "is_active")
+    list_filter = ("is_active", "project")
+    search_fields = ("project__title",)
+    date_hierarchy = "date"
+    exclude = ("estimation", "is_active")
+    autocomplete_fields = ["project"]
+
+    @admin.display(description="Hours Used")
+    def get_used_hours(self, obj):
+        return obj.total_hours_used
+
+    def save_model(self, request, obj, form, change):
+        exist_estimate = ProjectEstimation.objects.filter(
+            project=obj.project, is_active=True
+        ).exclude(pk=obj.pk)
+        if exist_estimate.exists():
+            exist_estimate.update(is_active=False)
+        return super().save_model(request, obj, form, change)

@@ -259,7 +259,9 @@ class Client(TimeStampMixin, AuthorMixin):
     # cc_email = models.TextField(
     #     null=True, blank=True, help_text="Comma-separated email addresses for CC"
     # )
-    address = models.TextField(null=True, blank=True, verbose_name="Billing Address")
+    address = models.TextField(
+        null=True, blank=True, verbose_name="Billing Address"
+    )
     exclude_client_name = models.BooleanField(default=False)
     country = models.ForeignKey(
         Country, on_delete=models.SET_NULL, null=True, blank=True
@@ -272,7 +274,9 @@ class Client(TimeStampMixin, AuthorMixin):
     company_name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Website URL"
     )
-    client_feedback = models.TextField(null=True, blank=True, verbose_name="Closing Summary/Future Scope")
+    client_feedback = models.TextField(
+        null=True, blank=True, verbose_name="Closing Summary/Future Scope"
+    )
     image = models.ImageField(
         upload_to="client_images",
         null=True,
@@ -282,7 +286,9 @@ class Client(TimeStampMixin, AuthorMixin):
     linkedin_url = models.URLField(
         null=True, blank=True, verbose_name="LinkedIn URL"
     )
-    notes = models.TextField(null=True, blank=True, verbose_name="Billing Notes")
+    notes = models.TextField(
+        null=True, blank=True, verbose_name="Billing Notes"
+    )
     is_hour_breakdown = models.BooleanField(default=False)
     payment_method = models.ForeignKey(
         PaymentMethod,
@@ -1618,3 +1624,35 @@ class Teams(TimeStampMixin):
         if not self.team_name:
             raise ValidationError("Team name is required.")
         super().clean()
+
+
+class ProjectEstimation(TimeStampMixin, AuthorMixin):
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="project_estimations",
+    )
+    date = models.DateField(
+        default=timezone.now, help_text="Estimation Activate Date"
+    )
+    estimation = models.FileField(upload_to="uploads/project_estimation/%y/%m")
+    hours = models.PositiveIntegerField(
+        default=0, verbose_name="Estimate Hours"
+    )
+    description = models.TextField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    @property
+    def total_hours_used(self):
+        total = DailyProjectUpdate.objects.filter(
+            project=self.project, created_at__lte=self.date, status="approved"
+        ).aggregate(total_hours=Sum("hours"))
+        return total["total_hours"] if total["total_hours"] else 0
+
+    class Meta:
+        verbose_name = "Project Estimation"
+        verbose_name_plural = "Project Estimations"
+
+    def __str__(self):
+        return f"{self.project.title} Estimation"
