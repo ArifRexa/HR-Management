@@ -871,6 +871,7 @@ class LeadershipAPIView(RetrieveAPIView):
 
 
 class EmployeeTestimonialListAPIView(ListAPIView):
+    permission_classes = [AllowAny]
     queryset = EmployeeTestimonial.objects.all()
     serializer_class = EmployeeTestimonialSerializer
     pagination_class = None
