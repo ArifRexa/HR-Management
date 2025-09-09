@@ -267,7 +267,7 @@ class InventorySummaryAdmin(admin.ModelAdmin):
             )
         )
 
-    def get_sort_keys(self, request) -> tuple[str, str]:
+    def get_sort_keys(self, request):
         o_param: str = request.GET.get("o", "")
         if o_param:
             if o_param.startswith("-"):
