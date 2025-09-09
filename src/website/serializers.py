@@ -124,7 +124,7 @@ from website.models import (
     WhyUsTitle,
 )
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
 
@@ -1856,7 +1856,11 @@ class ServeCategorySerializer(serializers.ModelSerializer):
 
 # ===================================================== ServicesPage =====================================================
 
-
+class ServicesItemTagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicesItemTags
+        fields = '__all__'
+        ref_name = 'ServiceItemTag'
 # Base serializers for nested models
 class SolutionsAndServicesCardsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1994,9 +1998,10 @@ class ServiceMetaDataSerializer(serializers.ModelSerializer):
 
 
 class ServicePageChildrenSerializer(serializers.ModelSerializer):
+    tags = ServicesItemTagsSerializer(many=True, read_only=True, source='service_item_tags')
     class Meta:
         model = ServicePage
-        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description', 'show_in_menu']
+        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description', 'show_in_menu', 'tags']
         ref_name = 'ServicePageChild'
 
 
