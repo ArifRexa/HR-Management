@@ -70,6 +70,8 @@ from website.models import (
     Gallery,
     HistoryOfTech,
     HomeBanner,
+    HomePage,
+    HomePageHeroAnimatedTitle,
     Industry,
     IndustryTitle,
     IndustryWeServe,
@@ -122,7 +124,40 @@ from website.models import (
     WhyUsTitle,
 )
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+
+
+
+class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HomePageHeroAnimatedTitle
+        fields = ("title",)
+
+class HomePageSerializer(serializers.ModelSerializer):
+    animated_titles = HomePageAnimateTitleSerializer(
+        many=True, 
+        source='hero_animated_titles',
+        read_only=True
+    )
+    
+    class Meta:
+        model = HomePage
+        fields = (
+            "id",
+            "seo_title",
+            "section_title",
+            "section_description",
+            "button_text",
+            "button_url",
+            "animated_titles",
+        )
+
+
+
+
+
+
+
 
 
 class PostCredentialSerializer(serializers.ModelSerializer):
@@ -248,6 +283,31 @@ class ServiceMetadataSerializer(serializers.ModelSerializer):
 
     def get_keywords(self, obj):
         return [keyword.name for keyword in obj.servicekeyword_set.all()]
+    
+
+class CardTitleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SolutionsAndServicesCards
+        fields = ['card_title']
+
+class ServicePageCardTitlesSerializer(serializers.ModelSerializer):
+    card_titles = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ServicePage
+        fields = ['card_titles']
+    
+    def get_card_titles(self, obj):
+        # Get all related SolutionsAndServices
+        solutions_services = obj.solutions_and_services.all()
+        
+        # Get all cards from all solutions services
+        cards = SolutionsAndServicesCards.objects.filter(
+            solutions_and_services__in=solutions_services
+        )
+        
+        # Extract all card titles
+        return [card.card_title for card in cards]
 
 
 class ServiceDetailsSerializer(serializers.ModelSerializer):
@@ -1796,7 +1856,11 @@ class ServeCategorySerializer(serializers.ModelSerializer):
 
 # ===================================================== ServicesPage =====================================================
 
-
+class ServicesItemTagsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicesItemTags
+        fields = '__all__'
+        ref_name = 'ServiceItemTag'
 # Base serializers for nested models
 class SolutionsAndServicesCardsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1934,9 +1998,10 @@ class ServiceMetaDataSerializer(serializers.ModelSerializer):
 
 
 class ServicePageChildrenSerializer(serializers.ModelSerializer):
+    tags = ServicesItemTagsSerializer(many=True, read_only=True, source='service_item_tags')
     class Meta:
         model = ServicePage
-        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description']
+        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description', 'show_in_menu', 'tags']
         ref_name = 'ServicePageChild'
 
 

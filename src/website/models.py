@@ -22,6 +22,25 @@ from .hire_models import *  # noqa
 from smart_selects.db_fields import ChainedManyToManyField
 
 
+class HomePage(TimeStampMixin):
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    button_text = models.CharField(max_length=200, blank=True, null=True)
+    button_url = models.CharField(max_length=200, blank=True, null=True)
+
+    def __str__(self):
+        return self.section_title
+
+
+class HomePageHeroAnimatedTitle(models.Model):
+    homepage = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="hero_animated_titles")
+    title = models.CharField(max_length=100)
+
+
+
+
+
 class ServiceProcess(models.Model):
     img = models.ImageField()
     title = models.CharField(max_length=200)
@@ -140,6 +159,7 @@ class Technology(TimeStampMixin):
         TechnologyType, related_name="technologies", on_delete=models.CASCADE
     )
     icon = models.ImageField(upload_to="technology_icons/", null=True, blank=True)
+    featured_image = models.ImageField(upload_to="technology_featured_images/", null=True, blank=True)
     show_in_menu = models.BooleanField(
         default=False,
         help_text="If checked, this technology will be displayed in the main menu.",
@@ -1095,7 +1115,8 @@ class Leadership(TimeStampMixin):
 class LeadershipSpeech(TimeStampMixin):
     video_url = models.URLField()
     thumbnail = models.ImageField(upload_to="leadership_speech/")
-    speech = HTMLField()
+    description = HTMLField(null=True, blank=True)
+    speech = HTMLField(null=True, blank=True)
     leader = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,

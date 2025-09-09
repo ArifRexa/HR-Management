@@ -147,7 +147,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -702,7 +702,9 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
 #     prepopulated_fields = {"slug": ("title",)}
 #     list_display = ('title', 'slug', 'is_parent')
 #     list_filter = ('is_parent',)
-
+class ServicesItemTagsInline(nested_admin.NestedTabularInline):
+    model = ServicesItemTags
+    extra = 1
 # ===========================SolutionsAndServices======================
 class SolutionsAndServicesCardsInline(nested_admin.NestedStackedInline):
     model = SolutionsAndServicesCards
@@ -815,9 +817,9 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         ("Page Hierarchy", {"fields": ("is_parent", "parent", "title", "show_in_menu", "services_body_schema")}),
         (
             "Banner",
-            {"fields": ("seo_title", "sub_title", "secondary_title", "slug", "description")},
+            {"fields": ("seo_title", "sub_title", "secondary_title", "slug", "description", "icon", "feature_image")},
         ),
-        # ("Explore Our Services", {"fields": ("icon", "feature_image")}),
+        # ("Explore Our Services", {"fields": ("icon", "feature_image")})
         
         # ("Why Choose Us", {"fields": ("why_choose_us_sub_title",)}),
         # (
@@ -857,6 +859,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         ServicePageFAQSchemaInline,
         # ServiceMetaDataInline,
         ServicePageCTAInline,
+        ServicesItemTagsInline,
     ]
     list_per_page = 20
     change_form_template = 'admin/website/servecategory/change_form.html'
@@ -2162,7 +2165,7 @@ class LeadershipSpeechInline(admin.StackedInline):
     extra = 1
     autocomplete_fields = ("leader",)
     search_fields = ("leader__full_name",)
-    fields = ("leader", "video_url", "thumbnail", "speech")
+    # fields = ("leader", "video_url", "thumbnail", "description", "speech")
 
 
 @admin.register(Leadership)

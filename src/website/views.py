@@ -43,6 +43,7 @@ from website.models import (
     EmployeePerspective,
     EmployeeTestimonial,
     Gallery,
+    HomePage,
     Industry,
     IndustryWeServe,
     Inquiry,
@@ -91,6 +92,7 @@ from website.serializers import (
     EmployeeTestimonialSerializer,
     FAQSerializer,
     GallerySerializer,
+    HomePageSerializer,
     IndustrySerializer,
     IndustryWeServeSerializer,
     InquirySerializer,
@@ -112,6 +114,7 @@ from website.serializers import (
     ProjectSitemapSerializer,
     ServeCategorySerializer,
     ServiceDetailsSerializer,
+    ServicePageCardTitlesSerializer,
     ServicePageDetailSerializer,
     ServicePageSerializer,
     ServiceSerializer,
@@ -128,6 +131,35 @@ from website.serializers import (
     WebsiteTitleSerializer,
 )
 from website.utils.plagiarism_checker import CopyleaksAPI
+
+class HomePageApiView(APIView):
+
+    @swagger_auto_schema(
+        tags=["Home Page"],
+        operation_description="Home Page data",
+        responses={
+            200: openapi.Response(
+                description="HomePage data retrieved successfully",
+                schema=HomePageSerializer(),
+            ),
+            404: "HomePage not found",
+            500: "Internal server error",
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        try:
+            homepage = HomePage.objects.first()
+            if not homepage:
+                return Response(
+                    {"error": "HomePage not found."}, status=status.HTTP_404_NOT_FOUND
+                )
+
+            serializer = HomePageSerializer(homepage)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 def index(request):
@@ -1637,7 +1669,26 @@ class ServicePageListView(ListAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
-
+class ServicePageCardTitlesView(RetrieveAPIView):
+    queryset = ServicePage.objects.all()
+    serializer_class = ServicePageCardTitlesSerializer
+    lookup_field = 'slug'
+    @swagger_auto_schema(
+        operation_description="Retrieve card titles for a specific service page by slug",
+        tags=["Service Details"],
+        responses={200: ServicePageCardTitlesSerializer},
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Slug of the service page to retrieve card titles for",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 # ======================================= Technology ===========================================
 

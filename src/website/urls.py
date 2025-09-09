@@ -19,6 +19,7 @@ from website.views import (
     ContactModelViewSet,
     EmployeeTestimonialListAPIView,
     GalleryListView,
+    HomePageApiView,
     IndustryListAPIView,
     IndustryWeServeListAPIView,
     InquiryModelViewSet,
@@ -39,6 +40,7 @@ from website.views import (
     ProjectDetails,
     EmployeeList,
     ServiceListAPIView,
+    ServicePageCardTitlesView,
     ServicePageListView,
     ServicePageDetailView as ServicePageDetailViewV2,
     SubscriptionModelViewSet,
@@ -292,6 +294,10 @@ urlpatterns = [
     
     path('website/awards/', AwardCategoryListView.as_view(), name='award-categories'),
     path('website/featured-awards/', IsFeaturedAwardListView.as_view(), name='featured-awards'),
+    path('website/home-page-hero/', HomePageApiView.as_view(), name='home-page-hero-'),
+    path('website/services-service-card-titles/<slug:slug>/', 
+         ServicePageCardTitlesView.as_view(), 
+         name='service-card-titles'),
 
 ]
 

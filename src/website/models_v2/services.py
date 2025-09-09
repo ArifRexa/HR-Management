@@ -24,7 +24,7 @@ class ServicePage(TimeStampMixin):
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     h1_title = models.CharField(max_length=255, verbose_name="H1 Title", null=True, blank=True)
     slug = models.SlugField(unique=True)
-    sub_title = models.TextField(verbose_name="Section Title")
+    sub_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Section Title")
     description = HTMLField(null=True, blank=True, verbose_name="Section Description")
     # menu_title = models.CharField(
     #     max_length=255, null=True, blank=True, verbose_name="Menu Title2"
@@ -49,6 +49,18 @@ class ServicePage(TimeStampMixin):
     class Meta:
         verbose_name = "Service"
         verbose_name_plural = "Services"
+
+class ServicesItemTags(TimeStampMixin):
+    service_page = models.ForeignKey(
+        ServicePage,
+        related_name="service_item_tags",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    title = models.CharField(max_length=100)
+
+    # def __str__(self):
+    #     return self.tag
 
 # ======================= SolutionsAndServices =======================
 class SolutionsAndServices(TimeStampMixin):
