@@ -2165,7 +2165,7 @@ class LeadershipSpeechInline(admin.StackedInline):
     extra = 1
     autocomplete_fields = ("leader",)
     search_fields = ("leader__full_name",)
-    fields = ("leader", "video_url", "thumbnail", "speech")
+    # fields = ("leader", "video_url", "thumbnail", "description", "speech")
 
 
 @admin.register(Leadership)

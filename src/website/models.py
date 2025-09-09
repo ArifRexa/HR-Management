@@ -1115,7 +1115,8 @@ class Leadership(TimeStampMixin):
 class LeadershipSpeech(TimeStampMixin):
     video_url = models.URLField()
     thumbnail = models.ImageField(upload_to="leadership_speech/")
-    speech = HTMLField()
+    description = HTMLField(null=True, blank=True)
+    speech = HTMLField(null=True, blank=True)
     leader = models.ForeignKey(
         Employee,
         on_delete=models.CASCADE,
