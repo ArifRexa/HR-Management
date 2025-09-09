@@ -50,6 +50,18 @@ class ServicePage(TimeStampMixin):
         verbose_name = "Service"
         verbose_name_plural = "Services"
 
+class ServicesItemTags(TimeStampMixin):
+    service_page = models.ForeignKey(
+        ServicePage,
+        related_name="service_item_tags",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    title = models.CharField(max_length=100)
+
+    # def __str__(self):
+    #     return self.tag
+
 # ======================= SolutionsAndServices =======================
 class SolutionsAndServices(TimeStampMixin):
     services = models.ForeignKey(
