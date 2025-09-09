@@ -194,85 +194,123 @@ def get_start_end_dates(n_months_ago):
 @admin.register(InventorySummary)
 class InventorySummaryAdmin(admin.ModelAdmin):
     change_list_template = "admin/inventory/inventory_summary.html"
-    # date_hierarchy = "transaction_date"
-    # list_filter = ("inventory_item",)
+    sortable_fields = {
+        "0": "inventory_item__name",
+        "1": "inventory_item__quantity",
+        "2": "current_total_out",
+        "3": "one_month_ago_total_out",
+        "4": "two_months_ago_total_out",
+        "5": "three_months_ago_total_out",
+    }
 
-    def changelist_view(self, request, extra_context=None):
+    def _build_queryset(self, request):
         # Get start/end dates for the last 4 months
         current_month = get_start_end_dates(0)
         one_month_ago = get_start_end_dates(1)
         two_months_ago = get_start_end_dates(2)
         three_months_ago = get_start_end_dates(3)
 
-        # Generate month names for headers
+        # Calculate overall date range
         today = timezone.now().date()
-        month_names = ["Inventory Item", "Current Stock"]
-        for i in range(4):
-            month_date = today - relativedelta(months=i)
-            month_names.append(month_date.strftime("%b %Y"))
-
-        # Calculate overall date range (from 3 months ago to current month)
         start_date_overall = today - relativedelta(months=3)
         start_date_overall = start_date_overall.replace(day=1)
         end_date_overall = today.replace(
             day=calendar.monthrange(today.year, today.month)[1]
         )
 
+        qs = super().get_queryset(request)
+        return (
+            qs.filter(
+                transaction_type="o",
+                status="approved",
+                transaction_date__lte=end_date_overall,
+                transaction_date__gte=start_date_overall,
+            )
+            .values("inventory_item")
+            .annotate(
+                current_total_out=Sum(
+                    "quantity",
+                    filter=Q(
+                        transaction_date__gte=current_month[0],
+                        transaction_date__lte=current_month[1],
+                    ),
+                ),
+                one_month_ago_total_out=Sum(
+                    "quantity",
+                    filter=Q(
+                        transaction_date__gte=one_month_ago[0],
+                        transaction_date__lte=one_month_ago[1],
+                    ),
+                ),
+                two_months_ago_total_out=Sum(
+                    "quantity",
+                    filter=Q(
+                        transaction_date__gte=two_months_ago[0],
+                        transaction_date__lte=two_months_ago[1],
+                    ),
+                ),
+                three_months_ago_total_out=Sum(
+                    "quantity",
+                    filter=Q(
+                        transaction_date__gte=three_months_ago[0],
+                        transaction_date__lte=three_months_ago[1],
+                    ),
+                ),
+            )
+            .values(
+                "inventory_item__name",
+                "current_total_out",
+                "inventory_item__quantity",
+                "one_month_ago_total_out",
+                "two_months_ago_total_out",
+                "three_months_ago_total_out",
+            )
+        )
+
+    def get_sort_keys(self, request) -> tuple[str, str]:
+        o_param: str = request.GET.get("o", "")
+        if o_param:
+            if o_param.startswith("-"):
+                sortable_field_key = o_param[1:]
+                field = f"-{self.sortable_fields[sortable_field_key]}"
+                return field, o_param
+            sortable_field_key = o_param
+            field = f"{self.sortable_fields[sortable_field_key]}"
+            return field, o_param
+        return "", ""
+
+    def get_queryset(self, request):
+        qs = self._build_queryset(request)
+        sort_keys, _ = self.get_sort_keys(request)
+        if sort_keys:
+            qs = qs.order_by(sort_keys)
+        return qs
+
+    def changelist_view(self, request, extra_context=None):
+        # Generate month names for headers
+        today = timezone.now().date()
+        month_names = ["Inventory Item", "Current Stock"]
+        for i in range(4):
+            month_date = today - relativedelta(months=i)
+            month_names.append(month_date.strftime("%b %Y"))
+        sort_keys, param = self.get_sort_keys(request)
+        query_param = None
+        for i, val in enumerate(month_names, start=1):
+            if param and param.startswith("-"):
+                if str(i) == param[1:]:
+                    query_param = param[1:]
+                    break
+            else:
+                query_param = f"-{param}"
+                break
+
         extra_context = extra_context or {}
-        qs = self.get_queryset(request)
-        
 
         extra_context.update(
             {
                 "month_headers": month_names,
-                "qs": (
-                    qs.filter(
-                        transaction_type="o",
-                        status="approved",
-                        transaction_date__lte=end_date_overall,
-                        transaction_date__gte=start_date_overall,
-                    )
-                    .values("inventory_item")
-                    .annotate(
-                        current_total_out=Sum(
-                            "quantity",
-                            filter=Q(
-                                transaction_date__gte=current_month[0],
-                                transaction_date__lte=current_month[1],
-                            ),
-                        ),
-                        one_month_ago_total_out=Sum(
-                            "quantity",
-                            filter=Q(
-                                transaction_date__gte=one_month_ago[0],
-                                transaction_date__lte=one_month_ago[1],
-                            ),
-                        ),
-                        two_months_ago_total_out=Sum(
-                            "quantity",
-                            filter=Q(
-                                transaction_date__gte=two_months_ago[0],
-                                transaction_date__lte=two_months_ago[1],
-                            ),
-                        ),
-                        three_months_ago_total_out=Sum(
-                            "quantity",
-                            filter=Q(
-                                transaction_date__gte=three_months_ago[0],
-                                transaction_date__lte=three_months_ago[1],
-                            ),
-                        ),
-                    )
-                    .order_by("-current_total_out")
-                    .values(
-                        "inventory_item__name",
-                        "current_total_out",
-                        "inventory_item__quantity",
-                        "one_month_ago_total_out",
-                        "two_months_ago_total_out",
-                        "three_months_ago_total_out",
-                    )
-                ),
+                "qs": self.get_queryset(request),
+                "query_param": query_param,
             }
         )
 

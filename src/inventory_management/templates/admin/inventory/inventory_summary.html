@@ -1,21 +1,10 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls static admin_list %}
+{% load i18n admin_urls static admin_list inventory_tag %}
 
 {% block extrastyle %}
   {{ block.super }}
   <link rel="stylesheet" type="text/css" href="{% static "admin/css/changelists.css" %}">
-  {% if cl.formset %}
-    <link rel="stylesheet" type="text/css" href="{% static "admin/css/forms.css" %}">
-  {% endif %}
-  {% if cl.formset or action_form %}
-    <script src="{% url 'admin:jsi18n' %}"></script>
-  {% endif %}
   {{ media.css }}
-  {% if not actions_on_top and not actions_on_bottom %}
-    <style>
-      #changelist table thead th:first-child {width: inherit}
-    </style>
-  {% endif %}
 {% endblock %}
 
 {% block extrahead %}
@@ -24,18 +13,6 @@
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
-
-{% if not is_popup %}
-{% block breadcrumbs %}
-<div class="breadcrumbs">
-<a href="{% url 'admin:index' %}">{% translate 'Home' %}</a>
-&rsaquo; <a href="{% url 'admin:app_list' app_label=cl.opts.app_label %}">{{ cl.opts.app_config.verbose_name }}</a>
-&rsaquo; {{ cl.opts.verbose_name_plural|capfirst }}
-</div>
-{% endblock %}
-{% endif %}
-
-{% block coltype %}{% endblock %}
 
 {% block content %}
   <div id="content-main">
@@ -46,74 +23,71 @@
           {% endblock %}
         </ul>
     {% endblock %}
-    {% if cl.formset and cl.formset.errors %}
-        <p class="errornote">
-        {% if cl.formset.total_error_count == 1 %}{% translate "Please correct the error below." %}{% else %}{% translate "Please correct the errors below." %}{% endif %}
-        </p>
-        {{ cl.formset.non_form_errors }}
-    {% endif %}
+
     <div class="module{% if cl.has_filters %} filtered{% endif %}" id="changelist">
       <div class="changelist-form-container">
         {% block search %}{% search_form cl %}{% endblock %}
         {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
-
+        
         <form id="changelist-form" method="post"{% if cl.formset and cl.formset.is_multipart %} enctype="multipart/form-data"{% endif %} novalidate>{% csrf_token %}
         {% if cl.formset %}
           <div>{{ cl.formset.management_form }}</div>
         {% endif %}
 
         {% block result_list %}
-          {% if action_form and actions_on_top and cl.show_admin_actions %}{% admin_actions %}{% endif %}
           <div class="results">
             <table id="result_list">
             <thead>
             <tr>
-
-            <th scope="col" class="action-checkbox-column">
-            
-            <div class="text"><span><input type="checkbox" id="action-toggle"></span></div>
-            <div class="clear"></div>
-            </th>
-            
-            {% for header in month_headers %}
-              
-              <th scope="col" class="sortable column-transaction_date">            
-                <div class="text">{{header}}</div>
+              <th scope="col" class="action-checkbox-column">
+                <div class="text"><span><input type="checkbox" id="action-toggle"></span></div>
                 <div class="clear"></div>
               </th>
-            {% endfor %}
               
-            
-            
+              <!-- Dynamic sorting headers -->
+              {% for header in month_headers %}
+                <th scope="col" class="sortable column-transaction_date">
+                  
+                  {% if query_param|is_query:forloop.counter0 %}
+                    <a href="?o={{ query_param }}">
+                    {{ header }}
+                  </a>
+                  {% else %}
+                  <a href="?o={{ forloop.counter0 }}">
+                    {{ header }}
+                  </a>
+                  {% endif %}
+                    
+                  
+                </th>
+              {% endfor %}
             </tr>
             </thead>
             <tbody>
                 {% for obj in qs %}
-                    
-
                 <tr>
-                    <td class="action-checkbox">
-                        <input type="checkbox" name="_selected_action" value="6" class="action-select">
-                    </td>
-                    <th class="field-transaction_date nowrap">
-                        {{obj.inventory_item__name}}
-                    </th>
-                    <th class="field-transaction_date nowrap">
-                    {{obj.inventory_item__quantity}}
-                    </th>
-                    <td class="field-inventory_item nowrap">
-                        {{obj.current_total_out | default:"0"}}
-                    </td>
-                    <td class="field-inventory_item nowrap">
-                        {{obj.one_month_ago_total_out | default:"0"}}
-                    </td>
-                    <td class="field-inventory_item nowrap">
-                        {{obj.two_months_ago_total_out | default:"0"}}
-                    </td>
-                    <td class="field-inventory_item nowrap">
-                        {{obj.three_months_ago_total_out | default:"0"}}
-                    </td>
-                    
+                  <td class="action-checkbox">
+                    <input type="checkbox" name="_selected_action" value="{{ obj.id }}" class="action-select">
+                  </td>
+                  <th class="field-transaction_date nowrap">
+                    {{ obj.inventory_item__name }}
+                  </th>
+                  <th class="field-transaction_date nowrap">
+                    {{ obj.inventory_item__quantity }}
+                  </th>
+                  <td class="field-inventory_item nowrap">
+                    {{ obj.current_total_out | default:"0" }}
+                  </td>
+                  <td class="field-inventory_item nowrap">
+                    {{ obj.one_month_ago_total_out | default:"0" }}
+                  </td>
+                  <td class="field-inventory_item nowrap">
+                    {{ obj.two_months_ago_total_out | default:"0" }}
+                  </td>
+                  <td class="field-inventory_item nowrap">
+                    {{ obj.three_months_ago_total_out | default:"0" }}
+                  </td>
+                </tr>
                 {% endfor %}
              </tbody>
             </table>
@@ -123,6 +97,7 @@
         
         </form>
       </div>
+      
       {% block filters %}
         {% if cl.has_filters %}
           <div id="changelist-filter">
@@ -136,4 +111,18 @@
       {% endblock %}
     </div>
   </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const headers = document.querySelectorAll('.sortable');
+    headers.forEach(header => {
+        header.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = this.getAttribute('href');
+        });
+    });
+});
+</script>
 {% endblock %}
