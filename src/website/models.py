@@ -1526,3 +1526,14 @@ class Awards(models.Model):
     
     def __str__(self):
         return self.title
+    
+
+class Certification(models.Model):
+    title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='certifications/', null=True, blank=True)
+    image_url = models.URLField(max_length=500, verbose_name="Certification Image URL", null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    link = models.URLField(max_length=500, verbose_name="Link", null=True, blank=True)
+
+    def __str__(self):
+        return self.title

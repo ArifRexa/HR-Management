@@ -39,6 +39,7 @@ from website.models import (
     BlogStatus,
     Brand,
     Category,
+    Certification,
     Contact,
     EmployeePerspective,
     EmployeeTestimonial,
@@ -79,6 +80,7 @@ from website.serializers import (
     BlogSitemapSerializer,
     BrandSerializer,
     CategoryListSerializer,
+    CertificationSerializer,
     ClientLogoSerializer,
     ClientReviewSerializer,
     ClientSerializer,
@@ -1819,4 +1821,18 @@ class IsFeaturedAwardListView(APIView):
     def get(self, request):
         featured_awards = Awards.objects.filter(is_featured=True)
         serializer = AwardsSerializer(featured_awards, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class CertificationListView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = CertificationSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all certifications",
+        responses={200: CertificationSerializer(many=True)},
+        tags=['Certifications']
+    )
+    def get(self, request):
+        certifications = Certification.objects.all()
+        serializer = CertificationSerializer(certifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

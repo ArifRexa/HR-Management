@@ -59,6 +59,7 @@ from website.models import (
     BlogTitle,
     Brand,
     Category,
+    Certification,
     Contact,
     ContactForm,
     EcoSystem,
@@ -2532,3 +2533,10 @@ class AwardCategorySerializer(serializers.ModelSerializer):
 class AwardCategoryListResponseSerializer(serializers.Serializer):
     table_of_content = serializers.ListField(child=serializers.CharField())
     categories = AwardCategorySerializer(many=True)
+
+
+class CertificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certification
+        fields = '__all__'
+        ref_name = 'CertificationSerializer'

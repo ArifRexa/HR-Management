@@ -63,6 +63,7 @@ from website.models import (
     Career,
     CareerBanner,
     Category,
+    Certification,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
@@ -2219,3 +2220,7 @@ class PublicImageAdmin(admin.ModelAdmin):
 class ContactFormAdmin(admin.ModelAdmin):
     list_display = ("full_name", "email", "form_type", "created_at")
     readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
+
+@admin.register(Certification)
+class CertificationAdmin(admin.ModelAdmin):
+    list_display = ("title", )

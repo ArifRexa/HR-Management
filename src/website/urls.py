@@ -12,6 +12,7 @@ from website.views import (
     BenefitsOfEmploymentListAPIView,
     BlogDetailAPIView,
     BlogListAPIView,
+    CertificationListView,
     ClientListAPIView,
     ClientLogoListView,
     ClientReviewListAPIView,
@@ -298,6 +299,8 @@ urlpatterns = [
     path('website/services-service-card-titles/<slug:slug>/', 
          ServicePageCardTitlesView.as_view(), 
          name='service-card-titles'),
+
+    path('website/certifications-lists/', CertificationListView.as_view(), name='certification-list'),
 
 ]
 
