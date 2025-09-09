@@ -1646,7 +1646,7 @@ class ProjectEstimation(TimeStampMixin, AuthorMixin):
     @property
     def total_hours_used(self):
         total = DailyProjectUpdate.objects.filter(
-            project=self.project, created_at__lte=self.date, status="approved"
+            project=self.project, created_at__date__gte=self.date, status="approved"
         ).aggregate(total_hours=Sum("hours"))
         return total["total_hours"] if total["total_hours"] else 0
 
