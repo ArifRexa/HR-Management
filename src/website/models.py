@@ -506,7 +506,8 @@ class Blog(AuthorMixin, TimeStampMixin):
         ServicePage,
         related_name="blogs_as_parent",
         limit_choices_to={"is_parent": True},
-        verbose_name="Parent Services"
+        verbose_name="Services",
+        blank=True,
     )
     # child_services = models.ManyToManyField(
     #     ServicePage,

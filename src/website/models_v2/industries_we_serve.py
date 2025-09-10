@@ -7,10 +7,11 @@ from config.model import TimeStampMixin
 
 # ===================================Industry Details====================================
 class ServeCategory(models.Model):
-    title = models.CharField(max_length=100, verbose_name="Section Title")
+    title = models.CharField(max_length=100, verbose_name="Menu Title")
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     # short_description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True)
+    show_in_menu = models.BooleanField(default=False, verbose_name="Show in Menu")
     # title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
     # industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
     # industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
@@ -28,6 +29,16 @@ class ServeCategory(models.Model):
     class Meta:
         verbose_name = "Industry Detail"
         verbose_name_plural = "Industry Details"
+
+
+class IndustryItemTags(models.Model):
+    service_page = models.ForeignKey(
+        ServeCategory,
+        related_name="industry_item_tags",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    title = models.CharField(max_length=100)
 
 #================================= Industry Details Hero Section =================================
 

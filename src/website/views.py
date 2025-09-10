@@ -114,6 +114,7 @@ from website.serializers import (
     ProjectListSerializer,
     ProjectSerializer,
     ProjectSitemapSerializer,
+    ServeCategoryMainSerializer,
     ServeCategorySerializer,
     ServiceDetailsSerializer,
     ServicePageCardTitlesSerializer,
@@ -1631,7 +1632,16 @@ class ServeCategoryAPIView(APIView):
     #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
     #         )
         
-
+class IndustryMainListView(ListAPIView):
+    queryset = ServeCategory.objects.all()
+    serializer_class = ServeCategoryMainSerializer
+    @swagger_auto_schema(
+        operation_description="List all industries with main details",
+        tags=["Industry Details"],
+        responses={200: ServeCategoryMainSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 # ======================================= Service Page ===========================================
 
 class ServicePageDetailView(RetrieveAPIView):

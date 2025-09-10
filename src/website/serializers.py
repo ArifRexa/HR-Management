@@ -124,7 +124,7 @@ from website.models import (
     WhatIs,
     WhyUsTitle,
 )
-from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
@@ -1854,6 +1854,43 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         return toc
 
 
+class IndustryItemTagSerializer(serializers.ModelSerializer):
+    """Serializer for IndustryItemTags model (title field only)"""
+    class Meta:
+        model = IndustryItemTags
+        fields = ['title']
+
+class IndustryDetailsHeroSerializer(serializers.ModelSerializer):
+    """Serializer for IndustryDetailsHeroSection model (section_description field only)"""
+    class Meta:
+        model = IndustryDetailsHeroSection
+        fields = ['section_description']
+
+class ServeCategoryMainSerializer(serializers.ModelSerializer):
+    """Main serializer combining all required fields"""
+    # Get section_description from related hero section
+    section_description = serializers.CharField(
+        source='industry_details_hero_section.section_description',
+        allow_null=True,
+        read_only=True
+    )
+    
+    # Get all related tag titles
+    tags = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ServeCategory
+        fields = [
+            'title',
+            'slug',
+            'show_in_menu',
+            'section_description',
+            'tags'
+        ]
+    
+    def get_tags(self, obj):
+        """Retrieve all tag titles for the category"""
+        return [tag.title for tag in obj.industry_item_tags.all()]
 
 # ===================================================== ServicesPage =====================================================
 
