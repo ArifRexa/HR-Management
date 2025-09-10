@@ -1869,15 +1869,9 @@ class IndustryDetailsHeroSerializer(serializers.ModelSerializer):
 class ServeCategoryMainSerializer(serializers.ModelSerializer):
     """Main serializer combining all required fields"""
     # Get section_description from related hero section
-    section_description = serializers.CharField(
-        source='industry_details_hero_section.section_description',
-        allow_null=True,
-        read_only=True
-    )
-    
-    # Get all related tag titles
+    section_description = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = ServeCategory
         fields = [
@@ -1887,9 +1881,14 @@ class ServeCategoryMainSerializer(serializers.ModelSerializer):
             'section_description',
             'tags'
         ]
-    
+
+    def get_section_description(self, obj):
+        """Get the section description from the most recent hero section"""
+        hero_section = obj.industry_details_hero_section.order_by('-created_at').first()
+        return hero_section.section_description if hero_section else None
+
     def get_tags(self, obj):
-        """Retrieve all tag titles for the category"""
+        """Get all related tag titles"""
         return [tag.title for tag in obj.industry_item_tags.all()]
 
 # ===================================================== ServicesPage =====================================================
