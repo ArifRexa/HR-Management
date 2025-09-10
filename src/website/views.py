@@ -1635,6 +1635,7 @@ class ServeCategoryAPIView(APIView):
 class IndustryMainListView(ListAPIView):
     queryset = ServeCategory.objects.all()
     serializer_class = ServeCategoryMainSerializer
+    pagination_class = None
     @swagger_auto_schema(
         operation_description="List all industries with main details",
         tags=["Industry Details"],
