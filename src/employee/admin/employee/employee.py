@@ -66,6 +66,52 @@ class EmployeeAdmin(
     change_list_template = "admin/employee/list/index.html"
     exclude = ["pf_eligibility"]
 
+    # Add all fields from the Employee model
+    fields = [
+        "active",
+        "user",
+        "email",
+        "blood_group",
+        "tax_info",
+        "image",
+        
+        "gender",
+        "date_of_birth",
+        "address",
+        "present_address",
+        "phone",
+        "joining_date",
+        "national_id_no",
+        "permanent_date",
+        "designation",
+        "leave_management",
+        "pay_scale",
+        "is_tpm",
+        "tax_eligible",
+        "manager",
+        "lead",
+        "sqa",
+        "exception_la",
+        # "show_in_web",
+        "operation",
+        "lunch_allowance",
+        "project_eligibility",
+        "leave_in_cash_eligibility",
+        "show_in_attendance_list",
+        "festival_bonus_eligibility",
+        # "device_allowance",
+        # "list_order",
+        # "birthday_image",
+        # "birthday_image_shown",
+        # "need_cto",
+        # "need_cto_at",
+        # "need_hr",
+        # "need_hr_at",
+
+        "entry_pass_id",
+        "monthly_expected_hours",
+    ]
+
     def lookup_allowed(self, lookup, value):
         if lookup in ["employeeskill__skill__title__exact"]:
             return True
