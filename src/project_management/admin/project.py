@@ -249,7 +249,6 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     #         )
     #     return form
 
-
     def get_fields(self, request, obj):
         fields = super().get_fields(request, obj)
         remove_fields = list(fields)
@@ -431,7 +430,14 @@ class TeamsAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectEstimation)
 class ProjectEstimationAdmin(admin.ModelAdmin):
-    list_display = ("project", "date", "hours", "get_used_hours", "is_active")
+    list_display = (
+        "project",
+        "date",
+        "get_estivate_hours",
+        "get_used_hours",
+        "get_extra_used_hours",
+        "is_active",
+    )
     list_filter = ("is_active", "project")
     search_fields = ("project__title",)
     date_hierarchy = "date"
@@ -442,6 +448,18 @@ class ProjectEstimationAdmin(admin.ModelAdmin):
     def get_used_hours(self, obj):
         return obj.total_hours_used
 
+    @admin.display(description="Estimate Hours")
+    def get_estivate_hours(self, obj):
+        if obj.hours < obj.total_hours_used:
+            return format_html(f"<span style='color:red;'>{obj.hours}</span>")
+        return obj.hours
+
+    @admin.display(description="Extra Used Hours")
+    def get_extra_used_hours(self, obj):
+        if obj.hours < obj.total_hours_used:
+            return obj.total_hours_used - obj.hours
+        return 0
+
     def save_model(self, request, obj, form, change):
         exist_estimate = ProjectEstimation.objects.filter(
             project=obj.project, is_active=True
@@ -449,5 +467,3 @@ class ProjectEstimationAdmin(admin.ModelAdmin):
         if exist_estimate.exists():
             exist_estimate.update(is_active=False)
         return super().save_model(request, obj, form, change)
-    
-    
