@@ -12,6 +12,7 @@ from website.views import (
     BenefitsOfEmploymentListAPIView,
     BlogDetailAPIView,
     BlogListAPIView,
+    CertificationListView,
     ClientListAPIView,
     ClientLogoListView,
     ClientReviewListAPIView,
@@ -21,6 +22,7 @@ from website.views import (
     GalleryListView,
     HomePageApiView,
     IndustryListAPIView,
+    IndustryMainListView,
     IndustryWeServeListAPIView,
     InquiryModelViewSet,
     IsFeaturedAwardListView,
@@ -279,6 +281,7 @@ urlpatterns = [
     path('website/industries/', IndustryListAPIView.as_view(), name='industry-list'),
     path('website/technologies/', TechnologyListAPIView.as_view(), name='technology-list'),
     # path('api/industry-details/', ServeCategoryAPIView.as_view(), name='serve-category-list'),
+    path('website/industry-for-home/', IndustryMainListView.as_view(), name='serve-category-home'),
     path('website/industry-details/<slug:slug>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
     path('website/projects/', ProjectListView.as_view(), name='project-list'),
     path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
@@ -298,6 +301,8 @@ urlpatterns = [
     path('website/services-service-card-titles/<slug:slug>/', 
          ServicePageCardTitlesView.as_view(), 
          name='service-card-titles'),
+
+    path('website/certifications-lists/', CertificationListView.as_view(), name='certification-list'),
 
 ]
 

@@ -506,7 +506,8 @@ class Blog(AuthorMixin, TimeStampMixin):
         ServicePage,
         related_name="blogs_as_parent",
         limit_choices_to={"is_parent": True},
-        verbose_name="Parent Services"
+        verbose_name="Services",
+        blank=True,
     )
     # child_services = models.ManyToManyField(
     #     ServicePage,
@@ -1357,7 +1358,8 @@ class Subscription(TimeStampMixin):
 class AdditionalPages(TimeStampMixin):
     title = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
-    description = models.TextField(null=True, blank=True)
+    meta_title = models.CharField(max_length=255, verbose_name="Meta Title", null=True, blank=True)
+    description = models.TextField(null=True, blank=True, verbose_name='Meta Description')
 
     def __str__(self):
         return self.title
@@ -1374,7 +1376,7 @@ class AdditionalPageHeroSection(TimeStampMixin):
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secodary_title = models.CharField(max_length=255, null=True, blank=True)
     # slug = models.SlugField(unique=True)
-    section_description = models.TextField(null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
 
     def __str__(self):
         return self.section_title or "Hero Section"
@@ -1387,9 +1389,9 @@ class WhatIs(TimeStampMixin):
         null=True,
         blank=True
     )
-    seo_title = models.CharField(max_length=255, verbose_name="SEO Title")
-    section_title = models.CharField(max_length=255)
-    section_description = models.TextField(null=True, blank=True)
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", blank=True, null=True)
+    section_title = models.CharField(max_length=255, blank=True, null=True)
+    section_description = HTMLField(null=True, blank=True)
 
     def __str__(self):
         return self.section_title
@@ -1404,7 +1406,7 @@ class AdditionalPageKeyThings(TimeStampMixin):
     )
     seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=200, blank=True, null=True)
-    section_description = models.TextField(blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
 
     def __str__(self):
         return self.section_title
@@ -1418,7 +1420,7 @@ class AdditionalPageKeyThingsCards(TimeStampMixin):
         blank=True
     )
     card_title = models.CharField(max_length=200, blank=True, null=True)
-    card_description = models.TextField(blank=True, null=True)
+    card_description = HTMLField(blank=True, null=True)
     def __str__(self):
         return self.card_title
     
@@ -1459,7 +1461,7 @@ class AdditionalPageOurProcess(models.Model):
         null=True,
         blank=True
     )
-    section_title = models.CharField(max_length=200)
+    section_title = models.CharField(max_length=200, blank=True, null=True)
     section_description = HTMLField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
@@ -1524,5 +1526,16 @@ class Awards(models.Model):
     image_url = models.URLField(max_length=500, verbose_name="Award URL", null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     
+    def __str__(self):
+        return self.title
+    
+
+class Certification(models.Model):
+    title = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='certifications/', null=True, blank=True)
+    image_url = models.URLField(max_length=500, verbose_name="Certification Image URL", null=True, blank=True)
+    description = models.TextField(blank=True, null=True)
+    link = models.URLField(max_length=500, verbose_name="Link", null=True, blank=True)
+
     def __str__(self):
         return self.title

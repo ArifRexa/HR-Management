@@ -83,6 +83,7 @@ class Employee(TimeStampMixin, AuthorMixin):
         blank=True,
         max_length=255,
         help_text="i.e: 59530389237, Circle–138, Zone-11, Dhaka",
+        verbose_name="TIN Number"
     )
     is_tpm = models.BooleanField(
         default=False,

@@ -39,6 +39,7 @@ from website.models import (
     BlogStatus,
     Brand,
     Category,
+    Certification,
     Contact,
     EmployeePerspective,
     EmployeeTestimonial,
@@ -79,6 +80,7 @@ from website.serializers import (
     BlogSitemapSerializer,
     BrandSerializer,
     CategoryListSerializer,
+    CertificationSerializer,
     ClientLogoSerializer,
     ClientReviewSerializer,
     ClientSerializer,
@@ -112,6 +114,7 @@ from website.serializers import (
     ProjectListSerializer,
     ProjectSerializer,
     ProjectSitemapSerializer,
+    ServeCategoryMainSerializer,
     ServeCategorySerializer,
     ServiceDetailsSerializer,
     ServicePageCardTitlesSerializer,
@@ -1629,7 +1632,17 @@ class ServeCategoryAPIView(APIView):
     #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
     #         )
         
-
+class IndustryMainListView(ListAPIView):
+    queryset = ServeCategory.objects.all()
+    serializer_class = ServeCategoryMainSerializer
+    pagination_class = None
+    @swagger_auto_schema(
+        operation_description="List all industries with main details",
+        tags=["Industry Details"],
+        responses={200: ServeCategoryMainSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 # ======================================= Service Page ===========================================
 
 class ServicePageDetailView(RetrieveAPIView):
@@ -1819,4 +1832,18 @@ class IsFeaturedAwardListView(APIView):
     def get(self, request):
         featured_awards = Awards.objects.filter(is_featured=True)
         serializer = AwardsSerializer(featured_awards, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class CertificationListView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class = CertificationSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all certifications",
+        responses={200: CertificationSerializer(many=True)},
+        tags=['Certifications']
+    )
+    def get(self, request):
+        certifications = Certification.objects.all()
+        serializer = CertificationSerializer(certifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

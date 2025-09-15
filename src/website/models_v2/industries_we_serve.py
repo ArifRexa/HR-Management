@@ -7,10 +7,11 @@ from config.model import TimeStampMixin
 
 # ===================================Industry Details====================================
 class ServeCategory(models.Model):
-    title = models.CharField(max_length=100, verbose_name="Section Title")
+    title = models.CharField(max_length=100, verbose_name="Menu Title")
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     # short_description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True)
+    show_in_menu = models.BooleanField(default=False, verbose_name="Show in Menu")
     # title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
     # industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
     # industry_banner = models.ImageField(upload_to='industry_banners/', blank=True, null=True)
@@ -28,6 +29,16 @@ class ServeCategory(models.Model):
     class Meta:
         verbose_name = "Industry Detail"
         verbose_name_plural = "Industry Details"
+
+
+class IndustryItemTags(models.Model):
+    service_page = models.ForeignKey(
+        ServeCategory,
+        related_name="industry_item_tags",
+        on_delete=models.SET_NULL,
+        null=True,
+    )
+    title = models.CharField(max_length=100)
 
 #================================= Industry Details Hero Section =================================
 
@@ -48,8 +59,8 @@ class IndustryDetailsHeroSection(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.section_title or "Industry Details Hero Section"
+    # def __str__(self):
+    #     return self.section_title or "Industry Details Hero Section"
 
 
 
@@ -67,8 +78,8 @@ class OurProcess(models.Model):
     section_description = HTMLField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
-    def __str__(self):
-        return self.section_title
+    # def __str__(self):
+    #     return self.section_title
     
     class Meta:
         verbose_name = "Our Process"
@@ -91,8 +102,8 @@ class IndustryDetailsHeading(models.Model):
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Industry Details Heading"
+    # def __str__(self):
+    #     return self.section_title or "Industry Details Heading"
     
     class Meta:
         verbose_name = "Industry Details Heading"
@@ -111,8 +122,8 @@ class IndustryDetailsHeadingCards(models.Model):
     card_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='industry_details_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
     
     
 #================================= CustomSolutions =================================
@@ -129,8 +140,8 @@ class CustomSolutions(models.Model):
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Custom Solutions"
+    # def __str__(self):
+    #     return self.section_title or "Custom Solutions"
     
     class Meta:
         verbose_name = "Custom Solution"
@@ -149,8 +160,8 @@ class CustomSolutionsCards(models.Model):
     card_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 
 
@@ -170,8 +181,8 @@ class Benefits(models.Model):
     image = models.ImageField(upload_to='benefits_images/', blank=True, null=True)
 
 
-    def __str__(self):
-        return self.section_title or "Benefits"
+    # def __str__(self):
+    #     return self.section_title or "Benefits"
     
     class Meta:
         verbose_name = "Benefit"
@@ -187,8 +198,8 @@ class BenefitsQA(models.Model):
     )
     card_title = models.CharField(max_length=200, blank=True, null=True)
     card_description = HTMLField(blank=True, null=True)
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
     
 #================================= Why Choose Us =================================
@@ -206,8 +217,8 @@ class WhyChooseUs(models.Model):
     section_description = HTMLField(blank=True, null=True)
     image = models.ImageField(upload_to='why_choose_us_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.section_title or "Why Choose Us"
+    # def __str__(self):
+    #     return self.section_title or "Why Choose Us"
     
     class Meta:
         verbose_name = "Why Choose Us"
@@ -226,8 +237,8 @@ class WhyChooseUsCards(models.Model):
     # card_description = HTMLField(blank=True, null=True)
     order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
-    def __str__(self):
-        return self.card_title
+    # def __str__(self):
+    #     return self.card_title
 
 
 class WhyChooseUsCardsDetails(models.Model):
@@ -240,8 +251,8 @@ class WhyChooseUsCardsDetails(models.Model):
     )
     card_description = HTMLField(blank=True, null=True)
 
-    def __str__(self):
-        return self.card_description
+    # def __str__(self):
+    #     return self.card_description
     
 
 
@@ -263,8 +274,8 @@ class ServeCategoryCTA(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return self.title or "CTA"
+    # def __str__(self):
+    #     return self.title or "CTA"
 
     
 
@@ -274,8 +285,8 @@ class ServiceCategoryFAQ(models.Model):
     answer = HTMLField()
     order = models.PositiveIntegerField(default=0, help_text="Order of display for FAQs")
 
-    def __str__(self):
-        return self.question
+    # def __str__(self):
+    #     return self.question
 
     class Meta:
         verbose_name = "FAQ"
@@ -294,8 +305,8 @@ class ServeCategoryFAQSchema(models.Model):
         help_text="JSON-LD schema for FAQs"
     )
 
-    def __str__(self):
-        return f"FAQ Schema for {self.serve_category.title}"
+    # def __str__(self):
+    #     return f"FAQ Schema for {self.serve_category.title}"
 
 
 
@@ -305,8 +316,8 @@ class ApplicationAreas(models.Model):
     description = HTMLField()
     image = models.ImageField(upload_to='solutions_images/', blank=True, null=True)
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
 
 
 class IndustryServe(models.Model):
@@ -317,8 +328,8 @@ class IndustryServe(models.Model):
     motivation_description = models.TextField()
     serve_categories = models.ManyToManyField(ServeCategory, related_name='industries')
 
-    def __str__(self):
-        return self.title
+    # def __str__(self):
+    #     return self.title
     
     class Meta:
         verbose_name = "Industry"

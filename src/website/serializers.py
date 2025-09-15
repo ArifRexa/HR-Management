@@ -59,6 +59,7 @@ from website.models import (
     BlogTitle,
     Brand,
     Category,
+    Certification,
     Contact,
     ContactForm,
     EcoSystem,
@@ -123,7 +124,7 @@ from website.models import (
     WhatIs,
     WhyUsTitle,
 )
-from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
@@ -1853,6 +1854,42 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         return toc
 
 
+class IndustryItemTagSerializer(serializers.ModelSerializer):
+    """Serializer for IndustryItemTags model (title field only)"""
+    class Meta:
+        model = IndustryItemTags
+        fields = ['title']
+
+class IndustryDetailsHeroSerializer(serializers.ModelSerializer):
+    """Serializer for IndustryDetailsHeroSection model (section_description field only)"""
+    class Meta:
+        model = IndustryDetailsHeroSection
+        fields = ['section_description']
+
+class ServeCategoryMainSerializer(serializers.ModelSerializer):
+    """Main serializer combining all required fields"""
+    # Get section_description from related hero section
+    section_description = serializers.SerializerMethodField()
+    tags = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ServeCategory
+        fields = [
+            'title',
+            'slug',
+            'show_in_menu',
+            'section_description',
+            'tags'
+        ]
+
+    def get_section_description(self, obj):
+        """Get the section description from the most recent hero section"""
+        hero_section = obj.industry_details_hero_section.order_by('-created_at').first()
+        return hero_section.section_description if hero_section else None
+
+    def get_tags(self, obj):
+        """Get all related tag titles"""
+        return [tag.title for tag in obj.industry_item_tags.all()]
 
 # ===================================================== ServicesPage =====================================================
 
@@ -2532,3 +2569,10 @@ class AwardCategorySerializer(serializers.ModelSerializer):
 class AwardCategoryListResponseSerializer(serializers.Serializer):
     table_of_content = serializers.ListField(child=serializers.CharField())
     categories = AwardCategorySerializer(many=True)
+
+
+class CertificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Certification
+        fields = '__all__'
+        ref_name = 'CertificationSerializer'

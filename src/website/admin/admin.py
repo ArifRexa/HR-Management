@@ -63,6 +63,7 @@ from website.models import (
     Career,
     CareerBanner,
     Category,
+    Certification,
     ClientTestimonialBanner,
     ClutchTestimonialBanner,
     ContactBanner,
@@ -146,7 +147,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
+from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
@@ -632,6 +633,13 @@ class IndustryDetailsHeadingInline(nested_admin.NestedStackedInline):
     fields = ('seo_title', 'section_title', 'section_description', 'image')
     # You can add more customization here if needed
 
+
+
+class IndustryItemTagsInlineAdmin(nested_admin.NestedStackedInline):
+    model = IndustryItemTags
+    extra = 1
+    min_num = 1
+    max_num = 3
 # ================================= ServeCategoryAdmin (Industry Details) =================================
 @admin.register(ServeCategory)
 class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
@@ -647,7 +655,9 @@ class ServeCategoryAdmin(nested_admin.NestedModelAdmin):
                OurProcessInline,
                ServiceCategoryFAQInline, 
                ServeCategoryCTAInline, 
-               ServeCategoryFAQSchemaInline]
+               ServeCategoryFAQSchemaInline,
+               IndustryItemTagsInlineAdmin
+               ]
     prepopulated_fields = {"slug": ("title",)}
     list_filter = ('title',)
     change_form_template = 'admin/website/servecategory/change_form.html'
@@ -2219,3 +2229,7 @@ class PublicImageAdmin(admin.ModelAdmin):
 class ContactFormAdmin(admin.ModelAdmin):
     list_display = ("full_name", "email", "form_type", "created_at")
     readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
+
+@admin.register(Certification)
+class CertificationAdmin(admin.ModelAdmin):
+    list_display = ("title", )
