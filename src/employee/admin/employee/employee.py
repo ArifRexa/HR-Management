@@ -33,6 +33,7 @@ from employee.models.employee import (
     MeetingSummary,
     Observation,
     TPMComplain,
+    # generate_employee_profile_pdf,
 )
 from employee.models.employee_activity import EmployeeAttendance
 from project_management.models import EmployeeProjectHour, Project
@@ -110,6 +111,7 @@ class EmployeeAdmin(
 
         "entry_pass_id",
         "monthly_expected_hours",
+        "profile_pdf"
     ]
 
     def lookup_allowed(self, lookup, value):
@@ -117,14 +119,36 @@ class EmployeeAdmin(
             return True
         return super().lookup_allowed(lookup, value)
 
+
+
+    # def save_model(self, request, obj, form, change):
+    #     print(obj.__dict__)
+    #     if change:
+    #         if (
+    #             obj.lead != form.initial["lead"]
+    #             or obj.manager != form.initial["manager"]
+    #         ):
+    #             # Create an observation record
+    #             already_exist = Observation.objects.filter(
+    #                 employee__id=obj.id
+    #             ).first()
+    #             if not already_exist:
+    #                 Observation.objects.create(
+    #                     employee=obj,
+    #                 )
+    #     super().save_model(request, obj, form, change)
+    #     # Observation.objects.create(
+    #     #             employee_id=obj.id,
+    #     #         )
+
+
     def save_model(self, request, obj, form, change):
-        print(obj.__dict__)
+        # Your existing logic
         if change:
             if (
                 obj.lead != form.initial["lead"]
                 or obj.manager != form.initial["manager"]
             ):
-                # Create an observation record
                 already_exist = Observation.objects.filter(
                     employee__id=obj.id
                 ).first()
@@ -132,10 +156,27 @@ class EmployeeAdmin(
                     Observation.objects.create(
                         employee=obj,
                     )
+
+        # Save the object first
         super().save_model(request, obj, form, change)
-        # Observation.objects.create(
-        #             employee_id=obj.id,
-        #         )
+
+        # Generate and save PDF
+        # try:
+        #     pdf_content = generate_employee_profile_pdf(obj)
+        #     pdf_filename = f"{obj.full_name}_profile_{obj.id}.pdf".replace(" ", "_")
+        #     obj.profile_pdf.save(pdf_filename, pdf_content, save=True)
+        #     # Verify the file was saved
+        #     if obj.profile_pdf and obj.profile_pdf.name:
+        #         print(f"PDF saved successfully for {obj.full_name}: {obj.profile_pdf.name}")
+        #     else:
+        #         print(f"Failed to save PDF for {obj.full_name}: No file associated")
+        # except Exception as e:
+        #     # Log detailed error for debugging
+        #     import traceback
+        #     print(f"Error generating/saving PDF for {obj.full_name}: {e}")
+        #     print(traceback.format_exc())
+
+
 
     def get_readonly_fields(self, request, obj):
         if request.user.is_superuser or request.user.has_perm(

@@ -6,6 +6,7 @@ from pyexpat import model
 from re import sub
 from tabnanny import verbose
 from django.utils import timezone
+from django.template.loader import render_to_string
 
 # from unittest import loader
 from urllib import request
@@ -22,8 +23,10 @@ from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timesince import timesince
 from tinymce.models import HTMLField
+from weasyprint import HTML
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
+import settings
 from settings.models import Designation, LeaveManagement, PayScale
 from django.core.exceptions import ValidationError
 from dateutil.relativedelta import relativedelta
@@ -33,6 +36,7 @@ from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template import loader
 from django.template.loader import get_template
+from django.core.files.base import ContentFile
 
 
 class Appointment(AuthorMixin, TimeStampMixin):
@@ -118,6 +122,7 @@ class Employee(TimeStampMixin, AuthorMixin):
     monthly_expected_hours = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
+    profile_pdf = models.FileField(upload_to="employee_pdfs/", null=True, blank=True)
 
     def __str__(self):
         return self.full_name
@@ -572,6 +577,54 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_print_employee_info", "Can print employee info"),
         )
         ordering = ["full_name"]
+
+
+
+
+# def generate_employee_profile_pdf(employee):
+#     """
+#     Generate a PDF profile for the employee and return the ContentFile.
+#     """
+#     context = {
+#         'employee': employee,
+#         'MEDIA_URL': settings.MEDIA_URL,
+#         'STATIC_URL': settings.STATIC_URL,
+#     }
+
+#     # Render HTML template
+#     html_string = render_to_string('employee/profile_pdf.html', context)
+
+#     # Generate PDF
+#     html = HTML(string=html_string, base_url=settings.BASE_DIR)
+#     pdf_file = html.write_pdf()
+
+#     # Return as Django ContentFile
+#     return ContentFile(pdf_file, name=f"{employee.full_name}_profile.pdf")
+# def generate_employee_profile_pdf(employee):
+#     """
+#     Generate a PDF profile for the employee and return the ContentFile.
+#     """
+#     # Provide fallback values for MEDIA_URL and STATIC_URL
+#     media_url = getattr(settings, 'MEDIA_URL', '/media/')
+#     static_url = getattr(settings, 'STATIC_URL', '/static/')
+    
+#     context = {
+#         'employee': employee,
+#         'MEDIA_URL': media_url,
+#         'STATIC_URL': static_url,
+#     }
+
+#     # Render HTML template
+#     html_string = render_to_string('employee/profile_pdf.html', context)
+
+#     # Generate PDF
+#     html = HTML(string=html_string, base_url=str(settings.BASE_DIR))
+#     pdf_file = html.write_pdf()
+
+#     # Create a ContentFile with the PDF data
+#     pdf_name = f"{employee.full_name}_profile_{employee.id}.pdf".replace(" ", "_")
+#     return ContentFile(pdf_file, name=pdf_name)
+
 
 
 class BookConferenceRoom(models.Model):

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>{{ employee.full_name }} - Profile</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+        .section { margin-bottom: 20px; }
+        .label { font-weight: bold; display: inline-block; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Employee Profile: {{ employee.full_name }}</h1>
+
+    <div class="section">
+        <div><span class="label">Employee ID:</span> {{ employee.employee_id }}</div>
+        <div><span class="label">Email:</span> {{ employee.email }}</div>
+        <div><span class="label">Gender:</span> {{ employee.get_gender_display }}</div>
+        <div><span class="label">Date of Birth:</span> {{ employee.date_of_birth }}</div>
+        <div><span class="label">Blood Group:</span> {{ employee.blood_group }}</div>
+        <div><span class="label">Address:</span> {{ employee.address }}</div>
+        <div><span class="label">Present Address:</span> {{ employee.present_address }}</div>
+        <div><span class="label">Phone:</span> {{ employee.phone }}</div>
+        <div><span class="label">Joining Date:</span> {{ employee.joining_date }}</div>
+        <div><span class="label">National ID:</span> {{ employee.national_id_no }}</div>
+        <div><span class="label">Permanent Date:</span> {{ employee.permanent_date }}</div>
+        <div><span class="label">Designation:</span> {{ employee.designation }}</div>
+        <div><span class="label">Pay Scale:</span> {{ employee.pay_scale }}</div>
+        <div><span class="label">TIN Number:</span> {{ employee.tax_info }}</div>
+        <div><span class="label">Is TPM:</span> {{ employee.is_tpm|yesno }}</div>
+        <div><span class="label">Tax Eligible:</span> {{ employee.tax_eligible|yesno }}</div>
+        <div><span class="label">Is Manager:</span> {{ employee.manager|yesno }}</div>
+        <div><span class="label">Is Lead:</span> {{ employee.lead|yesno }}</div>
+        <div><span class="label">Is SQA:</span> {{ employee.sqa|yesno }}</div>
+        <div><span class="label">Exception LA:</span> {{ employee.exception_la|yesno }}</div>
+        <div><span class="label">Active:</span> {{ employee.active|yesno }}</div>
+        <div><span class="label">Operation:</span> {{ employee.operation|yesno }}</div>
+        <div><span class="label">Lunch Allowance:</span> {{ employee.lunch_allowance|yesno }}</div>
+        <div><span class="label">Project Eligibility:</span> {{ employee.project_eligibility|yesno }}</div>
+        <div><span class="label">Leave in Cash Eligibility:</span> {{ employee.leave_in_cash_eligibility|yesno }}</div>
+        <div><span class="label">Show in Attendance:</span> {{ employee.show_in_attendance_list|yesno }}</div>
+        <div><span class="label">Festival Bonus Eligibility:</span> {{ employee.festival_bonus_eligibility|yesno }}</div>
+        <div><span class="label">PF Eligibility:</span> {{ employee.pf_eligibility|yesno }}</div>
+        <div><span class="label">Device Allowance:</span> {{ employee.device_allowance|yesno }}</div>
+        <div><span class="label">List Order:</span> {{ employee.list_order }}</div>
+        <div><span class="label">Entry Pass ID:</span> {{ employee.entry_pass_id }}</div>
+        <div><span class="label">Monthly Expected Hours:</span> {{ employee.monthly_expected_hours }}</div>
+        <div><span class="label">Resignation Date:</span> {{ employee.resignation_date }}</div>
+    </div>
+
+    {% if employee.image %}
+    <div class="section">
+        <img src="{{ MEDIA_URL }}{{ employee.image }}" width="150" />
+    </div>
+    {% endif %}
+
+    <div class="section">
+        <h3>Salary History</h3>
+        {% for salary in employee.salaryhistory_set.all %}
+            <div>From: {{ salary.active_from }} | Basic: {{ salary.basic_salary }} | Payable: {{ salary.payable_salary }}</div>
+        {% empty %}
+            <div>No salary history.</div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h3>Skills</h3>
+        {% for skill in employee.employeeskill_set.all %}
+            <div>{{ skill.skill.title }} ({{ skill.percentage }}%)</div>
+        {% empty %}
+            <div>No skills listed.</div>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h3>Bank Accounts</h3>
+        {% for bank in employee.bankaccount_set.all %}
+            <div>{{ bank.bank.name }} - {{ bank.account_number }} {% if bank.default %}(Default){% endif %}</div>
+        {% empty %}
+            <div>No bank accounts.</div>
+        {% endfor %}
+    </div>
+</body>
+</html>
