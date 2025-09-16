@@ -765,10 +765,28 @@ class TDSChallan(TimeStampMixin):
         return self.challan_no
 
 
-class AssistantFund(Fund):
+class AssistantFund(TimeStampMixin, AuthorMixin):
+    STATUS_CHOICE = (
+        ("pending", "⌛ Pending"),
+        ("approved", "✔ Approved"),
+    )
+    date = models.DateField(null=True, blank=True)
+    amount = models.FloatField(default=0.0)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.RESTRICT
+    )
+    fund_category = models.ForeignKey(
+        FundCategory, on_delete=models.RESTRICT, null=True, blank=True
+    )
+    note = models.TextField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20, choices=STATUS_CHOICE, default="pending"
+    )
+
     
     class Meta:
         permissions = [
             ("view_assistant_fund_user", "Can view assistant fund user in admin"),
             ("change_assistant_fund_user", "Can change assistant fund user in admin"),
+            ("assistant_fund_superuser", "Assistant fund superuser in admin"),
         ]
