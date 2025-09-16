@@ -9,7 +9,7 @@ from django.utils.html import format_html
 from django.contrib import messages
 from django.contrib.admin import SimpleListFilter
 
-from account.models import Expense, Fund, FundCategory
+from account.models import Expense, Fund, FundCategory, AssistantFund
 from config.admin import RecentEdit
 from employee.models import Employee
 
@@ -353,4 +353,12 @@ class FundAdmin(RecentEdit, admin.ModelAdmin):
                 messages.WARNING
             )
 
-            
+
+
+@admin.register(AssistantFund)
+class AssistantFundAdmin(FundAdmin):
+    
+    def _has_user_permission(self, request):
+        """Check if user has permission to view/change fund user"""
+        return (request.user.has_perm('account.view_assistant_fund_user') or 
+                request.user.has_perm('account.change_assistant_fund_user'))
