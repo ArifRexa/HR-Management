@@ -111,7 +111,6 @@ class EmployeeAdmin(
 
         "entry_pass_id",
         "monthly_expected_hours",
-        "profile_pdf"
     ]
 
     def lookup_allowed(self, lookup, value):
@@ -400,10 +399,10 @@ class EmployeeDetails(admin.ModelAdmin):
     list_display = (
         "employee",
         "get_designation",
-        "get_skill",
+        # "get_skill",
         "get_email",
         "get_phone",
-        "get_present_address",
+        # "get_present_address",
         "get_blood_group",
         "get_joining_date_human",
     )

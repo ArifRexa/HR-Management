@@ -122,7 +122,6 @@ class Employee(TimeStampMixin, AuthorMixin):
     monthly_expected_hours = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
-    profile_pdf = models.FileField(upload_to="employee_pdfs/", null=True, blank=True)
 
     def __str__(self):
         return self.full_name
