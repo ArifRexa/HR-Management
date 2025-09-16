@@ -286,7 +286,7 @@ TINYMCE_DEFAULT_CONFIG = {
     "content_style": """
         @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
         """,
-    "fontsize_formats": "8pt 10pt 12pt 14pt 16pt 18pt 20pt 22pt 24pt 28pt 32pt 36pt 40pt 48pt 56pt 64pt 72pt",
+    "fontsize_formats": "8px 10px 12px 14px 16px 18px 20px 22px 24px 28px 32px 36px 40px 48px 56px 64px 72px",
     "font_formats": "Andale Mono=andale mono,times; Arial=arial,helvetica,sans-serif; Arial Black=arial black,avant garde;"
     "Book Antiqua=book antiqua,palatino; Baskerville=baskerville,serif; Courier New=courier new,courier;"
     "Georgia=georgia,palatino; Helvetica=helvetica; Impact=impact,chicago; Symbol=symbol; Tahoma=tahoma,arial,helvetica,sans-serif;"
