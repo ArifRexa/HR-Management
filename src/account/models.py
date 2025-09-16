@@ -763,3 +763,12 @@ class TDSChallan(TimeStampMixin):
 
     def __str__(self):
         return self.challan_no
+
+
+class AssistantFund(Fund):
+    
+    class Meta:
+        permissions = [
+            ("view_assistant_fund_user", "Can view assistant fund user in admin"),
+            ("change_assistant_fund_user", "Can change assistant fund user in admin"),
+        ]
