@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from asset_management.models import (  # AssetCategory,
+from asset_management.models import (
     Addition,
     Asset,
     AssetHead,
@@ -17,6 +17,10 @@ from asset_management.models import (  # AssetCategory,
     EmployeeAsset,
     EmployeeAssignedAsset,
     Vendor,
+    AssetCategory,
+    AssetBrand,
+    FixedAsset,
+    CPU,
 )
 from asset_management.models.asset import (
     AssetRequest,
@@ -503,3 +507,66 @@ class AssetRequestAdmin(admin.ModelAdmin):
         )
 
         return mark_safe(html_content)
+
+
+@admin.register(AssetCategory)
+class AssetCategoryModelAdmin(admin.ModelAdmin):
+    list_display = ["name", ]
+
+
+@admin.register(AssetBrand)
+class AssetBrandModelAdmin(admin.ModelAdmin):
+    list_display = ["name", ]
+
+
+@admin.register(FixedAsset)
+class FixedAssetModelAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "category",
+        "brand",
+        "vendor",
+        "purchase_date",
+        "warranty_duration",
+        "serial",
+        "processor",
+        "ram",
+        "storage",
+        "display_size",
+        "gpu",
+        "other_specs",
+        "is_active",
+    ]
+
+    fields = [
+        "is_active",
+        "category",
+        "brand",
+        "vendor",
+        "purchase_date",
+        "warranty_duration",
+        "serial",
+        "processor",
+        "ram",
+        "storage",
+        "display_size",
+        "gpu",
+        "other_specs",
+    ]
+
+    class Media:
+        js = ("js/fixedasset.js",)
+
+
+@admin.register(CPU)
+class CPUModelAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "processor",
+        "ram1",
+        "ram2",
+        "ssd",
+        "hdd",
+        "gpu",
+    ]
+    

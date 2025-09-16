@@ -252,3 +252,155 @@ class AssetRequestNote(AuthorMixin, TimeStampMixin):
         AssetRequest, on_delete=models.CASCADE, related_name="asset_request_notes"
     )
     note = models.TextField(null=True, blank=True)
+
+
+class AssetCategory(AuthorMixin, TimeStampMixin):
+
+    name = models.CharField(
+        db_index=True,
+        help_text="Table, Chair, Monitor, Keyboard, Mouse, Headphone, RAM, SSD, HDD, GPU",
+        max_length=255,
+        unique=True,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class AssetBrand(AuthorMixin, TimeStampMixin):
+
+    name = models.CharField(
+        db_index=True,
+        help_text="HP, LG, Samsung, DELL, etc.",
+        max_length=255,
+        unique=True,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class FixedAsset(AuthorMixin, TimeStampMixin):
+    is_active = models.BooleanField(default=True)
+    category = models.ForeignKey(
+        to=AssetCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="fixed_assets",
+    )
+    brand = models.ForeignKey(
+        to=AssetBrand,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="fixed_assets",
+    )
+    
+    # General specifications
+    processor = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="CPU details",
+    )
+    ram = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="RAM size in GB e.g., 16",
+    )
+    storage = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="SSD/HDD size in GB e.g., 250",
+    )
+    display_size = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Screen size in inches e.g., 24",
+    )
+    gpu = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="GPU model, if any",
+    )
+    other_specs = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Any additional configuration",
+    )
+
+    serial = models.CharField(
+        max_length=100,
+    )
+    vendor = models.ForeignKey(
+        to=Vendor,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="fixed_assets",
+    )
+    purchase_date = models.DateField()
+    warranty_duration = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Warranty duration in months",
+    )
+
+    def __str__(self):
+        field_map = {
+            "SSD": self.storage,
+            "HDD": self.storage,
+            "GPU": self.gpu,
+            "Processor": self.processor,
+            "Monitor": self.display_size,
+            "RAM": self.ram,
+        }
+        items = [
+            self.category.name,
+            self.brand.name,
+            str(field_map.get(self.category.name, "")),
+            self.other_specs,
+            self.serial,
+        ]
+        return ", ".join(items)
+
+
+class CPU(AuthorMixin, TimeStampMixin):
+    processor = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_processor",
+    )
+    ram1 = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_ram1",
+    )
+    ram2 = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_ram2",
+    )
+    ssd = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_ssd",
+    )
+    hdd = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpu_hdd",
+    )
+    gpu = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpu_gpu",
+    )
