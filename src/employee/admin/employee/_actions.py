@@ -1,6 +1,7 @@
 import os
 from io import BytesIO
 
+from employee.helper.pdf_generator import generate_employee_details_pdf
 from employee.tasks import email_send_to_employee
 import pdf2image
 import qrcode
@@ -52,6 +53,7 @@ NOC_PDF_DATA = """
 
 class EmployeeActions:
     actions = [
+        'download_employee_details',
         "generate_noc_letter",
         "print_appointment_letter",
         "print_permanent_letter",
@@ -73,6 +75,19 @@ class EmployeeActions:
         "download_employee_info",
         "print_salary_pay_slip_all_months",
     ]
+
+    def download_employee_details(self, request, queryset):
+        if queryset.count() != 1:
+            self.message_user(request, "Please select exactly one employee.", level='error')
+            return
+
+        employee = queryset.first()
+        pdf_buffer = generate_employee_details_pdf(employee)
+        response = HttpResponse(pdf_buffer, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Employee_Details_{employee.full_name.replace(" ", "_")}.pdf"'
+        return response
+
+    download_employee_details.short_description = "Download Employee Details (PDF)"
 
     @admin.action(description="Print Salary Pay Slip (All months)")
     def print_salary_pay_slip_all_months(self, request, queryset):
