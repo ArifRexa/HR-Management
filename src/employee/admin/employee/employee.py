@@ -36,9 +36,13 @@ from employee.models.employee import (
     # generate_employee_profile_pdf,
 )
 from employee.models.employee_activity import EmployeeAttendance
+from employee.models.employee_social import SocialMedia
 from project_management.models import EmployeeProjectHour, Project
 from user_auth.models import UserLogs
 
+@admin.register(SocialMedia)
+class SocialMediaAdmin(admin.ModelAdmin):
+    pass
 
 @admin.register(Employee)
 class EmployeeAdmin(

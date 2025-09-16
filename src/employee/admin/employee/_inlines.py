@@ -62,6 +62,7 @@ class SkillInline(admin.TabularInline):
 class EmployeeSocialInline(admin.TabularInline):
     model = EmployeeSocial
     extra = 0
+    exclude = ["created_at", "updated_at", "title"]
 
 
 class EmployeeContentInline(admin.StackedInline):

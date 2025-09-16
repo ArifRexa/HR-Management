@@ -341,7 +341,7 @@ def generate_employee_details_pdf(employee):
 
         salary_table = Table(salary_table_data, colWidths=[1.5*inch, 2*inch, 3*inch])  # Adjusted widths
         salary_table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#3498DB")),
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#441ADB")),
             ('TEXTCOLOR', (0,0), (-1,0), colors.white),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -371,7 +371,7 @@ def generate_employee_details_pdf(employee):
 
         bank_table = Table(bank_table_data, colWidths=[2*inch, 2*inch, 1.5*inch, 0.5*inch])
         bank_table.setStyle(TableStyle([
-            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#3498DB")),
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#441ADB")),
             ('TEXTCOLOR', (0,0), (-1,0), colors.white),
             ('ALIGN', (0,0), (-1,-1), 'CENTER'),
             ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
@@ -381,6 +381,44 @@ def generate_employee_details_pdf(employee):
             ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#F8F9FA")),
         ]))
         story.append(bank_table)
+        story.append(Spacer(1, 10))
+
+        # === SOCIAL MEDIA PROFILES ===
+    employee_socials = employee.employeesocial_set.all()
+    if employee_socials:
+        story.append(Paragraph("Social Media & Profiles", section_header))
+
+        social_table_data = [["Platform", "Profile URL"]]
+        for es in employee_socials:
+            # Get platform name: from SocialMedia if linked, else from title field
+            platform = "—"
+            if es.social_name and es.social_name.title:
+                platform = es.social_name.title
+            elif es.title:
+                platform = es.title
+
+            # Make URL clickable in PDF (if viewer supports it)
+            url = es.url or "—"
+            display_url = url if len(url) < 50 else url[:47] + "..."
+            social_table_data.append([
+                platform,
+                f"{display_url}" if url != "—" else "—"
+            ])
+
+        social_table = Table(social_table_data, colWidths=[1.5*inch, 4.5*inch])
+        social_table.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor("#441ADB")),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.white),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0,0), (-1,-1), 8),
+            ('BOTTOMPADDING', (0,0), (-1,0), 10),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+            ('BACKGROUND', (0,1), (-1,-1), colors.HexColor("#F8F9FA")),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('TEXTCOLOR', (1,1), (-1,-1), colors.blue),  # Links in blue
+        ]))
+        story.append(social_table)
         story.append(Spacer(1, 10))
 
     # === ATTACHMENTS ===
