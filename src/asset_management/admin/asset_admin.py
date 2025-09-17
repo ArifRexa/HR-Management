@@ -28,7 +28,9 @@ from asset_management.models.asset import (
     AssetRequestNote,
     AssetRequestStatus,
     AssetVariant,
+    MonitorSize,
     PriorityChoices,
+    RAMSize,
 )
 
 # @admin.register(AssetCategory)
@@ -513,11 +515,25 @@ class AssetRequestAdmin(admin.ModelAdmin):
 @admin.register(AssetCategory)
 class AssetCategoryModelAdmin(admin.ModelAdmin):
     list_display = ["name", ]
+    search_fields = [
+        "name",
+    ]
 
 
 @admin.register(AssetBrand)
 class AssetBrandModelAdmin(admin.ModelAdmin):
     list_display = ["name", ]
+    search_fields = ["name", ]
+
+
+@admin.register(RAMSize)
+class RAMSizeModelAdmin(admin.ModelAdmin):
+    list_display = ["id", "ram_capacity"]
+
+
+@admin.register(MonitorSize)
+class MonitorSizeModelAdmin(admin.ModelAdmin):
+    list_display = ["id", "display_size"]
 
 
 @admin.register(FixedAsset)
@@ -530,13 +546,19 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "purchase_date",
         "warranty_duration",
         "serial",
+        "asset_id",
         "processor",
-        "ram",
+        "ram_size",
         "storage",
         "display_size",
         "gpu",
         "other_specs",
         "is_active",
+    ]
+    search_fields = [
+        "category",
+        "brand",
+        "vendor",
     ]
 
     fields = [
@@ -547,14 +569,19 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "purchase_date",
         "warranty_duration",
         "serial",
+        "asset_id",
         "processor",
-        "ram",
+        "ram_size",
         "storage",
         "display_size",
         "gpu",
         "other_specs",
     ]
-    readonly_fields = ["serial", ]
+    readonly_fields = ["asset_id", ]
+    autocomplete_fields = [
+        "category",
+        "brand",
+    ]
     list_filter = [
         "is_active",
         "category",
@@ -564,8 +591,8 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'id') is None:
-            serial_number = FixedAsset.objects.filter(category=obj.category).count() + 1
-            obj.serial = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{serial_number}"
+            asset_number = FixedAsset.objects.filter(category=obj.category).count() + 1
+            obj.asset_id = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{asset_number}"
         return super().save_model(request, obj, form, change)
 
     class Media:
@@ -577,6 +604,7 @@ class CPUModelAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "serial",
+        "asset_id",
         "processor",
         "ram1",
         "ram2",
@@ -584,12 +612,30 @@ class CPUModelAdmin(admin.ModelAdmin):
         "hdd",
         "gpu",
     ]
-    readonly_fields = ["serial", ]
+    readonly_fields = ["asset_id", ]
+    autocomplete_fields = [
+        "processor",
+        "ram1",
+        "ram2",
+        "ssd",
+        "hdd",
+        "gpu",
+    ]
+    search_fields = [
+        "serial",
+        "asset_id",
+        "processor",
+        "ram1",
+        "ram2",
+        "ssd",
+        "hdd",
+        "gpu",
+    ]
 
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'id') is None:
-            serial_number = CPU.objects.count() + 1
-            obj.serial = f"{obj.__class__.__name__}-{serial_number}"
+            asset_number = CPU.objects.count() + 1
+            obj.asset_id = f"{obj.__class__.__name__}-{asset_number}"
         return super().save_model(request, obj, form, change)
 
 
@@ -604,11 +650,23 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "keyboard",
         "mouse",
         "headphone",
+        "extra",
     ]
 
     search_fields = [
         "employee__full_name",
         "employee__email",
+    ]
+    autocomplete_fields = [
+        "employee",
+        "table",
+        "monitor1",
+        "monitor2",
+        "chair",
+        "cpu",
+        "keyboard",
+        "mouse",
+        "headphone",
     ]
 
 
