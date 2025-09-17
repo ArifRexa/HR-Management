@@ -554,7 +554,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "gpu",
         "other_specs",
     ]
-    readonly_fields = ("serial", )
+    readonly_fields = ["serial", ]
     list_filter = [
         "is_active",
         "category",
@@ -584,7 +584,7 @@ class CPUModelAdmin(admin.ModelAdmin):
         "hdd",
         "gpu",
     ]
-    readonly_fields = ("serial", )
+    readonly_fields = ["serial", ]
 
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'id') is None:
