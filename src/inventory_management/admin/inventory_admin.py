@@ -103,14 +103,14 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
             item = InventoryItem.objects.get(id=obj.inventory_item.id)
             item.quantity = item.quantity - obj.quantity
             item.save()
-        if obj.transaction_type == "i" and obj.status == "pending":  # IN
-            item = InventoryItem.objects.get(id=obj.inventory_item.id)
-            item.quantity = item.quantity - obj.quantity
-            item.save()
-        elif obj.transaction_type == "o" and obj.status == "pending":  # OUT
-            item = InventoryItem.objects.get(id=obj.inventory_item.id)
-            item.quantity = item.quantity + obj.quantity
-            item.save()
+        # if obj.transaction_type == "i" and obj.status == "pending":  # IN
+        #     item = InventoryItem.objects.get(id=obj.inventory_item.id)
+        #     item.quantity = item.quantity - obj.quantity
+        #     item.save()
+        # elif obj.transaction_type == "o" and obj.status == "pending":  # OUT
+        #     item = InventoryItem.objects.get(id=obj.inventory_item.id)
+        #     item.quantity = item.quantity + obj.quantity
+        #     item.save()
         super().save_model(request, obj, form, change)
 
     @admin.action(description="Mark Selected Inventory as Approved")
