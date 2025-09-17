@@ -286,6 +286,28 @@ class AssetBrand(AuthorMixin, TimeStampMixin):
         return self.name
 
 
+class RAMSize(AuthorMixin, TimeStampMixin):
+    ram_capacity = models.CharField(
+        max_length=10,
+        unique=True,
+        help_text="RAM capacity in GB.",
+    )
+
+    def __str__(self):
+        return self.ram_capacity
+
+
+class MonitorSize(AuthorMixin, TimeStampMixin):
+    display_size = models.CharField(
+        max_length=10,
+        unique=True,
+        help_text="Screen size in inches e.g., 24",
+    )
+
+    def __str__(self):
+        return self.display_size
+
+
 class FixedAsset(AuthorMixin, TimeStampMixin):
     is_active = models.BooleanField(default=True)
     category = models.ForeignKey(
@@ -309,20 +331,24 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
         null=True,
         help_text="CPU details",
     )
-    ram = models.PositiveIntegerField(
+    ram_size = models.ForeignKey(
+        to=RAMSize,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        help_text="RAM size in GB e.g., 16",
+        related_name="fixed_assets",
     )
     storage = models.PositiveIntegerField(
         blank=True,
         null=True,
         help_text="SSD/HDD size in GB e.g., 250",
     )
-    display_size = models.PositiveIntegerField(
+    display_size = models.ForeignKey(
+        to=MonitorSize,
+        on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        help_text="Screen size in inches e.g., 24",
+        related_name="fixed_assets",
     )
     gpu = models.CharField(
         max_length=100,
@@ -337,6 +363,11 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
     )
 
     serial = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+    asset_id = models.CharField(
         max_length=100,
         editable=False,
     )
@@ -356,25 +387,28 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
     def __str__(self):
         field_map = {
             "SSD": f"{self.storage}GB",
-            "HDD": f"{self.storage}",
+            "HDD": f"{self.storage}GB",
             "GPU": self.gpu,
             "Processor": self.processor,
-            "Monitor": f"{self.display_size}Inch.",
-            "RAM": f"{self.ram}GB",
+            "Monitor": self.display_size.display_size if self.display_size else None,
+            "RAM": self.ram_size.ram_capacity if self.ram_size else None,
         }
         items = [
-            self.category.name,
             self.brand.name,
             str(field_map.get(self.category.name, "")),
-            self.serial,
             self.other_specs,
         ]
-        items = [item for item in items if item]
-        return ", ".join(items)
+        fixed_asset = ", ".join([item for item in items if item])
+        return f"{self.asset_id}({fixed_asset})"
 
 
 class CPU(AuthorMixin, TimeStampMixin):
     serial = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+    )
+    asset_id = models.CharField(
         max_length=100,
         editable=False,
     )
@@ -426,7 +460,6 @@ class CPU(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         items = [
-            self.serial,
             self.processor,
             self.ram1,
             self.ram2,
@@ -434,8 +467,8 @@ class CPU(AuthorMixin, TimeStampMixin):
             self.hdd,
             self.gpu,
         ]
-        items = [str(item) for item in items if item]
-        return ", ".join(items)
+        cpu = ", ".join([str(item) for item in items if item])
+        return f"{self.asset_id}({cpu})"
 
 
 class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
@@ -506,4 +539,8 @@ class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
         null=True,
         limit_choices_to={"category__name": "Headphone"},
         related_name="employee_fixed_asset_headphone",
+    )
+    extra = models.TextField(
+        blank=True,
+        null=True,
     )
