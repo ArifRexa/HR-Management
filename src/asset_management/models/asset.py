@@ -252,3 +252,258 @@ class AssetRequestNote(AuthorMixin, TimeStampMixin):
         AssetRequest, on_delete=models.CASCADE, related_name="asset_request_notes"
     )
     note = models.TextField(null=True, blank=True)
+
+
+class AssetCategory(AuthorMixin, TimeStampMixin):
+
+    name = models.CharField(
+        db_index=True,
+        help_text="Table, Chair, Monitor, Keyboard, Mouse, Headphone, RAM, SSD, HDD, GPU",
+        max_length=255,
+        unique=True,
+    )
+    serial_short_form_prefix = models.CharField(
+        max_length=50,
+        help_text="KB, MS, HP, RM, SSD, HDD, GPU",
+        blank=True,
+        null=True,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class AssetBrand(AuthorMixin, TimeStampMixin):
+
+    name = models.CharField(
+        db_index=True,
+        help_text="HP, LG, Samsung, DELL, etc.",
+        max_length=255,
+        unique=True,
+    )
+
+    def __str__(self):
+        return self.name
+
+
+class FixedAsset(AuthorMixin, TimeStampMixin):
+    is_active = models.BooleanField(default=True)
+    category = models.ForeignKey(
+        to=AssetCategory,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="fixed_assets",
+    )
+    brand = models.ForeignKey(
+        to=AssetBrand,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="fixed_assets",
+    )
+    
+    # General specifications
+    processor = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="CPU details",
+    )
+    ram = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="RAM size in GB e.g., 16",
+    )
+    storage = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="SSD/HDD size in GB e.g., 250",
+    )
+    display_size = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Screen size in inches e.g., 24",
+    )
+    gpu = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="GPU model, if any",
+    )
+    other_specs = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Any additional configuration",
+    )
+
+    serial = models.CharField(
+        max_length=100,
+        editable=False,
+    )
+    vendor = models.ForeignKey(
+        to=Vendor,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="fixed_assets",
+    )
+    purchase_date = models.DateField()
+    warranty_duration = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+        help_text="Warranty duration in months",
+    )
+
+    def __str__(self):
+        field_map = {
+            "SSD": f"{self.storage}GB",
+            "HDD": f"{self.storage}",
+            "GPU": self.gpu,
+            "Processor": self.processor,
+            "Monitor": f"{self.display_size}Inch.",
+            "RAM": f"{self.ram}GB",
+        }
+        items = [
+            self.category.name,
+            self.brand.name,
+            str(field_map.get(self.category.name, "")),
+            self.serial,
+            self.other_specs,
+        ]
+        items = [item for item in items if item]
+        return ", ".join(items)
+
+
+class CPU(AuthorMixin, TimeStampMixin):
+    serial = models.CharField(
+        max_length=100,
+        editable=False,
+    )
+    processor = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_processor",
+        limit_choices_to={"category__name": "Processor"},
+    )
+    ram1 = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_ram1",
+        limit_choices_to={"category__name": "RAM"},
+    )
+    ram2 = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpu_ram2",
+        limit_choices_to={"category__name": "RAM"},
+    )
+    ssd = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="cpu_ssd",
+        limit_choices_to={"category__name": "SSD"},
+    )
+    hdd = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpu_hdd",
+        limit_choices_to={"category__name": "HDD"},
+    )
+    gpu = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="cpu_gpu",
+        limit_choices_to={"category__name": "GPU"},
+    )
+
+    def __str__(self):
+        items = [
+            self.serial,
+            self.processor,
+            self.ram1,
+            self.ram2,
+            self.ssd,
+            self.hdd,
+            self.gpu,
+        ]
+        items = [str(item) for item in items if item]
+        return ", ".join(items)
+
+
+class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
+    employee = models.ForeignKey(
+        to=Employee,
+        on_delete=models.CASCADE,
+        related_name="employee_fixed_assets_employee",
+    )
+    table = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Table"},
+        related_name="employee_fixed_asset_table",
+    )
+    chair = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Chair"},
+        related_name="employee_fixed_asset_chair",
+    )
+    monitor1 = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Monitor"},
+        related_name="employee_fixed_asset_monitor1",
+    )
+    monitor2 = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Monitor"},
+        related_name="employee_fixed_asset_monitor2",
+    )
+    cpu = models.OneToOneField(
+        to=CPU,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="employee_fixed_asset_cpu",
+    )
+    keyboard = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Keyboard"},
+        related_name="employee_fixed_asset_keyboard",
+    )
+    mouse = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Mouse"},
+        related_name="employee_fixed_asset_mouse",
+    )
+    headphone = models.OneToOneField(
+        to=FixedAsset,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        limit_choices_to={"category__name": "Headphone"},
+        related_name="employee_fixed_asset_headphone",
+    )

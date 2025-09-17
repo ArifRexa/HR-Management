@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from asset_management.models import (  # AssetCategory,
+from asset_management.models import (
     Addition,
     Asset,
     AssetHead,
@@ -17,6 +17,11 @@ from asset_management.models import (  # AssetCategory,
     EmployeeAsset,
     EmployeeAssignedAsset,
     Vendor,
+    AssetCategory,
+    AssetBrand,
+    FixedAsset,
+    CPU,
+    EmployeeFixedAsset,
 )
 from asset_management.models.asset import (
     AssetRequest,
@@ -503,3 +508,117 @@ class AssetRequestAdmin(admin.ModelAdmin):
         )
 
         return mark_safe(html_content)
+
+
+@admin.register(AssetCategory)
+class AssetCategoryModelAdmin(admin.ModelAdmin):
+    list_display = ["name", ]
+
+
+@admin.register(AssetBrand)
+class AssetBrandModelAdmin(admin.ModelAdmin):
+    list_display = ["name", ]
+
+
+@admin.register(FixedAsset)
+class FixedAssetModelAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "category",
+        "brand",
+        "vendor",
+        "purchase_date",
+        "warranty_duration",
+        "serial",
+        "processor",
+        "ram",
+        "storage",
+        "display_size",
+        "gpu",
+        "other_specs",
+        "is_active",
+    ]
+
+    fields = [
+        "is_active",
+        "category",
+        "brand",
+        "vendor",
+        "purchase_date",
+        "warranty_duration",
+        "serial",
+        "processor",
+        "ram",
+        "storage",
+        "display_size",
+        "gpu",
+        "other_specs",
+    ]
+    readonly_fields = ["serial", ]
+    list_filter = [
+        "is_active",
+        "category",
+        "brand",
+        "vendor",
+    ]
+
+    def save_model(self, request, obj, form, change):
+        if getattr(obj, 'id') is None:
+            serial_number = FixedAsset.objects.filter(category=obj.category).count() + 1
+            obj.serial = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{serial_number}"
+        return super().save_model(request, obj, form, change)
+
+    class Media:
+        js = ("js/fixedasset.js",)
+
+
+@admin.register(CPU)
+class CPUModelAdmin(admin.ModelAdmin):
+    list_display = [
+        "id",
+        "serial",
+        "processor",
+        "ram1",
+        "ram2",
+        "ssd",
+        "hdd",
+        "gpu",
+    ]
+    readonly_fields = ["serial", ]
+
+    def save_model(self, request, obj, form, change):
+        if getattr(obj, 'id') is None:
+            serial_number = CPU.objects.count() + 1
+            obj.serial = f"{obj.__class__.__name__}-{serial_number}"
+        return super().save_model(request, obj, form, change)
+
+
+@admin.register(EmployeeFixedAsset)
+class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
+    list_display = [
+        "employee",
+        "table",
+        "chair",
+        "get_monitors",
+        "cpu",
+        "keyboard",
+        "mouse",
+        "headphone",
+    ]
+
+    search_fields = [
+        "employee__full_name",
+        "employee__email",
+    ]
+
+
+    @admin.display(description="Monitors")
+    def get_monitors(self, obj):
+        monitors = [
+            obj.monitor1,
+            obj.monitor2,
+        ]
+        monitors = [str(monitor) for monitor in monitors if monitor]
+        return format_html(
+            "<br>".join(monitors),
+        )
