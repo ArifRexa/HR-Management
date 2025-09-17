@@ -363,7 +363,7 @@ class AssistantFundAdmin(admin.ModelAdmin):
     def get_actions(self, request):
         actions = super().get_actions(request)
         # Remove the approve action for non-superusers
-        if not request.user.is_superuser and 'approve_selected_funds' in actions:
+        if 'approve_selected_funds' in actions and not request.user.is_superuser or not self._has_user_permission(request):
             del actions['approve_selected_funds']
         return actions
 
