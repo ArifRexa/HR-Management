@@ -9,7 +9,7 @@ import django_userforeignkey.models.fields
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('employee', '0338_alter_employeesocial_title'),
+        ('employee', '0337_alter_employeesocial_title'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ('asset_management', '0038_alter_cpu_ram2'),
     ]

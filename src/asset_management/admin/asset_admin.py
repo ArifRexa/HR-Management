@@ -622,4 +622,3 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         return format_html(
             "<br>".join(monitors),
         )
-    
