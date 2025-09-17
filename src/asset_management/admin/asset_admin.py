@@ -21,6 +21,7 @@ from asset_management.models import (
     AssetBrand,
     FixedAsset,
     CPU,
+    EmployeeFixedAsset,
 )
 from asset_management.models.asset import (
     AssetRequest,
@@ -553,6 +554,19 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "gpu",
         "other_specs",
     ]
+    readonly_fields = ("serial", )
+    list_filter = [
+        "is_active",
+        "category",
+        "brand",
+        "vendor",
+    ]
+
+    def save_model(self, request, obj, form, change):
+        if getattr(obj, 'id') is None:
+            serial_number = FixedAsset.objects.filter(category=obj.category).count() + 1
+            obj.serial = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{serial_number}"
+        return super().save_model(request, obj, form, change)
 
     class Media:
         js = ("js/fixedasset.js",)
@@ -562,6 +576,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
 class CPUModelAdmin(admin.ModelAdmin):
     list_display = [
         "id",
+        "serial",
         "processor",
         "ram1",
         "ram2",
@@ -569,4 +584,42 @@ class CPUModelAdmin(admin.ModelAdmin):
         "hdd",
         "gpu",
     ]
+    readonly_fields = ("serial", )
+
+    def save_model(self, request, obj, form, change):
+        if getattr(obj, 'id') is None:
+            serial_number = CPU.objects.count() + 1
+            obj.serial = f"{obj.__class__.__name__}-{serial_number}"
+        return super().save_model(request, obj, form, change)
+
+
+@admin.register(EmployeeFixedAsset)
+class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
+    list_display = [
+        "employee",
+        "table",
+        "chair",
+        "get_monitors",
+        "cpu",
+        "keyboard",
+        "mouse",
+        "headphone",
+    ]
+
+    search_fields = [
+        "employee__full_name",
+        "employee__email",
+    ]
+
+
+    @admin.display(description="Monitors")
+    def get_monitors(self, obj):
+        monitors = [
+            obj.monitor1,
+            obj.monitor2,
+        ]
+        monitors = [str(monitor) for monitor in monitors if monitor]
+        return format_html(
+            "<br>".join(monitors),
+        )
     

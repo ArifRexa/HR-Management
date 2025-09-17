@@ -1,41 +1,3 @@
-// document.addEventListener("DOMContentLoaded", function () {
-//     const categorySelect = document.getElementById("id_category");
-
-//     const processorField = document.getElementById("id_processor");
-//     const ramField = document.getElementById("id_ram");
-//     const displaySizeField = document.getElementById("id_display_size");
-
-//     function toggleReadonly() {
-//         const selected = categorySelect.value;
-//         console.log('=== selected', selected)
-//         if (!selected) return;
-
-//         // Example: adjust category IDs to your database
-//         if (selected === "1") {  // Laptop
-//             processorField.readOnly = false;
-//             ramField.readOnly = false;
-//             displaySizeField.readOnly = true;  // make readonly
-
-//         } else if (selected === "2") {  // Monitor
-//             processorField.readOnly = true;
-//             ramField.readOnly = true;
-//             displaySizeField.readOnly = false;
-
-//         } else {
-//             // default: all editable
-//             processorField.readOnly = false;
-//             ramField.readOnly = false;
-//             displaySizeField.readOnly = false;
-//         }
-//     }
-
-//     if (categorySelect) {
-//         toggleReadonly();  // initial on page load
-//         categorySelect.addEventListener("change", toggleReadonly);  // on change
-//     }
-// });
-
-
 document.addEventListener("DOMContentLoaded", function () {
     const categorySelect = document.getElementById("id_category");
 
@@ -48,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const fields = [
         processorRow, ramRow, storageRow, displaySizeRow, gpuRow, 
     ];
+
     function hideAllRowWithout(selected_field){
         // hide All input field Without selected_field input field. 
         fields.forEach((field)=>{
@@ -61,18 +24,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function updateFields() {
         const selected = categorySelect.value;
+        const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
 
         if (!selected) return;
-        if (selected === "1") { // "Monitor"
+        if (selectedText === "Monitor") {
             hideAllRowWithout(displaySizeRow);
-        } else if (selected === "2") {  // Processor
+        } else if (selectedText === "Processor") {
            hideAllRowWithout(processorRow);
-        } else if (selected === "3") {  // RAM
+        } else if (selectedText === "RAM") {
            hideAllRowWithout(ramRow);
-        } else if (selected === "4" || selected === "5") {  // SSD or HDD
+        } else if (selectedText === "SSD" || selectedText === "HDD") {
            hideAllRowWithout(storageRow);
-        } else if (selected === "6") {  // GPU
+        } else if (selectedText === "GPU") {
            hideAllRowWithout(gpuRow);
+        }
+        else{
+            // hide all row if selected category is Headphone or Table or Chair, etc.
+            hideAllRowWithout(null);
         }
     }
 
