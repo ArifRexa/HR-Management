@@ -1,20 +1,22 @@
 from django import forms
+
 from inventory_management.models import (
     InventoryItem,
     InventoryTransaction,
-    InventoryUnit
+    InventoryUnit,
 )
+
 
 class InventoryTransactionForm(forms.ModelForm):
     class Meta:
         model = InventoryTransaction
-        fields = '__all__'
+        fields = "__all__"
 
     def clean(self):
         cleaned_data = super().clean()
         transaction_type = cleaned_data.get("transaction_type")
         quantity = cleaned_data.get("quantity")
-        item= cleaned_data.get("inventory_item")
+        item = cleaned_data.get("inventory_item")
 
         if item is None:
             raise forms.ValidationError(
@@ -22,26 +24,42 @@ class InventoryTransactionForm(forms.ModelForm):
             )
 
         inventory_item = InventoryItem.objects.get(id=item.id)
-        
-        if not self.instance and InventoryTransaction.objects.filter(inventory_item=inventory_item, status="pending", transaction_type="o").exists():
+
+        if inventory_item.quantity < quantity and transaction_type == "o":
             raise forms.ValidationError(
-                {"inventory_item": "There is already a pending transaction for this item."}
+                {
+                    "quantity": "Cannot use more items than available in inventory. First In this Item"
+                }
+            )
+
+        if (
+            not self.instance
+            and InventoryTransaction.objects.filter(
+                inventory_item=inventory_item,
+                status="pending",
+                transaction_type="o",
+            ).exists()
+        ):
+            raise forms.ValidationError(
+                {
+                    "inventory_item": "There is already a pending transaction for this item."
+                }
             )
 
         if quantity is None:
-            raise forms.ValidationError(
-                {"quantity": "Quantity is required."}
-            )
+            raise forms.ValidationError({"quantity": "Quantity is required."})
 
-        if quantity <=0 :
+        if quantity <= 0:
             raise forms.ValidationError(
                 {"quantity": "Quantity must be greater than 0."}
             )
-        
+
         if transaction_type == "o":  # OUT
             if quantity > inventory_item.quantity:
                 raise forms.ValidationError(
-                    {"quantity": "Cannot use more items than available in inventory."}
+                    {
+                        "quantity": "Cannot use more items than available in inventory."
+                    }
                 )
 
         if inventory_item.unit.allow_decimal == False:
@@ -50,7 +68,6 @@ class InventoryTransactionForm(forms.ModelForm):
                     {"quantity": f"Quantity must be a whole number for {item}"}
                 )
         return cleaned_data
-    
 
 
 class InventoryItemForm(forms.ModelForm):
@@ -61,18 +78,18 @@ class InventoryItemForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         reorder_point = cleaned_data.get("reorder_point")
-        unit= cleaned_data.get("unit")
+        unit = cleaned_data.get("unit")
 
         if unit is None:
-            raise forms.ValidationError(
-                {"unit": "Please Select a Unit."}
-            )
+            raise forms.ValidationError({"unit": "Please Select a Unit."})
 
         inventory_unit = InventoryUnit.objects.get(id=unit.id)
 
         if inventory_unit.allow_decimal == False:
             if reorder_point % 1 != 0:
                 raise forms.ValidationError(
-                    {"reorder_point": f"Reorder Point must be a whole number for {unit}"}
+                    {
+                        "reorder_point": f"Reorder Point must be a whole number for {unit}"
+                    }
                 )
         return cleaned_data
