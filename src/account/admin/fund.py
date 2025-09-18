@@ -362,8 +362,8 @@ class AssistantFundAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        # Remove the approve action for non-superusers
-        if 'approve_selected_funds' in actions and not request.user.is_superuser or not self._has_user_permission(request):
+        # Remove the approve action for non-permitede
+        if 'approve_selected_funds' in actions and not request.user.has_perm("account.approve_assistant_fund_status"):
             del actions['approve_selected_funds']
         return actions
 
@@ -375,10 +375,11 @@ class AssistantFundAdmin(admin.ModelAdmin):
         elif obj.status == 'pending':
             return format_html('<span style="color: red; font-weight: bold;">{}</span>', obj.get_status_display())
         return obj.get_status_display()
-    
+
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        if request.user.is_superuser or self._has_user_permission(request):
+        if request.user.is_superuser or request.user.has_perm('account.view_assistant_fund_user'):
             return qs
         return qs.filter(user=request.user)
 
@@ -387,9 +388,8 @@ class AssistantFundAdmin(admin.ModelAdmin):
         excluded = super().get_exclude(request, obj) or []
         
         # Only exclude 'user' field if user doesn't have permission
-        if not request.user.is_superuser and not self._has_user_permission(request):
+        if not request.user.has_perm("account.add_assistant_fund_to_user"):
             excluded.append('user')
-            
         return excluded
 
     def get_readonly_fields(self, request, obj=None):
@@ -400,19 +400,21 @@ class AssistantFundAdmin(admin.ModelAdmin):
             readonly_fields.append('amount')
             
         # For non-superusers, make status read-only
-        if not request.user.is_superuser:
-            readonly_fields.append('status')            
+        # if request.user.is_superuser:
+        #     return readonly_fields
+        elif not request.user.has_perm("account.approve_assistant_fund_status"):
+            readonly_fields.append('status')
         return readonly_fields
 
 
     def save_model(self, request, obj, form, change):
         # Only set user automatically for non-permitted users
-        if not change and not request.user.is_superuser and not self._has_user_permission(request):
+        if not change and not request.user.has_perm("account.add_assistant_fund_to_user"):
             obj.user = request.user
             
         # Check if status is being changed to 'approved' by non-superuser
-        if change and 'status' in form.changed_data and obj.status == 'approved' and not request.user.is_superuser:
-            raise PermissionDenied("Only superusers can approve funds.")
+        # if change and 'status' in form.changed_data and obj.status == 'approved' and not request.user.has_perm("account.approve_assistant_fund_status"):
+        #     raise PermissionDenied("Only superusers can approve funds.")
         
         employee = Employee.objects.get(user=obj.user)
         html_template = get_template('mail/fund_mail.html')
@@ -436,32 +438,29 @@ class AssistantFundAdmin(admin.ModelAdmin):
     def get_fund(self, obj):
         user = obj.user
         # Calculate total approved funds added for the user
-        fund_added = user.fund_set.filter(status='approved').aggregate(
+        fund_added = user.assistantfund_set.filter(status='approved').aggregate(
             total_amount=Coalesce(Sum('amount'), 0.0)
         )['total_amount']
         # Calculate total expenses approved by the user
+        
         fund_subtract = Expense.objects.filter(approved_by=user).aggregate(
             total_amount=Coalesce(Sum('amount'), 0.0)
         )['total_amount']
         return fund_added - fund_subtract
     
     def has_change_permission(self, request, obj=None):
-        # Superusers can change any fund
+        # Superusers can change any Assistant Fund
         if request.user.is_superuser:
             return True
-            
-        if self._has_user_permission(request):
-            return True
-            
         if obj:
-            return obj.user == request.user and obj.status == 'pending'
+            return super().has_change_permission(request, obj) and obj.status == 'pending'
         return super().has_change_permission(request, obj)
-    
-    
+
+
     @admin.action(description='Approve selected funds')
     def approve_selected_funds(self, request, queryset):
-        if not request.user.is_superuser:
-            raise PermissionDenied("Only superusers can approve funds.")
+        if not request.user.has_perm("account.approve_assistant_fund_status"):
+            raise PermissionDenied("Only permited user can approve funds.")
         
         # Count how many funds we're approving
         count = 0
@@ -505,9 +504,10 @@ class AssistantFundAdmin(admin.ModelAdmin):
                 messages.WARNING
             )
 
-    def _has_user_permission(self, request):
-        """Check if user has permission to view/change fund user"""
-        return (request.user.has_perm('account.view_assistant_fund_user') or 
-                request.user.has_perm('account.change_assistant_fund_user') or
-                request.user.has_perm('account.assistant_fund_superuser')
-            )
+    # def _has_user_permission(self, request):
+    #     """Check if user has permission to view/change fund user"""
+    #     return (
+    #             # request.user.has_perm('account.view_assistant_fund_user') or 
+    #             request.user.has_perm('account.change_assistant_fund_user') or
+    #             request.user.has_perm('account.assistant_fund_superuser')
+    #         )
