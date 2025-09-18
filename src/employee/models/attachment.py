@@ -49,7 +49,6 @@ class Attachment(TimeStampMixin, AuthorMixin):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        default=get_current_financial_year,
         verbose_name="TDS Year",
         help_text="Use for Tax Acknowledgement Document",
     )

@@ -1412,7 +1412,6 @@ def last_four_financial_year(index=0):
 
 
 from django.contrib import admin
-from django.db.models import OuterRef, Subquery
 
 
 @admin.register(EmployeeTaxAcknowledgement)
@@ -1424,13 +1423,7 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
         "third_year",
         "fourth_year",
     )
-
-
-    # def last_four_financial_year(self, index=0):
-    #     try:
-    #         return FinancialYear.objects.order_by("-id")[index]
-    #     except IndexError:
-    #         return "-"
+    list_filter = ("employee__active", "employee")
 
     def _file_link(self, attachment):
         if not attachment:
@@ -1440,29 +1433,27 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
             '<a href="{}" target="_blank">{}</a>', attachment.file.url, text
         )
 
-
     def get_queryset(self, request):
         from django.db.models import Max
 
         latest_ids = (
-            EmployeeTaxAcknowledgement.objects
-            .values('employee')                       # one row per employee
-            .annotate(max_id=Max('id'))               # latest id
-            .values_list('max_id', flat=True)         # [123, 456, …]
+            EmployeeTaxAcknowledgement.objects.values(
+                "employee"
+            )
+            .annotate(max_id=Max("id"))  # latest id
+            .values_list("max_id", flat=True)  # [123, 456, …]
         )
 
-
         qs = EmployeeTaxAcknowledgement.objects.filter(
-            id__in=list(latest_ids)
-        ).select_related('employee', 'file_name', 'tds_year')
+            tds_year__isnull=False, id__in=list(latest_ids)
+        ).select_related("employee", "file_name", "tds_year")
 
-
-        if not request.user.has_perm('employee.view_all_tax_acknowledgement'):
+        if not request.user.has_perm("employee.view_all_tax_acknowledgement"):
             qs = qs.filter(employee=request.user.employee)
 
         return qs
 
-    # ---------- columns --------------------------------------------------
+    
     def _year_column(self, obj, offset):
         fy = last_four_financial_year(offset)
         if isinstance(fy, str):
