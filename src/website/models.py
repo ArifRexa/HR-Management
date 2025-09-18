@@ -531,7 +531,14 @@ class Blog(AuthorMixin, TimeStampMixin):
         verbose_name="Technologies",
         blank=True
     )
-
+    author = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="blogs",
+        null=True,
+        blank=True,
+        limit_choices_to={"active": True},
+    )
     tag = models.ManyToManyField(Tag, related_name="tags")
     # short_description = models.TextField()
     is_featured = models.BooleanField(default=False)

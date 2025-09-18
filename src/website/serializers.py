@@ -1497,7 +1497,7 @@ class ServicePageSerializer(serializers.ModelSerializer):
 class ServeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServeCategory
-        fields = ['id', 'title', 'slug', 'short_description']
+        fields = ['id', 'title', 'slug']
         ref_name = 'website_servecategory'
 
 class SimpleServeCategorySerializer(serializers.ModelSerializer):
@@ -1599,8 +1599,8 @@ class BlogSerializer(serializers.ModelSerializer):
         ref_name = 'website_blog'
 
     def get_author(self, obj):
-        author = obj.created_by
-        return f"{author.first_name} {author.last_name}" if author else ""
+        author = obj.author
+        return f"{author}" if author else ""
     
     def get_table_of_contents(self, obj):
         """
