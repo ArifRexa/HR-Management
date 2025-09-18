@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from pyexpat.errors import messages
 
 from django import forms
 from django.contrib import admin
@@ -11,6 +10,7 @@ from django.urls import path
 from django.utils import timezone
 from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
+
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee._inlines import EmployeeInline
@@ -22,6 +22,7 @@ from employee.models import (
     BookConferenceRoom,
     Employee,
 )
+from employee.models.attachment import EmployeeTaxAcknowledgement
 from employee.models.bank_account import BEFTN
 from employee.models.employee import (
     EmployeeLunch,
@@ -38,11 +39,14 @@ from employee.models.employee import (
 from employee.models.employee_activity import EmployeeAttendance
 from employee.models.employee_social import SocialMedia
 from project_management.models import EmployeeProjectHour, Project
+from settings.models import FinancialYear
 from user_auth.models import UserLogs
+
 
 @admin.register(SocialMedia)
 class SocialMediaAdmin(admin.ModelAdmin):
     pass
+
 
 @admin.register(Employee)
 class EmployeeAdmin(
@@ -79,7 +83,6 @@ class EmployeeAdmin(
         "blood_group",
         "tax_info",
         "image",
-        
         "gender",
         "date_of_birth",
         "address",
@@ -112,7 +115,6 @@ class EmployeeAdmin(
         # "need_cto_at",
         # "need_hr",
         # "need_hr_at",
-
         "entry_pass_id",
         "monthly_expected_hours",
     ]
@@ -121,8 +123,6 @@ class EmployeeAdmin(
         if lookup in ["employeeskill__skill__title__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
-
-
 
     # def save_model(self, request, obj, form, change):
     #     print(obj.__dict__)
@@ -143,7 +143,6 @@ class EmployeeAdmin(
     #     # Observation.objects.create(
     #     #             employee_id=obj.id,
     #     #         )
-
 
     def save_model(self, request, obj, form, change):
         # Your existing logic
@@ -178,8 +177,6 @@ class EmployeeAdmin(
         #     import traceback
         #     print(f"Error generating/saving PDF for {obj.full_name}: {e}")
         #     print(traceback.format_exc())
-
-
 
     def get_readonly_fields(self, request, obj):
         if request.user.is_superuser or request.user.has_perm(
@@ -414,11 +411,7 @@ class EmployeeDetails(admin.ModelAdmin):
     list_filter = ("active",)
     search_fields = ("employee__full_name", "employee__phone")
 
-
-    from django.utils.html import format_html
     from django.utils.safestring import mark_safe
-
-
 
     # @admin.display(description="Social Links")
     # def social_links(self, obj: EmployeeLunch):
@@ -485,7 +478,7 @@ class EmployeeDetails(admin.ModelAdmin):
                 '<a href="{}" target="_blank" title="{}" style="margin-right: 12px; display: inline-block; text-decoration: none;">{}</a>',
                 es.url,
                 platform.capitalize(),
-                mark_safe(svg_icon)
+                mark_safe(svg_icon),
             )
             icons_html.append(link_html)
 
@@ -619,8 +612,7 @@ class EmployeeNOCAdmin(admin.ModelAdmin):
 #     list_filter = ['created_at']  # Add other fields as needed
 from calendar import month_name
 
-from django.core.mail import send_mail
-import datetime as dt  # For parsing date strings
+
 @admin.register(LateAttendanceFine)
 class LateAttendanceFineAdmin(admin.ModelAdmin):
     list_display = (
@@ -639,7 +631,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     def create_late_fines_for_current_month(self, request, queryset=None):
         """
-        Create LateAttendanceFine records for employees who have late entries 
+        Create LateAttendanceFine records for employees who have late entries
         in the current month but don't already have a fine record.
         First sends an email with the list of late attendance details.
         No selection of items from the admin table is required.
@@ -647,7 +639,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         now = datetime.now()
         current_month = now.month
         current_year = now.year
-        
+
         # Get all attendance records for current month
         attendances = EmployeeAttendance.objects.filter(
             date__year=current_year,
@@ -655,84 +647,93 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             entry_time__isnull=False,
             employee__active=True,
             employee__show_in_attendance_list=True,
-            employee__exception_la=False
-        ).select_related('employee')
-        
+            employee__exception_la=False,
+        ).select_related("employee")
+
         # Dictionary to store late attendance details per employee
         late_attendance_details = {}
-        
+
         for att in attendances:
             entry_time = att.entry_time
             hour = entry_time.hour
             minute = entry_time.minute
             employee_is_lead = att.employee.lead or att.employee.manager
-            
+
             # Determine if attendance is late (using 10-minute rule for all dates)
             is_late = (
-                (employee_is_lead and 
-                 ((hour == 11 and minute > 10) or hour >= 12)) or
-                (not employee_is_lead and 
-                 ((hour >= 11 and minute > 10) or hour >= 12))
+                employee_is_lead
+                and ((hour == 11 and minute > 10) or hour >= 12)
+            ) or (
+                not employee_is_lead
+                and ((hour >= 11 and minute > 10) or hour >= 12)
             )
-            
+
             if is_late:
                 employee_id = att.employee.id
                 if employee_id not in late_attendance_details:
                     late_attendance_details[employee_id] = {
-                        'name': att.employee.full_name,
-                        'email': att.employee.email,
-                        'phone': att.employee.phone,
-                        'dates': [],
-                        'entry_times': [],
-                        'total_late_days': 0,
-                        'employee': att.employee
+                        "name": att.employee.full_name,
+                        "email": att.employee.email,
+                        "phone": att.employee.phone,
+                        "dates": [],
+                        "entry_times": [],
+                        "total_late_days": 0,
+                        "employee": att.employee,
                     }
-                
-                late_attendance_details[employee_id]['dates'].append(att.date.strftime('%Y-%m-%d'))
-                late_attendance_details[employee_id]['entry_times'].append(entry_time.strftime('%H:%M'))
-                late_attendance_details[employee_id]['total_late_days'] += 1
-        
+
+                late_attendance_details[employee_id]["dates"].append(
+                    att.date.strftime("%Y-%m-%d")
+                )
+                late_attendance_details[employee_id]["entry_times"].append(
+                    entry_time.strftime("%H:%M")
+                )
+                late_attendance_details[employee_id]["total_late_days"] += 1
 
         # Create LateAttendanceFine records for each unique late date
         created_fines = []
         for employee_id, details in late_attendance_details.items():
-            for late_date, entry_time in zip(details['dates'], details['entry_times']):
+            for late_date, entry_time in zip(
+                details["dates"], details["entry_times"]
+            ):
                 # Check if a fine already exists for this employee and specific date
                 existing_fine = LateAttendanceFine.objects.filter(
-                    employee=details['employee'],  # Use 'employee' key
+                    employee=details["employee"],  # Use 'employee' key
                     month=current_month,
                     year=current_year,
-                    date=late_date
+                    date=late_date,
                 ).exists()
-                
+
                 if not existing_fine:
                     # Create a new LateAttendanceFine record for this date
                     fine = LateAttendanceFine(
-                        employee=details['employee'],
+                        employee=details["employee"],
                         month=current_month,
                         year=current_year,
                         total_late_attendance_fine=0.00,  # Ignored as per request
                         date=late_date,
                         is_consider=True,
-                        entry_time=entry_time
+                        entry_time=entry_time,
                     )
                     fine.save()
                     created_fines.append(fine)
-        
+
         # Provide feedback to the user
         if created_fines:
-            self.message_user(request, f"Created {len(created_fines)} new LateAttendanceFine records.")
+            self.message_user(
+                request,
+                f"Created {len(created_fines)} new LateAttendanceFine records.",
+            )
         else:
-            self.message_user(request, "No new LateAttendanceFine records were created.")
-        
-        
+            self.message_user(
+                request, "No new LateAttendanceFine records were created."
+            )
+
         # Redirect back to the changelist view to avoid resubmission
         return HttpResponseRedirect(request.get_full_path())
 
     create_late_fines_for_current_month.short_description = (
         "Create late fines for current month"
     )
-
 
     @admin.display(description="Employee", ordering="employee__full_name")
     def get_employee(self, obj):
@@ -1398,3 +1399,100 @@ class InboxAdmin(admin.ModelAdmin):
             obj.is_read = True
             obj.save()
         return super().change_view(request, object_id, form_url, extra_context)
+
+
+def last_four_financial_year(index=0):
+    last_four_year_financial_year = FinancialYear.objects.all().order_by("-id")[
+        :4
+    ]
+    try:
+        return last_four_year_financial_year[index]
+    except IndexError:
+        return "-"
+
+
+from django.contrib import admin
+from django.db.models import OuterRef, Subquery
+
+
+@admin.register(EmployeeTaxAcknowledgement)
+class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
+    list_display = (
+        "employee",
+        "first_year",
+        "second_year",
+        "third_year",
+        "fourth_year",
+    )
+
+
+    # def last_four_financial_year(self, index=0):
+    #     try:
+    #         return FinancialYear.objects.order_by("-id")[index]
+    #     except IndexError:
+    #         return "-"
+
+    def _file_link(self, attachment):
+        if not attachment:
+            return "-"
+        text = "📄"
+        return format_html(
+            '<a href="{}" target="_blank">{}</a>', attachment.file.url, text
+        )
+
+
+    def get_queryset(self, request):
+        from django.db.models import Max
+
+        latest_ids = (
+            EmployeeTaxAcknowledgement.objects
+            .values('employee')                       # one row per employee
+            .annotate(max_id=Max('id'))               # latest id
+            .values_list('max_id', flat=True)         # [123, 456, …]
+        )
+
+
+        qs = EmployeeTaxAcknowledgement.objects.filter(
+            id__in=list(latest_ids)
+        ).select_related('employee', 'file_name', 'tds_year')
+
+
+        if not request.user.has_perm('employee.view_all_tax_acknowledgement'):
+            qs = qs.filter(employee=request.user.employee)
+
+        return qs
+
+    # ---------- columns --------------------------------------------------
+    def _year_column(self, obj, offset):
+        fy = last_four_financial_year(offset)
+        if isinstance(fy, str):
+            return "-"
+        att = (
+            EmployeeTaxAcknowledgement.objects.filter(
+                employee=obj.employee, tds_year=fy
+            )
+            .select_related("file_name")
+            .first()
+        )
+        return self._file_link(att)
+
+    def first_year(self, obj):
+        return self._year_column(obj, offset=0)
+
+    def second_year(self, obj):
+        return self._year_column(obj, 1)
+
+    def third_year(self, obj):
+        return self._year_column(obj, 2)
+
+    def fourth_year(self, obj):
+        return self._year_column(obj, 3)
+
+    def _header(self, offset):
+        fy = last_four_financial_year(offset)
+        return str(fy) if not isinstance(fy, str) else f"Year-{offset + 1}"
+
+    first_year.short_description = last_four_financial_year(0)
+    second_year.short_description = last_four_financial_year(1)
+    third_year.short_description = last_four_financial_year(2)
+    fourth_year.short_description = last_four_financial_year(3)
