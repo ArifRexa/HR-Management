@@ -385,6 +385,8 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
     )
 
     def __str__(self):
+        if self.category.name in ["Table", "Chair"]:
+            return self.asset_id
         field_map = {
             "SSD": f"{self.storage}GB",
             "HDD": f"{self.storage}GB",
@@ -394,7 +396,7 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
             "RAM": self.ram_size.ram_capacity if self.ram_size else None,
         }
         items = [
-            self.brand.name,
+            self.brand.name if self.brand else None,
             str(field_map.get(self.category.name, "")),
             self.other_specs,
         ]
