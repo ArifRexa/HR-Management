@@ -4,15 +4,17 @@ document.addEventListener("DOMContentLoaded", function () {
     // Select the rows of fields you may want to remove
     const displaySizeRow = document.querySelector(".form-row.field-display_size");
     const processorRow = document.querySelector(".form-row.field-processor");
-    const ramRow = document.querySelector(".form-row.field-ram");
+    const ramRow = document.querySelector(".form-row.field-ram_size");
     const storageRow = document.querySelector(".form-row.field-storage");
     const gpuRow = document.querySelector(".form-row.field-gpu");
+    const brandRow = document.querySelector(".form-row.field-brand");
+    
     const fields = [
-        processorRow, ramRow, storageRow, displaySizeRow, gpuRow, 
+        processorRow, ramRow, storageRow, displaySizeRow
     ];
 
     function hideAllRowWithout(selected_field){
-        // hide All input field Without selected_field input field. 
+        // hide All input field Without selected_field input field.
         fields.forEach((field)=>{
             if(field != selected_field){
                 field.style.display = "none";
@@ -25,6 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function updateFields() {
         const selected = categorySelect.value;
         const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
+
 
         if (!selected) return;
         if (selectedText === "Monitor") {
