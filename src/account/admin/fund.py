@@ -442,8 +442,10 @@ class AssistantFundAdmin(admin.ModelAdmin):
             total_amount=Coalesce(Sum('amount'), 0.0)
         )['total_amount']
         # Calculate total expenses approved by the user
-        
-        fund_subtract = Expense.objects.filter(approved_by=user).aggregate(
+        fund_subtract = Expense.objects.filter(
+            is_approved=True,
+            created_by=user,
+        ).aggregate(
             total_amount=Coalesce(Sum('amount'), 0.0)
         )['total_amount']
         return fund_added - fund_subtract
