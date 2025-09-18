@@ -438,10 +438,11 @@ class AssistantFundAdmin(admin.ModelAdmin):
     def get_fund(self, obj):
         user = obj.user
         # Calculate total approved funds added for the user
-        fund_added = user.fund_set.filter(status='approved').aggregate(
+        fund_added = user.assistantfund_set.filter(status='approved').aggregate(
             total_amount=Coalesce(Sum('amount'), 0.0)
         )['total_amount']
         # Calculate total expenses approved by the user
+        
         fund_subtract = Expense.objects.filter(approved_by=user).aggregate(
             total_amount=Coalesce(Sum('amount'), 0.0)
         )['total_amount']
