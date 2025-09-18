@@ -109,6 +109,7 @@ from website.models import (
     ServicesWeProvideCards,
     SpecialProjectsTitle,
     Subscription,
+    TeamElement,
     TechStack,
     TechnologyCTA,
     TechnologyCreatorsQuotes,
@@ -2575,6 +2576,12 @@ class AdditionalPageFAQSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'AdditionalPageFAQ'
 
+class TeamElementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeamElement
+        fields = '__all__'
+        ref_name = 'TeamElement'
+
 class AdditionalPagesSerializer(serializers.ModelSerializer):
     hero_section = serializers.SerializerMethodField()
     what_is = serializers.SerializerMethodField()
@@ -2582,6 +2589,7 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
     why_choose_us = serializers.SerializerMethodField()
     our_process = AdditionalPageOurProcessSerializer(many=True, read_only=True)
     faqs = AdditionalPageFAQSerializer(many=True, read_only=True)
+    team_elements = TeamElementSerializer(many=True, read_only=True)
     
        
     class Meta:
@@ -2589,7 +2597,7 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
             'hero_section', 'what_is', 'keyThings', 'why_choose_us', 
-            'our_process', 'faqs'
+            'our_process', 'faqs', 'team_elements'
         ]
         ref_name = 'AdditionalPages'
     
@@ -2625,6 +2633,15 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
             why_choose = obj.additional_page_why_choose_us.first()
             if why_choose:
                 return AdditionalPageWhyChooseUsSerializer(why_choose).data
+        except Exception:
+            pass
+        return None
+    
+    def get_team_elements(self, obj):
+        try:
+            team_elements = obj.team_elements.all()
+            if team_elements:
+                return TeamElementSerializer(team_elements, many=True).data
         except Exception:
             pass
         return None

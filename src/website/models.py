@@ -44,6 +44,9 @@ class BeginningOfWorking(models.Model):
     section_title = models.CharField(max_length=100, null=True, blank=True)
     secondary_title = models.CharField(max_length=100, null=True, blank=True, verbose_name="Secondary Title")
     section_description = models.TextField(null=True, blank=True)
+
+    verbose_name = "Service Section"
+    verbose_name_plural = "Service Section"
     
 
 class IndustryWeServeHomePage(models.Model):
@@ -1459,6 +1462,20 @@ class AdditionalPages(TimeStampMixin):
 
     def __str__(self):
         return self.title
+    
+
+class TeamElement(TimeStampMixin):
+    additional_page = models.ForeignKey(
+        AdditionalPages, 
+        on_delete=models.CASCADE,
+        related_name='team_elements',
+        null=True,
+        blank=True
+    )
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secodary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
     
 class AdditionalPageHeroSection(TimeStampMixin):
     additional_page = models.ForeignKey(
