@@ -122,6 +122,7 @@ from website.models import (
     ServicesWeProvideCards,
     SpecialProjectsTitle,
     Tag,
+    TeamElement,
     Technology,
     TechnologyCTA,
     TechnologyCreatorsQuotes,
@@ -1771,6 +1772,10 @@ class AdditionalPageFAQInline(nested_admin.NestedStackedInline):
     verbose_name = "FAQ"
     verbose_name_plural = "FAQ's"
 
+class TeamElementInline(nested_admin.NestedStackedInline):
+    model = TeamElement
+    extra = 1
+
 
 @admin.register(AdditionalPages)
 class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
@@ -1783,10 +1788,8 @@ class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
         AdditionalPageWhyChooseUsInline,
         AdditionalPageOurProcessInline,
         AdditionalPageFAQInline,
+        TeamElementInline
 
-        
-        
-        
         
     ]
 
