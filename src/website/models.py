@@ -112,6 +112,18 @@ class CaseStudyHomePage(models.Model):
     verbose_name_plural = "Case Studies"
 
 
+class OurProcessHome(TimeStampMixin):
+    home_page = models.ForeignKey(
+        HomePage,
+        related_name="our_process_home",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    section_title = models.CharField(max_length=200)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+
+
 
 
 
