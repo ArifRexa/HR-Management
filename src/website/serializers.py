@@ -43,7 +43,9 @@ from website.models import (
     AwardCategory,
     AwardYearGroup,
     Awards,
+    AwardsHomePage,
     AwardsTitle,
+    BeginningOfWorking,
     BenefitsOfEmployment,
     Blog,
     BlogCategory,
@@ -57,7 +59,9 @@ from website.models import (
     BlogStatus,
     BlogTag,
     BlogTitle,
+    BlogsAndArticlesHomePage,
     Brand,
+    CaseStudyHomePage,
     Category,
     Certification,
     Contact,
@@ -76,6 +80,7 @@ from website.models import (
     Industry,
     IndustryTitle,
     IndustryWeServe,
+    IndustryWeServeHomePage,
     Inquiry,
     Lead,
     Leadership,
@@ -88,6 +93,7 @@ from website.models import (
     OurGrowth,
     OurJourney,
     OurJourneyTitle,
+    OurProcessHome,
     PageBanner,
     PostCredential,
     ProjectMetadata,
@@ -103,6 +109,7 @@ from website.models import (
     ServicesWeProvideCards,
     SpecialProjectsTitle,
     Subscription,
+    TechStack,
     TechnologyCTA,
     TechnologyCreatorsQuotes,
     TechnologyFAQ,
@@ -117,6 +124,7 @@ from website.models import (
     TechnologyWhyChooseUs,
     TechnologyWhyChooseUsCards,
     TechnologyWhyChooseUsCardsDetails,
+    TestimonialsHomePage,
     TextualTestimonialTitle,
     VideoTestimonial,
     VideoTestimonialTitle,
@@ -134,13 +142,70 @@ class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
         model = HomePageHeroAnimatedTitle
         fields = ("title",)
 
+
+class BeginningOfWorkingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BeginningOfWorking
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class IndustryWeServeHomePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryWeServeHomePage
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class TechStackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechStack
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class TestimonialsHomePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TestimonialsHomePage
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class AwardsHomePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AwardsHomePage
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class BlogsAndArticlesHomePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogsAndArticlesHomePage
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class CaseStudyHomePageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CaseStudyHomePage
+        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+
+
+class OurProcessHomeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OurProcessHome
+        fields = ("id", "section_title", "section_description", "order")
+
+
 class HomePageSerializer(serializers.ModelSerializer):
     animated_titles = HomePageAnimateTitleSerializer(
-        many=True, 
+        many=True,
         source='hero_animated_titles',
         read_only=True
     )
-    
+    beginning_of_working = BeginningOfWorkingSerializer(many=True, read_only=True)
+    industry_we_serve = IndustryWeServeHomePageSerializer(many=True, read_only=True)
+    tech_stack = TechStackSerializer(many=True, read_only=True)
+    testimonials = TestimonialsHomePageSerializer(many=True, read_only=True)
+    awards = AwardsHomePageSerializer(many=True, read_only=True)
+    blogs_and_articles = BlogsAndArticlesHomePageSerializer(many=True, read_only=True)
+    case_studies = CaseStudyHomePageSerializer(many=True, read_only=True)
+    our_process_home = OurProcessHomeSerializer(many=True, read_only=True)
+
     class Meta:
         model = HomePage
         fields = (
@@ -150,8 +215,36 @@ class HomePageSerializer(serializers.ModelSerializer):
             "section_description",
             "button_text",
             "button_url",
+            # Nested Sections
             "animated_titles",
+            "beginning_of_working",
+            "industry_we_serve",
+            "tech_stack",
+            "testimonials",
+            "awards",
+            "blogs_and_articles",
+            "case_studies",
+            "our_process_home",
         )
+
+# class HomePageSerializer(serializers.ModelSerializer):
+#     animated_titles = HomePageAnimateTitleSerializer(
+#         many=True, 
+#         source='hero_animated_titles',
+#         read_only=True
+#     )
+    
+#     class Meta:
+#         model = HomePage
+#         fields = (
+#             "id",
+#             "seo_title",
+#             "section_title",
+#             "section_description",
+#             "button_text",
+#             "button_url",
+#             "animated_titles",
+#         )
 
 
 
@@ -1497,7 +1590,7 @@ class ServicePageSerializer(serializers.ModelSerializer):
 class ServeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServeCategory
-        fields = ['id', 'title', 'slug', 'short_description']
+        fields = ['id', 'title', 'slug']
         ref_name = 'website_servecategory'
 
 class SimpleServeCategorySerializer(serializers.ModelSerializer):
@@ -1599,8 +1692,8 @@ class BlogSerializer(serializers.ModelSerializer):
         ref_name = 'website_blog'
 
     def get_author(self, obj):
-        author = obj.created_by
-        return f"{author.first_name} {author.last_name}" if author else ""
+        author = obj.author
+        return f"{author}" if author else ""
     
     def get_table_of_contents(self, obj):
         """
