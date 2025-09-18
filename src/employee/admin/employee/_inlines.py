@@ -90,7 +90,7 @@ class EmployeeNOCInlineAdmin(admin.StackedInline):
 class EmployeeInline(admin.ModelAdmin):
     inlines = (
         # SkillInline,
-        # AttachmentInline,
+        AttachmentInline,
         SalaryHistoryInline,
         BankAccountInline,
         EmployeeSocialInline,

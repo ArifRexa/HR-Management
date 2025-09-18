@@ -135,11 +135,41 @@ from website.serializers import (
 )
 from website.utils.plagiarism_checker import CopyleaksAPI
 
+# class HomePageApiView(APIView):
+
+#     @swagger_auto_schema(
+#         tags=["Home Page"],
+#         operation_description="Home Page data",
+#         responses={
+#             200: openapi.Response(
+#                 description="HomePage data retrieved successfully",
+#                 schema=HomePageSerializer(),
+#             ),
+#             404: "HomePage not found",
+#             500: "Internal server error",
+#         },
+#     )
+#     def get(self, request, *args, **kwargs):
+#         try:
+#             homepage = HomePage.objects.first()
+#             if not homepage:
+#                 return Response(
+#                     {"error": "HomePage not found."}, status=status.HTTP_404_NOT_FOUND
+#                 )
+
+#             serializer = HomePageSerializer(homepage)
+#             return Response(serializer.data, status=status.HTTP_200_OK)
+#         except Exception as e:
+#             return Response(
+#                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
+
+
 class HomePageApiView(APIView):
 
     @swagger_auto_schema(
         tags=["Home Page"],
-        operation_description="Home Page data",
+        operation_description="Retrieve all homepage content including hero titles, sections, and process steps.",
         responses={
             200: openapi.Response(
                 description="HomePage data retrieved successfully",
@@ -151,7 +181,18 @@ class HomePageApiView(APIView):
     )
     def get(self, request, *args, **kwargs):
         try:
-            homepage = HomePage.objects.first()
+            homepage = HomePage.objects.prefetch_related(
+                'hero_animated_titles',
+                'beginning_of_working',
+                'industry_we_serve',
+                'tech_stack',
+                'testimonials',
+                'awards',
+                'blogs_and_articles',
+                'case_studies',
+                'our_process_home',
+            ).first()
+
             if not homepage:
                 return Response(
                     {"error": "HomePage not found."}, status=status.HTTP_404_NOT_FOUND
@@ -159,10 +200,19 @@ class HomePageApiView(APIView):
 
             serializer = HomePageSerializer(homepage)
             return Response(serializer.data, status=status.HTTP_200_OK)
+
         except Exception as e:
             return Response(
                 {"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+
+
+
+
+
+
 
 
 def index(request):
