@@ -1445,7 +1445,7 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
         )
 
         qs = EmployeeTaxAcknowledgement.objects.filter(
-            tds_year__isnull=False, id__in=list(latest_ids)
+            id__in=list(latest_ids)
         ).select_related("employee", "file_name", "tds_year")
 
         if not request.user.has_perm("employee.view_all_tax_acknowledgement"):
