@@ -782,11 +782,10 @@ class AssistantFund(TimeStampMixin, AuthorMixin):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICE, default="pending"
     )
-
     
     class Meta:
         permissions = [
             ("view_assistant_fund_user", "Can view assistant fund user in admin"),
             ("change_assistant_fund_user", "Can change assistant fund user in admin"),
-            ("assistant_fund_superuser", "Assistant fund superuser in admin"),
+            ("approve_assistant_fund_status", "Can approve assistant fund status"),
         ]
