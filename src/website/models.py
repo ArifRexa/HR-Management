@@ -46,6 +46,17 @@ class BeginningOfWorking(models.Model):
     section_description = models.TextField(null=True, blank=True)
     
 
+class IndustryWeServeHomePage(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="industry_we_serve")
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
+
+    verbose_name = "Industry We Serve"
+    verbose_name_plural = "Industries We Serve"
+    
+
 
 
 
