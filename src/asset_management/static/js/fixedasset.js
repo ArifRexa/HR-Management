@@ -10,13 +10,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const brandRow = document.querySelector(".form-row.field-brand");
     
     const fields = [
-        processorRow, ramRow, storageRow, displaySizeRow
+        processorRow, ramRow, storageRow, displaySizeRow, gpuRow
     ];
 
     function hideAllRowWithout(selected_field){
         // hide All input field Without selected_field input field.
         fields.forEach((field)=>{
-            if(field != selected_field){
+            if(field == null) return;
+            else if(field != selected_field){
                 field.style.display = "none";
             }else{
                 field.style.display = "";
@@ -24,12 +25,18 @@ document.addEventListener("DOMContentLoaded", function () {
         })
     }
 
+    // initially, remove all fields.
+    hideAllRowWithout(null);
+
     function updateFields() {
         const selected = categorySelect.value;
         const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
 
 
         if (!selected) return;
+        if (selectedText !== "Chair" || selectedText !== "Table"){
+            brandRow.style.display = "";
+        }
         if (selectedText === "Monitor") {
             hideAllRowWithout(displaySizeRow);
         } else if (selectedText === "Processor") {
@@ -42,6 +49,9 @@ document.addEventListener("DOMContentLoaded", function () {
            hideAllRowWithout(gpuRow);
         }
         else{
+            if (selectedText === "Chair" || selectedText === "Table"){
+                brandRow.style.display = "none";
+            }
             // hide all row if selected category is Headphone or Table or Chair, etc.
             hideAllRowWithout(null);
         }

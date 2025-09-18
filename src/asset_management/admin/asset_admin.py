@@ -579,7 +579,6 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
     ]
     readonly_fields = ["asset_id", ]
     autocomplete_fields = [
-        "category",
         "brand",
     ]
     list_filter = [
