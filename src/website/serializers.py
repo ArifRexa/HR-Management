@@ -2615,7 +2615,7 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
         try:
             key_things = obj.additional_page_key_things.first()
             if key_things:
-                return AdditionalPageKeyThingsSerializer(key_things).data
+                return [AdditionalPageKeyThingsSerializer(key_things).data]
         except Exception:
             pass
         return None
