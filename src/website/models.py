@@ -58,7 +58,58 @@ class IndustryWeServeHomePage(models.Model):
     
 
 
+class TechStack(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="tech_stack")
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
 
+    verbose_name = "Tech Stack"
+    verbose_name_plural = "Tech Stacks"
+
+
+class TestimonialsHomePage(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="testimonials")
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
+
+    verbose_name = "Testimonials"
+    verbose_name_plural = "Testimonials"
+
+
+class AwardsHomePage(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="awards")
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
+
+    verbose_name = "Awards"
+    verbose_name_plural = "Awards"
+
+
+class BlogsAndArticlesHomePage(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="blogs_and_articles")
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
+
+    verbose_name = "Blogs and Articles"
+    verbose_name_plural = "Blogs and Articles"
+
+class CaseStudyHomePage(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="case_studies")
+    seo_title = models.CharField(max_length=255, verbose_name="SEO Title", null=True, blank=True)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
+
+    verbose_name = "Case Studies"
+    verbose_name_plural = "Case Studies"
 
 
 
