@@ -373,6 +373,7 @@ class EmployeeAdmin(
                 "print_promotion_letter",
                 "print_experience_letter",
                 "download_employee_info",
+                "download_employee_details",
             ],
         }
 
