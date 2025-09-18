@@ -1206,6 +1206,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     )
     readonly_fields = ("status",)
     exclude = ("content",)
+
     fields = (
         "title",
         "slug",
@@ -1220,6 +1221,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "parent_services",
         # "technology_type",
         "technology",
+        "author",
         # "tag",
         # "short_description",
         "is_featured",
@@ -1648,7 +1650,9 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             "image": obj.image.url if obj.image else "",
             "author": {
                 "@type": "Person",
-                "name": f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else ""
+                # "name": f"{obj.created_by.first_name} {obj.created_by.last_name}" if obj.created_by else ""
+                "name": f"{obj.author}" if obj.author else ""
+
             },
             "publisher": {
                 "@type": "Organization",
