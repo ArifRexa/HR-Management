@@ -38,6 +38,21 @@ class HomePageHeroAnimatedTitle(models.Model):
     title = models.CharField(max_length=100)
 
 
+class BeginningOfWorking(models.Model):
+    home_page = models.ForeignKey(HomePage, on_delete=models.CASCADE, related_name="beginning_of_working")
+    seo_title = models.CharField(max_length=100, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=100, null=True, blank=True)
+    secondary_title = models.CharField(max_length=100, null=True, blank=True, verbose_name="Secondary Title")
+    section_description = models.TextField(null=True, blank=True)
+    
+
+
+
+
+
+
+
+
 
 
 
