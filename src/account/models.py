@@ -788,4 +788,5 @@ class AssistantFund(TimeStampMixin, AuthorMixin):
             ("view_assistant_fund_user", "Can view assistant fund user in admin"),
             ("change_assistant_fund_user", "Can change assistant fund user in admin"),
             ("approve_assistant_fund_status", "Can approve assistant fund status"),
+            ("add_assistant_fund_to_user", "Can add assistant fund to a user"),
         ]

@@ -388,9 +388,8 @@ class AssistantFundAdmin(admin.ModelAdmin):
         excluded = super().get_exclude(request, obj) or []
         
         # Only exclude 'user' field if user doesn't have permission
-        if not request.user.is_superuser and not request.user.has_perm("account.add_assistantfund"):# and not self._has_user_permission(request):
+        if not request.user.has_perm("account.add_assistant_fund_to_user"):
             excluded.append('user')
-            
         return excluded
 
     def get_readonly_fields(self, request, obj=None):
@@ -410,7 +409,7 @@ class AssistantFundAdmin(admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         # Only set user automatically for non-permitted users
-        if not change and not request.user.has_perm("account.add_assistantfund") : # and not self._has_user_permission(request):
+        if not change and not request.user.has_perm("account.add_assistant_fund_to_user"):
             obj.user = request.user
             
         # Check if status is being changed to 'approved' by non-superuser
@@ -459,8 +458,8 @@ class AssistantFundAdmin(admin.ModelAdmin):
 
     @admin.action(description='Approve selected funds')
     def approve_selected_funds(self, request, queryset):
-        if not request.user.is_superuser:
-            raise PermissionDenied("Only superusers can approve funds.")
+        if not request.user.has_perm("account.approve_assistant_fund_status"):
+            raise PermissionDenied("Only permited user can approve funds.")
         
         # Count how many funds we're approving
         count = 0
