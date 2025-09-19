@@ -532,6 +532,7 @@ class Project(TimeStampMixin, AuthorMixin):
         related_name="projects",
     )
     live_link = models.URLField(max_length=200, null=True, blank=True)
+    behance_link = models.URLField(max_length=200, null=True, blank=True)
     location = models.CharField(max_length=100, null=True, blank=True)
     country = models.ForeignKey(
         Country, on_delete=models.SET_NULL, null=True, blank=True

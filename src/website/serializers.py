@@ -1965,6 +1965,7 @@ class ServeCategoryMainSerializer(serializers.ModelSerializer):
     # Get section_description from related hero section
     section_description = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
+    icon = serializers.SerializerMethodField()
 
     class Meta:
         model = ServeCategory
@@ -1973,13 +1974,23 @@ class ServeCategoryMainSerializer(serializers.ModelSerializer):
             'slug',
             'show_in_menu',
             'section_description',
-            'tags'
+            'tags',
+            'icon',
         ]
 
     def get_section_description(self, obj):
         """Get the section description from the most recent hero section"""
         hero_section = obj.industry_details_hero_section.order_by('-created_at').first()
         return hero_section.section_description if hero_section else None
+    
+    def get_icon(self, obj):
+        hero_section = obj.industry_details_hero_section.first()
+        if hero_section and hero_section.image:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(hero_section.image.url)
+            return hero_section.image.url
+        return None
 
     def get_tags(self, obj):
         """Get all related tag titles"""

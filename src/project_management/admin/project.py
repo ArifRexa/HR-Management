@@ -150,7 +150,8 @@ class ProjectKeywordInline(nested_admin.NestedTabularInline):
 class ProjectMetadataInline(nested_admin.NestedStackedInline):
     model = ProjectMetadata
     extra = 1
-    inlines = [ProjectKeywordInline]
+    exclude = ["canonical"]
+    # inlines = [ProjectKeywordInline]
 
 
 @admin.register(Project)
@@ -175,7 +176,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     date_hierarchy = "created_at"
     inlines = (
         # ProjectResultInline,
-        ProjectKeyPointInline,
+        # ProjectKeyPointInline,
         # ProjectTechnologyInline,
         ProjectContentAdmin,
         # ProjectServiceInline,
@@ -199,6 +200,9 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     ]
     # form = ProjectAdminForm
     fields = (
+        "active",
+        "show_in_website",
+        "is_special",
         "title",
         # "slug",
         # "web_title",
@@ -206,25 +210,23 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "client",
         # "client_web_name",
         # "client_image",
-        "client_review",
-        "platforms",
-        "categories_tags",
-        "industries",
+        # "client_review",
+        # "platforms",
+        # "categories_tags",
         "services",
         "technology",
+        "industries",
         "live_link",
+        "behance_link",
         # "location",
-        "country",
-        "is_team",
-        "active",
-        "show_in_website",
-        "is_special",
-        "special_image",
+        # "country",
+        # "is_team",
+        # "special_image",
         # "in_active_at",
         "hourly_rate",
         "activate_from",
-        "featured_image",
-        "display_image",
+        # "featured_image",
+        # "display_image",
         "project_logo",
         "thumbnail",
         "featured_video",
