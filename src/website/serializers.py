@@ -1971,9 +1971,10 @@ class ServeCategoryMainSerializer(serializers.ModelSerializer):
         fields = [
             'title',
             'slug',
+            'icon',
             'show_in_menu',
             'section_description',
-            'tags'
+            'tags',
         ]
 
     def get_section_description(self, obj):

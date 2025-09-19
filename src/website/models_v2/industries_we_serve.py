@@ -11,6 +11,7 @@ class ServeCategory(models.Model):
     secondary_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="Secondary Title")
     # short_description = models.TextField(blank=True, null=True)
     slug = models.SlugField(unique=True)
+    icon = models.ImageField(upload_to='industry_icons/', blank=True, null=True)
     show_in_menu = models.BooleanField(default=False, verbose_name="Show in Menu")
     # title_in_detail_page = models.CharField(max_length=100, blank=True, null=True)
     # industry_field_image = models.ImageField(upload_to='industry_serve_images/', blank=True, null=True)
