@@ -245,7 +245,7 @@ class ClientAdmin(admin.ModelAdmin):
     list_filter = [
         # "is_need_feedback",
         "active",
-        "review",
+        # "review",
         "payment_method",
         "invoice_type",
         "currency",

@@ -432,7 +432,7 @@ class EmployeeDetails(admin.ModelAdmin):
     #         links.append(f"{platform}: {es.url}")
 
     #     return " | ".join(links)
-    @admin.display(description="Social Links")
+    @admin.display(description="Social Links", ordering="employee__employeesocial")
     def social_links(self, obj: EmployeeLunch):
         employee = obj.employee
         socials = employee.employeesocial_set.all()
