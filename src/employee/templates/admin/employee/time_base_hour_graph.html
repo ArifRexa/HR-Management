@@ -4,6 +4,9 @@
     {% load static %}
 
     <style>
+        #nav-sidebar{
+            display: none;
+        }
         button {
             outline: none;
             background: #417690;
@@ -14,6 +17,7 @@
             font-weight: 400;
             transition: background 0.15s;
             cursor: pointer;
+            margin-right: 6px;
         }
     </style>
 
@@ -37,9 +41,16 @@
         </div>
     </div>
 
+    <!-- View Type Buttons -->
     <div style="margin: 15px 0;">
         <button onclick="updateChart('weekly')">Weekly</button>
         <button onclick="updateChart('monthly')">Monthly</button>
+    </div>
+
+    <!-- Chart Type Buttons -->
+    <div style="margin: 15px 0;">
+        <button onclick="changeChartType('bar')">Bar</button>
+        <button onclick="changeChartType('line')">Line</button>
     </div>
 
     <div id="main">
@@ -49,41 +60,66 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const chartData = {{ chart|safe }};
-
         const ctx = document.getElementById('hourChart').getContext('2d');
 
-        let config = {
-            type: 'bar',
-            data: {
-                labels: chartData.weekly.labels,
-                datasets: [{
-                    label: chartData.weekly.label,
-                    data: chartData.weekly.data,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    borderColor: 'rgb(75, 192, 192)',
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            },
-        };
+        // Default configuration
+        let currentView = 'weekly';
+        let currentType = 'bar';
 
-        let myChart = new Chart(ctx, config);
+        function getConfig(type, view) {
+            return {
+                type: type,
+                data: {
+                    labels: chartData[view].labels,
+                    datasets: [{
+                        label: chartData[view].label,
+                        data: chartData[view].data,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(54, 162, 235)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 159, 64)'
+                        ],
+                        borderWidth: 1,
+                        fill: type === 'line' ? true : false,
+                        tension: type === 'line' ? 0.3 : 0 // smooth curve for line
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        tooltip: { enabled: true }
+                    },
+                }
+            };
+        }
+
+        let myChart = new Chart(ctx, getConfig(currentType, currentView));
 
         function updateChart(view) {
-            myChart.data.labels = chartData[view].labels;
-            myChart.data.datasets[0].data = chartData[view].data;
-            myChart.data.datasets[0].label = chartData[view].label;
-            myChart.update();
+            currentView = view;
+            myChart.destroy();
+            myChart = new Chart(ctx, getConfig(currentType, currentView));
 
-            // update title total hours
             document.getElementById("chartTitle").innerText =
                 "{{ title }} (" + chartData[view].total_hour.toFixed(2) + ")";
+        }
+
+        function changeChartType(type) {
+            currentType = type;
+            myChart.destroy();
+            myChart = new Chart(ctx, getConfig(currentType, currentView));
         }
     </script>
 {% endblock %}
