@@ -109,9 +109,9 @@
                           <span style="font-weight: bold; font-size: 1.5em;">{{result.employees|length}}</span>
                           
                           {% for employee in result.employees %}
-                          <li>{{ employee }} 
+                          <li>{{ employee }}
                             [ {% widthratio employee.monthly_expected_hours 4 1 %}({% with employee.get_last_four_weeks_totals as totals %}{{ totals.0|safe }}) || {{ employee.monthly_expected_hours|floatformat:0 }} ({% if totals.1 < employee.monthly_expected_hours %}<span style="color: red;">{{ totals.1 }}</span>{% else %}{{ totals.1 }}{% endif %})
-                            {% endwith %}]
+                            {% endwith %}] {% if employee.id %} <a href="{% url 'admin:time_hour_graph' employee.id %}" target="_blank">📈</a> {% endif %}
                           </li>
                           {% endfor %}
                         </ul>
