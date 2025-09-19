@@ -163,6 +163,12 @@ class FundUserFilter(SimpleListFilter):
             return queryset.filter(user_id=self.value())
         return queryset
 
+class AssistantFundUserFilter(FundUserFilter):
+    def lookups(self, request, model_admin):
+        # Get users who have created funds
+        users = AssistantFund.objects.values_list('user', 'user__first_name', 'user__last_name').distinct()
+        return [(user[0], f"{user[1]} {user[2]}".strip()) for user in users]
+
 
 @admin.register(Fund)
 class FundAdmin(RecentEdit, admin.ModelAdmin):
@@ -356,7 +362,7 @@ class FundAdmin(RecentEdit, admin.ModelAdmin):
 @admin.register(AssistantFund)
 class AssistantFundAdmin(admin.ModelAdmin):
     list_display = ['date', 'amount', 'user_full_name', 'note', 'fund_category', 'get_fund', 'colored_status']
-    list_filter = ['status', 'date',  FundUserFilter]
+    list_filter = ['status', 'date',  AssistantFundUserFilter]
     autocomplete_fields = ['user', 'fund_category']
     actions = ['approve_selected_funds']
 
