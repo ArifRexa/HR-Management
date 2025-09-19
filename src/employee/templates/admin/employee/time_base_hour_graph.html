@@ -1,0 +1,89 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+    {% load static %}
+
+    <style>
+        button {
+            outline: none;
+            background: #417690;
+            padding: 6px 10px;
+            color: white;
+            border: 1px solid #417690;
+            border-radius: 4px;
+            font-weight: 400;
+            transition: background 0.15s;
+            cursor: pointer;
+        }
+    </style>
+
+    <script src="{% url 'js-catalog' %}"></script>
+    <script src="{% static 'admin/js/core.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+
+    {% block content_title %}{% endblock %}
+
+    <div style="display: flex">
+        <div style="flex: 1 1 auto">
+            <h1 id="chartTitle">{{ title }} ({{ chart.weekly.total_hour|floatformat:2 }})</h1>
+        </div>
+        <div style="flex: 0 0 25vw">
+            <form action="" method="get">
+                {{ filter_form.media }}
+                {{ filter_form }}
+                <button type="submit" class="default">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <div style="margin: 15px 0;">
+        <button onclick="updateChart('weekly')">Weekly</button>
+        <button onclick="updateChart('monthly')">Monthly</button>
+    </div>
+
+    <div id="main">
+        <canvas id="hourChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const chartData = {{ chart|safe }};
+
+        const ctx = document.getElementById('hourChart').getContext('2d');
+
+        let config = {
+            type: 'bar',
+            data: {
+                labels: chartData.weekly.labels,
+                datasets: [{
+                    label: chartData.weekly.label,
+                    data: chartData.weekly.data,
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgb(75, 192, 192)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            },
+        };
+
+        let myChart = new Chart(ctx, config);
+
+        function updateChart(view) {
+            myChart.data.labels = chartData[view].labels;
+            myChart.data.datasets[0].data = chartData[view].data;
+            myChart.data.datasets[0].label = chartData[view].label;
+            myChart.update();
+
+            // update title total hours
+            document.getElementById("chartTitle").innerText =
+                "{{ title }} (" + chartData[view].total_hour.toFixed(2) + ")";
+        }
+    </script>
+{% endblock %}

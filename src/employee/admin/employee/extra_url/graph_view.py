@@ -3,6 +3,7 @@ import datetime
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Sum
+from django.db.models.functions import TruncMonth
 from django.template.response import TemplateResponse
 
 from employee.admin.employee._forms import FilterForm
@@ -95,10 +96,83 @@ class GraphView(admin.ModelAdmin):
         filters['employee_id__exact'] = employee_id
         employee_hours = EmployeeProjectHour.objects.values('project_hour__date').filter(**filters).annotate(
             hours=Sum('hours'))
-        print(employee_hours)
         for employee_hour in employee_hours:
             chart.get('labels').append(employee_hour['project_hour__date'].strftime('%B %d %Y'))
             chart.get('data').append(employee_hour['hours'])
             chart['total_hour'] += employee_hour['hours']
+        return chart
+    
+    def employee_time_base_graph_view(self, request, *args, **kwargs):
+        """
+        Hour graph by employee id
+        @param request:
+        @param args:
+        @param kwargs:
+        @return:
+        """
+        filter_form = FilterForm(initial={
+            'project_hour__date__gte': request.GET.get('project_hour__date__gte', ''),
+            'project_hour__date__lte': request.GET.get('project_hour__date__lte', '')
+        })
+        context = dict(
+            self.admin_site.each_context(request),
+            chart=self._get_chart_data_by_month_weekly_base(request, *args, **kwargs),
+            filter_form=filter_form,
+            title=Employee.objects.get(pk=kwargs.get('employee_id__exact'))
+        )
+        return TemplateResponse(request, "admin/employee/time_base_hour_graph.html", context)
 
+    def _get_chart_data_by_month_weekly_base(self, request, *args, **kwargs):
+        """
+        @param request:
+        @param args:
+        @param kwargs:
+        @return:
+        """
+        employee_id = kwargs.get('employee_id__exact')
+        if not request.user.is_superuser and request.user.employee.id != employee_id:
+            raise PermissionDenied
+        chart = {
+            "weekly": {
+                "label": "Weekly View",
+                "total_hour": 0,
+                "labels": [],
+                "data": [],
+            },
+            "monthly": {
+                "label": "Monthly View",
+                "total_hour": 0,
+                "labels": [],
+                "data": [],
+            },
+        }
+
+        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if
+                        key not in ['p', 'q', 'o', '_changelist_filters']])
+        filters['employee_id__exact'] = employee_id
+
+        filtered_employee_hours = EmployeeProjectHour.objects.filter(
+            **filters,
+        )
+        
+        employee_monthly_hours = filtered_employee_hours.annotate(
+            month=TruncMonth("created_at__date")
+        ).values("month").annotate(
+            monthly_hour = Sum("hours")
+        ).order_by("month")
+        for employee_monthly_hour in employee_monthly_hours:
+            chart["monthly"]["labels"].append(employee_monthly_hour.get("month").strftime("%d-%b-%Y"))
+            chart["monthly"]["data"].append(employee_monthly_hour.get("monthly_hour"))
+            chart["monthly"]["total_hour"] += employee_monthly_hour.get("monthly_hour")
+
+        weekly_employee_hours = EmployeeProjectHour.objects.values(
+            "project_hour__date"
+        ).filter(**filters).annotate(
+            hours=Sum("hours")
+        ).order_by("project_hour__date")
+
+        for weekly_employee_hour in weekly_employee_hours:
+            chart["weekly"]["labels"].append(weekly_employee_hour.get("project_hour__date").strftime("%d-%b-%Y"))
+            chart["weekly"]["data"].append(weekly_employee_hour.get("hours"))
+            chart["weekly"]["total_hour"] += weekly_employee_hour.get("hours")
         return chart
