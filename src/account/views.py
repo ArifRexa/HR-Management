@@ -312,6 +312,8 @@ def expense_attachment(request, id):
         total = expense.amount
     breakdown = "+".join(f"{amt}" for amt in amounts)
     amount_header = f"{total}({breakdown})"
+    expense_group = expense.expanse_group
+    expense_date = expense.date
 
     attachment_data = []
     for attachment in attachments:
@@ -322,6 +324,8 @@ def expense_attachment(request, id):
 
         attachment_data.append({
             'amount_header': amount_header,
+            'expense_group': expense_group,
+            'expense_date': expense_date,
             'file_url': file_url,
             'is_image': is_image,
             'filename': os.path.basename(filename),

@@ -7,7 +7,7 @@
 <body>
     {% for item in attachments %}
         <div class="attachment-box">
-            <div class="amount-header">{{ item.amount_header }}</div>
+            <div class="amount-header">{{item.expense_date}} - {{ item.expense_group }} - {{ item.amount_header }}</div>
             {% if item.is_image %}
                 <img src="{{ item.file_url }}" alt="Attachment">
             {% else %}
