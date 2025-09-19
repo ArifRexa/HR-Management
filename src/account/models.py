@@ -106,17 +106,34 @@ class EmployeeSalary(TimeStampMixin):
 
     @property
     def current_month_late_fee(self):
-        late_fee = (
-            LateAttendanceFine.objects.filter(
-                employee=self.employee,
-                month=self.salary_sheet.date.month,
-                year=self.salary_sheet.date.year,
-            ).aggregate(total_fine=Sum("total_late_attendance_fine"))[
-                "total_fine"
-            ]
-            or 0
-        )
-        return -late_fee
+        # late_fee = (
+        #     LateAttendanceFine.objects.filter(
+        #         employee=self.employee,
+        #         month=self.salary_sheet.date.month,
+        #         year=self.salary_sheet.date.year,
+        #     ).aggregate(total_fine=Sum("total_late_attendance_fine"))[
+        #         "total_fine"
+        #     ]
+        #     or 0
+        # )
+        # return -late_fee
+        late_count = LateAttendanceFine.objects.filter(
+            employee=self.employee,
+            month=self.salary_sheet.date.month,
+            year=self.salary_sheet.date.year,
+        ).count()
+
+        total_fine = 0.00
+        if late_count > 3:
+            # Apply 80 BDT for 4th to 6th late entries
+            late_entries_4_to_6 = min(late_count, 6) - 3
+            if late_entries_4_to_6 > 0:
+                total_fine += late_entries_4_to_6 * 80.00
+            # Apply 500 BDT for 7th and subsequent late entries
+            if late_count > 6:
+                late_entries_7_and_above = late_count - 6
+                total_fine += late_entries_7_and_above * 500.00
+        return -total_fine
 
     @property
     def tax_loan_total(self):

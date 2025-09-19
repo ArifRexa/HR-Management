@@ -199,6 +199,9 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     ]
     # form = ProjectAdminForm
     fields = (
+        "active",
+        "show_in_website",
+        "is_special",
         "title",
         # "slug",
         # "web_title",
@@ -209,16 +212,13 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "client_review",
         "platforms",
         "categories_tags",
-        "industries",
         "services",
         "technology",
+        "industries",
         "live_link",
         # "location",
         "country",
         "is_team",
-        "active",
-        "show_in_website",
-        "is_special",
         "special_image",
         # "in_active_at",
         "hourly_rate",
