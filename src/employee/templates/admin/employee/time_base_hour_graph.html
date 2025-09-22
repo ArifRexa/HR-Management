@@ -7,6 +7,9 @@
         #nav-sidebar{
             display: none;
         }
+        #toggle-nav-sidebar{
+            display: none;
+        }
         button {
             outline: none;
             background: #417690;
@@ -19,6 +22,11 @@
             cursor: pointer;
             margin-right: 6px;
         }
+        .content{
+            max-width: 100% !important;
+        }
+        
+
     </style>
 
     <script src="{% url 'js-catalog' %}"></script>
@@ -43,6 +51,7 @@
 
     <!-- View Type Buttons -->
     <div style="margin: 15px 0;">
+        <button onclick="updateChart('daily')">Daily</button>
         <button onclick="updateChart('weekly')">Weekly</button>
         <button onclick="updateChart('monthly')">Monthly</button>
     </div>
@@ -50,7 +59,7 @@
     <!-- Chart Type Buttons -->
     <div style="margin: 15px 0;">
         <button onclick="changeChartType('bar')">Bar</button>
-        <button onclick="changeChartType('line')">Line</button>
+        <button onclick="changeChartType('line')">Line</button>     
     </div>
 
     <div id="main">
