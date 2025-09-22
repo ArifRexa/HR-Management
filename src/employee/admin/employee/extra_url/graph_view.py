@@ -192,12 +192,16 @@ class GraphView(admin.ModelAdmin):
             created_at__date__gte=start_date,
             status="approved",
             **filters,
-        ).order_by("id").values("created_at__date", "hours")
-        
+        ).values(
+            "created_at__date",
+        ).annotate(
+            total_hour = Sum("hours")
+        ).order_by("created_at__date")
+
         for daily_employee_hour in daily_employee_hours:
             chart["daily"]["labels"].append(daily_employee_hour.get("created_at__date").strftime("%d-%b-%Y"))
-            chart["daily"]["data"].append(daily_employee_hour.get("hours"))
-            chart["daily"]["total_hour"] += daily_employee_hour.get("hours")
+            chart["daily"]["data"].append(daily_employee_hour.get("total_hour"))
+            chart["daily"]["total_hour"] += daily_employee_hour.get("total_hour")
         return chart
     
     def project_graph_view(self, request, *args, **kwargs):
