@@ -211,6 +211,7 @@ class ClientAdmin(admin.ModelAdmin):
         "invoice_type",
         "get_source",
         "get_remark",
+        "get_attachments",
         # "get_client_review",
     )
     # fields = (
@@ -358,6 +359,20 @@ class ClientAdmin(admin.ModelAdmin):
             ):
                 actions.pop("export_to_pdf", None)
         return actions
+    
+    @admin.display(description="Attachments")
+    def get_attachments(self, obj):
+        attachments = obj.clientattachment_set.all()
+        if not attachments:
+            return "—"
+        
+        icons = []
+        for attachment in attachments:
+            if attachment.attachment:
+                url = attachment.attachment.url
+                icons.append(f'<a href="{url}" target="_blank" title="{attachment.name or "Attachment"}">📄</a>')
+        
+        return mark_safe(" ".join(icons))
 
     @admin.action(description="Export selected clients to PDF")
     def export_to_pdf(self, request, queryset):
