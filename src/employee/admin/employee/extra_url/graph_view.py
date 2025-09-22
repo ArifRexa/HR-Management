@@ -3,7 +3,7 @@ from dateutil.relativedelta import relativedelta
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Sum
+from django.db.models import Sum, Count
 from django.db.models.functions import TruncMonth
 from django.template.response import TemplateResponse
 
@@ -111,16 +111,25 @@ class GraphView(admin.ModelAdmin):
         @param kwargs:
         @return:
         """
+        current_date = datetime.date.today()
+        start_date = current_date - relativedelta(months=6)
         
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
-        filter_form = FilterForm(initial={
-            'project_hour__date__gte': request.GET.get('project_hour__date__gte', ''),
-            'project_hour__date__lte': request.GET.get('project_hour__date__lte', '')
-        })
+        
+        initial_filter = {
+            'project_hour__date__gte': request.GET.get('project_hour__date__gte', start_date),
+            'project_hour__date__lte': request.GET.get('project_hour__date__lte', current_date),
+        }
+        filter_form = FilterForm(initial={**initial_filter})
         context = dict(
             self.admin_site.each_context(request),
-            chart=self._get_employee_chart_data_by_daily_month_weekly_base(request, *args, **kwargs),
+            chart=self._get_employee_chart_data_by_daily_month_weekly_base(
+                request,
+                *args,
+                apply_filter=initial_filter,
+                **kwargs,
+            ),
             filter_form=filter_form,
             title=Employee.objects.get(pk=kwargs.get('employee_id__exact'))
         )
@@ -137,28 +146,30 @@ class GraphView(admin.ModelAdmin):
         if not request.user.is_superuser and request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied
         chart = {
-            "weekly": {
-                "label": "Weekly View",
+            "daily": {
+                "label": "Daily Hours",
                 "total_hour": 0,
                 "labels": [],
                 "data": [],
+                "per_day_count": [],
+            },
+            "weekly": {
+                "label": "Weekly Hours",
+                "total_hour": 0,
+                "labels": [],
+                "data": [],
+                "per_day_count": [],
             },
             "monthly": {
-                "label": "Monthly View",
+                "label": "Monthly Hours",
                 "total_hour": 0,
                 "labels": [],
                 "data": [],
-            },
-            "daily": {
-                "label": "Daily View",
-                "total_hour": 0,
-                "labels": [],
-                "data": [],
+                "per_day_count": [],
             },
         }
 
-        filters = dict([(key, request.GET.get(key)) for key in dict(request.GET) if
-                        key not in ['p', 'q', 'o', '_changelist_filters']])
+        filters = kwargs.get("apply_filter")
         filters['employee_id__exact'] = employee_id
 
         filtered_employee_hours = EmployeeProjectHour.objects.filter(
@@ -178,18 +189,23 @@ class GraphView(admin.ModelAdmin):
         weekly_employee_hours = EmployeeProjectHour.objects.values(
             "project_hour__date"
         ).filter(**filters).annotate(
-            hours=Sum("hours")
+            t_hours=Sum("hours"),
         ).order_by("project_hour__date")
-
+        employee_hour = EmployeeProjectHour.objects.filter(
+            **filters
+        )
         for weekly_employee_hour in weekly_employee_hours:
             chart["weekly"]["labels"].append(weekly_employee_hour.get("project_hour__date").strftime("%d-%b-%Y"))
-            chart["weekly"]["data"].append(weekly_employee_hour.get("hours"))
-            chart["weekly"]["total_hour"] += weekly_employee_hour.get("hours")
-        
+            chart["weekly"]["data"].append(weekly_employee_hour.get("t_hours"))
+            employee_hour_list = employee_hour.filter(
+                project_hour__date=weekly_employee_hour.get("project_hour__date")
+            ).values_list("hours", flat=True)
+            chart["weekly"]["per_day_count"].append(list(employee_hour_list))
+            chart["weekly"]["total_hour"] += weekly_employee_hour.get("t_hours")        
 
-        start_date = datetime.date.today() - relativedelta(months=6)
+        filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
+        filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
         daily_employee_hours = DailyProjectUpdate.objects.filter(
-            created_at__date__gte=start_date,
             status="approved",
             **filters,
         ).values(

@@ -36,11 +36,22 @@
 
     {% block content_title %}{% endblock %}
 
-    <div style="display: flex">
-        <div style="flex: 1 1 auto">
+    <div style="display: flex; justify-content: space-between;">
+        <div>
             <h1 id="chartTitle">{{ title }} ({{ chart.weekly.total_hour|floatformat:2 }})</h1>
         </div>
-        <div style="flex: 0 0 25vw">
+
+        <!-- View Type Buttons -->
+        <div >
+            <button onclick="updateChart('daily')">Daily</button>
+            <button onclick="updateChart('weekly')">Weekly</button>
+            <button onclick="updateChart('monthly')">Monthly</button>
+
+            <!-- <button onclick="changeChartType('line')">Line</button> -->
+            <!-- <button onclick="changeChartType('bar')">Bar</button> -->
+        </div>
+
+        <div>
             <form action="" method="get">
                 {{ filter_form.media }}
                 {{ filter_form }}
@@ -49,18 +60,13 @@
         </div>
     </div>
 
-    <!-- View Type Buttons -->
-    <div style="margin: 15px 0;">
-        <button onclick="updateChart('daily')">Daily</button>
-        <button onclick="updateChart('weekly')">Weekly</button>
-        <button onclick="updateChart('monthly')">Monthly</button>
-    </div>
+    
 
     <!-- Chart Type Buttons -->
-    <div style="margin: 15px 0;">
+    <!-- <div style="margin: 15px 0;">
         <button onclick="changeChartType('line')">Line</button>
         <button onclick="changeChartType('bar')">Bar</button>
-    </div>
+    </div> -->
 
     <div id="main">
         <canvas id="hourChart"></canvas>
@@ -83,6 +89,7 @@
                     datasets: [{
                         label: chartData[view].label,
                         data: chartData[view].data,
+                        extraInfo: chartData[view].per_day_count,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
                             'rgba(255, 99, 132, 0.2)',
@@ -117,6 +124,17 @@
                             },
                             footerFont: {
                                 size: 14  // optional: tooltip footer font size
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    const value = context.raw;
+                                    const index = context.dataIndex;
+                                    if(context.dataset.extraInfo.length == 0){
+                                        return value;
+                                    }
+                                    const extra = context.dataset.extraInfo[index];
+                                    return `${extra.length}(${extra})`;
+                                }
                             }
                         },
                         legend: {
