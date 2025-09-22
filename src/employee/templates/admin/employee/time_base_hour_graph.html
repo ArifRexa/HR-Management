@@ -58,8 +58,8 @@
 
     <!-- Chart Type Buttons -->
     <div style="margin: 15px 0;">
+        <button onclick="changeChartType('line')">Line</button>
         <button onclick="changeChartType('bar')">Bar</button>
-        <button onclick="changeChartType('line')">Line</button>     
     </div>
 
     <div id="main">
@@ -73,7 +73,7 @@
 
         // Default configuration
         let currentView = 'weekly';
-        let currentType = 'bar';
+        let currentType = 'line';
 
         function getConfig(type, view) {
             return {
@@ -107,9 +107,31 @@
                 options: {
                     responsive: true,
                     plugins: {
-                        legend: { position: 'top' },
-                        tooltip: { enabled: true }
+                        tooltip: {
+                            enabled: true,
+                            bodyFont: {
+                                size: 16  // increase body font size
+                            },
+                            titleFont: {
+                                size: 18  // optional: tooltip title font size
+                            },
+                            footerFont: {
+                                size: 14  // optional: tooltip footer font size
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 14  // legend font size
+                                }
+                            }
+                        }
                     },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
                 }
             };
         }
