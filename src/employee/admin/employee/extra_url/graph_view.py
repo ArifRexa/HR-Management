@@ -134,7 +134,7 @@ class GraphView(admin.ModelAdmin):
         @return:
         """
         employee_id = kwargs.get('employee_id__exact')
-        if not request.user.is_superuser and request.user.has_perm("employee.view_employeeundertpm"):
+        if not request.user.is_superuser and request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied
         chart = {
             "weekly": {
