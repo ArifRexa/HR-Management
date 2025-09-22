@@ -6,6 +6,8 @@ from django.db.models.functions import Coalesce
 from django.template.loader import get_template
 from django.core.mail import EmailMultiAlternatives
 from django.utils import timezone
+from django.utils.safestring import mark_safe
+
 
 from account.models import (
     Loan,
@@ -31,7 +33,7 @@ class LoadAttachmentInline(admin.TabularInline):
 
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):
-    list_display = ("employee", "loan_amount", "due", "emi", "tenor", "description")
+    list_display = ("employee", "loan_amount", "due", "emi", "tenor", "description", "emi_dates")
     inlines = (LoadAttachmentInline,)
     actions = ("print_loan_agreement", "duplicate")
     list_filter = (
@@ -42,6 +44,14 @@ class LoanAdmin(admin.ModelAdmin):
     date_hierarchy = "effective_date"
     change_list_template = "admin/loan.html"
     autocomplete_fields = ("employee",)
+
+    @admin.display(description="EMI Dates")
+    def emi_dates(self, obj):
+        return mark_safe(
+            f"{obj.effective_date.strftime('%Y-%m-%d')}<br>"
+            # f"Start: {obj.start_date.strftime('%Y-%m-%d')}<br>"
+            f"{obj.end_date.strftime('%Y-%m-%d')}"
+        )
 
     @admin.action(description="Print Agreement")
     def print_loan_agreement(self, request, queryset):
