@@ -92,7 +92,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             'id', 'title', 'slug', 'description', 'client_name', 
-            'client_image', 'featured_image', 'thumbnail', 'live_link', 'project_logo',
+            'client_image', 'client_review', 'featured_image', 'thumbnail', 'live_link', 'project_logo',
             'industries', 'services', 'technology',
             'active', 'show_in_website', 'created_at', 'updated_at'
         ]
