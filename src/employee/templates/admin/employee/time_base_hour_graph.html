@@ -126,15 +126,18 @@
                                 size: 14  // optional: tooltip footer font size
                             },
                             callbacks: {
-                                label: function(context) {
-                                    const value = context.raw;
-                                    const index = context.dataIndex;
-                                    if(context.dataset.extraInfo.length == 0){
-                                        return value;
+                                // label: function(context) {
+                                //     return context.raw;
+                                // },
+                                footer: function(context) {
+                                    const dataset = context[0].dataset;
+                                    const index = context[0].dataIndex;
+                                    if (dataset.extraInfo.length === 0) {
+                                        return '';
                                     }
-                                    const extra = context.dataset.extraInfo[index];
+                                    const extra = dataset.extraInfo[index];
                                     return `${extra.length}(${extra})`;
-                                }
+                                },
                             }
                         },
                         legend: {
