@@ -2550,7 +2550,7 @@ class AdditionalPageKeyThingsCardsSerializer(serializers.ModelSerializer):
         ref_name = 'AdditionalPageKeyThingsCards'
 
 class AdditionalPageKeyThingsSerializer(serializers.ModelSerializer):
-    keyThings_cards = AdditionalPageKeyThingsCardsSerializer(many=True, read_only=True, source='additional_page_key_things_cards.all')
+    KeyThings_cards = AdditionalPageKeyThingsCardsSerializer(many=True, read_only=True, source='additional_page_key_things_cards.all')
     
     class Meta:
         model = AdditionalPageKeyThings
@@ -2596,7 +2596,7 @@ class TeamElementSerializer(serializers.ModelSerializer):
 class AdditionalPagesSerializer(serializers.ModelSerializer):
     hero_section = serializers.SerializerMethodField()
     what_is = serializers.SerializerMethodField()
-    keyThings = serializers.SerializerMethodField()
+    KeyThings = serializers.SerializerMethodField()
     why_choose_us = serializers.SerializerMethodField()
     our_process = AdditionalPageOurProcessSerializer(many=True, read_only=True)
     faqs = AdditionalPageFAQSerializer(many=True, read_only=True)
@@ -2607,7 +2607,7 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
         model = AdditionalPages
         fields = [
             'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
-            'hero_section', 'what_is', 'keyThings', 'why_choose_us', 
+            'hero_section', 'what_is', 'KeyThings', 'why_choose_us', 
             'our_process', 'faqs', 'team_elements'
         ]
         ref_name = 'AdditionalPages'
@@ -2630,7 +2630,7 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
             pass
         return None
     
-    def get_keyThings(self, obj):
+    def get_KeyThings(self, obj):
         try:
             key_things = obj.additional_page_key_things.first()
             if key_things:
