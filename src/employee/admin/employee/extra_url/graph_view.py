@@ -120,13 +120,13 @@ class GraphView(admin.ModelAdmin):
         })
         context = dict(
             self.admin_site.each_context(request),
-            chart=self._get_employee_chart_data_by_month_weekly_base(request, *args, **kwargs),
+            chart=self._get_employee_chart_data_by_daily_month_weekly_base(request, *args, **kwargs),
             filter_form=filter_form,
             title=Employee.objects.get(pk=kwargs.get('employee_id__exact'))
         )
         return TemplateResponse(request, "admin/employee/time_base_hour_graph.html", context)
 
-    def _get_employee_chart_data_by_month_weekly_base(self, request, *args, **kwargs):
+    def _get_employee_chart_data_by_daily_month_weekly_base(self, request, *args, **kwargs):
         """
         @param request:
         @param args:
@@ -134,7 +134,7 @@ class GraphView(admin.ModelAdmin):
         @return:
         """
         employee_id = kwargs.get('employee_id__exact')
-        if not request.user.is_superuser and request.user.employee.id != employee_id:
+        if not request.user.is_superuser and request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied
         chart = {
             "weekly": {
