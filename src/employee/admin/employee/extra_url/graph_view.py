@@ -171,11 +171,12 @@ class GraphView(admin.ModelAdmin):
 
         filters = kwargs.get("apply_filter")
         filters['employee_id__exact'] = employee_id
-
+        if request.GET.get('project_hour__date__gte') is None:
+            filters["project_hour__date__gte"] = filters["project_hour__date__gte"] - relativedelta(months=6)
+        
         filtered_employee_hours = EmployeeProjectHour.objects.filter(
             **filters,
         )
-        
         employee_monthly_hours = filtered_employee_hours.annotate(
             month=TruncMonth("created_at__date")
         ).values("month").annotate(
@@ -185,6 +186,9 @@ class GraphView(admin.ModelAdmin):
             chart["monthly"]["labels"].append(employee_monthly_hour.get("month").strftime("%d-%b-%Y"))
             chart["monthly"]["data"].append(employee_monthly_hour.get("monthly_hour"))
             chart["monthly"]["total_hour"] += employee_monthly_hour.get("monthly_hour")
+        
+        if request.GET.get('project_hour__date__gte') is None:
+            filters["project_hour__date__gte"] = filters["project_hour__date__gte"] + relativedelta(months=6)
 
         weekly_employee_hours = EmployeeProjectHour.objects.values(
             "project_hour__date"
