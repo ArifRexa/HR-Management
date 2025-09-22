@@ -112,7 +112,7 @@ class GraphView(admin.ModelAdmin):
         @return:
         """
         
-        if  not request.user.has_perm("employee.view_employeeundertpm"):
+        if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
         filter_form = FilterForm(initial={
             'project_hour__date__gte': request.GET.get('project_hour__date__gte', ''),
