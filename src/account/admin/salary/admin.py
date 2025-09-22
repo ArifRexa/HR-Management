@@ -24,7 +24,11 @@ from account.repository.SalarySheetRepository import SalarySheetRepository
 from config.utils.pdf import PDF
 from employee.models import Employee
 from employee.models.employee import LateAttendanceFine
-
+from django.db.models import (
+    Sum, Q, Case, When, IntegerField, Value, F,
+    OuterRef, Subquery, Count
+)
+from django.db.models.functions import Cast, Coalesce
 
 class EmployeeSalaryInline(admin.TabularInline):
     model = EmployeeSalary
@@ -192,10 +196,52 @@ class EmployeeSalaryInline(admin.TabularInline):
     def has_add_permission(self, request, obj):
         return False
 
+    # def get_queryset(self, request):
+    #     qs = super().get_queryset(request)
+
+    #     # Filter by the current SalarySheet
+    #     salary_sheet_id = (
+    #         self.parent_model.objects.filter(
+    #             id=request.resolver_match.kwargs.get("object_id")
+    #         )
+    #         .values_list("id", flat=True)
+    #         .first()
+    #     )
+    #     qs = qs.filter(salary_sheet_id=salary_sheet_id)
+
+    #     # Calculate totals
+    #     self.total_values = qs.aggregate(
+    #         total_employees=Count("id"),
+    #         total_net_salary=Sum("net_salary"),
+    #         total_overtime=Sum("overtime"),
+    #         total_project_bonus=Sum("project_bonus"),
+    #         total_leave_bonus=Sum("leave_bonus"),
+    #         total_food_allowance=Sum("food_allowance"),
+    #         total_festival_bonus=Sum("festival_bonus"),
+    #         total_gross_salary=Sum("gross_salary"),
+    #     )
+
+    #     # Initialize total_late_fine as Decimal
+    #     total_late_fine = Decimal("0.00")
+    #     total_tax_loan = Decimal("0.00")
+    #     total_salary_loan = Decimal("0.00")
+
+    #     # Calculate custom total for late fines manually
+    #     for obj in qs:
+    #         total_late_fine += Decimal(self.get_late_fine(obj))
+    #         total_tax_loan += Decimal(self.get_tax_loan(obj))
+    #         total_salary_loan += Decimal(self.get_salary_loan(obj))
+
+    #     self.total_values["total_late_fine"] = total_late_fine
+    #     self.total_values["total_tax_loan"] = total_tax_loan
+    #     self.total_values["total_salary_loan"] = total_salary_loan
+
+    #     return qs
+
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
 
-        # Filter by the current SalarySheet
         salary_sheet_id = (
             self.parent_model.objects.filter(
                 id=request.resolver_match.kwargs.get("object_id")
@@ -205,7 +251,34 @@ class EmployeeSalaryInline(admin.TabularInline):
         )
         qs = qs.filter(salary_sheet_id=salary_sheet_id)
 
-        # Calculate totals
+        # Handle sorting
+        sort = request.GET.get('sort')
+        order = request.GET.get('order', 'asc')
+
+        if sort:
+            # Map display field names to actual model field names if needed
+            field_map = {
+                'formatted_net_salary': 'net_salary',
+                'formatted_overtime': 'overtime',
+                'formatted_project_bonus': 'project_bonus',
+                'formatted_leave_bonus': 'leave_bonus',
+                'formatted_food_allowance': 'food_allowance',
+                'formatted_festival_bonus': 'festival_bonus',
+                'formatted_gross_salary': 'gross_salary',
+                'get_tax_loan': None,  # Not directly sortable via ORM
+                'get_salary_loan': None,
+                'get_late_fine': None,
+                'employee': 'employee__name',  # Adjust if your Employee model uses a different field
+            }
+
+            actual_field = field_map.get(sort, sort)  # fallback to sort field itself
+
+            if actual_field:
+                if order == 'desc':
+                    actual_field = '-' + actual_field
+                qs = qs.order_by(actual_field)
+
+        # Calculate totals (unchanged)
         self.total_values = qs.aggregate(
             total_employees=Count("id"),
             total_net_salary=Sum("net_salary"),
@@ -217,12 +290,10 @@ class EmployeeSalaryInline(admin.TabularInline):
             total_gross_salary=Sum("gross_salary"),
         )
 
-        # Initialize total_late_fine as Decimal
         total_late_fine = Decimal("0.00")
         total_tax_loan = Decimal("0.00")
         total_salary_loan = Decimal("0.00")
 
-        # Calculate custom total for late fines manually
         for obj in qs:
             total_late_fine += Decimal(self.get_late_fine(obj))
             total_tax_loan += Decimal(self.get_tax_loan(obj))
@@ -233,6 +304,8 @@ class EmployeeSalaryInline(admin.TabularInline):
         self.total_values["total_salary_loan"] = total_salary_loan
 
         return qs
+
+
 
 
 @admin.register(SalarySheet)
