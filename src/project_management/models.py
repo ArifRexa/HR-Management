@@ -383,6 +383,69 @@ class Client(TimeStampMixin, AuthorMixin):
             ("can_export_to_pdf", "Can export clients to PDF"),
         ]
 
+    def save(self, *args, **kwargs):
+        # Check if this is an update (not a new instance)
+        if self.pk:
+            # Get the current state from DB
+            old_instance = Client.objects.filter(pk=self.pk).first()
+            if old_instance and old_instance.hourly_rate != self.hourly_rate:
+                # Close any existing open history record
+                ClientHistory.objects.filter(
+                    client=self,
+                    end_date__isnull=True
+                ).update(end_date=timezone.now().date())
+
+                # Create new history record
+                ClientHistory.objects.create(
+                    client=self,
+                    starting_date=timezone.now().date(),
+                    hourly_rate=self.hourly_rate,
+                    end_date=None,  # Open-ended until next change
+                )
+
+        super().save(*args, **kwargs)
+    
+
+
+
+
+
+
+class ClientHistory(models.Model):
+    client = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name="hourly_rate_history",
+        verbose_name="Client",
+    )
+    starting_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when this hourly rate became effective",
+    )
+    hourly_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Hourly rate at this point in time",
+    )
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Date when this hourly rate was replaced (NULL = current rate)",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.client.name}"
+
+    class Meta:
+        verbose_name = "Client Hourly Rate History"
+        verbose_name_plural = "Client Hourly Rate Histories"
+        ordering = ["-starting_date"]
+
+
+
+
 
 class ClientExperience(Client):
     class Meta:
