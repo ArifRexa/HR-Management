@@ -506,11 +506,11 @@ class ExpenseAdmin(admin.ModelAdmin):
         actions = super().get_actions(request)
         if not request.user.is_superuser:
             actions.pop("change_authorized_status")
-        if not request.user.is_superuser and not request.user.has_perm(
-            "account.can_add_balance_sheet"
-        ):
-            actions.pop("add_to_balance_sheet")
-            actions.pop("remove_from_balance_sheet")
+        # if not request.user.is_superuser and not request.user.has_perm(
+        #     "account.can_add_balance_sheet"
+        # ):
+        #     actions.pop("add_to_balance_sheet")
+        #     actions.pop("remove_from_balance_sheet")
         return actions
 
     @admin.action()
