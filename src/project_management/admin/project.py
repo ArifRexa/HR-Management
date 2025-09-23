@@ -209,7 +209,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "description",
         "client",
         # "client_web_name",
-        # "client_image",
+        "client_image",
         "client_review",
         # "platforms",
         # "categories_tags",
