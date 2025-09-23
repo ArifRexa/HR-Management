@@ -26,6 +26,12 @@
 {{ block.super }}
 {{ media.js }}
 <script src="{% static 'admin/js/filters.js' %}" defer></script>
+
+<script>
+  window.addEventListener('load', () => {
+  document.getElementById('main').classList.remove('shifted');
+});
+</script>
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}

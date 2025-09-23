@@ -326,7 +326,7 @@ class GraphView(admin.ModelAdmin):
             self.admin_site.each_context(request),
             series=self._get_client_all_projects_dataset(client_id=kwargs.get("client_id")),
         )
-        return TemplateResponse(request, "admin/employee/all_employee_hour_graph.html", context)
+        return TemplateResponse(request, "admin/employee/client_projects_hour_graph.html", context)
     
     def _get_client_all_projects_dataset(self, client_id):
         dataset = []
