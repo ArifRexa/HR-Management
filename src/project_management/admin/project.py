@@ -219,7 +219,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "live_link",
         "behance_link",
         # "location",
-        # "country",
+        "country",
         # "is_team",
         # "special_image",
         # "in_active_at",
