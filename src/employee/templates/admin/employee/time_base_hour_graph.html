@@ -22,11 +22,15 @@
             cursor: pointer;
             margin-right: 6px;
         }
+        /* Add active button style */
+        button.active {
+            background: #1f3844; /* Darker shade for active state */
+            border-color: #2a4b5b;
+            font-weight: 600; /* Slightly bolder text */
+        }
         .content{
             max-width: 100% !important;
         }
-        
-
     </style>
 
     <script src="{% url 'js-catalog' %}"></script>
@@ -42,13 +46,10 @@
         </div>
 
         <!-- View Type Buttons -->
-        <div >
-            <button onclick="updateChart('daily')">Daily</button>
-            <button onclick="updateChart('weekly')">Weekly</button>
-            <button onclick="updateChart('monthly')">Monthly</button>
-
-            <!-- <button onclick="changeChartType('line')">Line</button> -->
-            <!-- <button onclick="changeChartType('bar')">Bar</button> -->
+        <div>
+            <button id="dailyBtn" onclick="updateChart('daily')">Daily</button>
+            <button id="weeklyBtn" class="active" onclick="updateChart('weekly')">Weekly</button>
+            <button id="monthlyBtn" onclick="updateChart('monthly')">Monthly</button>
         </div>
 
         <div>
@@ -59,14 +60,6 @@
             </form>
         </div>
     </div>
-
-    
-
-    <!-- Chart Type Buttons -->
-    <!-- <div style="margin: 15px 0;">
-        <button onclick="changeChartType('line')">Line</button>
-        <button onclick="changeChartType('bar')">Bar</button>
-    </div> -->
 
     <div id="main">
         <canvas id="hourChart"></canvas>
@@ -125,9 +118,10 @@
                             footerFont: {
                                 size: 14  // optional: tooltip footer font size
                             },
+                            displayColors: false,
                             callbacks: {
                                 // label: function(context) {
-                                //     return context.raw;
+                                //     return `${context.dataset.label} ${context.raw}`;
                                 // },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
@@ -163,6 +157,14 @@
             currentView = view;
             myChart.destroy();
             myChart = new Chart(ctx, getConfig(currentType, currentView));
+
+            const buttons = {
+                'daily': document.getElementById('dailyBtn'),
+                'weekly': document.getElementById('weeklyBtn'),
+                'monthly': document.getElementById('monthlyBtn')
+            };
+            Object.values(buttons).forEach(btn => btn.classList.remove('active'));
+            buttons[view].classList.add('active');
 
             document.getElementById("chartTitle").innerText =
                 "{{ title }} (" + chartData[view].total_hour.toFixed(2) + ")";
