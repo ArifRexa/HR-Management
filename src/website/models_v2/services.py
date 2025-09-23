@@ -387,3 +387,19 @@ class ServiceMetaData(models.Model):
 
     # def __str__(self):
     #     return self.title
+
+
+class ServicesRelatedBlogs(models.Model):
+    services = models.ForeignKey(
+        ServicePage, related_name="service_related_blogs", on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    link = models.URLField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Related Blog"
+        verbose_name_plural = "Related Blogs"
+
+
+    # def __str__(self):
+    #     return self.title
