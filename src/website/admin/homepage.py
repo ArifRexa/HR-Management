@@ -24,8 +24,8 @@ class BeginningOfWorkingInline(nested_admin.NestedStackedInline):
     model = BeginningOfWorking
     extra = 0
     fields = ("seo_title", "section_title", "secondary_title", "section_description")
-    verbose_name = "Beginning of Working"
-    verbose_name_plural = "Beginning of Working"
+    verbose_name = "Services We Provide"
+    verbose_name_plural = "Services We Provide"
 
 
 class IndustryWeServeHomePageInline(nested_admin.NestedStackedInline):
