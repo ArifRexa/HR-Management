@@ -208,6 +208,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "web_title",
         "description",
         "client",
+        "client_designation",
         # "client_web_name",
         "client_image",
         "client_review",

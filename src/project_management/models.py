@@ -494,6 +494,9 @@ class Project(TimeStampMixin, AuthorMixin):
     client = models.ForeignKey(
         Client, on_delete=models.SET_NULL, null=True, blank=True
     )
+    client_designation = models.CharField(
+        max_length=255, null=True, blank=True, verbose_name="Client Designation"
+    )
     client_web_name = models.CharField(
         max_length=255, null=True, blank=True, verbose_name="Client Web Name"
     )
