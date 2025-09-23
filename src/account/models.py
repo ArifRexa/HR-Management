@@ -218,6 +218,7 @@ class Expense(TimeStampMixin, AuthorMixin):
     note = models.TextField(null=True, blank=True)
     amount = models.FloatField()
     date = models.DateField(default=timezone.now)
+    add_to_balance_sheet = models.BooleanField(default=False, verbose_name="Reviewer")
     is_approved = models.BooleanField(default=False, verbose_name="Is Checked")
     is_authorized = models.BooleanField(
         default=True, verbose_name="Is Authorized"
@@ -230,7 +231,6 @@ class Expense(TimeStampMixin, AuthorMixin):
         blank=True,
         verbose_name="Checked By",
     )
-    add_to_balance_sheet = models.BooleanField(default=True)
     
     def save(self, *args, **kwargs):
 

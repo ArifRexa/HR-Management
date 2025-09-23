@@ -307,9 +307,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         "get_amount",
         "get_notes",
         "get_attachments",
+        "get_add_to_balance_sheet",
         "get_approved",
         "get_authorized",
-        "get_add_to_balance_sheet",
         "get_created_by",
     )
     date_hierarchy = "date"
@@ -420,7 +420,7 @@ class ExpenseAdmin(admin.ModelAdmin):
             return "✅"
         return "❌"
 
-    @admin.display(description="BS", ordering="add_to_balance_sheet")
+    @admin.display(description="Reviewer", ordering="add_to_balance_sheet")
     def get_add_to_balance_sheet(self, obj):
         if obj.add_to_balance_sheet:
             return "✅"
