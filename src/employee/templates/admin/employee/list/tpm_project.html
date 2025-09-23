@@ -133,7 +133,10 @@
                       <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">{{result.clients|length}}</span>
                         <ul>
                           {% for client in result.clients %}
-                          <li>{{ client }}</li>
+                          <li>
+                            {{ client }}
+                            {% if client.id %} <a href="{% url 'admin:client_projects_hour_graph' client.id %}" target="_blank">📈</a> {% endif %}
+                          </li>
                           {% endfor %}
                         </ul>
                     </td>
