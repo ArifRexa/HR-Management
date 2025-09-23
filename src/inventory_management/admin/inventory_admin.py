@@ -115,7 +115,7 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark Selected Inventory as Approved")
     def mark_as_approved(self, request, queryset):
-        for obj in queryset:
+        for obj in queryset.filter(status="pending"):
             if obj.transaction_type == "i":  # IN
                 item = InventoryItem.objects.get(id=obj.inventory_item.id)
                 item.quantity = item.quantity + obj.quantity
@@ -133,7 +133,7 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark Selected Inventory as Pending")
     def mark_as_pending(self, request, queryset):
-        for obj in queryset:
+        for obj in queryset.filter(status="approved"):
             if obj.transaction_type == "i":  # IN
                 item = InventoryItem.objects.get(id=obj.inventory_item.id)
                 item.quantity = item.quantity - obj.quantity
