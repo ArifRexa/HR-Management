@@ -1,192 +1,238 @@
 {% load i18n admin_urls static admin_modify %}
 
 <style>
-    .scl {
-        /* background-color: #f4f4f4; */
-        position: sticky;
-        top: 0;
-        z-index: 1;
-        cursor: pointer;
-    }
-    .scl:hover {
-        background-color: #aea7bb;
-    }
-    .sort-asc::after {
-        content: " ▲";
-        color: #007cba;
-    }
-    .sort-desc::after {
-        content: " ▼";
-        color: #007cba;
-    }
+  .scl {
+    /* background-color: #f4f4f4; */
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    cursor: pointer;
+  }
+
+  .scl:hover {
+    background-color: #aea7bb;
+  }
+
+  .sort-asc::after {
+    content: " ▲";
+    color: #007cba;
+  }
+
+  .sort-desc::after {
+    content: " ▼";
+    color: #007cba;
+  }
 </style>
 
 <div class="js-inline-admin-formset inline-group" id="{{ inline_admin_formset.formset.prefix }}-group"
-     data-inline-type="tabular"
-     data-inline-formset="{{ inline_admin_formset.inline_formset_data }}">
+  data-inline-type="tabular" data-inline-formset="{{ inline_admin_formset.inline_formset_data }}">
 
   <div class="tabular inline-related {% if forloop.last %}last-related{% endif %}">
     {{ inline_admin_formset.formset.management_form }}
     <fieldset class="module {{ inline_admin_formset.classes }}">
-       {% if inline_admin_formset.formset.max_num == 1 %}
-         <h2>{{ inline_admin_formset.opts.verbose_name|capfirst }}</h2>
-       {% else %}
-         <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
-       {% endif %}
-       {{ inline_admin_formset.formset.non_form_errors }}
+      {% if inline_admin_formset.formset.max_num == 1 %}
+      <h2>{{ inline_admin_formset.opts.verbose_name|capfirst }}</h2>
+      {% else %}
+      <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+      {% endif %}
+      {{ inline_admin_formset.formset.non_form_errors }}
 
-       <table id="employee-salary-table">
-         <thead>
-           <tr>
-             <th class="original"></th>
-             {% for field in inline_admin_formset.fields %}
-               {% if not field.widget.is_hidden %}
-                 {% with sort_field=field.name %}
-                   {% if request.GET.sort == sort_field %}
-                     {% if request.GET.order == 'desc' %}
-                       <th class="column-{{ field.name }} required scl sort-desc"
-                           data-sort="{{ sort_field }}" data-order="asc">
-                         {{ field.label|capfirst }}
-                       </th>
-                     {% else %}
-                       <th class="column-{{ field.name }} required scl sort-asc"
-                           data-sort="{{ sort_field }}" data-order="desc">
-                         {{ field.label|capfirst }}
-                       </th>
-                     {% endif %}
-                   {% else %}
-                     <th class="column-{{ field.name }} required scl"
-                         data-sort="{{ sort_field }}" data-order="asc">
-                       {{ field.label|capfirst }}
-                     </th>
-                   {% endif %}
-                 {% endwith %}
-                 {% if field.help_text %}
-                   <img src="{% static 'admin/img/icon-unknown.svg' %}" class="help help-tooltip" width="10" height="10" alt="({{ field.help_text|striptags }})" title="{{ field.help_text|striptags }}">
-                 {% endif %}
-               {% endif %}
-             {% endfor %}
-             {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
-               <th>{% translate "Delete?" %}</th>
-             {% endif %}
-           </tr>
-         </thead>
+      <table id="employee-salary-table">
+        <thead>
+          <tr>
+            <th class="original"></th>
+            {% for field in inline_admin_formset.fields %}
+            {% if not field.widget.is_hidden %}
+            {% with sort_field=field.name %}
+            {% if request.GET.sort == sort_field %}
+            {% if request.GET.order == 'desc' %}
+            <th class="column-{{ field.name }} required scl sort-desc" data-sort="{{ sort_field }}" data-order="asc">
+              {{ field.label|capfirst }}
+            </th>
+            {% else %}
+            <th class="column-{{ field.name }} required scl sort-asc" data-sort="{{ sort_field }}" data-order="desc">
+              {{ field.label|capfirst }}
+            </th>
+            {% endif %}
+            {% else %}
+            <th class="column-{{ field.name }} required scl" data-sort="{{ sort_field }}" data-order="asc">
+              {{ field.label|capfirst }}
+            </th>
+            {% endif %}
+            {% endwith %}
+            {% if field.help_text %}
+            <img src="{% static 'admin/img/icon-unknown.svg' %}" class="help help-tooltip" width="10" height="10"
+              alt="({{ field.help_text|striptags }})" title="{{ field.help_text|striptags }}">
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+            {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
+            <th>{% translate "Delete?" %}</th>
+            {% endif %}
+          </tr>
+        </thead>
 
-         <tbody>
-           {% for inline_admin_form in inline_admin_formset %}
-             {% if inline_admin_form.form.non_field_errors %}
-               <tr class="row-form-errors">
-                 <td colspan="{{ inline_admin_form|cell_count }}">{{ inline_admin_form.form.non_field_errors }}</td>
-               </tr>
-             {% endif %}
-             <tr class="form-row {% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form{% endif %}"
-                 id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+        <tbody>
+          {% for inline_admin_form in inline_admin_formset %}
+          {% if inline_admin_form.form.non_field_errors %}
+          <tr class="row-form-errors">
+            <td colspan="{{ inline_admin_form|cell_count }}">{{ inline_admin_form.form.non_field_errors }}</td>
+          </tr>
+          {% endif %}
+          <tr
+            class="form-row {% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form{% endif %}"
+            id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
 
-               <td class="original">
-                 {% if inline_admin_form.original or inline_admin_form.show_url %}
-                   <p>
-                     {% if inline_admin_form.original %}
-                       {{ inline_admin_form.original }}
-                       {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
-                         <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="{% if inline_admin_formset.has_change_permission %}inlinechangelink{% else %}inlineviewlink{% endif %}">
-                           {% if inline_admin_formset.has_change_permission %}{% translate "Change" %}{% else %}{% translate "View" %}{% endif %}
-                         </a>
-                       {% endif %}
-                     {% endif %}
-                     {% if inline_admin_form.show_url %}
-                       <a href="{{ inline_admin_form.absolute_url }}">{% translate "View on site" %}</a>
-                     {% endif %}
-                   </p>
-                 {% endif %}
-                 {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
-                 {% if inline_admin_form.fk_field %}{{ inline_admin_form.fk_field.field }}{% endif %}
-                 {% spaceless %}
-                   {% for fieldset in inline_admin_form %}
-                     {% for line in fieldset %}
-                       {% for field in line %}
-                         {% if not field.is_readonly and field.field.is_hidden %}{{ field.field }}{% endif %}
-                       {% endfor %}
-                     {% endfor %}
-                   {% endfor %}
-                 {% endspaceless %}
-               </td>
+            <td class="original">
+              {% if inline_admin_form.original or inline_admin_form.show_url %}
+              <p>
+                {% if inline_admin_form.original %}
+                {{ inline_admin_form.original }}
+                {% if inline_admin_form.model_admin.show_change_link and
+                inline_admin_form.model_admin.has_registered_model %}
+                <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}"
+                  class="{% if inline_admin_formset.has_change_permission %}inlinechangelink{% else %}inlineviewlink{% endif %}">
+                  {% if inline_admin_formset.has_change_permission %}{% translate "Change" %}{% else %}{% translate
+                  "View" %}{% endif %}
+                </a>
+                {% endif %}
+                {% endif %}
+                {% if inline_admin_form.show_url %}
+                <a href="{{ inline_admin_form.absolute_url }}">{% translate "View on site" %}</a>
+                {% endif %}
+              </p>
+              {% endif %}
+              {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
+              {% if inline_admin_form.fk_field %}{{ inline_admin_form.fk_field.field }}{% endif %}
+              {% spaceless %}
+              {% for fieldset in inline_admin_form %}
+              {% for line in fieldset %}
+              {% for field in line %}
+              {% if not field.is_readonly and field.field.is_hidden %}{{ field.field }}{% endif %}
+              {% endfor %}
+              {% endfor %}
+              {% endfor %}
+              {% endspaceless %}
+            </td>
 
-               {% for fieldset in inline_admin_form %}
-                 {% for line in fieldset %}
-                   {% for field in line %}
-                     {% if field.is_readonly or not field.field.is_hidden %}
-                       <td{% if field.field.name %} class="field-{{ field.field.name }}"{% endif %}>
-                         {% if field.is_readonly %}
-                           <p>{{ field.contents }}</p>
-                         {% else %}
-                           {{ field.field.errors.as_ul }}
-                           {{ field.field }}
-                         {% endif %}
-                       </td>
-                     {% endif %}
-                   {% endfor %}
-                 {% endfor %}
-               {% endfor %}
+            {% for fieldset in inline_admin_form %}
+            {% for line in fieldset %}
+            {% for field in line %}
+            {% if field.is_readonly or not field.field.is_hidden %}
+            <td{% if field.field.name %} class="field-{{ field.field.name }}" {% endif %}>
+              {% if field.is_readonly %}
+              <p>{{ field.contents }}</p>
+              {% else %}
+              {{ field.field.errors.as_ul }}
+              {{ field.field }}
+              {% endif %}
+              </td>
+              {% endif %}
+              {% endfor %}
+              {% endfor %}
+              {% endfor %}
 
-               {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
-                 <td class="delete">
-                   {% if inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}
-                 </td>
-               {% endif %}
-             </tr>
-           {% endfor %}
-         </tbody>
-       </table>
+              {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
+              <td class="delete">
+                {% if inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}
+              </td>
+              {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </fieldset>
   </div>
 </div>
 
 
 <script>
-(function() {
-    const table = document.getElementById('employee-salary-table');
-    if (!table) return;
+  document.addEventListener("DOMContentLoaded", function () {
+    const table = document.getElementById("employee-salary-table");
+    const headers = table.querySelectorAll("th.scl");
 
-    const headers = table.querySelectorAll('th[data-sort]');
-    const url = new URL(window.location.href);
+    // Clone original rows to preserve initial order (deep clone)
+    const originalRows = Array.from(table.querySelectorAll("tbody tr")).map(row => row.cloneNode(true));
 
-    headers.forEach(header => {
-        header.addEventListener('click', function() {
-            const sortField = this.getAttribute('data-sort');
-            const currentSort = url.searchParams.get('sort');
-            const currentOrder = url.searchParams.get('order');
+    headers.forEach((header, headerIndex) => {
+      // Data columns start at index 1 because first <td> is .original
+      const dataCellIndex = headerIndex + 1;
 
-            let newSort, newOrder;
+      header.addEventListener("click", function () {
+        let currentOrder = header.getAttribute("data-order") || "default";
+        let newOrder;
 
-            if (currentSort === sortField) {
-                if (currentOrder === 'asc') {
-                    // Second click → desc
-                    newSort = sortField;
-                    newOrder = 'desc';
-                } else {
-                    // Third click → remove sorting
-                    newSort = null;
-                    newOrder = null;
-                }
-            } else {
-                // First click → asc
-                newSort = sortField;
-                newOrder = 'asc';
-            }
+        // Cycle: default → asc → desc → default
+        if (currentOrder === "default") {
+          newOrder = "asc";
+        } else if (currentOrder === "asc") {
+          newOrder = "desc";
+        } else {
+          newOrder = "default";
+        }
 
-            // Clear existing sort/order
-            url.searchParams.delete('sort');
-            url.searchParams.delete('order');
-
-            // Set new ones if not null
-            if (newSort) {
-                url.searchParams.set('sort', newSort);
-                url.searchParams.set('order', newOrder);
-            }
-
-            // Redirect
-            window.location.href = url.toString();
+        // Reset all headers
+        headers.forEach(h => {
+          h.classList.remove("sort-asc", "sort-desc");
+          h.setAttribute("data-order", "default");
         });
+
+        // Apply state to clicked header
+        header.setAttribute("data-order", newOrder);
+        if (newOrder === "asc") header.classList.add("sort-asc");
+        if (newOrder === "desc") header.classList.add("sort-desc");
+
+        const tbody = table.querySelector("tbody");
+        let rows = Array.from(tbody.querySelectorAll("tr"));
+
+        if (newOrder === "default") {
+          // Restore original order
+          tbody.innerHTML = ''; // Clear
+          originalRows.forEach(row => tbody.appendChild(row.cloneNode(true)));
+          return;
+        }
+
+        // Detect if column is numeric (try parsing first 5 non-empty cells)
+        let isNumeric = true;
+        let sampleCount = 0;
+        for (let row of rows) {
+          if (sampleCount >= 5) break;
+          let cellText = row.cells[dataCellIndex]?.innerText.trim() || '';
+          if (cellText === '') continue;
+          sampleCount++;
+          if (isNaN(parseFloat(cellText.replace(/[^\d.-]/g, '')))) {
+            isNumeric = false;
+            break;
+          }
+        }
+
+        // Sort function
+        rows.sort((a, b) => {
+          let cellA = a.cells[dataCellIndex]?.innerText.trim() || '';
+          let cellB = b.cells[dataCellIndex]?.innerText.trim() || '';
+
+          let valA, valB;
+
+          if (isNumeric) {
+            // Clean non-numeric chars (e.g., $, commas)
+            valA = parseFloat(cellA.replace(/[^\d.-]/g, '')) || 0;
+            valB = parseFloat(cellB.replace(/[^\d.-]/g, '')) || 0;
+          } else {
+            valA = cellA.toLowerCase();
+            valB = cellB.toLowerCase();
+          }
+
+          if (newOrder === "asc") {
+            return valA > valB ? 1 : (valA < valB ? -1 : 0);
+          } else { // desc
+            return valA < valB ? 1 : (valA > valB ? -1 : 0);
+          }
+        });
+
+        // Re-render
+        tbody.innerHTML = '';
+        rows.forEach(row => tbody.appendChild(row));
+      });
     });
-})();
+  });
 </script>
