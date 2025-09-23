@@ -208,14 +208,16 @@ class ExpenseForm(forms.ModelForm):
         is_approved = cleaned_data.get("is_approved")
         obj = self.instance
         attachments = obj.expanseattachment_set.all()
-        for attachment in obj.expanseattachment_set.all():
-            group_title = obj.expanse_group.title.lower()
-            if not attachment.inventory_ids and group_title in [
-                "office expense",
-                "office supplies & stationery",
-                "entertainment",
-            ]:
-                raise ValidationError(f"you must give inventory ids for {group_title} group")
+        
+        # for attachment in obj.expanseattachment_set.all():
+        #     group_title = obj.expanse_group.title.lower()
+        #     if not attachment.inventory_ids and group_title in [
+        #         "office expense",
+        #         "office supplies & stationery",
+        #         "entertainment",
+        #     ]:
+        #         raise ValidationError(f"you must give inventory ids for {group_title} group")
+        
         # Only validate if the object is approved
         if is_approved:
             # Current model instance (unsaved/new)
