@@ -586,12 +586,21 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "brand",
         "vendor",
     ]
+    actions = [
+        "make_inactive",
+    ]
 
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'id') is None:
             asset_number = FixedAsset.objects.filter(category=obj.category).count() + 1
             obj.asset_id = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{asset_number}"
         return super().save_model(request, obj, form, change)
+
+
+    @admin.action(description="Mark selected FixedAsset as inactive.")
+    def make_inactive(modeladmin, request, queryset):
+        queryset.update(is_active=False)
+
 
     class Media:
         js = ("js/fixedasset.js",)
