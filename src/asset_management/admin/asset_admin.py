@@ -539,14 +539,13 @@ class MonitorSizeModelAdmin(admin.ModelAdmin):
 @admin.register(FixedAsset)
 class FixedAssetModelAdmin(admin.ModelAdmin):
     list_display = [
-        "id",
+        "asset_id",
         "category",
         "brand",
         "vendor",
         "purchase_date",
         "warranty_duration",
         "serial",
-        "asset_id",
         "processor",
         "ram_size",
         "storage",
@@ -569,13 +568,13 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "purchase_date",
         "warranty_duration",
         "serial",
-        "asset_id",
         "processor",
         "ram_size",
         "storage",
         "display_size",
         "gpu",
         "other_specs",
+        "asset_id",
     ]
     readonly_fields = ["asset_id", ]
     autocomplete_fields = [

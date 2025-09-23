@@ -1,0 +1,49 @@
+{% extends 'admin/base_site.html' %}
+
+{% block content %}
+    <style>
+        #nav-sidebar{
+            display: none;
+        }
+        #toggle-nav-sidebar{
+            display: none;
+        }
+        .content{
+            max-width: 100% !important;
+        }
+    </style>
+    
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+
+    <div id="graph" style="height: 80vh; min-width: 310px"></div>
+
+    
+
+
+    <script>
+
+        let series =
+            {{ series | safe }};
+
+        series.map(value => {
+            value['visible'] = false
+            return value
+        });
+
+
+        const highCharts = Highcharts.stockChart('graph', {
+            legend: {
+                enabled: true,
+                navigation: {
+                    enabled: false
+                }
+            },
+            series: series
+        });
+
+
+    </script>
+{% endblock %}
