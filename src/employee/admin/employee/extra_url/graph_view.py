@@ -307,7 +307,7 @@ class GraphView(admin.ModelAdmin):
             "date__year",
         ).annotate(
             total_hour = Sum("hours"),
-        ).order_by("date__month", "date__year")
+        ).order_by("date__year", "date__month")
 
         for monthly_project_hour in monthly_project_hours:
             month_num = str(monthly_project_hour.get("date__month")).zfill(2)
@@ -317,4 +317,44 @@ class GraphView(admin.ModelAdmin):
             chart["monthly"]["data"].append(hour)
             chart["monthly"]["total_hour"] += hour
         return chart
+
+    def clinet_projects_graph(self, request, *args, **kwargs):
+        if request.user.has_perm("employee.view_employeeundertpm") is False:
+            raise PermissionDenied("You do not have permission to access this feature.")
+
+        context = dict(
+            self.admin_site.each_context(request),
+            series=self._get_client_all_projects_dataset(client_id=kwargs.get("client_id")),
+        )
+        return TemplateResponse(request, "admin/employee/client_projects_hour_graph.html", context)
     
+    def _get_client_all_projects_dataset(self, client_id):
+        dataset = []
+        start_date = datetime.date.today() - relativedelta(years=1)
+        projects = Project.objects.only("title").filter(client_id=client_id)
+        for project in projects:
+            project_hours = ProjectHour.objects.filter(
+                date__gte=start_date,
+                project_id=project.id
+            ).values("date").annotate(
+                total_hour = Sum("hours")
+            ).order_by("date")
+
+            if project_hours.count() > 0:
+                data = []
+                for project_hour in project_hours:
+                    timestamp = int(
+                        datetime.datetime.combine(
+                            project_hour.get("date"),
+                            datetime.datetime.min.time()
+                        ).timestamp()
+                    )
+                    data.append([timestamp * 1000, project_hour.get("total_hour")])
+                dataset.append(
+                    {
+                        "type": "spline",
+                        "name": project.title,
+                        "data": data,
+                    }
+                )
+        return dataset

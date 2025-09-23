@@ -22,6 +22,8 @@ class EmployeeExtraUrls(SMSView, GraphView, FormalView, admin.ModelAdmin):
                  name='time_hour_graph'),
             path('<int:project_id__exact>/project-time-graph/', self.admin_site.admin_view(self.project_graph_view),
                  name='project_hour_graph'),
+            path('<int:client_id>/client-projects-graph/', self.admin_site.admin_view(self.clinet_projects_graph),
+                 name='client_projects_hour_graph'),
             path('announce/sms/', self.admin_site.admin_view(self.sms_announce_view),
                  name='employee.announce.sms'),
             path('announce/sms/post/', self.admin_site.admin_view(self.send_sms),
