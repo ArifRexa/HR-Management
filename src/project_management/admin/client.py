@@ -195,6 +195,7 @@ class DecisionMakerAdmin(admin.ModelAdmin):
 class ClientAdmin(admin.ModelAdmin):
     list_display = (
         "name",
+        "get_attachments",
         "get_hourly_rate",
         "get_project_income",
         "get_inactive_from",
@@ -211,7 +212,6 @@ class ClientAdmin(admin.ModelAdmin):
         "invoice_type",
         "get_source",
         "get_remark",
-        "get_attachments",
         # "get_client_review",
     )
     # fields = (

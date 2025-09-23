@@ -149,7 +149,7 @@ from website.models import (
     WomenEmpowermentBanner,
 )
 from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -816,6 +816,12 @@ class MetaDescriptionInline(nested_admin.NestedStackedInline):
     min_num = 1
 
 
+class ServicesRelatedBlogsInline(nested_admin.NestedStackedInline):
+    model = ServicesRelatedBlogs
+    extra = 1
+
+
+
 @admin.register(ServicePage)
 class ServicePageAdmin(nested_admin.NestedModelAdmin):
     list_display = (
@@ -871,6 +877,7 @@ class ServicePageAdmin(nested_admin.NestedModelAdmin):
         # ServiceMetaDataInline,
         ServicePageCTAInline,
         ServicesItemTagsInline,
+        ServicesRelatedBlogsInline
     ]
     list_per_page = 20
     change_form_template = 'admin/website/servecategory/change_form.html'
