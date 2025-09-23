@@ -316,6 +316,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     list_filter = [
         "is_authorized",
         "is_approved",
+        "add_to_balance_sheet",
         ActiveCreatedByFilter,
         "expanse_group",
         "expense_category",
