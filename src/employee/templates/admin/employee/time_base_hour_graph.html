@@ -12,21 +12,25 @@
         }
         button {
             outline: none;
-            background: #417690;
+            background: white; /* Changed to white for unselected buttons */
             padding: 6px 10px;
-            color: white;
-            border: 1px solid #417690;
+            color: #417690; /* Match border color for text */
+            border: 1px solid #417690; /* Border color matches original background */
             border-radius: 4px;
             font-weight: 400;
             transition: background 0.15s;
             cursor: pointer;
             margin-right: 6px;
         }
+        button.active {
+            background: #417690; /* Original default style for selected button */
+            border-color: #417690;
+            color: white; /* Ensure text is visible on dark background */
+            font-weight: 600; /* Keep bolder text for active state */
+        }
         .content{
             max-width: 100% !important;
         }
-        
-
     </style>
 
     <script src="{% url 'js-catalog' %}"></script>
@@ -42,13 +46,10 @@
         </div>
 
         <!-- View Type Buttons -->
-        <div >
-            <button onclick="updateChart('daily')">Daily</button>
-            <button onclick="updateChart('weekly')">Weekly</button>
-            <button onclick="updateChart('monthly')">Monthly</button>
-
-            <!-- <button onclick="changeChartType('line')">Line</button> -->
-            <!-- <button onclick="changeChartType('bar')">Bar</button> -->
+        <div>
+            <button id="dailyBtn" onclick="updateChart('daily')">Daily</button>
+            <button id="weeklyBtn" class="active" onclick="updateChart('weekly')">Weekly</button>
+            <button id="monthlyBtn" onclick="updateChart('monthly')">Monthly</button>
         </div>
 
         <div>
@@ -60,19 +61,12 @@
         </div>
     </div>
 
-    
-
-    <!-- Chart Type Buttons -->
-    <!-- <div style="margin: 15px 0;">
-        <button onclick="changeChartType('line')">Line</button>
-        <button onclick="changeChartType('bar')">Bar</button>
-    </div> -->
-
     <div id="main">
         <canvas id="hourChart"></canvas>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
     <script>
         const chartData = {{ chart|safe }};
         const ctx = document.getElementById('hourChart').getContext('2d');
@@ -125,9 +119,20 @@
                             footerFont: {
                                 size: 14  // optional: tooltip footer font size
                             },
+                            displayColors: false,
+                            backgroundColor: function(context) {
+                                console.log()
+                                const value = parseFloat(context.tooltip.body[0].lines[0].split(" ")[2].replace(' ', ''));
+                                const target_hour = chartData[view].target_hour | 0;
+                                if(target_hour == 0){
+                                    return '';
+                                }
+                                else if (value >= target_hour) return 'rgba(144, 238, 144, 0.5)'; // green
+                                else return 'rgba(200, 0, 0, 0.5)'; // red
+                            },
                             callbacks: {
                                 // label: function(context) {
-                                //     return context.raw;
+                                //     return `${context.dataset.label} ${context.raw}`;
                                 // },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
@@ -144,6 +149,28 @@
                             labels: {
                                 font: {
                                     size: 14  // legend font size
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: {
+                                targetLine: {
+                                    type: 'line',
+                                    yMin: chartData[view].target_hour || 0,
+                                    yMax: chartData[view].target_hour || 0,
+                                    borderColor: 'red',
+                                    borderWidth: 2,
+                                    borderDash: [0, 0],
+                                    // label: {
+                                    //     enabled: true,
+                                    //     content: `Target: ${chartData[view].target_hour || 0}`,
+                                    //     position: 'center',
+                                    //     backgroundColor: 'rgba(255, 182, 193, 0.9)',
+                                    //     font: {
+                                    //         size: 20,
+                                    //     },
+                                    //     padding: 6,
+                                    // }
                                 }
                             }
                         }
@@ -163,6 +190,14 @@
             currentView = view;
             myChart.destroy();
             myChart = new Chart(ctx, getConfig(currentType, currentView));
+
+            const buttons = {
+                'daily': document.getElementById('dailyBtn'),
+                'weekly': document.getElementById('weeklyBtn'),
+                'monthly': document.getElementById('monthlyBtn')
+            };
+            Object.values(buttons).forEach(btn => btn.classList.remove('active'));
+            buttons[view].classList.add('active');
 
             document.getElementById("chartTitle").innerText =
                 "{{ title }} (" + chartData[view].total_hour.toFixed(2) + ")";

@@ -145,10 +145,15 @@ class GraphView(admin.ModelAdmin):
         employee_id = kwargs.get('employee_id__exact')
         if not request.user.is_superuser and request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied
+        employee_monthly_expected_hour = Employee.objects.only(
+            "monthly_expected_hours"
+        ).get(id=employee_id).monthly_expected_hours
+
         chart = {
             "daily": {
                 "label": "Daily Hours",
                 "total_hour": 0,
+                "target_hour": 0,
                 "labels": [],
                 "data": [],
                 "per_day_count": [],
@@ -156,6 +161,7 @@ class GraphView(admin.ModelAdmin):
             "weekly": {
                 "label": "Weekly Hours",
                 "total_hour": 0,
+                "target_hour": round(float(employee_monthly_expected_hour or 0)/4, 2),
                 "labels": [],
                 "data": [],
                 "per_day_count": [],
@@ -163,6 +169,7 @@ class GraphView(admin.ModelAdmin):
             "monthly": {
                 "label": "Monthly Hours",
                 "total_hour": 0,
+                "target_hour": round(float(employee_monthly_expected_hour or 0), 2),
                 "labels": [],
                 "data": [],
                 "per_day_count": [],
