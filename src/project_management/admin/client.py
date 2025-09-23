@@ -36,6 +36,7 @@ from project_management.models import (
     ClientAttachment,
     ClientExperience,
     ClientFeedbackEmail,
+    ClientHistory,
     ClientInvoiceDate,
     ClientReview,
     ClientSource,
@@ -954,6 +955,24 @@ class ClientAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
+
+
+
+@admin.register(ClientHistory)
+class ClientHistoryAdmin(admin.ModelAdmin):
+    list_display = (
+        "client",
+        "starting_date",
+        "hourly_rate",
+        "end_date",
+        "created_at",
+    )
+
+    # def has_module_permission(self, request):
+    #     return False
+
+
+
 
 
 @admin.register(ClientFeedbackEmail)
