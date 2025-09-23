@@ -22,6 +22,12 @@ class FilterForm(forms.Form):
     project_hour__date__lte = forms.DateField(label=' ', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
 
 
+class DateFilterForm(forms.Form):
+    date__gte = forms.DateField(label='', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
+    date__lte = forms.DateField(label='', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
+
+
+
 class DailyUpdateFilterForm(forms.Form):
     created_at__date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type':'date'}))
     created_at__date__lte = forms.DateField(label='To', widget=AdminDateWidget(attrs={'type':'date'}))
