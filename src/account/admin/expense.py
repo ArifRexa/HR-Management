@@ -307,9 +307,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         "get_amount",
         "get_notes",
         "get_attachments",
+        "get_add_to_balance_sheet",
         "get_approved",
         "get_authorized",
-        "get_add_to_balance_sheet",
         "get_created_by",
     )
     date_hierarchy = "date"
@@ -328,8 +328,9 @@ class ExpenseAdmin(admin.ModelAdmin):
         "print_voucher",
         "print_voucher_attachment",
         "approve_expense",
-        "add_to_balance_sheet",
-        "remove_from_balance_sheet",
+        # "add_to_balance_sheet",
+        # "remove_from_balance_sheet",
+        "change_reviewer_status",
         "change_authorized_status",
     )
     autocomplete_fields = ("expanse_group", "expense_category")
@@ -420,7 +421,7 @@ class ExpenseAdmin(admin.ModelAdmin):
             return "✅"
         return "❌"
 
-    @admin.display(description="BS", ordering="add_to_balance_sheet")
+    @admin.display(description="Reviewer", ordering="add_to_balance_sheet")
     def get_add_to_balance_sheet(self, obj):
         if obj.add_to_balance_sheet:
             return "✅"
@@ -590,6 +591,13 @@ class ExpenseAdmin(admin.ModelAdmin):
     @admin.action()
     def remove_from_balance_sheet(self, request, queryset):
         queryset.update(add_to_balance_sheet=False)
+
+    @admin.action()
+    def change_reviewer_status(self, request, queryset):
+        if queryset.filter(add_to_balance_sheet=True):
+            queryset.update(add_to_balance_sheet=False)
+        else:
+            queryset.update(add_to_balance_sheet=True)
 
     # @admin.action()
     # def print_voucher(self, request, queryset):
