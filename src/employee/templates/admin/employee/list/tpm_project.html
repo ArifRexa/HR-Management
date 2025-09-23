@@ -124,6 +124,7 @@
                           <li>
                             {{ project.title }}
                             ({% for hours in result.last_four_project_hours|get_item:project.id %}{{hours|floatformat:0}}{% if not forloop.last %},{% endif %}{% endfor %})
+                             {% if project.id %} <a href="{% url 'admin:project_hour_graph' project.id %}" target="_blank">📈</a> {% endif %}
                           </li>
                         {% endfor %}
                       </ul>
