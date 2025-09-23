@@ -307,7 +307,7 @@ class GraphView(admin.ModelAdmin):
             "date__year",
         ).annotate(
             total_hour = Sum("hours"),
-        ).order_by("date__month", "date__year")
+        ).order_by("date__year", "date__month")
 
         for monthly_project_hour in monthly_project_hours:
             month_num = str(monthly_project_hour.get("date__month")).zfill(2)
