@@ -330,9 +330,11 @@ class GraphView(admin.ModelAdmin):
     
     def _get_client_all_projects_dataset(self, client_id):
         dataset = []
+        start_date = datetime.date.today() - relativedelta(years=1)
         projects = Project.objects.only("title").filter(client_id=client_id)
         for project in projects:
             project_hours = ProjectHour.objects.filter(
+                date__gte=start_date,
                 project_id=project.id
             ).values("date").annotate(
                 total_hour = Sum("hours")
