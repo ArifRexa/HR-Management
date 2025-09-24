@@ -464,7 +464,7 @@ class ProjectListView(ListAPIView):
     def get_queryset(self):
         return Project.objects.select_related('client').prefetch_related(
             'platforms', 'categories_tags', 'industries', 'services', 'technology'
-        ).filter(active=True)
+        ).filter(show_in_website=True)
     
 
 class ProjectDetailView(RetrieveAPIView):

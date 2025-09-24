@@ -31,9 +31,9 @@
     {{ inline_admin_formset.formset.management_form }}
     <fieldset class="module {{ inline_admin_formset.classes }}">
       {% if inline_admin_formset.formset.max_num == 1 %}
-      <h2>{{ inline_admin_formset.opts.verbose_name|capfirst }}</h2>
+        <h2>{{ inline_admin_formset.opts.verbose_name|capfirst }}</h2>
       {% else %}
-      <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+        <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
       {% endif %}
       {{ inline_admin_formset.formset.non_form_errors }}
 
@@ -42,102 +42,100 @@
           <tr>
             <th class="original"></th>
             {% for field in inline_admin_formset.fields %}
-            {% if not field.widget.is_hidden %}
-            {% with sort_field=field.name %}
-            {% if request.GET.sort == sort_field %}
-            {% if request.GET.order == 'desc' %}
-            <th class="column-{{ field.name }} required scl sort-desc" data-sort="{{ sort_field }}" data-order="asc">
-              {{ field.label|capfirst }}
-            </th>
-            {% else %}
-            <th class="column-{{ field.name }} required scl sort-asc" data-sort="{{ sort_field }}" data-order="desc">
-              {{ field.label|capfirst }}
-            </th>
-            {% endif %}
-            {% else %}
-            <th class="column-{{ field.name }} required scl" data-sort="{{ sort_field }}" data-order="asc">
-              {{ field.label|capfirst }}
-            </th>
-            {% endif %}
-            {% endwith %}
-            {% if field.help_text %}
-            <img src="{% static 'admin/img/icon-unknown.svg' %}" class="help help-tooltip" width="10" height="10"
-              alt="({{ field.help_text|striptags }})" title="{{ field.help_text|striptags }}">
-            {% endif %}
-            {% endif %}
+              {% if not field.widget.is_hidden %}
+                {% with sort_field=field.name %}
+                  {% if request.GET.sort == sort_field %}
+                    {% if request.GET.order == 'desc' %}
+                      <th class="column-{{ field.name }} required scl sort-desc" data-sort="{{ sort_field }}" data-order="asc">
+                        {{ field.label|capfirst }}
+                      </th>
+                    {% else %}
+                      <th class="column-{{ field.name }} required scl sort-asc" data-sort="{{ sort_field }}" data-order="desc">
+                        {{ field.label|capfirst }}
+                      </th>
+                    {% endif %}
+                  {% else %}
+                    <th class="column-{{ field.name }} required scl" data-sort="{{ sort_field }}" data-order="asc">
+                      {{ field.label|capfirst }}
+                    </th>
+                  {% endif %}
+                {% endwith %}
+                {% if field.help_text %}
+                  <img src="{% static 'admin/img/icon-unknown.svg' %}" class="help help-tooltip" width="10" height="10"
+                    alt="({{ field.help_text|striptags }})" title="{{ field.help_text|striptags }}">
+                {% endif %}
+              {% endif %}
             {% endfor %}
             {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
-            <th>{% translate "Delete?" %}</th>
+              <th>{% translate "Delete?" %}</th>
             {% endif %}
           </tr>
         </thead>
 
         <tbody>
           {% for inline_admin_form in inline_admin_formset %}
-          {% if inline_admin_form.form.non_field_errors %}
-          <tr class="row-form-errors">
-            <td colspan="{{ inline_admin_form|cell_count }}">{{ inline_admin_form.form.non_field_errors }}</td>
-          </tr>
-          {% endif %}
-          <tr
-            class="form-row {% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form{% endif %}"
-            id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+            {% if inline_admin_form.form.non_field_errors %}
+              <tr class="row-form-errors">
+                <td colspan="{{ inline_admin_form|cell_count }}">{{ inline_admin_form.form.non_field_errors }}</td>
+              </tr>
+            {% endif %}
+            <tr
+              class="form-row {% if inline_admin_form.original or inline_admin_form.show_url %}has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} empty-form{% endif %}"
+              id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
 
-            <td class="original">
-              {% if inline_admin_form.original or inline_admin_form.show_url %}
-              <p>
-                {% if inline_admin_form.original %}
-                {{ inline_admin_form.original }}
-                {% if inline_admin_form.model_admin.show_change_link and
-                inline_admin_form.model_admin.has_registered_model %}
-                <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}"
-                  class="{% if inline_admin_formset.has_change_permission %}inlinechangelink{% else %}inlineviewlink{% endif %}">
-                  {% if inline_admin_formset.has_change_permission %}{% translate "Change" %}{% else %}{% translate
-                  "View" %}{% endif %}
-                </a>
+              <td class="original">
+                {% if inline_admin_form.original or inline_admin_form.show_url %}
+                  <p>
+                    {% if inline_admin_form.original %}
+                      {{ inline_admin_form.original }}
+                      {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
+                        <a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}"
+                           class="{% if inline_admin_formset.has_change_permission %}inlinechangelink{% else %}inlineviewlink{% endif %}">
+                          {% if inline_admin_formset.has_change_permission %}{% translate "Change" %}{% else %}{% translate "View" %}{% endif %}
+                        </a>
+                      {% endif %}
+                    {% endif %}
+                    {% if inline_admin_form.show_url %}
+                      <a href="{{ inline_admin_form.absolute_url }}">{% translate "View on site" %}</a>
+                    {% endif %}
+                  </p>
                 {% endif %}
-                {% endif %}
-                {% if inline_admin_form.show_url %}
-                <a href="{{ inline_admin_form.absolute_url }}">{% translate "View on site" %}</a>
-                {% endif %}
-              </p>
-              {% endif %}
-              {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
-              {% if inline_admin_form.fk_field %}{{ inline_admin_form.fk_field.field }}{% endif %}
-              {% spaceless %}
-              {% for fieldset in inline_admin_form %}
-              {% for line in fieldset %}
-              {% for field in line %}
-              {% if not field.is_readonly and field.field.is_hidden %}{{ field.field }}{% endif %}
-              {% endfor %}
-              {% endfor %}
-              {% endfor %}
-              {% endspaceless %}
-            </td>
-
-            {% for fieldset in inline_admin_form %}
-            {% for line in fieldset %}
-            {% for field in line %}
-            {% if field.is_readonly or not field.field.is_hidden %}
-            <td{% if field.field.name %} class="field-{{ field.field.name }}" {% endif %}>
-              {% if field.is_readonly %}
-              <p>{{ field.contents }}</p>
-              {% else %}
-              {{ field.field.errors.as_ul }}
-              {{ field.field }}
-              {% endif %}
+                {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
+                {% if inline_admin_form.fk_field %}{{ inline_admin_form.fk_field.field }}{% endif %}
+                {% spaceless %}
+                  {% for fieldset in inline_admin_form %}
+                    {% for line in fieldset %}
+                      {% for field in line %}
+                        {% if not field.is_readonly and field.field.is_hidden %}{{ field.field }}{% endif %}
+                      {% endfor %}
+                    {% endfor %}
+                  {% endfor %}
+                {% endspaceless %}
               </td>
-              {% endif %}
-              {% endfor %}
-              {% endfor %}
+
+              {% for fieldset in inline_admin_form %}
+                {% for line in fieldset %}
+                  {% for field in line %}
+                    {% if field.is_readonly or not field.field.is_hidden %}
+                      <td{% if field.field.name %} class="field-{{ field.field.name }}"{% endif %}>
+                        {% if field.is_readonly %}
+                          <p>{{ field.contents }}</p>
+                        {% else %}
+                          {{ field.field.errors.as_ul }}
+                          {{ field.field }}
+                        {% endif %}
+                      </td>
+                    {% endif %}
+                  {% endfor %}
+                {% endfor %}
               {% endfor %}
 
               {% if inline_admin_formset.formset.can_delete and inline_admin_formset.has_delete_permission %}
-              <td class="delete">
-                {% if inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}
-              </td>
+                <td class="delete">
+                  {% if inline_admin_form.original %}{{ inline_admin_form.deletion_field.field }}{% endif %}
+                </td>
               {% endif %}
-          </tr>
+            </tr>
           {% endfor %}
         </tbody>
       </table>
@@ -145,9 +143,8 @@
   </div>
 </div>
 
-
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     const table = document.getElementById("employee-salary-table");
     const headers = table.querySelectorAll("th.scl");
 
@@ -155,84 +152,84 @@
     const originalRows = Array.from(table.querySelectorAll("tbody tr")).map(row => row.cloneNode(true));
 
     headers.forEach((header, headerIndex) => {
-      // Data columns start at index 1 because first <td> is .original
-      const dataCellIndex = headerIndex + 1;
+        // Data columns start at index 1 because first <td> is .original
+        const dataCellIndex = headerIndex + 1;
 
-      header.addEventListener("click", function () {
-        let currentOrder = header.getAttribute("data-order") || "default";
-        let newOrder;
+        header.addEventListener("click", function () {
+            let currentOrder = header.getAttribute("data-order") || "default";
+            let newOrder;
 
-        // Cycle: default → asc → desc → default
-        if (currentOrder === "default") {
-          newOrder = "asc";
-        } else if (currentOrder === "asc") {
-          newOrder = "desc";
-        } else {
-          newOrder = "default";
-        }
+            // Cycle: default → asc → desc → default
+            if (currentOrder === "default") {
+                newOrder = "asc";
+            } else if (currentOrder === "asc") {
+                newOrder = "desc";
+            } else {
+                newOrder = "default";
+            }
 
-        // Reset all headers
-        headers.forEach(h => {
-          h.classList.remove("sort-asc", "sort-desc");
-          h.setAttribute("data-order", "default");
+            // Reset all headers
+            headers.forEach(h => {
+                h.classList.remove("sort-asc", "sort-desc");
+                h.setAttribute("data-order", "default");
+            });
+
+            // Apply state to clicked header
+            header.setAttribute("data-order", newOrder);
+            if (newOrder === "asc") header.classList.add("sort-asc");
+            if (newOrder === "desc") header.classList.add("sort-desc");
+
+            const tbody = table.querySelector("tbody");
+            let rows = Array.from(tbody.querySelectorAll("tr"));
+
+            if (newOrder === "default") {
+                // Restore original order
+                tbody.innerHTML = ''; // Clear
+                originalRows.forEach(row => tbody.appendChild(row.cloneNode(true)));
+                return;
+            }
+
+            // Detect if column is numeric (try parsing first 5 non-empty cells)
+            let isNumeric = true;
+            let sampleCount = 0;
+            for (let row of rows) {
+                if (sampleCount >= 5) break;
+                let cellText = row.cells[dataCellIndex]?.innerText.trim() || '';
+                if (cellText === '') continue;
+                sampleCount++;
+                if (isNaN(parseFloat(cellText.replace(/[^\d.-]/g, '')))) {
+                    isNumeric = false;
+                    break;
+                }
+            }
+
+            // Sort function
+            rows.sort((a, b) => {
+                let cellA = a.cells[dataCellIndex]?.innerText.trim() || '';
+                let cellB = b.cells[dataCellIndex]?.innerText.trim() || '';
+
+                let valA, valB;
+
+                if (isNumeric) {
+                    // Clean non-numeric chars (e.g., $, commas)
+                    valA = parseFloat(cellA.replace(/[^\d.-]/g, '')) || 0;
+                    valB = parseFloat(cellB.replace(/[^\d.-]/g, '')) || 0;
+                } else {
+                    valA = cellA.toLowerCase();
+                    valB = cellB.toLowerCase();
+                }
+
+                if (newOrder === "asc") {
+                    return valA > valB ? 1 : (valA < valB ? -1 : 0);
+                } else { // desc
+                    return valA < valB ? 1 : (valA > valB ? -1 : 0);
+                }
+            });
+
+            // Re-render
+            tbody.innerHTML = '';
+            rows.forEach(row => tbody.appendChild(row));
         });
-
-        // Apply state to clicked header
-        header.setAttribute("data-order", newOrder);
-        if (newOrder === "asc") header.classList.add("sort-asc");
-        if (newOrder === "desc") header.classList.add("sort-desc");
-
-        const tbody = table.querySelector("tbody");
-        let rows = Array.from(tbody.querySelectorAll("tr"));
-
-        if (newOrder === "default") {
-          // Restore original order
-          tbody.innerHTML = ''; // Clear
-          originalRows.forEach(row => tbody.appendChild(row.cloneNode(true)));
-          return;
-        }
-
-        // Detect if column is numeric (try parsing first 5 non-empty cells)
-        let isNumeric = true;
-        let sampleCount = 0;
-        for (let row of rows) {
-          if (sampleCount >= 5) break;
-          let cellText = row.cells[dataCellIndex]?.innerText.trim() || '';
-          if (cellText === '') continue;
-          sampleCount++;
-          if (isNaN(parseFloat(cellText.replace(/[^\d.-]/g, '')))) {
-            isNumeric = false;
-            break;
-          }
-        }
-
-        // Sort function
-        rows.sort((a, b) => {
-          let cellA = a.cells[dataCellIndex]?.innerText.trim() || '';
-          let cellB = b.cells[dataCellIndex]?.innerText.trim() || '';
-
-          let valA, valB;
-
-          if (isNumeric) {
-            // Clean non-numeric chars (e.g., $, commas)
-            valA = parseFloat(cellA.replace(/[^\d.-]/g, '')) || 0;
-            valB = parseFloat(cellB.replace(/[^\d.-]/g, '')) || 0;
-          } else {
-            valA = cellA.toLowerCase();
-            valB = cellB.toLowerCase();
-          }
-
-          if (newOrder === "asc") {
-            return valA > valB ? 1 : (valA < valB ? -1 : 0);
-          } else { // desc
-            return valA < valB ? 1 : (valA > valB ? -1 : 0);
-          }
-        });
-
-        // Re-render
-        tbody.innerHTML = '';
-        rows.forEach(row => tbody.appendChild(row));
-      });
     });
-  });
+});
 </script>
