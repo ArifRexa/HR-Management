@@ -332,6 +332,33 @@ class GraphView(admin.ModelAdmin):
         dataset = []
         start_date = datetime.date.today() - relativedelta(years=1)
         projects = Project.objects.only("title").filter(client_id=client_id)
+
+        # for all project
+        all_project_hours = ProjectHour.objects.filter(
+            date__gte=start_date,
+            project_id__in=projects.values_list("id", flat=True),
+        ).values("date").annotate(
+            total_hour = Sum("hours")
+        ).order_by("date")
+        if all_project_hours.exists():
+            data = []
+            for project_hour in all_project_hours:
+                timestamp = int(
+                    datetime.datetime.combine(
+                        project_hour.get("date"),
+                        datetime.datetime.min.time()
+                    ).timestamp()
+                )
+                data.append([timestamp * 1000, project_hour.get("total_hour")])
+            dataset.append(
+                {
+                    "type": "spline",
+                    "name": "All Projects",
+                    "data": data,
+                }
+            )
+        
+        # for project by project
         for project in projects:
             project_hours = ProjectHour.objects.filter(
                 date__gte=start_date,

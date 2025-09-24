@@ -25,11 +25,15 @@
 
     <script>
 
-        let series =
-            {{ series | safe }};
+        let series = {{ series | safe }};
 
         series.map(value => {
-            value['visible'] = false
+            if(value.name === "All Projects"){
+                value['visible'] = true;
+            }
+            else{
+                value['visible'] = false;
+            }
             return value
         });
 
