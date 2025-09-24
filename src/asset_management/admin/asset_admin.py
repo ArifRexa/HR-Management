@@ -28,9 +28,12 @@ from asset_management.models.asset import (
     AssetRequestNote,
     AssetRequestStatus,
     AssetVariant,
+    CasingBrand,
     MonitorSize,
     PriorityChoices,
+    ProcessorData,
     RAMSize,
+    SSDorHDDSize,
 )
 
 # @admin.register(AssetCategory)
@@ -529,11 +532,34 @@ class AssetBrandModelAdmin(admin.ModelAdmin):
 @admin.register(RAMSize)
 class RAMSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "ram_capacity"]
+    search_fields = ["ram_capacity", ]
+    
 
 
 @admin.register(MonitorSize)
 class MonitorSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "display_size"]
+    search_fields = ["display_size", ]
+
+
+@admin.register(SSDorHDDSize)
+class SSDorHDDSizeModelAdmin(admin.ModelAdmin):
+    list_display = ["id", "storage_capacity"]
+    search_fields = ["storage_capacity"]
+
+
+
+@admin.register(CasingBrand)
+class CasingBrandModelAdmin(admin.ModelAdmin):
+    list_display = ["id", "name"]
+    search_fields = ["name"]
+
+
+@admin.register(ProcessorData)
+class ProcessorDataModelAdmin(admin.ModelAdmin):
+    list_display = ["id", "processor_info"]
+    search_fields = ["processor_info"]
+
 
 
 @admin.register(FixedAsset)
@@ -546,18 +572,24 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "purchase_date",
         "warranty_duration",
         "serial",
-        "processor",
+        "core",
         "ram_size",
-        "storage",
+        "storage_size",
         "display_size",
         "gpu",
         "other_specs",
         "is_active",
     ]
     search_fields = [
-        "category",
-        "brand",
-        "vendor",
+        "category__name",
+        "brand__name",
+        "vendor__name",
+        "ram_size__ram_capacity",
+        "storage_size__storage_capacity",
+        "display_size__display_size",
+        "core__processor_info",
+        "gpu",
+        "other_specs",
     ]
 
     fields = [
@@ -568,9 +600,9 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "purchase_date",
         "warranty_duration",
         "serial",
-        "processor",
+        "core",
         "ram_size",
-        "storage",
+        "storage_size",
         "display_size",
         "gpu",
         "other_specs",
@@ -586,12 +618,21 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "brand",
         "vendor",
     ]
+    actions = [
+        "make_inactive",
+    ]
 
     def save_model(self, request, obj, form, change):
         if getattr(obj, 'id') is None:
             asset_number = FixedAsset.objects.filter(category=obj.category).count() + 1
             obj.asset_id = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{asset_number}"
         return super().save_model(request, obj, form, change)
+
+
+    @admin.action(description="Mark selected FixedAsset as inactive.")
+    def make_inactive(modeladmin, request, queryset):
+        queryset.update(is_active=False)
+
 
     class Media:
         js = ("js/fixedasset.js",)
@@ -601,7 +642,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
 class CPUModelAdmin(admin.ModelAdmin):
     list_display = [
         "id",
-        "serial",
+        "casing",
         "asset_id",
         "processor",
         "ram1",
@@ -620,14 +661,14 @@ class CPUModelAdmin(admin.ModelAdmin):
         "gpu",
     ]
     search_fields = [
-        "serial",
+        "casing__name",
         "asset_id",
-        "processor",
-        "ram1",
-        "ram2",
-        "ssd",
-        "hdd",
-        "gpu",
+        "processor__asset_id",
+        "ram1__asset_id",
+        "ram2__asset_id",
+        "ssd__asset_id",
+        "hdd__asset_id",
+        "gpu__asset_id",
     ]
 
     def save_model(self, request, obj, form, change):
