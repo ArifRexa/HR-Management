@@ -18,6 +18,7 @@ from django.db.models import (
     Prefetch,
     Sum,
     When,
+    Count,
 )
 from django.db.models.functions import Coalesce, TruncMonth
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
@@ -361,7 +362,7 @@ class ClientAdmin(admin.ModelAdmin):
                 actions.pop("export_to_pdf", None)
         return actions
     
-    @admin.display(description="Attachments")
+    @admin.display(description="Attachments", ordering="attachment_count")
     def get_attachments(self, obj):
         attachments = obj.clientattachment_set.all()
         if not attachments:
@@ -480,113 +481,13 @@ class ClientAdmin(admin.ModelAdmin):
         return format_html("<br>".join(client_referrals))
 
 
-
-
-    # @admin.display(description="Hourly Rate", ordering="hourly_rate")
-    # def get_hourly_rate(self, obj):
-    #     rate_display = "-"
-    #     if obj.hourly_rate is not None:
-    #         # Get currency icon
-    #         currency_icon = obj.currency.icon if obj.currency else ""
-
-    #         # Create the display string with icon
-    #         rate_display = f"{currency_icon} {obj.hourly_rate}"
-
-    #     html_template = get_template(
-    #         "admin/project_management/list/client_info.html"
-    #     )
-    #     html_content = html_template.render(
-    #         {
-    #             "projects": obj.project_set.all(),
-    #             "client_obj": obj,
-    #             "rate_display": rate_display,
-    #             "client_review": obj.review.all().values_list(
-    #                 "name", flat=True
-    #             ),
-    #         }
-    #     )
-    #     try:
-    #         data = format_html(html_content)
-    #     except:
-    #         data = "-"
-    #     return data
-
     # Inside your ClientAdmin class
 
     from django.utils.html import format_html
     from django.utils import timezone
     from datetime import timedelta
 
-    # @admin.display(description="Hourly Rate", ordering="hourly_rate")
-    # def get_hourly_rate(self, obj):
-    #     # Use prefetched history if available
-    #     histories = getattr(obj, 'prefetched_hourly_rate_history', None)
-    #     if histories is None:
-    #         histories = obj.hourly_rate_history.all().order_by('-starting_date')
-
-    #     rate_lines = []
-
-    #     # Handle legacy case: no history but hourly_rate is set
-    #     if not histories and obj.hourly_rate is not None:
-    #         currency_icon = obj.currency.icon if obj.currency else ""
-    #         rate_display = f"{currency_icon} {obj.hourly_rate}" if currency_icon else str(obj.hourly_rate)
-
-    #         if obj.active_from:
-    #             six_months_ago = timezone.now().date() - timedelta(days=180)
-    #             if obj.active_from <= six_months_ago:
-    #                 rate_display = format_html(
-    #                     '<span style="color: red; font-weight: bold;">{}</span>',
-    #                     rate_display
-    #                 )
-    #             else:
-    #                 rate_display = format_html('<span>{}</span>', rate_display)
-    #         else:
-    #             rate_display = format_html('<span>{}</span>', rate_display)
-
-    #         rate_lines.append(rate_display)
-
-    #     # Process historical records
-    #     for idx, history in enumerate(histories):
-    #         currency_icon = obj.currency.icon if obj.currency else ""
-    #         rate_display = f"{currency_icon} {history.hourly_rate}" if currency_icon else str(history.hourly_rate)
-
-    #         if idx == 0:  # Current rate
-    #             if history.starting_date:
-    #                 six_months_ago = timezone.now().date() - timedelta(days=180)
-    #                 if history.starting_date <= six_months_ago:
-    #                     rate_display = format_html(
-    #                         '<span style="color: red; font-weight: bold;">{}</span>',
-    #                         rate_display
-    #                     )
-    #                 else:
-    #                     rate_display = format_html('<span>{}</span>', rate_display)
-    #             else:
-    #                 rate_display = format_html('<span>{}</span>', rate_display)
-
-    #         rate_lines.append(rate_display)
-
-    #     # Final rate_display string for template — join with <br>
-    #     final_rate_display = format_html("<br>".join(rate_lines)) if rate_lines else "-"
-
-    #     # Render your original template — now with enhanced rate_display
-    #     html_template = get_template(
-    #         "admin/project_management/list/client_info.html"
-    #     )
-    #     html_content = html_template.render(
-    #         {
-    #             "projects": obj.project_set.all(),
-    #             "client_obj": obj,
-    #             "rate_display": final_rate_display,  # ← INJECTED HERE
-    #             "client_review": obj.review.all().values_list("name", flat=True),
-    #         }
-    #     )
-
-    #     try:
-    #         return format_html(html_content)
-    #     except Exception:
-    #         return "-"
-
-
+   
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
         # Use prefetched history if available
@@ -936,21 +837,6 @@ class ClientAdmin(admin.ModelAdmin):
     # def has_module_permission(self, request):
     #     return False
 
-    # def get_queryset(self, request):
-    #     queryset = super().get_queryset(request)
-    #     current_date = timezone.now().date()
-
-    #     active_from = F("active_from")
-    #     inactive_from = F("inactive_from")
-    #     queryset = queryset.annotate(
-    #         duration_in_days=ExpressionWrapper(
-    #             expression=functions.Coalesce(inactive_from, current_date) - functions.Coalesce(active_from, current_date),
-    #             output_field=DurationField(),
-    #         )
-    #     )
-
-    #     return queryset
-
 
 
     # def get_queryset(self, request):
@@ -959,6 +845,7 @@ class ClientAdmin(admin.ModelAdmin):
     #     income_filter = models.Q(project__income__status="approved")
     #     active_from = F("active_from")
     #     inactive_from = F("inactive_from")
+
     #     queryset = queryset.annotate(
     #         duration_in_days=ExpressionWrapper(
     #             expression=Coalesce(inactive_from, current_date)
@@ -980,11 +867,17 @@ class ClientAdmin(admin.ModelAdmin):
     #             0.0,
     #             output_field=DecimalField(max_digits=10, decimal_places=2),
     #         ),
+    #     ).prefetch_related(
+    #         Prefetch(
+    #             "hourly_rate_history",
+    #             queryset=ClientHistory.objects.all().order_by('-starting_date'),
+    #             to_attr="prefetched_hourly_rate_history"
+    #         )
     #     )
 
     #     return queryset
 
-    # Inside your ClientAdmin class
+    from django.db.models import Count
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -1004,9 +897,7 @@ class ClientAdmin(admin.ModelAdmin):
                     ExpressionWrapper(
                         F("project__income__hours")
                         * F("project__income__hour_rate"),
-                        output_field=DecimalField(
-                            max_digits=10, decimal_places=2
-                        ),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
                     ),
                     filter=income_filter,
                     output_field=DecimalField(max_digits=10, decimal_places=2),
@@ -1014,6 +905,7 @@ class ClientAdmin(admin.ModelAdmin):
                 0.0,
                 output_field=DecimalField(max_digits=10, decimal_places=2),
             ),
+            attachment_count=Count('clientattachment'),  # ← Add this
         ).prefetch_related(
             Prefetch(
                 "hourly_rate_history",
