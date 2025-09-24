@@ -517,6 +517,76 @@ class ClientAdmin(admin.ModelAdmin):
     from django.utils import timezone
     from datetime import timedelta
 
+    # @admin.display(description="Hourly Rate", ordering="hourly_rate")
+    # def get_hourly_rate(self, obj):
+    #     # Use prefetched history if available
+    #     histories = getattr(obj, 'prefetched_hourly_rate_history', None)
+    #     if histories is None:
+    #         histories = obj.hourly_rate_history.all().order_by('-starting_date')
+
+    #     rate_lines = []
+
+    #     # Handle legacy case: no history but hourly_rate is set
+    #     if not histories and obj.hourly_rate is not None:
+    #         currency_icon = obj.currency.icon if obj.currency else ""
+    #         rate_display = f"{currency_icon} {obj.hourly_rate}" if currency_icon else str(obj.hourly_rate)
+
+    #         if obj.active_from:
+    #             six_months_ago = timezone.now().date() - timedelta(days=180)
+    #             if obj.active_from <= six_months_ago:
+    #                 rate_display = format_html(
+    #                     '<span style="color: red; font-weight: bold;">{}</span>',
+    #                     rate_display
+    #                 )
+    #             else:
+    #                 rate_display = format_html('<span>{}</span>', rate_display)
+    #         else:
+    #             rate_display = format_html('<span>{}</span>', rate_display)
+
+    #         rate_lines.append(rate_display)
+
+    #     # Process historical records
+    #     for idx, history in enumerate(histories):
+    #         currency_icon = obj.currency.icon if obj.currency else ""
+    #         rate_display = f"{currency_icon} {history.hourly_rate}" if currency_icon else str(history.hourly_rate)
+
+    #         if idx == 0:  # Current rate
+    #             if history.starting_date:
+    #                 six_months_ago = timezone.now().date() - timedelta(days=180)
+    #                 if history.starting_date <= six_months_ago:
+    #                     rate_display = format_html(
+    #                         '<span style="color: red; font-weight: bold;">{}</span>',
+    #                         rate_display
+    #                     )
+    #                 else:
+    #                     rate_display = format_html('<span>{}</span>', rate_display)
+    #             else:
+    #                 rate_display = format_html('<span>{}</span>', rate_display)
+
+    #         rate_lines.append(rate_display)
+
+    #     # Final rate_display string for template — join with <br>
+    #     final_rate_display = format_html("<br>".join(rate_lines)) if rate_lines else "-"
+
+    #     # Render your original template — now with enhanced rate_display
+    #     html_template = get_template(
+    #         "admin/project_management/list/client_info.html"
+    #     )
+    #     html_content = html_template.render(
+    #         {
+    #             "projects": obj.project_set.all(),
+    #             "client_obj": obj,
+    #             "rate_display": final_rate_display,  # ← INJECTED HERE
+    #             "client_review": obj.review.all().values_list("name", flat=True),
+    #         }
+    #     )
+
+    #     try:
+    #         return format_html(html_content)
+    #     except Exception:
+    #         return "-"
+
+
     @admin.display(description="Hourly Rate", ordering="hourly_rate")
     def get_hourly_rate(self, obj):
         # Use prefetched history if available
@@ -529,41 +599,45 @@ class ClientAdmin(admin.ModelAdmin):
         # Handle legacy case: no history but hourly_rate is set
         if not histories and obj.hourly_rate is not None:
             currency_icon = obj.currency.icon if obj.currency else ""
-            rate_display = f"{currency_icon} {obj.hourly_rate}" if currency_icon else str(obj.hourly_rate)
+            rate_value = obj.hourly_rate
+            date_str = obj.active_from.strftime("%d-%m-%Y") if obj.active_from else "—"
+            display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
 
             if obj.active_from:
                 six_months_ago = timezone.now().date() - timedelta(days=180)
                 if obj.active_from <= six_months_ago:
-                    rate_display = format_html(
+                    display_text = format_html(
                         '<span style="color: red; font-weight: bold;">{}</span>',
-                        rate_display
+                        display_text
                     )
                 else:
-                    rate_display = format_html('<span>{}</span>', rate_display)
+                    display_text = format_html('<span>{}</span>', display_text)
             else:
-                rate_display = format_html('<span>{}</span>', rate_display)
+                display_text = format_html('<span>{}</span>', display_text)
 
-            rate_lines.append(rate_display)
+            rate_lines.append(display_text)
 
         # Process historical records
         for idx, history in enumerate(histories):
             currency_icon = obj.currency.icon if obj.currency else ""
-            rate_display = f"{currency_icon} {history.hourly_rate}" if currency_icon else str(history.hourly_rate)
+            rate_value = history.hourly_rate
+            date_str = history.starting_date.strftime("%d-%m-%Y") if history.starting_date else "—"
+            display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
 
             if idx == 0:  # Current rate
                 if history.starting_date:
                     six_months_ago = timezone.now().date() - timedelta(days=180)
                     if history.starting_date <= six_months_ago:
-                        rate_display = format_html(
+                        display_text = format_html(
                             '<span style="color: red; font-weight: bold;">{}</span>',
-                            rate_display
+                            display_text
                         )
                     else:
-                        rate_display = format_html('<span>{}</span>', rate_display)
+                        display_text = format_html('<span>{}</span>', display_text)
                 else:
-                    rate_display = format_html('<span>{}</span>', rate_display)
+                    display_text = format_html('<span>{}</span>', display_text)
 
-            rate_lines.append(rate_display)
+            rate_lines.append(display_text)
 
         # Final rate_display string for template — join with <br>
         final_rate_display = format_html("<br>".join(rate_lines)) if rate_lines else "-"
@@ -585,9 +659,6 @@ class ClientAdmin(admin.ModelAdmin):
             return format_html(html_content)
         except Exception:
             return "-"
-
-
-
 
 
 
