@@ -47,7 +47,6 @@
 
         <!-- View Type Buttons -->
         <div>
-            <button id="dailyBtn" onclick="updateChart('daily')">Daily</button>
             <button id="weeklyBtn" class="active" onclick="updateChart('weekly')">Weekly</button>
             <button id="monthlyBtn" onclick="updateChart('monthly')">Monthly</button>
         </div>
@@ -83,7 +82,6 @@
                     datasets: [{
                         label: chartData[view].label,
                         data: chartData[view].data,
-                        extraInfo: chartData[view].per_day_count,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
                             'rgba(255, 99, 132, 0.2)',
@@ -120,30 +118,6 @@
                                 size: 14  // optional: tooltip footer font size
                             },
                             displayColors: false,
-                            backgroundColor: function(context) {
-                                console.log()
-                                const value = parseFloat(context.tooltip.body[0].lines[0].split(" ")[2].replace(' ', ''));
-                                const target_hour = chartData[view].target_hour | 0;
-                                if(target_hour == 0){
-                                    return '';
-                                }
-                                else if (value >= target_hour) return 'rgba(144, 238, 144, 0.5)'; // green
-                                else return 'rgba(200, 0, 0, 0.5)'; // red
-                            },
-                            callbacks: {
-                                // label: function(context) {
-                                //     return `${context.dataset.label} ${context.raw}`;
-                                // },
-                                footer: function(context) {
-                                    const dataset = context[0].dataset;
-                                    const index = context[0].dataIndex;
-                                    if (dataset.extraInfo.length === 0) {
-                                        return '';
-                                    }
-                                    const extra = dataset.extraInfo[index];
-                                    return `${extra.length}(${extra})`;
-                                },
-                            }
                         },
                         legend: {
                             labels: {
@@ -152,28 +126,6 @@
                                 }
                             }
                         },
-                        annotation: {
-                            annotations: {
-                                targetLine: {
-                                    type: 'line',
-                                    yMin: chartData[view].target_hour || 0,
-                                    yMax: chartData[view].target_hour || 0,
-                                    borderColor: 'red',
-                                    borderWidth: 1,
-                                    borderDash: [0, 0],
-                                    // label: {
-                                    //     enabled: true,
-                                    //     content: `Target: ${chartData[view].target_hour || 0}`,
-                                    //     position: 'center',
-                                    //     backgroundColor: 'rgba(255, 182, 193, 0.9)',
-                                    //     font: {
-                                    //         size: 20,
-                                    //     },
-                                    //     padding: 6,
-                                    // }
-                                }
-                            }
-                        }
                     },
                     scales: {
                         y: {
@@ -192,7 +144,6 @@
             myChart = new Chart(ctx, getConfig(currentType, currentView));
 
             const buttons = {
-                'daily': document.getElementById('dailyBtn'),
                 'weekly': document.getElementById('weeklyBtn'),
                 'monthly': document.getElementById('monthlyBtn')
             };

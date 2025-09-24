@@ -26,6 +26,12 @@
 {{ block.super }}
 {{ media.js }}
 <script src="{% static 'admin/js/filters.js' %}" defer></script>
+
+<script>
+  window.addEventListener('load', () => {
+  document.getElementById('main').classList.remove('shifted');
+});
+</script>
 {% endblock %}
 
 {% block bodyclass %}{{ block.super }} app-{{ opts.app_label }} model-{{ opts.model_name }} change-list{% endblock %}
@@ -124,6 +130,7 @@
                           <li>
                             {{ project.title }}
                             ({% for hours in result.last_four_project_hours|get_item:project.id %}{{hours|floatformat:0}}{% if not forloop.last %},{% endif %}{% endfor %})
+                             {% if project.id %} <a href="{% url 'admin:project_hour_graph' project.id %}" target="_blank">📈</a> {% endif %}
                           </li>
                         {% endfor %}
                       </ul>
@@ -132,7 +139,10 @@
                       <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">{{result.clients|length}}</span>
                         <ul>
                           {% for client in result.clients %}
-                          <li>{{ client }}</li>
+                          <li>
+                            {{ client }}
+                            {% if client.id %} <a href="{% url 'admin:client_projects_hour_graph' client.id %}" target="_blank">📈</a> {% endif %}
+                          </li>
                           {% endfor %}
                         </ul>
                     </td>
