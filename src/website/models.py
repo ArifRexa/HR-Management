@@ -1652,3 +1652,13 @@ class Certification(models.Model):
 
     def __str__(self):
         return self.title
+    
+
+class ArchivePage(TimeStampMixin):
+    seo_title = models.CharField(max_length=200, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+    image = models.ImageField(upload_to="archive_page", null=True, blank=True)
+    def __str__(self):
+        return self.section_title

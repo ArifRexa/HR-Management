@@ -30,6 +30,7 @@ from settings.models import Designation
 from website.models import (
     FAQ,
     AdditionalPages,
+    ArchivePage,
     Award,
     AwardCategory,
     Awards,
@@ -67,6 +68,7 @@ from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 from website.serializers import (
     AdditionalPagesSerializer,
+    ArchivePageSerializer,
     AvailableTagSerializer,
     AwardCategoryListResponseSerializer,
     AwardCategorySerializer,
@@ -1897,3 +1899,17 @@ class CertificationListView(APIView):
         certifications = Certification.objects.all()
         serializer = CertificationSerializer(certifications, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class ArchivePageView(ListAPIView):
+    queryset = ArchivePage.objects.all()
+    serializer_class = ArchivePageSerializer
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        operation_description="Retrieve detailed information about the archive page",
+        responses={200: ArchivePageSerializer},
+        tags=['Archive Page']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
