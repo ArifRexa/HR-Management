@@ -3,14 +3,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Select the rows of fields you may want to remove
     const displaySizeRow = document.querySelector(".form-row.field-display_size");
-    const processorRow = document.querySelector(".form-row.field-processor");
+    const coreRow = document.querySelector(".form-row.field-core");
     const ramRow = document.querySelector(".form-row.field-ram_size");
-    const storageRow = document.querySelector(".form-row.field-storage");
+    const storageSizeRow = document.querySelector(".form-row.field-storage_size");
     const gpuRow = document.querySelector(".form-row.field-gpu");
     const brandRow = document.querySelector(".form-row.field-brand");
     
     const fields = [
-        processorRow, ramRow, storageRow, displaySizeRow, gpuRow
+        coreRow, ramRow, storageSizeRow, displaySizeRow, gpuRow
     ];
 
     function hideAllRowWithout(selected_field){
@@ -40,11 +40,11 @@ document.addEventListener("DOMContentLoaded", function () {
         if (selectedText === "Monitor") {
             hideAllRowWithout(displaySizeRow);
         } else if (selectedText === "Processor") {
-           hideAllRowWithout(processorRow);
+           hideAllRowWithout(coreRow);
         } else if (selectedText === "RAM") {
            hideAllRowWithout(ramRow);
         } else if (selectedText === "SSD" || selectedText === "HDD") {
-           hideAllRowWithout(storageRow);
+           hideAllRowWithout(storageSizeRow);
         } else if (selectedText === "GPU") {
            hideAllRowWithout(gpuRow);
         }
