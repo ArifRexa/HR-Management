@@ -38,6 +38,7 @@ from website.models import (
     AdditionalPages,
     AllProjectsBanner,
     AllServicesTitle,
+    ArchivePage,
     Award,
     AwardCategory,
     AwardYearGroup,
@@ -2247,3 +2248,7 @@ class ContactFormAdmin(admin.ModelAdmin):
 @admin.register(Certification)
 class CertificationAdmin(admin.ModelAdmin):
     list_display = ("title", )
+
+@admin.register(ArchivePage)
+class ArchivePageAdmin(admin.ModelAdmin):
+    list_display = ("section_title", "section_description")

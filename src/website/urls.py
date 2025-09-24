@@ -6,6 +6,7 @@ from project_management.views import ProjectDetailView, ProjectListView
 from website.models import LifeAtMediusware
 from website.views import (
     AdditionalPageSlugDetailView,
+    ArchivePageView,
     AwardCategoryListView,
     # AdditionalPagesListView,
     AwardListView,
@@ -303,6 +304,7 @@ urlpatterns = [
          name='service-card-titles'),
 
     path('website/certifications-lists/', CertificationListView.as_view(), name='certification-list'),
+    path('website/archive-page/', ArchivePageView.as_view(), name='archive-page'),
 
 ]
 
