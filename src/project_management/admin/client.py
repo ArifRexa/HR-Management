@@ -501,7 +501,7 @@ class ClientAdmin(admin.ModelAdmin):
         if not histories and obj.hourly_rate is not None:
             currency_icon = obj.currency.icon if obj.currency else ""
             rate_value = obj.hourly_rate
-            date_str = obj.active_from.strftime("%d-%m-%Y") if obj.active_from else "—"
+            date_str = obj.active_from.strftime("%d %b %y") if obj.active_from else "—"
             display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
 
             if obj.active_from:
@@ -522,7 +522,7 @@ class ClientAdmin(admin.ModelAdmin):
         for idx, history in enumerate(histories):
             currency_icon = obj.currency.icon if obj.currency else ""
             rate_value = history.hourly_rate
-            date_str = history.starting_date.strftime("%d-%m-%Y") if history.starting_date else "—"
+            date_str = history.starting_date.strftime("%d %b %y") if history.starting_date else "—"
             display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
 
             if idx == 0:  # Current rate
