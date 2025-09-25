@@ -17,7 +17,7 @@
     <div class="popover-message" style="padding: 10px 20px; min-width: 200px;">
         <strong style="font-size: 1.4em;">Projects:</strong> <br>
         {% for project in projects %}
-            <span style="font-size: 1.3em;">{{forloop.counter}}. {{project.title}}</span> {% if forloop.last is not True %}<br>{% endif %}
+            <span style="font-size: 1.3em;">{{forloop.counter}}. {{project.title}} {% if project.hourly_rate is not None %} ({{project.hourly_rate}}) {% endif %}</span> {% if forloop.last is not True %}<br>{% endif %}
         {% endfor %}
         <br><br>
 

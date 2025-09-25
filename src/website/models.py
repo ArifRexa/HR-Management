@@ -31,6 +31,10 @@ class HomePage(TimeStampMixin):
 
     def __str__(self):
         return self.section_title
+    
+    class Meta:
+        verbose_name = "Home Page"
+        verbose_name_plural = "Home Page"
 
 
 class HomePageHeroAnimatedTitle(models.Model):

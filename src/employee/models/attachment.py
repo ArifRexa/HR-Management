@@ -4,7 +4,6 @@ from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
 
-from account.models import get_current_financial_year
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -27,7 +26,7 @@ class DocumentName(models.Model):
 class Attachment(TimeStampMixin, AuthorMixin):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
     # file_name = models.CharField(null=True, blank=True, max_length=155)
-    
+
     file_name = models.ForeignKey(
         DocumentName,
         on_delete=models.SET_NULL,
@@ -44,14 +43,14 @@ class Attachment(TimeStampMixin, AuthorMixin):
             )
         ],
     )
-    tds_year = models.ForeignKey(
-        FinancialYear,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        verbose_name="TDS Year",
-        help_text="Use for Tax Acknowledgement Document",
-    )
+    # tds_year = models.ForeignKey(
+    #     FinancialYear,
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     verbose_name="TDS Year",
+    #     help_text="Use for Tax Acknowledgement Document",
+    # )
 
 
 def get_file_name(given_name, filename):
@@ -61,10 +60,22 @@ def get_file_name(given_name, filename):
     return filename
 
 
-class EmployeeTaxAcknowledgement(Attachment):
-    
+class EmployeeTaxAcknowledgement(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    tds_year = models.ForeignKey(
+        FinancialYear,
+        verbose_name="TDS Year",
+        help_text="Use for Tax Acknowledgement Document",
+        null=True,
+        on_delete=models.SET_NULL,
+    )
+    file = models.FileField(
+        upload_to="tax_acknowledgement/",
+    )
+
     class Meta:
-        proxy = True
         verbose_name = "Tax Acknowledgement"
         verbose_name_plural = "Tax Acknowledgements"
-        permissions = (("view_all_tax_acknowledgement", "View All Tax Acknowledgement"),)
+        permissions = (
+            ("view_all_tax_acknowledgement", "View All Tax Acknowledgement"),
+        )

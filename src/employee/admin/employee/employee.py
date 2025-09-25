@@ -1424,7 +1424,8 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
         "third_year",
         "fourth_year",
     )
-    list_filter = ("employee__active", "employee")
+    list_filter = ("tds_year", "employee")
+    autocomplete_fields = ("employee",)
 
     def _file_link(self, attachment):
         if not attachment:
@@ -1447,7 +1448,7 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
 
         qs = EmployeeTaxAcknowledgement.objects.filter(
             id__in=list(latest_ids)
-        ).select_related("employee", "file_name", "tds_year")
+        ).select_related("employee", "tds_year")
 
         if not request.user.has_perm("employee.view_all_tax_acknowledgement"):
             qs = qs.filter(employee=request.user.employee)
@@ -1463,7 +1464,7 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
             EmployeeTaxAcknowledgement.objects.filter(
                 employee=obj.employee, tds_year=fy
             )
-            .select_related("file_name")
+            .select_related("tds_year", "employee")
             .first()
         )
         return self._file_link(att)
