@@ -262,6 +262,9 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 "boss_rating",
             ]
         return []
+    
+    def has_module_permission(self, request):
+        return False
 
     # def get_queryset(self, request):
     #     qs = super().get_queryset(request)
