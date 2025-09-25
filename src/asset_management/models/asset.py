@@ -590,3 +590,4 @@ class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
         blank=True,
         null=True,
     )
+    is_active = models.BooleanField(default=True)

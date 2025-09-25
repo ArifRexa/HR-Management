@@ -502,7 +502,8 @@ class ClientAdmin(admin.ModelAdmin):
             currency_icon = obj.currency.icon if obj.currency else ""
             rate_value = obj.hourly_rate
             date_str = obj.active_from.strftime("%d %b %y") if obj.active_from else "—"
-            display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
+            display_text = f"{rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
+            # display_text = f"{rate_value} ({date_str})"
 
             if obj.active_from:
                 six_months_ago = timezone.now().date() - timedelta(days=180)
@@ -518,12 +519,13 @@ class ClientAdmin(admin.ModelAdmin):
 
             rate_lines.append(display_text)
 
+
         # Process historical records
         for idx, history in enumerate(histories):
             currency_icon = obj.currency.icon if obj.currency else ""
             rate_value = history.hourly_rate
             date_str = history.starting_date.strftime("%d %b %y") if history.starting_date else "—"
-            display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
+            display_text = f"{rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
 
             if idx == 0:  # Current rate
                 if history.starting_date:
@@ -551,8 +553,9 @@ class ClientAdmin(admin.ModelAdmin):
             {
                 "projects": obj.project_set.all(),
                 "client_obj": obj,
-                "rate_display": final_rate_display,  # ← INJECTED HERE
+                "rate_display": final_rate_display,
                 "client_review": obj.review.all().values_list("name", flat=True),
+                "client_hourly_rate": obj.hourly_rate,  
             }
         )
 
@@ -794,7 +797,7 @@ class ClientAdmin(admin.ModelAdmin):
         #     "red" if red_flags[3] else "inherit", incomes[3],
         # )
         formatted_income = format_html(
-            '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>'
+            '<span style="font-weight: bold; font-size: calc(1rem);">{}</span><br>'
             '<span style="color: {}">{}</span><br>'
             '<span style="color: {}">{}</span><br>'
             '<span style="color: {}">{}</span><br>'
