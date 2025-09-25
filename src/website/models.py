@@ -1666,3 +1666,7 @@ class ArchivePage(TimeStampMixin):
     image = models.ImageField(upload_to="archive_page", null=True, blank=True)
     def __str__(self):
         return self.section_title
+    
+    class Meta:
+        verbose_name = "Page Hero Section"
+        verbose_name_plural = "Page Hero Sections"
