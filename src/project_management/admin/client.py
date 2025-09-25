@@ -551,8 +551,9 @@ class ClientAdmin(admin.ModelAdmin):
             {
                 "projects": obj.project_set.all(),
                 "client_obj": obj,
-                "rate_display": final_rate_display,  # ← INJECTED HERE
+                "rate_display": final_rate_display,
                 "client_review": obj.review.all().values_list("name", flat=True),
+                "client_hourly_rate": obj.hourly_rate,  
             }
         )
 
