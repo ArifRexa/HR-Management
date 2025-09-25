@@ -199,6 +199,11 @@
         <ul class="list-group list-group-horizontal-md float-end remove-float-end-on-mobile" style="margin-right: 20px;">
           {% if not request.user.is_superuser%}
           <div style="display: flex; align-items: center; justify-content: space-between;">
+            <a href="{% url 'admin:time_hour_graph' request.user.employee.id %}" target="_blank">
+                <span style="font-size: 2rem; margin-right: 10px;">
+                📈
+            </span>
+            </a>
             
             <p style="margin-top: 15px;margin-right: 15px; ">Weekly: {{weekly_expected_hours}} ({{ request.user.employee.get_last_four_weeks_totals.0|safe }})<br>
                 Last 4 Weeks: {{monthly_expected_hours}} ({% if monthly_expected_hours > request.user.employee.get_last_four_weeks_totals.1 %}<span style="color: red;">{{ request.user.employee.get_last_four_weeks_totals.1 }}</span>{% else %}{{ request.user.employee.get_last_four_weeks_totals.1 }}{% endif %})</p>
