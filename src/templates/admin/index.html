@@ -200,7 +200,7 @@
           {% if not request.user.is_superuser%}
           <div style="display: flex; align-items: center; justify-content: space-between;">
             <a href="{% url 'admin:time_hour_graph' request.user.employee.id %}" target="_blank">
-                <span style="font-size: 2rem; margin-right: 10px;">
+                <span style="font-size: 2rem; margin-right: 10px; border: 2px solid #264b5d; border-radius: 10px;">
                 📈
             </span>
             </a>
