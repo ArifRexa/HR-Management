@@ -525,7 +525,7 @@ class ClientAdmin(admin.ModelAdmin):
             currency_icon = obj.currency.icon if obj.currency else ""
             rate_value = history.hourly_rate
             date_str = history.starting_date.strftime("%d %b %y") if history.starting_date else "—"
-            display_text = f"{currency_icon} {rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
+            display_text = f"{rate_value} ({date_str})" if currency_icon else f"{rate_value} ({date_str})"
 
             if idx == 0:  # Current rate
                 if history.starting_date:
