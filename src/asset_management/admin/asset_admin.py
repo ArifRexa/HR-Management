@@ -2,7 +2,10 @@ from urllib.parse import urlparse
 
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count, Q
+from django.db.models import (
+    Count, Q, Case,
+    When, Value, BooleanField,
+)
 from django.template.loader import get_template
 from django.utils import timezone
 from django.utils.html import format_html
@@ -579,6 +582,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "gpu",
         "other_specs",
         "is_active",
+        "created_by",
     ]
     search_fields = [
         "category__name",
@@ -619,7 +623,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "vendor",
     ]
     actions = [
-        "make_inactive",
+        "make_active_inactive",
     ]
 
     def save_model(self, request, obj, form, change):
@@ -629,9 +633,15 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
-    @admin.action(description="Mark selected FixedAsset as inactive.")
-    def make_inactive(modeladmin, request, queryset):
-        queryset.update(is_active=False)
+    @admin.action(description="Mark selected as active/inactive")
+    def make_active_inactive(modeladmin, request, queryset):
+        queryset.update(
+            is_active=Case(
+                When(is_active=True, then=Value(False)),
+                output_field=BooleanField(),
+                default=Value(True),
+            )
+        )
 
 
     class Media:
@@ -690,6 +700,8 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "mouse",
         "headphone",
         "extra",
+        "is_active",
+        "created_by",
     ]
 
     search_fields = [
@@ -707,7 +719,8 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "mouse",
         "headphone",
     ]
-
+    list_filter = ["is_active", ]
+    actions = ["make_active_inactive", ]
 
     @admin.display(description="Monitors")
     def get_monitors(self, obj):
@@ -718,4 +731,14 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         monitors = [str(monitor) for monitor in monitors if monitor]
         return format_html(
             "<br>".join(monitors),
+        )
+    
+    @admin.action(description="Mark selected as active/inactive")
+    def make_active_inactive(modeladmin, request, queryset):
+        queryset.update(
+            is_active=Case(
+                When(is_active=True, then=Value(False)),
+                output_field=BooleanField(),
+                default=Value(True),
+            )
         )
