@@ -33,3 +33,6 @@ class IndustryServeAdmin(admin.ModelAdmin):
     search_fields = ('title',)
     exclude = ('serve_categories',)
     # filter_horizontal = ('serve_categories',)
+    
+    def has_module_permission(self, request):
+        return False
