@@ -1827,6 +1827,9 @@ class FAQAdmin(admin.ModelAdmin):
     model = FAQ
     list_display = ["question", "answer"]
 
+    def has_module_permission(self, request):
+        return False
+
 
 @admin.register(OurAchievement)
 class OurAchievementAdmin(admin.ModelAdmin):
@@ -1923,6 +1926,9 @@ class OfficeLocationAdmin(admin.ModelAdmin):
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
     list_display = ("id", "brandphoto")
+
+    def has_module_permission(self, request):
+        return False
 
 
 # Inline classes for each model
@@ -2087,6 +2093,9 @@ class WebsiteTitleAdmin(admin.ModelAdmin):
         BenefitsOfEmploymentTitleInline,
     ]
 
+    def has_module_permission(self, request):
+        return False
+
 
 class BaseInline(admin.StackedInline):
     can_delete = False
@@ -2183,6 +2192,8 @@ class PageBannerAdmin(admin.ModelAdmin):
         LeaderShipBannerInline,
         CareerBannerInline,
     ]
+    def has_module_permission(self, request):
+        return False
 
 
 class LeadershipSpeechInline(admin.StackedInline):

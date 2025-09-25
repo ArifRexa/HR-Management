@@ -321,6 +321,7 @@ class ApplicationAreas(models.Model):
     #     return self.title
 
 
+
 class IndustryServe(models.Model):
     title = models.CharField(max_length=200)
     short_description = models.TextField()
