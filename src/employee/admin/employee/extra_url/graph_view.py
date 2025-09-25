@@ -1,16 +1,21 @@
 import calendar
 import datetime
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Sum, F
+from django.db.models import F, Sum
 from django.db.models.functions import TruncMonth
 from django.template.response import TemplateResponse
 
 from employee.admin.employee._forms import DateFilterForm, FilterForm
 from employee.models import Employee
-from project_management.models import DailyProjectUpdate, EmployeeProjectHour, Project, ProjectHour
+from project_management.models import (
+    DailyProjectUpdate,
+    EmployeeProjectHour,
+    Project,
+    ProjectHour,
+)
 
 
 class GraphView(admin.ModelAdmin):
@@ -154,7 +159,7 @@ class GraphView(admin.ModelAdmin):
             "daily": {
                 "label": "Daily Hours",
                 "total_hour": 0,
-                "target_hour": 0,
+                "target_hour": round(float(employee_monthly_expected_hour or 0)/20, 2),
                 "labels": [],
                 "data": [],
                 "per_day_count": [],
