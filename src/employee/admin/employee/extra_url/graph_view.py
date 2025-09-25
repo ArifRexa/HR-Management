@@ -114,8 +114,6 @@ class GraphView(admin.ModelAdmin):
         """
         current_date = datetime.date.today()
         start_date = current_date - relativedelta(months=6)
-        u = request.user.employee.id != kwargs.get('employee_id__exact')
-        p = request.user.has_perm("employee.view_employeeundertpm") is False
         if request.user.has_perm("employee.view_employeeundertpm") is False and request.user.employee.id != kwargs.get('employee_id__exact'):
             raise PermissionDenied("You do not have permission to access this feature.")
         
