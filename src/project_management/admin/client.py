@@ -797,7 +797,7 @@ class ClientAdmin(admin.ModelAdmin):
         #     "red" if red_flags[3] else "inherit", incomes[3],
         # )
         formatted_income = format_html(
-            '<span style="font-weight: bold; font-size: calc(1rem);">$ {}</span><br>'
+            '<span style="font-weight: bold; font-size: calc(1rem);">{}</span><br>'
             '<span style="color: {}">{}</span><br>'
             '<span style="color: {}">{}</span><br>'
             '<span style="color: {}">{}</span><br>'
