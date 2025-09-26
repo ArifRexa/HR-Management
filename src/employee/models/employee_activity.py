@@ -1,13 +1,10 @@
 import datetime
 
-from django_userforeignkey.models.fields import UserForeignKey
-
-from django.contrib.auth import get_user_model
-
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django_userforeignkey.models.fields import UserForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
@@ -25,12 +22,15 @@ class EmployeeOnline(TimeStampMixin, AuthorMixin):
 
 @receiver(post_save, sender=EmployeeOnline)
 def save_employee_attendance(sender, **kwargs):
-    instance = kwargs["instance"]
+    instance: EmployeeOnline = kwargs["instance"]
     # TODO : set data in employee attendance if it's first attempt of active
     attendance, created = EmployeeAttendance.objects.get_or_create(
         employee=instance.employee,
         date=timezone.now().date(),
-        defaults={"date": timezone.now().date()},
+        defaults={
+            "date": timezone.now().date(),
+            "entry_time": instance.created_at.time(),
+        },
     )
     if instance.active:
         activity = EmployeeActivity.objects.filter(
@@ -63,7 +63,10 @@ class EmployeeAttendance(TimeStampMixin, AuthorMixin):
         verbose_name_plural = "Employee Attendances"
         permissions = (
             ("can_see_full_month_attendance", "Can see full month attendance"),
-            ("can_download_attendance_report", "Can download attendance report"),
+            (
+                "can_download_attendance_report",
+                "Can download attendance report",
+            ),
         )
 
 
@@ -80,7 +83,9 @@ class EmployeeActivity(TimeStampMixin, AuthorMixin):
     end_time = models.DateTimeField(null=True, blank=True)
 
     updated_by = UserForeignKey(
-        auto_user=True, verbose_name="Updated By", related_name="activities_updated"
+        auto_user=True,
+        verbose_name="Updated By",
+        related_name="activities_updated",
     )
     is_updated_by_bot = models.BooleanField(default=False)
 

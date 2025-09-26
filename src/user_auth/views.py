@@ -118,6 +118,7 @@ class CustomAdminLoginView(LoginView):
             send_otp_via_email(user)
         except Exception as e:
             messages.error(self.request, "Failed to send OTP. Please try again.")
+            self.request.session['pre_login_user_id'] = user.id
             return self.form_invalid(form)  
 
     
