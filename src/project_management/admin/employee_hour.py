@@ -1,10 +1,12 @@
 import datetime
 from datetime import timedelta
+import random
 
 import openpyxl
 from django.contrib import admin, messages
 from django.db.models import Count, Prefetch, Q, Sum
 from django.db.models.functions import TruncDate
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.loader import get_template
@@ -207,6 +209,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "export_updated_in_txt",
         "export_selected",
         "export_selected_merged",
+        # "generate_random_updates",  # for developers if needed to add dummy data into daily project updates. below you can find the code
     ]
     form = AddDDailyProjectUpdateForm
     # change_form_template = 'admin/project_management/dailyprojectupdate_form.html'
@@ -575,6 +578,121 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             )
 
         messages.success(request, f"Marked Approved {qs_count} daily update(s).")
+
+# for developers if needed to add dummy data into daily project updates
+    # from django.contrib import admin, messages
+    # from django.db import transaction
+    # import random
+    # import datetime
+    # from datetime import timedelta
+    # @admin.action(description="Generate 250 random daily project updates")
+    # def generate_random_updates(modeladmin, request, queryset=None):
+    #     employees = ["Nahar Sara", "Partho Debnath", "Arafat", "Farhina Tarhina"]
+    #     projects = [
+    #         "UIMC",
+    #         "How to fetch all data from database using Django",
+    #         "Bulk.ly",
+    #         "Anj",
+    #         "DWPS",
+    #         "p2",
+    #         "VIP",
+    #     ]
+    #     managers = ["Fatin", "Pappu"]
+    #     random_updates = [
+    #         "Completed feature implementation and bug fixes.",
+    #         "Worked on UI enhancements and tested functionality.",
+    #         "Integrated new API endpoints and optimized queries.",
+    #         "Conducted code review and updated documentation.",
+    #         "Fixed bugs and improved performance for backend services.",
+    #         "Developed new module and ran unit tests.",
+    #     ]
+
+    #     def generate_random_date(start_year=2023, end_year=2024):
+    #         start_date = datetime.datetime(start_year, 1, 1)
+    #         print(start_date)
+    #         end_date = datetime.datetime(end_year, 12, 31)
+    #         print(end_date)
+    #         delta = end_date - start_date
+    #         print(delta)
+    #         random_days = random.randint(0, delta.days)
+    #         print(random_days)
+    #         return start_date + timedelta(days=random_days)
+
+    #     try:
+    #         with transaction.atomic():
+    #             print("Starting to generate random updates...")
+
+    #             # Fetch or create employees
+    #             employee_objects = []
+    #             for emp_name in employees:
+    #                 print(f"Creating/fetching employee: {emp_name}")
+    #                 emp, _ = Employee.objects.get_or_create(
+    #                     full_name=emp_name,
+    #                     defaults={"active": True},
+    #                 )
+    #                 employee_objects.append(emp)
+
+    #             # Fetch or create managers
+    #             manager_objects = []
+    #             for mgr_name in managers:
+    #                 print(f"Creating/fetching manager: {mgr_name}")
+    #                 mgr, _ = Employee.objects.get_or_create(
+    #                     full_name=mgr_name,
+    #                     defaults={"active": True, "manager": True},
+    #                 )
+    #                 manager_objects.append(mgr)
+
+    #             # Fetch or create projects
+    #             project_objects = []
+    #             for proj_name in projects:
+    #                 print(f"Creating/fetching project: {proj_name}")
+    #                 proj, _ = Project.objects.get_or_create(
+    #                     title=proj_name,
+    #                     defaults={"active": True},
+    #                 )
+    #                 project_objects.append(proj)
+
+    #             # Generate 250 random records
+    #             num_records = 250
+    #             for i in range(num_records):
+    #                 print(f"Generating record {i+1}/{num_records}...")
+    #                 employee = random.choice(employee_objects)
+    #                 print(f"Selected employee: {employee.full_name}")
+    #                 manager = random.choice(manager_objects)
+    #                 print(f"Selected manager: {manager.full_name}")
+    #                 project = random.choice(project_objects)
+    #                 print(f"Selected project: {project.title}")
+    #                 hours = round(random.uniform(5.0, 8.0), 1)
+    #                 print(f"Generated hours: {hours}")
+    #                 update_text = random.choice(random_updates)
+    #                 print(f"Generated update: {update_text}")
+    #                 updates_json = [[update_text, f"{hours:.1f}H"]]
+    #                 created_at = generate_random_date()  # Naive datetime for USE_TZ = False
+    #                 print(f"Generated created_at: {created_at}")
+
+    #                 print(f"Creating record {i+1}/{num_records}: {employee.full_name} on {project.title}")
+
+    #                 DailyProjectUpdate.objects.create(
+    #                     employee=employee,
+    #                     manager=manager,
+    #                     project=project,
+    #                     hours=hours,
+    #                     update=update_text,
+    #                     updates_json=updates_json,
+    #                     management_updates=f"Additional note for {project.title}",
+    #                     status="approved",
+    #                     note=f"Approved by {manager.full_name}",
+    #                     created_at=created_at,
+    #                 )
+
+    #             messages.success(
+    #                 request, f"Successfully created {num_records} random daily project updates."
+    #             )
+    #     except Exception as e:
+    #         print(f"Error details: {str(e)}")
+    #         messages.error(
+    #             request, f"Error occurred while generating updates: {str(e)}"
+    #         )
 
     @admin.action(description="Pending selected status daily project updates")
     def update_status_pending(modeladmin, request, queryset):

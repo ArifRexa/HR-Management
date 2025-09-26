@@ -2214,44 +2214,44 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         
-        # Add section titles from Our Process
-        try:
-            for item in obj.our_process.all():
-                if item.section_title:
-                    toc.append(item.section_title)
-        except AttributeError:
-            pass
+        # # Add section titles from Our Process
+        # try:
+        #     for item in obj.our_process.all():
+        #         if item.section_title:
+        #             toc.append(item.section_title)
+        # except AttributeError:
+        #     pass
         
-        # Add titles from Discover Our Service
-        try:
-            for item in obj.discover_services.all():
-                if item.title:
-                    toc.append(item.title)
-        except AttributeError:
-            pass
+        # # Add titles from Discover Our Service
+        # try:
+        #     for item in obj.discover_services.all():
+        #         if item.title:
+        #             toc.append(item.title)
+        # except AttributeError:
+        #     pass
         
-        # Add titles from Additional Service Content
-        try:
-            for item in obj.additional_service_content.all():
-                if item.title:
-                    toc.append(item.title)
-        except AttributeError:
-            pass
+        # # Add titles from Additional Service Content
+        # try:
+        #     for item in obj.additional_service_content.all():
+        #         if item.title:
+        #             toc.append(item.title)
+        # except AttributeError:
+        #     pass
         
-        # Add titles from Development Service Process
-        try:
-            for item in obj.development_services_process.all():
-                if item.title:
-                    toc.append(item.title)
-        except AttributeError:
-            pass
+        # # Add titles from Development Service Process
+        # try:
+        #     for item in obj.development_services_process.all():
+        #         if item.title:
+        #             toc.append(item.title)
+        # except AttributeError:
+        #     pass
 
-        try:
-            for item in obj.meta_description.all():
-                if item.title:
-                    toc.append(item.title)
-        except AttributeError:
-            pass
+        # try:
+        #     for item in obj.meta_description.all():
+        #         if item.title:
+        #             toc.append(item.title)
+        # except AttributeError:
+        #     pass
         
         return toc
 
