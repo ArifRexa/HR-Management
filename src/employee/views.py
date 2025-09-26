@@ -280,9 +280,10 @@ class TodoSerializer(serializers.ModelSerializer):
 
 
 class EntryPassSerializer(serializers.Serializer):
-    mechine_code = serializers.CharField()
+    mechine_token = serializers.CharField()
     entry_pass_id = serializers.CharField()
     intent = serializers.CharField()
+    created_at = serializers.DateTimeField(required=False)
 
 
 class TodoApiList(ListAPIView):
@@ -322,7 +323,7 @@ class ChangeEmployeeEntryPass(CreateAPIView):
         if not intent:
             return Response(data={"message": "intent missing"}, status=403)
 
-        employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
+        employee = Employee.objects.first()
 
         if not employee:
             return Response(data={"message": "Employee not found!"}, status=403)

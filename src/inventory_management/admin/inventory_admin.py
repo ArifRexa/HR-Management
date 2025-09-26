@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.db import transaction
 from django.db.models import Q, Sum
 from django.utils.html import format_html
 
@@ -94,6 +95,7 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
             obj.get_status_display(),
         )
 
+    @transaction.atomic
     def save_model(self, request, obj, form, change):
         if obj.transaction_type == "i" and obj.status == "approved":  # IN
             item = InventoryItem.objects.get(id=obj.inventory_item.id)
@@ -103,14 +105,15 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
             item = InventoryItem.objects.get(id=obj.inventory_item.id)
             item.quantity = item.quantity - obj.quantity
             item.save()
-        # if obj.transaction_type == "i" and obj.status == "pending":  # IN
-        #     item = InventoryItem.objects.get(id=obj.inventory_item.id)
-        #     item.quantity = item.quantity - obj.quantity
-        #     item.save()
-        # elif obj.transaction_type == "o" and obj.status == "pending":  # OUT
-        #     item = InventoryItem.objects.get(id=obj.inventory_item.id)
-        #     item.quantity = item.quantity + obj.quantity
-        #     item.save()
+        if obj.id:
+            if obj.transaction_type == "i" and obj.status == "pending":  # IN
+                item = InventoryItem.objects.get(id=obj.inventory_item.id)
+                item.quantity = item.quantity - obj.quantity
+                item.save()
+            elif obj.transaction_type == "o" and obj.status == "pending":  # OUT
+                item = InventoryItem.objects.get(id=obj.inventory_item.id)
+                item.quantity = item.quantity + obj.quantity
+                item.save()
         super().save_model(request, obj, form, change)
 
     @admin.action(description="Mark Selected Inventory as Approved")
