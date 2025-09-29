@@ -32,6 +32,7 @@ from website.hire_models import (
 from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
     FAQQuestion,
+    HireDeveloperPage,
     HireResourcePage,
     HireResourceService,
     HireResourceServiceContent,
@@ -143,6 +144,9 @@ class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
         ),
     )
     prepopulated_fields = {"slug": ("title",)}
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
 
 
 class HireResourceForm(forms.ModelForm):
@@ -303,3 +307,16 @@ class PricingAdmin(HireResourceAdminMixin):
 class HirePricingAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
+
+
+
+
+
+@admin.register(HireDeveloperPage)
+class HireDeveloperPageAdmin(admin.ModelAdmin):
+    list_display = ("seo_title", "section_title", "secondary_title")
+    search_fields = ("seo_title", "section_title", "secondary_title")
+
+
+
+    
