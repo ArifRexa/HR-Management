@@ -1,0 +1,36 @@
+{% load replace_newline daily_groupby %}
+
+<div class="popover-wrapper">
+    {% if cpu %}
+        
+        <div class="popover-title">
+
+            {{ cpu.processor }}
+                
+
+        </div>
+        <div class="popover-message">
+
+            <strong>Casing:</strong> {{ cpu.casing }}
+            <br/>
+            <strong>Processor:</strong> {{ cpu.processor }} 
+            <br>
+            <strong>RAM 1:</strong> {{ cpu.ram1 }} 
+            <br>
+            <strong>RAM 2:</strong> {{ cpu.ram2 }} 
+            <br>
+            <strong>SSD:</strong> {{ cpu.ssd }} 
+            <br>
+            <strong>HDD:</strong> {{ cpu.hdd }} 
+            <br>
+            <strong>GPU:</strong> {{ cpu.gpu }} 
+        </div>
+    {% else %}
+        <div class="popover-title">
+            -
+        </div>
+    {% endif %}
+        
+
+
+</div>

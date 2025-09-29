@@ -758,7 +758,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "table",
         "chair",
         "get_monitors",
-        "cpu",
+        "get_cpu",
         "keyboard",
         "mouse",
         "headphone",
@@ -789,11 +789,44 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "make_active_inactive",
     ]
 
+    class Media:
+        css = {"all": ("css/list.css", "css/daily-update.css")}
+        js = ("js/list.js", "js/new_daily_update.js")
+
+    def get_queryset(self, request):
+        if (
+            not request.user.has_perm(
+                "asset_management.cal_view_all_employee_asset"
+            )
+            and not request.user.is_superuser
+        ):
+            if hasattr(request.user, "employee"):
+                return (
+                    super()
+                    .get_queryset(request)
+                    .filter(employee=request.user.employee)
+                )
+            else:
+                return super().get_queryset(request).none()
+        return super().get_queryset(request)
+
     @staticmethod
     def log_assignment(employee, asset, action, note=""):
-        AssetAssignmentLog.objects.create(
-            employee=employee, asset=asset, action=action, note=note
-        )
+        if isinstance(asset, FixedAsset):
+            data = {
+                "employee": employee,
+                "asset": asset,
+                "action": action,
+                "note": note,
+            }
+        else:
+            data = {
+                "employee": employee,
+                "cpu": asset,
+                "action": action,
+                "note": note,
+            }
+        AssetAssignmentLog.objects.create(**data)
 
     def save_model(self, request, obj, form, change):
         old_employee_asset = EmployeeFixedAsset.objects.filter(
@@ -826,6 +859,12 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
                         obj.employee, new_asset, "ASSIGN", f"{field} added"
                     )
         return super().save_model(request, obj, form, change)
+
+    @admin.display(description="CPU")
+    def get_cpu(self, obj):
+        template = get_template("admin/asset/col_cpu.html")
+        html_content = template.render({"cpu": obj.cpu})
+        return mark_safe(html_content)
 
     @admin.display(description="Monitors")
     def get_monitors(self, obj):
@@ -860,6 +899,14 @@ class AssetAssignmentLogAdmin(admin.ModelAdmin):
         "asset__asset_id",
         "note",
     )
+    
+    @admin.display(description="Asset", ordering="asset__asset_id")
+    def get_asset(self, obj):
+        if obj.asset:
+            return obj.asset
+        elif obj.cpu:
+            return obj.cpu
+        return "-"
 
     @admin.display(description="Date", ordering="date")
     def get_format_date(self, obj):

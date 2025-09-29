@@ -6,6 +6,7 @@ from django.dispatch import receiver
 from django.utils import timezone
 from smart_selects.db_fields import ChainedForeignKey
 
+
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -604,11 +605,18 @@ class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
         null=True,
     )
     is_active = models.BooleanField(default=True)
+    
+    
+    class Meta:
+        permissions = [
+            ("cal_view_all_employee_asset", "Can view all employee fixed asset"),
+        ]
 
 
 class AssetAssignmentLog(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    asset = models.ForeignKey(FixedAsset, on_delete=models.CASCADE)
+    asset = models.ForeignKey(FixedAsset, on_delete=models.CASCADE, null=True, blank=True)
+    cpu = models.ForeignKey(CPU, on_delete=models.CASCADE, null=True, blank=True)
     action = models.CharField(
         max_length=10, choices=[("ASSIGN", "Assign"), ("RETURN", "Return")]
     )
