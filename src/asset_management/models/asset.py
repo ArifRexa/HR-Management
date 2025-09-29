@@ -1,14 +1,14 @@
 from datetime import timedelta
+
 from django.db import models
+from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
-from django.db.models.signals import pre_save, pre_delete
 from django.utils import timezone
+from smart_selects.db_fields import ChainedForeignKey
 
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
-
 from employee.models import Employee
-from smart_selects.db_fields import ChainedForeignKey
 
 
 class AssetHead(AuthorMixin, TimeStampMixin):
@@ -50,26 +50,29 @@ class AssetVariant(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return self.name
-    
+
     class Meta:
         verbose_name = "Variant"
         verbose_name_plural = "Variants"
 
 
 class Asset(AuthorMixin, TimeStampMixin):
-    STATUS_CHOICES = [
-        ('pending', '⌛ Pending'),
-        ('approved', '✔ Approved')
-    ]
+    STATUS_CHOICES = [("pending", "⌛ Pending"), ("approved", "✔ Approved")]
     date = models.DateField(help_text="Date of purchase", null=True)
     # title = models.CharField(max_length=255, null=True)
     rate = models.FloatField(default=0.00, verbose_name="Purchase Price")
     # addition = models.ManyToManyField(Addition, related_name="asset_additions", null=True, blank=True)
     # category = models.ForeignKey(AssetCategory, on_delete=models.CASCADE)
-    vendor = models.ForeignKey(Vendor, on_delete=models.SET_NULL, null=True, blank=True)
-    brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True, blank=True)
+    vendor = models.ForeignKey(
+        Vendor, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    brand = models.ForeignKey(
+        Brand, on_delete=models.SET_NULL, null=True, blank=True
+    )
     head = models.ForeignKey(AssetHead, on_delete=models.CASCADE, null=True)
-    variant = models.ForeignKey(AssetVariant, on_delete=models.SET_NULL, null=True, blank=True)
+    variant = models.ForeignKey(
+        AssetVariant, on_delete=models.SET_NULL, null=True, blank=True
+    )
     code = models.SlugField(max_length=50, unique=True)
     description = models.TextField(default="", blank=True)
 
@@ -91,8 +94,8 @@ class Asset(AuthorMixin, TimeStampMixin):
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
-        default='pending',
-        db_index=True  # Add this if you'll be querying by status frequently
+        default="pending",
+        db_index=True,  # Add this if you'll be querying by status frequently
     )
     # need_repair = models.BooleanField(default=False)
 
@@ -108,7 +111,7 @@ class Asset(AuthorMixin, TimeStampMixin):
         return addition_total + self.rate
 
     def __str__(self):
-        title = '-'
+        title = "-"
         if self.item:
             title = self.item.title
         return f"{title} | {self.code}"
@@ -125,7 +128,11 @@ class Asset(AuthorMixin, TimeStampMixin):
 
 class Addition(AuthorMixin, TimeStampMixin):
     asset = models.ForeignKey(
-        Asset, on_delete=models.CASCADE, related_name="addition", null=True, blank=True
+        Asset,
+        on_delete=models.CASCADE,
+        related_name="addition",
+        null=True,
+        blank=True,
     )
     title = models.CharField(max_length=255)
     amount = models.FloatField(default=0.00)
@@ -177,7 +184,9 @@ def asset_assign(sender, instance, **kwargs):
 
     # Retrieve the most recent instance for the same employee
     old_instance = (
-        sender.objects.filter(employee=instance.employee).order_by("-id").first()
+        sender.objects.filter(employee=instance.employee)
+        .order_by("-id")
+        .first()
     )
 
     if old_instance:
@@ -237,7 +246,9 @@ class AssetRequest(AuthorMixin, TimeStampMixin):
     )
     quantity = models.IntegerField(default=1)
     priority = models.CharField(
-        max_length=10, choices=PriorityChoices.choices, default=PriorityChoices.LOW
+        max_length=10,
+        choices=PriorityChoices.choices,
+        default=PriorityChoices.LOW,
     )
     status = models.CharField(
         max_length=15,
@@ -249,13 +260,14 @@ class AssetRequest(AuthorMixin, TimeStampMixin):
 
 class AssetRequestNote(AuthorMixin, TimeStampMixin):
     request = models.ForeignKey(
-        AssetRequest, on_delete=models.CASCADE, related_name="asset_request_notes"
+        AssetRequest,
+        on_delete=models.CASCADE,
+        related_name="asset_request_notes",
     )
     note = models.TextField(null=True, blank=True)
 
 
 class AssetCategory(AuthorMixin, TimeStampMixin):
-
     name = models.CharField(
         db_index=True,
         help_text="Table, Chair, Monitor, Keyboard, Mouse, Headphone, RAM, SSD, HDD, GPU",
@@ -274,7 +286,6 @@ class AssetCategory(AuthorMixin, TimeStampMixin):
 
 
 class AssetBrand(AuthorMixin, TimeStampMixin):
-
     name = models.CharField(
         db_index=True,
         help_text="HP, LG, Samsung, DELL, etc.",
@@ -349,7 +360,7 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
         null=True,
         related_name="fixed_assets",
     )
-    
+
     # General specifications
     core = models.ForeignKey(
         to=ProcessorData,
@@ -372,7 +383,7 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
         related_name="fixed_asset_storage",
         blank=True,
         null=True,
-        help_text="Storage size in GB."
+        help_text="Storage size in GB.",
     )
     display_size = models.ForeignKey(
         to=MonitorSize,
@@ -423,7 +434,9 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
             "HDD": self.storage_size,
             "GPU": self.gpu,
             "Processor": self.core.processor_info if self.core else None,
-            "Monitor": self.display_size.display_size if self.display_size else None,
+            "Monitor": self.display_size.display_size
+            if self.display_size
+            else None,
             "RAM": self.ram_size.ram_capacity if self.ram_size else None,
         }
         items = [
@@ -591,3 +604,20 @@ class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
         null=True,
     )
     is_active = models.BooleanField(default=True)
+
+
+class AssetAssignmentLog(models.Model):
+    employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
+    asset = models.ForeignKey(FixedAsset, on_delete=models.CASCADE)
+    action = models.CharField(
+        max_length=10, choices=[("ASSIGN", "Assign"), ("RETURN", "Return")]
+    )
+    date = models.DateTimeField(auto_now_add=True)
+    note = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ["-date"]
+
+    def __str__(self):
+        return f"{self.action} {self.asset} to {self.employee} @ {self.date:%Y-%m-%d %H:%M}"
+

@@ -31,6 +31,7 @@ from asset_management.models import (
     Vendor,
 )
 from asset_management.models.asset import (
+    AssetAssignmentLog,
     AssetRequest,
     AssetRequestNote,
     AssetRequestStatus,
@@ -788,6 +789,44 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "make_active_inactive",
     ]
 
+    @staticmethod
+    def log_assignment(employee, asset, action, note=""):
+        AssetAssignmentLog.objects.create(
+            employee=employee, asset=asset, action=action, note=note
+        )
+
+    def save_model(self, request, obj, form, change):
+        old_employee_asset = EmployeeFixedAsset.objects.filter(
+            employee=obj.employee
+        )
+        old_asset = None
+        for field in form.changed_data:
+            if field in [
+                "table",
+                "monitor1",
+                "monitor2",
+                "chair",
+                "cpu",
+                "keyboard",
+                "mouse",
+                "headphone",
+            ]:
+                old_asset = getattr(old_employee_asset.last(), field, None)
+
+                new_asset = getattr(obj, field, None)
+                if old_asset and old_asset != new_asset:
+                    self.log_assignment(
+                        obj.employee,
+                        old_asset,
+                        "RETURN",
+                        f"{field} removed",
+                    )
+                if new_asset and old_asset != new_asset:
+                    self.log_assignment(
+                        obj.employee, new_asset, "ASSIGN", f"{field} added"
+                    )
+        return super().save_model(request, obj, form, change)
+
     @admin.display(description="Monitors")
     def get_monitors(self, obj):
         monitors = [
@@ -808,3 +847,20 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
                 default=Value(True),
             )
         )
+
+
+@admin.register(AssetAssignmentLog)
+class AssetAssignmentLogAdmin(admin.ModelAdmin):
+    list_display = ("get_format_date", "employee", "asset", "action", "note")
+    list_filter = ("action", "date", "asset", "employee")
+    search_fields = (
+        "employee__full_name",
+        "asset__category__name",
+        "asset__brand__name",
+        "asset__asset_id",
+        "note",
+    )
+
+    @admin.display(description="Date", ordering="date")
+    def get_format_date(self, obj):
+        return obj.date.strftime("%Y-%m-%d")
