@@ -269,3 +269,22 @@ class ComprehensiveGuideSectionQnA(models.Model):
     )
     question = models.CharField(max_length=255, null=True, blank=True)
     answer = HTMLField(null=True, blank=True)
+
+
+class DefiningDevelopers(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="defining_developer_roles", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+
+class DefiningDeveloperCards(models.Model):
+    defining_developer_role = models.ForeignKey(
+        DefiningDevelopers, related_name="defining_developer_cards", on_delete=models.CASCADE, null=True, blank=True
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+

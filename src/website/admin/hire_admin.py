@@ -36,6 +36,8 @@ from website.models_v2.hire_resources import (
     ComprehensiveGuide,
     ComprehensiveGuideSectionQnA,
     ComprehensiveGuideSections,
+    DefiningDeveloperCards,
+    DefiningDevelopers,
     DeliveryModuleIntro,
     FAQQuestion,
     HireDeveloperPage,
@@ -375,6 +377,20 @@ class ComprehensiveGuideInline(nested_admin.NestedStackedInline):
     inlines = [ComprehensiveGuideSectionsInline]
 
 
+class DefiningDeveloperCardsInline(nested_admin.NestedTabularInline):
+    model = DefiningDeveloperCards
+    extra = 0
+
+class DefiningDevelopersInline(nested_admin.NestedStackedInline):
+    model = DefiningDevelopers
+    extra = 0
+    inlines = [DefiningDeveloperCardsInline]
+
+
+
+
+
+
 @admin.register(HireDeveloperPage)
 class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
     list_display = ("seo_title", "section_title", "secondary_title")
@@ -386,6 +402,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         HireDevelopersOurProcessInline,
         HiringComparisonInline,
         ComprehensiveGuideInline,
+        DefiningDevelopersInline,
     )
 
 
