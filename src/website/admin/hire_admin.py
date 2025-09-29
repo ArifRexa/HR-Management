@@ -31,6 +31,8 @@ from website.hire_models import (
 )
 from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
+    BenifitCards,
+    Benifits,
     DeliveryModuleIntro,
     FAQQuestion,
     HireDeveloperPage,
@@ -321,6 +323,15 @@ class WorkingMechanismInline(nested_admin.NestedStackedInline):
     model = WorkingMechanism
     extra = 1
 
+class BenifitCardsInline(nested_admin.NestedTabularInline):
+    model = BenifitCards
+    extra = 1
+
+class BenifitsInline(nested_admin.NestedStackedInline):
+    model = Benifits
+    extra = 1
+    inlines = [BenifitCardsInline]
+
 
 
 
@@ -333,6 +344,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
     inlines = (
         DeliveryModuleIntroInline,
         WorkingMechanismInline,
+        BenifitsInline,
     )
 
 
