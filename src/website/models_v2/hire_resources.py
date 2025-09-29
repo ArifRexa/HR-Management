@@ -192,6 +192,22 @@ class WorkingMechanism(models.Model):
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
     section_description = HTMLField(null=True, blank=True)
 
+class Benifits(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="benefits", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+class BenifitCards(models.Model):
+    benifit = models.ForeignKey(
+        Benifits, related_name="benifit_cards", on_delete=models.CASCADE, null=True, blank=True
+    )
+    icon = models.ImageField(upload_to="benifit_cards", null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
 
 
 
