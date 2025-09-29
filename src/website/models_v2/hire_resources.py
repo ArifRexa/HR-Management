@@ -288,3 +288,42 @@ class DefiningDeveloperCards(models.Model):
     title = models.CharField(max_length=255, null=True, blank=True)
     description = HTMLField(null=True, blank=True)
 
+
+class Qualities(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="qualities", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+    
+
+class QualityCards(models.Model):
+    quality = models.ForeignKey(
+        Qualities, related_name="quality_cards", on_delete=models.CASCADE, null=True, blank=True
+    )
+    icon = models.ImageField(upload_to="quality_cards", null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

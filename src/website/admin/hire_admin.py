@@ -53,6 +53,8 @@ from website.models_v2.hire_resources import (
     Criteria,
     DeveloperPriceType,
     HiringThroughMediusware,
+    Qualities,
+    QualityCards,
     WorkingMechanism,
 )
 
@@ -386,9 +388,14 @@ class DefiningDevelopersInline(nested_admin.NestedStackedInline):
     extra = 0
     inlines = [DefiningDeveloperCardsInline]
 
+class QualityCardsInline(nested_admin.NestedTabularInline):
+    model = QualityCards
+    extra = 0
 
-
-
+class QualitiesInline(nested_admin.NestedStackedInline):
+    model = Qualities
+    extra = 0
+    inlines = [QualityCardsInline]
 
 
 @admin.register(HireDeveloperPage)
@@ -403,6 +410,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         HiringComparisonInline,
         ComprehensiveGuideInline,
         DefiningDevelopersInline,
+        QualitiesInline,
     )
 
 
