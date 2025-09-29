@@ -41,6 +41,7 @@ from website.models_v2.hire_resources import (
     DeliveryModuleIntro,
     FAQQuestion,
     HireDeveloperFAQ,
+    HireDeveloperMetaDescription,
     HireDeveloperPage,
     HireDevelopersOurProcess,
     HireResourcePage,
@@ -402,6 +403,10 @@ class HireDeveloperFAQInline(nested_admin.NestedTabularInline):
     model = HireDeveloperFAQ
     extra = 0
 
+class HireDeveloperMetaDescriptionInline(nested_admin.NestedStackedInline):
+    model = HireDeveloperMetaDescription
+    extra = 0
+    max_num = 1
 
 
 @admin.register(HireDeveloperPage)
@@ -418,6 +423,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         DefiningDevelopersInline,
         QualitiesInline,
         HireDeveloperFAQInline,
+        HireDeveloperMetaDescriptionInline,
     )
 
 
