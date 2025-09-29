@@ -31,6 +31,7 @@ from website.hire_models import (
 )
 from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
+    DeliveryModuleIntro,
     FAQQuestion,
     HireDeveloperPage,
     HireResourcePage,
@@ -309,13 +310,26 @@ class HirePricingAdmin(HireResourceAdminMixin):
     search_fields = ("title", "sub_title", "description")
 
 
+# =====================================================================================================================
+
+class DeliveryModuleIntroInline(nested_admin.NestedStackedInline):
+    model = DeliveryModuleIntro
+    extra = 1
+
+
+
+
+
 
 
 
 @admin.register(HireDeveloperPage)
-class HireDeveloperPageAdmin(admin.ModelAdmin):
+class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
     list_display = ("seo_title", "section_title", "secondary_title")
     search_fields = ("seo_title", "section_title", "secondary_title")
+    inlines = (
+        DeliveryModuleIntroInline,
+    )
 
 
 

@@ -174,6 +174,14 @@ class HireDeveloperPage(models.Model):
     featured_image = models.ImageField(upload_to="hire_developer_page", null=True, blank=True)
 
 
+class DeliveryModuleIntro(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="delivery_module_intros", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
 
 
 
