@@ -164,7 +164,7 @@ class Cost(models.Model):
         verbose_name_plural = "Approx Costs"
 
 
-
+# ===========================================================================================
 
 class HireDeveloperPage(models.Model):
     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
@@ -177,6 +177,15 @@ class HireDeveloperPage(models.Model):
 class DeliveryModuleIntro(models.Model):
     hire_developer_page = models.ForeignKey(
         HireDeveloperPage, related_name="delivery_module_intros", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = models.TextField(null=True, blank=True)
+
+class WorkingMechanism(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="working_mechanisms", on_delete=models.CASCADE, null=True, blank=True
     )
     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=255, null=True, blank=True)

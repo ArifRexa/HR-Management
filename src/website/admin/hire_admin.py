@@ -42,6 +42,7 @@ from website.models_v2.hire_resources import (
     CostType,
     Criteria,
     DeveloperPriceType,
+    WorkingMechanism,
 )
 
 
@@ -316,7 +317,9 @@ class DeliveryModuleIntroInline(nested_admin.NestedStackedInline):
     model = DeliveryModuleIntro
     extra = 1
 
-
+class WorkingMechanismInline(nested_admin.NestedStackedInline):
+    model = WorkingMechanism
+    extra = 1
 
 
 
@@ -329,6 +332,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
     search_fields = ("seo_title", "section_title", "secondary_title")
     inlines = (
         DeliveryModuleIntroInline,
+        WorkingMechanismInline,
     )
 
 
