@@ -266,7 +266,7 @@ class HiringThroughMediusware(models.Model):
     hire_developer_page = models.ForeignKey(
         HiringComparison, related_name="hiring_through_mediuswares", on_delete=models.CASCADE, null=True, blank=True
     )
-    description = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(max_length=255, null=True, blank=True)
 
     class Meta:
         verbose_name = "Hiring Through Mediusware"
@@ -277,7 +277,7 @@ class HiringFreeLancer(models.Model):
     hiring_comparison = models.ForeignKey(
         HiringComparison, related_name="hiring_freelancers", on_delete=models.CASCADE, null=True, blank=True
     )
-    description = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(max_length=255, null=True, blank=True)
 
     class Meta:
         verbose_name = "Hiring FreeLancer"
@@ -396,8 +396,8 @@ class HireDeveloperMetaDescription(models.Model):
     meta_description = models.TextField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Meta Description"
-        verbose_name_plural = "Meta Descriptions"
+        verbose_name = "Meta"
+        verbose_name_plural = "Meta"
 
 
 
