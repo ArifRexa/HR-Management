@@ -31,15 +31,33 @@ from website.hire_models import (
 )
 from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
+    BenifitCards,
+    Benifits,
+    ComprehensiveGuide,
+    ComprehensiveGuideSectionQnA,
+    ComprehensiveGuideSections,
+    DefiningDeveloperCards,
+    DefiningDevelopers,
+    DeliveryModuleIntro,
     FAQQuestion,
+    HireDeveloperFAQ,
+    HireDeveloperMetaDescription,
+    HireDeveloperPage,
+    HireDevelopersOurProcess,
     HireResourcePage,
     HireResourceService,
     HireResourceServiceContent,
+    HiringComparison,
+    HiringFreeLancer,
     HiringStep,
     Cost,
     CostType,
     Criteria,
     DeveloperPriceType,
+    HiringThroughMediusware,
+    Qualities,
+    QualityCards,
+    WorkingMechanism,
 )
 
 
@@ -143,6 +161,9 @@ class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
         ),
     )
     prepopulated_fields = {"slug": ("title",)}
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
 
 
 class HireResourceForm(forms.ModelForm):
@@ -303,3 +324,108 @@ class PricingAdmin(HireResourceAdminMixin):
 class HirePricingAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
+
+
+# =====================================================================================================================
+
+class DeliveryModuleIntroInline(nested_admin.NestedStackedInline):
+    model = DeliveryModuleIntro
+    extra = 0
+
+class WorkingMechanismInline(nested_admin.NestedStackedInline):
+    model = WorkingMechanism
+    extra = 0
+
+class BenifitCardsInline(nested_admin.NestedTabularInline):
+    model = BenifitCards
+    extra = 0
+
+class BenifitsInline(nested_admin.NestedStackedInline):
+    model = Benifits
+    extra = 0
+    inlines = [BenifitCardsInline]
+
+class HireDevelopersOurProcessInline(nested_admin.NestedStackedInline):
+    model = HireDevelopersOurProcess
+    extra = 0
+    sortable_field_name = "order"
+
+
+class HiringThroughMediuswareInline(nested_admin.NestedTabularInline):
+    model = HiringThroughMediusware
+    extra = 0
+
+
+class HiringFreelanceInline(nested_admin.NestedTabularInline):
+    model = HiringFreeLancer
+    extra = 0
+
+class HiringComparisonInline(nested_admin.NestedStackedInline):
+    model = HiringComparison
+    extra = 0
+    inlines = [HiringThroughMediuswareInline, HiringFreelanceInline]
+    max_num = 1
+
+class ComprehensiveGuideSectionQnAInline(nested_admin.NestedTabularInline):
+    model = ComprehensiveGuideSectionQnA
+    extra = 0
+
+class ComprehensiveGuideSectionsInline(nested_admin.NestedStackedInline):
+    model = ComprehensiveGuideSections
+    extra = 0
+    inlines = [ComprehensiveGuideSectionQnAInline]
+
+class ComprehensiveGuideInline(nested_admin.NestedStackedInline):
+    model = ComprehensiveGuide
+    extra = 0
+    inlines = [ComprehensiveGuideSectionsInline]
+
+
+class DefiningDeveloperCardsInline(nested_admin.NestedTabularInline):
+    model = DefiningDeveloperCards
+    extra = 0
+
+class DefiningDevelopersInline(nested_admin.NestedStackedInline):
+    model = DefiningDevelopers
+    extra = 0
+    inlines = [DefiningDeveloperCardsInline]
+
+class QualityCardsInline(nested_admin.NestedTabularInline):
+    model = QualityCards
+    extra = 0
+
+class QualitiesInline(nested_admin.NestedStackedInline):
+    model = Qualities
+    extra = 0
+    inlines = [QualityCardsInline]
+
+class HireDeveloperFAQInline(nested_admin.NestedTabularInline):
+    model = HireDeveloperFAQ
+    extra = 0
+
+class HireDeveloperMetaDescriptionInline(nested_admin.NestedStackedInline):
+    model = HireDeveloperMetaDescription
+    extra = 0
+    max_num = 1
+
+
+@admin.register(HireDeveloperPage)
+class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
+    list_display = ("seo_title", "section_title", "secondary_title")
+    search_fields = ("seo_title", "section_title", "secondary_title")
+    inlines = (
+        DeliveryModuleIntroInline,
+        WorkingMechanismInline,
+        BenifitsInline,
+        HireDevelopersOurProcessInline,
+        HiringComparisonInline,
+        ComprehensiveGuideInline,
+        DefiningDevelopersInline,
+        QualitiesInline,
+        HireDeveloperFAQInline,
+        HireDeveloperMetaDescriptionInline,
+    )
+
+
+
+    
