@@ -162,3 +162,110 @@ class Cost(models.Model):
     class Meta:
         verbose_name = "Approx Cost"
         verbose_name_plural = "Approx Costs"
+
+
+# ===========================================================================================
+
+class HireDeveloperPage(models.Model):
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+    featured_image = models.ImageField(upload_to="hire_developer_page", null=True, blank=True)
+
+
+class DeliveryModuleIntro(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="delivery_module_intros", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+class WorkingMechanism(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="working_mechanisms", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+class Benifits(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="benefits", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+class BenifitCards(models.Model):
+    benifit = models.ForeignKey(
+        Benifits, related_name="benifit_cards", on_delete=models.CASCADE, null=True, blank=True
+    )
+    icon = models.ImageField(upload_to="benifit_cards", null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+
+
+
+class HireDevelopersOurProcess(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="our_processes", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
+
+
+
+class HiringComparison(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="hiring_comparisons", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+
+class HiringThroughMediusware(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HiringComparison, related_name="hiring_through_mediuswares", on_delete=models.CASCADE, null=True, blank=True
+    )
+    description = models.CharField(max_length=255, null=True, blank=True)
+
+
+class HiringFreeLancer(models.Model):
+    hiring_comparison = models.ForeignKey(
+        HiringComparison, related_name="hiring_freelancers", on_delete=models.CASCADE, null=True, blank=True
+    )
+    description = models.CharField(max_length=255, null=True, blank=True)
+
+
+class ComprehensiveGuide(models.Model):
+    hiring_comparison = models.ForeignKey(
+        HireDeveloperPage, related_name="comprehensive_guides", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+
+
+class ComprehensiveGuideSections(models.Model):
+    comprehensive_guide = models.ForeignKey(
+        ComprehensiveGuide, related_name="comprehensive_guide_sections", on_delete=models.CASCADE, null=True, blank=True
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+
+class ComprehensiveGuideSectionQnA(models.Model):
+    comprehensive_guide_section = models.ForeignKey(
+        ComprehensiveGuideSections, related_name="comprehensive_guide_section_points", on_delete=models.CASCADE, null=True, blank=True
+    )
+    question = models.CharField(max_length=255, null=True, blank=True)
+    answer = HTMLField(null=True, blank=True)

@@ -31,15 +31,27 @@ from website.hire_models import (
 )
 from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
+    BenifitCards,
+    Benifits,
+    ComprehensiveGuide,
+    ComprehensiveGuideSectionQnA,
+    ComprehensiveGuideSections,
+    DeliveryModuleIntro,
     FAQQuestion,
+    HireDeveloperPage,
+    HireDevelopersOurProcess,
     HireResourcePage,
     HireResourceService,
     HireResourceServiceContent,
+    HiringComparison,
+    HiringFreeLancer,
     HiringStep,
     Cost,
     CostType,
     Criteria,
     DeveloperPriceType,
+    HiringThroughMediusware,
+    WorkingMechanism,
 )
 
 
@@ -143,6 +155,9 @@ class HireResourcePageAdmin(nested_admin.NestedModelAdmin):
         ),
     )
     prepopulated_fields = {"slug": ("title",)}
+
+    def has_module_permission(self, request: HttpRequest) -> bool:
+        return False
 
 
 class HireResourceForm(forms.ModelForm):
@@ -303,3 +318,76 @@ class PricingAdmin(HireResourceAdminMixin):
 class HirePricingAdmin(HireResourceAdminMixin):
     list_display = ("title", "sub_title", "description")
     search_fields = ("title", "sub_title", "description")
+
+
+# =====================================================================================================================
+
+class DeliveryModuleIntroInline(nested_admin.NestedStackedInline):
+    model = DeliveryModuleIntro
+    extra = 0
+
+class WorkingMechanismInline(nested_admin.NestedStackedInline):
+    model = WorkingMechanism
+    extra = 0
+
+class BenifitCardsInline(nested_admin.NestedTabularInline):
+    model = BenifitCards
+    extra = 0
+
+class BenifitsInline(nested_admin.NestedStackedInline):
+    model = Benifits
+    extra = 0
+    inlines = [BenifitCardsInline]
+
+class HireDevelopersOurProcessInline(nested_admin.NestedStackedInline):
+    model = HireDevelopersOurProcess
+    extra = 0
+    sortable_field_name = "order"
+
+
+class HiringThroughMediuswareInline(nested_admin.NestedTabularInline):
+    model = HiringThroughMediusware
+    extra = 0
+
+
+class HiringFreelanceInline(nested_admin.NestedTabularInline):
+    model = HiringFreeLancer
+    extra = 0
+
+class HiringComparisonInline(nested_admin.NestedStackedInline):
+    model = HiringComparison
+    extra = 0
+    inlines = [HiringThroughMediuswareInline, HiringFreelanceInline]
+    max_num = 1
+
+class ComprehensiveGuideSectionQnAInline(nested_admin.NestedTabularInline):
+    model = ComprehensiveGuideSectionQnA
+    extra = 0
+
+class ComprehensiveGuideSectionsInline(nested_admin.NestedStackedInline):
+    model = ComprehensiveGuideSections
+    extra = 0
+    inlines = [ComprehensiveGuideSectionQnAInline]
+
+class ComprehensiveGuideInline(nested_admin.NestedStackedInline):
+    model = ComprehensiveGuide
+    extra = 0
+    inlines = [ComprehensiveGuideSectionsInline]
+
+
+@admin.register(HireDeveloperPage)
+class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
+    list_display = ("seo_title", "section_title", "secondary_title")
+    search_fields = ("seo_title", "section_title", "secondary_title")
+    inlines = (
+        DeliveryModuleIntroInline,
+        WorkingMechanismInline,
+        BenifitsInline,
+        HireDevelopersOurProcessInline,
+        HiringComparisonInline,
+        ComprehensiveGuideInline,
+    )
+
+
+
+    
