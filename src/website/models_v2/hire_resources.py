@@ -308,7 +308,16 @@ class QualityCards(models.Model):
     description = HTMLField(null=True, blank=True)
 
 
+class HireDeveloperFAQ(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="faqs", on_delete=models.CASCADE, null=True, blank=True
+    )
+    question = models.CharField(max_length=255, null=True, blank=True)
+    answer = HTMLField(null=True, blank=True)
 
+    class Meta:
+        verbose_name = "FAQ"
+        verbose_name_plural = "FAQ's"
 
 
 

@@ -40,6 +40,7 @@ from website.models_v2.hire_resources import (
     DefiningDevelopers,
     DeliveryModuleIntro,
     FAQQuestion,
+    HireDeveloperFAQ,
     HireDeveloperPage,
     HireDevelopersOurProcess,
     HireResourcePage,
@@ -397,6 +398,11 @@ class QualitiesInline(nested_admin.NestedStackedInline):
     extra = 0
     inlines = [QualityCardsInline]
 
+class HireDeveloperFAQInline(nested_admin.NestedTabularInline):
+    model = HireDeveloperFAQ
+    extra = 0
+
+
 
 @admin.register(HireDeveloperPage)
 class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
@@ -411,6 +417,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         ComprehensiveGuideInline,
         DefiningDevelopersInline,
         QualitiesInline,
+        HireDeveloperFAQInline,
     )
 
 
