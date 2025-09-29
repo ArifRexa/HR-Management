@@ -246,7 +246,26 @@ class HiringFreeLancer(models.Model):
     description = models.CharField(max_length=255, null=True, blank=True)
 
 
+class ComprehensiveGuide(models.Model):
+    hiring_comparison = models.ForeignKey(
+        HireDeveloperPage, related_name="comprehensive_guides", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
 
 
+class ComprehensiveGuideSections(models.Model):
+    comprehensive_guide = models.ForeignKey(
+        ComprehensiveGuide, related_name="comprehensive_guide_sections", on_delete=models.CASCADE, null=True, blank=True
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
 
-
+class ComprehensiveGuideSectionQnA(models.Model):
+    comprehensive_guide_section = models.ForeignKey(
+        ComprehensiveGuideSections, related_name="comprehensive_guide_section_points", on_delete=models.CASCADE, null=True, blank=True
+    )
+    question = models.CharField(max_length=255, null=True, blank=True)
+    answer = HTMLField(null=True, blank=True)

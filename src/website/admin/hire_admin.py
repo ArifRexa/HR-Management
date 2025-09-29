@@ -33,6 +33,9 @@ from website.models import HireResourceKeyword, HireResourceMetadata
 from website.models_v2.hire_resources import (
     BenifitCards,
     Benifits,
+    ComprehensiveGuide,
+    ComprehensiveGuideSectionQnA,
+    ComprehensiveGuideSections,
     DeliveryModuleIntro,
     FAQQuestion,
     HireDeveloperPage,
@@ -357,9 +360,19 @@ class HiringComparisonInline(nested_admin.NestedStackedInline):
     inlines = [HiringThroughMediuswareInline, HiringFreelanceInline]
     max_num = 1
 
+class ComprehensiveGuideSectionQnAInline(nested_admin.NestedTabularInline):
+    model = ComprehensiveGuideSectionQnA
+    extra = 0
 
+class ComprehensiveGuideSectionsInline(nested_admin.NestedStackedInline):
+    model = ComprehensiveGuideSections
+    extra = 0
+    inlines = [ComprehensiveGuideSectionQnAInline]
 
-
+class ComprehensiveGuideInline(nested_admin.NestedStackedInline):
+    model = ComprehensiveGuide
+    extra = 0
+    inlines = [ComprehensiveGuideSectionsInline]
 
 
 @admin.register(HireDeveloperPage)
@@ -372,6 +385,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         BenifitsInline,
         HireDevelopersOurProcessInline,
         HiringComparisonInline,
+        ComprehensiveGuideInline,
     )
 
 
