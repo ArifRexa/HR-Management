@@ -40,11 +40,14 @@ from website.models_v2.hire_resources import (
     HireResourcePage,
     HireResourceService,
     HireResourceServiceContent,
+    HiringComparison,
+    HiringFreeLancer,
     HiringStep,
     Cost,
     CostType,
     Criteria,
     DeveloperPriceType,
+    HiringThroughMediusware,
     WorkingMechanism,
 )
 
@@ -339,6 +342,24 @@ class HireDevelopersOurProcessInline(nested_admin.NestedStackedInline):
     sortable_field_name = "order"
 
 
+class HiringThroughMediuswareInline(nested_admin.NestedTabularInline):
+    model = HiringThroughMediusware
+    extra = 0
+
+
+class HiringFreelanceInline(nested_admin.NestedTabularInline):
+    model = HiringFreeLancer
+    extra = 0
+
+class HiringComparisonInline(nested_admin.NestedStackedInline):
+    model = HiringComparison
+    extra = 0
+    inlines = [HiringThroughMediuswareInline, HiringFreelanceInline]
+    max_num = 1
+
+
+
+
 
 
 @admin.register(HireDeveloperPage)
@@ -350,6 +371,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         WorkingMechanismInline,
         BenifitsInline,
         HireDevelopersOurProcessInline,
+        HiringComparisonInline,
     )
 
 

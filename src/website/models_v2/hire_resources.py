@@ -222,10 +222,28 @@ class HireDevelopersOurProcess(models.Model):
 
 
 
+class HiringComparison(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="hiring_comparisons", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
 
 
+class HiringThroughMediusware(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HiringComparison, related_name="hiring_through_mediuswares", on_delete=models.CASCADE, null=True, blank=True
+    )
+    description = models.CharField(max_length=255, null=True, blank=True)
 
 
+class HiringFreeLancer(models.Model):
+    hiring_comparison = models.ForeignKey(
+        HiringComparison, related_name="hiring_freelancers", on_delete=models.CASCADE, null=True, blank=True
+    )
+    description = models.CharField(max_length=255, null=True, blank=True)
 
 
 
