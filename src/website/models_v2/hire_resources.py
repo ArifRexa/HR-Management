@@ -170,7 +170,7 @@ class HireDeveloperPage(models.Model):
     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
-    section_description = models.TextField(null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
     featured_image = models.ImageField(upload_to="hire_developer_page", null=True, blank=True)
 
 
@@ -181,7 +181,7 @@ class DeliveryModuleIntro(models.Model):
     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
-    section_description = models.TextField(null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
 
 class WorkingMechanism(models.Model):
     hire_developer_page = models.ForeignKey(
@@ -190,7 +190,7 @@ class WorkingMechanism(models.Model):
     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
-    section_description = models.TextField(null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
 
 
 
