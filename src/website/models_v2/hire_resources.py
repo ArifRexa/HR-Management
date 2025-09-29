@@ -211,6 +211,14 @@ class BenifitCards(models.Model):
 
 
 
+class HireDevelopersOurProcess(models.Model):
+    hire_developer_page = models.ForeignKey(
+        HireDeveloperPage, related_name="our_processes", on_delete=models.CASCADE, null=True, blank=True
+    )
+    seo_title = models.CharField(max_length=255, blank=True, null=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=200, blank=True, null=True)
+    section_description = HTMLField(blank=True, null=True)
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for process steps")
 
 
 

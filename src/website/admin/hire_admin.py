@@ -36,6 +36,7 @@ from website.models_v2.hire_resources import (
     DeliveryModuleIntro,
     FAQQuestion,
     HireDeveloperPage,
+    HireDevelopersOurProcess,
     HireResourcePage,
     HireResourceService,
     HireResourceServiceContent,
@@ -317,22 +318,25 @@ class HirePricingAdmin(HireResourceAdminMixin):
 
 class DeliveryModuleIntroInline(nested_admin.NestedStackedInline):
     model = DeliveryModuleIntro
-    extra = 1
+    extra = 0
 
 class WorkingMechanismInline(nested_admin.NestedStackedInline):
     model = WorkingMechanism
-    extra = 1
+    extra = 0
 
 class BenifitCardsInline(nested_admin.NestedTabularInline):
     model = BenifitCards
-    extra = 1
+    extra = 0
 
 class BenifitsInline(nested_admin.NestedStackedInline):
     model = Benifits
-    extra = 1
+    extra = 0
     inlines = [BenifitCardsInline]
 
-
+class HireDevelopersOurProcessInline(nested_admin.NestedStackedInline):
+    model = HireDevelopersOurProcess
+    extra = 0
+    sortable_field_name = "order"
 
 
 
@@ -345,6 +349,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         DeliveryModuleIntroInline,
         WorkingMechanismInline,
         BenifitsInline,
+        HireDevelopersOurProcessInline,
     )
 
 
