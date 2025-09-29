@@ -3,8 +3,12 @@ from urllib.parse import urlparse
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db.models import (
-    Count, Q, Case,
-    When, Value, BooleanField,
+    BooleanField,
+    Case,
+    Count,
+    Q,
+    Value,
+    When,
 )
 from django.template.loader import get_template
 from django.utils import timezone
@@ -12,19 +16,19 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from asset_management.models import (
+    CPU,
     Addition,
     Asset,
+    AssetBrand,
+    AssetCategory,
     AssetHead,
     AssetItem,
     Brand,
     EmployeeAsset,
     EmployeeAssignedAsset,
-    Vendor,
-    AssetCategory,
-    AssetBrand,
-    FixedAsset,
-    CPU,
     EmployeeFixedAsset,
+    FixedAsset,
+    Vendor,
 )
 from asset_management.models.asset import (
     AssetRequest,
@@ -146,16 +150,20 @@ class AssetAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
 
         if object_id:
-            extra_context["assign_history"] = EmployeeAssignedAsset.objects.filter(
-                asset_id=object_id
-            ).order_by("-id")
+            extra_context["assign_history"] = (
+                EmployeeAssignedAsset.objects.filter(
+                    asset_id=object_id
+                ).order_by("-id")
+            )
 
         return super().change_view(
             request, object_id, form_url, extra_context=extra_context
         )
 
     def get_search_results(self, request, queryset, search_term):
-        qs, use_distinct = super().get_search_results(request, queryset, search_term)
+        qs, use_distinct = super().get_search_results(
+            request, queryset, search_term
+        )
         data = request.GET.dict()
 
         app_label = data.get("app_label")
@@ -188,7 +196,9 @@ class AssetAdmin(admin.ModelAdmin):
         readonly_fields = list(super().get_readonly_fields(request, obj))
 
         # If user doesn't have permission to change status, make it read-only
-        if not request.user.has_perm("asset_management.can_change_asset_status"):
+        if not request.user.has_perm(
+            "asset_management.can_change_asset_status"
+        ):
             readonly_fields.append("status")
 
         return readonly_fields
@@ -197,7 +207,9 @@ class AssetAdmin(admin.ModelAdmin):
         # Check if status field was changed
         if change and "status" in form.changed_data:
             # Verify permission before allowing status change
-            if not request.user.has_perm("asset_management.can_change_asset_status"):
+            if not request.user.has_perm(
+                "asset_management.can_change_asset_status"
+            ):
                 raise PermissionDenied(
                     "You don't have permission to change asset status."
                 )
@@ -213,7 +225,9 @@ class AssetAdmin(admin.ModelAdmin):
 
         # If trying to change status, check for specific permission
         if obj and "status" in request.POST:
-            return request.user.has_perm("asset_management.can_change_asset_status")
+            return request.user.has_perm(
+                "asset_management.can_change_asset_status"
+            )
 
         return True
 
@@ -230,7 +244,9 @@ class AssetAdmin(admin.ModelAdmin):
         permissions=["can_change_asset_status"],  # Requires this permission
     )
     def make_pending(self, request, queryset):
-        if not request.user.has_perm("asset_management.can_change_asset_status"):
+        if not request.user.has_perm(
+            "asset_management.can_change_asset_status"
+        ):
             self.message_user(
                 request, "You don't have permission to change asset status."
             )
@@ -249,7 +265,9 @@ class AssetAdmin(admin.ModelAdmin):
         permissions=["can_change_asset_status"],  # Requires this permission
     )
     def make_approved(self, request, queryset):
-        if not request.user.has_perm("asset_management.can_change_asset_status"):
+        if not request.user.has_perm(
+            "asset_management.can_change_asset_status"
+        ):
             self.message_user(
                 request, "You don't have permission to change asset status."
             )
@@ -274,7 +292,10 @@ class AssetAdmin(admin.ModelAdmin):
 
     # @admin.display(description='Status')
     def colored_status(self, obj):
-        colors = {"pending": "#FF0000", "approved": "#28a745"}  # Orange  # Green
+        colors = {
+            "pending": "#FF0000",
+            "approved": "#28a745",
+        }  # Orange  # Green
         return format_html(
             '<span style="color: {}; font-weight: bold;">{}</span>',
             colors.get(obj.status, "black"),
@@ -439,14 +460,15 @@ class AssetRequestAdmin(admin.ModelAdmin):
         extra_context = extra_context or {}
 
         pending_info = self.get_queryset(request).aggregate(
-            pending_count=Count("id", filter=Q(status=AssetRequestStatus.PENDING))
+            pending_count=Count(
+                "id", filter=Q(status=AssetRequestStatus.PENDING)
+            )
         )
         extra_context["has_pending_request"] = pending_info["pending_count"] > 0
         extra_context["pending_count"] = pending_info["pending_count"]
         return super().changelist_view(request, extra_context)
 
     def get_queryset(self, request):
-
         return (
             super()
             .get_queryset(request)
@@ -482,7 +504,9 @@ class AssetRequestAdmin(admin.ModelAdmin):
             color = "red"
         elif obj.status == AssetRequestStatus.IN_PROGRESS:
             color = "blue"
-        return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
+        return format_html(
+            f'<b style="color: {color}">{obj.get_status_display()}</b>'
+        )
 
     @admin.action(description="Update Status To Done")
     def update_status_done(self, request, queryset):
@@ -520,7 +544,9 @@ class AssetRequestAdmin(admin.ModelAdmin):
 
 @admin.register(AssetCategory)
 class AssetCategoryModelAdmin(admin.ModelAdmin):
-    list_display = ["name", ]
+    list_display = [
+        "name",
+    ]
     search_fields = [
         "name",
     ]
@@ -528,28 +554,34 @@ class AssetCategoryModelAdmin(admin.ModelAdmin):
 
 @admin.register(AssetBrand)
 class AssetBrandModelAdmin(admin.ModelAdmin):
-    list_display = ["name", ]
-    search_fields = ["name", ]
+    list_display = [
+        "name",
+    ]
+    search_fields = [
+        "name",
+    ]
 
 
 @admin.register(RAMSize)
 class RAMSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "ram_capacity"]
-    search_fields = ["ram_capacity", ]
-    
+    search_fields = [
+        "ram_capacity",
+    ]
 
 
 @admin.register(MonitorSize)
 class MonitorSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "display_size"]
-    search_fields = ["display_size", ]
+    search_fields = [
+        "display_size",
+    ]
 
 
 @admin.register(SSDorHDDSize)
 class SSDorHDDSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "storage_capacity"]
     search_fields = ["storage_capacity"]
-
 
 
 @admin.register(CasingBrand)
@@ -562,7 +594,6 @@ class CasingBrandModelAdmin(admin.ModelAdmin):
 class ProcessorDataModelAdmin(admin.ModelAdmin):
     list_display = ["id", "processor_info"]
     search_fields = ["processor_info"]
-
 
 
 @admin.register(FixedAsset)
@@ -612,7 +643,9 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "other_specs",
         "asset_id",
     ]
-    readonly_fields = ["asset_id", ]
+    readonly_fields = [
+        "asset_id",
+    ]
     autocomplete_fields = [
         "brand",
     ]
@@ -626,12 +659,40 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "make_active_inactive",
     ]
 
+    def get_search_from_model(self, request):
+        app_label = request.GET.get("app_label")
+        model_name = request.GET.get("model_name")
+        if not app_label or not model_name:
+            return None
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get(
+            app_label=app_label, model=model_name.lower()
+        )
+        return ct.model_class()
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(
+            request, queryset, search_term
+        )
+        model_class = self.get_search_from_model(request)
+        field = request.GET.get("field_name")
+        search_fields = {
+            f"{field}__isnull": False,
+        }
+        used_pks = model_class.objects.filter(**search_fields).values_list(
+            field, flat=True
+        )
+        queryset = queryset.exclude(pk__in=used_pks)
+        return queryset, use_distinct
+
     def save_model(self, request, obj, form, change):
-        if getattr(obj, 'id') is None:
-            asset_number = FixedAsset.objects.filter(category=obj.category).count() + 1
+        if getattr(obj, "id") is None:
+            asset_number = (
+                FixedAsset.objects.filter(category=obj.category).count() + 1
+            )
             obj.asset_id = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{asset_number}"
         return super().save_model(request, obj, form, change)
-
 
     @admin.action(description="Mark selected as active/inactive")
     def make_active_inactive(modeladmin, request, queryset):
@@ -642,7 +703,6 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
                 default=Value(True),
             )
         )
-
 
     class Media:
         js = ("js/fixedasset.js",)
@@ -661,7 +721,9 @@ class CPUModelAdmin(admin.ModelAdmin):
         "hdd",
         "gpu",
     ]
-    readonly_fields = ["asset_id", ]
+    readonly_fields = [
+        "asset_id",
+    ]
     autocomplete_fields = [
         "processor",
         "ram1",
@@ -682,7 +744,7 @@ class CPUModelAdmin(admin.ModelAdmin):
     ]
 
     def save_model(self, request, obj, form, change):
-        if getattr(obj, 'id') is None:
+        if getattr(obj, "id") is None:
             asset_number = CPU.objects.count() + 1
             obj.asset_id = f"{obj.__class__.__name__}-{asset_number}"
         return super().save_model(request, obj, form, change)
@@ -719,8 +781,12 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "mouse",
         "headphone",
     ]
-    list_filter = ["is_active", ]
-    actions = ["make_active_inactive", ]
+    list_filter = [
+        "is_active",
+    ]
+    actions = [
+        "make_active_inactive",
+    ]
 
     @admin.display(description="Monitors")
     def get_monitors(self, obj):
@@ -732,7 +798,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         return format_html(
             "<br>".join(monitors),
         )
-    
+
     @admin.action(description="Mark selected as active/inactive")
     def make_active_inactive(modeladmin, request, queryset):
         queryset.update(
