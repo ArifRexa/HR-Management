@@ -323,7 +323,7 @@ class ChangeEmployeeEntryPass(CreateAPIView):
         if not intent:
             return Response(data={"message": "intent missing"}, status=403)
 
-        employee = Employee.objects.first()
+        employee = Employee.objects.filter(entry_pass_id=str(entry_pass_id)).first()
 
         if not employee:
             return Response(data={"message": "Employee not found!"}, status=403)
