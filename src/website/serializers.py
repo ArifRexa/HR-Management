@@ -134,7 +134,7 @@ from website.models import (
     WhatIs,
     WhyUsTitle,
 )
-from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism
+from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
@@ -2716,8 +2716,14 @@ class DeliveryModuleIntroSerializer(serializers.ModelSerializer):
         model = DeliveryModuleIntro
         fields = '__all__'
 
-
+class WorkingMechanismCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkingMechanismCards
+        fields = '__all__'
+        ref_name = 'WorkingMechanismCard'
+        
 class WorkingMechanismSerializer(serializers.ModelSerializer):
+    working_mechanism_cards = WorkingMechanismCardsSerializer(many=True, read_only=True)
     class Meta:
         model = WorkingMechanism
         fields = '__all__'

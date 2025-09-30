@@ -1903,15 +1903,41 @@ class CertificationListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
 
-class ArchivePageView(ListAPIView):
+# class ArchivePageView(ListAPIView):
+#     queryset = ArchivePage.objects.all()
+#     serializer_class = ArchivePageSerializer
+#     permission_classes = [AllowAny]
+#     lookup_field = 'slug'
+
+#     @swagger_auto_schema(
+#         operation_description="Retrieve detailed information about the archive page",
+#         responses={200: ArchivePageSerializer},
+#         tags=['Archive Page']
+#     )
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
+class ArchivePageView(RetrieveAPIView):
     queryset = ArchivePage.objects.all()
     serializer_class = ArchivePageSerializer
     permission_classes = [AllowAny]
+    lookup_field = 'slug'
 
     @swagger_auto_schema(
-        operation_description="Retrieve detailed information about the archive page",
-        responses={200: ArchivePageSerializer},
-        tags=['Archive Page']
+        operation_description="Retrieve archive page details by slug",
+        tags=['Archive Page'],
+        responses={
+            200: ArchivePageSerializer,
+            404: "Archive page not found"
+        },
+        manual_parameters=[
+            openapi.Parameter(
+                'slug',
+                openapi.IN_PATH,
+                description="Slug of the archive page",
+                type=openapi.TYPE_STRING,
+                required=True
+            )
+        ]
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
