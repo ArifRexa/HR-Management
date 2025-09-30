@@ -58,6 +58,7 @@ from website.models_v2.hire_resources import (
     Qualities,
     QualityCards,
     WorkingMechanism,
+    WorkingMechanismCards,
 )
 
 
@@ -332,9 +333,14 @@ class DeliveryModuleIntroInline(nested_admin.NestedStackedInline):
     model = DeliveryModuleIntro
     extra = 0
 
+class WorkingMechanismCardsInline(nested_admin.NestedTabularInline):
+    model = WorkingMechanismCards
+    extra = 0
+
 class WorkingMechanismInline(nested_admin.NestedStackedInline):
     model = WorkingMechanism
     extra = 0
+    inlines = [WorkingMechanismCardsInline]
 
 class BenifitCardsInline(nested_admin.NestedTabularInline):
     model = BenifitCards
@@ -425,6 +431,7 @@ class HireDeveloperPageAdmin(nested_admin.NestedModelAdmin):
         HireDeveloperFAQInline,
         HireDeveloperMetaDescriptionInline,
     )
+    change_form_template = 'admin/website/servecategory/change_form.html'
 
 
 

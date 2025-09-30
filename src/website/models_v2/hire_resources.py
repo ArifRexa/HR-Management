@@ -201,10 +201,22 @@ class WorkingMechanism(models.Model):
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
     section_description = HTMLField(null=True, blank=True)
+    conclusion = models.TextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Working Mechanism"
         verbose_name_plural = "Working Mechanism"
+
+class WorkingMechanismCards(models.Model):
+    working_mechanism = models.ForeignKey(
+        WorkingMechanism, related_name="working_mechanism_cards", on_delete=models.CASCADE, null=True, blank=True
+    )
+    order = models.PositiveIntegerField(default=0, help_text="Order of display for working mechanism cards", null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Working Mechanism Card"
+        verbose_name_plural = "Working Mechanism Cards"
 
 
 
