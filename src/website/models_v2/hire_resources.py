@@ -173,6 +173,10 @@ class HireDeveloperPage(models.Model):
     section_description = HTMLField(null=True, blank=True)
     featured_image = models.ImageField(upload_to="hire_developer_page", null=True, blank=True)
 
+    class Meta:
+        verbose_name = "Hire Developer"
+        verbose_name_plural = "Hire Developer"
+
 
 class DeliveryModuleIntro(models.Model):
     hire_developer_page = models.ForeignKey(

@@ -64,6 +64,7 @@ from website.models import (
     VideoTestimonial,
     WebsiteTitle,
 )
+from website.models_v2.hire_resources import HireDeveloperPage
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 from website.serializers import (
@@ -96,6 +97,7 @@ from website.serializers import (
     EmployeeTestimonialSerializer,
     FAQSerializer,
     GallerySerializer,
+    HireDeveloperPageSerializer,
     HomePageSerializer,
     IndustrySerializer,
     IndustryWeServeSerializer,
@@ -1913,3 +1915,31 @@ class ArchivePageView(ListAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+    
+
+
+
+class HireDeveloperPageDetailView(RetrieveAPIView):
+    serializer_class = HireDeveloperPageSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve the single Hire Developer page with all content",
+        tags=["Hire Developer"],
+        responses={200: HireDeveloperPageSerializer, 404: "Page not configured"}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_object(self):
+        obj = HireDeveloperPage.objects.first()
+        if not obj:
+            raise Http404("Hire Developer page not found")
+        return obj
+
+
+
+
+
+
+
+
