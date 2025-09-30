@@ -21,6 +21,7 @@ from website.views import (
     ContactModelViewSet,
     EmployeeTestimonialListAPIView,
     GalleryListView,
+    HireDeveloperPageDetailView,
     HomePageApiView,
     IndustryListAPIView,
     IndustryMainListView,
