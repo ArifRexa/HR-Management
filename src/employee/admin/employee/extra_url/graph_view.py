@@ -219,8 +219,12 @@ class GraphView(admin.ModelAdmin):
             chart["weekly"]["per_day_count"].append(list(employee_hour_list))
             chart["weekly"]["total_hour"] += weekly_employee_hour.get("t_hours")        
 
-        filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
-        filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
+        # filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
+        # filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
+        filters.pop("project_hour__date__gte")
+        filters.pop("project_hour__date__lte")
+        filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
+        filters["created_at__date__lte"] = datetime.date.today()
         daily_employee_hours = DailyProjectUpdate.objects.filter(
             status="approved",
             **filters,
