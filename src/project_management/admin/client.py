@@ -151,6 +151,18 @@ class ClientForm(forms.ModelForm):
                 }
             ),
         }
+        
+        
+    def clean(self):
+        cleaned = super().clean()
+        instance_pk = getattr(self.instance, "pk", None)
+        if instance_pk:                      
+            if not cleaned.get("active"):
+                if not cleaned.get("remark"):
+                    self.add_error("remark", "Remark is required when de-activating a client.")
+                if not cleaned.get("client_feedback"):
+                    self.add_error("client_feedback", "Client feedback is required when de-activating a client.")
+        return cleaned
 
 
 @admin.register(CurrencyType)
