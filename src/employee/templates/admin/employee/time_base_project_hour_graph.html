@@ -4,6 +4,10 @@
     {% load static %}
 
     <style>
+        #main{
+            max-height: 80vh;
+            min-width: 100vw;
+        }
         #nav-sidebar{
             display: none;
         }
@@ -45,6 +49,11 @@
             <h1 id="chartTitle">{{ title }} ({{ chart.weekly.total_hour|floatformat:2 }})</h1>
         </div>
 
+        <div>
+            <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button>
+            <button id="lineChart" onclick="changeChartType('line')">Line</button>
+        </div>
+
         <!-- View Type Buttons -->
         <div>
             <button id="weeklyBtn" class="active" onclick="updateChart('weekly')">Weekly</button>
@@ -66,13 +75,14 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
     <script>
         const chartData = {{ chart|safe }};
         const ctx = document.getElementById('hourChart').getContext('2d');
 
         // Default configuration
         let currentView = 'weekly';
-        let currentType = 'line';
+        let currentType = 'bar';
 
         function getConfig(type, view) {
             return {
@@ -106,6 +116,27 @@
                 options: {
                     responsive: true,
                     plugins: {
+                        datalabels: {
+                            anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
+                            align: 'top',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
+                            formatter: function(value, context) {
+                                // Customize the label text here.
+                                // 'value' is the data point value
+                                // 'context' provides access to dataset, index, etc.
+                                return +value.toFixed(1); // Display the raw value
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            color: function(context){
+                                const index = context.dataIndex
+                                const value = context.dataset.data[index]
+                                const target_hour = chartData[view].target_hour | 0;
+                                if (value>=target_hour) return "green";
+                                else return "red";
+                            },
+                        },
                         tooltip: {
                             enabled: true,
                             bodyFont: {
@@ -132,7 +163,8 @@
                             beginAtZero: true
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             };
         }
 
@@ -158,6 +190,12 @@
             currentType = type;
             myChart.destroy();
             myChart = new Chart(ctx, getConfig(currentType, currentView));
+            const buttons = {
+                'bar': document.getElementById('barChart'),
+                'line': document.getElementById('lineChart'),
+            };
+            Object.values(buttons).forEach(btn => btn.classList.remove('active'));
+            buttons[currentType].classList.add('active');
         }
     </script>
 {% endblock %}

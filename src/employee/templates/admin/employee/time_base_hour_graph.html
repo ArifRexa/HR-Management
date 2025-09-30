@@ -125,7 +125,7 @@
                                 // Customize the label text here.
                                 // 'value' is the data point value
                                 // 'context' provides access to dataset, index, etc.
-                                return value; // Display the raw value
+                                return +value.toFixed(1); // Display the raw value
                             },
                             font: {
                                 weight: 'bold',
@@ -244,7 +244,6 @@
                 'bar': document.getElementById('barChart'),
                 'line': document.getElementById('lineChart'),
             };
-            console.log(buttons)
             Object.values(buttons).forEach(btn => btn.classList.remove('active'));
             buttons[currentType].classList.add('active');
         }
