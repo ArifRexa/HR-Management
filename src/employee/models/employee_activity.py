@@ -27,10 +27,7 @@ def save_employee_attendance(sender, **kwargs):
     attendance, created = EmployeeAttendance.objects.get_or_create(
         employee=instance.employee,
         date=timezone.now().date(),
-        defaults={
-            "date": timezone.now().date(),
-            "entry_time": instance.created_at.time(),
-        },
+        defaults={"date": timezone.now().date()},
     )
     if instance.active:
         activity = EmployeeActivity.objects.filter(
