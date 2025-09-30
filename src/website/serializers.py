@@ -134,6 +134,7 @@ from website.models import (
     WhatIs,
     WhyUsTitle,
 )
+from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
@@ -2704,3 +2705,139 @@ class ArchivePageSerializer(serializers.ModelSerializer):
         model = ArchivePage
         fields = '__all__'
         ref_name = 'ArchivePageSerializer'
+
+
+# =================================== Hire Developers Serializers ================================
+
+
+
+class DeliveryModuleIntroSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryModuleIntro
+        fields = '__all__'
+
+
+class WorkingMechanismSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WorkingMechanism
+        fields = '__all__'
+
+
+class BenifitCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BenifitCards
+        fields = '__all__'
+
+
+class BenifitsSerializer(serializers.ModelSerializer):
+    benifit_cards = BenifitCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Benifits
+        fields = '__all__'
+
+
+class HireDevelopersOurProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireDevelopersOurProcess
+        fields = '__all__'
+
+
+class HiringThroughMediuswareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HiringThroughMediusware
+        fields = '__all__'
+
+
+class HiringFreeLancerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HiringFreeLancer
+        fields = '__all__'
+
+
+class HiringComparisonSerializer(serializers.ModelSerializer):
+    hiring_through_mediuswares = HiringThroughMediuswareSerializer(many=True, read_only=True)
+    hiring_freelancers = HiringFreeLancerSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = HiringComparison
+        fields = '__all__'
+
+
+class ComprehensiveGuideSectionQnASerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ComprehensiveGuideSectionQnA
+        fields = '__all__'
+
+
+class ComprehensiveGuideSectionsSerializer(serializers.ModelSerializer):
+    comprehensive_guide_section_points = ComprehensiveGuideSectionQnASerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ComprehensiveGuideSections
+        fields = '__all__'
+
+
+class ComprehensiveGuideSerializer(serializers.ModelSerializer):
+    comprehensive_guide_sections = ComprehensiveGuideSectionsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = ComprehensiveGuide
+        fields = '__all__'
+
+
+class DefiningDeveloperCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DefiningDeveloperCards
+        fields = '__all__'
+
+
+class DefiningDevelopersSerializer(serializers.ModelSerializer):
+    defining_developer_cards = DefiningDeveloperCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = DefiningDevelopers
+        fields = '__all__'
+
+
+class QualityCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QualityCards
+        fields = '__all__'
+
+
+class QualitiesSerializer(serializers.ModelSerializer):
+    quality_cards = QualityCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Qualities
+        fields = '__all__'
+
+
+class HireDeveloperFAQSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireDeveloperFAQ
+        fields = '__all__'
+
+
+class HireDeveloperMetaDescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HireDeveloperMetaDescription
+        fields = '__all__'
+
+
+class HireDeveloperPageSerializer(serializers.ModelSerializer):
+    delivery_module_intros = DeliveryModuleIntroSerializer(many=True, read_only=True)
+    working_mechanisms = WorkingMechanismSerializer(many=True, read_only=True)
+    benefits = BenifitsSerializer(many=True, read_only=True)
+    our_processes = HireDevelopersOurProcessSerializer(many=True, read_only=True)
+    hiring_comparisons = HiringComparisonSerializer(many=True, read_only=True)
+    comprehensive_guides = ComprehensiveGuideSerializer(many=True, read_only=True)
+    defining_developer_roles = DefiningDevelopersSerializer(many=True, read_only=True)
+    qualities = QualitiesSerializer(many=True, read_only=True)
+    faqs = HireDeveloperFAQSerializer(many=True, read_only=True)
+    meta_descriptions = HireDeveloperMetaDescriptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = HireDeveloperPage
+        fields = '__all__'
