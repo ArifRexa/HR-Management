@@ -1435,6 +1435,11 @@ class ContactForm(TimeStampMixin):
         ("general", "General Inquiry"),
         ("discuss", "Discuss Service"),
     )
+    ACTION_BY = (
+        ("pending", "Pending"),
+        ("sales", "Sales"),
+        ("hr", "HR")
+    )
     form_type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="discuss")
     full_name = models.CharField(max_length=255)
     email = models.EmailField()
@@ -1442,6 +1447,7 @@ class ContactForm(TimeStampMixin):
     project_details = models.TextField(null=True, blank=True)
     client_query = models.TextField(null=True, blank=True)  # Client Query
     attached_file = models.FileField(upload_to="contact_files/", null=True, blank=True)
+    action_by = models.CharField(max_length=50, choices=ACTION_BY, default="pending", null=True, blank=True)
 
 
 
