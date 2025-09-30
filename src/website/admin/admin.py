@@ -2262,4 +2262,4 @@ class CertificationAdmin(admin.ModelAdmin):
 
 @admin.register(ArchivePage)
 class ArchivePageAdmin(admin.ModelAdmin):
-    list_display = ("seo_title", "section_title", "section_description")
+    list_display = ("seo_title", "slug", "section_title", "section_description")
