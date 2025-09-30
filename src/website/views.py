@@ -1916,3 +1916,30 @@ class ArchivePageView(ListAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
     
+
+
+
+class HireDeveloperPageDetailView(RetrieveAPIView):
+    serializer_class = HireDeveloperPageSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve the single Hire Developer page with all content",
+        tags=["Hire Developer"],
+        responses={200: HireDeveloperPageSerializer, 404: "Page not configured"}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_object(self):
+        obj = HireDeveloperPage.objects.first()
+        if not obj:
+            raise Http404("Hire Developer page not found")
+        return obj
+
+
+
+
+
+
+
+

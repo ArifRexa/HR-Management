@@ -306,6 +306,7 @@ urlpatterns = [
 
     path('website/certifications-lists/', CertificationListView.as_view(), name='certification-list'),
     path('website/archive-page/', ArchivePageView.as_view(), name='archive-page'),
+    path('website/hire-developer/', HireDeveloperPageDetailView.as_view(), name='hire-developer-detail'),
 
 ]
 
