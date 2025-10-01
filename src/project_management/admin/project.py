@@ -311,9 +311,10 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     @admin.display(description="CS", ordering="identifier")
     def get_cs_link(self, obj):
         html_template = get_template(
-            "admin/project_management/list/col_reporturl.html"
+            "admin/project_management/list/cs_link.html"
         )
-        html_content = html_template.render({"identifier": obj.identifier})
+        url = f"https://mediusware.com/case-study/{obj.slug}"
+        html_content = html_template.render({"url": url})
         return format_html(html_content)
 
     def get_report_url(self, obj):
