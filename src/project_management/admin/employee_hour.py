@@ -301,7 +301,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     
     @admin.display(description="Project", ordering="project")
     def get_project(self, obj):
-        project = f"{obj.project.title} <br /> {obj.project.client.name}"
+        if obj.project.client:
+            project = f"{obj.project.title} <br /> {obj.project.client.name}"
+        else:
+            project = f"{obj.project.title} <br /> (No Client)"
         return format_html(project)
 
     @admin.display(description="Update")
