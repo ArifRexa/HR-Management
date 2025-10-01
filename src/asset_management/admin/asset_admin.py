@@ -761,6 +761,7 @@ User = get_user_model()
 
 class CreatedByUserFilter(RelatedFieldListFilter):
     """Only show users that have created at least one EmployeeFixedAsset."""
+    title = "Created"
 
     def field_choices(self, field, request, model_admin):
         # users that appear in EmployeeFixedAsset.created_by
@@ -836,8 +837,8 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "is_active",
-        EmployeeWithAssetFilter,
         ("created_by", CreatedByUserFilter),
+        EmployeeWithAssetFilter,
     ]
     actions = [
         "make_active_inactive",

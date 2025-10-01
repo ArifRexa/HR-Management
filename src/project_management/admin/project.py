@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
-from website.models import Technology as WebTechnology
+
 from project_management.models import (
     ClientInvoiceDate,
     EnableDailyUpdateNow,
@@ -35,6 +35,7 @@ from project_management.models import (
     Technology,
 )
 from website.models import ProjectKeyword, ProjectMetadata
+from website.models import Technology as WebTechnology
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 
@@ -154,40 +155,51 @@ class ProjectMetadataInline(nested_admin.NestedStackedInline):
     extra = 1
     exclude = ["canonical"]
     # inlines = [ProjectKeywordInline]
-    
+
 
 from django.contrib.admin import SimpleListFilter
 from django.db.models import Count
 
+
 class ProjectCountMixin:
     title_field = "title"
+
     def lookups(self, request, model_admin):
-        queryset = self.model.objects.annotate(project_count=Count('projects'))#.filter(project_count__gt=0)
-        return [(obj.id, f"{getattr(obj, self.title_field)} ({obj.project_count})") for obj in queryset]
+        queryset = self.model.objects.annotate(
+            project_count=Count("projects")
+        )  # .filter(project_count__gt=0)
+        if self.model == ServicePage:
+            queryset = queryset.filter(is_parent=True)
+        return [
+            (obj.id, f"{getattr(obj, self.title_field)} ({obj.project_count})")
+            for obj in queryset
+        ]
 
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(**{self.field_name: self.value()})
         return queryset
 
+
 class ServiceFilter(ProjectCountMixin, SimpleListFilter):
-    title = 'Services'
-    parameter_name = 'services'
+    title = "Services"
+    parameter_name = "services"
     model = ServicePage
-    field_name = 'services'
-    
+    field_name = "services"
+
 
 class IndustryFilter(ProjectCountMixin, SimpleListFilter):
-    title = 'Industries'
-    parameter_name = 'industries'
+    title = "Industries"
+    parameter_name = "industries"
     model = ServeCategory
-    field_name = 'industries'
+    field_name = "industries"
+
 
 class TechnologyFilter(ProjectCountMixin, SimpleListFilter):
-    title = 'Technologies'
-    parameter_name = 'technology'
+    title = "Technologies"
+    parameter_name = "technology"
     model = WebTechnology
-    field_name = 'technology'
+    field_name = "technology"
     title_field = "name"
 
 
@@ -202,7 +214,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "active",
         "get_show_in_website",
         "get_report_url",
-        "get_cs_link"
+        "get_cs_link",
         # "get_live_link",
         # "client_feedback_link",
     )
@@ -308,20 +320,17 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
 
     def get_ordering(self, request):
         return ["title"]
-    
+
     @admin.display(description="Website", ordering="show_in_website")
     def get_show_in_website(self, obj):
         from django.templatetags.static import static
+
         if obj.show_in_website:
             icon = static("admin/img/icon-yes.svg")
         else:
             icon = static("admin/img/icon-no.svg")
-        return format_html(
-            '<img src="{}" alt="{}">',
-            icon,
-            obj.show_in_website
-        )
-    
+        return format_html('<img src="{}" alt="{}">', icon, obj.show_in_website)
+
     @admin.display(description="CS", ordering="identifier")
     def get_cs_link(self, obj):
         html_template = get_template(
