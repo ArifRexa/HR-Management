@@ -443,6 +443,7 @@ class ProjectListView(ListAPIView):
                                 'live_link': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
                                 'active': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                                 'show_in_website': openapi.Schema(type=openapi.TYPE_BOOLEAN),
+                                'is_special': openapi.Schema(type=openapi.TYPE_BOOLEAN),
                                 'created_at': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
                                 'updated_at': openapi.Schema(type=openapi.TYPE_STRING, format='date-time'),
                             }
@@ -455,16 +456,49 @@ class ProjectListView(ListAPIView):
         }
     )
     def get(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset()).filter(show_in_website=True)
-        page = self.paginate_queryset(queryset)
+        # Get the filtered queryset
+        filtered_queryset = self.filter_queryset(self.get_queryset()).filter(show_in_website=True)
+        filtered_count = filtered_queryset.count()
+
+        # Initialize the final queryset
+        final_queryset = filtered_queryset
+
+        # If exactly one project is returned, add one is_special=True project
+        if filtered_count == 1:
+            special_projects = self.get_queryset().filter(
+                is_special=True
+            ).exclude(
+                id__in=filtered_queryset.values('id')
+            )[:1]
+            # Combine querysets at the Python level
+            final_queryset = list(filtered_queryset) + list(special_projects)
+        # If no projects are returned, add two is_special=True projects
+        elif filtered_count == 0:
+            special_projects = self.get_queryset().filter(
+                is_special=True
+            )[:2]
+            final_queryset = list(special_projects)
+
+        # Apply pagination to the final queryset
+        page = self.paginate_queryset(final_queryset)
         serializer = self.get_serializer(page, many=True)
-        # print(serializer.data)
         return self.get_paginated_response(serializer.data)
 
     def get_queryset(self):
         return Project.objects.select_related('client').prefetch_related(
             'platforms', 'categories_tags', 'industries', 'services', 'technology'
         ).filter(show_in_website=True)
+    # def get(self, request, *args, **kwargs):
+    #     queryset = self.filter_queryset(self.get_queryset()).filter(show_in_website=True)
+    #     page = self.paginate_queryset(queryset)
+    #     serializer = self.get_serializer(page, many=True)
+    #     # print(serializer.data)
+    #     return self.get_paginated_response(serializer.data)
+
+    # def get_queryset(self):
+    #     return Project.objects.select_related('client').prefetch_related(
+    #         'platforms', 'categories_tags', 'industries', 'services', 'technology'
+    #     ).filter(show_in_website=True)
     
 
 class ProjectDetailView(RetrieveAPIView):
