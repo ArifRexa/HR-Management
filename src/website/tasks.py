@@ -36,3 +36,56 @@ def thank_you_message_to_author(blog: Blog, url):
     email.from_email = '"Mediusware-Admin" <blog@mediusware.com>'
     email.send()
 
+
+
+
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
+from django.utils import timezone
+from datetime import timedelta
+from .models import ContactForm
+
+def send_daily_contact_form_summary():
+    # Calculate the time range: last 24 hours
+    end_time = timezone.now()
+    start_time = end_time - timedelta(hours=24)
+
+    # Query ContactForm entries from the last 24 hours
+    new_contacts = ContactForm.objects.filter(
+        created_at__range=(start_time, end_time)
+    ).order_by('-created_at')
+
+    # If no new contacts, skip sending email
+    if not new_contacts.exists():
+        print("No new contact forms in the last 24 hours.")
+        return
+
+    # Prepare context for the email template
+    context = {
+        'new_contacts': new_contacts,
+        'date_range': f"{start_time.strftime('%Y-%m-%d %H:%M:%S')} to {end_time.strftime('%Y-%m-%d %H:%M:%S')}",
+    }
+
+    # Render the HTML email template
+    html_body = loader.render_to_string(
+        'mails/daily_contact_form_summary.html',
+        context=context,
+    )
+
+    # Define recipient emails (replace with actual email addresses)
+    recipient_emails = ['hr@mediusware.com', 'sales@mediusware.com']
+
+    # Create and send the email
+    email = EmailMultiAlternatives(
+        subject=f"Daily Contact Form Summary - {end_time.strftime('%Y-%m-%d')}",
+        body="Please find the daily summary of new contact form submissions.",
+        from_email='"Your Company Name" <no-reply@yourdomain.com>',
+        to=recipient_emails,
+    )
+    email.attach_alternative(html_body, "text/html")
+
+    try:
+        email.send()
+        print(f"Daily contact form summary email sent to {', '.join(recipient_emails)}")
+    except Exception as e:
+        print(f"Failed to send daily contact form summary email: {str(e)}")
