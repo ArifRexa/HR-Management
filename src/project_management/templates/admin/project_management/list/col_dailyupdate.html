@@ -5,7 +5,7 @@
 
     <div class="popover-title">
         {% for update_line in update_json %}
-        {{ update_line.0 | strip_last_newline| safe }}
+        {{ update_line.0 | strip_last_newline| safe | truncatewords:10 }}
             
         {% endfor %}
     </div>

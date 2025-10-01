@@ -171,9 +171,9 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     list_display = (
         "get_date",
         "employee",
-        "project",
+        "get_project",
         "get_hours",
-        "history",
+        # "history",
         "get_update",
         # "get_updates_json",
         "manager",
@@ -298,6 +298,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.display(description="Date", ordering="created_at")
     def get_date(self, obj):
         return obj.created_at.date()
+    
+    @admin.display(description="Project", ordering="project")
+    def get_project(self, obj):
+        project = f"{obj.project.title} <br /> {obj.project.client.name}"
+        return format_html(project)
 
     @admin.display(description="Update")
     def get_update(self, obj):
@@ -328,10 +333,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.display(description="Hours", ordering="hours")
     def get_hours(self, obj):
-        custom_style = ""
+        history_qs = getattr(obj, "history_list", None)
+        if history_qs:
+            history_list = list(history_qs)
+            hours_str = " > ".join(f"{round(h.hours, 2)}" for h in history_list)
+        custom_style = ' style="font-size: 16px"'
         if obj.hours < 6:
-            custom_style = ' style="color:red; font-weight: bold;"'
-        html_content = f"<span{custom_style}>{round(obj.hours, 2)}</span>"
+            custom_style = ' style="color:red; font-weight: bold; font-size: 16px;"'
+        html_content = f"<span{custom_style}>{round(obj.hours, 2)} </span><br /> {hours_str}"
         return format_html(html_content)
 
     # @method_decorator(cache_page(cache_timeout))
