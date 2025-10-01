@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
-
+from website.models import Technology as WebTechnology
 from project_management.models import (
     ClientInvoiceDate,
     EnableDailyUpdateNow,
@@ -35,6 +35,8 @@ from project_management.models import (
     Technology,
 )
 from website.models import ProjectKeyword, ProjectMetadata
+from website.models_v2.industries_we_serve import ServeCategory
+from website.models_v2.services import ServicePage
 
 from .forms import ProjectTechnologyInlineForm
 
@@ -152,20 +154,56 @@ class ProjectMetadataInline(nested_admin.NestedStackedInline):
     extra = 1
     exclude = ["canonical"]
     # inlines = [ProjectKeywordInline]
+    
+
+from django.contrib.admin import SimpleListFilter
+from django.db.models import Count
+
+class ProjectCountMixin:
+    title_field = "title"
+    def lookups(self, request, model_admin):
+        queryset = self.model.objects.annotate(project_count=Count('projects')).filter(project_count__gt=0)
+        return [(obj.id, f"{getattr(obj, self.title_field)} ({obj.project_count})") for obj in queryset]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(**{self.field_name: self.value()})
+        return queryset
+
+class ServiceFilter(ProjectCountMixin, SimpleListFilter):
+    title = 'Services'
+    parameter_name = 'services'
+    model = ServicePage
+    field_name = 'services'
+    
+
+class IndustryFilter(ProjectCountMixin, SimpleListFilter):
+    title = 'Industries'
+    parameter_name = 'industries'
+    model = ServeCategory
+    field_name = 'industries'
+
+class TechnologyFilter(ProjectCountMixin, SimpleListFilter):
+    title = 'Technologies'
+    parameter_name = 'technology'
+    model = WebTechnology
+    field_name = 'technology'
+    title_field = "name"
 
 
 @admin.register(Project)
 class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     list_display = (
         "project_title_with_client",
-        "web_title",
-        "client_invoice_date",
+        # "web_title",
+        # "client_invoice_date",
         "hourly_rate",
-        "last_increased",
+        # "last_increased",
         "active",
         "get_report_url",
-        "get_live_link",
-        "client_feedback_link",
+        "get_cs_link"
+        # "get_live_link",
+        # "client_feedback_link",
     )
     search_fields = (
         "title",
@@ -187,7 +225,13 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         ProjectMetadataInline,
     )
 
-    list_filter = ("active", "show_in_website")
+    list_filter = (
+        "active",
+        "show_in_website",
+        ServiceFilter,
+        IndustryFilter,
+        TechnologyFilter,
+    )
     list_per_page = 20
     ordering = ("pk",)
     # autocomplete_fields = ["client"]
@@ -263,6 +307,15 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
 
     def get_ordering(self, request):
         return ["title"]
+    
+    @admin.display(description="CS", ordering="identifier")
+    def get_cs_link(self, obj):
+        html_template = get_template(
+            "admin/project_management/list/cs_link.html"
+        )
+        url = f"https://mediusware.com/case-study/{obj.slug}"
+        html_content = html_template.render({"url": url})
+        return format_html(html_content)
 
     def get_report_url(self, obj):
         html_template = get_template(
@@ -271,7 +324,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         html_content = html_template.render({"identifier": obj.identifier})
         return format_html(html_content)
 
-    get_report_url.short_description = "hours_breakdown"
+    get_report_url.short_description = "WU"
 
     def get_live_link(self, obj):
         html_template = get_template(
