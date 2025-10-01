@@ -2349,34 +2349,35 @@ class ContactFormAdmin(admin.ModelAdmin):
         "full_name",
         "email",
         "form_type",
-        "client_query_truncated",
-        "project_details_truncated",
+        # "client_query_truncated",
+        # "project_details_truncated",
+        "short_brief_truncated",
         "created_at"
     )
 
-    def client_query_truncated(self, obj):
-        if not obj.client_query:
+    def short_brief_truncated(self, obj):
+        if not obj.short_brief:
             return "-"
-        truncated = Truncator(obj.client_query).words(5, html=True)
+        truncated = Truncator(obj.short_brief).words(5, html=True)
         return format_html(
             '<span class="tooltip" data-tooltip="{}">{}</span>',
-            obj.client_query,
+            obj.short_brief,
             truncated
         )
-    client_query_truncated.short_description = "Client Query"
-    client_query_truncated.admin_order_field = "client_query"
+    short_brief_truncated.short_description = "Short Brief"
+    short_brief_truncated.admin_order_field = "short_brief"
 
-    def project_details_truncated(self, obj):
-        if not obj.project_details:
-            return "-"
-        truncated = Truncator(obj.project_details).words(5, html=True)
-        return format_html(
-            '<span class="tooltip" data-tooltip="{}">{}</span>',
-            obj.project_details,
-            truncated
-        )
-    project_details_truncated.short_description = "Project Details"
-    project_details_truncated.admin_order_field = "project_details"
+    # def project_details_truncated(self, obj):
+    #     if not obj.project_details:
+    #         return "-"
+    #     truncated = Truncator(obj.project_details).words(5, html=True)
+    #     return format_html(
+    #         '<span class="tooltip" data-tooltip="{}">{}</span>',
+    #         obj.project_details,
+    #         truncated
+    #     )
+    # project_details_truncated.short_description = "Project Details"
+    # project_details_truncated.admin_order_field = "project_details"
 
     class Media:
         css = {
