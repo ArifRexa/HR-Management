@@ -1,0 +1,12 @@
+{% load i18n %}
+<h3>{{ title }}</h3>
+<ul class="admin-filter-list">
+{% for choice in choices %}
+  <li>
+    <a href="{{ choice.query_string|iriencode }}"
+       title="{{ choice.display.label }}" {% if not choice.display.has_assets %} style="color:red"{% endif %}>
+       {{ choice.display.label }}
+    </a>
+  </li>
+{% endfor %}
+</ul>

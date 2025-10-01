@@ -43,6 +43,7 @@ from asset_management.models.asset import (
     RAMSize,
     SSDorHDDSize,
 )
+from employee.models.employee import Employee
 
 # @admin.register(AssetCategory)
 # class AssetCategoryAdmin(admin.ModelAdmin):
@@ -614,7 +615,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "gpu",
         "other_specs",
         "is_active",
-        "created_by",
+        "get_created_by",
     ]
     search_fields = [
         "category__name",
@@ -650,15 +651,14 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "brand",
     ]
-    list_filter = [
-        "is_active",
-        "category",
-        "brand",
-        "vendor",
-    ]
+    list_filter = ["is_active", "category", "brand", "vendor", "created_by"]
     actions = [
         "make_active_inactive",
     ]
+
+    @admin.display(description="Created By")
+    def get_created_by(self, obj):
+        return obj.created_by.first_name
 
     def get_search_from_model(self, request):
         app_label = request.GET.get("app_label")
@@ -753,6 +753,56 @@ class CPUModelAdmin(admin.ModelAdmin):
         return super().save_model(request, obj, form, change)
 
 
+from django.contrib.admin.filters import RelatedFieldListFilter
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+
+class CreatedByUserFilter(RelatedFieldListFilter):
+    """Only show users that have created at least one EmployeeFixedAsset."""
+
+    def field_choices(self, field, request, model_admin):
+        # users that appear in EmployeeFixedAsset.created_by
+        qs = (
+            User.objects.filter(
+                employee__employee_fixed_assets_employee__created_by__isnull=False
+            )
+            .distinct()
+            .order_by("first_name", "last_name")
+        )
+        return [(u.pk, str(u)) for u in qs]
+
+
+from django.contrib.admin import SimpleListFilter
+
+from employee.models import Employee
+
+
+class EmployeeWithAssetFilter(SimpleListFilter):
+    title = "Employee"
+    parameter_name = "employee"
+
+    template = "admin/asset/employee_with_asset_filter.html"  # <-- our own copy
+
+    def lookups(self, request, model_admin):
+        # annotate every employee with number of fixed-assets
+        employees = (
+            Employee.objects.filter(active=True)
+            .annotate(asset_cnt=Count("employee_fixed_assets_employee"))
+            .order_by("full_name")
+        )
+        return [
+            (emp.pk, {"label": str(emp), "has_assets": bool(emp.asset_cnt)})
+            for emp in employees
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(employee_id=self.value())
+        return queryset
+
+
 @admin.register(EmployeeFixedAsset)
 class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     list_display = [
@@ -766,7 +816,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "headphone",
         "extra",
         "is_active",
-        "created_by",
+        "get_created_by",
     ]
 
     search_fields = [
@@ -786,6 +836,8 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "is_active",
+        EmployeeWithAssetFilter,
+        ("created_by", CreatedByUserFilter),
     ]
     actions = [
         "make_active_inactive",
@@ -793,7 +845,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
-        js = ("js/list.js", "js/new_daily_update.js")
+        js = ("js/list.js", "js/new_daily_update.js", "js/menuHide.js")
 
     def get_queryset(self, request):
         if (
@@ -879,6 +931,10 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
             "<br>".join(monitors),
         )
 
+    @admin.display(description="Created By")
+    def get_created_by(self, obj):
+        return obj.created_by.first_name
+
     @admin.action(description="Mark selected as active/inactive")
     def make_active_inactive(modeladmin, request, queryset):
         queryset.update(
@@ -901,7 +957,7 @@ class AssetAssignmentLogAdmin(admin.ModelAdmin):
         "asset__asset_id",
         "note",
     )
-    
+
     @admin.display(description="Asset", ordering="asset__asset_id")
     def get_asset(self, obj):
         if obj.asset:
