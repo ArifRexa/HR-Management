@@ -262,6 +262,7 @@ class ClientAdmin(admin.ModelAdmin):
         "active",
         # "review",
         "payment_method",
+        "source",
         "invoice_type",
         "currency",
     ]
