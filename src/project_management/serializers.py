@@ -94,8 +94,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
             'id', 'title', 'slug', 'description', 'client_name', 
             'client_image', 'client_review', 'client_designation', 'featured_image', 'thumbnail', 'live_link', 'project_logo',
             'industries', 'services', 'technology',
-            'active', 'show_in_website', 'created_at', 'updated_at'
+            'active', 'show_in_website', 'is_special', 'created_at', 'updated_at'
         ]
+        
         ref_name = 'ProjectListReadOnly'
 
 
