@@ -1436,9 +1436,9 @@ class ContactForm(TimeStampMixin):
         ("discuss", "Discuss Service"),
     )
     ACTION_BY = (
-        ("pending", "Pending"),
-        ("sales", "Sales"),
-        ("hr", "HR")
+        ("pending", "⌛ Pending"),
+        ("sales", "💼 Sales"),
+        ("hr", "🤝 HR")
     )
     form_type = models.CharField(max_length=50, choices=TYPE_CHOICES, default="discuss")
     full_name = models.CharField(max_length=255)
