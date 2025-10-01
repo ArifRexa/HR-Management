@@ -2352,8 +2352,11 @@ class ContactFormAdmin(admin.ModelAdmin):
         # "client_query_truncated",
         # "project_details_truncated",
         "short_brief_truncated",
+        "action_by",
         "created_at"
     )
+    
+    list_filter = ("form_type", "action_by")
 
     def short_brief_truncated(self, obj):
         if not obj.short_brief:
