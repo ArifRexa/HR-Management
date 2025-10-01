@@ -297,7 +297,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     @admin.display(description="Date", ordering="created_at")
     def get_date(self, obj):
-        return obj.created_at
+        return obj.created_at.date()
 
     @admin.display(description="Update")
     def get_update(self, obj):

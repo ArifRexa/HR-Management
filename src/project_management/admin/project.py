@@ -162,7 +162,7 @@ from django.db.models import Count
 class ProjectCountMixin:
     title_field = "title"
     def lookups(self, request, model_admin):
-        queryset = self.model.objects.annotate(project_count=Count('projects')).filter(project_count__gt=0)
+        queryset = self.model.objects.annotate(project_count=Count('projects'))#.filter(project_count__gt=0)
         return [(obj.id, f"{getattr(obj, self.title_field)} ({obj.project_count})") for obj in queryset]
 
     def queryset(self, request, queryset):
@@ -200,6 +200,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "hourly_rate",
         # "last_increased",
         "active",
+        "get_show_in_website",
         "get_report_url",
         "get_cs_link"
         # "get_live_link",
@@ -308,13 +309,19 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     def get_ordering(self, request):
         return ["title"]
     
+    @admin.display(description="Website", ordering="show_in_website")
+    def get_show_in_website(self, obj):
+        y = '<img src="/static/admin/img/icon-no.svg" alt="False">'
+        n = '<img src="/static/admin/img/icon-yes.svg" alt="False">'
+        return format_html(y) if obj.show_in_website else format_html(n)
+    
     @admin.display(description="CS", ordering="identifier")
     def get_cs_link(self, obj):
         html_template = get_template(
             "admin/project_management/list/cs_link.html"
         )
         url = f"https://mediusware.com/case-study/{obj.slug}"
-        html_content = html_template.render({"url": url})
+        html_content = html_template.render({"url": url, "obj": obj})
         return format_html(html_content)
 
     def get_report_url(self, obj):
