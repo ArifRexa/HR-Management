@@ -337,6 +337,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     @admin.display(description="Hours", ordering="hours")
     def get_hours(self, obj):
         history_qs = getattr(obj, "history_list", None)
+        hours_str = ""
         if history_qs:
             history_list = list(history_qs)
             hours_str = " > ".join(f"{round(h.hours, 2)}" for h in history_list)
