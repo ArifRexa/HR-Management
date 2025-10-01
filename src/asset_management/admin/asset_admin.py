@@ -677,6 +677,8 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
             request, queryset, search_term
         )
         model_class = self.get_search_from_model(request)
+        if not model_class:
+            return queryset, use_distinct
         field = request.GET.get("field_name")
         search_fields = {
             f"{field}__isnull": False,
