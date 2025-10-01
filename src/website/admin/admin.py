@@ -1,3 +1,4 @@
+from html import escape
 import json
 from typing import Any, Union
 
@@ -17,6 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django.utils.text import Truncator
 from django_q.tasks import async_task
 from mptt.admin import MPTTModelAdmin
 from django.contrib.admin import SimpleListFilter
@@ -2251,10 +2253,142 @@ class PublicImageAdmin(admin.ModelAdmin):
 #     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
 
 
+# @admin.register(ContactForm)
+# class ContactFormAdmin(admin.ModelAdmin):
+#     list_display = ("full_name", "email", "form_type", "client_query", "project_details", "created_at")
+#     # readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
+
+
+
+# @admin.register(ContactForm)
+# class ContactFormAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "full_name",
+#         "email",
+#         "form_type",
+#         "client_query_truncated",
+#         "project_details_truncated",
+#         "created_at"
+#     )
+
+#     # Optional: Make fields read-only if needed
+#     # readonly_fields = [...]  # keep your existing if needed
+
+#     def client_query_truncated(self, obj):
+#         if not obj.client_query:
+#             return "-"
+#         truncated = Truncator(obj.client_query).words(5, html=True)  # or .chars(50)
+#         return format_html(
+#             '<span title="{}">{}</span>',
+#             obj.client_query,
+#             truncated
+#         )
+#     client_query_truncated.short_description = "Client Query"
+#     client_query_truncated.admin_order_field = "client_query"
+
+#     def project_details_truncated(self, obj):
+#         if not obj.project_details:
+#             return "-"
+#         truncated = Truncator(obj.project_details).words(5, html=True)
+#         return format_html(
+#             '<span title="{}">{}</span>',
+#             obj.project_details,
+#             truncated
+#         )
+#     project_details_truncated.short_description = "Project Details"
+#     project_details_truncated.admin_order_field = "project_details"
+
+
+
+
+# ===================== modal=====================
+# @admin.register(ContactForm)
+# class ContactFormAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "full_name",
+#         "email",
+#         "form_type",
+#         "client_query_truncated",
+#         "project_details_truncated",
+#         "created_at"
+#     )
+
+#     def client_query_truncated(self, obj):
+#         if not obj.client_query:
+#             return "-"
+#         truncated = Truncator(obj.client_query).words(5, html=True)
+#         return format_html(
+#             '<a href="#" class="popup-link" data-content="{}" data-title="Client Query">{}</a>',
+#             obj.client_query,
+#             truncated
+#         )
+#     client_query_truncated.short_description = "Client Query"
+#     client_query_truncated.admin_order_field = "client_query"
+
+#     def project_details_truncated(self, obj):
+#         if not obj.project_details:
+#             return "-"
+#         truncated = Truncator(obj.project_details).words(5, html=True)
+#         return format_html(
+#             '<a href="#" class="popup-link" data-content="{}" data-title="Project Details">{}</a>',
+#             obj.project_details,
+#             truncated
+#         )
+#     project_details_truncated.short_description = "Project Details"
+#     project_details_truncated.admin_order_field = "project_details"
+
+#     class Media:
+#         css = {
+#             'all': ('css/admin_popup.css',)
+#         }
+#         js = ('js/admin_popup.js',)
+
 @admin.register(ContactForm)
 class ContactFormAdmin(admin.ModelAdmin):
-    list_display = ("full_name", "email", "form_type", "created_at")
-    readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
+    list_display = (
+        "full_name",
+        "email",
+        "form_type",
+        "client_query_truncated",
+        "project_details_truncated",
+        "created_at"
+    )
+
+    def client_query_truncated(self, obj):
+        if not obj.client_query:
+            return "-"
+        truncated = Truncator(obj.client_query).words(5, html=True)
+        return format_html(
+            '<span class="tooltip" data-tooltip="{}">{}</span>',
+            obj.client_query,
+            truncated
+        )
+    client_query_truncated.short_description = "Client Query"
+    client_query_truncated.admin_order_field = "client_query"
+
+    def project_details_truncated(self, obj):
+        if not obj.project_details:
+            return "-"
+        truncated = Truncator(obj.project_details).words(5, html=True)
+        return format_html(
+            '<span class="tooltip" data-tooltip="{}">{}</span>',
+            obj.project_details,
+            truncated
+        )
+    project_details_truncated.short_description = "Project Details"
+    project_details_truncated.admin_order_field = "project_details"
+
+    class Media:
+        css = {
+            'all': ('css/admin_popup.css',)
+        }
+
+
+
+
+
+
+
 
 @admin.register(Certification)
 class CertificationAdmin(admin.ModelAdmin):
