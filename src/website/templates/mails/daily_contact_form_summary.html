@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            color: #007bff;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .no-data {
+            font-style: italic;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Daily Contact Form Summary</h1>
+        <p><strong>Date Range:</strong> {{ date_range }}</p>
+        {% if new_contacts %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Form Type</th>
+                        <th>Short Brief</th>
+                        <th>Action By</th>
+                        <th>Created At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for contact in new_contacts %}
+                        <tr>
+                            <td>{{ contact.full_name }}</td>
+                            <td>{{ contact.email }}</td>
+                            <td>{{ contact.get_form_type_display }}</td>
+                            <td>{{ contact.short_brief|default:"-" }}</td>
+                            <td>{{ contact.get_action_by_display|default:"-" }}</td>
+                            <td>{{ contact.created_at|date:"Y-m-d H:i:s" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-data">No new contact forms submitted in the last 24 hours.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
