@@ -311,9 +311,16 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     
     @admin.display(description="Website", ordering="show_in_website")
     def get_show_in_website(self, obj):
-        y = '<img src="/static/admin/img/icon-no.svg" alt="False">'
-        n = '<img src="/static/admin/img/icon-yes.svg" alt="False">'
-        return format_html(y) if obj.show_in_website else format_html(n)
+        from django.templatetags.static import static
+        if obj.show_in_website:
+            icon = static("admin/img/icon-yes.svg")
+        else:
+            icon = static("admin/img/icon-no.svg")
+        return format_html(
+            '<img src="{}" alt="{}">',
+            icon,
+            obj.show_in_website
+        )
     
     @admin.display(description="CS", ordering="identifier")
     def get_cs_link(self, obj):
