@@ -1538,7 +1538,7 @@ class ContactFormSerializer(serializers.ModelSerializer):
         full_name = data.get('full_name')
         email = data.get('email')
         service_require = data.get('service_require')
-        client_query = data.get('client_query')
+        short_brief = data.get('short_brief')
 
         # Common required fields
         if not full_name:
@@ -1551,8 +1551,8 @@ class ContactFormSerializer(serializers.ModelSerializer):
             if not service_require:
                 raise serializers.ValidationError({"service_require": "This field is required for Discuss Service form type."})
         elif form_type == 'general':
-            if not client_query:
-                raise serializers.ValidationError({"client_query": "This field is required for General Inquiry form type."})
+            if not short_brief:
+                raise serializers.ValidationError({"short_brief": "This field is required for General Inquiry form type."})
 
         return data
 
