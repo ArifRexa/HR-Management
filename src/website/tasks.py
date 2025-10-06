@@ -79,7 +79,7 @@ def send_daily_contact_form_summary():
     email = EmailMultiAlternatives(
         subject=f"Daily Contact Form Summary - {end_time.strftime('%Y-%m-%d')}",
         body="Please find the daily summary of new contact form submissions.",
-        from_email='"Your Company Name" <no-reply@yourdomain.com>',
+        from_email='"Mediusware-Admin" <hr@mediusware.com>',
         to=recipient_emails,
     )
     email.attach_alternative(html_body, "text/html")
