@@ -135,6 +135,7 @@ from website.models import (
     TechnologyKeyThingsQA,
     TechnologyMetaData,
     TechnologyOurProcess,
+    TechnologyRelatedBlogs,
     TechnologySolutionsAndServices,
     TechnologySolutionsAndServicesCards,
     TechnologyTitle,
@@ -1106,6 +1107,13 @@ class HistoryOfTechInline(nested_admin.NestedStackedInline):
 class TechnologyMetaDataInline(nested_admin.NestedStackedInline):
     model = TechnologyMetaData
     extra = 1
+
+
+class TechnologyRelatedBlogsInline(nested_admin.NestedStackedInline):
+    model = TechnologyRelatedBlogs
+    fields = ["blog_id"]
+    extra = 1
+
 @admin.register(Technology)
 class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelAdmin
     list_display = ("name", "slug", "type", "show_in_menu")
@@ -1124,7 +1132,9 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
         TechnologyFAQInline, 
         TechnologyCTAInline, 
         TechnologyFAQSchemaInline,
+        TechnologyRelatedBlogsInline
     ]
+    
     change_form_template = 'admin/website/servecategory/change_form.html'
     
     def save_related(self, request, form, formsets, change):
