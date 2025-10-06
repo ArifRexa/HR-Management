@@ -680,12 +680,22 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         if not model_class:
             return queryset, use_distinct
         field = request.GET.get("field_name")
-        search_fields = {
-            f"{field}__isnull": False,
-        }
-        used_pks = model_class.objects.filter(**search_fields).values_list(
-            field, flat=True
-        )
+        if field in ["monitor1", "monitor2"]:
+            search_fields = Q(monitor1__isnull=False) | Q(
+                monitor2__isnull=False
+            )
+        else:
+            search_fields = {
+                f"{field}__isnull": False,
+            }
+        if isinstance(search_fields, dict):
+            used_pks = model_class.objects.filter(**search_fields).values_list(
+                field, flat=True
+            )
+        else:
+            used_pks = model_class.objects.filter(search_fields).values_list(
+                field, flat=True
+            )
         queryset = queryset.exclude(pk__in=used_pks)
         return queryset, use_distinct
 
@@ -761,6 +771,7 @@ User = get_user_model()
 
 class CreatedByUserFilter(RelatedFieldListFilter):
     """Only show users that have created at least one EmployeeFixedAsset."""
+
     title = "Created"
 
     def field_choices(self, field, request, model_admin):
@@ -808,13 +819,13 @@ class EmployeeWithAssetFilter(SimpleListFilter):
 class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     list_display = [
         "employee",
-        "table",
-        "chair",
+        "get_table",
+        "get_chair",
         "get_monitors",
         "get_cpu",
-        "keyboard",
-        "mouse",
-        "headphone",
+        "get_keyboard",
+        "get_mouse",
+        "get_headphone",
         "extra",
         "is_active",
         "get_created_by",
@@ -843,6 +854,34 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     actions = [
         "make_active_inactive",
     ]
+
+    def _asset_card(self, asset, title=None):
+        """Utility: render asset-card.html for any asset (CPU or FixedAsset)."""
+        if asset is None:
+            return "-"
+        tpl = get_template("admin/asset/col_cpu.html")
+        html = tpl.render({"asset": asset, "title": title})
+        return mark_safe(html)
+
+    @admin.display(description="Table")
+    def get_table(self, obj):
+        return self._asset_card(obj.table)
+
+    @admin.display(description="Chair")
+    def get_chair(self, obj):
+        return self._asset_card(obj.chair)
+
+    @admin.display(description="Keyboard")
+    def get_keyboard(self, obj):
+        return self._asset_card(obj.keyboard)
+
+    @admin.display(description="Mouse")
+    def get_mouse(self, obj):
+        return self._asset_card(obj.mouse)
+
+    @admin.display(description="Headphone")
+    def get_headphone(self, obj):
+        return self._asset_card(obj.headphone)
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
@@ -917,20 +956,16 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
 
     @admin.display(description="CPU")
     def get_cpu(self, obj):
-        template = get_template("admin/asset/col_cpu.html")
-        html_content = template.render({"cpu": obj.cpu})
-        return mark_safe(html_content)
+        return self._asset_card(obj.cpu)
 
     @admin.display(description="Monitors")
     def get_monitors(self, obj):
-        monitors = [
-            obj.monitor1,
-            obj.monitor2,
-        ]
-        monitors = [str(monitor) for monitor in monitors if monitor]
-        return format_html(
-            "<br>".join(monitors),
-        )
+        monitors = [obj.monitor1, obj.monitor2]
+        monitors = [m for m in monitors if m]  # drop None
+        if not monitors:
+            return "-"
+        tpl = get_template("admin/asset/monitor.html")
+        return mark_safe(tpl.render({"monitors": monitors}))
 
     @admin.display(description="Created By")
     def get_created_by(self, obj):

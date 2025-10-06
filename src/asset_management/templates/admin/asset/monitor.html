@@ -1,0 +1,11 @@
+{# admin/asset/monitors.html #}
+{% load replace_newline daily_groupby %}
+
+{% for m in monitors %}
+    {% if m %}
+        {% include "admin/asset/col_cpu.html" with asset=m title=m.asset_id %}
+    {% endif %}
+    {% if not forloop.last %}<br>{% endif %}
+{% empty %}
+    -
+{% endfor %}

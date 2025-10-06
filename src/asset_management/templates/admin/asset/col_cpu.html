@@ -1,36 +1,37 @@
 {% load replace_newline daily_groupby %}
 
 <div class="popover-wrapper">
-    {% if cpu %}
-        
-        <div class="popover-title">
+    <div class="popover-title">
+        {% if title %}
+            {{ title }}
+        {% else %}
+            {{ asset.asset_id }}
+        {% endif %}
+    </div>
 
-            {{ cpu.processor }}
-                
-
-        </div>
-        <div class="popover-message">
-
-            <strong>Casing:</strong> {{ cpu.casing }}
-            <br/>
-            <strong>Processor:</strong> {{ cpu.processor }} 
-            <br>
-            <strong>RAM 1:</strong> {{ cpu.ram1 }} 
-            <br>
-            <strong>RAM 2:</strong> {{ cpu.ram2 }} 
-            <br>
-            <strong>SSD:</strong> {{ cpu.ssd }} 
-            <br>
-            <strong>HDD:</strong> {{ cpu.hdd }} 
-            <br>
-            <strong>GPU:</strong> {{ cpu.gpu }} 
+    {% if asset %}
+        <div class="popover-message" style="min-width: 200px; padding: 10px 5px;top: 25px;">
+            {# LEGAL way to recognise a CPU object #}
+            {% if asset.casing %}
+                {# CPU-specific block #}
+                <strong>Casing:</strong> {{ asset.casing|default:" -" }}<br/><br/>
+                <strong>Processor:</strong> {{ asset.processor|default:" -" }}<br><br/>
+                <strong>RAM 1:</strong> {{ asset.ram1|default:" -" }}<br><br/>
+                <strong>RAM 2:</strong> {{ asset.ram2|default:" -" }}<br><br/>
+                <strong>SSD:</strong> {{ asset.ssd|default:" -" }}<br><br/>
+                <strong>HDD:</strong> {{ asset.hdd|default:" -" }}<br><br/>
+                <strong>GPU:</strong> {{ asset.gpu|default:" -" }}
+            {% else %}
+                {# Generic FixedAsset block #}
+                <strong>Asset ID:</strong> {{ asset.asset_id }}<br><br/>
+                <strong>Category:</strong> {{ asset.category.name }}<br><br/>
+                <strong>Brand:</strong> {{ asset.brand|default:" -" }}<br><br/>
+                <strong>Model:</strong> {{ asset.model|default:" -" }}<br><br/>
+                <strong>Serial:</strong> {{ asset.serial|default:" -" }}<br><br/>
+                <strong>Remarks:</strong> {{ asset.remarks|default:" -" }}
+            {% endif %}
         </div>
     {% else %}
-        <div class="popover-title">
-            -
-        </div>
+        <div class="popover-title">-</div>
     {% endif %}
-        
-
-
 </div>
