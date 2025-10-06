@@ -395,6 +395,7 @@ class ServicesRelatedBlogs(models.Model):
     )
     title = models.CharField(max_length=255, null=True, blank=True)
     link = models.URLField(null=True, blank=True)
+    blog_id = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         verbose_name = "Related Blog"
