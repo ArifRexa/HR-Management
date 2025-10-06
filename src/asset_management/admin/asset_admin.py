@@ -973,7 +973,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     @admin.display(description="Monitors")
     def get_monitors(self, obj):
         monitors = [obj.monitor1, obj.monitor2]
-        monitors = [m for m in monitors if m]  # drop None
+        monitors = [m for m in monitors if m]
         if not monitors:
             return "-"
         tpl = get_template("admin/asset/monitor.html")

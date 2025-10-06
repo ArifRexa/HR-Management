@@ -1,11 +1,33 @@
-{# admin/asset/monitors.html #}
+{# admin/asset/monitors.html  --  standalone #}
 {% load replace_newline daily_groupby %}
+<div class="popover-wrapper">
+{% with monitors=monitors|slice:":2" %}
+  {% if monitors %}
+    {# ---- visible trigger text ---- #}
+    <span class="popover-title">
+      {% for m in monitors %}
+            {% if m %}
+                {{m.asset_id}} <br>
+            {% endif %}
+        {% endfor %}
+    </span>
 
-{% for m in monitors %}
-    {% if m %}
-        {% include "admin/asset/col_cpu.html" with asset=m title=m.asset_id %}
-    {% endif %}
-    {% if not forloop.last %}<br>{% endif %}
-{% empty %}
+    {# ---- single shared bubble ---- #}
+    <div class="popover-message" style="min-width:220px; padding:10px 5px;">
+      {% for m in monitors %}
+        {% if m %}
+          <strong>Monitor {{ forloop.counter }}</strong><br>
+          {% if m.asset_id %}ID: {{ m.asset_id }}<br>{% endif %}
+          {% if m.brand %}Brand: {{ m.brand }}<br>{% endif %}
+          {% if m.model %}Model: {{ m.model }}<br>{% endif %}
+          {% if m.serial %}Serial: {{ m.serial }}<br>{% endif %}
+          {% if m.remarks %}Remarks: {{ m.remarks }}<br>{% endif %}
+          {% if not forloop.last %}<br>{% endif %}
+        {% endif %}
+      {% endfor %}
+    </div>
+  {% else %}
     -
-{% endfor %}
+  {% endif %}
+{% endwith %}
+</div>
