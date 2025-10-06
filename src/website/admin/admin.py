@@ -821,6 +821,7 @@ class MetaDescriptionInline(nested_admin.NestedStackedInline):
 
 class ServicesRelatedBlogsInline(nested_admin.NestedStackedInline):
     model = ServicesRelatedBlogs
+    fields = ["blog_id"]
     extra = 1
 
 
