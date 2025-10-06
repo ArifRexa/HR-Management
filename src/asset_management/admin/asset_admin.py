@@ -694,9 +694,21 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
             )
         else:
             used_pks = model_class.objects.filter(search_fields).values_list(
-                field, flat=True
+                "monitor1", "monitor2"
             )
-        queryset = queryset.exclude(pk__in=used_pks)
+        # d = FixedAsset.objects.filter(monitor1__isnull=False)
+        monitors_used_ids = []
+        if used_pks and isinstance(used_pks[0], tuple):
+            for i, k in used_pks:
+                if i:
+                    monitors_used_ids.append(i)
+                if k:
+                    monitors_used_ids.append(k)
+            queryset = queryset.exclude(pk__in=monitors_used_ids)
+        else:
+            queryset = queryset.exclude(pk__in=used_pks)
+        # used_pks += p
+        # queryset = queryset.exclude(pk__in=used_pks)
         return queryset, use_distinct
 
     def save_model(self, request, obj, form, change):
