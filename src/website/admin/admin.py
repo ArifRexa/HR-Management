@@ -2353,10 +2353,11 @@ class ContactFormAdmin(admin.ModelAdmin):
         # "project_details_truncated",
         "short_brief_truncated",
         "action_by",
+        "is_verified",
         "created_at"
     )
     
-    list_filter = ("form_type", "action_by")
+    list_filter = ("form_type", "action_by", "is_verified")
 
     def short_brief_truncated(self, obj):
         if not obj.short_brief:

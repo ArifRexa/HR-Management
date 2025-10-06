@@ -1,4 +1,5 @@
 import json
+from django.template.loader import render_to_string
 
 import django_filters
 from django.core.files.base import ContentFile
@@ -17,6 +18,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound
+from config import settings
 from employee.models import Employee, EmployeeNOC, Skill
 from project_management.models import (
     Client,
@@ -42,6 +44,7 @@ from website.models import (
     Category,
     Certification,
     Contact,
+    ContactForm,
     EmployeePerspective,
     EmployeeTestimonial,
     Gallery,
@@ -64,6 +67,7 @@ from website.models import (
     VideoTestimonial,
     WebsiteTitle,
 )
+from django.core.mail import EmailMultiAlternatives
 from website.models_v2.hire_resources import HireDeveloperPage
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
@@ -1061,6 +1065,23 @@ class SubscriptionModelViewSet(viewsets.ModelViewSet):
     serializer_class = SubscriptionSerializer
 
 
+# class ContactFormView(APIView):
+#     serializer_class = ContactFormSerializer
+#     permission_classes = [AllowAny]
+
+#     @swagger_auto_schema(
+#         request_body=ContactFormSerializer,
+#         tags=["Contact"],
+#         operation_description="Create a new contact form entry"
+#     )
+#     def post(self, request):
+#         serializer = ContactFormSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class ContactFormView(APIView):
     serializer_class = ContactFormSerializer
     permission_classes = [AllowAny]
@@ -1073,10 +1094,89 @@ class ContactFormView(APIView):
     def post(self, request):
         serializer = ContactFormSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            email = serializer.validated_data['email']
+
+            # Check if this email was ever verified in any previous submission
+            if ContactForm.objects.filter(email=email, is_verified=True).exists():
+                # Auto-verify this new submission
+                contact = serializer.save(is_verified=True)
+                return Response({
+                    "message": "Form submitted successfully. Email already verified.",
+                    "data": serializer.data
+                }, status=status.HTTP_201_CREATED)
+            else:
+                # First-time submission (or never verified): send email
+                contact = serializer.save(is_verified=False)
+                try:
+                    self.send_verification_email(contact, request)
+                    return Response({
+                        "message": "Form submitted successfully. Please check your email to verify.",
+                        "data": serializer.data
+                    }, status=status.HTTP_201_CREATED)
+                except Exception as e:
+                    print("Email sending failed:", str(e))
+                    import traceback
+                    traceback.print_exc()
+                    return Response({
+                        "message": "Form submitted successfully, but failed to send verification email.",
+                        "data": serializer.data
+                    }, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+    def send_verification_email(self, contact, request):
+        """Send verification email with token link"""
+        token = contact.generate_verification_token()
+        # Dynamically construct the site URL from the request
+        scheme = request.scheme  # http or https
+        host = request.get_host()  # e.g., 127.0.0.1:8083 or yourdomain.com
+        verify_url = f"{scheme}://{host}/verify/{token}/"
+        
+        context = {
+            'full_name': contact.full_name,
+            'verify_url': verify_url,
+            'company_name': "Mediusware LTD.",
+            'contact_email': "hr@mediusware.com"
+        }
+        print("*"*100)
+        print(verify_url)
+        print(context)
+        
+        html_body = render_to_string(
+            'mails/contact_verification.html',
+            context=context,
+        )
+
+        email = EmailMultiAlternatives(
+            subject="Verify Your Contact Form Submission - Mediusware LTD.",
+            body="Please verify your submission by clicking the link.",
+            from_email='"Mediusware-Admin" <hr@mediusware.com>',
+            to=[contact.email],
+        )
+        print(email, contact.email)
+        email.attach_alternative(html_body, "text/html")
+        email.send()
+
+
+class VerifyContactView(APIView):
+    permission_classes = [AllowAny]
+
+    @swagger_auto_schema(
+        tags=["Contact"],
+        operation_description="Verify a contact form submission using token"
+    )
+    def get(self, request, token):
+        contact = ContactForm.verify_token(token)
+        if contact:
+            contact.is_verified = True
+            contact.save()
+            return Response({
+                "message": "Thank you for verifying. Our team will contact you soon."
+            }, status=status.HTTP_200_OK)
+        return Response({
+            "error": "Invalid or expired verification link."
+        }, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 # class TechnologyNavigationView(APIView):

@@ -17,7 +17,7 @@ from project_management.models import Client, Country, Project, Technology
 from website.models_v2.hire_resources import HireResourcePage
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
-
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from .hire_models import *  # noqa
 from smart_selects.db_fields import ChainedManyToManyField
 
@@ -1449,6 +1449,24 @@ class ContactForm(TimeStampMixin):
     short_brief = models.TextField(null=True, blank=True)  # Short Brief
     attached_file = models.FileField(upload_to="contact_files/", null=True, blank=True)
     action_by = models.CharField(max_length=50, choices=ACTION_BY, default="pending", null=True, blank=True)
+    is_verified = models.BooleanField(default=False)
+
+    def generate_verification_token(self):
+        """Generate a signed token for email verification"""
+        signer = TimestampSigner()
+        return signer.sign(f"{self.id}:{self.email}")
+
+    @staticmethod
+    def verify_token(token, max_age=24*3600):  # 24 hours expiry
+        """Verify token and return ContactForm instance if valid"""
+        signer = TimestampSigner()
+        try:
+            value = signer.unsign(token, max_age=max_age)
+            contact_id, email = value.split(":")
+            contact = ContactForm.objects.get(id=contact_id, email=email, is_verified=False)
+            return contact
+        except (BadSignature, SignatureExpired, ContactForm.DoesNotExist):
+            return None
 
 
 
