@@ -1719,5 +1719,5 @@ class ArchivePage(TimeStampMixin):
         return self.seo_title
     
     class Meta:
-        verbose_name = "Page Hero Section"
-        verbose_name_plural = "Page Hero Sections"
+        verbose_name = "All Page"
+        verbose_name_plural = "All Pages"
