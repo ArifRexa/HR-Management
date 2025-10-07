@@ -136,7 +136,7 @@ from website.models import (
     WhyUsTitle,
 )
 from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
-from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
@@ -1823,7 +1823,13 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'IndustriesWeServeIndustryServe'
 
+class IndustryRelatedBlogsSerializer(serializers.ModelSerializer):
+    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
+    class Meta:
+        model = IndustryRelatedBlogs
+        fields = ['id', 'related_blog']
+        ref_name = 'IndustriesWeServeIndustryRelatedBlogs'
 
 class ServeCategorySerializer(serializers.ModelSerializer):
     # Change these fields to return single objects instead of arrays
@@ -1839,6 +1845,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
+    related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')
     
     class Meta:
         model = ServeCategory
@@ -1880,6 +1887,15 @@ class ServeCategorySerializer(serializers.ModelSerializer):
             return None
         except AttributeError:
             return None
+        
+    def get_related_blogs(self, obj):
+        try:
+            related_blogs = obj.industryrelatedblogs_set.all()
+            if related_blogs.exists():
+                return IndustryRelatedBlogsSerializer(related_blogs, many=True, context=self.context).data
+            return []
+        except AttributeError:
+            return []
     
     def get_table_of_contents(self, obj):
         toc = []
