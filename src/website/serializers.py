@@ -138,7 +138,7 @@ from website.models import (
 )
 from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
 
@@ -2172,6 +2172,15 @@ class MetaDescriptionSerializer(serializers.ModelSerializer):
         model = MetaDescription
         fields = '__all__'
         ref_name = 'MetaDescription'
+
+
+class ServicesRelatedBlogsSerializer(serializers.ModelSerializer):
+    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+
+    class Meta:
+        model = ServicesRelatedBlogs
+        fields = ['id', 'related_blog']
+        ref_name = 'ServicesRelatedBlogs'
         
 # Main ServicePage serializer with all nested relationships
 class ServicePageDetailSerializer(serializers.ModelSerializer):
@@ -2191,6 +2200,7 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
     service_meta_data = ServiceMetaDataSerializer(read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     meta_description = MetaDescriptionSerializer()
+    related_blogs = ServicesRelatedBlogsSerializer(many=True, read_only=True, source='service_related_blogs.all')
     
     class Meta:
         model = ServicePage
