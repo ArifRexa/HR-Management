@@ -1,20 +1,21 @@
-import datetime
-from typing import Any
+from datetime import timedelta
 
 from django.contrib import admin
-from django.http import HttpRequest
+from django.db.models import Q, Sum
 from django.template.loader import get_template
-from django.test import Client
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
+
+from employee.models import Employee
 
 # from networkx import project
-from django.db.models import Sum
 from employee.models.employee import EmployeeUnderTPM
-from employee.models.employee_activity import EmployeeProject
-from project_management.models import ProjectHour, ProjectHourHistry
-from employee.models import Employee
-from project_management.models import Project, Client
+from project_management.models import (
+    Client,
+    DailyProjectUpdate,
+    Project,
+    ProjectHour,
+    ProjectHourHistry,
+)
 
 
 class ProjectFilter(admin.SimpleListFilter):
@@ -31,7 +32,9 @@ class ProjectFilter(admin.SimpleListFilter):
         choices = []
         for project_id, project_title, client_name in project_types:
             display_name = (
-                f"{project_title} ({client_name})" if client_name else project_title
+                f"{project_title} ({client_name})"
+                if client_name
+                else project_title
             )
             choices.append((str(project_id), display_name))
         return choices
@@ -39,7 +42,9 @@ class ProjectFilter(admin.SimpleListFilter):
     def choices(self, changelist):
         yield {
             "selected": self.value() is None,
-            "query_string": changelist.get_query_string(remove=[self.parameter_name]),
+            "query_string": changelist.get_query_string(
+                remove=[self.parameter_name]
+            ),
             "display": ("All"),
         }
 
@@ -50,9 +55,13 @@ class ProjectFilter(admin.SimpleListFilter):
                 "query_string": changelist.get_query_string(
                     {self.parameter_name: lookup}
                 ),
-                "display": format_html(f'<span style="color: red;">{title}</span>')
+                "display": format_html(
+                    f'<span style="color: red;">{title}</span>'
+                )
                 if not project.check_is_weekly_project_hour_generated
-                else format_html(f'<span style="color: inherit;">{title}</span>'),
+                else format_html(
+                    f'<span style="color: inherit;">{title}</span>'
+                ),
             }
 
     def queryset(self, request, queryset):
@@ -70,7 +79,7 @@ class ProjectTypeFilter(admin.SimpleListFilter):
     parameter_name = "hour_type"
 
     def lookups(self, request, model_admin):
-        return (("bonus", "Bonus"),("project", "Project"))
+        return (("bonus", "Bonus"), ("project", "Project"))
 
     def queryset(self, request, queryset):
         if self.value() == "bonus":
@@ -135,7 +144,9 @@ class ProjectClientFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         employees = (
-            Client.objects.filter(project__active=True).distinct().values("id", "name")
+            Client.objects.filter(project__active=True)
+            .distinct()
+            .values("id", "name")
         )
         return tuple(
             [
@@ -150,7 +161,6 @@ class ProjectClientFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(project__client__id__exact=self.value())
-
 
 
 class TPMProjectFilter(admin.SimpleListFilter):
@@ -174,9 +184,13 @@ class TPMProjectFilter(admin.SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        tpm_project = EmployeeUnderTPM.objects.filter(
-            tpm__id__exact=self.value(),
-        ).values_list("project_id", flat=True).distinct()
+        tpm_project = (
+            EmployeeUnderTPM.objects.filter(
+                tpm__id__exact=self.value(),
+            )
+            .values_list("project_id", flat=True)
+            .distinct()
+        )
         # employee_project = EmployeeProject.objects.filter(
         #     employee__id__exact=self.value()
         # )
@@ -196,17 +210,13 @@ class StatusFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         STATUS_CHOICE = (("pending", "⌛ Pending"), ("approved", "✔ Approved"))
-        return tuple(
-            [
-                status
-                for status in STATUS_CHOICE
-            ]
-        )
+        return tuple([status for status in STATUS_CHOICE])
 
     def queryset(self, request, queryset):
         if self.value():
             return queryset.filter(status=self.value())
         return queryset
+
 
 class ProjectHourOptions(admin.ModelAdmin):
     class Media:
@@ -225,7 +235,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             if not request.user.employee.is_tpm:
                 fields.remove("status")
         return fields
-    
+
     def get_readonly_fields(self, request, obj):
         return ["tpm"]
 
@@ -255,6 +265,7 @@ class ProjectHourOptions(admin.ModelAdmin):
             "date",
             "project",
             "display_hours",
+            "get_daily_update",
             "manager",
             "get_resources",
             "get_status",
@@ -262,9 +273,13 @@ class ProjectHourOptions(admin.ModelAdmin):
         # if not request.user.is_superuser:
         #     list_display.remove('payable')
         return list_display
-    
+
     def display_hours(self, obj):
-        hours = ProjectHourHistry.objects.filter(history__id=obj.id).values_list('hour_history', flat=True).order_by('-id')
+        hours = (
+            ProjectHourHistry.objects.filter(history__id=obj.id)
+            .values_list("hour_history", flat=True)
+            .order_by("-id")
+        )
         if not hours:
             return obj.hours
         hours_list = []
@@ -273,10 +288,10 @@ class ProjectHourOptions(admin.ModelAdmin):
                 hours_list.append(f"<b style='font-size: 16px;'>{hour}</b>")
             else:
                 hours_list.append(int(hour))
-            
-        return format_html('<br>'.join(str(hour) for hour in hours_list))
 
-    display_hours.short_description = 'Hours'
+        return format_html("<br>".join(str(hour) for hour in hours_list))
+
+    display_hours.short_description = "Hours"
 
     # @admin.display(description='Forcast', ordering='forcast')
     # def get_forcast(self, obj: ProjectHour):
@@ -285,6 +300,31 @@ class ProjectHourOptions(admin.ModelAdmin):
     #         'project_hour': obj
     #     })
     #     return format_html(html_content)
+
+    @admin.display(description="Daily Update")
+    def get_daily_update(self, obj: ProjectHour):
+        manager_id = obj.manager.id
+
+        q_obj = Q(
+            project=obj.id,
+            manager=manager_id,
+            created_at__date__lte=obj.date,
+            created_at__date__gte=obj.date - timedelta(days=6),
+        )
+        employee = (
+            DailyProjectUpdate.objects.filter(
+                q_obj,
+                employee__active=True,
+                employee__project_eligibility=True,
+            )
+            .exclude(hours=0.0)
+            .only(
+                "hours",
+            )
+            .aggregate(total=Sum("hours"))
+        )
+
+        return employee.get("total", 0) if employee.get("total", None) else 0
 
     @admin.display(description="Resources")
     def get_resources(self, obj: ProjectHour):
@@ -311,7 +351,9 @@ class ProjectHourOptions(admin.ModelAdmin):
         color = "red"
         if obj.status == "approved":
             color = "green"
-        return format_html(f'<b style="color: {color}">{obj.get_status_display()}</b>')
+        return format_html(
+            f'<b style="color: {color}">{obj.get_status_display()}</b>'
+        )
 
     @admin.display(description="Operation Feedback")
     def operation_feedback_link(self, obj):
