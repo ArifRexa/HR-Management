@@ -36,6 +36,7 @@ from website.models import (
     AdditionalPageKeyThings,
     AdditionalPageKeyThingsCards,
     AdditionalPageOurProcess,
+    AdditionalPageRelatedBlogs,
     AdditionalPageWhyChooseUs,
     AdditionalPages,
     AllServicesTitle,
@@ -2597,6 +2598,12 @@ class TeamElementSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'TeamElement'
 
+class AdditionalPageRelatedBlogsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageRelatedBlogs
+        fields = '__all__'
+        ref_name = 'AdditionalPageRelatedBlogs'
+
 class AdditionalPagesSerializer(serializers.ModelSerializer):
     hero_section = serializers.SerializerMethodField()
     what_is = serializers.SerializerMethodField()
@@ -2605,14 +2612,14 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
     our_process = AdditionalPageOurProcessSerializer(many=True, read_only=True)
     faqs = AdditionalPageFAQSerializer(many=True, read_only=True)
     team_elements = TeamElementSerializer(many=True, read_only=True)
-    
+    related_blogs = AdditionalPageRelatedBlogsSerializer(many=True, read_only=True, source='additional_page_related_blogs.all')
        
     class Meta:
         model = AdditionalPages
         fields = [
             'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
             'hero_section', 'what_is', 'KeyThings', 'why_choose_us', 
-            'our_process', 'faqs', 'team_elements'
+            'our_process', 'faqs', 'team_elements', 'related_blogs'
         ]
         ref_name = 'AdditionalPages'
     
@@ -2657,6 +2664,15 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
             team_elements = obj.team_elements.all()
             if team_elements:
                 return TeamElementSerializer(team_elements, many=True).data
+        except Exception:
+            pass
+        return None
+    
+    def get_related_blogs(self, obj):
+        try:
+            related_blogs = obj.related_blogs.all()
+            if related_blogs:
+                return AdditionalPageRelatedBlogsSerializer(related_blogs, many=True).data
         except Exception:
             pass
         return None
