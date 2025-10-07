@@ -1825,11 +1825,11 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         ref_name = 'IndustriesWeServeIndustryServe'
 
 class IndustryRelatedBlogsSerializer(serializers.ModelSerializer):
-    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+    # related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
     class Meta:
         model = IndustryRelatedBlogs
-        fields = ['id', 'related_blog']
+        fields = ['blog_id',]
         ref_name = 'IndustriesWeServeIndustryRelatedBlogs'
 
 class ServeCategorySerializer(serializers.ModelSerializer):
@@ -1949,13 +1949,13 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         
-        # Add titles from Application Areas
-        try:
-            for item in obj.application_areas.all():
-                if item.title:
-                    toc.append(item.title)
-        except AttributeError:
-            pass
+        # # Add titles from Application Areas
+        # try:
+        #     for item in obj.application_areas.all():
+        #         if item.title:
+        #             toc.append(item.title)
+        # except AttributeError:
+        #     pass
         
         # Add titles from Industries
         try:
@@ -2175,11 +2175,11 @@ class MetaDescriptionSerializer(serializers.ModelSerializer):
 
 
 class ServicesRelatedBlogsSerializer(serializers.ModelSerializer):
-    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+    # related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
     class Meta:
         model = ServicesRelatedBlogs
-        fields = ['id', 'related_blog']
+        fields = ['blog_id',]
         ref_name = 'ServicesRelatedBlogs'
         
 # Main ServicePage serializer with all nested relationships
@@ -2508,11 +2508,11 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 #         ref_name = 'TechnologyDetailSerializer'
 
 class TechnologyRelatedBlogsSerializer(serializers.ModelSerializer):
-    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+    # related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
     class Meta:
         model = TechnologyRelatedBlogs
-        fields = ['id', 'related_blog']
+        fields = ['blog_id',]
         ref_name = 'TechnologyRelatedBlogsSerializer'
 
 class TechnologyDetailSerializer(serializers.ModelSerializer):
@@ -2560,10 +2560,10 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
             if item.section_title:
                 toc.append(item.section_title)
         
-        # Add section titles from Our Process
-        for item in obj.our_process.all():
-            if item.section_title:
-                toc.append(item.section_title)
+        # # Add section titles from Our Process
+        # for item in obj.our_process.all():
+        #     if item.section_title:
+        #         toc.append(item.section_title)
         
         # Add section titles from History of Tech
         for item in obj.history_of_tech.all():
@@ -2637,7 +2637,7 @@ class TeamElementSerializer(serializers.ModelSerializer):
 class AdditionalPageRelatedBlogsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdditionalPageRelatedBlogs
-        fields = '__all__'
+        fields = ['blog_id',]
         ref_name = 'AdditionalPageRelatedBlogs'
 
 class AdditionalPagesSerializer(serializers.ModelSerializer):
