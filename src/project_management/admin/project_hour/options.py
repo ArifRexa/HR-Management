@@ -306,7 +306,7 @@ class ProjectHourOptions(admin.ModelAdmin):
         manager_id = obj.manager.id
 
         q_obj = Q(
-            project=obj.id,
+            project=obj.project,
             manager=manager_id,
             created_at__date__lte=obj.date,
             created_at__date__gte=obj.date - timedelta(days=6),
