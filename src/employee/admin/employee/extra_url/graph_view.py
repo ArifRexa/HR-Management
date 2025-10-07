@@ -301,7 +301,7 @@ class GraphView(admin.ModelAdmin):
         weekly_project_hours = filtered_project_hours.values(
             "date",
         ).annotate(
-            hours=F("hours"),
+            hours=Sum("hours"),
         ).order_by("date")
 
         for weekly_project_hour in weekly_project_hours:
