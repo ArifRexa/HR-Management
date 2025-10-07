@@ -1825,11 +1825,11 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         ref_name = 'IndustriesWeServeIndustryServe'
 
 class IndustryRelatedBlogsSerializer(serializers.ModelSerializer):
-    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+    # related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
     class Meta:
         model = IndustryRelatedBlogs
-        fields = ['id', 'related_blog']
+        fields = ['blog_id',]
         ref_name = 'IndustriesWeServeIndustryRelatedBlogs'
 
 class ServeCategorySerializer(serializers.ModelSerializer):
@@ -2175,11 +2175,11 @@ class MetaDescriptionSerializer(serializers.ModelSerializer):
 
 
 class ServicesRelatedBlogsSerializer(serializers.ModelSerializer):
-    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+    # related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
     class Meta:
         model = ServicesRelatedBlogs
-        fields = ['id', 'related_blog']
+        fields = ['blog_id',]
         ref_name = 'ServicesRelatedBlogs'
         
 # Main ServicePage serializer with all nested relationships
@@ -2508,11 +2508,11 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 #         ref_name = 'TechnologyDetailSerializer'
 
 class TechnologyRelatedBlogsSerializer(serializers.ModelSerializer):
-    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+    # related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
     class Meta:
         model = TechnologyRelatedBlogs
-        fields = ['id', 'related_blog']
+        fields = ['blog_id',]
         ref_name = 'TechnologyRelatedBlogsSerializer'
 
 class TechnologyDetailSerializer(serializers.ModelSerializer):
@@ -2637,7 +2637,7 @@ class TeamElementSerializer(serializers.ModelSerializer):
 class AdditionalPageRelatedBlogsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdditionalPageRelatedBlogs
-        fields = '__all__'
+        fields = ['blog_id',]
         ref_name = 'AdditionalPageRelatedBlogs'
 
 class AdditionalPagesSerializer(serializers.ModelSerializer):
