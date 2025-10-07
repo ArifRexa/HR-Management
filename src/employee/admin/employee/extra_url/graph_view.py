@@ -294,7 +294,7 @@ class GraphView(admin.ModelAdmin):
         filters = kwargs.get("filters")
         filters["project_id__exact"] = kwargs.get('project_id__exact')
         filtered_project_hours = ProjectHour.objects.filter(
-            status="approved",
+            # status="approved",
             **filters,
         )
         
