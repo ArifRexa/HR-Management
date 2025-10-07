@@ -297,7 +297,7 @@ urlpatterns = [
     path('website/technology-list/', TechnologyListView.as_view(), name='technology-list'),
     path('website/technologies/sitemap/', TechnologySiteMapView.as_view(), name='technology-sitemap'),
     # path('website/technologies/<int:pk>/', TechnologyDetailView.as_view(), name='technology-detail'),
-    path('website/technologies/<slug:slug>/', TechnologySlugDetailView.as_view(), name='technology-detail-slug'),
+    path('website/technologies/<slug:identifier>/', TechnologySlugDetailView.as_view(), name='technology-detail-slug'),
     path('website/additional-pages/<slug:slug>/', AdditionalPageSlugDetailView.as_view(), name='additional-page-detail'),
     
     path('website/awards/', AwardCategoryListView.as_view(), name='award-categories'),

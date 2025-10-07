@@ -1957,26 +1957,59 @@ class TechnologyDetailView(APIView):
         serializer = TechnologyDetailSerializer(technology)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+# class TechnologySlugDetailView(APIView):
+#     @swagger_auto_schema(
+#         operation_description="Retrieve detailed information about a specific technology by slug",
+#         manual_parameters=[
+#             openapi.Parameter(
+#                 'slug',
+#                 openapi.IN_PATH,
+#                 description="Slug of the technology to retrieve",
+#                 type=openapi.TYPE_STRING,
+#                 required=True
+#             )
+#         ],
+#         responses={200: TechnologyDetailSerializer},
+#         tags=['Technologies']
+#     )
+#     def get(self, request, slug):
+#         from website.models import Technology
+#         technology = get_object_or_404(Technology, slug=slug)
+#         serializer = TechnologyDetailSerializer(technology)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
+
 class TechnologySlugDetailView(APIView):
+    from website.models import Technology
     @swagger_auto_schema(
-        operation_description="Retrieve detailed information about a specific technology by slug",
+        operation_description="Retrieve detailed information about a technology by slug or ID",
         manual_parameters=[
             openapi.Parameter(
-                'slug',
+                'identifier',
                 openapi.IN_PATH,
-                description="Slug of the technology to retrieve",
+                description="Slug (e.g., 'react') or numeric ID (e.g., 5) of the technology",
                 type=openapi.TYPE_STRING,
                 required=True
             )
         ],
-        responses={200: TechnologyDetailSerializer},
+        responses={
+            200: TechnologyDetailSerializer,
+            404: "Technology not found"
+        },
         tags=['Technologies']
     )
-    def get(self, request, slug):
+    def get(self, request, identifier):
         from website.models import Technology
-        technology = get_object_or_404(Technology, slug=slug)
+        # Try to fetch by ID if identifier is a positive integer
+        if identifier.isdigit():
+            technology = get_object_or_404(Technology, id=int(identifier))
+        else:
+            # Otherwise, treat as slug
+            technology = get_object_or_404(Technology, slug=identifier)
+
         serializer = TechnologyDetailSerializer(technology)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 class AdditionalPageSlugDetailView(RetrieveAPIView):
     queryset = AdditionalPages.objects.all()
