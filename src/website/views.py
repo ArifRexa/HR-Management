@@ -1662,16 +1662,92 @@ class TechnologyListAPIView(ListAPIView):
 #                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
 #             )
 
+# class ServeCategoryAPIView(APIView):
+#     @swagger_auto_schema(
+#         tags=["Industry Details"],
+#         operation_description="Retrieve serve categories or a specific category by slug",
+#         manual_parameters=[
+#             openapi.Parameter(
+#                 'slug',
+#                 openapi.IN_PATH,
+#                 type=openapi.TYPE_STRING,
+#                 description='Slug of the category to retrieve',
+#             ),
+#         ],
+#         responses={
+#             200: ServeCategorySerializer(many=True),
+#             404: "Category not found",
+#         },
+#     )
+#     def get(self, request, slug=None):
+#         try:
+#             if slug:
+#                 # Updated field names to match model relationships
+#                 category = ServeCategory.objects.prefetch_related(
+#                     'industry_details_hero_section',
+#                     'industry_details_heading',  # Changed from industry_solutions_and_services
+#                     'our_process', 
+#                     'industry_details_heading__industry_details_sub_heading',
+#                     'custom_solutions',  # Changed from industry_benifits
+#                     'custom_solutions__custom_solutions_cards',
+#                     'benefits',  # Changed from benifited_organizations
+#                     'benefits__benefits_cards',
+#                     'why_choose_us', 
+#                     'why_choose_us__why_choose_us_cards',
+#                     'ctas', 
+#                     'faqs', 
+#                     # 'application_areas', 
+#                     'industries'
+#                 ).select_related('faq_schema').get(slug=slug)
+#                 serializer = ServeCategorySerializer(category, context={'request': request})
+#                 return Response(serializer.data)
+#             else:
+#                 # Updated field names to match model relationships
+#                 categories = ServeCategory.objects.prefetch_related(
+#                     'industry_details_hero_section', 
+#                     'our_process', 
+#                     'industry_details_heading',  # Changed from industry_solutions_and_services
+#                     'industry_details_heading__industry_details_sub_heading',
+#                     'custom_solutions',  # Changed from industry_benifits
+#                     'custom_solutions__custom_solutions_cards',
+#                     'benefits',  # Changed from benifited_organizations
+#                     'benefits__benefits_cards',
+#                     'why_choose_us', 
+#                     'why_choose_us__why_choose_us_cards',
+#                     'ctas', 
+#                     'faqs', 
+#                     # 'application_areas', 
+#                     'industries'
+#                 ).select_related('faq_schema').all()
+                
+#                 serializer = ServeCategorySerializer(categories, many=True, context={'request': request})
+#                 return Response(serializer.data)
+#         except ServeCategory.DoesNotExist:
+#             return Response(
+#                 {"error": "Category not found"}, 
+#                 status=status.HTTP_404_NOT_FOUND
+#             )
+#         except Exception as e:
+#             return Response(
+#                 {"error": str(e)}, 
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
+    
+
+
 class ServeCategoryAPIView(APIView):
     @swagger_auto_schema(
         tags=["Industry Details"],
-        operation_description="Retrieve serve categories or a specific category by slug",
+        operation_description=(
+            "Retrieve all serve categories (when no identifier) "
+            "or a specific category by slug or ID."
+        ),
         manual_parameters=[
             openapi.Parameter(
-                'slug',
+                'identifier',
                 openapi.IN_PATH,
                 type=openapi.TYPE_STRING,
-                description='Slug of the category to retrieve',
+                description='Slug (e.g., "healthcare") or numeric ID (e.g., 3) of the category. Omit for full list.',
             ),
         ],
         responses={
@@ -1679,49 +1755,67 @@ class ServeCategoryAPIView(APIView):
             404: "Category not found",
         },
     )
-    def get(self, request, slug=None):
+    def get(self, request, identifier=None):
         try:
-            if slug:
-                # Updated field names to match model relationships
-                category = ServeCategory.objects.prefetch_related(
-                    'industry_details_hero_section',
-                    'industry_details_heading',  # Changed from industry_solutions_and_services
-                    'our_process', 
-                    'industry_details_heading__industry_details_sub_heading',
-                    'custom_solutions',  # Changed from industry_benifits
-                    'custom_solutions__custom_solutions_cards',
-                    'benefits',  # Changed from benifited_organizations
-                    'benefits__benefits_cards',
-                    'why_choose_us', 
-                    'why_choose_us__why_choose_us_cards',
-                    'ctas', 
-                    'faqs', 
-                    # 'application_areas', 
-                    'industries'
-                ).select_related('faq_schema').get(slug=slug)
+            if identifier is not None:
+                # Determine if identifier is an ID or slug
+                if identifier.isdigit():
+                    category = ServeCategory.objects.prefetch_related(
+                        'industry_details_hero_section',
+                        'industry_details_heading',
+                        'our_process', 
+                        'industry_details_heading__industry_details_sub_heading',
+                        'custom_solutions',
+                        'custom_solutions__custom_solutions_cards',
+                        'benefits',
+                        'benefits__benefits_cards',
+                        'why_choose_us', 
+                        'why_choose_us__why_choose_us_cards',
+                        'ctas', 
+                        'faqs', 
+                        'industries'
+                    ).select_related('faq_schema').get(id=int(identifier))
+                else:
+                    category = ServeCategory.objects.prefetch_related(
+                        'industry_details_hero_section',
+                        'industry_details_heading',
+                        'our_process', 
+                        'industry_details_heading__industry_details_sub_heading',
+                        'custom_solutions',
+                        'custom_solutions__custom_solutions_cards',
+                        'benefits',
+                        'benefits__benefits_cards',
+                        'why_choose_us', 
+                        'why_choose_us__why_choose_us_cards',
+                        'ctas', 
+                        'faqs', 
+                        'industries'
+                    ).select_related('faq_schema').get(slug=identifier)
+
                 serializer = ServeCategorySerializer(category, context={'request': request})
                 return Response(serializer.data)
+
             else:
-                # Updated field names to match model relationships
+                # Return all categories
                 categories = ServeCategory.objects.prefetch_related(
-                    'industry_details_hero_section', 
+                    'industry_details_hero_section',
+                    'industry_details_heading',
                     'our_process', 
-                    'industry_details_heading',  # Changed from industry_solutions_and_services
                     'industry_details_heading__industry_details_sub_heading',
-                    'custom_solutions',  # Changed from industry_benifits
+                    'custom_solutions',
                     'custom_solutions__custom_solutions_cards',
-                    'benefits',  # Changed from benifited_organizations
+                    'benefits',
                     'benefits__benefits_cards',
                     'why_choose_us', 
                     'why_choose_us__why_choose_us_cards',
                     'ctas', 
                     'faqs', 
-                    # 'application_areas', 
                     'industries'
                 ).select_related('faq_schema').all()
-                
+
                 serializer = ServeCategorySerializer(categories, many=True, context={'request': request})
                 return Response(serializer.data)
+
         except ServeCategory.DoesNotExist:
             return Response(
                 {"error": "Category not found"}, 
@@ -1732,59 +1826,9 @@ class ServeCategoryAPIView(APIView):
                 {"error": str(e)}, 
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    # def get(self, request, slug=None):
-    #     try:
-    #         if slug:
-    #             # Include all related fields in prefetch_related
-    #             category = ServeCategory.objects.prefetch_related(
-    #                 'industry_details_hero_section',
-    #                 'industry_details_heading',
-    #                 'our_process', 
-    #                 'industry_details_heading__industry_details_sub_heading',
-    #                 'custom_solutions', 
-    #                 'custom_solutions__custom_solutions_cards',
-    #                 'benefits', 
-    #                 'benefits__benefits_cards',
-    #                 'why_choose_us', 
-    #                 'why_choose_us__why_choose_us_cards',
-    #                 'ctas', 
-    #                 'faqs', 
-    #                 'application_areas', 
-    #                 'industries'
-    #             ).select_related('faq_schema').get(slug=slug)
-    #             serializer = ServeCategorySerializer(category, context={'request': request})
-    #             return Response(serializer.data)
-    #         else:
-    #             # Include all related fields in prefetch_related
-    #             categories = ServeCategory.objects.prefetch_related(
-    #                 'industry_details_hero_section', 
-    #                 'our_process', 
-    #                 'industry_details_heading',
-    #                 'industry_details_heading__industry_details_sub_heading',
-    #                 'custom_solutions', 
-    #                 'custom_solutions__custom_solutions_cards',
-    #                 'benefits', 
-    #                 'benefits__benefits_cards',
-    #                 'why_choose_us', 
-    #                 'why_choose_us__why_choose_us_cards',
-    #                 'ctas', 
-    #                 'faqs', 
-    #                 'application_areas', 
-    #                 'industries'
-    #             ).select_related('faq_schema').all()
-                
-    #             serializer = ServeCategorySerializer(categories, many=True, context={'request': request})
-    #             return Response(serializer.data)
-    #     except ServeCategory.DoesNotExist:
-    #         return Response(
-    #             {"error": "Category not found"}, 
-    #             status=status.HTTP_404_NOT_FOUND
-    #         )
-    #     except Exception as e:
-    #         return Response(
-    #             {"error": str(e)}, 
-    #             status=status.HTTP_500_INTERNAL_SERVER_ERROR
-    #         )
+
+
+
         
 class IndustryMainListView(ListAPIView):
     queryset = ServeCategory.objects.all()
