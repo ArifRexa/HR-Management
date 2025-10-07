@@ -120,6 +120,7 @@ from website.models import (
     TechnologyKeyThings,
     TechnologyKeyThingsQA,
     TechnologyOurProcess,
+    TechnologyRelatedBlogs,
     TechnologySolutionsAndServices,
     TechnologySolutionsAndServicesCards,
     TechnologyTitle,
@@ -2496,6 +2497,14 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 #         ref_name = 'TechnologyDetailSerializer'
 
+class TechnologyRelatedBlogsSerializer(serializers.ModelSerializer):
+    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+
+    class Meta:
+        model = TechnologyRelatedBlogs
+        fields = ['id', 'related_blog']
+        ref_name = 'TechnologyRelatedBlogsSerializer'
+
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     from website.models import Technology
     type = TechnologyTypeSerializer(read_only=True)
@@ -2511,6 +2520,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
     ctas = TechnologyCTASerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
+    related_blogs = TechnologyRelatedBlogsSerializer(many=True, read_only=True, source='technology_related_blogs.all')
     
     def get_table_of_contents(self, obj):
         toc = []
