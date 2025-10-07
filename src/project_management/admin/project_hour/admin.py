@@ -37,10 +37,17 @@ class EmployeeHourInlineForm(forms.ModelForm):
     def save(self, commit):
         update_id = self.cleaned_data.get("update_id")
         update = self.cleaned_data.get("update")
+        hours = self.cleaned_data.get("hours")
         if update_id and update:
             daily_update = DailyProjectUpdate.objects.get(id=update_id)
             daily_update.updates_json = [[update, "0.0", ""]]
+            daily_update.hours = hours
             daily_update.save()
+            history = daily_update.history.last()
+            if history and history.hours != hours:
+                daily_update.history.create(
+                    hours=hours,
+                )
         return super().save(commit)
 
 

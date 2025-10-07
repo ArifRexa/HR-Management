@@ -996,7 +996,7 @@ class ProjectHour(TimeStampMixin, AuthorMixin):
 
         if (
             self.pk
-            and "hours" in kwargs.get("update_fields", [])
+            # and "hours" in kwargs.get("update_fields", [])
             and self.hours != ProjectHour.objects.get(pk=self.pk).hours
         ):
             ProjectHourHistry.objects.create(
