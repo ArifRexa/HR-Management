@@ -1949,13 +1949,13 @@ class ServeCategorySerializer(serializers.ModelSerializer):
         except AttributeError:
             pass
         
-        # Add titles from Application Areas
-        try:
-            for item in obj.application_areas.all():
-                if item.title:
-                    toc.append(item.title)
-        except AttributeError:
-            pass
+        # # Add titles from Application Areas
+        # try:
+        #     for item in obj.application_areas.all():
+        #         if item.title:
+        #             toc.append(item.title)
+        # except AttributeError:
+        #     pass
         
         # Add titles from Industries
         try:
@@ -2560,10 +2560,10 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
             if item.section_title:
                 toc.append(item.section_title)
         
-        # Add section titles from Our Process
-        for item in obj.our_process.all():
-            if item.section_title:
-                toc.append(item.section_title)
+        # # Add section titles from Our Process
+        # for item in obj.our_process.all():
+        #     if item.section_title:
+        #         toc.append(item.section_title)
         
         # Add section titles from History of Tech
         for item in obj.history_of_tech.all():
