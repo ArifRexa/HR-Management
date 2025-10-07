@@ -36,6 +36,7 @@ from website.models import (
     AdditionalPageKeyThings,
     AdditionalPageKeyThingsCards,
     AdditionalPageOurProcess,
+    AdditionalPageRelatedBlogs,
     AdditionalPageWhyChooseUs,
     AdditionalPages,
     AllServicesTitle,
@@ -119,6 +120,7 @@ from website.models import (
     TechnologyKeyThings,
     TechnologyKeyThingsQA,
     TechnologyOurProcess,
+    TechnologyRelatedBlogs,
     TechnologySolutionsAndServices,
     TechnologySolutionsAndServicesCards,
     TechnologyTitle,
@@ -135,8 +137,8 @@ from website.models import (
     WhyUsTitle,
 )
 from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
-from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
+from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
 
 
 
@@ -1822,7 +1824,13 @@ class IndustryServeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'IndustriesWeServeIndustryServe'
 
+class IndustryRelatedBlogsSerializer(serializers.ModelSerializer):
+    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
 
+    class Meta:
+        model = IndustryRelatedBlogs
+        fields = ['id', 'related_blog']
+        ref_name = 'IndustriesWeServeIndustryRelatedBlogs'
 
 class ServeCategorySerializer(serializers.ModelSerializer):
     # Change these fields to return single objects instead of arrays
@@ -1838,6 +1846,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
+    related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')
     
     class Meta:
         model = ServeCategory
@@ -1879,6 +1888,15 @@ class ServeCategorySerializer(serializers.ModelSerializer):
             return None
         except AttributeError:
             return None
+        
+    def get_related_blogs(self, obj):
+        try:
+            related_blogs = obj.industryrelatedblogs_set.all()
+            if related_blogs.exists():
+                return IndustryRelatedBlogsSerializer(related_blogs, many=True, context=self.context).data
+            return []
+        except AttributeError:
+            return []
     
     def get_table_of_contents(self, obj):
         toc = []
@@ -2154,6 +2172,15 @@ class MetaDescriptionSerializer(serializers.ModelSerializer):
         model = MetaDescription
         fields = '__all__'
         ref_name = 'MetaDescription'
+
+
+class ServicesRelatedBlogsSerializer(serializers.ModelSerializer):
+    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+
+    class Meta:
+        model = ServicesRelatedBlogs
+        fields = ['id', 'related_blog']
+        ref_name = 'ServicesRelatedBlogs'
         
 # Main ServicePage serializer with all nested relationships
 class ServicePageDetailSerializer(serializers.ModelSerializer):
@@ -2173,6 +2200,7 @@ class ServicePageDetailSerializer(serializers.ModelSerializer):
     service_meta_data = ServiceMetaDataSerializer(read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     meta_description = MetaDescriptionSerializer()
+    related_blogs = ServicesRelatedBlogsSerializer(many=True, read_only=True, source='service_related_blogs.all')
     
     class Meta:
         model = ServicePage
@@ -2479,7 +2507,16 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 #         ref_name = 'TechnologyDetailSerializer'
 
+class TechnologyRelatedBlogsSerializer(serializers.ModelSerializer):
+    related_blog = serializers.StringRelatedField()  # To avoid recursion, use string or id
+
+    class Meta:
+        model = TechnologyRelatedBlogs
+        fields = ['id', 'related_blog']
+        ref_name = 'TechnologyRelatedBlogsSerializer'
+
 class TechnologyDetailSerializer(serializers.ModelSerializer):
+    from website.models import Technology
     type = TechnologyTypeSerializer(read_only=True)
     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
     creators_quotes = TechnologyCreatorsQuotesSerializer(many=True, read_only=True)
@@ -2493,6 +2530,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     faq_schema = TechnologyFAQSchemaSerializer(read_only=True)
     ctas = TechnologyCTASerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
+    related_blogs = TechnologyRelatedBlogsSerializer(many=True, read_only=True, source='technology_related_blogs.all')
     
     def get_table_of_contents(self, obj):
         toc = []
@@ -2535,6 +2573,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
         return toc
     
     class Meta:
+        from website.models import Technology
         model = Technology
         fields = '__all__'
         ref_name = 'TechnologyDetailSerializer'
@@ -2595,6 +2634,12 @@ class TeamElementSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'TeamElement'
 
+class AdditionalPageRelatedBlogsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdditionalPageRelatedBlogs
+        fields = '__all__'
+        ref_name = 'AdditionalPageRelatedBlogs'
+
 class AdditionalPagesSerializer(serializers.ModelSerializer):
     hero_section = serializers.SerializerMethodField()
     what_is = serializers.SerializerMethodField()
@@ -2603,14 +2648,14 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
     our_process = AdditionalPageOurProcessSerializer(many=True, read_only=True)
     faqs = AdditionalPageFAQSerializer(many=True, read_only=True)
     team_elements = TeamElementSerializer(many=True, read_only=True)
-    
+    related_blogs = AdditionalPageRelatedBlogsSerializer(many=True, read_only=True, source='additional_page_related_blogs.all')
        
     class Meta:
         model = AdditionalPages
         fields = [
             'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
             'hero_section', 'what_is', 'KeyThings', 'why_choose_us', 
-            'our_process', 'faqs', 'team_elements'
+            'our_process', 'faqs', 'team_elements', 'related_blogs'
         ]
         ref_name = 'AdditionalPages'
     
@@ -2655,6 +2700,15 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
             team_elements = obj.team_elements.all()
             if team_elements:
                 return TeamElementSerializer(team_elements, many=True).data
+        except Exception:
+            pass
+        return None
+    
+    def get_related_blogs(self, obj):
+        try:
+            related_blogs = obj.related_blogs.all()
+            if related_blogs:
+                return AdditionalPageRelatedBlogsSerializer(related_blogs, many=True).data
         except Exception:
             pass
         return None
