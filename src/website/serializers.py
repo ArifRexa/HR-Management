@@ -2480,6 +2480,7 @@ class TechnologySiteMapSerializer(serializers.ModelSerializer):
 #         ref_name = 'TechnologyDetailSerializer'
 
 class TechnologyDetailSerializer(serializers.ModelSerializer):
+    from website.models import Technology
     type = TechnologyTypeSerializer(read_only=True)
     solutions_and_services = TechnologySolutionsAndServicesSerializer(many=True, read_only=True)
     creators_quotes = TechnologyCreatorsQuotesSerializer(many=True, read_only=True)
@@ -2535,6 +2536,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
         return toc
     
     class Meta:
+        from website.models import Technology
         model = Technology
         fields = '__all__'
         ref_name = 'TechnologyDetailSerializer'
