@@ -36,6 +36,7 @@ from website.models import (
     AdditionalPageKeyThings,
     AdditionalPageKeyThingsCards,
     AdditionalPageOurProcess,
+    AdditionalPageRelatedBlogs,
     AdditionalPageWhyChooseUs,
     AdditionalPages,
     AllProjectsBanner,
@@ -1805,6 +1806,12 @@ class TeamElementInline(nested_admin.NestedStackedInline):
     extra = 1
 
 
+class AdditionalPageRelatedBlogsInline(nested_admin.NestedStackedInline):
+    model = AdditionalPageRelatedBlogs
+    fields = ["blog_id"]
+    extra = 1
+
+
 @admin.register(AdditionalPages)
 class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -1816,7 +1823,8 @@ class AdditionalPagesAdmin(nested_admin.NestedModelAdmin):
         AdditionalPageWhyChooseUsInline,
         AdditionalPageOurProcessInline,
         AdditionalPageFAQInline,
-        TeamElementInline
+        TeamElementInline,
+        AdditionalPageRelatedBlogsInline
 
         
     ]

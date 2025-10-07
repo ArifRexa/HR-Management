@@ -1505,6 +1505,18 @@ class AdditionalPages(TimeStampMixin):
     def __str__(self):
         return self.title
     
+class AdditionalPageRelatedBlogs(models.Model):
+    additional_page = models.ForeignKey(
+        AdditionalPages, related_name="additional_page_related_blogs", on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    link = models.URLField(null=True, blank=True)
+    blog_id = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Related Blog"
+        verbose_name_plural = "Related Blogs"
+    
 
 class TeamElement(TimeStampMixin):
     additional_page = models.ForeignKey(
