@@ -45,8 +45,9 @@ from website.views import (
     EmployeeList,
     ServiceListAPIView,
     ServicePageCardTitlesView,
+    ServicePageDetailViewV2,
     ServicePageListView,
-    ServicePageDetailView as ServicePageDetailViewV2,
+    # ServicePageDetailView as ServicePageDetailViewV2,
     SubscriptionModelViewSet,
     TechnologyDetailView,
     TechnologyListAPIView,
@@ -291,7 +292,7 @@ urlpatterns = [
     path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
 
     path('website/services-list/', ServicePageListView.as_view(), name='service-list'),
-    path('website/services/<slug:slug>/', ServicePageDetailViewV2.as_view(), name='service-detail'),
+    path('website/services/<str:identifier>/', ServicePageDetailViewV2.as_view(), name='service-detail'),
 
     path('website/technology-list/', TechnologyListView.as_view(), name='technology-list'),
     path('website/technologies/sitemap/', TechnologySiteMapView.as_view(), name='technology-sitemap'),

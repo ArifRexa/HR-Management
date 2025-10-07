@@ -1799,13 +1799,37 @@ class IndustryMainListView(ListAPIView):
         return super().get(request, *args, **kwargs)
 # ======================================= Service Page ===========================================
 
-class ServicePageDetailView(RetrieveAPIView):
-    queryset = ServicePage.objects.filter().all()
-    serializer_class = ServicePageDetailSerializer
-    lookup_field = 'slug'
+# class ServicePageDetailView(RetrieveAPIView):
+#     queryset = ServicePage.objects.filter().all()
+#     serializer_class = ServicePageDetailSerializer
+#     lookup_field = 'slug'
     
+#     @swagger_auto_schema(
+#         operation_description="Retrieve detailed information about a service page including all related content",
+#         tags=["Service Details"],
+#         responses={
+#             200: ServicePageDetailSerializer,
+#             404: "Service not found"
+#         },
+#         manual_parameters=[
+#             openapi.Parameter(
+#                 'slug',
+#                 openapi.IN_PATH,
+#                 description="Unique slug identifier for the service page",
+#                 type=openapi.TYPE_STRING,
+#                 required=True
+#             )
+#         ]
+#     )
+#     def get(self, request, *args, **kwargs):
+#         return super().get(request, *args, **kwargs)
+
+class ServicePageDetailViewV2(RetrieveAPIView):
+    serializer_class = ServicePageDetailSerializer
+    queryset = ServicePage.objects.all()
+
     @swagger_auto_schema(
-        operation_description="Retrieve detailed information about a service page including all related content",
+        operation_description="Retrieve a service page by slug or ID (passed as 'identifier')",
         tags=["Service Details"],
         responses={
             200: ServicePageDetailSerializer,
@@ -1813,16 +1837,34 @@ class ServicePageDetailView(RetrieveAPIView):
         },
         manual_parameters=[
             openapi.Parameter(
-                'slug',
+                'identifier',
                 openapi.IN_PATH,
-                description="Unique slug identifier for the service page",
-                type=openapi.TYPE_STRING,
+                description="Unique slug (e.g., 'web-development') or numeric ID (e.g., 42) of the service",
+                type=openapi.TYPE_STRING,  # Must be string in path
                 required=True
             )
         ]
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+    def get_object(self):
+        identifier = self.kwargs.get('identifier')
+        queryset = self.filter_queryset(self.get_queryset())
+
+        # Try to see if identifier is an integer (ID)
+        if identifier.isdigit():
+            obj = queryset.filter(id=int(identifier)).first()
+        else:
+            # Treat as slug
+            obj = queryset.filter(slug=identifier).first()
+
+        if obj is None:
+            raise NotFound("Service page not found.")
+
+        self.check_object_permissions(self.request, obj)
+        return obj
+    
 
 class ServicePageListView(ListAPIView):
     queryset = ServicePage.objects.filter(is_parent=True).all()
