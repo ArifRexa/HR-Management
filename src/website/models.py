@@ -273,6 +273,19 @@ class Technology(TimeStampMixin):
         verbose_name = "Technology"
         verbose_name_plural = "Technologies"
 
+
+class TechnologyRelatedBlogs(models.Model):
+    technology = models.ForeignKey(
+        Technology, related_name="technology_related_blogs", on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    link = models.URLField(null=True, blank=True)
+    blog_id = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Related Blog"
+        verbose_name_plural = "Related Blogs"
+
 # =============Technology Solution and Services Section================
 class TechnologySolutionsAndServices(TimeStampMixin):
     services = models.ForeignKey(

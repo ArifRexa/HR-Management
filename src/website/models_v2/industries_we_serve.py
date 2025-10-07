@@ -336,3 +336,16 @@ class IndustryServe(models.Model):
     class Meta:
         verbose_name = "Industry"
         verbose_name_plural = "Industries"
+
+
+class IndustryRelatedBlogs(models.Model):
+    services = models.ForeignKey(
+        ServeCategory, related_name="industry_related_blogs", on_delete=models.CASCADE
+    )
+    title = models.CharField(max_length=255, null=True, blank=True)
+    link = models.URLField(null=True, blank=True)
+    blog_id = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Related Blog"
+        verbose_name_plural = "Related Blogs"
