@@ -8,9 +8,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const storageSizeRow = document.querySelector(".form-row.field-storage_size");
     const gpuRow = document.querySelector(".form-row.field-gpu");
     const brandRow = document.querySelector(".form-row.field-brand");
+    const headphoneFeaturesRow = document.querySelector(".form-row.field-headphone_feature");
     
     const fields = [
-        coreRow, ramRow, storageSizeRow, displaySizeRow, gpuRow
+        coreRow, ramRow, storageSizeRow, displaySizeRow, gpuRow, headphoneFeaturesRow
     ];
 
     function hideAllRowWithout(selected_field){
@@ -32,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const selected = categorySelect.value;
         const selectedText = categorySelect.options[categorySelect.selectedIndex].text;
 
-
         if (!selected) return;
         if (selectedText !== "Chair" || selectedText !== "Table"){
             brandRow.style.display = "";
@@ -47,6 +47,9 @@ document.addEventListener("DOMContentLoaded", function () {
            hideAllRowWithout(storageSizeRow);
         } else if (selectedText === "GPU") {
            hideAllRowWithout(gpuRow);
+        }
+        else if (selectedText === "Headphone") {
+           hideAllRowWithout(headphoneFeaturesRow);
         }
         else{
             if (selectedText === "Chair" || selectedText === "Table"){

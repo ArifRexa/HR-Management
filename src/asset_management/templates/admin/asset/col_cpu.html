@@ -1,55 +1,44 @@
 {% load replace_newline daily_groupby %}
 
 <div class="popover-wrapper">
+  {# ------------------------------------------------ title = all chosen asset-ids --------- #}
   <div class="popover-title">
-    {% if title %}{{ title }}{% else %}{{ asset.asset_id }}{% endif %}
+    {% if title %}{{ title }}: {% endif %}
+    {% if asset %}
+    {% for a in asset %}
+      {{ a }}   {# a.__str__ already returns a.asset_id #}
+      {% if not forloop.last %}<br>{% endif %}
+    {% endfor %}
+  {% else %}
+    -
+  {% endif %}
   </div>
 
+  {# ------------------------------------------------ pop-over body -------------------------- #}
   {% if asset %}
   <div class="popover-message" style="min-width:200px; padding:10px 5px; top:25px;">
-    {% if asset.casing %}
-      <strong>Casing:</strong> {{ asset.casing }}<br><br>
-    {% endif %}
-    {% if asset.processor %}
-      <strong>Processor:</strong> {{ asset.processor }}<br><br>
-    {% endif %}
-    {% if asset.ram1 %}
-      <strong>RAM 1:</strong> {{ asset.ram1 }}<br><br>
-    {% endif %}
-    {% if asset.ram2 %}
-      <strong>RAM 2:</strong> {{ asset.ram2 }}<br><br>
-    {% endif %}
-    {% if asset.ssd %}
-      <strong>SSD:</strong> {{ asset.ssd }}<br><br>
-    {% endif %}
-    {% if asset.hdd %}
-      <strong>HDD:</strong> {{ asset.hdd }}<br><br>
-    {% endif %}
-    {% if asset.gpu %}
-      <strong>GPU:</strong> {{ asset.gpu }}
-    {% endif %}
-
-    {# Generic FixedAsset fields (only when CPU block was skipped) #}
-    {% if not asset.casing %}
-      {% if asset.asset_id %}
-        <strong>Asset ID:</strong> {{ asset.asset_id }}<br><br>
+    {% for a in asset %}
+      {% if a.casing %}                             
+        <div class="asset-card">
+          {% if a.casing %}<strong>Casing:</strong> {{ a.casing }}<br>{% endif %}
+          {% if a.processor %}<strong>Processor:</strong> {{ a.processor }}<br>{% endif %}
+          {% if a.ram1 %}<strong>RAM 1:</strong> {{ a.ram1 }}<br>{% endif %}
+          {% if a.ram2 %}<strong>RAM 2:</strong> {{ a.ram2 }}<br>{% endif %}
+          {% if a.ssd %}<strong>SSD:</strong> {{ a.ssd }}<br>{% endif %}
+          {% if a.hdd %}<strong>HDD:</strong> {{ a.hdd }}<br>{% endif %}
+          {% if a.gpu %}<strong>GPU:</strong> {{ a.gpu }}{% endif %}
+        </div>
+      {% else %}                                    
+        <div class="asset-card">
+          {% if a.asset_id %}<strong>Asset ID:</strong> {{ a.asset_id }}<br>{% endif %}
+          {% if a.category %}<strong>Category:</strong> {{ a.category.name }}<br>{% endif %}
+          {% if a.brand %}<strong>Brand:</strong> {{ a.brand }}<br>{% endif %}
+          {% if a.serial %}<strong>Serial:</strong> {{ a.serial }}<br>{% endif %}
+          {% if a.other_specs %}<strong>Remarks:</strong> {{ a.other_specs }}{% endif %}
+        </div>
       {% endif %}
-      {% if asset.category and asset.category.name %}
-        <strong>Category:</strong> {{ asset.category.name }}<br><br>
-      {% endif %}
-      {% if asset.brand %}
-        <strong>Brand:</strong> {{ asset.brand }}<br><br>
-      {% endif %}
-      {% if asset.model %}
-        <strong>Model:</strong> {{ asset.model }}<br><br>
-      {% endif %}
-      {% if asset.serial %}
-        <strong>Serial:</strong> {{ asset.serial }}<br><br>
-      {% endif %}
-      {% if asset.remarks %}
-        <strong>Remarks:</strong> {{ asset.remarks }}
-      {% endif %}
-    {% endif %}
+      {% if not forloop.last %}<br><hr><br>{% endif %}
+    {% endfor %}
   </div>
   {% else %}
     <div class="popover-title">-</div>

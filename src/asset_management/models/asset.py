@@ -6,7 +6,6 @@ from django.dispatch import receiver
 from django.utils import timezone
 from smart_selects.db_fields import ChainedForeignKey
 
-
 from config.model.AuthorMixin import AuthorMixin
 from config.model.TimeStampMixin import TimeStampMixin
 from employee.models import Employee
@@ -271,7 +270,7 @@ class AssetRequestNote(AuthorMixin, TimeStampMixin):
 class AssetCategory(AuthorMixin, TimeStampMixin):
     name = models.CharField(
         db_index=True,
-        help_text="Table, Chair, Monitor, Keyboard, Mouse, Headphone, RAM, SSD, HDD, GPU",
+        help_text="Table, Chair, Monitor, Keyboard, Mouse, Headphone, RAM, SSD, HDD, GPU, Webcam",
         max_length=255,
         unique=True,
     )
@@ -344,6 +343,17 @@ class ProcessorData(AuthorMixin, TimeStampMixin):
 
     def __str__(self):
         return self.processor_info
+
+
+class HeadPhoneFeature(AuthorMixin, TimeStampMixin):
+    feature = models.CharField(
+        max_length=255,
+        unique=True,
+        help_text="Headphone feature",
+    )
+
+    def __str__(self):
+        return self.feature
 
 
 class FixedAsset(AuthorMixin, TimeStampMixin):
@@ -426,27 +436,17 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
         null=True,
         help_text="Warranty duration in months",
     )
+    headphone_feature = models.ForeignKey(
+        to=HeadPhoneFeature,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        verbose_name="Feature",
+        related_name="fixed_assets",
+    )
 
     def __str__(self):
-        if self.category.name in ["Table", "Chair"]:
-            return self.asset_id
-        field_map = {
-            "SSD": self.storage_size,
-            "HDD": self.storage_size,
-            "GPU": self.gpu,
-            "Processor": self.core.processor_info if self.core else None,
-            "Monitor": self.display_size.display_size
-            if self.display_size
-            else None,
-            "RAM": self.ram_size.ram_capacity if self.ram_size else None,
-        }
-        items = [
-            self.brand.name if self.brand else None,
-            str(field_map.get(self.category.name, "")),
-            self.other_specs,
-        ]
-        fixed_asset = ", ".join([item for item in items if item])
-        return f"{self.asset_id}({fixed_asset})"
+        return self.asset_id
 
 
 class CasingBrand(AuthorMixin, TimeStampMixin):
@@ -518,17 +518,7 @@ class CPU(AuthorMixin, TimeStampMixin):
     )
 
     def __str__(self):
-        items = [
-            self.casing,
-            self.processor,
-            self.ram1,
-            self.ram2,
-            self.ssd,
-            self.hdd,
-            self.gpu,
-        ]
-        cpu = ", ".join([str(item) for item in items if item])
-        return f"{self.asset_id}({cpu})"
+        return self.asset_id
 
 
 class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
@@ -536,87 +526,77 @@ class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
         to=Employee,
         on_delete=models.CASCADE,
         related_name="employee_fixed_assets_employee",
-    )
-    table = models.OneToOneField(
-        to=FixedAsset,
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Table"},
+    )
+    table = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Table"},
         related_name="employee_fixed_asset_table",
-    )
-    chair = models.OneToOneField(
-        to=FixedAsset,
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Chair"},
+    )
+    chair = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Chair"},
         related_name="employee_fixed_asset_chair",
-    )
-    monitor1 = models.OneToOneField(
-        to=FixedAsset,
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Monitor"},
+    )
+    monitor = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Monitor"},
         related_name="employee_fixed_asset_monitor1",
+        blank=True,
     )
-    monitor2 = models.OneToOneField(
+    cpu = models.ManyToManyField(
+        to=CPU, related_name="employee_fixed_asset_cpu", blank=True
+    )
+    keyboard = models.ManyToManyField(
         to=FixedAsset,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Monitor"},
-        related_name="employee_fixed_asset_monitor2",
-    )
-    cpu = models.OneToOneField(
-        to=CPU,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        related_name="employee_fixed_asset_cpu",
-    )
-    keyboard = models.OneToOneField(
-        to=FixedAsset,
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Keyboard"},
+        limit_choices_to={"category__name__icontains": "Keyboard"},
         related_name="employee_fixed_asset_keyboard",
-    )
-    mouse = models.OneToOneField(
-        to=FixedAsset,
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Mouse"},
+    )
+    mouse = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Mouse"},
         related_name="employee_fixed_asset_mouse",
-    )
-    headphone = models.OneToOneField(
-        to=FixedAsset,
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
-        limit_choices_to={"category__name": "Headphone"},
+    )
+    headphone = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Headphone"},
         related_name="employee_fixed_asset_headphone",
+        blank=True,
+    )
+    web_cam = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Webcam"},
+        related_name="employee_fixed_asset_webcam",
+        blank=True,
+        verbose_name="Web Cam",
     )
     extra = models.TextField(
         blank=True,
         null=True,
     )
     is_active = models.BooleanField(default=True)
-    
-    
+
     class Meta:
         permissions = [
-            ("cal_view_all_employee_asset", "Can view all employee fixed asset"),
+            (
+                "cal_view_all_employee_asset",
+                "Can view all employee fixed asset",
+            ),
         ]
 
 
 class AssetAssignmentLog(models.Model):
     employee = models.ForeignKey(Employee, on_delete=models.CASCADE)
-    asset = models.ForeignKey(FixedAsset, on_delete=models.CASCADE, null=True, blank=True)
-    cpu = models.ForeignKey(CPU, on_delete=models.CASCADE, null=True, blank=True)
+    asset = models.ForeignKey(
+        FixedAsset, on_delete=models.CASCADE, null=True, blank=True
+    )
+    cpu = models.ForeignKey(
+        CPU, on_delete=models.CASCADE, null=True, blank=True
+    )
     action = models.CharField(
         max_length=10, choices=[("ASSIGN", "Assign"), ("RETURN", "Return")]
     )
@@ -628,4 +608,3 @@ class AssetAssignmentLog(models.Model):
 
     def __str__(self):
         return f"{self.action} {self.asset} to {self.employee} @ {self.date:%Y-%m-%d %H:%M}"
-

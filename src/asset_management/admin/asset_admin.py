@@ -1,6 +1,9 @@
 from urllib.parse import urlparse
 
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
+from django.contrib.admin.filters import RelatedFieldListFilter
+from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied
 from django.db.models import (
     BooleanField,
@@ -37,12 +40,14 @@ from asset_management.models.asset import (
     AssetRequestStatus,
     AssetVariant,
     CasingBrand,
+    HeadPhoneFeature,
     MonitorSize,
     PriorityChoices,
     ProcessorData,
     RAMSize,
     SSDorHDDSize,
 )
+from employee.models import Employee
 from employee.models.employee import Employee
 
 # @admin.register(AssetCategory)
@@ -598,6 +603,15 @@ class ProcessorDataModelAdmin(admin.ModelAdmin):
     search_fields = ["processor_info"]
 
 
+@admin.register(HeadPhoneFeature)
+class HeadPhoneFeatureModelAdmin(admin.ModelAdmin):
+    list_display = ["id", "feature"]
+    search_fields = ["feature"]
+
+    def has_module_permission(self, request):
+        return False
+
+
 @admin.register(FixedAsset)
 class FixedAssetModelAdmin(admin.ModelAdmin):
     list_display = [
@@ -639,6 +653,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "serial",
         "core",
         "ram_size",
+        "headphone_feature",
         "storage_size",
         "display_size",
         "gpu",
@@ -680,35 +695,15 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         if not model_class:
             return queryset, use_distinct
         field = request.GET.get("field_name")
-        if field in ["monitor1", "monitor2"]:
-            search_fields = Q(monitor1__isnull=False) | Q(
-                monitor2__isnull=False
-            )
-        else:
-            search_fields = {
-                f"{field}__isnull": False,
-            }
-        if isinstance(search_fields, dict):
-            used_pks = model_class.objects.filter(**search_fields).values_list(
-                field, flat=True
-            )
-        else:
-            used_pks = model_class.objects.filter(search_fields).values_list(
-                "monitor1", "monitor2"
-            )
-        # d = FixedAsset.objects.filter(monitor1__isnull=False)
-        monitors_used_ids = []
-        if used_pks and isinstance(used_pks[0], tuple):
-            for i, k in used_pks:
-                if i:
-                    monitors_used_ids.append(i)
-                if k:
-                    monitors_used_ids.append(k)
-            queryset = queryset.exclude(pk__in=monitors_used_ids)
-        else:
-            queryset = queryset.exclude(pk__in=used_pks)
-        # used_pks += p
-        # queryset = queryset.exclude(pk__in=used_pks)
+        search_fields = {
+            f"{field}__isnull": False,
+        }
+        used_pks = model_class.objects.filter(**search_fields).values_list(
+            field, flat=True
+        )
+
+        queryset = queryset.exclude(pk__in=used_pks)
+
         return queryset, use_distinct
 
     def save_model(self, request, obj, form, change):
@@ -774,9 +769,37 @@ class CPUModelAdmin(admin.ModelAdmin):
             obj.asset_id = f"{obj.__class__.__name__}-{asset_number}"
         return super().save_model(request, obj, form, change)
 
+    def get_search_from_model(self, request):
+        app_label = request.GET.get("app_label")
+        model_name = request.GET.get("model_name")
+        if not app_label or not model_name:
+            return None
+        from django.contrib.contenttypes.models import ContentType
 
-from django.contrib.admin.filters import RelatedFieldListFilter
-from django.contrib.auth import get_user_model
+        ct = ContentType.objects.get(
+            app_label=app_label, model=model_name.lower()
+        )
+        return ct.model_class()
+
+    def get_search_results(self, request, queryset, search_term):
+        queryset, use_distinct = super().get_search_results(
+            request, queryset, search_term
+        )
+        model_class = self.get_search_from_model(request)
+        if not model_class:
+            return queryset, use_distinct
+        field = request.GET.get("field_name")
+        search_fields = {
+            f"{field}__isnull": False,
+        }
+        used_pks = model_class.objects.filter(**search_fields).values_list(
+            field, flat=True
+        )
+
+        queryset = queryset.exclude(pk__in=used_pks)
+
+        return queryset, use_distinct
+
 
 User = get_user_model()
 
@@ -796,11 +819,6 @@ class CreatedByUserFilter(RelatedFieldListFilter):
             .order_by("first_name", "last_name")
         )
         return [(u.pk, str(u)) for u in qs]
-
-
-from django.contrib.admin import SimpleListFilter
-
-from employee.models import Employee
 
 
 class EmployeeWithAssetFilter(SimpleListFilter):
@@ -838,6 +856,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "get_keyboard",
         "get_mouse",
         "get_headphone",
+        "get_webcam",
         "extra",
         "is_active",
         "get_created_by",
@@ -850,13 +869,13 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "employee",
         "table",
-        "monitor1",
-        "monitor2",
+        "monitor",
         "chair",
         "cpu",
         "keyboard",
         "mouse",
         "headphone",
+        "web_cam",
     ]
     list_filter = [
         "is_active",
@@ -877,23 +896,37 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
 
     @admin.display(description="Table")
     def get_table(self, obj):
-        return self._asset_card(obj.table)
+        # ManyToMany – give the whole queryset
+        return self._asset_card(obj.table.all())
 
     @admin.display(description="Chair")
     def get_chair(self, obj):
-        return self._asset_card(obj.chair)
+        return self._asset_card(obj.chair.all())
 
     @admin.display(description="Keyboard")
     def get_keyboard(self, obj):
-        return self._asset_card(obj.keyboard)
+        return self._asset_card(obj.keyboard.all())
 
     @admin.display(description="Mouse")
     def get_mouse(self, obj):
-        return self._asset_card(obj.mouse)
+        return self._asset_card(obj.mouse.all())
 
     @admin.display(description="Headphone")
     def get_headphone(self, obj):
-        return self._asset_card(obj.headphone)
+        return self._asset_card(obj.headphone.all())
+
+    @admin.display(description="Monitors")
+    def get_monitors(self, obj):
+        return self._asset_card(obj.monitor.all())
+
+    @admin.display(description="CPU")
+    def get_cpu(self, obj):
+        cpus = obj.cpu.all()  # ManyToMany
+        return self._asset_card(cpus)
+
+    @admin.display(description="Webcam")
+    def get_webcam(self, obj):
+        return self._asset_card(obj.web_cam.all())
 
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
@@ -965,19 +998,6 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
                         obj.employee, new_asset, "ASSIGN", f"{field} added"
                     )
         return super().save_model(request, obj, form, change)
-
-    @admin.display(description="CPU")
-    def get_cpu(self, obj):
-        return self._asset_card(obj.cpu)
-
-    @admin.display(description="Monitors")
-    def get_monitors(self, obj):
-        monitors = [obj.monitor1, obj.monitor2]
-        monitors = [m for m in monitors if m]
-        if not monitors:
-            return "-"
-        tpl = get_template("admin/asset/monitor.html")
-        return mark_safe(tpl.render({"monitors": monitors}))
 
     @admin.display(description="Created By")
     def get_created_by(self, obj):
