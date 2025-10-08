@@ -41,6 +41,7 @@ from website.models import (
     AdditionalPages,
     AllServicesTitle,
     ArchivePage,
+    ArchivePageBody,
     Award,
     AwardCategory,
     AwardYearGroup,
@@ -2754,7 +2755,14 @@ class CertificationSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'CertificationSerializer'
 
+class ArchivePageBodySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ArchivePageBody
+        fields = '__all__'
+        ref_name = 'ArchivePageBodySerializer'
+
 class ArchivePageSerializer(serializers.ModelSerializer):
+    bodies = ArchivePageBodySerializer(many=True, read_only=True, source='archive_page_bodies.all')
     class Meta:
         model = ArchivePage
         fields = '__all__'
