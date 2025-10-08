@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Verified! – Mediusware</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e6f2ff 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 40, 100, 0.08);
+            padding: 48px 40px;
+            text-align: center;
+            max-width: 520px;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1976d2;
+            margin-bottom: 8px;
+        }
+
+        .logo span {
+            color: #0288d1;
+        }
+
+        .check-icon {
+            width: 80px;
+            height: 80px;
+            background: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+        }
+
+        .check-icon i {
+            font-size: 36px;
+            color: #2e7d32;
+        }
+
+        h1 {
+            font-size: 28px;
+            color: #1a237e;
+            margin-bottom: 16px;
+            font-weight: 700;
+        }
+
+        p {
+            color: #555;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #1976d2;
+            color: white;
+            text-decoration: none;
+            padding: 12px 36px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(25, 118, 210, 0.25);
+        }
+
+        .btn:hover {
+            background: #1565c0;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(25, 118, 210, 0.35);
+        }
+
+        .footer-note {
+            margin-top: 24px;
+            color: #888;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 36px 24px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="logo">Medius<span>ware</span> LTD</div>
+        <div class="check-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        <h1>Successfully Verified!</h1>
+        <p>Thank you for verifying your contact form submission.</p>
+        <p>Our team will review your request and get back to you shortly.</p>
+        <a href="https://mediusware.com/contact" class="btn">Back to Contact Page</a>
+        <div class="footer-note">
+            Questions? Reach us at <strong>hr@mediusware.com</strong>
+        </div>
+    </div>
+</body>
+</html>
