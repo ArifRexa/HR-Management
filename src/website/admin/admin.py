@@ -42,6 +42,7 @@ from website.models import (
     AllProjectsBanner,
     AllServicesTitle,
     ArchivePage,
+    ArchivePageBody,
     Award,
     AwardCategory,
     AwardYearGroup,
@@ -2425,6 +2426,11 @@ class ContactFormAdmin(admin.ModelAdmin):
 class CertificationAdmin(admin.ModelAdmin):
     list_display = ("title", )
 
+class ArchivePageBodyInline(nested_admin.NestedStackedInline):
+    model = ArchivePageBody
+    extra = 1
+
 @admin.register(ArchivePage)
-class ArchivePageAdmin(admin.ModelAdmin):
+class ArchivePageAdmin(nested_admin.NestedModelAdmin):
     list_display = ("seo_title", "slug", "section_title", "section_description")
+    inlines = [ArchivePageBodyInline]
