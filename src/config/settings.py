@@ -143,6 +143,7 @@ TEMPLATES = [
                 "config.context_processors.employees.all_notices",
                 "config.context_processors.employees.unread_inbox",
                 "config.context_processors.employees.available_slot_form",
+                "config.context_processors.employees.all_employees_last_slot",
             ],
         },
     },

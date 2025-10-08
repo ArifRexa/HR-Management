@@ -365,6 +365,12 @@
                         </div>
                     </div>
                     {% include "admin/form/book_conference_room.html" %}
+                    
+                    {% if request.user.is_superuser or request.user.employee.is_tpm %}
+                        
+                    {% include "admin/employee/list/employee_available_slot.html" %}
+                    {% endif %}
+                        
                 
                     
                     {% if notices %}
@@ -738,6 +744,11 @@
             if (spinner) {
                 spinner.style.display = "none";
             }
+        });
+    </script>
+    <script>
+        document.body.addEventListener("htmx:configRequest", (event) => {
+            event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
         });
     </script>
     {% endblock %}

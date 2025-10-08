@@ -1,0 +1,19 @@
+{% load i18n %}
+<div class="card">
+  <div class="card-header">{% trans "All employees – last slot" %}</div>
+  <div class="card-body p-0">
+    <table class="table table-sm mb-0">
+  <thead>
+    <tr><th>Employee</th><th>Slot</th></tr>
+  </thead>
+  <tbody>
+    {% for emp in all_employees_last_slot %}
+      <tr>
+        <td>{{ emp.full_name }}</td>
+        <td>{{ emp.slot_label }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+  </div>
+</div>

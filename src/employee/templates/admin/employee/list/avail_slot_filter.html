@@ -1,0 +1,14 @@
+{% load i18n %}
+<h3>{{ title }}</h3>
+<ul class="admin-filter">
+  <li{% if spec.lookup_val is None %} class="selected"{% endif %}>
+    <a href="{{ request.get_full_path }}">{% trans 'All' %}</a>
+  </li>
+  {% for pk, label in spec.lookup_choices %}
+    <li{% if spec.lookup_val == pk %} class="selected"{% endif %}>
+      <a href="{{ request.get_full_path }}?{{ spec.parameter_name }}={{ pk|urlencode }}">
+        {{ label|safe }}   {#  <--  |safe keeps the red <span> #}
+      </a>
+    </li>
+  {% endfor %}
+</ul>

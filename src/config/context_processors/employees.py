@@ -23,7 +23,10 @@ from config.settings import employee_ids as management_ids
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_need_help import EmployeeNeedHelpForm
 from employee.forms.employee_online import EmployeeStatusForm
-from employee.forms.employee_project import BookConferenceRoomForm, EmployeeProjectForm
+from employee.forms.employee_project import (
+    BookConferenceRoomForm,
+    EmployeeProjectForm,
+)
 from employee.models import (
     Employee,
     EmployeeNeedHelp,
@@ -33,12 +36,17 @@ from employee.models import (
     Leave,
     LeaveManagement,
 )
-from employee.models.employee import BookConferenceRoom, EmployeeAvailableSlot, Inbox, LateAttendanceFine
+from employee.models.employee import (
+    BookConferenceRoom,
+    EmployeeAvailableSlot,
+    Inbox,
+    LateAttendanceFine,
+)
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from project_management.models import DailyProjectUpdate, Project
 from settings.models import Announcement, Notice
-from collections import defaultdict
+
 
 def formal_summery(request):
     if not request.path == "/admin/":
@@ -50,7 +58,9 @@ def formal_summery(request):
 
     employee_formal_summery = EmployeeNearbySummery()
 
-    leaves_nearby, leaves_nearby_count = employee_formal_summery.employee_leave_nearby()
+    leaves_nearby, leaves_nearby_count = (
+        employee_formal_summery.employee_leave_nearby()
+    )
     permanents, permanents_count = employee_formal_summery.permanents()
     anniversaries, anniversaries_count = employee_formal_summery.anniversaries()
 
@@ -76,13 +86,13 @@ def formal_summery(request):
         .order_by("-percentage")
         .values("skill__title")[:1]
     )
-    employee_filter = Q(employee__active=True) & Q(employee__project_eligibility=True)
+    employee_filter = Q(employee__active=True) & Q(
+        employee__project_eligibility=True
+    )
     if not employee.operation and not employee.is_tpm:
-        employee_filter &=Q(employee=employee)
+        employee_filter &= Q(employee=employee)
     employee_projects = (
-        EmployeeProject.objects.filter(
-            employee_filter
-        )
+        EmployeeProject.objects.filter(employee_filter)
         .exclude(employee_id__in=management_ids)
         .annotate(
             project_count=Count("project"),
@@ -176,27 +186,30 @@ def total_attendance_fine(request):
         employee=obj, month=last_month, year=current_year
     ).aggregate(fine=Sum("total_late_attendance_fine"))
     current_fine = (
-        current_late_fine.get("fine", 0.00) if current_late_fine.get("fine") else 0.00
+        current_late_fine.get("fine", 0.00)
+        if current_late_fine.get("fine")
+        else 0.00
     )
-    last_fine = last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
+    last_fine = (
+        last_late_fine.get("fine", 0.00) if last_late_fine.get("fine") else 0.00
+    )
 
     last_month_date = current_date + timedelta(days=-30)
-    html = f'{current_fine} ( {current_date.strftime("%b")} )  </br>{last_fine} ( {last_month_date.strftime("%b")} ) '
+    html = f"{current_fine} ( {current_date.strftime('%b')} )  </br>{last_fine} ( {last_month_date.strftime('%b')} ) "
     is_super = request.user.is_superuser
     return {"is_super": is_super, "late_attendance_fine": format_html(html)}
 
 
 def total_late_entry_count(request):
-
     if not request.user.is_authenticated:
         current_date = timezone.now()
         current_month_name = current_date.strftime("%b").lower()
         last_month_date = current_date - timedelta(days=30)
         last_month_name = last_month_date.strftime("%b").lower()
-        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
         return {"is_super": False, "late_attendance_count": format_html(html)}
 
-    obj = getattr(request.user, 'employee', None)
+    obj = getattr(request.user, "employee", None)
     current_date = timezone.now()
     current_month = current_date.month
     last_month = current_date.month - 1 or 12
@@ -208,7 +221,7 @@ def total_late_entry_count(request):
     last_month_name = last_month_date.strftime("%b").lower()
 
     if not obj:
-        html = f'0 ({current_month_name})<br>0 ({last_month_name})'
+        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
     else:
         current_late_count = LateAttendanceFine.objects.filter(
             employee=obj, month=current_month, year=current_year
@@ -216,7 +229,7 @@ def total_late_entry_count(request):
         last_late_count = LateAttendanceFine.objects.filter(
             employee=obj, month=last_month, year=last_year
         ).count()
-        html = f'{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})'
+        html = f"{current_late_count} ({current_month_name})<br>{last_late_count} ({last_month_name})"
 
     is_super = request.user.is_superuser
     return {"is_super": is_super, "late_attendance_count": format_html(html)}
@@ -247,7 +260,11 @@ def employee_project_form(request):
         employee_project = EmployeeProject.objects.get(
             employee_id=request.user.employee.id
         )
-        return {"employee_project_form": EmployeeProjectForm(instance=employee_project)}
+        return {
+            "employee_project_form": EmployeeProjectForm(
+                instance=employee_project
+            )
+        }
     else:
         return {"employee_project_form": None}
 
@@ -263,7 +280,9 @@ def employee_need_help_form(request):
             employee_id=request.user.employee.id,
         )
         return {
-            "employee_need_help_form": EmployeeNeedHelpForm(instance=employee_need_help)
+            "employee_need_help_form": EmployeeNeedHelpForm(
+                instance=employee_need_help
+            )
         }
     else:
         return {"employee_need_help_form": None}
@@ -275,7 +294,9 @@ def unread_inbox(request):
     if not request.user.is_authenticated:
         return {}
     if not request.user.has_perm("employee.can_see_all_employee_inbox"):
-        qs = Inbox.objects.filter(employee=request.user.employee, is_read=False).count()
+        qs = Inbox.objects.filter(
+            employee=request.user.employee, is_read=False
+        ).count()
         return {"unread_inbox_count": qs}
     return {}
 
@@ -397,13 +418,13 @@ def get_announcement(request):
     if birthdays_today:
         birthdays_text = ", ".join(birthdays_today)
         data.append(
-            f"{birthdays_text} {'has' if len(birthdays_today)==1 else 'have'} birthday today."
+            f"{birthdays_text} {'has' if len(birthdays_today) == 1 else 'have'} birthday today."
         )
 
     # Format Data
     if data:
-        initial = f'<span style="background-color:tomato;padding:0.4rem 0.8rem;border-radius:0.4rem;">ANNOUNCEMENTS</span> {"&nbsp;"*8}🚨'
-        data = initial + f' {"&nbsp;"*8}🚨'.join(
+        initial = f'<span style="background-color:tomato;padding:0.4rem 0.8rem;border-radius:0.4rem;">ANNOUNCEMENTS</span> {"&nbsp;" * 8}🚨'
+        data = initial + f" {'&nbsp;' * 8}🚨".join(
             [f'<span class="single_announcement">{d}</span>' for d in data]
         )
         data = format_html(data)
@@ -440,7 +461,9 @@ def get_managed_birthday_image(request):
 
 def favourite_menu_list(request):
     if request.user.is_authenticated and request.user.employee is not None:
-        f_menu = FavouriteMenu.objects.filter(employee_id=request.user.employee.id)
+        f_menu = FavouriteMenu.objects.filter(
+            employee_id=request.user.employee.id
+        )
         data = {}
         data["object_list"] = f_menu
         return data
@@ -536,16 +559,22 @@ def employee_project_list(request):
         if proj is None:
             try:
                 if user.employee.operation:
-                    emp = Employee.objects.filter(user=user).select_related("user").prefetch_related(
-                    # "employeeproject_set__project",
-                    Prefetch(
-                        "employeeproject__project",
-                        queryset=Project.objects.all(),
-                        to_attr="project_list",
+                    emp = (
+                        Employee.objects.filter(user=user)
+                        .select_related("user")
+                        .prefetch_related(
+                            # "employeeproject_set__project",
+                            Prefetch(
+                                "employeeproject__project",
+                                queryset=Project.objects.all(),
+                                to_attr="project_list",
+                            )
+                        )
                     )
-                )
                 else:
-                    emp = Employee.objects.select_related("user").prefetch_related(
+                    emp = Employee.objects.select_related(
+                        "user"
+                    ).prefetch_related(
                         # "employeeproject_set__project",
                         Prefetch(
                             "employeeproject__project",
@@ -556,7 +585,9 @@ def employee_project_list(request):
                 p = getattr(emp.get(user=user), "project_list", [])
                 print(p)
                 emp = emp.get(user=user)
-                proj = list(emp.employee_project_list.values_list("title", flat=True))
+                proj = list(
+                    emp.employee_project_list.values_list("title", flat=True)
+                )
             except Employee.DoesNotExist:
                 print(f"Employee not found for user {user.id}")
                 proj = []
@@ -584,9 +615,7 @@ def approval_info_leave_daily_update(request):
     update_color = "red" if daily_update_pending > 0 else "green"
 
     # Create HTML string with conditional styles
-    leave_html = (
-        f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
-    )
+    leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
     update_html = f'<span style="color: {update_color};"> Daily Update: {daily_update_pending}</span>'
     html = f"   {leave_html}<br/>   {update_html}"
 
@@ -626,17 +655,58 @@ def can_show_permanent_increment(reqeust):
     return {"can_show_permanent_increment": can_show}
 
 
-
 # forms.py
 class EmployeeAvailableSlotForm(forms.ModelForm):
     date = forms.DateField(widget=forms.HiddenInput())
+
     class Meta:
-        model  = EmployeeAvailableSlot
+        model = EmployeeAvailableSlot
         fields = ["slot", "date"]
-        
-        
+
+
 def available_slot_form(request):
     form = EmployeeAvailableSlotForm()
-    current_slot = EmployeeAvailableSlot.objects.filter(employee=request.user.employee).last()
+    if request.user.is_authenticated:
+        
+        current_slot = EmployeeAvailableSlot.objects.filter(
+            employee=request.user.employee
+        ).last()
+    else:
+        current_slot = None
     # Return the form in a dictionary
-    return {"slot_form": form, "today": timezone.now().date(), "current_slot": current_slot.slot if current_slot else None}
+    return {
+        "slot_form": form,
+        "today": timezone.now().date(),
+        "current_slot": current_slot.slot if current_slot else None,
+    }
+
+
+from django.db.models import Max
+
+
+def all_employees_last_slot(request):
+    """
+    Active employees + their latest slot choice (Half/Full/N/A).
+    MySQL 5.x compatible.
+    """
+    # 1. latest slot id per employee
+    latest_ids = (
+        EmployeeAvailableSlot.objects
+        .values('employee')
+        .annotate(max_id=Max('id'))
+        .values_list('max_id', flat=True)
+    )
+
+    # 2. fetch only those rows
+    slots = {
+        s.employee_id: s.get_slot_display()   # 'Half Time' / 'Full Time' / 'N/A'
+        for s in EmployeeAvailableSlot.objects.filter(id__in=latest_ids)
+    }
+
+    # 3. attach to active employees
+    employees = Employee.objects.filter(active=True).order_by("full_name")
+    for emp in employees:
+        emp.slot_label = slots.get(emp.id, '—')
+        
+    
+    return {"all_employees_last_slot": employees}

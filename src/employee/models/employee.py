@@ -876,7 +876,7 @@ class EmployeeAvailableSlot(TimeStampMixin, AuthorMixin):
     date = models.DateTimeField()
     slot = models.CharField(
         max_length=255,
-        choices=(("half", "Half Time"), ("full", "Full Time"), ("n/a", "N/A"))
+        choices=(("half", "Half-time"), ("full", "Full-time"), ("n/a", "N/A"))
     )
     available = models.BooleanField(default=True)
 

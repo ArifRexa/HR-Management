@@ -1490,11 +1490,48 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
     third_year.short_description = last_four_financial_year(2)
     fourth_year.short_description = last_four_financial_year(3)
 
+from django.contrib.admin import SimpleListFilter
+from django.utils import timezone
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
+
+class TodayFirstEmployeeFilter(SimpleListFilter):
+    title = _("employee")
+    parameter_name = "employee"
+    template = "admin/employee/list/avail_slot_filter.html"
+
+    def lookups(self, request, model_admin):
+        today = timezone.now().date()
+
+        # employees with an AVAILABLE slot today
+        today_pks = set(
+            EmployeeAvailableSlot.objects.filter(
+                date__date=today, available=True
+            ).values_list("employee", flat=True)
+        )
+
+        # build choices: red-labelled today guys first
+        choices = []
+        for emp in Employee.objects.filter(pk__in=today_pks).order_by("full_name"):
+            choices.append(
+                (emp.pk, format_html('<span style="color:red;font-weight:bold">{}</span>', emp))
+            )
+
+        # everybody else, alphabetical
+        for emp in Employee.objects.exclude(pk__in=today_pks).filter(active=True).order_by("full_name"):
+            choices.append((emp.pk, str(emp)))
+
+        return choices
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(employee__id=self.value())
+        return queryset
 
 @admin.register(EmployeeAvailableSlot)
 class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
     list_display = ("date_display", "employee", "available", "slot")
-    list_filter = ("available", "slot", "employee")
+    list_filter = ("available", "slot", TodayFirstEmployeeFilter)
     autocomplete_fields = ("employee",)
     date_hierarchy = "date"
 
