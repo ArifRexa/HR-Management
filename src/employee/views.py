@@ -453,4 +453,4 @@ def save_available_slot(request):
             "current_slot": instance.slot,
         },
     )
-    return HttpResponse("/admin/")
+    return HttpResponse(html, status=200)
