@@ -416,7 +416,7 @@ def save_available_slot(request):
 
         # 2. build the same fragment, but with an error banner
         html = render_to_string(
-            "partials/employee_slot_form.html",
+            "admin/form/available_slot.html",
             {
                 "today": date_obj,
                 "current_slot": request.POST.get("slot"),  # keep user choice
@@ -447,7 +447,7 @@ def save_available_slot(request):
         instance.save(update_fields=["slot", "available"])
 
     html = render_to_string(
-        "partials/employee_slot_form.html",
+        "admin/form/available_slot.html",
         {
             "today": date_value,
             "current_slot": instance.slot,
