@@ -453,6 +453,10 @@ class ClientAdmin(admin.ModelAdmin):
         ):
             if "hourly_rate" in fields:
                 fields.remove("hourly_rate")
+            if not request.user.is_superuser and not request.user.has_perm(
+                "project_management.can_see_all_field"
+            ):
+                fields.remove("active")
         return tuple(fields)
 
     def changelist_view(self, request, extra_context=None):

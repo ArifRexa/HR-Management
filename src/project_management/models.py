@@ -381,6 +381,7 @@ class Client(TimeStampMixin, AuthorMixin):
             ("can_mark_as_inactive", "Can mark clients as inactive"),
             ("can_export_to_excel", "Can export clients to Excel"),
             ("can_export_to_pdf", "Can export clients to PDF"),
+            ("can_see_all_field", "Can See All Field")
         ]
 
     def save(self, *args, **kwargs):
