@@ -84,6 +84,29 @@
         let currentView = 'weekly';
         let currentType = 'bar';
 
+        function labelToDateRange(label, view) {
+            /* 1. parse the displayed label (Mon-YYYY) */
+            const months = {
+                Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
+                Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11
+            };
+            const [, m, y] = label.match(/(\w{3})-(\d{4})/);
+            const startDate = new Date(Date.UTC(y, months[m], 1));   // 1-st of the month
+            const startStr  = startDate.toISOString().slice(0,10);  // YYYY-MM-DD
+
+            /* 2. compute the end of the period */
+            let endDate, endStr;
+            if (view === 'weekly') {
+                endDate = new Date(startDate);
+                endDate.setDate(startDate.getDate() + 6);           // 7 days inclusive
+            } else {  // monthly
+                endDate = new Date(Date.UTC(y, months[m] + 1, 0, 23, 59, 59)); // last second of the month
+            }
+            endStr = endDate.toISOString().slice(0,10);
+
+            return { start: startStr, end: endStr };
+        }
+
         function getConfig(type, view) {
             return {
                 type: type,
@@ -123,6 +146,7 @@
                                 // Customize the label text here.
                                 // 'value' is the data point value
                                 // 'context' provides access to dataset, index, etc.
+                                const v = +value.toFixed(1)
                                 return +value.toFixed(1); // Display the raw value
                             },
                             font: {
@@ -136,6 +160,29 @@
                                 if (value>=target_hour) return "green";
                                 else return "red";
                             },
+                            listeners: {
+                                click: function(context){
+                                    
+                                    const label = context.chart.data.labels[context.dataIndex];
+                                    console.log(label)
+                                    const range = labelToDateRange(label, currentView);
+
+                                    /* build the Django-admin query string */
+                                    const url =
+                                        `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
+                                        `?created_at__date__gte=${range.start}&created_at__date__lte=${range.end}`;
+
+                                    window.open(url, '_blank');
+                                },
+                                enter: function(context) {
+                                    // Change cursor to pointer when hovering over a datalabel
+                                    context.chart.canvas.style.cursor = 'pointer';
+                                },
+                                leave: function(context) {
+                                    // Revert cursor to default when leaving a datalabel
+                                    context.chart.canvas.style.cursor = 'default';
+                                }
+                            }
                         },
                         tooltip: {
                             enabled: true,
