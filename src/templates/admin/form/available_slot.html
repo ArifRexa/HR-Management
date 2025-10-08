@@ -1,0 +1,26 @@
+<div style="min-width: 300px;display: flex;flex-direction: row;align-items: center;">
+            <form hx-post="{% url 'save_available_slot' %}"
+                    hx-target="this"
+                    hx-swap="outerHTML"
+                    style="width: 100%;display: flex;gap: 4px;">
+
+                {% csrf_token %}
+
+                <!-- hidden date field – fill server-side or with JS -->
+                <input type="hidden" name="date" value="{{ today|date:'Y-m-d' }}">
+
+                <div>
+                    <label for="slot">Available Slot</label>
+                    <select name="slot" id="slot" required>
+                    <option value="">--------</option>
+                    <option value="n/a" {% if current_slot == 'n/a' %}selected{% endif %}>N/A</option>
+                    <option value="half" {% if current_slot == 'half' %}selected{% endif %}>Half Time</option>
+                    <option value="full" {% if current_slot == 'full' %}selected{% endif %}>Full Time</option>
+                    </select>
+                </div>
+
+                <div>
+                    <input type="submit" value="Submit" style="padding: 4px 10px;">
+                </div>
+            </form>
+            </div>

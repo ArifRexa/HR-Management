@@ -7,6 +7,7 @@ from employee.views import (
     booking_conference_room,
     delete_booking,
     employee_project_select_form,
+    save_available_slot,
     update_booking
 )
 
@@ -22,5 +23,6 @@ urlpatterns = [
         ChangeEmployeeEntryPass.as_view(),
         name="change_employee_entry_pass_api",
     ),
-    path("employee-project-form/<int:employee_id>/", employee_project_select_form, name="employee_project_form")
+    path("employee-project-form/<int:employee_id>/", employee_project_select_form, name="employee_project_form"),
+    path("save-slot/", save_available_slot, name="save_available_slot"),
 ]

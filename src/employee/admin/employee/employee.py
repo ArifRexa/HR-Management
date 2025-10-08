@@ -25,6 +25,7 @@ from employee.models import (
 from employee.models.attachment import EmployeeTaxAcknowledgement
 from employee.models.bank_account import BEFTN
 from employee.models.employee import (
+    EmployeeAvailableSlot,
     EmployeeLunch,
     EmployeeNOC,
     EmployeeUnderTPM,
@@ -1489,3 +1490,11 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
     second_year.short_description = last_four_financial_year(1)
     third_year.short_description = last_four_financial_year(2)
     fourth_year.short_description = last_four_financial_year(3)
+
+
+
+@admin.register(EmployeeAvailableSlot)
+class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
+    list_display = ("date", "employee", "slot", "available")
+    list_filter = ("slot", "available", "employee")
+    autocomplete_fields = ("employee",)

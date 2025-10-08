@@ -1,5 +1,6 @@
 from datetime import date, datetime, time, timedelta
 
+from django import forms
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import (
     BooleanField,
@@ -32,7 +33,7 @@ from employee.models import (
     Leave,
     LeaveManagement,
 )
-from employee.models.employee import BookConferenceRoom, Inbox, LateAttendanceFine
+from employee.models.employee import BookConferenceRoom, EmployeeAvailableSlot, Inbox, LateAttendanceFine
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from project_management.models import DailyProjectUpdate, Project
@@ -623,3 +624,19 @@ def can_show_permanent_increment(reqeust):
     if reqeust.user.has_perm("employee.can_show_permanent_increment"):
         can_show = True
     return {"can_show_permanent_increment": can_show}
+
+
+
+# forms.py
+class EmployeeAvailableSlotForm(forms.ModelForm):
+    date = forms.DateField(widget=forms.HiddenInput())
+    class Meta:
+        model  = EmployeeAvailableSlot
+        fields = ["slot", "date"]
+        
+        
+def available_slot_form(request):
+    form = EmployeeAvailableSlotForm()
+    current_slot = EmployeeAvailableSlot.objects.filter(employee=request.user.employee).last()
+    # Return the form in a dictionary
+    return {"slot_form": form, "today": timezone.now().date(), "current_slot": current_slot.slot}

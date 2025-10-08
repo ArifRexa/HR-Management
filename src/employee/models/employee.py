@@ -863,6 +863,25 @@ class EmployeeUnderTPM(models.Model):
         if not self.employee:
             return self.tpm.full_name
         return f"{self.employee.full_name} under {self.tpm.full_name}"
+    
+    
+    
+class EmployeeAvailableSlot(TimeStampMixin, AuthorMixin):
+    employee = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        limit_choices_to={"active": True},
+        related_name="employees_available_slots",
+    )
+    date = models.DateTimeField()
+    slot = models.CharField(
+        max_length=255,
+        choices=(("half", "Half Time"), ("full", "Full Time"), ("n/a", "N/A"))
+    )
+    available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.employee.full_name}"
 
 
 class TPMComplain(models.Model):
