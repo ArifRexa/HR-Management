@@ -433,7 +433,9 @@ class EmployeeDetails(admin.ModelAdmin):
     #         links.append(f"{platform}: {es.url}")
 
     #     return " | ".join(links)
-    @admin.display(description="Social Links", ordering="employee__employeesocial")
+    @admin.display(
+        description="Social Links", ordering="employee__employeesocial"
+    )
     def social_links(self, obj: EmployeeLunch):
         employee = obj.employee
         socials = employee.employeesocial_set.all()
@@ -1440,9 +1442,7 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
         from django.db.models import Max
 
         latest_ids = (
-            EmployeeTaxAcknowledgement.objects.values(
-                "employee"
-            )
+            EmployeeTaxAcknowledgement.objects.values("employee")
             .annotate(max_id=Max("id"))  # latest id
             .values_list("max_id", flat=True)  # [123, 456, …]
         )
@@ -1456,7 +1456,6 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
 
         return qs
 
-    
     def _year_column(self, obj, offset):
         fy = last_four_financial_year(offset)
         if isinstance(fy, str):
@@ -1492,9 +1491,19 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
     fourth_year.short_description = last_four_financial_year(3)
 
 
-
 @admin.register(EmployeeAvailableSlot)
 class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
-    list_display = ("date", "employee", "slot", "available")
-    list_filter = ("slot", "available", "employee")
+    list_display = ("date_display", "employee", "available", "slot")
+    list_filter = ("available", "slot", "employee")
     autocomplete_fields = ("employee",)
+    date_hierarchy = "date"
+
+    def date_display(self, obj):
+        return obj.date.strftime("%d %b %Y – %I:%M %p")
+
+    date_display.short_description = "Date & Time"
+    date_display.admin_order_field = "date"
+    
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.order_by("-date", "-available")

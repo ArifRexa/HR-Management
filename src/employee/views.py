@@ -3,7 +3,6 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
@@ -394,9 +393,6 @@ def employee_project_select_form(request, employee_id):
     )
 
 
-from django.template.loader import render_to_string
-
-
 @require_POST
 @login_required
 def save_available_slot(request):
@@ -407,50 +403,64 @@ def save_available_slot(request):
     - returns a small HTML fragment (or JSON) that HTMX can swap into the page
     """
     form = EmployeeAvailableSlotForm(request.POST)
-    if not form.is_valid():
+    if not form.is_valid:
         date_str = request.POST.get("date")
         try:
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         except (ValueError, TypeError):
             date_obj = datetime.today().date()
 
-        # 2. build the same fragment, but with an error banner
-        html = render_to_string(
-            "admin/form/available_slot.html",
-            {
+        context = {
                 "today": date_obj,
-                "current_slot": request.POST.get("slot"),  # keep user choice
+                "current_slot": request.POST.get("slot"),
                 "error": form.errors["slot"][0]
                 if form.errors.get("slot")
                 else "Invalid choice.",
-            },
-        )
-        # 3. return 422 (or 200) so HTMX still swaps the form
-        return HttpResponse(html, status=422)
+                "toast_message": "somethings wrong",
+                "toast_type": "error",
+                "toast": True
+            }
+        
+        return render(request, "admin/form/available_slot.html", context)
 
     slot_value = form.cleaned_data["slot"]
-    date_value = form.cleaned_data["date"]
+    date_value = timezone.now()
 
-    instance, created = EmployeeAvailableSlot.objects.get_or_create(
-        employee=request.user.employee,
-        date=date_value,
-        defaults={
-            "slot": slot_value,
-            "available": slot_value != "n/a",
-            "date": date_value,
-        },
+    existing = (
+        EmployeeAvailableSlot.objects
+        .filter(employee=request.user.employee, date__date=date_value)
+        .last()
     )
 
-    if not created:  # update
-        instance.slot = slot_value
-        instance.available = slot_value != "n/a"
-        instance.save(update_fields=["slot", "available"])
+    if existing:
+        if existing.slot == slot_value:
+            # same choice – just make sure availability is correct
+            existing.available = slot_value != "n/a"
+            existing.save(update_fields=["available"])
+            instance = existing
+        else:
+            instance = EmployeeAvailableSlot.objects.create(
+                employee=request.user.employee,
+                date=date_value,
+                slot=slot_value,
+                available=slot_value != "n/a",
+            )
+    else:
+        instance = EmployeeAvailableSlot.objects.create(
+            employee=request.user.employee,
+            date=date_value,
+            slot=slot_value,
+            available=slot_value != "n/a",
+        )
 
-    html = render_to_string(
+    return render(
+        request,
         "admin/form/available_slot.html",
-        {
+        context={
             "today": date_value,
             "current_slot": instance.slot,
+            "toast_message": "successfully add available slot",
+            "toast_type": "success",
+            "toast": True
         },
     )
-    return HttpResponse(html, status=200)
