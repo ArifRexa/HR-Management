@@ -639,4 +639,4 @@ def available_slot_form(request):
     form = EmployeeAvailableSlotForm()
     current_slot = EmployeeAvailableSlot.objects.filter(employee=request.user.employee).last()
     # Return the form in a dictionary
-    return {"slot_form": form, "today": timezone.now().date(), "current_slot": current_slot.slot}
+    return {"slot_form": form, "today": timezone.now().date(), "current_slot": current_slot.slot if current_slot else None}
