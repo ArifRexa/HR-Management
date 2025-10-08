@@ -423,7 +423,7 @@ def save_available_slot(request):
         
         return render(request, "admin/form/available_slot.html", context)
 
-    slot_value = form.cleaned_data["slot"]
+    slot_value = request.POST["slot"]
     date_value = timezone.now()
 
     existing = (
