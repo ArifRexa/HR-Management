@@ -426,18 +426,23 @@ class GraphView(admin.ModelAdmin):
             "employee", "employee__full_name",
         ).annotate(
             total_hour = Sum("hours")
+
         ).order_by("total_hour")
 
         chart = {
             "labels": [],
             "data": [],
-            "employees_id": [],
+            "projects_hour": [],
             "total_hour": 0,
         }
         for daily_employee_hour in daily_employee_hours:
             chart["labels"].append(daily_employee_hour.get("employee__full_name"))
             chart["data"].append(daily_employee_hour.get("total_hour"))
-            chart["employees_id"].append(daily_employee_hour.get("employee"))
+            projects = DailyProjectUpdate.objects.filter(
+                employee_id=daily_employee_hour.get("employee"),
+                **filters,
+            ).values("project", "project__title").values_list("project__title", "hours")
+            chart["projects_hour"].append([list(project) for project in projects])
             chart["total_hour"] += daily_employee_hour.get("total_hour")
         return chart
 
