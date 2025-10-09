@@ -1543,4 +1543,4 @@ class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.order_by("-date", "-available")
+        return qs.order_by("-available", "-date" )
