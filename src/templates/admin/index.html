@@ -192,14 +192,14 @@
 
 
 {% if not request.user.is_superuser %}
-<section class="dashboard-header container-fluid mb-3 shadow-sm rounded-4">
+<section class="container-fluid mb-3 shadow-sm rounded-4">
 
     <div class="row align-items-center g-3">
         <!-- LEFT: Title -->
         <div class="col-lg-4 col-md-12 text-center text-lg-start">
             {% if title %}
-                <h2 class="fw-bold mb-0 title-text">{{ title }}</h2>
-                <small class="text-light opacity-75">Employee Overview</small>
+                <h2 class="fw-bold mb-0 title-text text-dark">{{ title }}</h2>
+                <small class="text-dark opacity-75">Employee Overview</small>
             {% endif %}
         </div>
 

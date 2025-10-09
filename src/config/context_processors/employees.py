@@ -627,7 +627,7 @@ def approval_info_leave_daily_update(request):
     ).exists()
 
     return {
-        "approval_info_leave_daily_update": format_html(html),
+        # "approval_info_leave_daily_update": format_html(html),
         "is_manager_lead_tpm": is_manager_lead_tpm,
     }
 
