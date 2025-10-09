@@ -27,10 +27,14 @@ class DateFilterForm(forms.Form):
     date__lte = forms.DateField(label='', widget=AdminDateWidget(attrs={'readonly': 'readonly'}))
 
 
-
 class DailyUpdateFilterForm(forms.Form):
     created_at__date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type':'date'}))
     created_at__date__lte = forms.DateField(label='To', widget=AdminDateWidget(attrs={'type':'date'}))
+
+
+class DailyUpdateDateFilterForm(forms.Form):
+    created_at__date = forms.DateField(label="Date", widget=AdminDateWidget(attrs={"readonly": "readonly"}))
+
 
 class DailyExpenseFilterForm(forms.Form):
     date__gte = forms.DateField(label='From', widget=AdminDateWidget(attrs={'type': 'date'}))

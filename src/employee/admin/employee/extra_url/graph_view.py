@@ -8,7 +8,10 @@ from django.db.models import F, Sum
 from django.db.models.functions import TruncMonth
 from django.template.response import TemplateResponse
 
-from employee.admin.employee._forms import DateFilterForm, FilterForm
+from employee.admin.employee._forms import (
+    DateFilterForm, FilterForm,
+    DailyUpdateDateFilterForm,
+)
 from employee.models import Employee
 from project_management.models import (
     DailyProjectUpdate,
@@ -393,3 +396,48 @@ class GraphView(admin.ModelAdmin):
                     }
                 )
         return dataset
+
+    def all_employee_last_working_day_graph_view(self, request, *args, **kwargs):
+        if request.user.has_perm("employee.view_employeeundertpm") is False:
+            raise PermissionDenied("You do not have permission to access this feature.")
+        
+        current_date = datetime.datetime.now().date()
+        weekday = current_date.weekday()
+        if weekday in (5, 6):
+            current_date = current_date - relativedelta(days=1 if weekday == 5 else 2)
+        initial_date_filter = {
+            "created_at__date": request.GET.get("created_at__date", current_date),
+        }
+        date_filter_form = DailyUpdateDateFilterForm(
+            initial=initial_date_filter,
+        )
+        context = dict(
+            self.admin_site.each_context(request),
+            chart=self._all_employee_last_working_day_graph_data(**initial_date_filter),
+            date_filter_form=date_filter_form,
+        )
+        return TemplateResponse(request, "admin/employee/employees_last_working_day_hours.html", context)
+
+    def _all_employee_last_working_day_graph_data(self, **filters):
+        
+        daily_employee_hours = DailyProjectUpdate.objects.filter(
+            **filters,
+        ).select_related("employee", "project").values(
+            "employee", "employee__full_name",
+        ).annotate(
+            total_hour = Sum("hours")
+        ).order_by("total_hour")
+
+        chart = {
+            "labels": [],
+            "data": [],
+            "employees_id": [],
+            "total_hour": 0,
+        }
+        for daily_employee_hour in daily_employee_hours:
+            chart["labels"].append(daily_employee_hour.get("employee__full_name"))
+            chart["data"].append(daily_employee_hour.get("total_hour"))
+            chart["employees_id"].append(daily_employee_hour.get("employee"))
+            chart["total_hour"] += daily_employee_hour.get("total_hour")
+        return chart
+

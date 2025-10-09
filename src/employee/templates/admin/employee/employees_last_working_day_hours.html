@@ -1,0 +1,212 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+    {% load static %}
+
+    <style>
+        #main{
+            max-height: 80vh;
+            min-width: 100vw;
+        }
+        #nav-sidebar{
+            display: none;
+        }
+        #toggle-nav-sidebar{
+            display: none;
+        }
+        button {
+            outline: none;
+            background: white; /* Changed to white for unselected buttons */
+            padding: 6px 10px;
+            color: #417690; /* Match border color for text */
+            border: 1px solid #417690; /* Border color matches original background */
+            border-radius: 4px;
+            font-weight: 400;
+            transition: background 0.15s;
+            cursor: pointer;
+            margin-right: 6px;
+        }
+        button.active {
+            background: #417690; /* Original default style for selected button */
+            border-color: #417690;
+            color: white; /* Ensure text is visible on dark background */
+            font-weight: 600; /* Keep bolder text for active state */
+        }
+        .content{
+            max-width: 100% !important;
+        }
+    </style>
+
+    <script src="{% url 'js-catalog' %}"></script>
+    <script src="{% static 'admin/js/core.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
+
+    {% block content_title %}{% endblock %}
+
+    <div style="display: flex; justify-content: space-between;">
+        <div>
+            <h1 id="chartTitle">{{ title }} ({{ chart.total_hour|floatformat:2 }})</h1>
+        </div>
+
+        <div>
+            <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button>
+            <button id="lineChart" onclick="changeChartType('line')">Line</button>
+        </div>
+
+        <div>
+            <form action="" method="get">
+                {{ date_filter_form.media }}
+                {{ date_filter_form }}
+                <button type="submit" class="default">Filter</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="main">
+        <canvas id="hourChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script>
+        const chartData = {{ chart|safe }};
+        const ctx = document.getElementById('hourChart').getContext('2d');
+
+        // Default configuration
+        let currentType = 'bar';
+
+        function getConfig(type) {
+            return {
+                type: type,
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: chartData.label,
+                        data: chartData.data,
+                        employees_id: chartData.employees_id,
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(153, 102, 255, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 99, 132)',
+                            'rgb(255, 206, 86)',
+                            'rgb(54, 162, 235)',
+                            'rgb(153, 102, 255)',
+                            'rgb(255, 159, 64)'
+                        ],
+                        borderWidth: 1,
+                        fill: type === 'line' ? true : false,
+                        tension: type === 'line' ? 0.3 : 0 // smooth curve for line
+                    }]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
+                            align: 'top',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
+                            formatter: function(value, context) {
+                                // Customize the label text here.
+                                // 'value' is the data point value
+                                // 'context' provides access to dataset, index, etc.
+                                const v = +value.toFixed(1)
+                                return +value.toFixed(1); // Display the raw value
+                            },
+                            font: {
+                                weight: 'bold',
+                                size: 16
+                            },
+                            color: function(context){
+                                // const index = context.dataIndex
+                                // const value = context.dataset.data[index]
+                                // const target_hour = chartData.target_hour | 0;
+                                // if (value>=target_hour) return "white";
+                                // else return "red";
+                                return "white";
+                            },
+                            // listeners: {
+                            //     click: function(context){
+                            //         const label = context.chart.data.labels[context.dataIndex];
+                            //         console.log(label)
+                            //         const range = labelToDateRange(label);
+
+                            //         /* build the Django-admin query string */
+                            //         const url =
+                            //             `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
+                            //             `?created_at__date=${range.start}&created_at__date__lte=${range.end}`;
+
+                            //         window.open(url, '_blank');
+                            //     },
+                            //     enter: function(context) {
+                            //         // Change cursor to pointer when hovering over a datalabel
+                            //         context.chart.canvas.style.cursor = 'pointer';
+                            //     },
+                            //     leave: function(context) {
+                            //         // Revert cursor to default when leaving a datalabel
+                            //         context.chart.canvas.style.cursor = 'default';
+                            //     }
+                            // }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            bodyFont: {
+                                size: 16  // increase body font size
+                            },
+                            titleFont: {
+                                size: 18  // optional: tooltip title font size
+                            },
+                            footerFont: {
+                                size: 14  // optional: tooltip footer font size
+                            },
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.raw;
+                                },
+                                footer: function(context) {
+                                    const dataset = context[0].dataset;
+                                },
+                            }
+                        },
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 14  // legend font size
+                                }
+                            }
+                        },
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        }
+                    }
+                },
+                plugins: [ChartDataLabels],
+            };
+        }
+
+        let myChart = new Chart(ctx, getConfig(currentType));
+
+        function changeChartType(type) {
+            currentType = type;
+            myChart.destroy();
+            myChart = new Chart(ctx, getConfig(currentType));
+            const buttons = {
+                'bar': document.getElementById('barChart'),
+                'line': document.getElementById('lineChart'),
+            };
+            Object.values(buttons).forEach(btn => btn.classList.remove('active'));
+            buttons[currentType].classList.add('active');
+        }
+    </script>
+{% endblock %}
