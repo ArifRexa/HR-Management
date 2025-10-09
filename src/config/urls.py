@@ -88,6 +88,7 @@ urlpatterns = [
     ),
     path("", include("job_board.urls")),
     path("", include("website.urls")),
+    path("", include("news_letter.urls")),
     path("", include("user_auth.urls")),
     path("upload_image", tinymce_image_upload, name="upload_image"),
     path("api-auth/", include("rest_framework.urls")),
