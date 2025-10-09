@@ -262,7 +262,7 @@
                     <div class="action-item">{% include 'admin/form/employee_status_form.html' %}</div>
 
                     <a href="{% url 'admin:time_hour_graph' request.user.employee.id %}" target="_blank"
-                        class="btn btn-graph d-flex align-items-center justify-content-center gap-2">
+                        class="btn btn-graph d-flex align-items-center justify-content-center gap-2 text-light">
                         <i class="bi bi-graph-up-arrow"></i> View Graph 📈
                     </a>
                 </div>
@@ -355,8 +355,8 @@
 /* ---------- Graph Button ---------- */
 .btn-graph {
     border-radius: 2rem;
-    background: linear-gradient(135deg, #6a11cb, #2575fc);
-    color: #fff;
+    background: linear-gradient(135deg, #417690, #264b5d);
+    color: #ffffff;
     font-weight: 600;
     font-size: 0.9rem;
     padding: 0.3rem 0.8rem;
