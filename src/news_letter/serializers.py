@@ -1,5 +1,4 @@
 # src/news_letter/serializers.py
-
 from rest_framework import serializers
 from news_letter.models.subscriber import Subscriber
 from news_letter.models.segments import Segment
@@ -9,7 +8,7 @@ class SegmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Segment
         fields = ('id', 'title')
-        ref_name = 'NewsletterSegment'  # Avoid naming conflicts in Swagger
+        ref_name = 'NewsletterSegment'
 
 
 class SubscriberSerializer(serializers.ModelSerializer):
@@ -36,4 +35,4 @@ class SubscriberSerializer(serializers.ModelSerializer):
             'updated_at'
         )
         read_only_fields = ('created_at', 'updated_at')
-        ref_name = 'NewsletterSubscriber'  # Important for drf-yasg schema uniqueness
+        ref_name = 'NewsletterSubscriber'  

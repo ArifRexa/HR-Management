@@ -1,16 +1,4 @@
-# # src/news_letter/urls.py
-
-# from django.urls import path
-# from news_letter.views import SubscriberAPIView
-
-# urlpatterns = [
-#     path('website/subscribers/', SubscriberAPIView.as_view(), name='subscriber-api'),
-#     path('website/subscribers/<int:identifier>/', SubscriberAPIView.as_view(), name='subscriber-api-detail'),
-# ]
-
-
 # src/news_letter/urls.py
-
 from django.urls import path
 from news_letter.views import SubscriberListView, SubscriberDetailView
 
