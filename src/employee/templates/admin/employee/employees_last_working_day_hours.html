@@ -85,7 +85,7 @@
                     datasets: [{
                         label: chartData.label,
                         data: chartData.data,
-                        employees_id: chartData.employees_id,
+                        projects_hour: chartData.projects_hour,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
                             'rgba(255, 99, 132, 0.2)',
@@ -174,6 +174,7 @@
                                 },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
+                                    return dataset.projects_hour[context[0].dataIndex];
                                 },
                             }
                         },
