@@ -691,7 +691,7 @@ def all_employees_last_slot(request):
     # 1. latest slot id per employee
     today = timezone.now().date()
     latest_ids = (
-        EmployeeAvailableSlot.objects.filter(date__date=today).values("employee")
+        EmployeeAvailableSlot.objects.filter(date__date=today).exclude(slot="n/a").values("employee")
         .annotate(max_id=Max("id"))
         .values_list("max_id", flat=True)
     )
