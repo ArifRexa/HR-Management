@@ -99,7 +99,7 @@ class ProjectContentAdmin(
     model = ProjectContent
     extra = 1
     # fields = ("title", "content", "image", "iframe")
-    fields = ("image", "content")
+    fields = ("image", "content", "video_url")
 
 
 class ProjectKeyFeatureInline(nested_admin.NestedStackedInline):
