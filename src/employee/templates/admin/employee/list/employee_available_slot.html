@@ -54,8 +54,8 @@
 }
 
 .available-table tbody tr:hover {
-  background-color: #f8f9fc;
-  cursor: pointer;
+  /* background-color: #f8f9fc; */
+  /* cursor: pointer; */
 }
 
 .available-table .text-muted {
@@ -84,15 +84,16 @@
 </style>
 
 <!-- markup uses the new classes -->
-<div class="card available-card">
+<div class="card available-card mb-3">
   <div class="card-header">Available Resources</div>
   <div class="card-body p-0">
     <table class="table table-sm mb-0 available-table">
       <tbody>
         {% for emp in all_employees_last_slot %}
-          <tr>
-            <td>{{ emp.full_name }}</td>
-            <td>{{ emp.slot_label }}</td>
+          <tr >
+            <td style="color: #41a6fa; font-weight: bold">{{ emp.full_name }}</td>
+            <td style="color: #41a6fa; font-weight: bold">{{ emp.slot_label }}</td>
+            <td style="color: #41a6fa; font-weight: bold">{{emp.top_one_skill|default:"-"}}</td>
           </tr>
         {% empty %}
           <tr>
