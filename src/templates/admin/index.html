@@ -187,43 +187,207 @@
 {#{% endif %}#}
 
 
-{% if not request.user.is_superuser %}
-<div class="row mb-4">
-    <div class="col-md-5 d-flex justify-content-center justify-content-md-start align-items-center">
-        {% if title %}
-        <h2 class="title-h1 mb-0">{{ title }}</h2>
-        {% endif %}
-    </div>
-    <div class="col-md-7">
-        {% if not is_management %}
-        <ul class="list-group list-group-horizontal-md float-end remove-float-end-on-mobile" style="margin-right: 20px;">
-          {% if not request.user.is_superuser%}
-          <!-- available slot form -->
-            {% include 'admin/form/available_slot.html' %}
-          <div style="display: flex; align-items: center; justify-content: space-between; min-width: 314px;">
-            <a href="{% url 'admin:time_hour_graph' request.user.employee.id %}" target="_blank">
-                <span style="font-size: 2rem; margin-right: 10px; border: 2px solid #264b5d; border-radius: 10px;">
-                📈
-            </span>
-            </a>
-            
-            <p style="margin-top: 15px;margin-right: 15px; ">Weekly: {{weekly_expected_hours}} ({{ request.user.employee.get_last_four_weeks_totals.0|safe }})<br>
-                Last 4 Weeks: {{monthly_expected_hours}} ({% if monthly_expected_hours > request.user.employee.get_last_four_weeks_totals.1 %}<span style="color: red;">{{ request.user.employee.get_last_four_weeks_totals.1 }}</span>{% else %}{{ request.user.employee.get_last_four_weeks_totals.1 }}{% endif %})</p>
-            
-                <div style="float: right; margin-right: 10px; ">
-                    <p style="color: red; margin-bottom: 0;">{{late_attendance_count }} </p>
-                </div>
-            
-          {%endif%}
 
-          </div>
-            <li class="list-group-item">{% include 'admin/form/employee_project_form.html' %}</li>
-            <li class="list-group-item">{% include 'admin/form/employee_status_form.html' %}</li>
-        </ul>
-        {% endif %}
+
+
+
+{% if not request.user.is_superuser %}
+<section class="container-fluid mb-3 shadow-sm rounded-4">
+
+    <div class="row align-items-center g-3">
+        <!-- LEFT: Title -->
+        <div class="col-lg-4 col-md-12 text-center text-lg-start">
+            {% if title %}
+                <h2 class="fw-bold mb-0 title-text text-dark">{{ title }}</h2>
+                <small class="text-dark opacity-75">Employee Overview</small>
+            {% endif %}
+        </div>
+
+        <!-- MIDDLE: Time Summary -->
+        <div class="col-lg-5 col-md-12">
+            <div class="summary-cards d-flex flex-wrap justify-content-center justify-content-lg-start gap-3">
+                
+                <!-- Weekly Hours -->
+                <div class="summary-box">
+                    <div class="icon text-primary">⏰</div>
+                    <div class="content">
+                        <p class="mb-0 fw-semibold">Weekly</p>
+                        <small>{{ weekly_expected_hours }} ({{ request.user.employee.get_last_four_weeks_totals.0|safe }})</small>
+                    </div>
+                </div>
+
+                <!-- Monthly Hours -->
+                <div class="summary-box">
+                    <div class="icon text-success">📅</div>
+                    <div class="content">
+                        <p class="mb-0 fw-semibold">Last 4 Weeks</p>
+                        <small>
+                            {{ monthly_expected_hours }}
+                            (
+                            {% if monthly_expected_hours > request.user.employee.get_last_four_weeks_totals.1 %}
+                                <span class="text-danger fw-bold">{{ request.user.employee.get_last_four_weeks_totals.1 }}</span>
+                            {% else %}
+                                {{ request.user.employee.get_last_four_weeks_totals.1 }}
+                            {% endif %}
+                            )
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Late Count -->
+                <div class="summary-box">
+                    <div class="icon text-danger">⚠️</div>
+                    <div class="content">
+                        <p class="mb-0  px-2 fw-semibold">Late</p>
+                        <span class="badge late-badge text-danger">{{ late_attendance_count|safe }}</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT: Actions -->
+        <div class="col-lg-3 col-md-12 text-center text-lg-end">
+            {% if not is_management %}
+            <div class="actions d-flex flex-wrap justify-content-center justify-content-lg-end gap-3 align-items-center">
+
+                <!-- Project Form -->
+                <div class="action-item">{% include 'admin/form/employee_project_form.html' %}</div>
+                <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-1 align-items-center">
+                    <!-- Slot Form -->
+                    <div class="action-item">{% include 'admin/form/available_slot.html' %}</div>
+                
+
+                    <!-- Status Form -->
+                    <div class="action-item">{% include 'admin/form/employee_status_form.html' %}</div>
+
+                    <a href="{% url 'admin:time_hour_graph' request.user.employee.id %}" target="_blank"
+                        class="btn btn-graph d-flex align-items-center justify-content-center gap-2 text-light">
+                        <i class="bi bi-graph-up-arrow"></i> View Graph 📈
+                    </a>
+                </div>
+
+            </div>
+            {% endif %}
+        </div>
+
     </div>
-</div>
-{%endif%}
+
+</section>
+
+<style>
+/* ---------- Header Background (Glass Effect) ---------- */
+.dashboard-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+}
+
+/* ---------- Title ---------- */
+.title-text {
+    letter-spacing: 0.5px;
+    color: #fff;
+}
+
+/* ---------- Summary Cards (Neumorphism) ---------- */
+.summary-cards {
+    gap: 1rem;
+}
+
+.summary-box {
+    background: #f0f3f7;
+    border-radius: 1.2rem;
+    box-shadow: 8px 8px 16px #d1d9e6, -8px -8px 16px #ffffff;
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    min-width: 150px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 12px 12px 24px #d1d9e6, -12px -12px 24px #ffffff;
+}
+
+
+.summary-box .icon {
+    font-size: 1.8rem;
+    margin-right: 0.8rem;
+    /* Removed gradient color */
+    color: inherit; /* Use default text color */
+}
+
+
+
+.summary-box .content p {
+    margin-bottom: 0.2rem;
+}
+
+/* ---------- Late Badge ---------- */
+.late-badge {
+    font-size: 0.85rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 0.6rem;
+}
+
+/* ---------- Actions (Glass Effect) ---------- */
+.actions {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.5rem 0.8rem;
+    border-radius: 1rem;
+    backdrop-filter: blur(8px);
+    display: flex;
+    gap: 0.6rem;
+    transition: all 0.3s ease;
+}
+
+.action-item select,
+.action-item button {
+    border-radius: 0.8rem;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+}
+
+/* ---------- Graph Button ---------- */
+.btn-graph {
+    border-radius: 2rem;
+    background: linear-gradient(135deg, #417690, #264b5d);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-graph:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 767.98px) {
+    .actions {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.8rem;
+    }
+}
+</style>
+{% endif %}
+
+
+
+
+
+
+
+
 
 <script>
     const feedback__marquee = document.getElementById("feedback__marquee");

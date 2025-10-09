@@ -206,7 +206,7 @@ def total_late_entry_count(request):
         current_month_name = current_date.strftime("%b").lower()
         last_month_date = current_date - timedelta(days=30)
         last_month_name = last_month_date.strftime("%b").lower()
-        html = f"0 ({current_month_name})<br>0 ({last_month_name})"
+        html = f"<div class='text-start'>0 ({current_month_name})<br>0 ({last_month_name})<div>"
         return {"is_super": False, "late_attendance_count": format_html(html)}
 
     obj = getattr(request.user, "employee", None)
@@ -627,7 +627,7 @@ def approval_info_leave_daily_update(request):
     ).exists()
 
     return {
-        "approval_info_leave_daily_update": format_html(html),
+        # "approval_info_leave_daily_update": format_html(html),
         "is_manager_lead_tpm": is_manager_lead_tpm,
     }
 
