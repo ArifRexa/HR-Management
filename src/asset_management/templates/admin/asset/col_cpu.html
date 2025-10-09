@@ -22,11 +22,11 @@
         <div class="asset-card">
           {% if a.asset_id %}<strong>Asset ID:</strong> {{ a.asset_id }}<br>{% endif %}
           {% if a.casing %}<strong>Casing:</strong> {{ a.casing }}<br>{% endif %}
-          {% if a.processor %}<strong>Processor:</strong> {{ a.processor }}<br>{% endif %}
-          {% if a.ram1 %}<strong>RAM 1:</strong> {{ a.ram1 }}<br>{% endif %}
+          {% if a.processor %}<strong>Processor:</strong> {{ a.processor }}( {{a.processor.brand.name}}, {{ a.processor.core }})<br>{% endif %}
+          {% if a.ram1 %}<strong>RAM 1:</strong> {{ a.ram1 }}( {{a.ram1.brand.name}}, {{ a.ram1.ram_size }})<br>{% endif %}
           {% if a.ram2 %}<strong>RAM 2:</strong> {{ a.ram2 }}<br>{% endif %}
-          {% if a.ssd %}<strong>SSD:</strong> {{ a.ssd }}<br>{% endif %}
-          {% if a.hdd %}<strong>HDD:</strong> {{ a.hdd }}<br>{% endif %}
+          {% if a.ssd %}<strong>SSD:</strong> {{ a.ssd }}({{a.ssd.brand.name}}, {{a.ssd.storage_size}})<br>{% endif %}
+          {% if a.hdd %}<strong>HDD:</strong> {{ a.hdd }}({{a.hdd.brand.name}}, {{a.hdd.storage_size}})<br>{% endif %}
           {% if a.gpu %}<strong>GPU:</strong> {{ a.gpu }}{% endif %}
         </div>
       {% else %}                                    
