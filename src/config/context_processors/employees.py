@@ -691,23 +691,24 @@ def all_employees_last_slot(request):
     # 1. latest slot id per employee
     today = timezone.now().date()
     latest_ids = (
-        EmployeeAvailableSlot.objects.filter(date__date=today).exclude(slot="n/a").values("employee")
+        EmployeeAvailableSlot.objects.filter(date__date=today).values("employee")
         .annotate(max_id=Max("id"))
         .values_list("max_id", flat=True)
     )
-
+ 
     # 2. fetch only those rows
     slots = {
         s.employee_id: s.get_slot_display()  # 'Half Time' / 'Full Time' / 'N/A'
         for s in EmployeeAvailableSlot.objects.filter(id__in=latest_ids)
     }
-
+ 
     # 3. attach to active employees
     employees = Employee.objects.filter(active=True).order_by("full_name")
     available_employee = []
     for emp in employees:
-        if slots.get(emp.id, None):
+        slot =slots.get(emp.id, None)
+        if slot is not None and slot != "N/A":
             emp.slot_label = slots.get(emp.id, "—")
             available_employee.append(emp)
-
+ 
     return {"all_employees_last_slot": available_employee}
