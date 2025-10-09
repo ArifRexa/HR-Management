@@ -29,7 +29,7 @@
 }
 </style>
 
-<div style="margin-right: 10px;display: flex;flex-direction: row;align-items: center;">
+<div style="margin-right: 10px;display: flex;flex-direction: row;align-items: center;" title="Set your available slot for today.">
     <select name="slot" id="slot"
         hx-post="{% url 'save_available_slot' %}"
         hx-target="this"
@@ -38,7 +38,6 @@
         
         required
         style="background: white;color: black;">
-  <option value="">Available?</option>
   <option value="n/a"  {% if current_slot == 'n/a'  %}selected{% endif %}>N/A</option>
   <option value="half" {% if current_slot == 'half' %}selected{% endif %}>Half Time</option>
   <option value="full" {% if current_slot == 'full' %}selected{% endif %}>Full Time</option>
