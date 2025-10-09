@@ -366,7 +366,7 @@
                     </div>
                     {% include "admin/form/book_conference_room.html" %}
                     
-                    {% if request.user.is_superuser or request.user.employee.is_tpm %}
+                    {% if request.user.is_superuser or request.user.employee.is_tpm or request.user.employee.operation %}
                         
                     {% include "admin/employee/list/employee_available_slot.html" %}
                     {% endif %}

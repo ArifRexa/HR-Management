@@ -1,19 +1,108 @@
-{% load i18n %}
-<div class="card">
-  <div class="card-header">{% trans "All employees – last slot" %}</div>
+<style>
+/* ---------- card ---------- */
+.available-card {
+  width: 100%;
+  margin: 0 auto;
+  border: 1px solid #e3e6f0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.available-card .card-header {
+  background: var(--primary);
+  color: #fff;
+  padding: 12px 16px;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.available-card .card-body {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ---------- table ---------- */
+.available-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.available-table thead {
+  position: sticky;
+  top: 0;
+  background: #f8f9fc;
+  z-index: 10;
+}
+
+.available-table th {
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #6e707e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e3e6f0;
+}
+
+.available-table td {
+  padding: 10px 12px;
+  font-size: 0.9375rem;
+  color: #333;
+  border-bottom: 1px solid #edf2f9;
+}
+
+.available-table tbody tr:hover {
+  background-color: #f8f9fc;
+  cursor: pointer;
+}
+
+.available-table .text-muted {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #858796;
+}
+
+/* ---------- scrollbar (webkit) ---------- */
+.available-card .card-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.available-card .card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.available-card .card-body::-webkit-scrollbar-thumb {
+  background: #4e73df;
+  border-radius: 3px;
+}
+
+.available-card .card-body::-webkit-scrollbar-thumb:hover {
+  background: #224abe;
+}
+</style>
+
+<!-- markup uses the new classes -->
+<div class="card available-card">
+  <div class="card-header">Available Employees</div>
   <div class="card-body p-0">
-    <table class="table table-sm mb-0">
-  <thead>
-    <tr><th>Employee</th><th>Slot</th></tr>
-  </thead>
-  <tbody>
-    {% for emp in all_employees_last_slot %}
-      <tr>
-        <td>{{ emp.full_name }}</td>
-        <td>{{ emp.slot_label }}</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table>
+    <table class="table table-sm mb-0 available-table">
+      <thead>
+        <tr><th>Employee</th><th>Slot</th></tr>
+      </thead>
+      <tbody>
+        {% for emp in all_employees_last_slot %}
+          <tr>
+            <td>{{ emp.full_name }}</td>
+            <td>{{ emp.slot_label }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="2" class="text-muted">No one available today</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 </div>
