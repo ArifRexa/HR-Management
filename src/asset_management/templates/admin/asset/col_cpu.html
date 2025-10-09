@@ -20,6 +20,7 @@
     {% for a in asset %}
       {% if a.casing %}                             
         <div class="asset-card">
+          {% if a.asset_id %}<strong>Asset ID:</strong> {{ a.asset_id }}<br>{% endif %}
           {% if a.casing %}<strong>Casing:</strong> {{ a.casing }}<br>{% endif %}
           {% if a.processor %}<strong>Processor:</strong> {{ a.processor }}<br>{% endif %}
           {% if a.ram1 %}<strong>RAM 1:</strong> {{ a.ram1 }}<br>{% endif %}
@@ -31,7 +32,7 @@
       {% else %}                                    
         <div class="asset-card">
           {% if a.asset_id %}<strong>Asset ID:</strong> {{ a.asset_id }}<br>{% endif %}
-          {% if a.category %}<strong>Category:</strong> {{ a.category.name }}<br>{% endif %}
+          <!-- {% if a.category %}<strong>Category:</strong> {{ a.category.name }}<br>{% endif %} -->
           {% if a.brand %}<strong>Brand:</strong> {{ a.brand }}<br>{% endif %}
           {% if a.serial %}<strong>Serial:</strong> {{ a.serial }}<br>{% endif %}
           {% if a.other_specs %}<strong>Remarks:</strong> {{ a.other_specs }}{% endif %}
