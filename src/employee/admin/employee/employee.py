@@ -865,9 +865,10 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
     list_display = ("tpm", "employee", "project")
     search_fields = ("employee__full_name", "tpm__full_name", "project__title")
     autocomplete_fields = ("employee", "project")
-    list_filter = ("tpm", "project", "employee")
+    # list_filter = ("tpm", "project", "employee")
     form = EmployeeUnderTPMForm
     change_list_template = "admin/employee/list/tpm_project.html"
+    list_per_page = 0
 
     fieldsets = (
         (
@@ -970,6 +971,11 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             ),
         ]
         return custom_urls + urls
+    
+    class Media:
+        js = (
+            "employee/js/hide_employee_under_tpm_changelist.js",
+        )
 
 
 @admin.register(TPMComplain)
