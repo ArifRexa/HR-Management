@@ -968,36 +968,34 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         AssetAssignmentLog.objects.create(**data)
 
     def save_model(self, request, obj, form, change):
-        old_employee_asset = EmployeeFixedAsset.objects.filter(
-            employee=obj.employee
-        )
-        old_asset = None
-        for field in form.changed_data:
-            if field in [
-                "table",
-                "monitor1",
-                "monitor2",
-                "chair",
-                "cpu",
-                "keyboard",
-                "mouse",
-                "headphone",
-            ]:
-                old_asset = getattr(old_employee_asset.last(), field, None)
+        # 1.  grab the old data (empty QS when creating)
+        old_obj = EmployeeFixedAsset.objects.filter(pk=obj.pk).first()
+        old_values = {}  # field -> set(old assets)
+        for f in ('table','chair','monitor','keyboard','mouse',
+                'headphone','web_cam','cpu'):
+            old_values[f] = set(getattr(old_obj, f).all()) if old_obj else set()
 
-                new_asset = getattr(obj, field, None)
-                if old_asset and old_asset != new_asset:
-                    self.log_assignment(
-                        obj.employee,
-                        old_asset,
-                        "RETURN",
-                        f"{field} removed",
-                    )
-                if new_asset and old_asset != new_asset:
-                    self.log_assignment(
-                        obj.employee, new_asset, "ASSIGN", f"{field} added"
-                    )
-        return super().save_model(request, obj, form, change)
+        # 2.  save first so the M2M relations are committed
+        super().save_model(request, obj, form, change)
+
+        # 3.  compare and log
+        field_to_name = {
+            'table':'Table','chair':'Chair','monitor':'Monitor',
+            'keyboard':'Keyboard','mouse':'Mouse','headphone':'Headphone',
+            'web_cam':'Webcam','cpu':'CPU'
+        }
+
+        for field, name in field_to_name.items():
+            new_set = set(form.cleaned_data[field])   # already a QS
+            added   = new_set - old_values[field]
+            removed = old_values[field] - new_set
+
+            for asset in added:
+                self.log_assignment(obj.employee, asset, 'ASSIGN',
+                                    f'{name} added')
+            for asset in removed:
+                self.log_assignment(obj.employee, asset, 'RETURN',
+                                f'{name} removed')
 
     @admin.display(description="Created By")
     def get_created_by(self, obj):
