@@ -16,6 +16,8 @@ class EmployeeExtraUrls(SMSView, GraphView, FormalView, admin.ModelAdmin):
                  name='employee.salary.receive.history'),
             path('notice-board/', self.admin_site.admin_view(self.notice_bord), name='employee.notice_board'),
             path('graph/', self.admin_site.admin_view(self.all_employee_graph_view), name='employee.hours.graph'),
+            path('last-working-day-hours/', self.admin_site.admin_view(self.all_employee_last_working_day_graph_view),
+                 name='employees_last_working_day_hours'),
             path('<int:employee_id__exact>/graph/', self.admin_site.admin_view(self.employee_graph_view),
                  name='hour_graph'),
             path('<int:employee_id__exact>/time-graph/', self.admin_site.admin_view(self.employee_time_base_graph_view),

@@ -68,7 +68,7 @@
           
         </div>
         <br>
-        <table id="tpm-extra-data" style="width: 83%;">
+        <table id="tpm-extra-data" style="width: 100%;">
             <thead>
             <tr>
                 <th scope="col">TPM</th>
@@ -149,6 +149,26 @@
                 </tr>
                 {% endfor %}
     
+            </tbody>
+        </table>
+
+        <table id="tpm-extra-data" style="width: 100%;">
+            <thead>
+            <tr>
+              <th scope="col">Miss Linear Graph</th>
+            </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <ul>
+                    <li>
+                      <span style="font-weight: bold; font-size: 1.5em; margin-left: 15px;">All Employee Last Working Hours</span>
+                      <a href="{% url 'admin:employees_last_working_day_hours' %}" target="_blank">📈</a>
+                    </li>
+                  </ul>
+                </td>
+              </tr>
             </tbody>
         </table>
     </div>
