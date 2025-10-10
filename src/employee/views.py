@@ -566,13 +566,35 @@ def save_available_slot(request):
         try:
             today_date = timezone.now().date()
             # Fetch all available employees for today
-            available_entries = EmployeeAvailableSlot.objects.filter(
+            # available_entries = EmployeeAvailableSlot.objects.filter(
+            #     date__date=today_date,
+            #     slot__in=["full", "half"]
+            # ).select_related('employee__user').order_by('-date')
+
+            # Get ALL entries for today, ordered newest first
+            all_entries = EmployeeAvailableSlot.objects.filter(
                 date__date=today_date,
-                slot__in=["full", "half"]
+                slot__in=["full", "half"]  # include "n/a" to catch latest even if now unavailable
             ).select_related('employee__user').order_by('-date')
+            # Build a dict: employee_id → latest entry
+            latest_per_employee = {}
+            for entry in all_entries:
+                emp_id = entry.employee_id
+                # Only keep the FIRST (newest) entry per employee
+                if emp_id not in latest_per_employee:
+                    latest_per_employee[emp_id] = entry
+
+            # Now filter: only include if latest slot is "full" or "half"
+            available_employees = [
+                entry for entry in latest_per_employee.values()
+                if entry.slot in ["full", "half"]
+            ]
+
+            # Sort by time (newest first) for consistent email order
+            available_employees.sort(key=lambda x: x.date, reverse=True)
 
             employees_data = []
-            for entry in available_entries:
+            for entry in available_employees:
                 emp = entry.employee
                 employees_data.append({
                     "name": emp.user.get_full_name() or emp.user.username,
@@ -594,7 +616,7 @@ def save_available_slot(request):
                 subject=f"Team Availability Update – {today_date.strftime('%B %d, %Y')}",
                 message=plain_message,
                 from_email='"Mediusware-Admin" <hr@mediusware.com>',
-                recipient_list=["mwtanvir98@gmail.com", "rashed@mediusware.com", "hr@mediusware.com"],  # Update as needed
+                recipient_list=["mailarif3126@gmail.com"],  # Update as needed
                 html_message=html_message,
                 fail_silently=False,  # Set to True in production if preferred
             )
