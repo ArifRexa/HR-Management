@@ -569,14 +569,14 @@ def save_available_slot(request):
             available_entries = EmployeeAvailableSlot.objects.filter(
                 date__date=today_date,
                 slot__in=["full", "half"]
-            ).select_related('employee__user')
+            ).select_related('employee__user').order_by('-date')
 
             employees_data = []
             for entry in available_entries:
                 emp = entry.employee
                 employees_data.append({
                     "name": emp.user.get_full_name() or emp.user.username,
-                    "email": emp.user.email,
+                    # "email": emp.user.email,
                     "skill": getattr(emp, 'top_one_skill', 'N/A'),
                     "slot": entry.slot.title(),
                     "time": entry.date.strftime("%I:%M %p").lower().replace("am", "a.m.").replace("pm", "p.m.")
@@ -595,7 +595,7 @@ def save_available_slot(request):
                 subject=f"Team Availability Update – {today_date.strftime('%B %d, %Y')}",
                 message=plain_message,
                 from_email='"Mediusware-Admin" <hr@mediusware.com>',
-                recipient_list=["mailarif3126@gmail.com", "mwtanvir98@gmail.com", "rashed@mediusware.com", "hr@mediusware.com"],  # Update as needed
+                recipient_list=["mwtanvir98@gmail.com", "rashed@mediusware.com", "hr@mediusware.com"],  # Update as needed
                 html_message=html_message,
                 fail_silently=False,  # Set to True in production if preferred
             )
