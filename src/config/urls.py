@@ -46,7 +46,7 @@ extra_context = dict(
     birthdays=employee_formal_summery.birthdays,
     increments=employee_formal_summery.increments,
     permanents=employee_formal_summery.permanents,
-    anniversaries=employee_formal_summery.anniversaries,
+    # anniversaries=employee_formal_summery.anniversaries,
     conference_room_bookings=BookConferenceRoom.objects.all(),
 )
 schema_view = swagger_get_schema_view(

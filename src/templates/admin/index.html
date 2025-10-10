@@ -558,7 +558,7 @@
                     {% endif %}
                         
                   
-                {% if request.user.is_superuser or can_show_permanent_increment%}
+                {% comment %} {% if request.user.is_superuser or can_show_permanent_increment%}
 
                     {% if increments.exists %}
                         <div class="col-md-12 mb-4">
@@ -598,7 +598,7 @@
                             </div>
                         </div>
                     {% endif %}
-                {% endif %}   
+                {% endif %}    {% endcomment %}
                 
                     {% comment %} <ul class="list-group rounded-0">
                         <li class="list-group-item list-group-item-action active">
@@ -635,7 +635,7 @@
                    
                 </div>
 
-                <div class="col-md-6 mb-4">
+                {% comment %} <div class="col-md-6 mb-4">
                     <ul class="list-group rounded-0">
                         <li class="list-group-item active">
                             <span class="text-uppercase">Employee's Projects</span>
@@ -714,7 +714,7 @@
 
                     </ul>
 
-                </div>
+                </div> {% endcomment %}
 
                 {% if leaves_count > 0 %}
                 <div class="col-md-6 mb-4">
@@ -776,7 +776,7 @@
                 </div>
                 {% endif %}
 
-                {% if request.user.employee.operation and anniversaries_count > 0 %}
+                {% comment %} {% if request.user.employee.operation and anniversaries_count > 0 %}
                 <div class="col-md-6 mb-4">
                     <div class="card rounded-0">
                         <div class="card-header">Anniversaries Nearby
@@ -793,7 +793,7 @@
                         </div>
                     </div>
                 </div>
-                {% endif %}
+                {% endif %} {% endcomment %}
             </div>
         </div>
     </div>
