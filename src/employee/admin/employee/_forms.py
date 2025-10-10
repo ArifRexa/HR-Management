@@ -38,16 +38,26 @@ class DailyUpdateDateFilterForm(forms.Form):
         widget=AdminDateWidget(attrs={"readonly": "readonly"}),
     )
     total_hour__gte = forms.IntegerField(
-        label="Hours (from)",
+        label="Hour",
         min_value=0,
         required=False,
-        widget=AdminIntegerFieldWidget(),
+        widget=AdminIntegerFieldWidget(
+            attrs={
+                "placeholder": "Min",
+                "style": "width: 60px;",
+            },
+        ),
     )
     total_hour__lte = forms.IntegerField(
-        label="Hours (to)",
+        label="",
         min_value=0,
         required=False,
-        widget=AdminIntegerFieldWidget(),
+        widget=AdminIntegerFieldWidget(
+            attrs={
+                "placeholder": "Max",
+                "style": "width: 60px;",
+            },
+        ),
     )
 
 
