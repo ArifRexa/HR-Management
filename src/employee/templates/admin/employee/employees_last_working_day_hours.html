@@ -50,8 +50,8 @@
         </div>
 
         <div>
-            <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button>
-            <button id="lineChart" onclick="changeChartType('line')">Line</button>
+            <!-- <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button> -->
+            <!-- <button id="lineChart" onclick="changeChartType('line')">Line</button> -->
         </div>
 
         <div>
@@ -73,6 +73,7 @@
     <script>
         const chartData = {{ chart|safe }};
         const ctx = document.getElementById('hourChart').getContext('2d');
+        const filter_date = document.getElementById("id_created_at__date").value;
 
         // Default configuration
         let currentType = 'bar';
@@ -85,6 +86,7 @@
                     datasets: [{
                         label: chartData.label,
                         data: chartData.data,
+                        projects_hour: chartData.projects_hour,
                         employees_id: chartData.employees_id,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
@@ -133,28 +135,25 @@
                                 // else return "red";
                                 return "white";
                             },
-                            // listeners: {
-                            //     click: function(context){
-                            //         const label = context.chart.data.labels[context.dataIndex];
-                            //         console.log(label)
-                            //         const range = labelToDateRange(label);
-
-                            //         /* build the Django-admin query string */
-                            //         const url =
-                            //             `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
-                            //             `?created_at__date=${range.start}&created_at__date__lte=${range.end}`;
-
-                            //         window.open(url, '_blank');
-                            //     },
-                            //     enter: function(context) {
-                            //         // Change cursor to pointer when hovering over a datalabel
-                            //         context.chart.canvas.style.cursor = 'pointer';
-                            //     },
-                            //     leave: function(context) {
-                            //         // Revert cursor to default when leaving a datalabel
-                            //         context.chart.canvas.style.cursor = 'default';
-                            //     }
-                            // }
+                            listeners: {
+                                click: function(context){
+                                    // const label = context.chart.data.labels[context.dataIndex];
+                                    const employee_id = context.chart.data.datasets[0].employees_id[context.dataIndex];
+                                    /* build the Django-admin query string */
+                                    const url =
+                                        `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
+                                        `?created_at__date=${filter_date}&employee__id__exact=${employee_id}`;
+                                    window.open(url, '_blank');
+                                },
+                                enter: function(context) {
+                                    // Change cursor to pointer when hovering over a datalabel
+                                    context.chart.canvas.style.cursor = 'pointer';
+                                },
+                                leave: function(context) {
+                                    // Revert cursor to default when leaving a datalabel
+                                    context.chart.canvas.style.cursor = 'default';
+                                }
+                            }
                         },
                         tooltip: {
                             enabled: true,
@@ -169,11 +168,17 @@
                             },
                             displayColors: false,
                             callbacks: {
+                                title: function(context){
+                                    const name = context[0].label.split(" ").slice(0, 2).join(" ");
+                                    return `${name} (${context[0].raw})`;
+                                },
                                 label: function(context) {
-                                    return context.raw;
+                                    // console.log(context.raw)
+                                    return null;
                                 },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
+                                    return dataset.projects_hour[context[0].dataIndex];
                                 },
                             }
                         },

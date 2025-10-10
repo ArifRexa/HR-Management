@@ -90,10 +90,10 @@
     <table class="table table-sm mb-0 available-table">
       <tbody>
         {% for emp in all_employees_last_slot %}
-          <tr >
-            <td style="color: #41a6fa; font-weight: bold">{{ emp.full_name }}</td>
-            <td style="color: #41a6fa; font-weight: bold">{{ emp.slot_label }}</td>
-            <td style="color: #41a6fa; font-weight: bold">{{emp.top_one_skill|default:"-"}}</td>
+          <tr style="{% if emp.slot_label == 'Full-time' %}color: red;{% endif %}">
+            <td style="color: {% if emp.slot_label == 'Full-time' %}red{% else %}#41a6fa{% endif %}; font-weight: bold">{{ emp.full_name }}</td>
+            <td style="color: {% if emp.slot_label == 'Full-time' %}red{% else %}#41a6fa{% endif %}; font-weight: bold">{{ emp.slot_label }}</td>
+            <td style="color: {% if emp.slot_label == 'Full-time' %}red{% else %}#41a6fa{% endif %}; font-weight: bold">{{ emp.top_one_skill|default:"-" }}</td>
           </tr>
         {% empty %}
           <tr>

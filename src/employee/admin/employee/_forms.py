@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.admin.widgets import FilteredSelectMultiple, AdminDateWidget
+from django.contrib.admin.widgets import FilteredSelectMultiple, AdminDateWidget, AdminIntegerFieldWidget
 
 from employee.models import Employee
 
@@ -33,7 +33,22 @@ class DailyUpdateFilterForm(forms.Form):
 
 
 class DailyUpdateDateFilterForm(forms.Form):
-    created_at__date = forms.DateField(label="Date", widget=AdminDateWidget(attrs={"readonly": "readonly"}))
+    created_at__date = forms.DateField(
+        label="Date",
+        widget=AdminDateWidget(attrs={"readonly": "readonly"}),
+    )
+    total_hour__gte = forms.IntegerField(
+        label="Hours (from)",
+        min_value=0,
+        required=False,
+        widget=AdminIntegerFieldWidget(),
+    )
+    total_hour__lte = forms.IntegerField(
+        label="Hours (to)",
+        min_value=0,
+        required=False,
+        widget=AdminIntegerFieldWidget(),
+    )
 
 
 class DailyExpenseFilterForm(forms.Form):

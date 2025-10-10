@@ -868,7 +868,7 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
     # list_filter = ("tpm", "project", "employee")
     form = EmployeeUnderTPMForm
     change_list_template = "admin/employee/list/tpm_project.html"
-    list_per_page = 0
+    list_per_page = 1
 
     fieldsets = (
         (
@@ -1501,6 +1501,89 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
+# class TodayFirstEmployeeFilter(SimpleListFilter):
+#     title = _("employee")
+#     parameter_name = "employee"
+#     template = "admin/employee/list/avail_slot_filter.html"
+
+#     def lookups(self, request, model_admin):
+#         today = timezone.now().date()
+
+#         # employees with an AVAILABLE slot today
+#         today_pks = set(
+#             EmployeeAvailableSlot.objects.filter(
+#                 date__date=today, available=True
+#             ).values_list("employee", flat=True)
+#         )
+
+#         # build choices: red-labelled today guys first
+#         choices = []
+#         for emp in Employee.objects.filter(pk__in=today_pks).order_by("full_name"):
+#             choices.append(
+#                 (emp.pk, format_html('<span style="color:red;font-weight:bold">{}</span>', emp))
+#             )
+
+#         # everybody else, alphabetical
+#         for emp in Employee.objects.exclude(pk__in=today_pks).filter(active=True).order_by("full_name"):
+#             choices.append((emp.pk, str(emp)))
+
+#         return choices
+
+#     def queryset(self, request, queryset):
+#         if self.value():
+#             return queryset.filter(employee__id=self.value())
+#         return queryset
+
+
+
+# class TodayFirstEmployeeFilter(SimpleListFilter):
+#     title = _("employee")
+#     parameter_name = "employee"
+#     template = "admin/employee/list/avail_slot_filter.html"
+
+#     def lookups(self, request, model_admin):
+#         today = timezone.now().date()
+
+#         # Employees with an AVAILABLE slot today
+#         today_pks = set(
+#             EmployeeAvailableSlot.objects.filter(
+#                 date__date=today, available=True
+#             ).values_list("employee", flat=True)
+#         )
+
+#         # Build choices: prioritize today’s available employees, style based on slot
+#         choices = []
+#         for emp in Employee.objects.filter(pk__in=today_pks).order_by("full_name"):
+#             # Get the latest slot for the employee
+#             latest_slot = EmployeeAvailableSlot.objects.filter(employee=emp).order_by("-date").first()
+#             slot_value = latest_slot.slot if latest_slot else None
+#             label = (
+#                 format_html('<span style="color:red;font-weight:bold">{}</span>', emp)
+#                 if slot_value == "full"
+#                 else str(emp)
+#             )
+#             choices.append((emp.pk, label))
+
+#         # Other active employees
+#         for emp in Employee.objects.exclude(pk__in=today_pks).filter(active=True).order_by("full_name"):
+#             latest_slot = EmployeeAvailableSlot.objects.filter(employee=emp).order_by("-date").first()
+#             slot_value = latest_slot.slot if latest_slot else None
+#             label = (
+#                 format_html('<span style="color:red;font-weight:bold">{}</span>', emp)
+#                 if slot_value == "full"
+#                 else str(emp)
+#             )
+#             choices.append((emp.pk, label))
+
+#         return choices
+
+#     def queryset(self, request, queryset):
+#         if self.value():
+#             return queryset.filter(employee__id=self.value())
+#         return queryset
+
+
+
 class TodayFirstEmployeeFilter(SimpleListFilter):
     title = _("employee")
     parameter_name = "employee"
@@ -1509,23 +1592,36 @@ class TodayFirstEmployeeFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         today = timezone.now().date()
 
-        # employees with an AVAILABLE slot today
+        # Employees with an AVAILABLE slot today
         today_pks = set(
             EmployeeAvailableSlot.objects.filter(
                 date__date=today, available=True
             ).values_list("employee", flat=True)
         )
 
-        # build choices: red-labelled today guys first
+        # Build choices: prioritize today’s available employees, style based on slot
         choices = []
         for emp in Employee.objects.filter(pk__in=today_pks).order_by("full_name"):
-            choices.append(
-                (emp.pk, format_html('<span style="color:red;font-weight:bold">{}</span>', emp))
+            # Get the latest slot for the employee
+            latest_slot = EmployeeAvailableSlot.objects.filter(employee=emp).order_by("-date").first()
+            slot_value = latest_slot.slot if latest_slot else None
+            label = (
+                format_html('<span style="color:red;font-weight:bold">{}</span>', emp)
+                if slot_value in ["full", "half"]
+                else str(emp)
             )
+            choices.append((emp.pk, label))
 
-        # everybody else, alphabetical
+        # Other active employees
         for emp in Employee.objects.exclude(pk__in=today_pks).filter(active=True).order_by("full_name"):
-            choices.append((emp.pk, str(emp)))
+            latest_slot = EmployeeAvailableSlot.objects.filter(employee=emp).order_by("-date").first()
+            slot_value = latest_slot.slot if latest_slot else None
+            label = (
+                format_html('<span style="color:red;font-weight:bold">{}</span>', emp)
+                if slot_value in ["full", "half"]
+                else str(emp)
+            )
+            choices.append((emp.pk, label))
 
         return choices
 

@@ -1,7 +1,7 @@
 <style>
     #toast-container {
     position: fixed;
-    bottom: 20px;
+    top: 600px;
     right: 20px;
     display: flex;
     flex-direction: column;
@@ -74,6 +74,7 @@
             toast.remove();
         }, 300); // Wait for fade-out animation to complete
     }, 3000); // Display for 3 seconds
+    window.location.reload();
 }
 showToast("{{toast_message}}", "{{toast_type}}")
     </script>

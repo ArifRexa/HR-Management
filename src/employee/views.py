@@ -420,8 +420,9 @@ def save_available_slot(request):
                 "toast_type": "error",
                 "toast": True
             }
-        
-        return render(request, "admin/form/available_slot.html", context)
+        response = render(request, "admin/form/available_slot.html", context)
+        response['HX-Refresh'] = 'true'
+        return response
 
     slot_value = request.POST["slot"]
     date_value = timezone.now()
