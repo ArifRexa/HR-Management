@@ -50,8 +50,8 @@
         </div>
 
         <div>
-            <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button>
-            <button id="lineChart" onclick="changeChartType('line')">Line</button>
+            <!-- <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button> -->
+            <!-- <button id="lineChart" onclick="changeChartType('line')">Line</button> -->
         </div>
 
         <div>
@@ -169,8 +169,13 @@
                             },
                             displayColors: false,
                             callbacks: {
+                                title: function(context){
+                                    const name = context[0].label.split(" ").slice(0, 2).join(" ");
+                                    return `${name} (${context[0].raw})`;
+                                },
                                 label: function(context) {
-                                    return context.raw;
+                                    // console.log(context.raw)
+                                    return null;
                                 },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
