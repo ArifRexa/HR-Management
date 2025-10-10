@@ -1,12 +1,16 @@
 {% extends "admin/base_site.html" %}
 
+{% block title %}
+    Daily Project Update
+{% endblock title %}
+
 {% block content %}
     {% load static %}
 
     <style>
         #main{
-            max-height: 80vh;
-            min-width: 100vw;
+            /* max-height: 80vh; */
+            min-width: 100%;
         }
         #nav-sidebar{
             display: none;
@@ -43,22 +47,32 @@
     <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
 
     {% block content_title %}{% endblock %}
-
-    <div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-evenly;">
         <div>
-            <h1 id="chartTitle">{{ title }} ({{ chart.total_hour|floatformat:2 }})</h1>
+            <h1>Daily Project Hours</h1>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-around;">
+        <div>
+            <h1 id="chartTitle"> Total Hours: {{ chart.total_hour|floatformat:2 }} ({{ chart.employees_id|length }})</h1>
         </div>
 
         <div>
-            <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button>
-            <button id="lineChart" onclick="changeChartType('line')">Line</button>
+            <!-- <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button> -->
+            <!-- <button id="lineChart" onclick="changeChartType('line')">Line</button> -->
         </div>
 
         <div>
             <form action="" method="get">
                 {{ date_filter_form.media }}
-                {{ date_filter_form }}
+                {{date_filter_form.created_at__date.label_tag }}{{ date_filter_form.created_at__date }}
+                {{date_filter_form.total_hour__gte.label_tag }}{{ date_filter_form.total_hour__gte }} - {{ date_filter_form.total_hour__lte }}
+                <!-- <br> -->
                 <button type="submit" class="default">Filter</button>
+                <button type="button" onclick="window.location.href = window.location.pathname;">
+                    Reset
+                </button>
             </form>
         </div>
     </div>
@@ -73,6 +87,7 @@
     <script>
         const chartData = {{ chart|safe }};
         const ctx = document.getElementById('hourChart').getContext('2d');
+        const filter_date = document.getElementById("id_created_at__date").value;
 
         // Default configuration
         let currentType = 'bar';
@@ -86,6 +101,7 @@
                         label: chartData.label,
                         data: chartData.data,
                         projects_hour: chartData.projects_hour,
+                        employees_id: chartData.employees_id,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
                             'rgba(255, 99, 132, 0.2)',
@@ -110,10 +126,11 @@
                 options: {
                     indexAxis: "y",
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
-                            align: 'top',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
+                            align: 'center',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
                             formatter: function(value, context) {
                                 // Customize the label text here.
                                 // 'value' is the data point value
@@ -131,30 +148,27 @@
                                 // const target_hour = chartData.target_hour | 0;
                                 // if (value>=target_hour) return "white";
                                 // else return "red";
-                                return "white";
+                                return "green";
                             },
-                            // listeners: {
-                            //     click: function(context){
-                            //         const label = context.chart.data.labels[context.dataIndex];
-                            //         console.log(label)
-                            //         const range = labelToDateRange(label);
-
-                            //         /* build the Django-admin query string */
-                            //         const url =
-                            //             `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
-                            //             `?created_at__date=${range.start}&created_at__date__lte=${range.end}`;
-
-                            //         window.open(url, '_blank');
-                            //     },
-                            //     enter: function(context) {
-                            //         // Change cursor to pointer when hovering over a datalabel
-                            //         context.chart.canvas.style.cursor = 'pointer';
-                            //     },
-                            //     leave: function(context) {
-                            //         // Revert cursor to default when leaving a datalabel
-                            //         context.chart.canvas.style.cursor = 'default';
-                            //     }
-                            // }
+                            listeners: {
+                                click: function(context){
+                                    // const label = context.chart.data.labels[context.dataIndex];
+                                    const employee_id = context.chart.data.datasets[0].employees_id[context.dataIndex];
+                                    /* build the Django-admin query string */
+                                    const url =
+                                        `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
+                                        `?created_at__date=${filter_date}&employee__id__exact=${employee_id}`;
+                                    window.open(url, '_blank');
+                                },
+                                enter: function(context) {
+                                    // Change cursor to pointer when hovering over a datalabel
+                                    context.chart.canvas.style.cursor = 'pointer';
+                                },
+                                leave: function(context) {
+                                    // Revert cursor to default when leaving a datalabel
+                                    context.chart.canvas.style.cursor = 'default';
+                                }
+                            }
                         },
                         tooltip: {
                             enabled: true,
@@ -169,8 +183,13 @@
                             },
                             displayColors: false,
                             callbacks: {
+                                title: function(context){
+                                    const name = context[0].label.split(" ").slice(0, 2).join(" ");
+                                    return `${name} (${context[0].raw})`;
+                                },
                                 label: function(context) {
-                                    return context.raw;
+                                    // console.log(context.raw)
+                                    return null;
                                 },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
@@ -189,12 +208,23 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                        }
+                            barThickness: 20, // or 'flex' for automatic
+                            categoryPercentage: 0.9,
+                            barPercentage: 0.8,
+                        },
+                       
                     }
                 },
                 plugins: [ChartDataLabels],
             };
         }
+        // calculate height dynamically based on number of data points
+        const barHeight = 40; // each bar gets 50px
+        const chartHeight = chartData.labels.length * barHeight;
+
+        // apply to canvas before creating the chart
+        const canvas = document.getElementById('hourChart');
+        canvas.height = chartHeight; // dynamically set height
 
         let myChart = new Chart(ctx, getConfig(currentType));
 
