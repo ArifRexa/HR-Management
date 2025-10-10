@@ -1,12 +1,16 @@
 {% extends "admin/base_site.html" %}
 
+{% block title %}
+    Daily Project Update
+{% endblock title %}
+
 {% block content %}
     {% load static %}
 
     <style>
         #main{
-            max-height: 80vh;
-            min-width: 100vw;
+            /* max-height: 80vh; */
+            min-width: 100%;
         }
         #nav-sidebar{
             display: none;
@@ -43,10 +47,15 @@
     <link rel="stylesheet" href="{% static 'admin/css/widgets.css' %}">
 
     {% block content_title %}{% endblock %}
-
-    <div style="display: flex; justify-content: space-between;">
+    <div style="display: flex; justify-content: space-evenly;">
         <div>
-            <h1 id="chartTitle">{{ title }} ({{ chart.total_hour|floatformat:2 }})</h1>
+            <h1>Daily Project Hours</h1>
+        </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-around;">
+        <div>
+            <h1 id="chartTitle"> Total Hours: {{ chart.total_hour|floatformat:2 }} ({{ chart.employees_id|length }})</h1>
         </div>
 
         <div>
@@ -57,8 +66,13 @@
         <div>
             <form action="" method="get">
                 {{ date_filter_form.media }}
-                {{ date_filter_form }}
+                {{date_filter_form.created_at__date.label_tag }}{{ date_filter_form.created_at__date }}
+                {{date_filter_form.total_hour__gte.label_tag }}{{ date_filter_form.total_hour__gte }} - {{ date_filter_form.total_hour__lte }}
+                <!-- <br> -->
                 <button type="submit" class="default">Filter</button>
+                <button type="button" onclick="window.location.href = window.location.pathname;">
+                    Reset
+                </button>
             </form>
         </div>
     </div>
@@ -112,10 +126,11 @@
                 options: {
                     indexAxis: "y",
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
-                            align: 'top',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
+                            align: 'center',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
                             formatter: function(value, context) {
                                 // Customize the label text here.
                                 // 'value' is the data point value
@@ -133,7 +148,7 @@
                                 // const target_hour = chartData.target_hour | 0;
                                 // if (value>=target_hour) return "white";
                                 // else return "red";
-                                return "white";
+                                return "green";
                             },
                             listeners: {
                                 click: function(context){
@@ -193,12 +208,23 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                        }
+                            barThickness: 20, // or 'flex' for automatic
+                            categoryPercentage: 0.9,
+                            barPercentage: 0.8,
+                        },
+                       
                     }
                 },
                 plugins: [ChartDataLabels],
             };
         }
+        // calculate height dynamically based on number of data points
+        const barHeight = 40; // each bar gets 50px
+        const chartHeight = chartData.labels.length * barHeight;
+
+        // apply to canvas before creating the chart
+        const canvas = document.getElementById('hourChart');
+        canvas.height = chartHeight; // dynamically set height
 
         let myChart = new Chart(ctx, getConfig(currentType));
 

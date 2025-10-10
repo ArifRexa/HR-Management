@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+    h2 { color: #1976d2; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+    th { background-color: #f5f9ff; color: #1976d2; }
+    tr:hover { background-color: #f9f9f9; }
+    .footer { margin-top: 20px; font-size: 0.9em; color: #777; }
+  </style>
+</head>
+<body>
+  <h2>Team Availability Update – {{ date }}</h2>
+  <p>A new availability entry was added. Here is the current list of available team members:</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Skill</th>
+        <th>Slot</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for emp in employees %}
+      <tr>
+        <td>{{ emp.name }}</td>
+        <td>{{ emp.email }}</td>
+        <td>{{ emp.skill }}</td>
+        <td>{{ emp.slot }}</td>
+        <td>{{ emp.time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="footer">
+    <p>Mediusware HR Team | <a href="mailto:hr@mediusware.com">hr@mediusware.com</a></p>
+    <p>Offices: Dhaka, Bangladesh | Carolina, USA</p>
+  </div>
+</body>
+</html>
