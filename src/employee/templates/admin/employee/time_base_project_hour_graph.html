@@ -115,6 +115,7 @@
                     datasets: [{
                         label: chartData[view].label,
                         data: chartData[view].data,
+                        project_id: chartData.project_id,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
                             'rgba(255, 99, 132, 0.2)',
@@ -162,15 +163,14 @@
                             },
                             listeners: {
                                 click: function(context){
-                                    
                                     const label = context.chart.data.labels[context.dataIndex];
-                                    console.log(label)
+                                    const project_id = context.chart.data.datasets[0].project_id;
                                     const range = labelToDateRange(label, currentView);
 
                                     /* build the Django-admin query string */
                                     const url =
                                         `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
-                                        `?created_at__date__gte=${range.start}&created_at__date__lte=${range.end}`;
+                                        `?project_id__exact=${project_id}&created_at__date__gte=${range.start}&created_at__date__lte=${range.end}`;
 
                                     window.open(url, '_blank');
                                 },
