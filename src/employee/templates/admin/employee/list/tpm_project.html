@@ -175,6 +175,602 @@
 
 
 
+
+
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1.5rem; margin-bottom: 2rem; margin-top: 20px;">
+    <!-- CSS only -->
+    <style>
+        #loading-spinner {
+            display: block;
+        }
+        .htmx-request #loading-spinner {
+            display: block;
+        }
+
+        .list-group-item.active {
+            background: linear-gradient(135deg, #4361ee, #3f37c9) !important;
+            border: none;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .module>table {
+            width: 100%;
+            caption-side: top !important;
+        }
+
+        ul.messagelist li.alert-danger {
+            background: var(--message-error-bg) url({% static 'admin/img/icon-no.svg' %}) 40px 12px no-repeat;
+            color: #842029;
+            background-color: #f8d7da;
+            border-color: #f5c2c7;
+        }
+
+        @media screen and (min-width: 768px) and (max-width: 991px) {
+            .title-h1 {
+                font-size: 24px;
+            }
+        }
+
+        .projects__row:nth-child(odd) {
+            background: #f8f8f8;
+        }
+
+        .projects__row:nth-child(even) {
+            background: white;
+        }
+
+        .birthdayGift canvas {
+            display: none;
+        }
+
+        .modal-open .birthdayGift canvas {
+            display: block;
+        }
+
+        #feedback__marquee {
+            overflow: hidden;
+            width: 100%;
+            background: linear-gradient(90deg, #4361ee, #3f37c9);
+            padding: 0.8rem 0.5rem;
+            margin: 0.6rem 0 1.6rem;
+            border-radius: 1rem;
+        }
+
+        #feedback__marquee__inner {
+            color: white;
+            white-space: nowrap;
+            animation: blink 3s linear infinite;
+            font-size: 2rem;
+        }
+
+        #feedback__marquee__inner a {
+            color: white;
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0; }
+            15% { opacity: .5; }
+            30% { opacity: 1; }
+        }
+
+        .bg-dj,
+        .btn-primary {
+            background-color: var(--primary);
+        }
+
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+        
+        @media (max-width: 767.98px) {
+            .remove-float-end-on-mobile {
+                float: none !important;
+            }
+        }
+        
+        .notice-board {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .notice-board-header {
+            position: sticky;
+            top: 0;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            z-index: 10;
+            padding: 12px 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            color: #fff;
+        }
+        
+        .list-group-item:not(:last-child) {
+            border-bottom: 1px solid #e9ecef;
+            font-size: 0.9rem;
+        }
+        
+        .blinking-text {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { color: #ff006e; }
+            50% { color: transparent; }
+            100% { color: #ff006e; }
+        }
+        
+        .notification {
+            position: relative;
+            left: -500px;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            background: #ff006e;
+            color: white;
+            border-radius: 50%;
+            padding: 0px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Enhanced Styles */
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+
+        {% comment %} .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        } {% endcomment %}
+
+        .card-header {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-group {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .list-group-item {
+            border: none;
+            padding: 12px 15px;
+            transition: all 0.2s ease;
+        }
+
+        {% comment %} .list-group-item:not(.active):hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        } {% endcomment %}
+
+        .employee-status {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        .status-online {
+            background-color: #06ffa5;
+            box-shadow: 0 0 8px rgba(6, 255, 165, 0.5);
+        }
+
+        .status-offline {
+            background-color: #ff006e;
+            box-shadow: 0 0 8px rgba(255, 0, 110, 0.5);
+        }
+
+        .project-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        {% comment %} .project-badge:hover {
+            transform: scale(1.05);
+        } {% endcomment %}
+
+        .badge-danger {
+            background-color: #ff006e;
+        }
+
+        .permanent-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 12px;
+            padding: 20px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .permanent-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #3f37c9;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .permanent-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        {% comment %} .permanent-item:hover {
+            padding-left: 10px;
+            background-color: rgba(67, 97, 238, 0.05);
+            margin: 0 -10px;
+            padding-right: 10px;
+        } {% endcomment %}
+
+        .permanent-item:last-child {
+            border-bottom: none;
+        }
+
+        .count-badge {
+            background: linear-gradient(135deg, #ff006e, #ff5c8d);
+            color: white;
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        {% comment %} .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        } {% endcomment %}
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+
+        /* Table Styles */
+        .employee-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .employee-table thead {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white;
+        }
+
+        .employee-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .employee-table th a {
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: opacity 0.2s;
+        }
+
+        .employee-table th a:hover {
+            opacity: 0.8;
+        }
+
+        .employee-table tbody tr {
+            transition: all 0.2s ease;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        {% comment %} .employee-table tbody tr:hover {
+            background-color: rgba(67, 97, 238, 0.05);
+        } {% endcomment %}
+
+        .employee-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .employee-table td {
+            padding: 15px;
+            vertical-align: middle;
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .employee-details h6 {
+            margin: 0;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .employee-details small {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        .projects-cell {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .table-responsive {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .sort-icon {
+            margin-left: 5px;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .employee-table {
+                font-size: 0.9rem;
+            }
+            
+            .employee-table th,
+            .employee-table td {
+                padding: 10px;
+            }
+            
+            .employee-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9rem;
+            }
+            
+            .projects-cell {
+                flex-direction: column;
+                gap: 3px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .flex-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+
+    <div class="col-md-6 mb-4" style="flex-grow: 2;">
+        <div class="card">
+            <div class="card-header">
+                <span class="text-uppercase">Employee's Projects</span>
+            </div>
+            <div class="table-responsive">
+                <table class="employee-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 50%;">
+                                {% if ord == '1' %}
+                                <a href="?ord=-1">
+                                    Employee Name <i class="bi bi-arrow-down-short sort-icon"></i>
+                                </a>
+                                {% else %}
+                                <a href="?ord=1">
+                                    Employee Name <i class="bi bi-arrow-up-short sort-icon"></i>
+                                </a>
+                                {% endif %}
+                            </th>
+                            <th style="width: 50%;">
+                                {% if ord == '2' %}
+                                <a href="?ord=-2">
+                                    Projects <i class="bi bi-arrow-down-short sort-icon"></i>
+                                </a>
+                                {% else %}
+                                <a href="?ord=2">
+                                    Projects <i class="bi bi-arrow-up-short sort-icon"></i>
+                                </a>
+                                {% endif %}
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee_project in employee_projects %}
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    
+                                    <div class="employee-details">
+                                        <h3>
+                                            
+                                            {{ employee_project.employee.full_name }}
+                                        </h3>
+                                        {% if employee_project.employee_skill %}
+                                        <small>{{ employee_project.employee.employee_skill }}</small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="projects-cell">
+                                    {% for project in employee_project.project.all %}
+                                    <span class="project-badge bg-light fw-bold {{ project.colorize }}">
+                                        {{ project.title }}
+                                    </span>
+                                    {% endfor %}
+                                    {% if not employee_project.project_exists %}
+                                    <span class="badge badge-danger rounded-pill">None</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+    <div style="flex-grow: 1;">
+        {% if request.user.is_superuser or can_show_permanent_increment%}
+        {% comment %} {% if increments.exists %} {% endcomment %}
+        <div class="card mb-4">
+            <div class="card-header text-uppercase d-flex justify-content-between align-items-center">
+                Increment Nearby
+                {% if increments|length > 0 %}
+                <span class="count-badge">{{ increments|length }}</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for employee_increment in increments %}
+                    <li class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-circle me-2 text-primary"></i>
+                            {{ employee_increment.full_name }}
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-muted text-center py-3">No upcoming increments</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% comment %} {% endif %} {% endcomment %}
+
+        
+        {% endif %}
+    </div>
+
+    <div style="flex-grow: 1;">
+        {% if permanents_count > 0 %}
+        <div class="card">
+            <div class="card-header text-uppercase d-flex justify-content-between align-items-center">
+                Permanent Status
+                <span class="count-badge">{{permanents_count}}</span>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% for employee_permanent in permanents %}
+                    <li class="list-group-item">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-person-badge me-2 text-success"></i>
+                            {{ employee_permanent.full_name }}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     {% if cl.formset and cl.formset.errors %}
         <p class="errornote">
         {% blocktranslate count counter=cl.formset.total_error_count %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
