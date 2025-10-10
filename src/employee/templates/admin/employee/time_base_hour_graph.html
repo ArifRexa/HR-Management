@@ -117,6 +117,7 @@
                 data: {
                     labels: chartData[view].labels,
                     datasets: [{
+                        employee_id: chartData.employee_id,
                         label: chartData[view].label,
                         data: chartData[view].data,
                         extraInfo: chartData[view].per_day_count,
@@ -166,14 +167,13 @@
                                 click: function(context){
                                     
                                     const label = context.chart.data.labels[context.dataIndex];
-                                    console.log(label)
                                     const range = labelToDateRange(label, currentView);
-
+                                    const employee_id = context.chart.data.datasets[0].employee_id;
                                     /* build the Django-admin query string */
                                     const url =
                                         `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
-                                        `?created_at__date__gte=${range.start}&created_at__date__lte=${range.end}`;
-
+                                        `?employee__id__exact=${employee_id}&created_at__date__gte=${range.start}&created_at__date__lte=${range.end}`;
+                                    
                                     window.open(url, '_blank');
                                 },
                                 enter: function(context) {
