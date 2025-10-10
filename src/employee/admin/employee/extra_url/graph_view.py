@@ -158,6 +158,7 @@ class GraphView(admin.ModelAdmin):
         ).get(id=employee_id).monthly_expected_hours
 
         chart = {
+            "employee_id": employee_id,
             "daily": {
                 "label": "Daily Hours",
                 "total_hour": 0,
