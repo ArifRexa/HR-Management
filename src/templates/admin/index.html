@@ -217,10 +217,10 @@
                 </div>
 
                 <!-- Monthly Hours -->
-                <div class="summary-box">
+                <div class="summary-box" title="Last 4 weeks">
                     <div class="icon text-success">📅</div>
                     <div class="content">
-                        <p class="mb-0 fw-semibold" title="Last 4 weeks">Monthly</p>
+                        <p class="mb-0 fw-semibold">Monthly</p>
                         <small>
                             {{ monthly_expected_hours }}
                             (
@@ -235,13 +235,15 @@
                 </div>
 
                 <!-- Late Count -->
-                <div class="summary-box">
-                    <div class="icon text-danger">⚠️</div>
-                    <div class="content">
-                        <p class="mb-0  px-2 fw-semibold">Late</p>
-                        <span class="badge late-badge text-danger">{{ late_attendance_count|safe }}</span>
+                <a href="/admin/employee/lateattendancefine/" style="text-decoration: none; color: inherit;" target="_blank">
+                    <div class="summary-box">
+                        <div class="icon text-danger">⚠️</div>
+                        <div class="content">
+                                <p class="mb-0 px-2 fw-semibold">Late</p>
+                                <span class="badge late-badge text-danger">{{ late_attendance_count|safe }}</span>
+                        </div>
                     </div>
-                </div>
+                </a>
 
             </div>
         </div>
