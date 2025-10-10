@@ -130,7 +130,7 @@
                     plugins: {
                         datalabels: {
                             anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
-                            align: 'top',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
+                            align: 'center',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
                             formatter: function(value, context) {
                                 // Customize the label text here.
                                 // 'value' is the data point value
@@ -219,7 +219,7 @@
             };
         }
         // calculate height dynamically based on number of data points
-        const barHeight = 50; // each bar gets 50px
+        const barHeight = 40; // each bar gets 50px
         const chartHeight = chartData.labels.length * barHeight;
 
         // apply to canvas before creating the chart
