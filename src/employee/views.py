@@ -590,6 +590,7 @@ def save_available_slot(request):
             html_message = render_to_string("mails/available_employees_table.html", email_context)
             plain_message = strip_tags(html_message)
 
+
             send_mail(
                 subject=f"Team Availability Update – {today_date.strftime('%B %d, %Y')}",
                 message=plain_message,
