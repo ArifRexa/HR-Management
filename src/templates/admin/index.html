@@ -914,5 +914,13 @@
         document.body.addEventListener("htmx:configRequest", (event) => {
             event.detail.headers["X-CSRFToken"] = "{{ csrf_token }}";
         });
+
+        
+        {% if request.user.is_superuser or perms.employee.eligible_for_home_page_reload %}
+           setTimeout(function() {
+                window.location.reload();
+            }, 900000); //900000
+        {% endif %}
+            
     </script>
     {% endblock %}
