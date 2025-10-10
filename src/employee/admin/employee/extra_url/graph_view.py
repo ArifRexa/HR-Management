@@ -485,12 +485,14 @@ class GraphView(admin.ModelAdmin):
             "labels": [],
             "data": [],
             "projects_hour": [],
+            "employees_id": [],
             "total_hour": 0,
         }
         for daily_employee_hour in daily_employee_hours:
             employee_id = daily_employee_hour["employee"]
             chart["labels"].append(daily_employee_hour["employee__full_name"])
             chart["data"].append(daily_employee_hour["total_hour"])
+            chart["employees_id"].append(employee_id)
             chart["projects_hour"].append(employee_projects.get(employee_id, []))
             chart["total_hour"] += daily_employee_hour["total_hour"]
         return chart
