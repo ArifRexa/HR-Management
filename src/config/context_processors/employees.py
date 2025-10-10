@@ -3,18 +3,10 @@ from datetime import date, datetime, time, timedelta
 from django import forms
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import (
-    BooleanField,
-    Case,
-    Count,
-    F,
-    Min,
     OuterRef,
     Prefetch,
     Q,
-    Subquery,
     Sum,
-    Value,
-    When,
 )
 from django.utils import timezone
 from django.utils.html import format_html
@@ -61,8 +53,8 @@ def formal_summery(request):
     leaves_nearby, leaves_nearby_count = (
         employee_formal_summery.employee_leave_nearby()
     )
-    permanents, permanents_count = employee_formal_summery.permanents()
-    anniversaries, anniversaries_count = employee_formal_summery.anniversaries()
+    # permanents, permanents_count = employee_formal_summery.permanents()
+    # anniversaries, anniversaries_count = employee_formal_summery.anniversaries()
 
     employee_online = (
         EmployeeOnline.objects.filter(
@@ -81,64 +73,64 @@ def formal_summery(request):
             "employee",
         )
     )
-    best_skill_qs = (
-        EmployeeSkill.objects.filter(employee_id=OuterRef("employee_id"))
-        .order_by("-percentage")
-        .values("skill__title")[:1]
-    )
-    employee_filter = Q(employee__active=True) & Q(
-        employee__project_eligibility=True
-    )
-    if not employee.operation and not employee.is_tpm:
-        employee_filter &= Q(employee=employee)
-    employee_projects = (
-        EmployeeProject.objects.filter(employee_filter)
-        .exclude(employee_id__in=management_ids)
-        .annotate(
-            project_count=Count("project"),
-            project_order=Min("project"),
-            project_exists=Case(
-                When(project_count=0, then=Value(False)),
-                default=Value(True),
-                output_field=BooleanField(),
-            ),
-            is_online=F("employee__employeeonline__active"),
-            employee_skill=Subquery(best_skill_qs),
-        )
-        .order_by(
-            "project_exists",
-            "employee__full_name",
-        )
-        .select_related(
-            "employee",
-        )
-        .prefetch_related(
-            Prefetch(
-                "employee__employeeskill_set",
-                queryset=EmployeeSkill.objects.order_by("-percentage"),
-            ),
-            Prefetch("employee__employeeskill_set__skill"),
-            Prefetch(
-                "project",
-                queryset=Project.objects.filter(active=True),
-            ),
-        )
-    )
+    # best_skill_qs = (
+    #     EmployeeSkill.objects.filter(employee_id=OuterRef("employee_id"))
+    #     .order_by("-percentage")
+    #     .values("skill__title")[:1]
+    # )
+    # employee_filter = Q(employee__active=True) & Q(
+    #     employee__project_eligibility=True
+    # )
+    # if not employee.operation and not employee.is_tpm:
+    #     employee_filter &= Q(employee=employee)
+    # employee_projects = (
+    #     EmployeeProject.objects.filter(employee_filter)
+    #     .exclude(employee_id__in=management_ids)
+    #     .annotate(
+    #         project_count=Count("project"),
+    #         project_order=Min("project"),
+    #         project_exists=Case(
+    #             When(project_count=0, then=Value(False)),
+    #             default=Value(True),
+    #             output_field=BooleanField(),
+    #         ),
+    #         is_online=F("employee__employeeonline__active"),
+    #         employee_skill=Subquery(best_skill_qs),
+    #     )
+    #     .order_by(
+    #         "project_exists",
+    #         "employee__full_name",
+    #     )
+    #     .select_related(
+    #         "employee",
+    #     )
+    #     .prefetch_related(
+    #         Prefetch(
+    #             "employee__employeeskill_set",
+    #             queryset=EmployeeSkill.objects.order_by("-percentage"),
+    #         ),
+    #         Prefetch("employee__employeeskill_set__skill"),
+    #         Prefetch(
+    #             "project",
+    #             queryset=Project.objects.filter(active=True),
+    #         ),
+    #     )
+    # )
 
-    order_keys = {
-        "1": "employee__full_name",
-        "-1": "-employee__full_name",
-        "2": "project_order",
-        "-2": "-project_order",
-    }
+    # order_keys = {
+    #     "1": "employee__full_name",
+    #     "-1": "-employee__full_name",
+    #     "2": "project_order",
+    #     "-2": "-project_order",
+    # }
 
-    order_by = request.GET.get("ord", None)
-    if order_by:
-        order_by_list = ["project_exists", order_keys.get(order_by, "1")]
-        if order_by not in ["1", "-1"]:
-            order_by_list.append("employee__full_name")
+    # order_by = request.GET.get("ord", None)
+    # if order_by:
+    #     order_by_list = ["project_exists", order_keys.get(order_by, "1")]
+    #     if order_by not in ["1", "-1"]:
+    #         order_by_list.append("employee__full_name")
 
-        employee_projects = employee_projects.order_by(*order_by_list)
+    #     employee_projects = employee_projects.order_by(*order_by_list)
 
     current_month_feedback_done = True
     if str(employee.id) not in management_ids:
@@ -151,16 +143,16 @@ def formal_summery(request):
         "leaves": leaves_nearby,
         "leaves_count": leaves_nearby_count,
         "employee_online": employee_online,
-        "employee_projects": employee_projects,
-        "ord": order_by,
+        # "employee_projects": employee_projects,
+        # "ord": order_by,
         "current_month_feedback_done": current_month_feedback_done,
         "announcement": get_announcement(request=request),
         "birthday_today": get_managed_birthday_image(request),
-        "increments": employee_formal_summery.increments,
-        "permanents": permanents,
-        "permanents_count": permanents_count,
-        "anniversaries": anniversaries,
-        "anniversaries_count": anniversaries_count,
+        # "increments": employee_formal_summery.increments,
+        # "permanents": permanents,
+        # "permanents_count": permanents_count,
+        # "anniversaries": anniversaries,
+        # "anniversaries_count": anniversaries_count,
         "is_management": str(employee.id) in management_ids,
         # TODO: Need Optimization
         "birthdays": employee_formal_summery.birthdays,
@@ -691,24 +683,25 @@ def all_employees_last_slot(request):
     # 1. latest slot id per employee
     today = timezone.now().date()
     latest_ids = (
-        EmployeeAvailableSlot.objects.filter(date__date=today).values("employee")
+        EmployeeAvailableSlot.objects.filter(date__date=today)
+        .values("employee")
         .annotate(max_id=Max("id"))
         .values_list("max_id", flat=True)
     )
- 
+
     # 2. fetch only those rows
     slots = {
         s.employee_id: s.get_slot_display()  # 'Half Time' / 'Full Time' / 'N/A'
         for s in EmployeeAvailableSlot.objects.filter(id__in=latest_ids)
     }
- 
+
     # 3. attach to active employees
     employees = Employee.objects.filter(active=True).order_by("full_name")
     available_employee = []
     for emp in employees:
-        slot =slots.get(emp.id, None)
+        slot = slots.get(emp.id, None)
         if slot is not None and slot != "N/A":
             emp.slot_label = slots.get(emp.id, "—")
             available_employee.append(emp)
- 
+
     return {"all_employees_last_slot": available_employee}

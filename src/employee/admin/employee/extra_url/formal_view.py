@@ -223,12 +223,12 @@ class EmployeeNearbySummery:
                 salary_increment_list.append(inc_salary_list)
         return salary_increment_list
 
-    def anniversaries(self):
-        qs = self.employees.filter(
-            joining_date__month__in=[self.today.month, self.today.month + 1],
-            permanent_date__isnull=False,
-        ).values("full_name")
-        return qs, qs.count()
+    # def anniversaries(self):
+    #     qs = self.employees.filter(
+    #         joining_date__month__in=[self.today.month, self.today.month + 1],
+    #         permanent_date__isnull=False,
+    #     ).values("full_name")
+    #     return qs, qs.count()
 
     def employee_leave_nearby(self):
         qs = Leave.objects.filter(

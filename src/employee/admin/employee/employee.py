@@ -15,6 +15,7 @@ from config.admin.utils import simple_request_filter
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee._inlines import EmployeeInline
 from employee.admin.employee._list_view import EmployeeAdminListView
+from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.admin.employee.extra_url.index import EmployeeExtraUrls
 from employee.admin.employee.filter import TopSkillFilter
 from employee.helper.tpm import TPMsBuilder
@@ -37,7 +38,11 @@ from employee.models.employee import (
     TPMComplain,
     # generate_employee_profile_pdf,
 )
-from employee.models.employee_activity import EmployeeAttendance
+from employee.models.employee_activity import (
+    EmployeeAttendance,
+    EmployeeProject,
+)
+from employee.models.employee_skill import EmployeeSkill
 from employee.models.employee_social import SocialMedia
 from project_management.models import EmployeeProjectHour, Project
 from settings.models import FinancialYear
@@ -859,6 +864,23 @@ class TPMFilter(admin.SimpleListFilter):
         return queryset
 
 
+from django.db.models import (
+    BooleanField,
+    Case,
+    Count,
+    F,
+    Max,
+    Min,
+    OuterRef,
+    Prefetch,
+    Subquery,
+    Value,
+    When,
+)
+
+from config.settings import employee_ids as management_ids
+
+
 @admin.register(EmployeeUnderTPM)
 class EmployeeUnderTPMAdmin(admin.ModelAdmin):
     # list_display = ("employee", "tpm", "project")
@@ -950,13 +972,78 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             tpm_builder.get_total_expected_and_got_hour_tpm()
         )
         formatted_weekly_sums = tpm_builder.get_formatted_weekly_sums()
+        employee = request.user.employee
+        employee_filter = Q(employee__active=True) & Q(
+            employee__project_eligibility=True
+        )
+        if not employee.operation and not employee.is_tpm:
+            employee_filter &= Q(employee=employee)
+        best_skill_qs = (
+            EmployeeSkill.objects.filter(employee_id=OuterRef("employee_id"))
+            .order_by("-percentage")
+            .values("skill__title")[:1]
+        )
+        employee_projects = (
+            EmployeeProject.objects.filter(employee_filter)
+            .exclude(employee_id__in=management_ids)
+            .annotate(
+                project_count=Count("project"),
+                project_order=Min("project"),
+                project_exists=Case(
+                    When(project_count=0, then=Value(False)),
+                    default=Value(True),
+                    output_field=BooleanField(),
+                ),
+                is_online=F("employee__employeeonline__active"),
+                employee_skill=Subquery(best_skill_qs),
+            )
+            .order_by(
+                "project_exists",
+                "employee__full_name",
+            )
+            .select_related(
+                "employee",
+            )
+            .prefetch_related(
+                Prefetch(
+                    "employee__employeeskill_set",
+                    queryset=EmployeeSkill.objects.order_by("-percentage"),
+                ),
+                Prefetch("employee__employeeskill_set__skill"),
+                Prefetch(
+                    "project",
+                    queryset=Project.objects.filter(active=True),
+                ),
+            )
+        )
 
+        order_keys = {
+            "1": "employee__full_name",
+            "-1": "-employee__full_name",
+            "2": "project_order",
+            "-2": "-project_order",
+        }
+
+        order_by = request.GET.get("ord", None)
+        if order_by:
+            order_by_list = ["project_exists", order_keys.get(order_by, "1")]
+            if order_by not in ["1", "-1"]:
+                order_by_list.append("employee__full_name")
+
+            employee_projects = employee_projects.order_by(*order_by_list)
+        employee_formal_summery = EmployeeNearbySummery()
+        permanents, permanents_count = employee_formal_summery.permanents()
         my_context = {
             "tpm_project_data": tpm_project_data,
             "tpm_data": tpm_builder.tpm_list,
             "total_expected": total_expected,
             "total_actual": total_actual,
             "formatted_weekly_sums": formatted_weekly_sums,
+            "employee_projects": employee_projects,
+            "ord": order_by,
+            "increments": employee_formal_summery.increments,
+            "permanents": permanents,
+            "permanents_count": permanents_count,
         }
 
         return super().changelist_view(request, extra_context=my_context)
@@ -971,11 +1058,9 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
             ),
         ]
         return custom_urls + urls
-    
+
     class Media:
-        js = (
-            "employee/js/hide_employee_under_tpm_changelist.js",
-        )
+        js = ("employee/js/hide_employee_under_tpm_changelist.js",)
 
 
 @admin.register(TPMComplain)
@@ -1445,8 +1530,6 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
         )
 
     def get_queryset(self, request):
-        from django.db.models import Max
-
         latest_ids = (
             EmployeeTaxAcknowledgement.objects.values("employee")
             .annotate(max_id=Max("id"))  # latest id
@@ -1496,9 +1579,8 @@ class EmployeeTaxAcknowledgementAdmin(admin.ModelAdmin):
     third_year.short_description = last_four_financial_year(2)
     fourth_year.short_description = last_four_financial_year(3)
 
+
 from django.contrib.admin import SimpleListFilter
-from django.utils import timezone
-from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 # class TodayFirstEmployeeFilter(SimpleListFilter):
@@ -1533,7 +1615,6 @@ from django.utils.translation import gettext_lazy as _
 #         if self.value():
 #             return queryset.filter(employee__id=self.value())
 #         return queryset
-
 
 
 # class TodayFirstEmployeeFilter(SimpleListFilter):
@@ -1583,7 +1664,6 @@ from django.utils.translation import gettext_lazy as _
 #         return queryset
 
 
-
 class TodayFirstEmployeeFilter(SimpleListFilter):
     title = _("employee")
     parameter_name = "employee"
@@ -1601,23 +1681,41 @@ class TodayFirstEmployeeFilter(SimpleListFilter):
 
         # Build choices: prioritize today’s available employees, style based on slot
         choices = []
-        for emp in Employee.objects.filter(pk__in=today_pks).order_by("full_name"):
+        for emp in Employee.objects.filter(pk__in=today_pks).order_by(
+            "full_name"
+        ):
             # Get the latest slot for the employee
-            latest_slot = EmployeeAvailableSlot.objects.filter(employee=emp).order_by("-date").first()
+            latest_slot = (
+                EmployeeAvailableSlot.objects.filter(employee=emp)
+                .order_by("-date")
+                .first()
+            )
             slot_value = latest_slot.slot if latest_slot else None
             label = (
-                format_html('<span style="color:red;font-weight:bold">{}</span>', emp)
+                format_html(
+                    '<span style="color:red;font-weight:bold">{}</span>', emp
+                )
                 if slot_value in ["full", "half"]
                 else str(emp)
             )
             choices.append((emp.pk, label))
 
         # Other active employees
-        for emp in Employee.objects.exclude(pk__in=today_pks).filter(active=True).order_by("full_name"):
-            latest_slot = EmployeeAvailableSlot.objects.filter(employee=emp).order_by("-date").first()
+        for emp in (
+            Employee.objects.exclude(pk__in=today_pks)
+            .filter(active=True)
+            .order_by("full_name")
+        ):
+            latest_slot = (
+                EmployeeAvailableSlot.objects.filter(employee=emp)
+                .order_by("-date")
+                .first()
+            )
             slot_value = latest_slot.slot if latest_slot else None
             label = (
-                format_html('<span style="color:red;font-weight:bold">{}</span>', emp)
+                format_html(
+                    '<span style="color:red;font-weight:bold">{}</span>', emp
+                )
                 if slot_value in ["full", "half"]
                 else str(emp)
             )
@@ -1629,6 +1727,7 @@ class TodayFirstEmployeeFilter(SimpleListFilter):
         if self.value():
             return queryset.filter(employee__id=self.value())
         return queryset
+
 
 @admin.register(EmployeeAvailableSlot)
 class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
@@ -1642,7 +1741,7 @@ class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
 
     date_display.short_description = "Date & Time"
     date_display.admin_order_field = "date"
-    
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.order_by("-available", "-date" )
+        return qs.order_by("-available", "-date")
