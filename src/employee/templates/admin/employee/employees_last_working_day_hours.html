@@ -126,6 +126,7 @@
                 options: {
                     indexAxis: "y",
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
@@ -207,12 +208,23 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                        }
+                            barThickness: 20, // or 'flex' for automatic
+                            categoryPercentage: 0.9,
+                            barPercentage: 0.8,
+                        },
+                       
                     }
                 },
                 plugins: [ChartDataLabels],
             };
         }
+        // calculate height dynamically based on number of data points
+        const barHeight = 50; // each bar gets 50px
+        const chartHeight = chartData.labels.length * barHeight;
+
+        // apply to canvas before creating the chart
+        const canvas = document.getElementById('hourChart');
+        canvas.height = chartHeight; // dynamically set height
 
         let myChart = new Chart(ctx, getConfig(currentType));
 
