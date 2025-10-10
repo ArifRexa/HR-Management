@@ -1,12 +1,14 @@
 # white_listed_ips = ['103.180.244.213', '127.0.0.1', '134.209.155.127', '45.248.149.252']
 from datetime import datetime
-
+from django.core.mail import send_mail
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
-
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 from config.admin.utils import not_for_management, white_listed_ip_check
 from config.context_processors.employees import EmployeeAvailableSlotForm
 from config.settings import MACHINE_SECRETS
@@ -393,6 +395,105 @@ def employee_project_select_form(request, employee_id):
     )
 
 
+# @require_POST
+# @login_required
+# def save_available_slot(request):
+#     """
+#     HTMX endpoint:
+#     - looks for an existing slot-row for the logged-in employee on the given date
+#     - creates or updates that row
+#     - returns a small HTML fragment (or JSON) that HTMX can swap into the page
+#     """
+#     form = EmployeeAvailableSlotForm(request.POST)
+#     if not form.is_valid:
+#         date_str = request.POST.get("date")
+#         try:
+#             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+#         except (ValueError, TypeError):
+#             date_obj = datetime.today().date()
+
+#         context = {
+#                 "today": date_obj,
+#                 "current_slot": request.POST.get("slot"),
+#                 "error": form.errors["slot"][0]
+#                 if form.errors.get("slot")
+#                 else "Invalid choice.",
+#                 "toast_message": "somethings wrong",
+#                 "toast_type": "error",
+#                 "toast": True
+#             }
+#         response = render(request, "admin/form/available_slot.html", context)
+#         response['HX-Refresh'] = 'true'
+#         return response
+
+#     slot_value = request.POST["slot"]
+#     date_value = timezone.now()
+
+#     should_notify = slot_value in ["half", "full"]
+
+#     existing = (
+#         EmployeeAvailableSlot.objects
+#         .filter(employee=request.user.employee, date__date=date_value)
+#         .last()
+#     )
+
+#     created = False
+#     if existing:
+#         if existing.slot != slot_value:
+#             # Slot changed → create new entry (or update, but you prefer new)
+#             instance = EmployeeAvailableSlot.objects.create(
+#                 employee=request.user.employee,
+#                 date=date_value,
+#                 slot=slot_value,
+#                 available=slot_value != "n/a",
+#             )
+#             created = True
+#         else:
+#             instance = existing
+#     else:
+#         # New entry
+#         instance = EmployeeAvailableSlot.objects.create(
+#             employee=request.user.employee,
+#             date=date_value,
+#             slot=slot_value,
+#             available=slot_value != "n/a",
+#         )
+#         created = True
+
+#     # 🔔 Send email only if NEW and slot is half/full
+#     if created and should_notify:
+#         employee = request.user.employee
+#         send_mail(
+#             subject=f"New Availability: {employee.user.get_full_name()} is available",
+#             message=(
+#                 f"Employee: {employee.user.get_full_name()} ({employee.user.email})\n"
+#                 f"Designation: {employee.top_one_skill}\n"
+#                 f"Date: {date_value}\n"
+#                 f"Slot: {slot_value.title()} Time\n\n"
+#                 "Please review in the admin panel."
+#             ),
+#             from_email='"Mediusware-Admin" <hr@mediusware.com>',
+#             recipient_list=["mailarif3126@gmail.com"],  # or your team email
+#             fail_silently=True,
+#         )
+
+#     return render(
+#         request,
+#         "admin/form/available_slot.html",
+#         context={
+#             "today": date_value,
+#             "current_slot": instance.slot,
+#             "toast_message": "successfully add available slot",
+#             "toast_type": "success",
+#             "toast": True
+#         },
+#     )
+
+
+
+
+
+
 @require_POST
 @login_required
 def save_available_slot(request):
@@ -427,41 +528,94 @@ def save_available_slot(request):
     slot_value = request.POST["slot"]
     date_value = timezone.now()
 
+    should_notify = slot_value in ["half", "full"]
+
     existing = (
         EmployeeAvailableSlot.objects
         .filter(employee=request.user.employee, date__date=date_value)
         .last()
     )
 
+    created = False
     if existing:
-        if existing.slot == slot_value:
-            # same choice – just make sure availability is correct
-            existing.available = slot_value != "n/a"
-            existing.save(update_fields=["available"])
-            instance = existing
-        else:
+        if existing.slot != slot_value:
+            # Slot changed → create new entry (or update, but you prefer new)
             instance = EmployeeAvailableSlot.objects.create(
                 employee=request.user.employee,
                 date=date_value,
                 slot=slot_value,
                 available=slot_value != "n/a",
             )
+            created = True
+        else:
+            instance = existing
     else:
+        # New entry
         instance = EmployeeAvailableSlot.objects.create(
             employee=request.user.employee,
             date=date_value,
             slot=slot_value,
             available=slot_value != "n/a",
         )
+        created = True
 
-    return render(
-        request,
-        "admin/form/available_slot.html",
-        context={
-            "today": date_value,
-            "current_slot": instance.slot,
-            "toast_message": "successfully add available slot",
-            "toast_type": "success",
-            "toast": True
-        },
-    )
+    print("*"*100)
+
+    # 🔔 Send email only if it's a NEW "full" or "half" entry
+    if created and should_notify:
+        try:
+            today_date = timezone.now().date()
+            # Fetch all available employees for today
+            available_entries = EmployeeAvailableSlot.objects.filter(
+                date__date=today_date,
+                slot__in=["full", "half"]
+            ).select_related('employee__user')
+
+            employees_data = []
+            for entry in available_entries:
+                emp = entry.employee
+                employees_data.append({
+                    "name": emp.user.get_full_name() or emp.user.username,
+                    "email": emp.user.email,
+                    "skill": getattr(emp, 'top_one_skill', 'N/A'),
+                    "slot": entry.slot.title(),
+                    "time": entry.date.strftime("%I:%M %p").lower().replace("am", "a.m.").replace("pm", "p.m.")
+                })
+
+            email_context = {
+                "date": today_date.strftime("%B %d, %Y"),
+                "employees": employees_data,
+            }
+
+            html_message = render_to_string("mails/available_employees_table.html", email_context)
+            plain_message = strip_tags(html_message)
+
+            send_mail(
+                subject=f"Team Availability Update – {today_date.strftime('%B %d, %Y')}",
+                message=plain_message,
+                from_email='"Mediusware-Admin" <hr@mediusware.com>',
+                recipient_list=["mailarif3126@gmail.com", "mwtanvir98@gmail.com", "rashed@mediusware.com", "hr@mediusware.com"],  # Update as needed
+                html_message=html_message,
+                fail_silently=False,  # Set to True in production if preferred
+            )
+        except Exception as e:
+            print(f"Failed to send availability email: {e}")
+            # Optionally notify user, but usually not needed for background email
+
+    # Prepare context for HTMX response
+    today = timezone.now().date()
+    available_employees = EmployeeAvailableSlot.objects.filter(
+        date__date=today,
+        slot__in=["full", "half"]
+    ).select_related('employee__user').order_by('-date')
+
+    context = {
+        "today": today,
+        "current_slot": instance.slot,
+        "toast_message": "Successfully updated availability",
+        "toast_type": "success",
+        "toast": True,
+        "available_employees": available_employees,
+    }
+
+    return render(request, "admin/form/available_slot.html", context)
