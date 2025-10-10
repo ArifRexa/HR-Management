@@ -574,6 +574,7 @@ class Employee(TimeStampMixin, AuthorMixin):
             ("can_show_permanent_increment", "Can show permanent increment"),
             ("can_send_mail_to_employee", "Can send mail to employee"),
             ("can_print_employee_info", "Can print employee info"),
+            ("eligible_for_home_page_reload", "Eligible For Home Page Reload")
         )
         ordering = ["full_name"]
 
