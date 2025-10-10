@@ -401,48 +401,99 @@ class GraphView(admin.ModelAdmin):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
         
-        current_date = datetime.datetime.now().date()
-        weekday = current_date.weekday()
-        if weekday in (5, 6):
-            current_date = current_date - relativedelta(days=1 if weekday == 5 else 2)
+        if request.GET.get("created_at__date"):
+            current_date = request.GET.get("created_at__date")
+        else:
+            current_date_time = datetime.datetime.now()
+            current_date = current_date_time.date()
+            weekday = current_date.weekday()
+            if weekday in (5, 6):
+                # get the last working date if current_date is Saturday or Sunday 
+                current_date = current_date - relativedelta(days=1 if weekday == 5 else 2)
+            else:
+                if current_date_time.time() < datetime.time(21, 0, 0):  # define 9 PM, time(21, 0, 0)
+                    # get the last working date if current_time is less then 9 PM
+                    current_date = current_date - relativedelta(days=1)
+
+        hours_filters = {key: request.GET.get(key) for key in ["total_hour__gte", "total_hour__lte"] if request.GET.get(key)}
         initial_date_filter = {
-            "created_at__date": request.GET.get("created_at__date", current_date),
+            "created_at__date": current_date,
+            **hours_filters,
         }
         date_filter_form = DailyUpdateDateFilterForm(
             initial=initial_date_filter,
         )
         context = dict(
             self.admin_site.each_context(request),
-            chart=self._all_employee_last_working_day_graph_data(**initial_date_filter),
+            chart=self._all_employee_last_working_day_graph_data(
+                date_filters={"created_at__date": current_date},
+                hours_filters=hours_filters,
+            ),
             date_filter_form=date_filter_form,
         )
         return TemplateResponse(request, "admin/employee/employees_last_working_day_hours.html", context)
 
-    def _all_employee_last_working_day_graph_data(self, **filters):
+    def _all_employee_last_working_day_graph_data(self, date_filters, hours_filters):
         
-        daily_employee_hours = DailyProjectUpdate.objects.filter(
-            **filters,
-        ).select_related("employee", "project").values(
-            "employee", "employee__full_name",
-        ).annotate(
-            total_hour = Sum("hours")
+        # daily_employee_hours = DailyProjectUpdate.objects.filter(
+        #     **date_filters,
+        # ).select_related("employee", "project").values(
+        #     "employee", "employee__full_name",
+        # ).annotate(
+        #     total_hour = Sum("hours")
+        # ).order_by("total_hour")
 
-        ).order_by("total_hour")
+        # chart = {
+        #     "labels": [],
+        #     "data": [],
+        #     "projects_hour": [],
+        #     "total_hour": 0,
+        # }
+        # for daily_employee_hour in daily_employee_hours:
+        #     chart["labels"].append(daily_employee_hour.get("employee__full_name"))
+        #     chart["data"].append(daily_employee_hour.get("total_hour"))
+        #     projects = DailyProjectUpdate.objects.filter(
+        #         employee_id=daily_employee_hour.get("employee"),
+        #         **date_filters,
+        #     ).values("project", "project__title").values_list("project__title", "hours")
+        #     chart["projects_hour"].append([list(project) for project in projects])
+        #     chart["total_hour"] += daily_employee_hour.get("total_hour")
+        # return chart
+        daily_employee_hours = (
+            DailyProjectUpdate.objects.filter(**date_filters)
+            .select_related("employee", "project")
+            .values("employee", "employee__full_name")
+            .annotate(total_hour=Sum("hours")).filter(**hours_filters)
+            .order_by("total_hour")
+        )
+
+        project_data = (
+            DailyProjectUpdate.objects.filter(**date_filters)
+            .select_related("project")
+            .values("employee", "project__title", "hours")
+            .order_by("employee", "project__title")
+        )
+
+        employee_projects = {}
+        for entry in project_data:
+            employee_id = entry["employee"]
+            if employee_id not in employee_projects:
+                employee_projects[employee_id] = []
+            employee_projects[employee_id].append([entry["project__title"], entry["hours"]])
 
         chart = {
             "labels": [],
             "data": [],
             "projects_hour": [],
+            "employees_id": [],
             "total_hour": 0,
         }
         for daily_employee_hour in daily_employee_hours:
-            chart["labels"].append(daily_employee_hour.get("employee__full_name"))
-            chart["data"].append(daily_employee_hour.get("total_hour"))
-            projects = DailyProjectUpdate.objects.filter(
-                employee_id=daily_employee_hour.get("employee"),
-                **filters,
-            ).values("project", "project__title").values_list("project__title", "hours")
-            chart["projects_hour"].append([list(project) for project in projects])
-            chart["total_hour"] += daily_employee_hour.get("total_hour")
+            employee_id = daily_employee_hour["employee"]
+            chart["labels"].append(daily_employee_hour["employee__full_name"])
+            chart["data"].append(daily_employee_hour["total_hour"])
+            chart["employees_id"].append(employee_id)
+            chart["projects_hour"].append(employee_projects.get(employee_id, []))
+            chart["total_hour"] += daily_employee_hour["total_hour"]
         return chart
 
