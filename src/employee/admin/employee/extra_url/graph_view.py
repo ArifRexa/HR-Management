@@ -280,7 +280,9 @@ class GraphView(admin.ModelAdmin):
         @param kwargs:
         @return:
         """
+        project_id = kwargs.get('project_id__exact')
         chart = {
+            "project_id": project_id,
             "weekly": {
                 "label": "Weekly Hours",
                 "total_hour": 0,
@@ -296,7 +298,7 @@ class GraphView(admin.ModelAdmin):
         }
         
         filters = kwargs.get("filters")
-        filters["project_id__exact"] = kwargs.get('project_id__exact')
+        filters["project_id__exact"] = project_id
         filtered_project_hours = ProjectHour.objects.filter(
             # status="approved",
             **filters,
