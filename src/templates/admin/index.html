@@ -532,7 +532,7 @@
                     </div>
                     {% include "admin/form/book_conference_room.html" %}
                     
-                    
+                    {% comment %} {% include "admin/employee/list/employee_available_slot.html" %} {% endcomment %}
                     <!-- {% if request.user.is_superuser or request.user.employee.is_tpm or request.user.employee.operation %}
                         
                     {% endif %} -->
@@ -557,25 +557,24 @@
                         </div>
                     {% endif %}
 
-                    {% comment %} {% if request.user.employee.operation and birthdays.count > 0 %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card rounded-0">
-                            <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
-                            </div>
-                            <div class="card-body rounded-0 p-0">
-                                <ul class="list-group list-group-flush">
-                                    {% for employee_birthday in birthdays %}
-                                    <li class="list-group-item">
-                                        {{ employee_birthday }} -
-                                        <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
+                    {% if request.user.employee.operation and birthdays.count > 0 %}
+                        <div class="col-md-6 mb-4">
+                            <div class="card rounded-0">
+                                <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
+                                </div>
+                                <div class="card-body rounded-0 p-0">
+                                    <ul class="list-group list-group-flush">
+                                        {% for employee_birthday in birthdays %}
+                                        <li class="list-group-item">
+                                            {{ employee_birthday }} -
+                                            <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                {% endif %} {% endcomment %}
-                {% include "admin/employee/list/employee_available_slot.html" %}
+                    {% endif %}
                         
                   
                 {% comment %} {% if request.user.is_superuser or can_show_permanent_increment%}
@@ -653,6 +652,10 @@
                        {% endfor %}
                    </ul>  {% endcomment %}
                    
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    {% include "admin/employee/list/employee_available_slot.html" %}
                 </div>
 
                 {% comment %} <div class="col-md-6 mb-4">
@@ -756,24 +759,24 @@
                 </div>
                 {% endif %}
 
-                {% if request.user.employee.operation and birthdays.count > 0 %}
-                    <div class="col-md-6 mb-4">
-                        <div class="card rounded-0">
-                            <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
-                            </div>
-                            <div class="card-body rounded-0 p-0">
-                                <ul class="list-group list-group-flush">
-                                    {% for employee_birthday in birthdays %}
-                                    <li class="list-group-item">
-                                        {{ employee_birthday }} -
-                                        <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
-                                    </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
+                {% comment %} {% if request.user.employee.operation and birthdays.count > 0 %}
+                <div class="col-md-6 mb-4">
+                    <div class="card rounded-0">
+                        <div class="card-header text-uppercase">Birthday Nearby <span class="float-end badge bg-secondary">{{ birthdays.count }}</span>
+                        </div>
+                        <div class="card-body rounded-0 p-0">
+                            <ul class="list-group list-group-flush">
+                                {% for employee_birthday in birthdays %}
+                                <li class="list-group-item">
+                                    {{ employee_birthday }} -
+                                    <b>{{ employee_birthday.date_of_birth | date:"jS M" }}</b>
+                                </li>
+                                {% endfor %}
+                            </ul>
                         </div>
                     </div>
-                {% endif %}
+                </div>
+                {% endif %} {% endcomment %}
 
                 
 
