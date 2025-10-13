@@ -539,6 +539,7 @@ class MonthlyJournal(AccountJournal):
         proxy = True
         verbose_name = "Account Journal (Monthly)"
         verbose_name_plural = "Accounts Journals (Monthly)"
+        
 
 
 class SalarySheetTaxLoan(models.Model):

@@ -35,6 +35,9 @@ class MonthlyJournalAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     list_filter = ['type', 'date']
     form = MonthlyJournalForm
+    
+    def has_module_permission(self, request):
+        return False
 
     # def debit(self, obj=None):
     #     return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')
