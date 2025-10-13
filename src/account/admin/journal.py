@@ -93,6 +93,10 @@ class DailyPaymentVoucherAdmin(admin.ModelAdmin):
     date_hierarchy = 'date'
     ordering = ['-date']
     form = DailyPaymentVoucherForm
+    
+    
+    def has_module_permission(self, request):
+        return False
 
     def debit(self, obj=None):
         return obj.expenses.all().aggregate(debit=Sum('amount')).get('debit')

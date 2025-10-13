@@ -614,6 +614,9 @@ class SalaryReportAdmin(admin.ModelAdmin):
     change_form_template = "admin/salary_report.html"
     actions = ["export_as_excel"]
     
+    def has_module_permission(self, request):
+        return False
+    
     def change_view(self, request, object_id, form_url="", extra_context=None):
         salary_report = self.get_object(request, object_id)
         start_date = salary_report.start_date
