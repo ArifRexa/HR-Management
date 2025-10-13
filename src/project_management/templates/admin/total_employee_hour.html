@@ -45,9 +45,35 @@
                 <span>
                     {{ filter_form.created_at__date__lte }}
                 </span>
-                <button type="submit"  style="margin-left: 5px; padding: 4px 8px; border: 1px solid #c6ccc6; border-radius: 5px; color: #333333;" >Filter</button>
+                <button id="form-submit" type="submit"  style="margin-left: 5px; padding: 4px 8px; border: 1px solid #c6ccc6; border-radius: 5px; color: #333333;" >Filter</button>
             </p>
         </form>
     </div>
     {% search_form cl %}
+
+    <script>
+        /* grab the two inputs that Django rendered */
+        const dateFrom = document.querySelector('input[name="created_at__date__gte"]');
+        const dateTo   = document.querySelector('input[name="created_at__date__lte"]');
+        const formBtn  = document.getElementById('form-submit');
+
+        formBtn.addEventListener('click', e => {
+            e.preventDefault();                       // stop the normal form submit
+
+            /* 1. current query-string → URLSearchParams object */
+            const params = new URLSearchParams(window.location.search);
+
+            /* 2. set / overwrite the two date fields */
+            params.set('created_at__date__gte', dateFrom.value);
+            params.set('created_at__date__lte', dateTo.value);
+
+            /* 3. build the new URL and go there */
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState({}, '', newUrl);   // or: location.href = newUrl;
+
+            /* if you use the Django admin changelist and want it to reload
+            with the new filter you can simply reload the page: */
+            location.reload();
+        });
+    </script>
 {% endblock %}
