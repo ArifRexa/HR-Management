@@ -1,5 +1,5 @@
 from datetime import datetime
-
+from django import forms
 import nested_admin
 from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
 from dateutil.relativedelta import relativedelta
@@ -202,9 +202,30 @@ class TechnologyFilter(ProjectCountMixin, SimpleListFilter):
     field_name = "technology"
     title_field = "name"
 
+class ProjectAdminForm(forms.ModelForm):
+    class Meta:
+        model = Project
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Dynamically filter child_services based on selected services
+        if self.instance and self.instance.pk:
+            # Get the selected parent services
+            selected_services = self.instance.services.all()
+            # Get all child services of the selected parent services
+            child_services = ServicePage.objects.filter(
+                parent__in=selected_services, is_parent=False
+            )
+            # Update the queryset for the child_services field
+            self.fields['child_services'].queryset = child_services
+        else:
+            # If no instance exists (e.g., creating a new project), show no child services
+            self.fields['child_services'].queryset = ServicePage.objects.none()
 
 @admin.register(Project)
 class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
+    form = ProjectAdminForm
     list_display = (
         "project_title_with_client",
         # "web_title",
@@ -254,6 +275,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "industries",
         "services",
         "technology",
+        "child_services"
     ]
     # form = ProjectAdminForm
     fields = (
@@ -272,6 +294,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "platforms",
         # "categories_tags",
         "services",
+        "child_services",
         "technology",
         "industries",
         "live_link",
