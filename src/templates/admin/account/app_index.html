@@ -40,9 +40,9 @@
             <tr>
                 <th scope="row"><a href="{% url 'admin:account_expensegroup_changelist' %}">Expense Groups</a></th>
             </tr>
-            <tr>
+            {% comment %} <tr>
                 <th scope="row"><a href="{% url 'admin:account_loan_changelist' %}">Loan</a></th>
-            </tr>
+            </tr> {% endcomment %}
             <tr>
                 <th scope="row"><a href="{% url 'admin:account_loanpayment_changelist' %}">Loan Payments</a></th>
             </tr>
