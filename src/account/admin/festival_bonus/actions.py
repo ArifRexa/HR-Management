@@ -8,12 +8,12 @@ from openpyxl.writer.excel import save_virtual_workbook
 
 from account.models import SalaryDisbursement
 from config.utils.pdf import PDF
-from employee.models.bank_account import BEFTN
+# from employee.models.bank_account import BEFTN
 
 
 class FestivalBonusAction(admin.ModelAdmin):
     actions = (
-        "export_city_bank_beftn",
+        # "export_city_bank_beftn",
         "export_bankasia_salary_acc_dis_excel",
         "export_salary_account_dis_excel",
         "export_bonus_account_dis_pdf",
@@ -79,77 +79,77 @@ class FestivalBonusAction(admin.ModelAdmin):
         response["Content-Disposition"] = "attachment; filename=City_Live.xlsx"
         return response
 
-    @admin.action(description="Export City Bank BEFTN")
-    def export_city_bank_beftn(self, request, queryset):
-        wb = Workbook()
-        work_sheet = wb.active
-        work_sheet.title = "BEFTN Export"
+    # @admin.action(description="Export City Bank BEFTN")
+    # def export_city_bank_beftn(self, request, queryset):
+    #     wb = Workbook()
+    #     work_sheet = wb.active
+    #     work_sheet.title = "BEFTN Export"
 
-        # Add headers including 'Total Salary' at the end
-        work_sheet.append(
-            [
-                "Date",
-                "Account No",
-                "Employee Name",
-                "BDT",
-                "Amount",
-                "Originating Bank Routing No.",
-                "Routing No",
-                "Originating Bank Account No.",
-                "Originating Account Name",
-                "Remarks",
-            ]
-        )
+    #     # Add headers including 'Total Salary' at the end
+    #     work_sheet.append(
+    #         [
+    #             "Date",
+    #             "Account No",
+    #             "Employee Name",
+    #             "BDT",
+    #             "Amount",
+    #             "Originating Bank Routing No.",
+    #             "Routing No",
+    #             "Originating Bank Account No.",
+    #             "Originating Account Name",
+    #             "Remarks",
+    #         ]
+    #     )
 
-        for festival_bonus_sheet in queryset:
-            beftn = BEFTN.objects.last()
+    #     for festival_bonus_sheet in queryset:
+    #         # beftn = BEFTN.objects.last()
 
-            total_salary = 0
-            for (
-                employee_festival_bonus
-            ) in festival_bonus_sheet.employeefestivalbonus_set.all():
-                # Get the bank account information
-                bank_account = employee_festival_bonus.employee.bankaccount_set.filter(
-                    default=True, is_approved=True
-                ).last()
+    #         total_salary = 0
+    #         for (
+    #             employee_festival_bonus
+    #         ) in festival_bonus_sheet.employeefestivalbonus_set.all():
+    #             # Get the bank account information
+    #             bank_account = employee_festival_bonus.employee.bankaccount_set.filter(
+    #                 default=True, is_approved=True
+    #             ).last()
 
-                if bank_account and employee_festival_bonus.amount > 0:
-                    # Append the employee salary data with total salary at the end
-                    total_salary += int(employee_festival_bonus.amount)
-                    work_sheet.append(
-                        [
-                            festival_bonus_sheet.date.strftime("%d-%m-%Y"),  # Date
-                            bank_account.account_number,  # Account No
-                            employee_festival_bonus.employee.full_name,
-                            "BDT",  # Currency
-                            str(int(employee_festival_bonus.amount)),  # Amount
-                            beftn.originating_bank_routing_number,  # Originating Bank Routing No.
-                            beftn.routing_no,  # Routing No
-                            beftn.originating_bank_account_number,  # Originating Bank Account No.
-                            beftn.originating_bank_account_name,  # Originating Account Name
-                            f'Festival Bonus of {festival_bonus_sheet.date.strftime("%b, %Y")}',  # Remarks
-                        ]
-                    )
-        work_sheet.append(
-            [
-                "",
-                "",
-                "",
-                "",
-                f"Total={int(total_salary)}",
-                "",
-                "",
-                "",
-                "",
-                "",  # Total salary row below "Amount"
-            ]
-        )
-        # Prepare the response with the Excel file
-        response = HttpResponse(
-            content=save_virtual_workbook(wb), content_type="application/ms-excel"
-        )
-        response["Content-Disposition"] = "attachment; filename=City_Bank_BEFTN.xlsx"
-        return response
+    #             if bank_account and employee_festival_bonus.amount > 0:
+    #                 # Append the employee salary data with total salary at the end
+    #                 total_salary += int(employee_festival_bonus.amount)
+    #                 work_sheet.append(
+    #                     [
+    #                         festival_bonus_sheet.date.strftime("%d-%m-%Y"),  # Date
+    #                         bank_account.account_number,  # Account No
+    #                         employee_festival_bonus.employee.full_name,
+    #                         "BDT",  # Currency
+    #                         str(int(employee_festival_bonus.amount)),  # Amount
+    #                         beftn.originating_bank_routing_number,  # Originating Bank Routing No.
+    #                         beftn.routing_no,  # Routing No
+    #                         beftn.originating_bank_account_number,  # Originating Bank Account No.
+    #                         beftn.originating_bank_account_name,  # Originating Account Name
+    #                         f'Festival Bonus of {festival_bonus_sheet.date.strftime("%b, %Y")}',  # Remarks
+    #                     ]
+    #                 )
+    #     work_sheet.append(
+    #         [
+    #             "",
+    #             "",
+    #             "",
+    #             "",
+    #             f"Total={int(total_salary)}",
+    #             "",
+    #             "",
+    #             "",
+    #             "",
+    #             "",  # Total salary row below "Amount"
+    #         ]
+    #     )
+    #     # Prepare the response with the Excel file
+    #     response = HttpResponse(
+    #         content=save_virtual_workbook(wb), content_type="application/ms-excel"
+    #     )
+    #     response["Content-Disposition"] = "attachment; filename=City_Bank_BEFTN.xlsx"
+    #     return response
 
     @admin.action(description="Export Bank Asia Salary Account Disbursements (Excel)")
     def export_bankasia_salary_acc_dis_excel(self, request, queryset):
