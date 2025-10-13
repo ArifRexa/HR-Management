@@ -641,6 +641,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "core__processor_info",
         "gpu",
         "other_specs",
+        "asset_id"
     ]
 
     fields = [
@@ -865,6 +866,13 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     search_fields = [
         "employee__full_name",
         "employee__email",
+        "table__asset_id",
+        "chair__asset_id",
+        "monitor__asset_id",
+        "keyboard__asset_id",
+        "mouse__asset_id",
+        "headphone__asset_id",
+        "web_cam__asset_id",
     ]
     autocomplete_fields = [
         "employee",
