@@ -413,10 +413,10 @@ class GraphView(admin.ModelAdmin):
             if weekday in (5, 6):
                 # get the last working date if current_date is Saturday or Sunday 
                 current_date = current_date - relativedelta(days=1 if weekday == 5 else 2)
-            else:
-                if current_date_time.time() < datetime.time(21, 0, 0):  # define 9 PM, time(21, 0, 0)
-                    # get the last working date if current_time is less then 9 PM
-                    current_date = current_date - relativedelta(days=1)
+            elif current_date_time.time() < datetime.time(21, 0, 0):  # define 9 PM, time(21, 0, 0)
+                # get the last working date if current_time is less then 9 PM
+                days = 3 if weekday == 0 else 1
+                current_date = current_date - relativedelta(days=days)
 
         hours_filters = {key: request.GET.get(key) for key in ["total_hour__gte", "total_hour__lte"] if request.GET.get(key)}
         initial_date_filter = {
