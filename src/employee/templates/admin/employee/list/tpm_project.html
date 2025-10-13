@@ -614,7 +614,7 @@
         }
     </style>
 
-    <div class="col-md-6 mb-4" style="flex-grow: 1; width: 711.33px;">
+    <div class="col-md-6 mb-4" style="flex-grow: 1; width: 50%;">
         <div class="card">
             <div class="card-header">
                 <span class="text-uppercase">Employee's Projects</span>
@@ -685,7 +685,7 @@
     </div>
 
 
-    <div style="flex-grow: 1;width: 711.33px;">
+    <div style="flex-grow: 1;width: 25%;">
         {% if request.user.is_superuser or can_show_permanent_increment%}
         {% comment %} {% if increments.exists %} {% endcomment %}
         <div class="card mb-4">
@@ -716,7 +716,7 @@
         {% endif %}
     </div>
 
-    <div style="flex-grow: 1; width: 711.33px;">
+    <div style="flex-grow: 1; width: 25%;">
         {% if permanents_count > 0 %}
         <div class="card">
             <div class="card-header text-uppercase d-flex justify-content-between align-items-center">

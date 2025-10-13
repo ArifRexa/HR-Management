@@ -33,7 +33,7 @@ class LoadAttachmentInline(admin.TabularInline):
 
 @admin.register(Loan)
 class LoanAdmin(admin.ModelAdmin):
-    list_display = ("employee", "loan_amount", "due", "emi", "tenor", "description", "emi_dates")
+    list_display = ("employee", "loan_amount", "due", "emi", "tenor", "loan_type", "description", "emi_dates")
     inlines = (LoadAttachmentInline,)
     actions = ("print_loan_agreement", "duplicate")
     list_filter = (
@@ -79,12 +79,12 @@ class LoanAdmin(admin.ModelAdmin):
         )
         return f"{due_amount} ({obj.loanpayment_set.count()})"
 
-    def has_module_permission(self, request):
-        if request.user.is_superuser or request.user.has_perm("account.add_loan"):
-            return False
-        elif request.user.has_perm("account.can_view_tax_loans"):
-            return True
-        return False
+    # def has_module_permission(self, request):
+    #     if request.user.is_superuser or request.user.has_perm("account.add_loan"):
+    #         return False
+    #     elif request.user.has_perm("account.can_view_tax_loans"):
+    #         return True
+    #     return False
 
     def changelist_view(self, request, extra_context=None):
         # Ensure   extra_context is initialized as a dictionary if it's not passed

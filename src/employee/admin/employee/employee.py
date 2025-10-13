@@ -24,7 +24,7 @@ from employee.models import (
     Employee,
 )
 from employee.models.attachment import EmployeeTaxAcknowledgement
-from employee.models.bank_account import BEFTN
+# from employee.models.bank_account import BEFTN
 from employee.models.employee import (
     EmployeeAvailableSlot,
     EmployeeLunch,
@@ -1272,28 +1272,28 @@ class UserLogsAdmin(admin.ModelAdmin):
     logout_all_users.short_description = "Logout all users"
 
 
-@admin.register(BEFTN)
-class BEFTNAdmin(admin.ModelAdmin):
-    fieldsets = (
-        (
-            "Sender Information",
-            {
-                "fields": (
-                    "originating_bank_account_number",
-                    "originating_bank_routing_number",
-                    "originating_bank_account_name",
-                ),
-            },
-        ),
-        (
-            "Receiver Information",
-            {
-                "fields": ("routing_no",),
-            },
-        ),
-    )
+# @admin.register(BEFTN)
+# class BEFTNAdmin(admin.ModelAdmin):
+#     fieldsets = (
+#         (
+#             "Sender Information",
+#             {
+#                 "fields": (
+#                     "originating_bank_account_number",
+#                     "originating_bank_routing_number",
+#                     "originating_bank_account_name",
+#                 ),
+#             },
+#         ),
+#         (
+#             "Receiver Information",
+#             {
+#                 "fields": ("routing_no",),
+#             },
+#         ),
+#     )
 
-    list_display = ("originating_bank_account_name",)
+#     list_display = ("originating_bank_account_name",)
 
 
 class LessHourForm(forms.ModelForm):

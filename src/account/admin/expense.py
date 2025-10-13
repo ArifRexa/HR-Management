@@ -45,6 +45,7 @@ class ExpenseGroupAdmin(admin.ModelAdmin):
     )
     search_fields = ["title"]
     ordering = ["account_code"]
+    
 
     @admin.display(description="VDS Rate (%)", ordering="vds_rate")
     def get_vds_rate(self, obj):
@@ -55,7 +56,7 @@ class ExpenseGroupAdmin(admin.ModelAdmin):
         return obj.tds_rate
 
     def has_module_permission(self, request):
-        return True
+        return False
 
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:
