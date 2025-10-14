@@ -26,7 +26,6 @@ from employee.models import (
     EmployeeSkill,
     FavouriteMenu,
     Leave,
-    LeaveManagement,
 )
 from employee.models.employee import (
     BookConferenceRoom,
@@ -595,21 +594,21 @@ def approval_info_leave_daily_update(request):
     if not request.user.is_authenticated:
         return ""  # Return empty response if user is not authenticated
 
-    pending_leave = LeaveManagement.objects.filter(
-        status="pending", manager=request.user.employee
-    ).count()
+    # pending_leave = LeaveManagement.objects.filter(
+    #     status="pending", manager=request.user.employee
+    # ).count()
     daily_update_pending = DailyProjectUpdate.objects.filter(
         status="pending", manager=request.user.employee
     ).count()
 
     # Determine if counts are greater than 0 to apply style
-    leave_color = "red" if pending_leave > 0 else "green"
+    # leave_color = "red" if pending_leave > 0 else "green"
     update_color = "red" if daily_update_pending > 0 else "green"
 
     # Create HTML string with conditional styles
-    leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
+    # leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
     update_html = f'<span style="color: {update_color};"> Daily Update: {daily_update_pending}</span>'
-    html = f"   {leave_html}<br/>   {update_html}"
+    html = f"{update_html}"
 
     # Query to check if the user is manager, lead, or TPM
     is_manager_lead_tpm = Employee.objects.filter(

@@ -28,7 +28,6 @@ from employee.models import (
     EmployeeOnline,
     HRPolicy,
     Leave,
-    LeaveManagement,
     NeedHelpPosition,
     PrayerInfo,
     SalaryHistory,
@@ -132,10 +131,10 @@ def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
 
 def leave_mail(leave: Leave):
     print("start leave mail")
-    leave_manage = LeaveManagement.objects.filter(leave=leave)
+    # leave_manage = LeaveManagement.objects.filter(leave=leave)
     manager_email = []
-    for leave_manage_obj in leave_manage:
-        manager_email.append(leave_manage_obj.manager.email)
+    # for leave_manage_obj in leave_manage:
+    #     manager_email.append(leave_manage_obj.manager.email)
     email = EmailMultiAlternatives()
     delta = leave.end_date - leave.start_date
     applied_days = delta.days + 1
