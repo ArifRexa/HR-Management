@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
-from employee.models import Skill, Learning, EmployeeExpertise, EmployeeTechnology
+from employee.models import Skill, Learning, EmployeeTechnology
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
@@ -137,45 +137,45 @@ class EmployeeTechnologyAdmin(admin.ModelAdmin):
 #         return False
 
 
-@admin.register(EmployeeExpertise)
-class EmployeeExpertiseAdmin(admin.ModelAdmin):
-    list_display = ('employee', 'get_tech')
-    search_fields = ('employee__full_name', 'employee_expertise__level')
-    list_filter = ('employee',)
-    autocomplete_fields = ('employee', )
-    readonly_fields = ['employee']
-    # inlines = (EmployeeExpertTechInlineAdmin,)
+# @admin.register(EmployeeExpertise)
+# class EmployeeExpertiseAdmin(admin.ModelAdmin):
+#     list_display = ('employee', 'get_tech')
+#     search_fields = ('employee__full_name', 'employee_expertise__level')
+#     list_filter = ('employee',)
+#     autocomplete_fields = ('employee', )
+#     readonly_fields = ['employee']
+#     # inlines = (EmployeeExpertTechInlineAdmin,)
 
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.is_superuser:
-            return []
-        if not obj and request.user.is_superuser:
-            return []
-        if obj and request.user.employee == obj.employee:
-            return ['employee']
-        return self.readonly_fields
+#     def get_readonly_fields(self, request, obj=None):
+#         if request.user.is_superuser:
+#             return []
+#         if not obj and request.user.is_superuser:
+#             return []
+#         if obj and request.user.employee == obj.employee:
+#             return ['employee']
+#         return self.readonly_fields
 
-    @admin.display(description="Expertise")
-    def get_tech(self, obj):
-        html_template = get_template('admin/col_expertise.html')
-        html_content = html_template.render({
-            'obj': obj.employee_expertise.all()
-        })
+#     @admin.display(description="Expertise")
+#     def get_tech(self, obj):
+#         html_template = get_template('admin/col_expertise.html')
+#         html_content = html_template.render({
+#             'obj': obj.employee_expertise.all()
+#         })
 
-        return format_html(html_content)
+#         return format_html(html_content)
 
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        if EmployeeExpertise.objects.filter(employee=request.user.employee).exists():
-            return False
-        return True
+#     def has_add_permission(self, request):
+#         if request.user.is_superuser:
+#             return True
+#         if EmployeeExpertise.objects.filter(employee=request.user.employee).exists():
+#             return False
+#         return True
 
-    def save_model(self, request, obj, form, change):
-        if request.user.is_superuser:
-            obj.employee = form.cleaned_data.get('employee')
-        else:
-            obj.employee = request.user.employee
+#     def save_model(self, request, obj, form, change):
+#         if request.user.is_superuser:
+#             obj.employee = form.cleaned_data.get('employee')
+#         else:
+#             obj.employee = request.user.employee
 
-        super().save_model(request, obj, form, change)
+#         super().save_model(request, obj, form, change)
 
