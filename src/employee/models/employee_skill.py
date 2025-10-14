@@ -75,27 +75,27 @@ class EmployeeExpertise(TimeStampMixin):
         return f"{self.employee.full_name}'s Expertises"
 
 
-# class EmployeeExpertTech(TimeStampMixin):
-#     LEVEL_CHOICE = (
-#         ('basic', 'Basic'),
-#         ('intermediate', 'Intermediate'),
-#         ('advanced', 'Advanced'),
-#         ('master', 'Master'),
-#     )
-#     employee_expertise = models.ForeignKey(
-#         EmployeeExpertise,
-#         on_delete=models.CASCADE,
-#         related_name='employee_expertise',
-#         null=True
-#     )
-#     technology = models.ForeignKey(EmployeeTechnology, limit_choices_to={'active': True}, on_delete=models.CASCADE)
-#     level = models.CharField(max_length=15, choices=LEVEL_CHOICE)
-#     percentage = models.IntegerField(validators=[MaxValueValidator(100), MinValueValidator(0)], default=0)
+class EmployeeExpertTech(TimeStampMixin):
+    LEVEL_CHOICE = (
+        ('basic', 'Basic'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+        ('master', 'Master'),
+    )
+    employee_expertise = models.ForeignKey(
+        EmployeeExpertise,
+        on_delete=models.CASCADE,
+        related_name='employee_expertise',
+        null=True
+    )
+    technology = models.ForeignKey(EmployeeTechnology, limit_choices_to={'active': True}, on_delete=models.CASCADE)
+    level = models.CharField(max_length=15, choices=LEVEL_CHOICE)
+    percentage = models.IntegerField(validators=[MaxValueValidator(100), MinValueValidator(0)], default=0)
 
-#     class Meta:
-#         verbose_name = "Employee Expert Tech"
-#         verbose_name_plural = "Employee Expert Techs"
-#         ordering = ('technology__name', )
+    class Meta:
+        verbose_name = "Employee Expert Tech"
+        verbose_name_plural = "Employee Expert Techs"
+        ordering = ('technology__name', )
 
-#     def __str__(self):
-#         return f"{self.technology.name} ({self.get_level_display()})"
+    def __str__(self):
+        return f"{self.technology.name} ({self.get_level_display()})"

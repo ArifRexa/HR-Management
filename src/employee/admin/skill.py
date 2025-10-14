@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.template.loader import get_template
 from django.utils.html import format_html
-from employee.models import Skill, Learning, EmployeeTechnology
+from employee.models import Skill, Learning
 
 @admin.register(Skill)
 class SkillAdmin(admin.ModelAdmin):
@@ -46,52 +46,52 @@ class LearningAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(EmployeeTechnology)
-class EmployeeTechnologyAdmin(admin.ModelAdmin):
-    list_display = ('name', 'icon', 'url', 'active')
-    list_filter = ('active', 'name')
-    search_fields = ('name',)
-    actions = ('approve_selected',)
+# @admin.register(EmployeeTechnology)
+# class EmployeeTechnologyAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'icon', 'url', 'active')
+#     list_filter = ('active', 'name')
+#     search_fields = ('name',)
+#     actions = ('approve_selected',)
 
-    def get_fields(self, request, obj=None):
-        if request.user.is_superuser or request.user.employee.manager:
-            return ['name', 'icon', 'url', 'active']
-        return ['name', 'icon', 'url']
+#     def get_fields(self, request, obj=None):
+#         if request.user.is_superuser or request.user.employee.manager:
+#             return ['name', 'icon', 'url', 'active']
+#         return ['name', 'icon', 'url']
 
-    @admin.action()
-    def active_selected(self, request, queryset):
-        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
-            queryset.update(active=True)
+#     @admin.action()
+#     def active_selected(self, request, queryset):
+#         if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+#             queryset.update(active=True)
 
-    def get_actions(self, request):
-        action = super().get_actions(request)
-        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
-            action['Active all selected'] = (
-                self.active_selected,
-                'Active all selected',
-                'Active all selected'
-            )
-            action['Inactive all selected'] = (
-                self.inactive_selected,
-                'Inactive all selected',
-                'Inactive all selected'
-            )
-        return action
+#     def get_actions(self, request):
+#         action = super().get_actions(request)
+#         if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+#             action['Active all selected'] = (
+#                 self.active_selected,
+#                 'Active all selected',
+#                 'Active all selected'
+#             )
+#             action['Inactive all selected'] = (
+#                 self.inactive_selected,
+#                 'Inactive all selected',
+#                 'Inactive all selected'
+#             )
+#         return action
 
-    @admin.action()
-    def inactive_selected(self, request, queryset):
-        if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
-            queryset.update(active=True)
+#     @admin.action()
+#     def inactive_selected(self, request, queryset):
+#         if request.user.is_superuser or request.user.employee.manager or request.user.employee.lead:
+#             queryset.update(active=True)
 
-    # def save_model(self, request, obj, form, change):
+#     # def save_model(self, request, obj, form, change):
 
-    #     if change:
-    #         obj.active = form.cleaned_data.get('active')
-    #         if EmployeeExpertTech.objects.filter(technology=obj).exists():
-    #             expert = EmployeeExpertTech.objects.get(technology=obj)
-    #             if not form.cleaned_data.get('active'):
-    #                 expert.delete()
-    #     super().save_model(request, obj, form, change)
+#     #     if change:
+#     #         obj.active = form.cleaned_data.get('active')
+#     #         if EmployeeExpertTech.objects.filter(technology=obj).exists():
+#     #             expert = EmployeeExpertTech.objects.get(technology=obj)
+#     #             if not form.cleaned_data.get('active'):
+#     #                 expert.delete()
+#     #     super().save_model(request, obj, form, change)
 
 
 # @admin.register(EmployeeExpertTech)
