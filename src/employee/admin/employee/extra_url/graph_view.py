@@ -335,47 +335,73 @@ class GraphView(admin.ModelAdmin):
     def clinet_projects_graph(self, request, *args, **kwargs):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
-        filter_fields = (
-            "total_hour__gte", "total_hour__lte",
-            # "date__gte", "date__lte",
-        )
+        start_date = datetime.date.today() - relativedelta(years=1)
         initial_filter = {
-            field_name: request.GET.get(field_name) for field_name in filter_fields if request.GET.get(field_name)
+            "total_hour__gte" : request.GET.get("total_hour__gte"),
+            "total_hour__lte" : request.GET.get("total_hour__lte"),
+            "date__gte" : request.GET.get("date__gte", start_date),
+            "date__lte" : request.GET.get("date__lte"),
         }
+        filters = {key: value for key, value in initial_filter.items() if value}
         filter_form = ClientProjectsHourFilterForm(
-            initial=initial_filter,
+            initial={**filters},
         )
         context = dict(
             self.admin_site.each_context(request),
-            chart_data=self._get_client_all_projects_dataset(client_id=kwargs.get("client_id"), filters=initial_filter),
+            chart_data=self._get_client_all_projects_dataset(client_id=kwargs.get("client_id"), filters=filters),
             filter_form=filter_form,
         )
         return TemplateResponse(request, "admin/employee/client_projects_hour_graph.html", context)
     
     def _get_client_all_projects_dataset(self, client_id:int, filters:dict):
         dataset = dict()
-        start_date = datetime.date.today() - relativedelta(years=1)
         projects = Project.objects.only("title").filter(client_id=client_id)
-
+        date_filters = {
+            "date__gte": filters.pop("date__gte")
+        }
+        if filters.get("date__lte"):
+            date_filters["date__lte"] = filters.pop("date__lte")
         # for all project
+        # weekly projects hours
         all_project_hours = ProjectHour.objects.filter(
-            date__gte=start_date,
             project_id__in=projects.values_list("id", flat=True),
-        ).values("date").annotate(
-            total_hour = Sum("hours")
-        ).filter(
-            **filters,
-        ).order_by("date")
+            **date_filters,
+        )
         if all_project_hours.exists():
+            weekly_all_project_hours = all_project_hours.values("date").annotate(
+                total_hour = Sum("hours")
+            ).filter(
+                **filters,
+            ).order_by("date")
             chart = {
-                "labels": [],
-                "data": [],
-                "total_hour": 0,
+                "weekly": {
+                    "labels": [],
+                    "data": [],
+                    "total_hour": 0,
+                },
+                "monthly": {
+                    "labels": [],
+                    "data": [],
+                    "total_hour": 0,
+                }
             }
-            for project_hour in all_project_hours:
-                chart["labels"].append(project_hour.get("date").strftime("%d-%b-%Y"))
-                chart["data"].append(project_hour.get("total_hour"))
-                chart["total_hour"] += project_hour.get("total_hour")
+            for weekly_project_hour in weekly_all_project_hours:
+                chart["weekly"]["labels"].append(weekly_project_hour.get("date").strftime("%d-%b-%Y"))
+                chart["weekly"]["data"].append(weekly_project_hour.get("total_hour"))
+                chart["weekly"]["total_hour"] += weekly_project_hour.get("total_hour")
+            monthly_all_project_hours = all_project_hours.values(
+                "date__year", "date__month"
+            ).annotate(
+                total_hour = Sum("hours"),
+            ).filter(
+                **filters,
+            ).order_by("date__year", "date__month")
+            for monthly_project_hour in monthly_all_project_hours:
+                month_num = str(monthly_project_hour.get("date__month")).zfill(2)
+                month_abbr = calendar.month_abbr[int(month_num)]
+                chart["monthly"]["labels"].append(f"{month_abbr}-{monthly_project_hour.get('date__year')}")
+                chart["monthly"]["data"].append(monthly_project_hour.get("total_hour"))
+                chart["monthly"]["total_hour"] += monthly_project_hour.get("total_hour")
             dataset["All Projects"] = {
                 "name": "All Projects",
                 **chart,
@@ -383,25 +409,46 @@ class GraphView(admin.ModelAdmin):
         # for project by project
         for project in projects:
             project_hours = ProjectHour.objects.filter(
-                date__gte=start_date,
-                project_id=project.id
-            ).values("date").annotate(
-                total_hour = Sum("hours")
-            ).filter(
-                **filters,
-            ).order_by("date")
+                project_id=project.id,
+                **date_filters,
+            )
 
             if project_hours.count() > 0:
+                weekly_project_hours = project_hours.values("date").annotate(
+                    total_hour = Sum("hours")
+                ).filter(
+                    **filters,
+                ).order_by("date")
                 chart = {
-                    "labels": [],
-                    "data": [],
-                    "total_hour": 0,
+                    "weekly": {
+                        "labels": [],
+                        "data": [],
+                        "total_hour": 0,
+                    },
+                    "monthly": {
+                        "labels": [],
+                        "data": [],
+                        "total_hour": 0,
+                    }
                 }
-                for project_hour in project_hours:
-                    chart["labels"].append(project_hour.get("date").strftime("%d-%b-%Y"))
-                    chart["data"].append(project_hour.get("total_hour"))
-                    chart["total_hour"] += project_hour.get("total_hour")
+                for project_hour in weekly_project_hours:
+                    chart["weekly"]["labels"].append(project_hour.get("date").strftime("%d-%b-%Y"))
+                    chart["weekly"]["data"].append(project_hour.get("total_hour"))
+                    chart["weekly"]["total_hour"] += project_hour.get("total_hour")
                 
+                monthly_project_hours = project_hours.values(
+                    "date__year", "date__month",
+                ).annotate(
+                    total_hour = Sum("hours"),
+                ).filter(
+                    **filters,
+                ).order_by("date__year", "date__month",)
+                for monthly_project_hour in monthly_project_hours:
+                    month_num = str(monthly_project_hour.get("date__month")).zfill(2)
+                    month_abbr = calendar.month_abbr[int(month_num)]
+                    chart["monthly"]["labels"].append(f"{month_abbr}-{monthly_project_hour.get('date__year')}")
+                    chart["monthly"]["data"].append(monthly_project_hour.get("total_hour"))
+                    chart["monthly"]["total_hour"] += monthly_project_hour.get("total_hour")
                 dataset[project.title] = {
                     "name": project.title,
                     **chart,

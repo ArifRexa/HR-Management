@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    <div style="display: flex; justify-content: space-around; align-items: center;">
+    <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
             <h1 id="chartTitle"> Total Hours: {{ chart.total_hour|floatformat:2 }}</h1>
         </div>
@@ -73,8 +73,15 @@
         </div>
 
         <div>
-            <!-- <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button> -->
-            <!-- <button id="lineChart" onclick="changeChartType('line')">Line</button> -->
+            <!-- Chart type switch -->
+            <button id="barChart" class="active" onclick="changeChartType('bar')">Bar</button>
+            <button id="lineChart" onclick="changeChartType('line')">Line</button>
+        </div>
+
+        <div>
+            <!-- Weekly / Monthly switch -->
+            <button id="weeklyBtn" class="active" onclick="changeView('weekly')">Weekly</button>
+            <button id="monthlyBtn" onclick="changeView('monthly')">Monthly</button>
         </div>
 
         <div>
@@ -105,8 +112,7 @@
         const ctx = document.getElementById('hourChart').getContext('2d');
         const projectSelect = document.getElementById('projectSelect');
         let currentType = 'bar';
-
-        // Default project
+        let currentView = 'weekly'; // Default: weekly
         let currentProject = "All Projects";
         projectSelect.value = currentProject;
 
@@ -116,7 +122,7 @@
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: data.name,
+                        label: currentType,
                         data: data.data,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
@@ -140,21 +146,22 @@
                     }]
                 },
                 options: {
-                    indexAxis: "y",
+                    // indexAxis: "y",
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            anchor: 'end',
+                            anchor: 'top',
                             align: 'center',
                             formatter: function(value) {
-                                return `        ${value.toFixed(1)}`;
+                                return value.toFixed(1);
                             },
                             font: {
                                 weight: 'bold',
                                 size: 16
                             },
-                            color: "green"
+                            color: "green",
+                           
                         },
                         tooltip: {
                             enabled: true,
@@ -167,10 +174,6 @@
                                     return `${context[0].label} (${context[0].raw})`;
                                 },
                                 label: function() { return null; },
-                                footer: function(context) {
-                                    const dataset = context[0].dataset;
-                                    return dataset.projects_hour ? dataset.projects_hour[context[0].dataIndex] : '';
-                                },
                             }
                         },
                         legend: {
@@ -190,47 +193,44 @@
             };
         }
 
-        function renderChart(projectName) {
-            const selected = projectData[projectName];
+        function renderChart() {
+            const selected = projectData[currentProject][currentView];
             if (!selected) return;
 
-            // Update chart title
             document.getElementById('chartTitle').textContent = 
-                `Total Hours: ${selected.total_hour.toFixed(2)}`;
+                `Total Hours (${currentView}): ${selected.total_hour.toFixed(2)}`;
 
-            // Adjust canvas height
             const barHeight = 40;
             const canvas = document.getElementById('hourChart');
             canvas.height = selected.labels.length * barHeight;
 
-            // Rebuild chart
             if (window.myChart) window.myChart.destroy();
             window.myChart = new Chart(ctx, getConfig(currentType, selected));
         }
 
-        // Chart type switch
         function changeChartType(type) {
             currentType = type;
-            renderChart(currentProject);
+            renderChart();
 
-            const buttons = {
-                'bar': document.getElementById('barChart'),
-                'line': document.getElementById('lineChart'),
-            };
-            Object.values(buttons).forEach(btn => btn.classList.remove('active'));
-            buttons[currentType].classList.add('active');
+            document.getElementById('barChart').classList.toggle('active', type === 'bar');
+            document.getElementById('lineChart').classList.toggle('active', type === 'line');
         }
 
-        // Dropdown change
+        function changeView(view) {
+            currentView = view;
+            renderChart();
+
+            document.getElementById('weeklyBtn').classList.toggle('active', view === 'weekly');
+            document.getElementById('monthlyBtn').classList.toggle('active', view === 'monthly');
+        }
+
         projectSelect.addEventListener('change', function() {
             currentProject = this.value;
-            renderChart(currentProject);
+            renderChart();
         });
 
-        // Initial render
-        renderChart(currentProject);
+        renderChart();
 
-        // Highlight Filter button if URL has query parameters
         document.addEventListener("DOMContentLoaded", function() {
             const filterButton = document.getElementById("filter-button-id");
             const urlParams = new URLSearchParams(window.location.search);

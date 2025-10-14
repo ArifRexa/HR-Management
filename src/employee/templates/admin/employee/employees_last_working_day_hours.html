@@ -136,7 +136,7 @@
                                 // 'value' is the data point value
                                 // 'context' provides access to dataset, index, etc.
                                 // const v = +value.toFixed(1)
-                                return `        ${value.toFixed(1)}`; // Display the raw value
+                                return value.toFixed(1); // Display the raw value
                             },
                             font: {
                                 weight: 'bold',
@@ -149,6 +149,12 @@
                                 // if (value>=target_hour) return "white";
                                 // else return "red";
                                 return "green";
+                            },
+                            padding: {
+                                left: 20,   // space to the left of label
+                                right: 0,
+                                top: 0,
+                                bottom: 0
                             },
                             listeners: {
                                 click: function(context){
