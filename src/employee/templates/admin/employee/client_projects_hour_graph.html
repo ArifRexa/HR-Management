@@ -55,13 +55,13 @@
     {% block content_title %}{% endblock %}
     <div style="display: flex; justify-content: space-evenly;">
         <div>
-            <h1>Clients Project Hours</h1>
+            <h1>Clients Project Hours (<strong id="client_name_id"></strong>)</h1>
         </div>
     </div>
 
     <div style="display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-            <h1 id="chartTitle"> Total Hours: {{ chart.total_hour|floatformat:2 }}</h1>
+            <h1 id="chartTitle"> Total Hours:</h1>
         </div>
 
         <div>
@@ -84,13 +84,13 @@
             <button id="weeklyBtn" class="active" onclick="changeView('weekly')">Weekly</button>
             <button id="monthlyBtn" onclick="changeView('monthly')">Monthly</button>
         </div>
-
         <div>
             <form action="" method="get">
                 {{ filter_form.media }}
                 {{filter_form.date__gte.label_tag }}{{ filter_form.date__gte }}
-                {{filter_form.date__lte.label_tag }}{{ filter_form.date__lte }} <br>
-                {{filter_form.total_hour__gte.label_tag }}{{ filter_form.total_hour__gte }} - {{ filter_form.total_hour__lte }}
+                {{filter_form.date__lte.label_tag }}{{ filter_form.date__lte }} 
+                <!-- <br> -->
+                <!-- {{filter_form.total_hour__gte.label_tag }}{{ filter_form.total_hour__gte }} - {{ filter_form.total_hour__lte }} -->
                 
                 <button type="submit" class="default" id="filter-button-id">Filter</button>
                 <button type="button" onclick="window.location.href = window.location.pathname;">
@@ -152,8 +152,9 @@
                     maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
-                            anchor: 'top',
-                            align: 'center',
+                            anchor: 'end',        // attach to end (top) of the bar
+                            align: 'end',         // align label above the bar
+                            // offset: 8,
                             formatter: function(value) {
                                 return value.toFixed(1);
                             },
@@ -162,7 +163,6 @@
                                 size: 16
                             },
                             color: "green",
-                           
                         },
                         tooltip: {
                             enabled: true,
@@ -200,7 +200,7 @@
 
             document.getElementById('chartTitle').textContent = 
                 `Total Hours (${currentView}): ${selected.total_hour.toFixed(2)}`;
-
+            document.getElementById('client_name_id').textContent = selected.client_name;
             const barHeight = 40;
             const canvas = document.getElementById('hourChart');
             canvas.height = selected.labels.length * barHeight;

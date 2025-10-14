@@ -63,6 +63,8 @@ class DailyUpdateDateFilterForm(forms.Form):
 
 class ClientProjectsHourFilterForm(DailyUpdateDateFilterForm):
     created_at__date = None
+    total_hour__gte = None
+    total_hour__lte = None
     date__gte = forms.DateField(label='', widget=AdminDateWidget(attrs={'readonly': 'readonly', "placeholder": "From"}))
     date__lte = forms.DateField(label='', widget=AdminDateWidget(attrs={'readonly': 'readonly', "placeholder": "To"}))
 
