@@ -130,7 +130,7 @@
                     plugins: {
                         datalabels: {
                             anchor: 'end', // Position the label (e.g., 'start', 'center', 'end')
-                            align: 'center',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
+                            align: 'end',  // Alignment relative to the anchor (e.g., 'top', 'bottom', 'left', 'right', 'center')
                             formatter: function(value, context) {
                                 // Customize the label text here.
                                 // 'value' is the data point value
@@ -149,12 +149,6 @@
                                 // if (value>=target_hour) return "white";
                                 // else return "red";
                                 return "green";
-                            },
-                            padding: {
-                                left: 20,   // space to the left of label
-                                right: 0,
-                                top: 0,
-                                bottom: 0
                             },
                             listeners: {
                                 click: function(context){

@@ -337,8 +337,8 @@ class GraphView(admin.ModelAdmin):
             raise PermissionDenied("You do not have permission to access this feature.")
         start_date = datetime.date.today() - relativedelta(years=1)
         initial_filter = {
-            "total_hour__gte" : request.GET.get("total_hour__gte"),
-            "total_hour__lte" : request.GET.get("total_hour__lte"),
+            # "total_hour__gte" : request.GET.get("total_hour__gte"),
+            # "total_hour__lte" : request.GET.get("total_hour__lte"),
             "date__gte" : request.GET.get("date__gte", start_date),
             "date__lte" : request.GET.get("date__lte"),
         }
@@ -354,8 +354,9 @@ class GraphView(admin.ModelAdmin):
         return TemplateResponse(request, "admin/employee/client_projects_hour_graph.html", context)
     
     def _get_client_all_projects_dataset(self, client_id:int, filters:dict):
+        projects = Project.objects.select_related("client").only("title", "client").filter(client_id=client_id)
         dataset = dict()
-        projects = Project.objects.only("title").filter(client_id=client_id)
+        client_name = projects.first().client.name
         date_filters = {
             "date__gte": filters.pop("date__gte")
         }
@@ -375,11 +376,13 @@ class GraphView(admin.ModelAdmin):
             ).order_by("date")
             chart = {
                 "weekly": {
+                    "client_name": client_name,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
                 },
                 "monthly": {
+                    "client_name": client_name,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
@@ -421,11 +424,13 @@ class GraphView(admin.ModelAdmin):
                 ).order_by("date")
                 chart = {
                     "weekly": {
+                        "client_name": client_name,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
                     },
                     "monthly": {
+                        "client_name": client_name,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
