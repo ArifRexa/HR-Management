@@ -31,7 +31,7 @@ from employee.models import (
 from employee.models.employee import (
     BookConferenceRoom,
     EmployeeAvailableSlot,
-    Inbox,
+    # Inbox,
     LateAttendanceFine,
 )
 from employee.models.employee_activity import EmployeeProject
@@ -280,17 +280,17 @@ def employee_need_help_form(request):
         return {"employee_need_help_form": None}
 
 
-def unread_inbox(request):
-    if not request.path == "/admin/":
-        return {}
-    if not request.user.is_authenticated:
-        return {}
-    if not request.user.has_perm("employee.can_see_all_employee_inbox"):
-        qs = Inbox.objects.filter(
-            employee=request.user.employee, is_read=False
-        ).count()
-        return {"unread_inbox_count": qs}
-    return {}
+# def unread_inbox(request):
+#     if not request.path == "/admin/":
+#         return {}
+#     if not request.user.is_authenticated:
+#         return {}
+#     if not request.user.has_perm("employee.can_see_all_employee_inbox"):
+#         qs = Inbox.objects.filter(
+#             employee=request.user.employee, is_read=False
+#         ).count()
+#         return {"unread_inbox_count": qs}
+#     return {}
 
 
 def all_notices(request):

@@ -28,13 +28,14 @@ from employee.models.attachment import EmployeeTaxAcknowledgement
 # from employee.models.bank_account import BEFTN
 from employee.models.employee import (
     EmployeeAvailableSlot,
+    EmployeeFAQView,
     EmployeeLunch,
     EmployeeNOC,
     EmployeeUnderTPM,
-    Inbox,
+    # Inbox,
     LateAttendanceFine,
     LessHour,
-    MeetingSummary,
+    # MeetingSummary,
     Observation,
     TPMComplain,
     # generate_employee_profile_pdf,
@@ -570,7 +571,7 @@ admin.site.register(BookConferenceRoom, BookConferenceRoomAdmin)
 #     def get_queryset(self, request):
 #         return super().get_queryset(request).filter(created_by=request.user)
 
-from employee.models import EmployeeFaq, EmployeeFAQView
+from employee.models import EmployeeFaq
 
 
 @admin.register(EmployeeFAQView)
@@ -583,6 +584,9 @@ class FAQAdmin(admin.ModelAdmin):
         return (
             super().get_queryset(request).filter(active=True).order_by("-rank")
         )
+        
+    def has_module_permission(self, request):
+        return False
 
     # def changelist_view(self, request, extra_context):
     # return super().changelist_view(request, extra_context)
@@ -1418,10 +1422,10 @@ class LessHourAdmin(admin.ModelAdmin):
         return qs
 
 
-class MeetingSummaryInline(admin.TabularInline):
-    model = MeetingSummary
-    extra = 1
-    readonly_fields = ("created_by",)
+# class MeetingSummaryInline(admin.TabularInline):
+#     model = MeetingSummary
+#     extra = 1
+#     readonly_fields = ("created_by",)
 
 
 class InboxReadStatusFilter(admin.SimpleListFilter):
@@ -1441,63 +1445,63 @@ class InboxReadStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_read=False)
 
 
-@admin.register(Inbox)
-class InboxAdmin(admin.ModelAdmin):
-    list_display = (
-        "get_date",
-        "employee",
-        "get_summary",
-        "get_discuss_with",
-        "get_read_status",
-    )
-    list_filter = ("employee", InboxReadStatusFilter)
-    # search_fields = ("sender__full_name", "receiver__full_name")
-    autocomplete_fields = ("employee",)
-    inlines = (MeetingSummaryInline,)
-    change_list_template = "admin/employee/change_list.html"
-    change_form_template = "admin/employee/change_view.html"
-    exclude = ("is_read",)
+# @admin.register(Inbox)
+# class InboxAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "get_date",
+#         "employee",
+#         "get_summary",
+#         "get_discuss_with",
+#         "get_read_status",
+#     )
+#     list_filter = ("employee", InboxReadStatusFilter)
+#     # search_fields = ("sender__full_name", "receiver__full_name")
+#     autocomplete_fields = ("employee",)
+#     inlines = (MeetingSummaryInline,)
+#     change_list_template = "admin/employee/change_list.html"
+#     change_form_template = "admin/employee/change_view.html"
+#     exclude = ("is_read",)
 
-    class Media:
-        css = {"all": ("css/list.css",)}
-        # js = ("employee/js/inbox.js",)
+#     class Media:
+#         css = {"all": ("css/list.css",)}
+#         # js = ("employee/js/inbox.js",)
 
-    @admin.display(description="Date")
-    def get_date(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d")
+#     @admin.display(description="Date")
+#     def get_date(self, obj):
+#         return obj.created_at.strftime("%Y-%m-%d")
 
-    @admin.display(description="Read Status")
-    def get_read_status(self, obj):
-        return "Read" if obj.is_read else "Unread"
+#     @admin.display(description="Read Status")
+#     def get_read_status(self, obj):
+#         return "Read" if obj.is_read else "Unread"
 
-    @admin.display(description="Summary")
-    def get_summary(self, obj):
-        summaries = obj.meeting_summary_inbox.all()
-        html_template = get_template("admin/employee/list/col_summary.html")
-        html_content = html_template.render(
-            {"summaries": summaries, "summary": summaries.first()}
-        )
-        return format_html(html_content)
+#     @admin.display(description="Summary")
+#     def get_summary(self, obj):
+#         summaries = obj.meeting_summary_inbox.all()
+#         html_template = get_template("admin/employee/list/col_summary.html")
+#         html_content = html_template.render(
+#             {"summaries": summaries, "summary": summaries.first()}
+#         )
+#         return format_html(html_content)
 
-    @admin.display(description="Discuss with")
-    def get_discuss_with(self, obj):
-        return obj.created_by.employee.full_name
+#     @admin.display(description="Discuss with")
+#     def get_discuss_with(self, obj):
+#         return obj.created_by.employee.full_name
 
-    def get_queryset(self, request):
-        if not request.user.has_perm("employee.can_see_all_employee_inbox"):
-            return (
-                super()
-                .get_queryset(request)
-                .filter(employee=request.user.employee)
-            )
-        return super().get_queryset(request)
+#     def get_queryset(self, request):
+#         if not request.user.has_perm("employee.can_see_all_employee_inbox"):
+#             return (
+#                 super()
+#                 .get_queryset(request)
+#                 .filter(employee=request.user.employee)
+#             )
+#         return super().get_queryset(request)
 
-    def change_view(self, request, object_id, form_url="", extra_context=None):
-        if request.method == "GET":
-            obj = self.get_object(request, object_id)
-            obj.is_read = True
-            obj.save()
-        return super().change_view(request, object_id, form_url, extra_context)
+#     def change_view(self, request, object_id, form_url="", extra_context=None):
+#         if request.method == "GET":
+#             obj = self.get_object(request, object_id)
+#             obj.is_read = True
+#             obj.save()
+#         return super().change_view(request, object_id, form_url, extra_context)
 
 
 def last_four_financial_year(index=0):
