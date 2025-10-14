@@ -148,6 +148,9 @@ class AssetAdmin(admin.ModelAdmin):
         "is_available",
     )
     change_form_template = "admin/asset/asset_change_form.html"
+    
+    def has_module_permission(self, request):
+        return False
 
     @admin.display(description="Title")
     def get_item_title(self, obj):
@@ -413,6 +416,9 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
         # EmployeeAssetCategoryFilter,
     )
 
+    def has_add_permission(self, request):
+        return False
+    
     @admin.display(description="Assigned Assets")
     def get_assets(self, obj):
         # print(dir(obj))
@@ -456,6 +462,9 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "update_status_pending",
         "update_status_in_progress",
     ]
+    
+    def has_module_permission(self, request):
+        return False
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -557,6 +566,9 @@ class AssetCategoryModelAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(AssetBrand)
@@ -567,6 +579,9 @@ class AssetBrandModelAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(RAMSize)
@@ -575,6 +590,9 @@ class RAMSizeModelAdmin(admin.ModelAdmin):
     search_fields = [
         "ram_capacity",
     ]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(MonitorSize)
@@ -589,18 +607,27 @@ class MonitorSizeModelAdmin(admin.ModelAdmin):
 class SSDorHDDSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "storage_capacity"]
     search_fields = ["storage_capacity"]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(CasingBrand)
 class CasingBrandModelAdmin(admin.ModelAdmin):
     list_display = ["id", "name"]
     search_fields = ["name"]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(ProcessorData)
 class ProcessorDataModelAdmin(admin.ModelAdmin):
     list_display = ["id", "processor_info"]
     search_fields = ["processor_info"]
+    
+    def has_module_permission(self, request):
+        return super().has_module_permission(request)
 
 
 @admin.register(HeadPhoneFeature)
