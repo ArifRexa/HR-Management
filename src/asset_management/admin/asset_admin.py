@@ -419,6 +419,9 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
     def has_add_permission(self, request):
         return False
     
+    def has_module_permission(self, request):
+        return False
+    
     @admin.display(description="Assigned Assets")
     def get_assets(self, obj):
         # print(dir(obj))
@@ -601,6 +604,9 @@ class MonitorSizeModelAdmin(admin.ModelAdmin):
     search_fields = [
         "display_size",
     ]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(SSDorHDDSize)
@@ -627,7 +633,7 @@ class ProcessorDataModelAdmin(admin.ModelAdmin):
     search_fields = ["processor_info"]
     
     def has_module_permission(self, request):
-        return super().has_module_permission(request)
+        return False
 
 
 @admin.register(HeadPhoneFeature)
