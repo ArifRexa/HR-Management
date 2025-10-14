@@ -24,6 +24,7 @@ from employee.models import (
     Employee,
 )
 from employee.models.attachment import EmployeeTaxAcknowledgement
+
 # from employee.models.bank_account import BEFTN
 from employee.models.employee import (
     EmployeeAvailableSlot,
@@ -549,6 +550,9 @@ class BookConferenceRoomAdmin(admin.ModelAdmin):
     list_filter = ("manager_or_lead", "project_name", "start_time")
     search_fields = ("manager_or_lead__full_name", "project_name__name")
     ordering = ("start_time",)
+
+    def has_module_permission(self, request):
+        return False
 
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "manager_or_lead":

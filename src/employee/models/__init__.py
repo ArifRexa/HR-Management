@@ -5,7 +5,7 @@ from .overtime import Overtime
 from .resignation import Resignation
 from .attachment import Attachment
 from .bank_account import BankAccount
-from .employee_skill import Skill, EmployeeSkill, Learning, EmployeeTechnology, EmployeeExpertTech, EmployeeExpertise
+from .employee_skill import Skill, EmployeeSkill, Learning, EmployeeTechnology, EmployeeExpertise
 from .employee_social import EmployeeSocial, EmployeeContent
 from .employee_activity import EmployeeOnline, EmployeeAttendance, EmployeeActivity
 from .employee_feedback import EmployeeFeedback
