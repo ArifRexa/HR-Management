@@ -1608,6 +1608,56 @@ class BlogDetailAPIView(RetrieveAPIView):
             raise NotFound("Blog post not found")
 
 
+class BlogListByIDsAPIView(APIView):
+    @swagger_auto_schema(
+        tags=["Blogs"],
+        manual_parameters=[
+            openapi.Parameter(
+                'ids',
+                openapi.IN_PATH,
+                description="Comma-separated list of blog IDs (e.g., 1,2,3 or single ID)",
+                type=openapi.TYPE_STRING,
+                required=True
+            ),
+        ],
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_OBJECT,
+                    ref='#/definitions/website_blog'
+                )
+            ),
+            404: 'One or more blogs not found'
+        }
+    )
+    def get(self, request, ids, *args, **kwargs):
+        try:
+            # Split the comma-separated IDs into a list
+            id_list = [int(id.strip()) for id in ids.split(',') if id.strip().isdigit()]
+            
+            if not id_list:
+                raise NotFound("No valid blog IDs provided")
+
+            # Query blogs with the provided IDs
+            blogs = Blog.objects.filter(id__in=id_list)
+            
+            if not blogs.exists():
+                raise NotFound("No blogs found for the provided IDs")
+
+            # Serialize the data
+            serializer = BlogSerializer(blogs, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        
+        except Blog.DoesNotExist:
+            raise NotFound("One or more blogs not found")
+        except ValueError:
+            raise NotFound("Invalid blog IDs provided")
+
+
+
+
+
 
 
 
