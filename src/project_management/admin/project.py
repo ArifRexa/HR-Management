@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 from django import forms
 import nested_admin
 from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
@@ -202,6 +203,50 @@ class TechnologyFilter(ProjectCountMixin, SimpleListFilter):
     field_name = "technology"
     title_field = "name"
 
+# class ProjectAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Project
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Dynamically filter child_services based on selected services
+#         if self.instance and self.instance.pk:
+#             # Get the selected parent services
+#             selected_services = self.instance.services.all()
+#             # Get all child services of the selected parent services
+#             child_services = ServicePage.objects.filter(
+#                 parent__in=selected_services, is_parent=False
+#             )
+#             # Update the queryset for the child_services field
+#             self.fields['child_services'].queryset = child_services
+#         else:
+#             # If no instance exists (e.g., creating a new project), show no child services
+#             self.fields['child_services'].queryset = ServicePage.objects.none()
+
+# class ProjectAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Project
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Set child_services to all non-parent services; filtering will happen via JS
+#         self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
+
+# class ProjectAdminForm(forms.ModelForm):
+#     class Meta:
+#         model = Project
+#         fields = '__all__'
+
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Set services to parent services only
+#         self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
+#         # Default: all non-parent services
+#         self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
+
+
 class ProjectAdminForm(forms.ModelForm):
     class Meta:
         model = Project
@@ -209,18 +254,23 @@ class ProjectAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Dynamically filter child_services based on selected services
-        if self.instance and self.instance.pk:
-            # Get the selected parent services
-            selected_services = self.instance.services.all()
-            # Get all child services of the selected parent services
-            child_services = ServicePage.objects.filter(
-                parent__in=selected_services, is_parent=False
-            )
-            # Update the queryset for the child_services field
-            self.fields['child_services'].queryset = child_services
-        else:
-            # If no instance exists (e.g., creating a new project), show no child services
+        # Set services to parent services only
+        self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
+        
+        # Filter child_services based on selected parent services
+        if self.instance.pk:  # If editing existing project
+            selected_parent_services = self.instance.services.all()
+            if selected_parent_services.exists():
+                # Show only child services whose parent is in the selected services
+                self.fields['child_services'].queryset = ServicePage.objects.filter(
+                    is_parent=False,
+                    parent__in=selected_parent_services
+                )
+            else:
+                # No parent services selected, show none
+                self.fields['child_services'].queryset = ServicePage.objects.none()
+        else:  # If creating new project
+            # No parent services selected yet, show none
             self.fields['child_services'].queryset = ServicePage.objects.none()
 
 @admin.register(Project)
@@ -319,18 +369,18 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "service_we_provide_image",
         # "industry_image",
     )
-    # def get_readonly_fields(self, request, obj=None):
-    #     if not request.user.is_superuser:
-    #         return ['on_boarded_by']
-    #     return []
+    
 
-    # def get_form(self, request, obj=None, **kwargs):
-    #     form = super().get_form(request, obj, **kwargs)
-    #     if request.user.is_superuser:
-    #         form.base_fields["hourly_rate"] = forms.DecimalField(
-    #             max_digits=10, decimal_places=2, required=False
-    #         )
-    #     return form
+    change_form_template = "admin/project_management/project/change_form.html"
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        extra_context['child_services_queryset'] = ServicePage.objects.filter(is_parent=False).select_related('parent')
+        return super().changeform_view(request, object_id, form_url, extra_context)
+
+    
+    class Media:
+        js = ("admin/js/project_admin.js",)
 
     def get_fields(self, request, obj):
         fields = super().get_fields(request, obj)
