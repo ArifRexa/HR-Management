@@ -1393,6 +1393,8 @@ class ProjectNeed(TimeStampMixin, AuthorMixin):
 #
 #     def __str__(self) -> str:
 #         return f"{self.project.title} ({str(self.avg_rating)})"
+
+
 class ClientFeedback(AuthorMixin, TimeStampMixin):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 

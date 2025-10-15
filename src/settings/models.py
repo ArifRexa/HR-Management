@@ -103,18 +103,18 @@ class OpenLetter(TimeStampMixin):
     message = models.TextField()
 
 
-class Announcement(TimeStampMixin, AuthorMixin):
-    start_datetime = models.DateTimeField()
-    end_datetime = models.DateTimeField()
+# class Announcement(TimeStampMixin, AuthorMixin):
+#     start_datetime = models.DateTimeField()
+#     end_datetime = models.DateTimeField()
 
-    rank = models.SmallIntegerField(default=0)
+#     rank = models.SmallIntegerField(default=0)
 
-    description = tinymce_models.HTMLField()
+#     description = tinymce_models.HTMLField()
 
-    is_active = models.BooleanField(default=True)
+#     is_active = models.BooleanField(default=True)
 
-    def __str__(self):
-        return self.description
+#     def __str__(self):
+#         return self.description
 
 
 class Notice(TimeStampMixin, AuthorMixin):

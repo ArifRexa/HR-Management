@@ -189,6 +189,10 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
         if obj and obj.is_default:
             return False
         return super().has_delete_permission(request, obj)
+    
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(ClientSource)
@@ -1078,8 +1082,8 @@ class ClientHistoryAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    # def has_module_permission(self, request):
-    #     return False
+    def has_module_permission(self, request):
+        return False
 
 
 
