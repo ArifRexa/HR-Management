@@ -231,7 +231,7 @@ class GraphView(admin.ModelAdmin):
         filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
         filters["created_at__date__lte"] = datetime.date.today()
         daily_employee_hours = DailyProjectUpdate.objects.filter(
-            status="approved",
+            # status="approved",
             **filters,
         ).values(
             "created_at__date",
