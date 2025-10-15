@@ -121,6 +121,7 @@ from website.models import (
     TechnologyFAQSchema,
     TechnologyKeyThings,
     TechnologyKeyThingsQA,
+    TechnologyMetaData,
     TechnologyOurProcess,
     TechnologyRelatedBlogs,
     TechnologySolutionsAndServices,
@@ -2515,6 +2516,12 @@ class TechnologyRelatedBlogsSerializer(serializers.ModelSerializer):
         fields = ['blog_id',]
         ref_name = 'TechnologyRelatedBlogsSerializer'
 
+class TechnologyMetaDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyMetaData
+        fields = '__all__'
+        ref_name = 'TechnologyMetaDataSerializer'
+
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     from website.models import Technology
     type = TechnologyTypeSerializer(read_only=True)
@@ -2531,6 +2538,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     ctas = TechnologyCTASerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     related_blogs = TechnologyRelatedBlogsSerializer(many=True, read_only=True, source='technology_related_blogs.all')
+    metadata = TechnologyMetaDataSerializer(many=True, read_only=True)  # Add metadata
     
     def get_table_of_contents(self, obj):
         toc = []
