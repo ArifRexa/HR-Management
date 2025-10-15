@@ -90,6 +90,7 @@ class EmployeeAdmin(
         "active",
         "user",
         "email",
+        "full_name",
         "blood_group",
         "tax_info",
         "image",
