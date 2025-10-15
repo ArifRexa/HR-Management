@@ -1854,7 +1854,7 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')   
-    industry_metadata = IndustryMetadataSerializer(many=True, read_only=True, source='industrymetadata_set')
+    meta_description = IndustryMetadataSerializer(many=True, read_only=True, source='industrymetadata_set')
 
     
     class Meta:
