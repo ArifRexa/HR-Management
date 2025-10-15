@@ -81,6 +81,7 @@ from website.models import (
     HomePage,
     HomePageHeroAnimatedTitle,
     Industry,
+    IndustryMetadata,
     IndustryTitle,
     IndustryWeServe,
     IndustryWeServeHomePage,
@@ -1716,7 +1717,11 @@ class BlogSerializer(serializers.ModelSerializer):
 
 
 # ============================== Industry Details ==================================
-
+class IndustryMetadataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryMetadata
+        fields = '__all__'  # or specify fields you want
+        ref_name = 'IndustriesWeServeIndustryMetadata'
 
 class IndustryDetailsHeroSectionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1847,7 +1852,9 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
-    related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')
+    related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')   
+    industry_metadata = IndustryMetadataSerializer(many=True, read_only=True, source='industrymetadata_set')
+
     
     class Meta:
         model = ServeCategory
@@ -1949,14 +1956,6 @@ class ServeCategorySerializer(serializers.ModelSerializer):
                     toc.append(item.section_title)
         except AttributeError:
             pass
-        
-        # # Add titles from Application Areas
-        # try:
-        #     for item in obj.application_areas.all():
-        #         if item.title:
-        #             toc.append(item.title)
-        # except AttributeError:
-        #     pass
         
         # Add titles from Industries
         try:
