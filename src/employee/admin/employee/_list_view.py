@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 
 from employee.models import Employee
-from employee.models.employee_rating_models import EmployeeRating
+# from employee.models.employee_rating_models import EmployeeRating
 
 
 class EmployeeAdminListView:
@@ -19,33 +19,33 @@ class EmployeeAdminListView:
         html_content = html_template.render({"employee": obj})
         return format_html(html_content)
 
-    def employee_rating(self, obj: Employee):
-        current_date = timezone.now()
+    # def employee_rating(self, obj: Employee):
+    #     current_date = timezone.now()
 
-        # Calculate the starting month for the last four months
-        starting_month = (current_date.month - 3) % 12 or 12
+    #     # Calculate the starting month for the last four months
+    #     starting_month = (current_date.month - 3) % 12 or 12
 
-        # Calculate the starting year for the last four months
-        starting_year = (
-            current_date.year - 1
-            if starting_month > current_date.month
-            else current_date.year
-        )
+    #     # Calculate the starting year for the last four months
+    #     starting_year = (
+    #         current_date.year - 1
+    #         if starting_month > current_date.month
+    #         else current_date.year
+    #     )
 
-        rating = (
-            EmployeeRating.objects.filter(
-                Q(year=starting_year, month__gte=starting_month)
-                | Q(year=current_date.year, month__lte=current_date.month),
-                employee_id=obj.id,
-            )
-            .values_list("month")
-            .annotate(average_rating=Avg("score"))
-            .order_by("-month")
-        )
+    #     rating = (
+    #         EmployeeRating.objects.filter(
+    #             Q(year=starting_year, month__gte=starting_month)
+    #             | Q(year=current_date.year, month__lte=current_date.month),
+    #             employee_id=obj.id,
+    #         )
+    #         .values_list("month")
+    #         .annotate(average_rating=Avg("score"))
+    #         .order_by("-month")
+    #     )
 
-        html_template = get_template("admin/employee/list/_rating.html")
-        html_content = html_template.render({"employee": obj, "ratings": rating})
-        return format_html(html_content)
+    #     html_template = get_template("admin/employee/list/_rating.html")
+    #     html_content = html_template.render({"employee": obj, "ratings": rating})
+    #     return format_html(html_content)
 
     @admin.display(description="Documents")
     def get_attachment(self, obj):

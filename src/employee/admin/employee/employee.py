@@ -24,18 +24,20 @@ from employee.models import (
     Employee,
 )
 from employee.models.attachment import EmployeeTaxAcknowledgement
+
 # from employee.models.bank_account import BEFTN
 from employee.models.employee import (
     EmployeeAvailableSlot,
+    EmployeeFAQView,
     EmployeeLunch,
     EmployeeNOC,
     EmployeeUnderTPM,
-    Inbox,
+    # Inbox,
     LateAttendanceFine,
-    LessHour,
-    MeetingSummary,
+    # LessHour,
+    # MeetingSummary,
     Observation,
-    TPMComplain,
+    # TPMComplain,
     # generate_employee_profile_pdf,
 )
 from employee.models.employee_activity import (
@@ -51,7 +53,8 @@ from user_auth.models import UserLogs
 
 @admin.register(SocialMedia)
 class SocialMediaAdmin(admin.ModelAdmin):
-    pass
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(Employee)
@@ -550,6 +553,9 @@ class BookConferenceRoomAdmin(admin.ModelAdmin):
     search_fields = ("manager_or_lead__full_name", "project_name__name")
     ordering = ("start_time",)
 
+    def has_module_permission(self, request):
+        return False
+
     def formfield_for_foreignkey(self, db_field, request, **kwargs):
         if db_field.name == "manager_or_lead":
             kwargs["queryset"] = Employee.objects.filter(
@@ -566,7 +572,7 @@ admin.site.register(BookConferenceRoom, BookConferenceRoomAdmin)
 #     def get_queryset(self, request):
 #         return super().get_queryset(request).filter(created_by=request.user)
 
-from employee.models import EmployeeFaq, EmployeeFAQView
+from employee.models import EmployeeFaq
 
 
 @admin.register(EmployeeFAQView)
@@ -579,6 +585,9 @@ class FAQAdmin(admin.ModelAdmin):
         return (
             super().get_queryset(request).filter(active=True).order_by("-rank")
         )
+        
+    def has_module_permission(self, request):
+        return False
 
     # def changelist_view(self, request, extra_context):
     # return super().changelist_view(request, extra_context)
@@ -1063,102 +1072,102 @@ class EmployeeUnderTPMAdmin(admin.ModelAdmin):
         js = ("employee/js/hide_employee_under_tpm_changelist.js",)
 
 
-@admin.register(TPMComplain)
-class TPMComplainAdmin(admin.ModelAdmin):
-    list_filter = ("tpm", "status", "employee")
-    list_display = (
-        "employee",
-        "tpm",
-        "short_complain",
-        "short_management_feedback",
-        "status_colored",
-    )
-    autocomplete_fields = ("employee",)
-    readonly_fields = ()
+# @admin.register(TPMComplain)
+# class TPMComplainAdmin(admin.ModelAdmin):
+#     list_filter = ("tpm", "status", "employee")
+#     list_display = (
+#         "employee",
+#         "tpm",
+#         "short_complain",
+#         "short_management_feedback",
+#         "status_colored",
+#     )
+#     autocomplete_fields = ("employee",)
+#     readonly_fields = ()
 
-    def get_fields(self, request, obj=None):
-        # Show the 'tpm' field only if the user is a superuser
-        fields = [
-            "employee",
-            "project",
-            "complain_title",
-            "complain",
-            "feedback_title",
-            "management_feedback",
-            "status",
-        ]
-        if request.user.is_superuser:
-            fields.insert(0, "tpm")  # Insert 'tpm' at the beginning
-        return fields
+#     def get_fields(self, request, obj=None):
+#         # Show the 'tpm' field only if the user is a superuser
+#         fields = [
+#             "employee",
+#             "project",
+#             "complain_title",
+#             "complain",
+#             "feedback_title",
+#             "management_feedback",
+#             "status",
+#         ]
+#         if request.user.is_superuser:
+#             fields.insert(0, "tpm")  # Insert 'tpm' at the beginning
+#         return fields
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.employee.is_tpm:
-            return qs.filter(tpm=request.user.employee).select_related(
-                "employee", "tpm"
-            )
-        return qs.select_related("employee", "tpm")
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         if request.user.employee.is_tpm:
+#             return qs.filter(tpm=request.user.employee).select_related(
+#                 "employee", "tpm"
+#             )
+#         return qs.select_related("employee", "tpm")
 
-    def employee(self, obj):
-        return obj.employee.full_name or "-"
+#     def employee(self, obj):
+#         return obj.employee.full_name or "-"
 
-    def tpm(self, obj):
-        return obj.tpm.full_name or "-"
+#     def tpm(self, obj):
+#         return obj.tpm.full_name or "-"
 
-    def get_readonly_fields(self, request, obj=None):
-        if request.user.employee.is_tpm:
-            return self.readonly_fields + (
-                "management_feedback",
-                "status",
-                "feedback_title",
-            )
-        return self.readonly_fields
+#     def get_readonly_fields(self, request, obj=None):
+#         if request.user.employee.is_tpm:
+#             return self.readonly_fields + (
+#                 "management_feedback",
+#                 "status",
+#                 "feedback_title",
+#             )
+#         return self.readonly_fields
 
-    def status_colored(self, obj):
-        if obj.status == "pending":
-            color = "red"
-        elif obj.status == "approved":
-            color = "green"
-        elif obj.status == "observation":
-            color = "blue"
-        else:
-            color = "black"  # Default color
+#     def status_colored(self, obj):
+#         if obj.status == "pending":
+#             color = "red"
+#         elif obj.status == "approved":
+#             color = "green"
+#         elif obj.status == "observation":
+#             color = "blue"
+#         else:
+#             color = "black"  # Default color
 
-        return format_html(
-            '<span style="color: {};">{}</span>',
-            color,
-            obj.get_status_display(),
-        )
+#         return format_html(
+#             '<span style="color: {};">{}</span>',
+#             color,
+#             obj.get_status_display(),
+#         )
 
-    status_colored.short_description = "Status"
+#     status_colored.short_description = "Status"
 
-    def short_complain(self, obj):
-        return self._truncate_text_with_tooltip(strip_tags(obj.complain))
+#     def short_complain(self, obj):
+#         return self._truncate_text_with_tooltip(strip_tags(obj.complain))
 
-    def short_management_feedback(self, obj):
-        return self._truncate_text_with_tooltip(
-            strip_tags(obj.management_feedback)
-        )
+#     def short_management_feedback(self, obj):
+#         return self._truncate_text_with_tooltip(
+#             strip_tags(obj.management_feedback)
+#         )
 
-    def _truncate_text_with_tooltip(self, text, length=100):
-        if text:
-            if len(text) > length:
-                truncated_text = text[:length] + "..."
-            else:
-                truncated_text = text
-            return format_html(
-                '<span title="{}">{}</span>',
-                text,  # Full text for tooltip
-                truncated_text,  # Shortened text for display
-            )
+#     def _truncate_text_with_tooltip(self, text, length=100):
+#         if text:
+#             if len(text) > length:
+#                 truncated_text = text[:length] + "..."
+#             else:
+#                 truncated_text = text
+#             return format_html(
+#                 '<span title="{}">{}</span>',
+#                 text,  # Full text for tooltip
+#                 truncated_text,  # Shortened text for display
+#             )
 
-    short_complain.short_description = "Complain"
-    short_management_feedback.short_description = "Management Feedback"
+#     short_complain.short_description = "Complain"
+#     short_management_feedback.short_description = "Management Feedback"
 
-    def save_model(self, request, obj, form, change):
-        if request.user.employee.is_tpm:
-            obj.tpm = request.user.employee
-        super().save_model(request, obj, form, change)
+#     def save_model(self, request, obj, form, change):
+#         if request.user.employee.is_tpm:
+#             obj.tpm = request.user.employee
+#         super().save_model(request, obj, form, change)
 
 
 from django.contrib.admin.filters import RelatedOnlyFieldListFilter
@@ -1229,6 +1238,9 @@ class UserLogsAdmin(admin.ModelAdmin):
     )
     ordering = ("-loging_time",)
     actions = ["logout_selected_users", "logout_all_users"]
+    
+    def has_module_permission(self, request):
+        return False
 
     def user_info(self, obj):
         user = obj.user
@@ -1296,128 +1308,128 @@ class UserLogsAdmin(admin.ModelAdmin):
 #     list_display = ("originating_bank_account_name",)
 
 
-class LessHourForm(forms.ModelForm):
-    class Meta:
-        model = LessHour
-        fields = "__all__"
+# class LessHourForm(forms.ModelForm):
+#     class Meta:
+#         model = LessHour
+#         fields = "__all__"
 
-    def clean(self):
-        data = super().clean()
-        date = data.get("date")
-        if timezone.now().date() < date:
-            raise forms.ValidationError("You can't select future date")
-        if date.weekday() != 4:
-            raise forms.ValidationError("Today is not Friday")
-        return data
-
-
-@admin.register(LessHour)
-class LessHourAdmin(admin.ModelAdmin):
-    list_display = (
-        "date",
-        "employee",
-        "get_skill",
-        "tpm",
-        "get_hour",
-        "get_feedback",
-    )
-    date_hierarchy = "date"
-    list_filter = ("tpm", "employee")
-    # fields = ["employee", "tpm", "date"]
-    exclude = ("tpm",)
-    autocomplete_fields = ("employee",)
-    form = LessHourForm
-
-    class Media:
-        css = {"all": ("css/list.css",)}
-
-    @admin.display(description="Hour")
-    def get_hour(self, obj):
-        employee_expected_hours = (
-            obj.employee.monthly_expected_hours / 4
-            if obj.employee.monthly_expected_hours
-            else 0
-        )
-        employee_hours = (
-            EmployeeProjectHour.objects.filter(
-                # project_hour__tpm=obj.tpm,
-                project_hour__date=obj.date,
-                project_hour__hour_type="project",
-                employee=obj.employee,
-            )
-            .aggregate(total_hours=Sum("hours"))
-            .get("total_hours", 0)
-            or 0
-        )
-        return f"{int(employee_expected_hours)} ({int(employee_hours)})"
-
-    @admin.display(description="Skill", ordering="employee__top_one_skill")
-    def get_skill(self, obj):
-        return obj.employee.top_one_skill
-
-    @admin.display(description="Feedback", ordering="feedback")
-    def get_feedback(self, obj):
-        # return obj.update
-        html_template = get_template(
-            "admin/employee/list/col_less_hour_feedback.html"
-        )
-
-        is_github_link_show = True
-        html_content = html_template.render(
-            {
-                "feedback": obj.feedback if obj.feedback else "-",
-                "is_github_link_show": is_github_link_show,
-            }
-        )
-
-        try:
-            data = format_html(html_content)
-        except:
-            data = "-"
-
-        return data
-
-    def save_form(self, request, form, change):
-        obj = super().save_form(request, form, change)
-        employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
-        tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
-        obj.tpm = tpm
-        obj.save()
-        return obj
-
-    def get_fields(self, request, obj=None):
-        fields = super().get_fields(request, obj)
-        fields = list(fields)
-        if not obj and not request.user.is_superuser:
-            fields.remove("feedback")
-
-        if not request.user.is_superuser and not request.user.has_perm(
-            "employee.can_see_hr_feedback_field"
-        ):
-            fields.remove("hr_feedback")
-        return fields
-
-    def get_readonly_fields(self, request, obj=None):
-        fields = super().get_readonly_fields(request, obj)
-        fields = list(fields)
-        if not request.user.is_superuser and not request.user.has_perm(
-            "employee.can_see_hr_feedback_field"
-        ):
-            fields.append("hr_feedback")
-
-        return fields
-
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.employee.is_tpm:
-            return qs.filter(tpm=request.user.employee)
-        return qs
+#     def clean(self):
+#         data = super().clean()
+#         date = data.get("date")
+#         if timezone.now().date() < date:
+#             raise forms.ValidationError("You can't select future date")
+#         if date.weekday() != 4:
+#             raise forms.ValidationError("Today is not Friday")
+#         return data
 
 
-class MeetingSummaryInline(admin.TabularInline):
-    model = MeetingSummary
-    extra = 1
-    readonly_fields = ("created_by",)
+# @admin.register(LessHour)
+# class LessHourAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "date",
+#         "employee",
+#         "get_skill",
+#         "tpm",
+#         "get_hour",
+#         "get_feedback",
+#     )
+#     date_hierarchy = "date"
+#     list_filter = ("tpm", "employee")
+#     # fields = ["employee", "tpm", "date"]
+#     exclude = ("tpm",)
+#     autocomplete_fields = ("employee",)
+#     form = LessHourForm
+
+#     class Media:
+#         css = {"all": ("css/list.css",)}
+
+#     @admin.display(description="Hour")
+#     def get_hour(self, obj):
+#         employee_expected_hours = (
+#             obj.employee.monthly_expected_hours / 4
+#             if obj.employee.monthly_expected_hours
+#             else 0
+#         )
+#         employee_hours = (
+#             EmployeeProjectHour.objects.filter(
+#                 # project_hour__tpm=obj.tpm,
+#                 project_hour__date=obj.date,
+#                 project_hour__hour_type="project",
+#                 employee=obj.employee,
+#             )
+#             .aggregate(total_hours=Sum("hours"))
+#             .get("total_hours", 0)
+#             or 0
+#         )
+#         return f"{int(employee_expected_hours)} ({int(employee_hours)})"
+
+#     @admin.display(description="Skill", ordering="employee__top_one_skill")
+#     def get_skill(self, obj):
+#         return obj.employee.top_one_skill
+
+#     @admin.display(description="Feedback", ordering="feedback")
+#     def get_feedback(self, obj):
+#         # return obj.update
+#         html_template = get_template(
+#             "admin/employee/list/col_less_hour_feedback.html"
+#         )
+
+#         is_github_link_show = True
+#         html_content = html_template.render(
+#             {
+#                 "feedback": obj.feedback if obj.feedback else "-",
+#                 "is_github_link_show": is_github_link_show,
+#             }
+#         )
+
+#         try:
+#             data = format_html(html_content)
+#         except:
+#             data = "-"
+
+#         return data
+
+#     def save_form(self, request, form, change):
+#         obj = super().save_form(request, form, change)
+#         employee_tpm = EmployeeUnderTPM.objects.filter(employee=obj.employee)
+#         tpm = employee_tpm.first().tpm if employee_tpm.exists() else None
+#         obj.tpm = tpm
+#         obj.save()
+#         return obj
+
+#     def get_fields(self, request, obj=None):
+#         fields = super().get_fields(request, obj)
+#         fields = list(fields)
+#         if not obj and not request.user.is_superuser:
+#             fields.remove("feedback")
+
+#         if not request.user.is_superuser and not request.user.has_perm(
+#             "employee.can_see_hr_feedback_field"
+#         ):
+#             fields.remove("hr_feedback")
+#         return fields
+
+#     def get_readonly_fields(self, request, obj=None):
+#         fields = super().get_readonly_fields(request, obj)
+#         fields = list(fields)
+#         if not request.user.is_superuser and not request.user.has_perm(
+#             "employee.can_see_hr_feedback_field"
+#         ):
+#             fields.append("hr_feedback")
+
+#         return fields
+
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         if request.user.employee.is_tpm:
+#             return qs.filter(tpm=request.user.employee)
+#         return qs
+
+
+# class MeetingSummaryInline(admin.TabularInline):
+#     model = MeetingSummary
+#     extra = 1
+#     readonly_fields = ("created_by",)
 
 
 class InboxReadStatusFilter(admin.SimpleListFilter):
@@ -1437,63 +1449,63 @@ class InboxReadStatusFilter(admin.SimpleListFilter):
             return queryset.filter(is_read=False)
 
 
-@admin.register(Inbox)
-class InboxAdmin(admin.ModelAdmin):
-    list_display = (
-        "get_date",
-        "employee",
-        "get_summary",
-        "get_discuss_with",
-        "get_read_status",
-    )
-    list_filter = ("employee", InboxReadStatusFilter)
-    # search_fields = ("sender__full_name", "receiver__full_name")
-    autocomplete_fields = ("employee",)
-    inlines = (MeetingSummaryInline,)
-    change_list_template = "admin/employee/change_list.html"
-    change_form_template = "admin/employee/change_view.html"
-    exclude = ("is_read",)
+# @admin.register(Inbox)
+# class InboxAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "get_date",
+#         "employee",
+#         "get_summary",
+#         "get_discuss_with",
+#         "get_read_status",
+#     )
+#     list_filter = ("employee", InboxReadStatusFilter)
+#     # search_fields = ("sender__full_name", "receiver__full_name")
+#     autocomplete_fields = ("employee",)
+#     inlines = (MeetingSummaryInline,)
+#     change_list_template = "admin/employee/change_list.html"
+#     change_form_template = "admin/employee/change_view.html"
+#     exclude = ("is_read",)
 
-    class Media:
-        css = {"all": ("css/list.css",)}
-        # js = ("employee/js/inbox.js",)
+#     class Media:
+#         css = {"all": ("css/list.css",)}
+#         # js = ("employee/js/inbox.js",)
 
-    @admin.display(description="Date")
-    def get_date(self, obj):
-        return obj.created_at.strftime("%Y-%m-%d")
+#     @admin.display(description="Date")
+#     def get_date(self, obj):
+#         return obj.created_at.strftime("%Y-%m-%d")
 
-    @admin.display(description="Read Status")
-    def get_read_status(self, obj):
-        return "Read" if obj.is_read else "Unread"
+#     @admin.display(description="Read Status")
+#     def get_read_status(self, obj):
+#         return "Read" if obj.is_read else "Unread"
 
-    @admin.display(description="Summary")
-    def get_summary(self, obj):
-        summaries = obj.meeting_summary_inbox.all()
-        html_template = get_template("admin/employee/list/col_summary.html")
-        html_content = html_template.render(
-            {"summaries": summaries, "summary": summaries.first()}
-        )
-        return format_html(html_content)
+#     @admin.display(description="Summary")
+#     def get_summary(self, obj):
+#         summaries = obj.meeting_summary_inbox.all()
+#         html_template = get_template("admin/employee/list/col_summary.html")
+#         html_content = html_template.render(
+#             {"summaries": summaries, "summary": summaries.first()}
+#         )
+#         return format_html(html_content)
 
-    @admin.display(description="Discuss with")
-    def get_discuss_with(self, obj):
-        return obj.created_by.employee.full_name
+#     @admin.display(description="Discuss with")
+#     def get_discuss_with(self, obj):
+#         return obj.created_by.employee.full_name
 
-    def get_queryset(self, request):
-        if not request.user.has_perm("employee.can_see_all_employee_inbox"):
-            return (
-                super()
-                .get_queryset(request)
-                .filter(employee=request.user.employee)
-            )
-        return super().get_queryset(request)
+#     def get_queryset(self, request):
+#         if not request.user.has_perm("employee.can_see_all_employee_inbox"):
+#             return (
+#                 super()
+#                 .get_queryset(request)
+#                 .filter(employee=request.user.employee)
+#             )
+#         return super().get_queryset(request)
 
-    def change_view(self, request, object_id, form_url="", extra_context=None):
-        if request.method == "GET":
-            obj = self.get_object(request, object_id)
-            obj.is_read = True
-            obj.save()
-        return super().change_view(request, object_id, form_url, extra_context)
+#     def change_view(self, request, object_id, form_url="", extra_context=None):
+#         if request.method == "GET":
+#             obj = self.get_object(request, object_id)
+#             obj.is_read = True
+#             obj.save()
+#         return super().change_view(request, object_id, form_url, extra_context)
 
 
 def last_four_financial_year(index=0):

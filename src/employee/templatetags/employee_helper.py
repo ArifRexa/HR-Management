@@ -6,7 +6,7 @@ from django.utils.html import format_html
 from account.models import EmployeeSalary
 from employee.admin.leave import has_friday_between_dates, has_monday_between_dates
 from employee.models import Employee
-from employee.models.leave.leave import Leave, LeaveManagement
+from employee.models.leave.leave import Leave
 from settings.models import FinancialYear
 
 register = template.Library()
@@ -127,13 +127,13 @@ def total_leave(leave: Leave, data):
     return format_html(html_content)
 
 
-@register.filter
-def manager_approval(obj):
-    leave_management = LeaveManagement.objects.filter(leave=obj)
-    html_template = get_template("admin/leave/list/col_manager_approval.html")
-    html_content = html_template.render({"leave_management": leave_management})
+# @register.filter
+# def manager_approval(obj):
+#     leave_management = LeaveManagement.objects.filter(leave=obj)
+#     html_template = get_template("admin/leave/list/col_manager_approval.html")
+#     html_content = html_template.render({"leave_management": leave_management})
 
-    return format_html(html_content)
+#     return format_html(html_content)
 
 
 @register.filter

@@ -29,7 +29,7 @@
                                 <td>{{ leave | total_leave:leave.get_applied_leave_type_display }}</td>
                                 <td>{{ leave | total_leave:leave.get_leave_type_display }}</td>
                                 <td>{{ leave | total_leave:leave.total_leave }}</td>
-                                <!-- <td>{{ leave | manager_approval }}</td> -->
+                                {% comment %} <!-- <td>{{ leave | manager_approval }}</td> --> {% endcomment %}
                                 <td>{{ leave | leave_status }}</td>
                                 <td>{{ leave.start_date|date:"d-m-Y" }}<br /> {{ leave.end_date|date:"d-m-Y" }}</td>
                                 

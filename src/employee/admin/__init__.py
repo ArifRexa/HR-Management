@@ -1,5 +1,5 @@
-from employee.admin.appointment import AppointmentAdmin
-from employee.admin.employeee_rating_admin import EmployeeRatingAdmin
+# from employee.admin.appointment import AppointmentAdmin
+# from employee.admin.employeee_rating_admin import EmployeeRatingAdmin
 
 from .config import ConfigAdmin
 from .employee import EmployeeAdmin
