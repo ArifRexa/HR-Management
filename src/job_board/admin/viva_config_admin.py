@@ -12,6 +12,9 @@ class VivaConfigAdmin(admin.ModelAdmin):
     list_filter = ['job_post', 'start_date', 'end_date']
     search_fields = ['job_post']
     inlines = [ExcludedDatesInline]
+    
+    def has_module_permission(self, request):
+        return False
 
 
 admin.site.register(VivaConfig, VivaConfigAdmin)

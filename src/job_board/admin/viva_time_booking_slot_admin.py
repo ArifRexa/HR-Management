@@ -22,6 +22,10 @@ from datetime import datetime
 class JobVivaTimeSlotAdmin(admin.ModelAdmin):
     list_display = ['job_post', 'candidate', 'date', 'start_time', 'end_time', 'interview_duration']
     date_hierarchy = "date"
+    
+    def has_module_permission(self, request):
+        return False
+    
     def interview_duration(self, obj):
         # Convert start_time and end_time to datetime objects
         start_datetime = datetime.combine(datetime.today(), obj.start_time)

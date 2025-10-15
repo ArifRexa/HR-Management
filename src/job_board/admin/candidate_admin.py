@@ -437,6 +437,9 @@ class CandidateApplicationSummaryAdmin(admin.ModelAdmin):
     list_display = ("job", "year", "month", "application_count")
     list_filter = ("job", "year", "month")
     actions = ["generate_summary"]
+    
+    def has_module_permission(self, request):
+        return False
 
     # Define custom URLs
     def get_urls(self):
