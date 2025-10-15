@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.utils.html import format_html, strip_tags
 from django.utils.safestring import mark_safe
 
+from asset_management.models.asset import EmployeeFixedAsset
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee._inlines import EmployeeInline
@@ -89,6 +90,7 @@ class EmployeeAdmin(
         "active",
         "user",
         "email",
+        "full_name",
         "blood_group",
         "tax_info",
         "image",
@@ -132,6 +134,8 @@ class EmployeeAdmin(
         if lookup in ["employeeskill__skill__title__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
+    
+    
 
     # def save_model(self, request, obj, form, change):
     #     print(obj.__dict__)
@@ -213,11 +217,37 @@ class EmployeeAdmin(
 
         return all_fields
 
+    def get_search_from_model(self, request):
+        app_label = request.GET.get("app_label")
+        model_name = request.GET.get("model_name")
+        if not app_label or not model_name:
+            return None
+        from django.contrib.contenttypes.models import ContentType
+
+        ct = ContentType.objects.get(
+            app_label=app_label, model=model_name.lower()
+        )
+        return ct.model_class()
+    
     def get_search_results(self, request, queryset, search_term):
         query_params = request.GET
         qs, use_distinct = super().get_search_results(
             request, queryset, search_term
         )
+        # add filter for employee fixed asset model
+        if query_params.get("model_name") == "employeefixedasset":
+            model_class = self.get_search_from_model(request)
+            field = request.GET.get("field_name")
+            search_fields = {
+                f"{field}__isnull": False,
+            }
+            used_pks = model_class.objects.filter(**search_fields).values_list(
+                field, flat=True
+            )
+
+            queryset = Employee.objects.filter(active=True).exclude(pk__in=used_pks)
+
+            return queryset, use_distinct
 
         # Override select2 auto relation to employee
         if (

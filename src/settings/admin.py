@@ -31,12 +31,12 @@ from project_management.models import Client
 from settings.models import LeaveManagement
 
 from .models import (
-    Announcement,
+    # Announcement,
     Bank,
     Designation,
     EmailAnnouncement,
     EmailAnnouncementAttatchment,
-    EmployeeFoodAllowance,
+    # EmployeeFoodAllowance,
     FinancialYear,
     Letter,
     Notice,
@@ -341,41 +341,41 @@ class SuccessfulTask(q_admin.TaskAdmin):
     list_filter = ("started",)
 
 
-@admin.register(Announcement)
-class AnnouncementAdmin(admin.ModelAdmin):
-    list_display = (
-        "created_at",
-        "get_date",
-        "rank",
-        "description",
-        "is_active",
-    )
-    date_hierarchy = "start_datetime"
+# @admin.register(Announcement)
+# class AnnouncementAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "created_at",
+#         "get_date",
+#         "rank",
+#         "description",
+#         "is_active",
+#     )
+#     date_hierarchy = "start_datetime"
 
-    list_filter = ("is_active",)
+#     list_filter = ("is_active",)
 
-    # inlines = [EmailAnnouncementInline]
+#     # inlines = [EmailAnnouncementInline]
 
-    actions = (
-        "mark_active",
-        "mark_inactive",
-        "send_mail",
-    )
+#     actions = (
+#         "mark_active",
+#         "mark_inactive",
+#         "send_mail",
+#     )
 
-    @admin.display(description="Active Date")
-    def get_date(self, obj):
-        data = f"{obj.start_datetime}<br>{obj.end_datetime}"
-        return format_html(data)
+#     @admin.display(description="Active Date")
+#     def get_date(self, obj):
+#         data = f"{obj.start_datetime}<br>{obj.end_datetime}"
+#         return format_html(data)
 
-    @admin.action(description="Mark Inactive")
-    def mark_inactive(modeladmin, request, queryset):
-        queryset.update(is_active=False)
-        messages.success(request, "Announcements marked as inactive.")
+#     @admin.action(description="Mark Inactive")
+#     def mark_inactive(modeladmin, request, queryset):
+#         queryset.update(is_active=False)
+#         messages.success(request, "Announcements marked as inactive.")
 
-    @admin.action(description="Mark Active")
-    def mark_active(modeladmin, request, queryset):
-        queryset.update(is_active=True)
-        messages.success(request, "Announcements marked as active.")
+#     @admin.action(description="Mark Active")
+#     def mark_active(modeladmin, request, queryset):
+#         queryset.update(is_active=True)
+#         messages.success(request, "Announcements marked as active.")
 
     # def save_model(self, request: Any, obj: Any, form: Any, change: Any) -> None:
     #     super().save_model(request, obj, form, change)
@@ -483,86 +483,86 @@ class FoodAllowanceForm(forms.Form):
     )
 
 
-@admin.register(EmployeeFoodAllowance)
-class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
-    list_display = ("employee", "amount", "date")
-    date_hierarchy = "date"
-    change_list_template = "settings/employee_lunch.html"
+# @admin.register(EmployeeFoodAllowance)
+# class EmployeeFoodAllowanceAdmin(admin.ModelAdmin):
+#     list_display = ("employee", "amount", "date")
+#     date_hierarchy = "date"
+#     change_list_template = "settings/employee_lunch.html"
 
-    def changelist_view(self, request, extra_context={}):
-        extra_context["allowance_form"] = FoodAllowanceForm()
-        return super().changelist_view(request, extra_context)
+#     def changelist_view(self, request, extra_context={}):
+#         extra_context["allowance_form"] = FoodAllowanceForm()
+#         return super().changelist_view(request, extra_context)
 
-    def get_urls(self):
-        urls = super().get_urls()
-        urls = [
-            path(
-                route="generate/",
-                view=self.xxx_view,
-                name="settings_employeefoodallowance_generate",
-            )
-        ] + urls
-        return urls
+#     def get_urls(self):
+#         urls = super().get_urls()
+#         urls = [
+#             path(
+#                 route="generate/",
+#                 view=self.xxx_view,
+#                 name="settings_employeefoodallowance_generate",
+#             )
+#         ] + urls
+#         return urls
 
-    def xxx_view(self, request, **kwargs):
-        if request.method == "POST":
-            form = FoodAllowanceForm(data=request.POST)
-            if form.is_valid():
-                date = form.cleaned_data.get("date")
-                # amount = form.cleaned_data.get("amount")
+#     def xxx_view(self, request, **kwargs):
+#         if request.method == "POST":
+#             form = FoodAllowanceForm(data=request.POST)
+#             if form.is_valid():
+#                 date = form.cleaned_data.get("date")
+#                 # amount = form.cleaned_data.get("amount")
 
-                # Get all active employees eligible for lunch allowance
-                employees = Employee.objects.filter(
-                    active=True, lunch_allowance=True
-                )
+#                 # Get all active employees eligible for lunch allowance
+#                 employees = Employee.objects.filter(
+#                     active=True, lunch_allowance=True
+#                 )
 
-                year = date.year
-                month = date.month
+#                 year = date.year
+#                 month = date.month
 
-                # Calculate the first and last date of the month
-                first_day_of_month = datetime(year, month, 1).date()
-                last_day_of_month = datetime(
-                    year, month + 1, 1
-                ).date() - timedelta(days=1)
+#                 # Calculate the first and last date of the month
+#                 first_day_of_month = datetime(year, month, 1).date()
+#                 last_day_of_month = datetime(
+#                     year, month + 1, 1
+#                 ).date() - timedelta(days=1)
 
-                print(first_day_of_month)
-                print(last_day_of_month)
+#                 print(first_day_of_month)
+#                 print(last_day_of_month)
 
-                for employee in employees:
-                    # Calculate the number of attendance records for the employee on the given date
-                    attendance_count = EmployeeAttendance.objects.filter(
-                        employee=employee,
-                        date__range=[first_day_of_month, last_day_of_month],
-                    ).count()
+#                 for employee in employees:
+#                     # Calculate the number of attendance records for the employee on the given date
+#                     attendance_count = EmployeeAttendance.objects.filter(
+#                         employee=employee,
+#                         date__range=[first_day_of_month, last_day_of_month],
+#                     ).count()
 
-                    # Calculate the number of leave days for the employee on the given date
-                    # leave_count = LeaveManagement.objects.filter(
-                    #     Q(leave__employee=employee),
-                    #     Q(leave__start_date__lte=date),
-                    #     Q(leave__end_date__gte=date) | Q(leave__end_date=None),
-                    #     status="approved"
-                    # ).count()
+#                     # Calculate the number of leave days for the employee on the given date
+#                     # leave_count = LeaveManagement.objects.filter(
+#                     #     Q(leave__employee=employee),
+#                     #     Q(leave__start_date__lte=date),
+#                     #     Q(leave__end_date__gte=date) | Q(leave__end_date=None),
+#                     #     status="approved"
+#                     # ).count()
 
-                    # Calculate the actual days attended (considering leave)
-                    # print(employee,attendance_count,leave_count)
-                    # actual_days_attended = attendance_count - leave_count
+#                     # Calculate the actual days attended (considering leave)
+#                     # print(employee,attendance_count,leave_count)
+#                     # actual_days_attended = attendance_count - leave_count
 
-                    # Calculate the adjusted allowance for the employee
-                    # if actual_days_attended < amount:
-                    #     adjusted_amount = actual_days_attended
-                    # else:
-                    #     adjusted_amount = amount
+#                     # Calculate the adjusted allowance for the employee
+#                     # if actual_days_attended < amount:
+#                     #     adjusted_amount = actual_days_attended
+#                     # else:
+#                     #     adjusted_amount = amount
 
-                    # Update or create Food Allowance entry
-                    EmployeeFoodAllowance.objects.update_or_create(
-                        employee=employee,
-                        date=date,
-                        defaults={
-                            "amount": attendance_count,
-                        },
-                    )
+#                     # Update or create Food Allowance entry
+#                     EmployeeFoodAllowance.objects.update_or_create(
+#                         employee=employee,
+#                         date=date,
+#                         defaults={
+#                             "amount": attendance_count,
+#                         },
+#                     )
 
-        return redirect("admin:settings_employeefoodallowance_changelist")
+#         return redirect("admin:settings_employeefoodallowance_changelist")
 
 
 @admin.register(Notice)

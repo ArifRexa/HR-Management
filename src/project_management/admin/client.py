@@ -35,7 +35,7 @@ from config.utils.pdf import PDF
 from project_management.models import (
     Client,
     ClientAttachment,
-    ClientExperience,
+    # ClientExperience,
     ClientFeedbackEmail,
     ClientHistory,
     ClientInvoiceDate,
@@ -189,6 +189,10 @@ class CurrencyTypeAdmin(admin.ModelAdmin):
         if obj and obj.is_default:
             return False
         return super().has_delete_permission(request, obj)
+    
+    
+    def has_module_permission(self, request):
+        return False
 
 
 @admin.register(ClientSource)
@@ -1078,8 +1082,8 @@ class ClientHistoryAdmin(admin.ModelAdmin):
         "created_at",
     )
 
-    # def has_module_permission(self, request):
-    #     return False
+    def has_module_permission(self, request):
+        return False
 
 
 
@@ -1093,177 +1097,177 @@ class ClientFeedbackEmailAdmin(admin.ModelAdmin):
         return False
 
 
-class ClientExperienceForm(forms.ModelForm):
-    class Meta:
-        model = ClientExperience
-        fields = "__all__"
+# class ClientExperienceForm(forms.ModelForm):
+#     class Meta:
+#         model = ClientExperience
+#         fields = "__all__"
 
-    def clean(self):
-        status = self.cleaned_data.get("status")
-        follow_up_date = self.cleaned_data.get("follow_up_date")
-        meeting_date = self.cleaned_data.get("meeting_date")
-        if status == 1 and not follow_up_date:
-            raise forms.ValidationError(
-                "Follow up date is required. When status is follow up."
-            )
-        elif status == 2 and not meeting_date:
-            raise forms.ValidationError(
-                "Meeting date is required. When status is meeting."
-            )
-        super().clean()
+#     def clean(self):
+#         status = self.cleaned_data.get("status")
+#         follow_up_date = self.cleaned_data.get("follow_up_date")
+#         meeting_date = self.cleaned_data.get("meeting_date")
+#         if status == 1 and not follow_up_date:
+#             raise forms.ValidationError(
+#                 "Follow up date is required. When status is follow up."
+#             )
+#         elif status == 2 and not meeting_date:
+#             raise forms.ValidationError(
+#                 "Meeting date is required. When status is meeting."
+#             )
+#         super().clean()
 
 
-@admin.register(ClientExperience)
-class ClientExperienceAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        # "web_name",
-        "get_project_name",
-        "email",
-        # "linkedin_url",
-        # "get_client_review",
-        "country",
-        "get_hourly_rate",
-        "payment_method",
-        "invoice_type",
-        "get_client_age",
-        "status",
-    )
-    fields = (
-        # "name",
-        # "active",
-        # "email",
-        # "invoice_cc_email",
-        # "designation",
-        # "company_name",
-        # "logo",
-        # "is_need_feedback",
-        # "client_feedback",
-        # "image",
-        # "linkedin_url",
-        # "bill_from",
-        # # "cc_email",
-        # "address",
-        # "country",
-        # "notes",
-        # "is_hour_breakdown",
-        # "hourly_rate",
-        # "active_from",
-        # "payment_method",
-        # "invoice_type",
-        # "review",
-        "status",
-        "follow_up_date",
-        "meeting_date",
-    )
-    readonly_fields = (
-        "name",
-        "active",
-        "email",
-        "invoice_cc_email",
-        "designation",
-        "company_name",
-        "logo",
-        "is_need_feedback",
-        "client_feedback",
-        "image",
-        "linkedin_url",
-        "bill_from",
-        # "cc_email",
-        "address",
-        "country",
-        "notes",
-        "is_hour_breakdown",
-        "hourly_rate",
-        "active_from",
-        "payment_method",
-        "invoice_type",
-        "review",
-    )
-    list_filter = [
-        "is_need_feedback",
-        "active",
-        "status",
-        "review",
-        # "payment_method",
-        # "invoice_type",
-    ]
-    # inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
-    search_fields = ["name", "web_name"]
-    # autocomplete_fields = ["country", "payment_method"]
-    form = ClientExperienceForm
-    # actions = ["mark_as_in_active"]
+# @admin.register(ClientExperience)
+# class ClientExperienceAdmin(admin.ModelAdmin):
+#     list_display = (
+#         "name",
+#         # "web_name",
+#         "get_project_name",
+#         "email",
+#         # "linkedin_url",
+#         # "get_client_review",
+#         "country",
+#         "get_hourly_rate",
+#         "payment_method",
+#         "invoice_type",
+#         "get_client_age",
+#         "status",
+#     )
+#     fields = (
+#         # "name",
+#         # "active",
+#         # "email",
+#         # "invoice_cc_email",
+#         # "designation",
+#         # "company_name",
+#         # "logo",
+#         # "is_need_feedback",
+#         # "client_feedback",
+#         # "image",
+#         # "linkedin_url",
+#         # "bill_from",
+#         # # "cc_email",
+#         # "address",
+#         # "country",
+#         # "notes",
+#         # "is_hour_breakdown",
+#         # "hourly_rate",
+#         # "active_from",
+#         # "payment_method",
+#         # "invoice_type",
+#         # "review",
+#         "status",
+#         "follow_up_date",
+#         "meeting_date",
+#     )
+#     readonly_fields = (
+#         "name",
+#         "active",
+#         "email",
+#         "invoice_cc_email",
+#         "designation",
+#         "company_name",
+#         "logo",
+#         "is_need_feedback",
+#         "client_feedback",
+#         "image",
+#         "linkedin_url",
+#         "bill_from",
+#         # "cc_email",
+#         "address",
+#         "country",
+#         "notes",
+#         "is_hour_breakdown",
+#         "hourly_rate",
+#         "active_from",
+#         "payment_method",
+#         "invoice_type",
+#         "review",
+#     )
+#     list_filter = [
+#         "is_need_feedback",
+#         "active",
+#         "status",
+#         "review",
+#         # "payment_method",
+#         # "invoice_type",
+#     ]
+#     # inlines = (ClientInvoiceDateInline, ClientAttachmentInline)
+#     search_fields = ["name", "web_name"]
+#     # autocomplete_fields = ["country", "payment_method"]
+#     form = ClientExperienceForm
+#     # actions = ["mark_as_in_active"]
 
-    def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .prefetch_related("project_set")
-            .annotate(
-                sort_date=Case(
-                    When(status=ClientStatus.FOLLOW_UP, then="follow_up_date"),
-                    When(status=ClientStatus.MEETING, then="meeting_date"),
-                    default=None,
-                    output_field=DateField(),
-                )
-            )
-            .order_by("sort_date")
-        )
+#     def get_queryset(self, request):
+#         return (
+#             super()
+#             .get_queryset(request)
+#             .prefetch_related("project_set")
+#             .annotate(
+#                 sort_date=Case(
+#                     When(status=ClientStatus.FOLLOW_UP, then="follow_up_date"),
+#                     When(status=ClientStatus.MEETING, then="meeting_date"),
+#                     default=None,
+#                     output_field=DateField(),
+#                 )
+#             )
+#             .order_by("sort_date")
+#         )
 
-    @admin.display(description="Project Name")
-    def get_project_name(self, obj):
-        project_name = obj.project_set.all().values_list("title", flat=True)
+#     @admin.display(description="Project Name")
+#     def get_project_name(self, obj):
+#         project_name = obj.project_set.all().values_list("title", flat=True)
 
-        return format_html("<br>".join(project_name))
+#         return format_html("<br>".join(project_name))
 
-    @admin.display(description="Hourly", ordering="hourly_rate")
-    def get_hourly_rate(self, obj):
-        if obj.is_active_over_six_months:
-            return format_html(
-                f"<span style='color: red;'>{obj.hourly_rate}</span>"
-            )
-        return obj.hourly_rate
+#     @admin.display(description="Hourly", ordering="hourly_rate")
+#     def get_hourly_rate(self, obj):
+#         if obj.is_active_over_six_months:
+#             return format_html(
+#                 f"<span style='color: red;'>{obj.hourly_rate}</span>"
+#             )
+#         return obj.hourly_rate
 
-    @admin.display(description="Age", ordering="created_at")
-    def get_client_age(self, obj):
-        return timesince(obj.created_at)
+#     @admin.display(description="Age", ordering="created_at")
+#     def get_client_age(self, obj):
+#         return timesince(obj.created_at)
 
-    def get_list_filter(self, request: HttpRequest):
-        if request.user.has_perm("project_management.view_client"):
-            return super().get_list_filter(request)
-        self.list_filter.remove("payment_method")
-        return self.list_filter
+#     def get_list_filter(self, request: HttpRequest):
+#         if request.user.has_perm("project_management.view_client"):
+#             return super().get_list_filter(request)
+#         self.list_filter.remove("payment_method")
+#         return self.list_filter
 
-    @admin.action(description="Mark as In-active")
-    def mark_as_in_active(self, request, queryset):
-        try:
-            queryset.update(active=False)
-            self.message_user(
-                request,
-                "Selected clients are marked as active.",
-                message.SUCCESS,
-            )
-        except Exception:
-            self.message_user(
-                request,
-                "Selected clients are not marked as active.",
-                message.ERROR,
-            )
+#     @admin.action(description="Mark as In-active")
+#     def mark_as_in_active(self, request, queryset):
+#         try:
+#             queryset.update(active=False)
+#             self.message_user(
+#                 request,
+#                 "Selected clients are marked as active.",
+#                 message.SUCCESS,
+#             )
+#         except Exception:
+#             self.message_user(
+#                 request,
+#                 "Selected clients are not marked as active.",
+#                 message.ERROR,
+#             )
 
-    # get_project_name.short_description = "Project Name"
-    @admin.display(description="Client Review")
-    def get_client_review(self, obj):
-        client_review = obj.review.all().values_list("name", flat=True)
+#     # get_project_name.short_description = "Project Name"
+#     @admin.display(description="Client Review")
+#     def get_client_review(self, obj):
+#         client_review = obj.review.all().values_list("name", flat=True)
 
-        return format_html("<br>".join(client_review))
+#         return format_html("<br>".join(client_review))
 
-    # def has_module_permission(self, request):
-    #     return False
+#     # def has_module_permission(self, request):
+#     #     return False
 
-    def save_model(self, request, obj, form, change):
-        if obj.status == ClientStatus.MEETING:
-            obj.follow_up_date = None
-        elif obj.status == ClientStatus.FOLLOW_UP:
-            obj.meeting_date = None
-        super().save_model(request, obj, form, change)
-        super().save_model(request, obj, form, change)
+#     def save_model(self, request, obj, form, change):
+#         if obj.status == ClientStatus.MEETING:
+#             obj.follow_up_date = None
+#         elif obj.status == ClientStatus.FOLLOW_UP:
+#             obj.meeting_date = None
+#         super().save_model(request, obj, form, change)
+#         super().save_model(request, obj, form, change)

@@ -11,7 +11,7 @@ from django.utils.html import format_html
 
 from project_management.models import (
     ClientInvoiceDate,
-    EnableDailyUpdateNow,
+    # EnableDailyUpdateNow,
     OurTechnology,
     PlatformImage,
     Project,
@@ -23,7 +23,7 @@ from project_management.models import (
     ProjectKeyPoint,
     ProjectNeed,
     ProjectPlatform,
-    ProjectReport,
+    # ProjectReport,
     ProjectResults,
     ProjectResultStatistic,
     ProjectScreenshot,
@@ -32,7 +32,7 @@ from project_management.models import (
     ProjectTechnology,
     ProjectToken,
     Tag,
-    Teams,
+    # Teams,
     Technology,
 )
 from website.models import ProjectKeyword, ProjectMetadata
@@ -497,12 +497,12 @@ class ProjectNeedAdmin(admin.ModelAdmin):
         return False
 
 
-@admin.register(ProjectReport)
-class ProjectReportAdmin(admin.ModelAdmin):
-    list_display = ["id", "project", "name", "type", "send_to", "api_token"]
-    list_display_links = ["project"]
-    list_filter = ("project", "type")
-    search_fields = ("project__title", "name", "type")
+# @admin.register(ProjectReport)
+# class ProjectReportAdmin(admin.ModelAdmin):
+#     list_display = ["id", "project", "name", "type", "send_to", "api_token"]
+#     list_display_links = ["project"]
+#     list_filter = ("project", "type")
+#     search_fields = ("project__title", "name", "type")
 
     # def formfield_for_foreignkey(self, db_field, request, **kwargs):
     #     if db_field.name == 'project':
@@ -510,10 +510,10 @@ class ProjectReportAdmin(admin.ModelAdmin):
     #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
-@admin.register(EnableDailyUpdateNow)
-class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
-    list_display = ["name", "enableproject", "last_time"]
-    list_editable = ("enableproject",)
+# @admin.register(EnableDailyUpdateNow)
+# class EnableDailyUpdateNowAdmin(admin.ModelAdmin):
+#     list_display = ["name", "enableproject", "last_time"]
+#     list_editable = ("enableproject",)
 
     # def has_view_permission(self, request, obj=None):
     #     # Check if the user has the required permission
@@ -575,9 +575,9 @@ class ProjectTechnologyAdmin(admin.ModelAdmin):
 
 
 # Register Teams models here.
-@admin.register(Teams)
-class TeamsAdmin(admin.ModelAdmin):
-    pass
+# @admin.register(Teams)
+# class TeamsAdmin(admin.ModelAdmin):
+#     pass
 
 
 @admin.register(ProjectEstimation)

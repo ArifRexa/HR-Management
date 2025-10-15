@@ -31,9 +31,9 @@ from project_management.models import (
     DailyProjectUpdateAttachment,
     DailyProjectUpdateHistory,
     EmployeeProjectHour,
-    EnableDailyUpdateNow,
+    # EnableDailyUpdateNow,
     Project,
-    ProjectReport,
+    # ProjectReport,
 )
 from project_management.utils.send_report import send_report_slack
 
@@ -485,33 +485,33 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 # permitted = False
                 return False
 
-        special_permission = EnableDailyUpdateNow.objects.filter(
-            enableproject=True
-        ).first()
+        # special_permission = EnableDailyUpdateNow.objects.filter(
+        #     enableproject=True
+        # ).first()
 
-        if obj:
-            # is lead / manager / sqa
-            if (
-                request.user.employee.lead
-                or request.user.employee.manager
-                or request.user.employee.sqa
-            ):
-                # previous date
-                if obj.created_at.date() < timezone.now().date():
-                    if (
-                        special_permission is not None
-                        and special_permission.enableproject == False
-                    ):
-                        permitted = False
-                # today
-                else:
-                    permitted = True
-            # not lead / manager / sqa
-            else:
-                if special_permission is not None:
-                    if special_permission.enableproject == False:
-                        if timezone.now().time() > special_permission.last_time:
-                            permitted = False
+        # if obj:
+        #     # is lead / manager / sqa
+        #     if (
+        #         request.user.employee.lead
+        #         or request.user.employee.manager
+        #         or request.user.employee.sqa
+        #     ):
+        #         # previous date
+        #         if obj.created_at.date() < timezone.now().date():
+        #             if (
+        #                 special_permission is not None
+        #                 and special_permission.enableproject == False
+        #             ):
+        #                 permitted = False
+        #         # today
+        #         else:
+        #             permitted = True
+        #     # not lead / manager / sqa
+        #     else:
+        #         if special_permission is not None:
+        #             if special_permission.enableproject == False:
+        #                 if timezone.now().time() > special_permission.last_time:
+        #                     permitted = False
 
         # is_have_panding = LeaveManagement.objects.filter(
         #     manager=request.user.employee, status="pending"
@@ -540,7 +540,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         # ).exists()
 
         permissons = super().has_add_permission(request)
-        special_permission = EnableDailyUpdateNow.objects.first()
+        # special_permission = EnableDailyUpdateNow.objects.first()
 
         # if is_have_panding:
         #     return False
@@ -549,17 +549,17 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             if self.is_rating_completed(request) == False:
                 return False
 
-        if not (
-            request.user.employee.lead
-            or request.user.employee.manager
-            or request.user.employee.sqa
-        ):
-            if special_permission is not None:
-                if special_permission.enableproject == True:
-                    return True
-                if special_permission.last_time > timezone.now().time():
-                    return True
-            return False
+        # if not (
+        #     request.user.employee.lead
+        #     or request.user.employee.manager
+        #     or request.user.employee.sqa
+        # ):
+        #     # if special_permission is not None:
+        #     #     if special_permission.enableproject == True:
+        #     #         return True
+        #     #     if special_permission.last_time > timezone.now().time():
+        #     #         return True
+        #     return False
         return permissons
 
     @admin.display(description="Status")
@@ -1062,10 +1062,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 user_type = "lead"
             elif request.user.employee.top_one_skill.skill.title.lower() == "sqa":
                 user_type = "sqa"
-            to_report = ProjectReport.objects.get(
-                project=queryset[0].project, type=user_type
-            )
-        except ProjectReport.DoesNotExist:
+            # to_report = ProjectReport.objects.get(
+            #     project=queryset[0].project, type=user_type
+            # )
+        except Exception:
             return messages.error(
                 request, "slack credential not set yet for this project"
             )
@@ -1111,18 +1111,18 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             f"{formatted_message}"
         )
 
-        response = send_report_slack(
-            token=to_report.api_token, channel=to_report.send_to, message=all_sections
-        )
+        # response = send_report_slack(
+        #     token=to_report.api_token, channel=to_report.send_to, message=all_sections
+        # )
 
-        if response.get("ok"):
-            return messages.success(
-                request, f"Report send to #{to_report.send_to} channel"
-            )
-        else:
-            return messages.error(
-                request, f"#{to_report.send_to} {response.get('error')}"
-            )
+        # if response.get("ok"):
+        #     return messages.success(
+        #         request, f"Report send to #{to_report.send_to} channel"
+        #     )
+        # else:
+        #     return messages.error(
+        #         request, f"#{to_report.send_to} {response.get('error')}"
+        #     )
 
     def has_delete_permission(self, request, obj=None):
         permitted = super().has_delete_permission(request, obj=obj)

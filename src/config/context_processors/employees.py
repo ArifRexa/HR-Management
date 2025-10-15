@@ -36,7 +36,7 @@ from employee.models.employee import (
 from employee.models.employee_activity import EmployeeProject
 from employee.models.employee_feedback import EmployeeFeedback
 from project_management.models import DailyProjectUpdate, Project
-from settings.models import Announcement, Notice
+from settings.models import Notice
 
 
 def formal_summery(request):
@@ -309,18 +309,18 @@ def get_announcement(request):
     now = timezone.now()
 
     # Get Announcements
-    announcements = (
-        Announcement.objects.filter(
-            is_active=True,
-            start_datetime__lte=now,
-            end_datetime__gte=now,
-        )
-        .order_by(
-            "-updated_at",
-            "-rank",
-        )
-        .values_list("description", flat=True)
-    )
+    # announcements = (
+    #     Announcement.objects.filter(
+    #         is_active=True,
+    #         start_datetime__lte=now,
+    #         end_datetime__gte=now,
+    #     )
+    #     .order_by(
+    #         "-updated_at",
+    #         "-rank",
+    #     )
+    #     .values_list("description", flat=True)
+    # )
 
     # need_help_positions = (
     #     NeedHelpPosition.objects.filter(
@@ -350,7 +350,7 @@ def get_announcement(request):
     #         )
 
     # Announcements
-    data.extend(announcements)
+    # data.extend(announcements)
 
     # Get Leaves
     leaves_today = (

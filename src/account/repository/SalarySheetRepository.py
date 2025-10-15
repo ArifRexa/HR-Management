@@ -19,7 +19,7 @@ from account.models import (
 )
 from employee.models import Employee, SalaryHistory
 from employee.models.employee import LateAttendanceFine
-from settings.models import EmployeeFoodAllowance
+# from settings.models import EmployeeFoodAllowance
 from django.db.models import Avg
 from employee.models.config import Config
 from project_management.models import CodeReview
@@ -1169,12 +1169,12 @@ class SalarySheetRepository:
         # total_allowance = (payable_days - skipp_days) * 140
         # return max(total_allowance, 0)
 
-        fa = EmployeeFoodAllowance.objects.filter(
-            employee_id=employee.id,
-            date=salary_date,
-        ).last()
-        if fa:
-            return fa.amount * 140
+        # fa = EmployeeFoodAllowance.objects.filter(
+        #     employee_id=employee.id,
+        #     date=salary_date,
+        # ).last()
+        # if fa:
+        #     return fa.amount * 140
 
         return 0.0
 
