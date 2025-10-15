@@ -549,17 +549,17 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
             if self.is_rating_completed(request) == False:
                 return False
 
-        if not (
-            request.user.employee.lead
-            or request.user.employee.manager
-            or request.user.employee.sqa
-        ):
-            # if special_permission is not None:
-            #     if special_permission.enableproject == True:
-            #         return True
-            #     if special_permission.last_time > timezone.now().time():
-            #         return True
-            return False
+        # if not (
+        #     request.user.employee.lead
+        #     or request.user.employee.manager
+        #     or request.user.employee.sqa
+        # ):
+        #     # if special_permission is not None:
+        #     #     if special_permission.enableproject == True:
+        #     #         return True
+        #     #     if special_permission.last_time > timezone.now().time():
+        #     #         return True
+        #     return False
         return permissons
 
     @admin.display(description="Status")
