@@ -114,7 +114,9 @@
         const projectSelect = document.getElementById('projectSelect');
         let currentType = 'bar';
         let currentView = 'weekly'; // Default: weekly
-        let currentProject = "All Projects";
+        let projects_name = Object.keys(projectData);
+        const default_selected_project = "All Projects";
+        let currentProject = projectData[default_selected_project] ? default_selected_project : projects_name.find(project_name => project_name !== default_selected_project);
         projectSelect.value = currentProject;
 
         function getConfig(type, data) {

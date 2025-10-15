@@ -335,12 +335,13 @@ class GraphView(admin.ModelAdmin):
     def clinet_projects_graph(self, request, *args, **kwargs):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
-        start_date = datetime.date.today() - relativedelta(years=1)
+        current_date = datetime.date.today()
+        start_date = current_date - relativedelta(years=1)
         initial_filter = {
             # "total_hour__gte" : request.GET.get("total_hour__gte"),
             # "total_hour__lte" : request.GET.get("total_hour__lte"),
             "date__gte" : request.GET.get("date__gte", start_date),
-            "date__lte" : request.GET.get("date__lte"),
+            "date__lte" : request.GET.get("date__lte", current_date),
         }
         filters = {key: value for key, value in initial_filter.items() if value}
         filter_form = ClientProjectsHourFilterForm(
@@ -368,7 +369,7 @@ class GraphView(admin.ModelAdmin):
             project_id__in=projects.values_list("id", flat=True),
             **date_filters,
         )
-        if all_project_hours.exists():
+        if projects.count() > 1 and all_project_hours.exists():
             weekly_all_project_hours = all_project_hours.values("date").annotate(
                 total_hour = Sum("hours")
             ).filter(
