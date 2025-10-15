@@ -369,8 +369,7 @@ class GraphView(admin.ModelAdmin):
             project_id__in=projects.values_list("id", flat=True),
             **date_filters,
         )
-        total_project = all_project_hours.count()
-        if total_project > 1:
+        if projects.count() > 1 and all_project_hours.exists():
             weekly_all_project_hours = all_project_hours.values("date").annotate(
                 total_hour = Sum("hours")
             ).filter(
