@@ -29,11 +29,11 @@ class FeedbackInline(admin.TabularInline):
     extra = 0
 
 
-class LeaveManagementInline(admin.TabularInline):
-    model = leave.LeaveManagement
-    extra = 0
-    can_delete = False
-    readonly_fields = ("manager", "status", "approval_time")
+# class LeaveManagementInline(admin.TabularInline):
+#     model = leave.LeaveManagement
+#     extra = 0
+#     can_delete = False
+#     readonly_fields = ("manager", "status", "approval_time")
 
 
 class LeaveForm(forms.ModelForm):
@@ -715,82 +715,82 @@ def has_monday_between_dates(start_date, end_date):
     return False
 
 
-@admin.register(leave.LeaveManagement)
-class LeaveManagementAdmin(admin.ModelAdmin):
-    list_display = [
-        "get_employee",
-        "get_apply_date",
-        "get_leave_type",
-        "manager",
-        "status",
-        "get_leave_date",
-        "approval_time",
-    ]
-    readonly_fields = ("manager", "leave")
-    actions = ("approve_selected", "pending_selected", "rejected_selected")
-    fields = ("leave", "manager", "status")
-    list_filter = ("status", "leave__leave_type", "manager", "leave__employee")
-    search_fields = ("manager__full_name", "status")
-    date_hierarchy = "created_at"
+# @admin.register(leave.LeaveManagement)
+# class LeaveManagementAdmin(admin.ModelAdmin):
+#     list_display = [
+#         "get_employee",
+#         "get_apply_date",
+#         "get_leave_type",
+#         "manager",
+#         "status",
+#         "get_leave_date",
+#         "approval_time",
+#     ]
+#     readonly_fields = ("manager", "leave")
+#     actions = ("approve_selected", "pending_selected", "rejected_selected")
+#     fields = ("leave", "manager", "status")
+#     list_filter = ("status", "leave__leave_type", "manager", "leave__employee")
+#     search_fields = ("manager__full_name", "status")
+#     date_hierarchy = "created_at"
 
-    @admin.display(description="Employee")
-    def get_employee(self, obj):
-        return obj.leave.employee.full_name
+#     @admin.display(description="Employee")
+#     def get_employee(self, obj):
+#         return obj.leave.employee.full_name
 
-    @admin.display(description="Application Time")
-    def get_apply_date(self, obj):
-        return obj.leave.created_at
+#     @admin.display(description="Application Time")
+#     def get_apply_date(self, obj):
+#         return obj.leave.created_at
 
-    @admin.display(description="Leave Type")
-    def get_leave_type(self, obj):
-        return obj.leave.get_leave_type_display()
+#     @admin.display(description="Leave Type")
+#     def get_leave_type(self, obj):
+#         return obj.leave.get_leave_type_display()
 
-    @admin.display(description="Leave On")
-    def get_leave_date(self, obj):
-        html_template = get_template("admin/leave/list/col_leave_on.html")
-        html_content = html_template.render(
-            {"start_date": obj.leave.start_date, "end_date": obj.leave.end_date}
-        )
-        return format_html(html_content)
+#     @admin.display(description="Leave On")
+#     def get_leave_date(self, obj):
+#         html_template = get_template("admin/leave/list/col_leave_on.html")
+#         html_content = html_template.render(
+#             {"start_date": obj.leave.start_date, "end_date": obj.leave.end_date}
+#         )
+#         return format_html(html_content)
 
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        if change:
-            obj.approval_time = timezone.now()
-            obj.save()
+#     def save_model(self, request, obj, form, change):
+#         super().save_model(request, obj, form, change)
+#         if change:
+#             obj.approval_time = timezone.now()
+#             obj.save()
 
-    def get_queryset(self, request):
-        qs = super().get_queryset(request)
-        if request.user.is_superuser:
-            return qs
-        return qs.filter(manager=request.user.employee)
+#     def get_queryset(self, request):
+#         qs = super().get_queryset(request)
+#         if request.user.is_superuser:
+#             return qs
+#         return qs.filter(manager=request.user.employee)
 
-    @admin.action()
-    def approve_selected(self, request, queryset):
-        if request.user.is_superuser or request.user.has_perm(
-            "employee.change_leavemanagement"
-        ):
-            messages.success(request, "Leaves approved.")
-            queryset.update(status="approved", approval_time=timezone.now())
-        else:
-            messages.error(request, "You don't have permission.")
+#     @admin.action()
+#     def approve_selected(self, request, queryset):
+#         if request.user.is_superuser or request.user.has_perm(
+#             "employee.change_leavemanagement"
+#         ):
+#             messages.success(request, "Leaves approved.")
+#             queryset.update(status="approved", approval_time=timezone.now())
+#         else:
+#             messages.error(request, "You don't have permission.")
 
-    @admin.action()
-    def pending_selected(self, request, queryset):
-        if request.user.is_superuser or request.user.has_perm(
-            "employee.change_leavemanagement"
-        ):
-            messages.success(request, "Leaves pending.")
-            queryset.update(status="pending")
-        else:
-            messages.error(request, "You don't have permission.")
+#     @admin.action()
+#     def pending_selected(self, request, queryset):
+#         if request.user.is_superuser or request.user.has_perm(
+#             "employee.change_leavemanagement"
+#         ):
+#             messages.success(request, "Leaves pending.")
+#             queryset.update(status="pending")
+#         else:
+#             messages.error(request, "You don't have permission.")
 
-    @admin.action()
-    def rejected_selected(self, request, queryset):
-        if request.user.is_superuser or request.user.has_perm(
-            "employee.change_leavemanagement"
-        ):
-            messages.success(request, "Leaves rejected.")
-            queryset.update(status="rejected")
-        else:
-            messages.error(request, "You don't have permission.")
+#     @admin.action()
+#     def rejected_selected(self, request, queryset):
+#         if request.user.is_superuser or request.user.has_perm(
+#             "employee.change_leavemanagement"
+#         ):
+#             messages.success(request, "Leaves rejected.")
+#             queryset.update(status="rejected")
+#         else:
+#             messages.error(request, "You don't have permission.")

@@ -18,9 +18,9 @@ from openpyxl.styles import Alignment, Font, PatternFill
 from config.admin import RecentEdit
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._forms import DailyUpdateFilterForm
-from employee.models import Employee, LeaveManagement
+from employee.models import Employee
 from employee.models.employee_activity import EmployeeProject
-from employee.models.employee_rating_models import EmployeeRating
+# from employee.models.employee_rating_models import EmployeeRating
 from project_management.admin.project_hour.options import (
     ProjectLeadFilter,
     ProjectManagerFilter,
@@ -366,14 +366,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 ),
             }
         )
-        is_have_pending = LeaveManagement.objects.filter(
-            manager=request.user.employee, status="pending"
-        ).exists()
+        # is_have_pending = LeaveManagement.objects.filter(
+        #     manager=request.user.employee, status="pending"
+        # ).exists()
 
         my_context = {
             "total": self.get_total_hour(request),
             "filter_form": filter_form,
-            "is_have_pending": is_have_pending,  # Pass the variable to the template context
+            "is_have_pending": False,  # Pass the variable to the template context
         }
 
         # Add a message to display in the template if there are pending leave requests
@@ -513,11 +513,11 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                         if timezone.now().time() > special_permission.last_time:
                             permitted = False
 
-        is_have_panding = LeaveManagement.objects.filter(
-            manager=request.user.employee, status="pending"
-        ).exists()
-        if is_have_panding:
-            return False
+        # is_have_panding = LeaveManagement.objects.filter(
+        #     manager=request.user.employee, status="pending"
+        # ).exists()
+        # if is_have_panding:
+        #     return False
 
         if self.today > self.deadline:
             if self.is_rating_completed(request) == False:
@@ -535,15 +535,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return True
 
-        is_have_panding = LeaveManagement.objects.filter(
-            manager=request.user.employee, status="pending"
-        ).exists()
+        # is_have_panding = LeaveManagement.objects.filter(
+        #     manager=request.user.employee, status="pending"
+        # ).exists()
 
         permissons = super().has_add_permission(request)
         special_permission = EnableDailyUpdateNow.objects.first()
 
-        if is_have_panding:
-            return False
+        # if is_have_panding:
+        #     return False
 
         if self.today > self.deadline:
             if self.is_rating_completed(request) == False:
@@ -576,15 +576,15 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         ):
             qs_count = queryset.update(status="approved")
         elif request.user.employee.manager or request.user.employee.lead:
-            if len(
-                LeaveManagement.objects.filter(
-                    manager=request.user.employee, status="pending"
-                )
-            ):
-                return messages.error(
-                    request,
-                    "You have pending leave application(s). Please approve first.",
-                )
+            # if len(
+            #     LeaveManagement.objects.filter(
+            #         manager=request.user.employee, status="pending"
+            #     )
+            # ):
+            #     return messages.error(
+            #         request,
+            #         "You have pending leave application(s). Please approve first.",
+            #     )
 
             qs_count = queryset.filter(manager_id=request.user.employee.id).update(
                 status="approved"
@@ -1144,7 +1144,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     def _is_rating_completed(self, request):
         today = timezone.now()
         user_id = request.user.id
-        ratings = EmployeeRating.objects.filter(created_by_id=user_id)
+        # ratings = EmployeeRating.objects.filter(created_by_id=user_id)
         projects = Project.objects.filter(
             employeeproject__employee__user__id=user_id,
         )
@@ -1158,25 +1158,25 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
                 | project.associated_employees.exclude(user__id=user_id)
             )
 
-        unique_associated_employees = associated_employees_qs.distinct()
+        # unique_associated_employees = associated_employees_qs.distinct()
 
         # print(unique_associated_employees)
 
         is_completed = True
-        for employee in unique_associated_employees:
-            has_rating = ratings.filter(
-                Q(created_by_id=user_id)
-                & Q(employee_id=employee.id)
-                & Q(month=today.month)
-                & Q(year=today.year)
-            ).exists()
+        # for employee in unique_associated_employees:
+        #     has_rating = ratings.filter(
+        #         Q(created_by_id=user_id)
+        #         & Q(employee_id=employee.id)
+        #         & Q(month=today.month)
+        #         & Q(year=today.year)
+        #     ).exists()
 
-            # print(f"{employee}--------------------{has_rating}-----------{is_completed}")
-            if not has_rating:
-                is_completed = False
-                # print(is_completed)
-                break
-        # print("*"*50)
+        #     # print(f"{employee}--------------------{has_rating}-----------{is_completed}")
+        #     if not has_rating:
+        #         is_completed = False
+        #         # print(is_completed)
+        #         break
+        # # print("*"*50)
 
         return is_completed
 
@@ -1255,14 +1255,14 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         actions = super().get_actions(request)
-        is_have_pending = LeaveManagement.objects.filter(
-            manager=request.user.employee, status="pending"
-        ).exists()
+        # is_have_pending = LeaveManagement.objects.filter(
+        #     manager=request.user.employee, status="pending"
+        # ).exists()
 
-        if is_have_pending:
-            # Remove both "update_status_approve" and "update_status_pending" actions if there are pending leave approvals
-            actions.pop("update_status_approve", None)
-            actions.pop("update_status_pending", None)
+        # if is_have_pending:
+        #     # Remove both "update_status_approve" and "update_status_pending" actions if there are pending leave approvals
+        #     actions.pop("update_status_approve", None)
+        #     actions.pop("update_status_pending", None)
 
         return actions
 

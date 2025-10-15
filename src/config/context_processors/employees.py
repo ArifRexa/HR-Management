@@ -26,12 +26,11 @@ from employee.models import (
     EmployeeSkill,
     FavouriteMenu,
     Leave,
-    LeaveManagement,
 )
 from employee.models.employee import (
     BookConferenceRoom,
     EmployeeAvailableSlot,
-    Inbox,
+    # Inbox,
     LateAttendanceFine,
 )
 from employee.models.employee_activity import EmployeeProject
@@ -280,17 +279,17 @@ def employee_need_help_form(request):
         return {"employee_need_help_form": None}
 
 
-def unread_inbox(request):
-    if not request.path == "/admin/":
-        return {}
-    if not request.user.is_authenticated:
-        return {}
-    if not request.user.has_perm("employee.can_see_all_employee_inbox"):
-        qs = Inbox.objects.filter(
-            employee=request.user.employee, is_read=False
-        ).count()
-        return {"unread_inbox_count": qs}
-    return {}
+# def unread_inbox(request):
+#     if not request.path == "/admin/":
+#         return {}
+#     if not request.user.is_authenticated:
+#         return {}
+#     if not request.user.has_perm("employee.can_see_all_employee_inbox"):
+#         qs = Inbox.objects.filter(
+#             employee=request.user.employee, is_read=False
+#         ).count()
+#         return {"unread_inbox_count": qs}
+#     return {}
 
 
 def all_notices(request):
@@ -595,21 +594,21 @@ def approval_info_leave_daily_update(request):
     if not request.user.is_authenticated:
         return ""  # Return empty response if user is not authenticated
 
-    pending_leave = LeaveManagement.objects.filter(
-        status="pending", manager=request.user.employee
-    ).count()
+    # pending_leave = LeaveManagement.objects.filter(
+    #     status="pending", manager=request.user.employee
+    # ).count()
     daily_update_pending = DailyProjectUpdate.objects.filter(
         status="pending", manager=request.user.employee
     ).count()
 
     # Determine if counts are greater than 0 to apply style
-    leave_color = "red" if pending_leave > 0 else "green"
+    # leave_color = "red" if pending_leave > 0 else "green"
     update_color = "red" if daily_update_pending > 0 else "green"
 
     # Create HTML string with conditional styles
-    leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
+    # leave_html = f'<span style="color: {leave_color};"> Leave Approval: {pending_leave}</span>'
     update_html = f'<span style="color: {update_color};"> Daily Update: {daily_update_pending}</span>'
-    html = f"   {leave_html}<br/>   {update_html}"
+    html = f"{update_html}"
 
     # Query to check if the user is manager, lead, or TPM
     is_manager_lead_tpm = Employee.objects.filter(

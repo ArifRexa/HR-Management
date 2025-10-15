@@ -9,7 +9,7 @@ from inventory_management.forms import (
 )
 from inventory_management.models import (
     InventoryItem,
-    InventoryItemHead,
+    # InventoryItemHead,
     InventorySummary,
     InventoryTransaction,
     InventoryUnit,
@@ -18,10 +18,10 @@ from inventory_management.models import (
 # Register your models here.
 
 
-@admin.register(InventoryItemHead)
-class InventoryItemHeadAdmin(admin.ModelAdmin):
-    list_display = ("title",)
-    search_fields = ("title",)
+# @admin.register(InventoryItemHead)
+# class InventoryItemHeadAdmin(admin.ModelAdmin):
+#     list_display = ("title",)
+#     search_fields = ("title",)
 
 
 @admin.register(InventoryItem)

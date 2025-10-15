@@ -131,17 +131,17 @@ class Employee(TimeStampMixin, AuthorMixin):
         join_date = self.joining_date.strftime('%Y%d')
         return f"{join_date}{self.pk}"
 
-    @property
-    def has_pending_appointment(self):
-        return Appointment.objects.filter(
-            created_by=self.user, is_completed=False
-        ).exists()
+    # @property
+    # def has_pending_appointment(self):
+    #     return Appointment.objects.filter(
+    #         created_by=self.user, is_completed=False
+    #     ).exists()
 
-    @property
-    def last_pending_appointment(self):
-        return Appointment.objects.filter(
-            created_by=self.user, is_completed=False
-        ).first()
+    # @property
+    # def last_pending_appointment(self):
+    #     return Appointment.objects.filter(
+    #         created_by=self.user, is_completed=False
+    #     ).first()
 
     @property
     def average_rating(self):
