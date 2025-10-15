@@ -81,6 +81,7 @@ from website.models import (
     HomePage,
     HomePageHeroAnimatedTitle,
     Industry,
+    IndustryMetadata,
     IndustryTitle,
     IndustryWeServe,
     IndustryWeServeHomePage,
@@ -120,6 +121,7 @@ from website.models import (
     TechnologyFAQSchema,
     TechnologyKeyThings,
     TechnologyKeyThingsQA,
+    TechnologyMetaData,
     TechnologyOurProcess,
     TechnologyRelatedBlogs,
     TechnologySolutionsAndServices,
@@ -1716,7 +1718,11 @@ class BlogSerializer(serializers.ModelSerializer):
 
 
 # ============================== Industry Details ==================================
-
+class IndustryMetadataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IndustryMetadata
+        fields = '__all__'  # or specify fields you want
+        ref_name = 'IndustriesWeServeIndustryMetadata'
 
 class IndustryDetailsHeroSectionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1847,7 +1853,9 @@ class ServeCategorySerializer(serializers.ModelSerializer):
     # application_areas = ApplicationAreasSerializer(many=True, read_only=True)
     industries = IndustryServeSerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
-    related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')
+    related_blogs = IndustryRelatedBlogsSerializer(many=True, read_only=True, source='industry_related_blogs.all')   
+    meta_description = IndustryMetadataSerializer(many=True, read_only=True, source='industrymetadata_set')
+
     
     class Meta:
         model = ServeCategory
@@ -1949,14 +1957,6 @@ class ServeCategorySerializer(serializers.ModelSerializer):
                     toc.append(item.section_title)
         except AttributeError:
             pass
-        
-        # # Add titles from Application Areas
-        # try:
-        #     for item in obj.application_areas.all():
-        #         if item.title:
-        #             toc.append(item.title)
-        # except AttributeError:
-        #     pass
         
         # Add titles from Industries
         try:
@@ -2516,6 +2516,12 @@ class TechnologyRelatedBlogsSerializer(serializers.ModelSerializer):
         fields = ['blog_id',]
         ref_name = 'TechnologyRelatedBlogsSerializer'
 
+class TechnologyMetaDataSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TechnologyMetaData
+        fields = '__all__'
+        ref_name = 'TechnologyMetaDataSerializer'
+
 class TechnologyDetailSerializer(serializers.ModelSerializer):
     from website.models import Technology
     type = TechnologyTypeSerializer(read_only=True)
@@ -2532,6 +2538,7 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
     ctas = TechnologyCTASerializer(many=True, read_only=True)
     table_of_contents = serializers.SerializerMethodField()
     related_blogs = TechnologyRelatedBlogsSerializer(many=True, read_only=True, source='technology_related_blogs.all')
+    metadata = TechnologyMetaDataSerializer(many=True, read_only=True)  # Add metadata
     
     def get_table_of_contents(self, obj):
         toc = []
