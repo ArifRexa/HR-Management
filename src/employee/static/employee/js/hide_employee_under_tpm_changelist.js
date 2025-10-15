@@ -1,4 +1,4 @@
 
-window.addEventListener('load', () => {
-    document.getElementById("changelist").remove();
-});
+// window.addEventListener('load', () => {
+//     document.getElementById("changelist").remove();
+// });
