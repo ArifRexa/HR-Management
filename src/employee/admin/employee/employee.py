@@ -245,7 +245,7 @@ class EmployeeAdmin(
                 field, flat=True
             )
 
-            queryset = queryset.exclude(pk__in=used_pks)
+            queryset = Employee.objects.filter(active=True).exclude(pk__in=used_pks)
 
             return queryset, use_distinct
 
