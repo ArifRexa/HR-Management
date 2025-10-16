@@ -36,3 +36,8 @@ class SubscriberSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ('created_at', 'updated_at')
         ref_name = 'NewsletterSubscriber'  
+
+
+class CaseStudySubscriptionSerializer(serializers.Serializer):
+    project_identifier = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
