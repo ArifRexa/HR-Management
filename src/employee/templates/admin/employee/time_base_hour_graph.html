@@ -200,7 +200,6 @@
                             },
                             displayColors: false,
                             backgroundColor: function(context) {
-                                console.log()
                                 const value = parseFloat(context.tooltip.body[0].lines[0].split(" ")[2].replace(' ', ''));
                                 const target_hour = chartData[view].target_hour | 0;
                                 if(target_hour == 0){
@@ -214,10 +213,17 @@
                                 //     return `${context.dataset.label} ${context.raw}`;
                                 // },
                                 footer: function(context) {
+                                    function formatProjects(data) {
+                                        return data.map(([name, value]) => `${name} : ${value}`);
+                                    }
+
                                     const dataset = context[0].dataset;
                                     const index = context[0].dataIndex;
                                     if (dataset.extraInfo.length === 0) {
                                         return '';
+                                    }
+                                    else if (view === "daily"){
+                                        return formatProjects(dataset.extraInfo[index]);
                                     }
                                     const extra = dataset.extraInfo[index];
                                     return `${extra.length}(${extra})`;

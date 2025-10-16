@@ -230,19 +230,45 @@ class GraphView(admin.ModelAdmin):
         filters.pop("project_hour__date__lte")
         filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
         filters["created_at__date__lte"] = datetime.date.today()
-        daily_employee_hours = DailyProjectUpdate.objects.filter(
+
+        daily_employee_hours_filtered_queryset = DailyProjectUpdate.objects.filter(
             # status="approved",
             **filters,
-        ).values(
+        )
+        daily_project_base_employee_hours = daily_employee_hours_filtered_queryset.select_related(
+            "project",
+        ).only(
+            "project__title",
+            "hours",
+        ).order_by("created_at__date")
+        daily_project_base_employee_hour_data = dict()
+        for daily_project_base_employee_hour in daily_project_base_employee_hours:
+            date = daily_project_base_employee_hour.created_at.strftime("%d-%b-%Y")
+            project_title = daily_project_base_employee_hour.project.title
+            project_hour = daily_project_base_employee_hour.hours
+            old_data = daily_project_base_employee_hour_data.get(date)
+            if old_data:
+                old_data.append([project_title, project_hour])
+            else:
+                daily_project_base_employee_hour_data[date] = [[project_title, project_hour]]
+
+        daily_employee_hours = daily_employee_hours_filtered_queryset.values(
             "created_at__date",
         ).annotate(
             total_hour = Sum("hours")
         ).order_by("created_at__date")
 
+        is_per_day_count_data_add = False
         for daily_employee_hour in daily_employee_hours:
-            chart["daily"]["labels"].append(daily_employee_hour.get("created_at__date").strftime("%d-%b-%Y"))
+            date = daily_employee_hour.get("created_at__date").strftime("%d-%b-%Y")
+            chart["daily"]["labels"].append(date)
             chart["daily"]["data"].append(daily_employee_hour.get("total_hour"))
             chart["daily"]["total_hour"] += daily_employee_hour.get("total_hour")
+            if is_per_day_count_data_add is False:
+                chart["daily"]["per_day_count"] = [daily_project_base_employee_hour_data.get(date, [])]
+                is_per_day_count_data_add = True
+            else:
+                chart["daily"]["per_day_count"].append(daily_project_base_employee_hour_data.get(date, []))
         return chart
 
     def project_graph_view(self, request, *args, **kwargs):
