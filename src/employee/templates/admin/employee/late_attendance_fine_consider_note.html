@@ -6,7 +6,16 @@
         {{ note | strip_last_newline | safe | truncatewords:10 }}
     </div>
     <div class="popover-message">
+        
+        <strong>Employee Remarks</strong>
+        <hr>
         {{ note | strip_last_newline | safe }}
+        <br><br><br>
+        <strong>HR Remarks</strong>
+        <hr>
+        {% if hr_note %}
+            {{ hr_note | strip_last_newline | safe }}
+        {% endif %}
     </div>
 </div>
 

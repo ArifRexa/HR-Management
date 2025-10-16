@@ -800,7 +800,12 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     @admin.action(description="Consider late attendance fine")
     def consider_late_attendance_fine(self, request, queryset):
-        queryset.filter(is_request_for_consider=True).update(is_consider=True)
+        queryset.filter(
+            is_request_for_consider=True
+        ).update(
+            is_consider=True,
+            hr_feedback_given_by=request.user.employee,
+        )
 
 
     @admin.display(description="Employee", ordering="employee__full_name")
@@ -829,9 +834,10 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             "employee",
             "total_late_attendance_fine",
             "date",
-            "is_consider",
-            "note",
             "is_request_for_consider",
+            "note",
+            "is_consider",
+            "hr_note",
         ]
         return fields
 
@@ -879,13 +885,14 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         )
         # return super().changelist_view(request, extra_context=extra_context)
     
-    @admin.display(description="Note")
+    @admin.display(description="Employee Remarks")
     def get_short_note(self, obj):
         if obj.note is None:
             return None
         template = get_template("admin/employee/late_attendance_fine_consider_note.html").render(
             context={
-                "note": obj.note
+                "note": obj.note,
+                "hr_note": obj.hr_note,
             }
         )
         return format_html(template)
@@ -895,6 +902,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             obj.year = obj.date.year
         if not obj.month:
             obj.month = obj.date.month
+        obj.hr_feedback_given_by = request.user.employee
         obj.save()
 
     class Media:
