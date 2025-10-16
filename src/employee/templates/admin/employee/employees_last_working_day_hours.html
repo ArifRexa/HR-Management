@@ -193,10 +193,8 @@
                                 },
                                 footer: function(context) {
                                     const dataset = context[0].dataset;
-                                    let names = dataset.projects_hour[context[0].dataIndex];
-                                    console.log(names)
                                     function formatProjects(data) {
-                                        return data.map(([name, value]) => `${name} - ${value}`);
+                                        return data.map(([name, value]) => `${name} : ${value}`);
                                     }
                                     return formatProjects(dataset.projects_hour[context[0].dataIndex]);
                                 },
