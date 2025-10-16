@@ -1,9 +1,9 @@
 from datetime import datetime
-import json
-from django import forms
+
 import nested_admin
 from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
 from dateutil.relativedelta import relativedelta
+from django import forms
 from django.contrib import admin
 from django.template.loader import get_template
 from django.urls import reverse
@@ -11,7 +11,7 @@ from django.utils.html import format_html
 
 from project_management.models import (
     ClientInvoiceDate,
-    # EnableDailyUpdateNow,
+    EnableDailyUpdateNow,
     OurTechnology,
     PlatformImage,
     Project,
@@ -23,7 +23,7 @@ from project_management.models import (
     ProjectKeyPoint,
     ProjectNeed,
     ProjectPlatform,
-    # ProjectReport,
+    ProjectReport,
     ProjectResults,
     ProjectResultStatistic,
     ProjectScreenshot,
@@ -32,7 +32,7 @@ from project_management.models import (
     ProjectTechnology,
     ProjectToken,
     Tag,
-    # Teams,
+    Teams,
     Technology,
 )
 from website.models import ProjectKeyword, ProjectMetadata
@@ -251,27 +251,30 @@ class ProjectAdminForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = '__all__'
+        widgets = {
+            "child_services": forms.SelectMultiple()
+        }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Set services to parent services only
-        self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
-        
-        # Filter child_services based on selected parent services
-        if self.instance.pk:  # If editing existing project
-            selected_parent_services = self.instance.services.all()
-            if selected_parent_services.exists():
-                # Show only child services whose parent is in the selected services
-                self.fields['child_services'].queryset = ServicePage.objects.filter(
-                    is_parent=False,
-                    parent__in=selected_parent_services
-                )
-            else:
-                # No parent services selected, show none
-                self.fields['child_services'].queryset = ServicePage.objects.none()
-        else:  # If creating new project
-            # No parent services selected yet, show none
-            self.fields['child_services'].queryset = ServicePage.objects.none()
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     # Set services to parent services only
+    #     self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
+
+    #     # Filter child_services based on selected parent services
+    #     if self.instance.pk:  # If editing existing project
+    #         selected_parent_services = self.instance.services.all()
+    #         if selected_parent_services.exists():
+    #             # Show only child services whose parent is in the selected services
+    #             self.fields['child_services'].queryset = ServicePage.objects.filter(
+    #                 is_parent=False,
+    #                 parent__in=selected_parent_services
+    #             )
+    #         else:
+    #             # No parent services selected, show none
+    #             self.fields['child_services'].queryset = ServicePage.objects.none()
+    #     else:  # If creating new project
+    #         # No parent services selected yet, show none
+    #         self.fields['child_services'].queryset = ServicePage.objects.none()
 
 @admin.register(Project)
 class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
@@ -369,7 +372,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "service_we_provide_image",
         # "industry_image",
     )
-    
+
 
     change_form_template = "admin/project_management/project/change_form.html"
 
@@ -378,7 +381,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         extra_context['child_services_queryset'] = ServicePage.objects.filter(is_parent=False).select_related('parent')
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-    
+
     class Media:
         js = ("admin/js/project_admin.js",)
 
