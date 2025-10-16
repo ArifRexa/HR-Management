@@ -816,7 +816,9 @@ class LateAttendanceFine(models.Model):
     date = models.DateField(default=datetime.now, null=True, blank=True)
     is_consider = models.BooleanField(default=True)
     entry_time = models.TimeField(null=True, blank=True)
-
+    note = models.TextField(blank=False, null=True)
+    is_request_for_consider = models.BooleanField(default=False)
+    
     class Meta:
         permissions = [
             ("can_view_all_late_attendance", "Can view all late attendance fines"),
