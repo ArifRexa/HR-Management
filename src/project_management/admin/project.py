@@ -349,6 +349,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "display_image",
         "project_logo",
         "thumbnail",
+        "case_study_pdf",
         "featured_video",
         # "tags",
         # "identifier",
