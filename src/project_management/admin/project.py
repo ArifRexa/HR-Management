@@ -1,40 +1,26 @@
 from datetime import datetime
-import json
-from django import forms
+
 import nested_admin
 from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
 from dateutil.relativedelta import relativedelta
+from django import forms
 from django.contrib import admin
 from django.template.loader import get_template
 from django.urls import reverse
 from django.utils.html import format_html
 
-from project_management.models import (
-    ClientInvoiceDate,
-    EnableDailyUpdateNow,
-    OurTechnology,
-    PlatformImage,
-    Project,
-    ProjectContent,
-    ProjectDocument,
-    ProjectEstimation,
-    ProjectIndustry,
-    ProjectKeyFeature,
-    ProjectKeyPoint,
-    ProjectNeed,
-    ProjectPlatform,
-    ProjectReport,
-    ProjectResults,
-    ProjectResultStatistic,
-    ProjectScreenshot,
-    ProjectService,
-    ProjectServiceSolution,
-    ProjectTechnology,
-    ProjectToken,
-    Tag,
-    Teams,
-    Technology,
-)
+from project_management.models import (ClientInvoiceDate, EnableDailyUpdateNow,
+                                       OurTechnology, PlatformImage, Project,
+                                       ProjectContent, ProjectDocument,
+                                       ProjectEstimation, ProjectIndustry,
+                                       ProjectKeyFeature, ProjectKeyPoint,
+                                       ProjectNeed, ProjectPlatform,
+                                       ProjectReport, ProjectResults,
+                                       ProjectResultStatistic,
+                                       ProjectScreenshot, ProjectService,
+                                       ProjectServiceSolution,
+                                       ProjectTechnology, ProjectToken, Tag,
+                                       Teams, Technology)
 from website.models import ProjectKeyword, ProjectMetadata
 from website.models import Technology as WebTechnology
 from website.models_v2.industries_we_serve import ServeCategory
@@ -251,12 +237,15 @@ class ProjectAdminForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = '__all__'
+        widgets = {
+            "child_services": forms.SelectMultiple()
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Set services to parent services only
         self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
-        
+
         # Filter child_services based on selected parent services
         if self.instance.pk:  # If editing existing project
             selected_parent_services = self.instance.services.all()
@@ -369,7 +358,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # "service_we_provide_image",
         # "industry_image",
     )
-    
+
 
     change_form_template = "admin/project_management/project/change_form.html"
 
@@ -378,7 +367,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         extra_context['child_services_queryset'] = ServicePage.objects.filter(is_parent=False).select_related('parent')
         return super().changeform_view(request, object_id, form_url, extra_context)
 
-    
+
     class Media:
         js = ("admin/js/project_admin.js",)
 
