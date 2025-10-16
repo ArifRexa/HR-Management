@@ -1,0 +1,234 @@
+.column-get_score {
+    width: 180px;
+}
+
+.popover-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.popover-wrapper .popover-title {
+
+}
+
+.popover-wrapper .popover-message {
+    opacity: 0;
+    visibility: hidden;
+    position: absolute;
+    left: 0;
+    transform: translate(0, 10px);
+    background-color: #d7d5d5;
+    padding: 5px;
+    box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+    width: auto;
+    top: 40px;
+    color: black;
+}
+
+.popover-message:before {
+    position: absolute;
+    z-index: -1;
+    content: "";
+    right: calc(50% - 10px);
+    top: -8px;
+    border-style: solid;
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #d7d5d5 transparent;
+    transition-duration: 0.3s;
+    transition-property: transform;
+}
+
+.popover-wrapper:hover .popover-message {
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+    transform: translate(0, -10px);
+    transition: all 0.5s cubic-bezier(0.75, -0.02, 0.2, 0.97);
+}
+
+.btn {
+    outline: none;
+    border: 0;
+    padding: 6px 10px;
+}
+
+.btn-filter {
+    position: absolute;
+    right: 0;
+}
+
+/* static/css/list.css */
+
+.candidate-actions {
+    position: relative;
+    width: 100%;
+}
+
+.action-status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 5px;
+    border-radius: 3px;
+    display: none;
+}
+.action-item{
+    margin-bottom: 5px;
+}
+.action-status.success {
+    background-color: #dff0d8;
+    color: #3c763d;
+    display: block;
+}
+
+.action-status.error {
+    background-color: #f2dede;
+    color: #a94442;
+    display: block;
+}
+
+.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Schedule Input Styling */
+.schedule-container {
+    margin: 10px 0;
+}
+
+.schedule-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.schedule-input-wrapper {
+    position: relative;
+}
+
+.schedule-datetime {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    color: #333;
+    background-color: #fff;
+    transition: all 0.3s ease;
+    width: 50%;
+}
+
+.schedule-datetime:focus {
+    outline: none;
+    border-color: #2271b1;
+    box-shadow: 0 0 0 1px #2271b1;
+}
+
+.schedule-datetime:hover {
+    border-color: #999;
+}
+
+/* Flatpickr Custom Styling */
+.flatpickr-calendar {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+}
+
+.flatpickr-day.selected {
+    background: #2271b1 !important;
+    border-color: #2271b1 !important;
+}
+
+.flatpickr-day:hover {
+    background: #f0f0f1 !important;
+}
+
+.flatpickr-time input:hover,
+.flatpickr-time input:focus {
+    background: #f0f0f1 !important;
+}
+
+/* Calendar Icon */
+.calendar-icon {
+    position: absolute;
+    right: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    /*background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 448 512'%3E%3Cpath fill='%23FFFFFF' d='M152 64H296V24C296 10.75 306.7 0 320 0C333.3 0 344 10.75 344 24V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H104V24C104 10.75 114.7 0 128 0C141.3 0 152 10.75 152 24V64zM48 448C48 456.8 55.16 464 64 464H384C392.8 464 400 456.8 400 448V192H48V448z'/%3E%3C/svg%3E");*/
+    background-repeat: no-repeat;
+    background-position: center;
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+.feedback-text{
+    width: 76%;
+}
+
+.status-select{
+    width: 73%;
+}
+
+.cancel-schedule-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    /*margin-left: 10px;*/
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.cancel-schedule-btn:hover {
+    background-color: #d32f2f;
+}
+.feedback-wrapper {
+    display: inline-block;
+    position: relative;
+    cursor: pointer;
+}
+
+.feedback-popup {
+    visibility: hidden; /* Hide the popup initially */
+    opacity: 0; /* Start with opacity 0 */
+    position: absolute;
+    top: 25px;
+    left: 0;
+    width: 350px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    color: #0f0f0f;
+    transform: translateY(-10px); /* Start slightly above */
+    transition: opacity 0.6s ease, transform 0.6s ease, visibility 0s ease 0.6s; /* Smooth transition */
+}
+
+/* Show on hover for desktop */
+.feedback-hover:hover + .feedback-popup,
+.feedback-popup:hover {
+    visibility: visible; /* Make it visible */
+    opacity: 1; /* Fade in */
+    transform: translateY(0); /* Slide down to normal position */
+    transition: opacity 0.6s ease, transform 0.6s ease; /* Smooth transition */
+}
+
+/* Show on click for mobile devices */
+@media (max-width: 768px) {
+    .feedback-popup {
+        visibility: hidden; /* Hide by default on mobile */
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    .feedback-wrapper.active .feedback-popup {
+        visibility: visible; /* Make it visible when clicked */
+        opacity: 1; /* Fade in */
+        transform: translateY(0); /* Slide down */
+        transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s ease 0s; /* Smooth transition */
+    }
+}
+

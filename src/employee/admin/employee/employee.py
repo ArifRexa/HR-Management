@@ -670,12 +670,27 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         "get_year",
         # "total_late_attendance_fine",
         "entry_time",
+        "get_short_note",
+        "is_request_for_consider",
+        "is_consider",
     )
-    list_filter = ("employee", "is_consider")
+    list_filter = ("employee", "is_consider", "is_request_for_consider")
     date_hierarchy = "date"
     autocomplete_fields = ("employee",)
     change_list_template = "admin/total_fine.html"
-    actions = ["create_late_fines_for_current_month"]
+    actions = [
+        "create_late_fines_for_current_month",
+        "consider_late_attendance_fine",
+    ]
+
+    def get_actions(self, request):
+        """
+        remove the action 'consider_late_attendance_fine' if an user don't have permission to change lateattendancefine. 
+        """
+        actions = super().get_actions(request)
+        if request.user.is_superuser is False and request.user.employee.operation is False and "consider_late_attendance_fine" in actions.keys():
+            del actions["consider_late_attendance_fine"]
+        return actions
 
     def create_late_fines_for_current_month(self, request, queryset=None):
         """
@@ -783,6 +798,11 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         "Create late fines for current month"
     )
 
+    @admin.action(description="Consider late attendance fine")
+    def consider_late_attendance_fine(self, request, queryset):
+        queryset.filter(is_request_for_consider=True).update(is_consider=True)
+
+
     @admin.display(description="Employee", ordering="employee__full_name")
     def get_employee(self, obj):
         consider_count = LateAttendanceFine.objects.filter(
@@ -810,8 +830,20 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             "total_late_attendance_fine",
             "date",
             "is_consider",
+            "note",
+            "is_request_for_consider",
         ]
         return fields
+
+    def get_readonly_fields(self, request, obj):
+        base_readonly_fields = super().get_readonly_fields(request, obj)
+        readonly_fields = set(base_readonly_fields) | set(self.get_fields(request, obj))
+        if request.user.is_superuser is True or request.user.employee.operation is True:
+            return base_readonly_fields
+        elif request.user.has_perm("employee.change_lateattendancefine") is True and obj is not None and obj.is_request_for_consider is False:
+            readonly_fields.remove("note")
+            readonly_fields.remove("is_request_for_consider")
+        return readonly_fields
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -846,6 +878,17 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             request, extra_context=extra_context
         )
         # return super().changelist_view(request, extra_context=extra_context)
+    
+    @admin.display(description="Note")
+    def get_short_note(self, obj):
+        if obj.note is None:
+            return None
+        template = get_template("admin/employee/late_attendance_fine_consider_note.html").render(
+            context={
+                "note": obj.note
+            }
+        )
+        return format_html(template)
 
     def save_model(self, request, obj, form, change):
         if not obj.year:
@@ -854,6 +897,8 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             obj.month = obj.date.month
         obj.save()
 
+    class Media:
+        css = {"all": ("employee/css/list.css",)}
 
 class EmployeeUnderTPMForm(forms.ModelForm):
     class Meta:
