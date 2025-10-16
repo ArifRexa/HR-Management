@@ -816,8 +816,28 @@ class LateAttendanceFine(models.Model):
     date = models.DateField(default=datetime.now, null=True, blank=True)
     is_consider = models.BooleanField(default=True)
     entry_time = models.TimeField(null=True, blank=True)
-    note = models.TextField(blank=False, null=True)
-    is_request_for_consider = models.BooleanField(default=False)
+    note = models.TextField(
+        verbose_name="Employee Remarks",
+        blank=False,
+        null=True,
+        help_text="Reason for late.",
+    )
+    is_request_for_consider = models.BooleanField(
+        verbose_name="Request for Consideration",
+        default=False,
+    )
+    hr_note = models.TextField(
+        verbose_name="HR Remarks",
+        blank=True,
+        null=True,
+    )
+    hr_feedback_given_by = models.ForeignKey(
+        to=Employee,
+        on_delete=models.SET_NULL,
+        related_name="hr_feedback_given_employee",
+        blank=True,
+        null=True,
+    )
     
     class Meta:
         permissions = [
