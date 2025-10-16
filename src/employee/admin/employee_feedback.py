@@ -371,7 +371,7 @@ class EmployeePerformanceFeedbackAdmin(admin.ModelAdmin):
         "initiative_learning_rating",
         "rating_definition",
         "total_rating",
-        # "boss_rating",
+        "rating_given_by",
         # "probation_risk",
     )
     list_filter = (
@@ -381,6 +381,10 @@ class EmployeePerformanceFeedbackAdmin(admin.ModelAdmin):
     )
     search_fields = ("employee__full_name",)
     autocomplete_fields = ("employee",)
+    
+    @admin.display(description="Rating Given By", ordering="created_by")
+    def rating_given_by(self, obj):
+        return obj.created_by.employee.full_name
 
     @admin.display(description="Technical Skill", ordering="technical_skill")
     def technical_skill_rating(self, obj):
