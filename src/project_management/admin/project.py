@@ -182,11 +182,333 @@ class ProjectCountMixin:
         return queryset
 
 
+# class ServiceFilter(ProjectCountMixin, SimpleListFilter):
+#     title = "Services"
+#     parameter_name = "services"
+#     model = ServicePage
+#     field_name = "services"
+
+
+# class ChildServiceFilter(SimpleListFilter):
+#     title = "Child Services"
+#     parameter_name = "child_services"
+    
+#     def lookups(self, request, model_admin):
+#         # Get all parent services that have child services
+#         parent_services = ServicePage.objects.filter(
+#             is_parent=True,
+#             children__isnull=False
+#         ).distinct()
+        
+#         lookups = []
+        
+#         for parent in parent_services:
+#             # Get all child services for this parent
+#             child_services = ServicePage.objects.filter(
+#                 parent=parent,
+#                 is_parent=False
+#             )
+            
+#             # Count projects for each child service
+#             child_counts = []
+#             for child in child_services:
+#                 count = child.child_projects.count()
+#                 if count > 0:
+#                     child_counts.append((child, count))
+            
+#             # Only add parent if it has children with projects
+#             if child_counts:
+#                 # Calculate total projects for parent (distinct projects)
+#                 parent_count = Project.objects.filter(
+#                     child_services__in=child_services
+#                 ).distinct().count()
+                
+#                 # Add parent header with visual indicator
+#                 lookups.append((
+#                     f"parent_{parent.id}", 
+#                     f"📁 {parent.title} ({parent_count})"
+#                 ))
+                
+#                 # Add child services with visual indicator and indentation
+#                 for child, count in child_counts:
+#                     lookups.append((
+#                         child.id,
+#                         f"   📄 {child.title} ({count})"
+#                     ))
+        
+#         return lookups
+
+#     def queryset(self, request, queryset):
+#         value = self.value()
+#         if value:
+#             if value.startswith('parent_'):
+#                 # Parent header selected - filter by all child services of this parent
+#                 parent_id = value.split('_')[1]  # Extract parent ID
+#                 # Get all child services of this parent
+#                 child_services = ServicePage.objects.filter(
+#                     parent_id=parent_id,
+#                     is_parent=False
+#                 )
+#                 # Filter projects by these child services
+#                 return queryset.filter(child_services__in=child_services)
+#             else:
+#                 # Child service selected - filter by this specific child service
+#                 return queryset.filter(child_services__id=value)
+#         return queryset
+
+
+# class ChildServiceFilter(SimpleListFilter):
+#     '''📁 Web Development (6)
+#             📄 Frontend Development (2)
+#             📄 Backend Development (3)
+#             📄 Full Stack Development (1)
+#             📄 API Development (0)
+#         📁 Mobile App (4)
+#             📄 iOS Development (2)
+#             📄 Android Development (1)
+#             📄 Cross Platform (1)
+#             📄 Wearable Apps (0)
+#    '''
+#     title = "Child Services"
+#     parameter_name = "child_services"
+    
+#     def lookups(self, request, model_admin):
+#         # Get all parent services that have child services
+#         parent_services = ServicePage.objects.filter(
+#             is_parent=True,
+#             children__isnull=False
+#         ).distinct()
+        
+#         lookups = []
+        
+#         for parent in parent_services:
+#             # Get all child services for this parent (even if they have no projects)
+#             child_services = ServicePage.objects.filter(
+#                 parent=parent,
+#                 is_parent=False
+#             )
+            
+#             # Calculate total projects for parent (distinct projects)
+#             parent_count = Project.objects.filter(
+#                 child_services__in=child_services
+#             ).distinct().count()
+            
+#             # Add parent header with visual indicator
+#             lookups.append((
+#                 f"parent_{parent.id}", 
+#                 f"📁 {parent.title} ({parent_count})"
+#             ))
+            
+#             # Add all child services with visual indicator and indentation
+#             for child in child_services:
+#                 # Count projects for this child service (can be zero)
+#                 count = child.child_projects.count()
+#                 lookups.append((
+#                     child.id,
+#                     f"   📄 {child.title} ({count})"
+#                 ))
+        
+#         return lookups
+
+#     def queryset(self, request, queryset):
+#         value = self.value()
+#         if value:
+#             if value.startswith('parent_'):
+#                 # Parent header selected - filter by all child services of this parent
+#                 parent_id = value.split('_')[1]  # Extract parent ID
+#                 # Get all child services of this parent
+#                 child_services = ServicePage.objects.filter(
+#                     parent_id=parent_id,
+#                     is_parent=False
+#                 )
+#                 # Filter projects by these child services
+#                 return queryset.filter(child_services__in=child_services)
+#             else:
+#                 # Child service selected - filter by this specific child service
+#                 return queryset.filter(child_services__id=value)
+#         return queryset
+
+
+
+
+
+# class ServiceFilter(ProjectCountMixin, SimpleListFilter):
+#     title = "Services"
+#     parameter_name = "services"
+#     model = ServicePage
+#     field_name = "services"
+    
+#     def lookups(self, request, model_admin):
+#         # Get all parent services (even if they have no projects)
+#         parent_services = ServicePage.objects.filter(is_parent=True)
+        
+#         lookups = []
+        
+#         for parent in parent_services:
+#             # Get all child services for this parent (even if they have no projects)
+#             child_services = ServicePage.objects.filter(
+#                 parent=parent,
+#                 is_parent=False
+#             )
+            
+#             # Count projects for this parent service (from the services field)
+#             parent_count = parent.projects.count()
+            
+#             # Add parent header with visual indicator
+#             lookups.append((
+#                 parent.id, 
+#                 f"📁 {parent.title} ({parent_count})"
+#             ))
+            
+#             # Add child services with visual indicator and indentation
+#             for child in child_services:
+#                 # Count projects for this child service (from the child_services field)
+#                 count = child.child_projects.count()
+#                 lookups.append((
+#                     f"child_{child.id}",  # Prefix with "child_" to distinguish
+#                     f"   📄 {child.title} ({count})"
+#                 ))
+        
+#         return lookups
+
+
+#     def queryset(self, request, queryset):
+#         value = self.value()
+#         if value:
+#             if str(value).startswith('child_'):
+#                 # Child service selected - filter by child_services field
+#                 child_id = str(value).split('_')[1]
+#                 return queryset.filter(child_services__id=child_id)
+#             else:
+#                 # Parent service selected - filter by services field
+#                 return queryset.filter(services__id=value)
+#         return queryset
+
+
+
+# class ServiceFilter(ProjectCountMixin, SimpleListFilter):
+#     title = "Services"
+#     parameter_name = "services"
+#     model = ServicePage
+#     field_name = "services"
+#     template = "admin/filter.html" 
+    
+#     def lookups(self, request, model_admin):
+#         # Get all parent services (even if they have no projects)
+#         parent_services = ServicePage.objects.filter(is_parent=True)
+        
+#         lookups = []
+        
+#         for parent in parent_services:
+#             # Get all child services for this parent (even if they have no projects)
+#             child_services = ServicePage.objects.filter(
+#                 parent=parent,
+#                 is_parent=False
+#             )
+            
+#             # Count projects for this parent service (from the services field)
+#             parent_count = parent.projects.count()
+            
+#             # Add parent header with visual indicator
+#             parent_class = "zero-count" if parent_count == 0 else ""
+#             lookups.append((
+#                 parent.id, 
+#                 f"📁 {parent.title} ({parent_count})",
+#                 parent_class
+#             ))
+            
+#             # Add child services with visual indicator and indentation
+#             for child in child_services:
+#                 # Count projects for this child service (from the child_services field)
+#                 count = child.child_projects.count()
+#                 child_class = "zero-count" if count == 0 else ""
+#                 lookups.append((
+#                     f"child_{child.id}",  # Prefix with "child_" to distinguish
+#                     f"   📄 {child.title} ({count})",
+#                     child_class
+#                 ))
+        
+#         return lookups
+
+#     def queryset(self, request, queryset):
+#         value = self.value()
+#         if value:
+#             if str(value).startswith('child_'):
+#                 # Child service selected - filter by child_services field
+#                 child_id = str(value).split('_')[1]
+#                 return queryset.filter(child_services__id=child_id)
+#             else:
+#                 # Parent service selected - filter by services field
+#                 return queryset.filter(services__id=value)
+#         return queryset
+    
+#     def choices(self, changelist):
+#         for lookup, title, css_class in self.lookup_choices:
+#             yield {
+#                 'selected': self.value() == str(lookup),
+#                 'query_string': changelist.get_query_string({
+#                     self.parameter_name: lookup,
+#                 }),
+#                 'display': title,
+#                 'css_class': css_class,
+#             }
+
+
+from django.utils.safestring import mark_safe
+
 class ServiceFilter(ProjectCountMixin, SimpleListFilter):
     title = "Services"
     parameter_name = "services"
     model = ServicePage
     field_name = "services"
+    
+    def lookups(self, request, model_admin):
+        # Get all parent services (even if they have no projects)
+        parent_services = ServicePage.objects.filter(is_parent=True)
+        
+        lookups = []
+        
+        for parent in parent_services:
+            # Get all child services for this parent (even if they have no projects)
+            child_services = ServicePage.objects.filter(
+                parent=parent,
+                is_parent=False
+            )
+            
+            # Count projects for this parent service (from the services field)
+            parent_count = parent.projects.count()
+            
+            # Add parent header with visual indicator
+            if parent_count == 0:
+                parent_display = mark_safe(f"📁 <span style='color: red; font-weight: bold;'>{parent.title} ({parent_count})</span>")
+            else:
+                parent_display = f"📁 {parent.title} ({parent_count})"
+            lookups.append((parent.id, parent_display))
+            
+            # Add child services with visual indicator and indentation
+            for child in child_services:
+                # Count projects for this child service (from the child_services field)
+                count = child.child_projects.count()
+                child_display = mark_safe(f"   <span style='padding-left:20px; font-size: 11px; text-align: right;'>{child.title} ({count})</span>")
+                # if count == 0:
+                # else:
+                #     child_display = f"   📄 {child.title} ({count})"
+                lookups.append((f"child_{child.id}", child_display))
+        
+        return lookups
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            if str(value).startswith('child_'):
+                # Child service selected - filter by child_services field
+                child_id = str(value).split('_')[1]
+                return queryset.filter(child_services__id=child_id)
+            else:
+                # Parent service selected - filter by services field
+                return queryset.filter(services__id=value)
+        return queryset
+
 
 
 class IndustryFilter(ProjectCountMixin, SimpleListFilter):
@@ -203,48 +525,6 @@ class TechnologyFilter(ProjectCountMixin, SimpleListFilter):
     field_name = "technology"
     title_field = "name"
 
-# class ProjectAdminForm(forms.ModelForm):
-#     class Meta:
-#         model = Project
-#         fields = '__all__'
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Dynamically filter child_services based on selected services
-#         if self.instance and self.instance.pk:
-#             # Get the selected parent services
-#             selected_services = self.instance.services.all()
-#             # Get all child services of the selected parent services
-#             child_services = ServicePage.objects.filter(
-#                 parent__in=selected_services, is_parent=False
-#             )
-#             # Update the queryset for the child_services field
-#             self.fields['child_services'].queryset = child_services
-#         else:
-#             # If no instance exists (e.g., creating a new project), show no child services
-#             self.fields['child_services'].queryset = ServicePage.objects.none()
-
-# class ProjectAdminForm(forms.ModelForm):
-#     class Meta:
-#         model = Project
-#         fields = '__all__'
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Set child_services to all non-parent services; filtering will happen via JS
-#         self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
-
-# class ProjectAdminForm(forms.ModelForm):
-#     class Meta:
-#         model = Project
-#         fields = '__all__'
-
-#     def __init__(self, *args, **kwargs):
-#         super().__init__(*args, **kwargs)
-#         # Set services to parent services only
-#         self.fields['services'].queryset = ServicePage.objects.filter(is_parent=True)
-#         # Default: all non-parent services
-#         self.fields['child_services'].queryset = ServicePage.objects.filter(is_parent=False)
 
 
 class ProjectAdminForm(forms.ModelForm):
@@ -318,6 +598,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         ServiceFilter,
         IndustryFilter,
         TechnologyFilter,
+        # ChildServiceFilter,
     )
     list_per_page = 20
     ordering = ("pk",)
