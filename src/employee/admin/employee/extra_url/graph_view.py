@@ -212,18 +212,39 @@ class GraphView(admin.ModelAdmin):
         ).filter(**filters).annotate(
             t_hours=Sum("hours"),
         ).order_by("project_hour__date")
-        employee_hour = EmployeeProjectHour.objects.filter(
+        employee_hours = EmployeeProjectHour.objects.select_related(
+            "project_hour",
+            "project_hour__project",
+        ).filter(
             **filters
-        )
+        ).only(
+            "project_hour__date",
+            "project_hour__project__title",
+            "hours",
+        ).order_by("project_hour__date")
+
+        projects_hour_by_date = dict()
+        for employee_hour in employee_hours:
+            date = employee_hour.project_hour.date.strftime("%d-%b-%Y")
+            item = projects_hour_by_date.get(date, [])
+            if item:
+                item.append([employee_hour.project_hour.project.title, employee_hour.hours])
+            else:
+                projects_hour_by_date[date] = [[employee_hour.project_hour.project.title, employee_hour.hours]]
         for weekly_employee_hour in weekly_employee_hours:
-            chart["weekly"]["labels"].append(weekly_employee_hour.get("project_hour__date").strftime("%d-%b-%Y"))
+            date = weekly_employee_hour.get("project_hour__date").strftime("%d-%b-%Y")
+            chart["weekly"]["labels"].append(date)
             chart["weekly"]["data"].append(weekly_employee_hour.get("t_hours"))
-            employee_hour_list = employee_hour.filter(
-                project_hour__date=weekly_employee_hour.get("project_hour__date")
-            ).values_list("hours", flat=True)
-            chart["weekly"]["per_day_count"].append(list(employee_hour_list))
+            # employee_hour_list = employee_hour.filter(
+            #     project_hour__date=weekly_employee_hour.get("project_hour__date")
+            # ).values_list("hours", flat=True)
+            # chart["weekly"]["per_day_count"].append(list(employee_hour_list))
+            chart["weekly"]["per_day_count"].append(projects_hour_by_date.get(date, []))
             chart["weekly"]["total_hour"] += weekly_employee_hour.get("t_hours")        
 
+        """
+        for daily update
+        """
         # filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
         # filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
         filters.pop("project_hour__date__gte")
@@ -258,17 +279,12 @@ class GraphView(admin.ModelAdmin):
             total_hour = Sum("hours")
         ).order_by("created_at__date")
 
-        is_per_day_count_data_add = False
         for daily_employee_hour in daily_employee_hours:
             date = daily_employee_hour.get("created_at__date").strftime("%d-%b-%Y")
             chart["daily"]["labels"].append(date)
             chart["daily"]["data"].append(daily_employee_hour.get("total_hour"))
             chart["daily"]["total_hour"] += daily_employee_hour.get("total_hour")
-            if is_per_day_count_data_add is False:
-                chart["daily"]["per_day_count"] = [daily_project_base_employee_hour_data.get(date, [])]
-                is_per_day_count_data_add = True
-            else:
-                chart["daily"]["per_day_count"].append(daily_project_base_employee_hour_data.get(date, []))
+            chart["daily"]["per_day_count"].append(daily_project_base_employee_hour_data.get(date, []))
         return chart
 
     def project_graph_view(self, request, *args, **kwargs):
@@ -403,15 +419,15 @@ class GraphView(admin.ModelAdmin):
             ).order_by("date")
             chart = {
                 "weekly": {
-                    "client_name": client_name,
                     "label": "Weekly Hours",
+                    "client_name": client_name,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
                 },
                 "monthly": {
-                    "client_name": client_name,
                     "label": "Monthly Hours",
+                    "client_name": client_name,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
@@ -453,12 +469,14 @@ class GraphView(admin.ModelAdmin):
                 ).order_by("date")
                 chart = {
                     "weekly": {
+                        "label": "Weekly Hours",
                         "client_name": client_name,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
                     },
                     "monthly": {
+                        "label": "Monthly Hours",
                         "client_name": client_name,
                         "labels": [],
                         "data": [],
