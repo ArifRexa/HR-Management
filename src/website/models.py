@@ -1373,7 +1373,7 @@ class IndustryMetadata(BaseMetadata):
 
 class ProjectMetadata(BaseMetadata):
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, null=True, blank=True
+        Project, on_delete=models.CASCADE, null=True, blank=True, related_name="project_metadata"
     )
 
 

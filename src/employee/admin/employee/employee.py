@@ -683,6 +683,12 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
         "consider_late_attendance_fine",
     ]
 
+    def get_form(self, request, obj, change, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        if request.user.is_superuser is True or request.user.employee.operation is True:
+            form.base_fields["note"].required = False
+        return form
+
     def get_actions(self, request):
         """
         remove the action 'consider_late_attendance_fine' if an user don't have permission to change lateattendancefine. 
@@ -902,7 +908,8 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             obj.year = obj.date.year
         if not obj.month:
             obj.month = obj.date.month
-        obj.hr_feedback_given_by = request.user.employee
+        if request.user.is_superuser is True or request.user.employee.operation is True:
+            obj.hr_feedback_given_by = request.user.employee
         obj.save()
 
     class Media:

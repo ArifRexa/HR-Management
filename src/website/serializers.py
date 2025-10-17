@@ -1492,10 +1492,19 @@ class ClientReviewSerializer(serializers.ModelSerializer):
 
 class LeaderSerializer(serializers.ModelSerializer):
     designation = serializers.CharField(source="designation.title")
+    social_links = serializers.SerializerMethodField()
 
     class Meta:
         model = Employee
-        fields = ("full_name", "designation")
+        fields = ("full_name", "designation", "social_links")
+
+    def get_social_links(self, obj):
+        socials = EmployeeSocial.objects.filter(employee=obj).select_related('social_name')
+        return {
+            social.social_name.title.lower(): social.url
+            for social in socials
+            if social.social_name and social.url
+        }
 
 
 class LeadershipSpeechSerializer(serializers.ModelSerializer):
