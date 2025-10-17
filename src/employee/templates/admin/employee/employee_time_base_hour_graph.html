@@ -6,8 +6,8 @@
     <style>
         #main{
             max-height: 80vh;
-            /* min-width: 100vw; */
-            min-width: 100%;
+            min-width: 100vw;
+            /* min-width: 100%; */
         }
         #hourChart{
             width: 100% !important;
@@ -152,6 +152,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end',
@@ -197,6 +198,7 @@
                         
                         tooltip: {
                             enabled: true,
+                             position: 'nearest', 
                             bodyFont: {
                                 size: 16  // increase body font size
                             },
