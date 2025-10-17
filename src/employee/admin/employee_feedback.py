@@ -7,9 +7,11 @@ from django.contrib.auth.models import AnonymousUser
 from django.db import models
 from django.db.models import Case, Max, OuterRef, Subquery, Value, When
 from django.shortcuts import redirect
+from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.urls import path
 from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 
 from config.settings import employee_ids
@@ -262,7 +264,7 @@ class EmployeeFeedbackAdmin(admin.ModelAdmin):
                 "boss_rating",
             ]
         return []
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -371,6 +373,7 @@ class EmployeePerformanceFeedbackAdmin(admin.ModelAdmin):
         "initiative_learning_rating",
         "rating_definition",
         "total_rating",
+        "get_note",
         "rating_given_by",
         # "probation_risk",
     )
@@ -381,7 +384,14 @@ class EmployeePerformanceFeedbackAdmin(admin.ModelAdmin):
     )
     search_fields = ("employee__full_name",)
     autocomplete_fields = ("employee",)
-    
+
+    @admin.display(description="Note", ordering="note")
+    def get_note(self, obj):
+        # /home/borhan/Desktop/mediusware_erp/src/employee/templates/admin/employee/list
+        html_template = get_template("admin/employee/list/feedback_note.html")
+        context = {"message": obj.note}
+        return format_html(html_template.render(context))
+
     @admin.display(description="Rating Given By", ordering="created_by")
     def rating_given_by(self, obj):
         return obj.created_by.employee.full_name

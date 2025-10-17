@@ -15,7 +15,7 @@ class ProjectKeywordSerializer(serializers.ModelSerializer):
         ref_name = 'ProjectKeywordReadOnly'
 
 class ProjectMetadataSerializer(serializers.ModelSerializer):
-    keywords = ProjectKeywordSerializer(many=True, source='projectkeyword_set', read_only=True)
+    # keywords = ProjectKeywordSerializer(many=True, source='projectkeyword_set', read_only=True)
     
     class Meta:
         model = ProjectMetadata
@@ -37,7 +37,7 @@ class ProjectContentSerializer(serializers.ModelSerializer):
 class ProjectDetailSerializer(serializers.ModelSerializer):
     key_points = ProjectKeyPointSerializer(many=True, source='projectkeypoint_set', read_only=True)
     contents = ProjectContentSerializer(many=True, source='projectcontent_set', read_only=True)
-    metadata = ProjectMetadataSerializer(source='projectmetadata', read_only=True)
+    metadata = ProjectMetadataSerializer(source='project_metadata', many=True, read_only=True)  # ✅
     
     class Meta:
         model = Project

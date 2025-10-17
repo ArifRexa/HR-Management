@@ -1,0 +1,21 @@
+{% extends "admin/filter.html" %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .zero-count {
+        color: red !important;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h3>{{ title }}</h3>
+<ul>
+{% for choice in choices %}
+    <li{% if choice.selected %} class="selected"{% endif %}>
+    <a href="{{ choice.query_string|iriencode }}"{% if choice.css_class %} class="{{ choice.css_class }}"{% endif %}>{{ choice.display }}</a></li>
+{% endfor %}
+</ul>
+{% endblock %}

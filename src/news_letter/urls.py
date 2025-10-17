@@ -6,5 +6,5 @@ urlpatterns = [
     path('website/subscribers/', SubscriberListView.as_view(), name='subscriber-list'),
     path('website/subscribers/<int:identifier>/', SubscriberDetailView.as_view(), name='subscriber-detail'),
 
-    path('api/case-study-subscribe/', CaseStudySubscriptionView.as_view(), name='case-study-subscribe'),
+    path('website/case-study-subscribe/', CaseStudySubscriptionView.as_view(), name='case-study-subscribe'),
 ]
