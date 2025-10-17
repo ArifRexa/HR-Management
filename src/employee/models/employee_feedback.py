@@ -89,6 +89,11 @@ class EmployeePerformanceFeedback(TimeStampMixin, AuthorMixin):
             "Initiative & Learning rating (1-5). Weight: 10%. "
         )
     )
+    note = models.TextField(
+        blank=True,
+        null=True,
+        help_text=_("Additional notes or comments about the employee's performance.")
+    )
 
     class Meta:
         verbose_name = _("Employee Feedback")
