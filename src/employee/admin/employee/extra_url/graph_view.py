@@ -142,7 +142,7 @@ class GraphView(admin.ModelAdmin):
             filter_form=filter_form,
             title=Employee.objects.get(pk=kwargs.get('employee_id__exact'))
         )
-        return TemplateResponse(request, "admin/employee/time_base_hour_graph.html", context)
+        return TemplateResponse(request, "admin/employee/employee_time_base_hour_graph.html", context)
 
     def _get_employee_chart_data_by_daily_month_weekly_base(self, request, *args, **kwargs):
         """
@@ -212,6 +212,7 @@ class GraphView(admin.ModelAdmin):
         ).filter(**filters).annotate(
             t_hours=Sum("hours"),
         ).order_by("project_hour__date")
+
         employee_hours = EmployeeProjectHour.objects.select_related(
             "project_hour",
             "project_hour__project",
@@ -231,15 +232,24 @@ class GraphView(admin.ModelAdmin):
                 item.append([employee_hour.project_hour.project.title, employee_hour.hours])
             else:
                 projects_hour_by_date[date] = [[employee_hour.project_hour.project.title, employee_hour.hours]]
+
+        employee_hour = EmployeeProjectHour.objects.filter(
+            **filters
+        )
         for weekly_employee_hour in weekly_employee_hours:
             date = weekly_employee_hour.get("project_hour__date").strftime("%d-%b-%Y")
             chart["weekly"]["labels"].append(date)
             chart["weekly"]["data"].append(weekly_employee_hour.get("t_hours"))
-            # employee_hour_list = employee_hour.filter(
-            #     project_hour__date=weekly_employee_hour.get("project_hour__date")
-            # ).values_list("hours", flat=True)
-            # chart["weekly"]["per_day_count"].append(list(employee_hour_list))
-            chart["weekly"]["per_day_count"].append(projects_hour_by_date.get(date, []))
+            
+            employee_hour_list = employee_hour.filter(
+                project_hour__date=weekly_employee_hour.get("project_hour__date")
+            ).values_list("hours", flat=True)
+            chart["weekly"]["per_day_count"].append(
+                {
+                    "project_by_project_hour": projects_hour_by_date.get(date, []),
+                    "all_project_hour": list(employee_hour_list),
+                }
+            )
             chart["weekly"]["total_hour"] += weekly_employee_hour.get("t_hours")        
 
         """
