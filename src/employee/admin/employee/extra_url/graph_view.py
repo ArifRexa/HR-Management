@@ -199,10 +199,44 @@ class GraphView(admin.ModelAdmin):
         ).values("month").annotate(
             monthly_hour = Sum("hours")
         ).order_by("month")
+
+        employee_hours = EmployeeProjectHour.objects.select_related(
+            "project_hour",
+            "project_hour__project",
+        ).filter(
+            **filters
+        ).only(
+            "project_hour__date",
+            "project_hour__project__title",
+            "hours",
+        ).order_by("project_hour__date")
+
+        projects_hour_by_date = dict()
+        for employee_hour in employee_hours:
+            date = employee_hour.project_hour.date.strftime("%b-%Y")
+            item = projects_hour_by_date.get(date, [])
+            if item:
+                item.append([employee_hour.project_hour.project.title, employee_hour.hours])
+            else:
+                projects_hour_by_date[date] = [[employee_hour.project_hour.project.title, employee_hour.hours]]
+        
         for employee_monthly_hour in employee_monthly_hours:
-            chart["monthly"]["labels"].append(employee_monthly_hour.get("month").strftime("%d-%b-%Y"))
+            date = employee_monthly_hour.get("month")
+            chart["monthly"]["labels"].append(date.strftime("%d-%b-%Y"))
             chart["monthly"]["data"].append(employee_monthly_hour.get("monthly_hour"))
             chart["monthly"]["total_hour"] += employee_monthly_hour.get("monthly_hour")
+            year_month = employee_monthly_hour.get("month")
+            employee_hour_list = filtered_employee_hours.filter(
+                project_hour__date__month=year_month.month,
+                project_hour__date__year=year_month.year,
+            ).values_list("hours", flat=True)
+            print(year_month.year, year_month.month, employee_hour_list)
+            chart["monthly"]["per_day_count"].append(
+                {
+                    "project_by_project_hour": projects_hour_by_date.get(date.strftime("%b-%Y"), []),
+                    "all_project_hour": list(employee_hour_list),
+                }
+            )
         
         if request.GET.get('project_hour__date__gte') is None:
             filters["project_hour__date__gte"] = filters["project_hour__date__gte"] + relativedelta(months=6)
