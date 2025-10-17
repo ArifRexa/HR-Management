@@ -2662,7 +2662,7 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = AdditionalPages
         fields = [
-            'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
+            'id', 'title', 'slug', 'meta_title', 'description', 'created_at', 'updated_at',
             'hero_section', 'what_is', 'KeyThings', 'why_choose_us', 
             'our_process', 'faqs', 'team_elements', 'related_blogs', 'table_of_contents'
         ]
