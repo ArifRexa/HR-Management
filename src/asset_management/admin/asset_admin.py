@@ -728,13 +728,25 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         model_class = self.get_search_from_model(request)
         if not model_class:
             return queryset, use_distinct
+        
         field = request.GET.get("field_name")
         search_fields = {
             f"{field}__isnull": False,
         }
-        used_pks = model_class.objects.filter(**search_fields).values_list(
-            field, flat=True
-        )
+        if model_class==CPU and field in ["ram1", "ram2"]:
+            used_id = model_class.objects.filter(Q(ram1__isnull=False)|Q(ram2__isnull=False)).values_list(
+            "ram1", "ram2"
+            )
+            used_pks = []
+            for ids in used_id:
+                if ids[0]:
+                    used_pks.append(ids[0])
+                elif ids[1]:
+                    used_pks.append(ids[1])
+        else:
+            used_pks = model_class.objects.filter(**search_fields).values_list(
+                field, flat=True
+            )
 
         queryset = queryset.exclude(pk__in=used_pks)
 
