@@ -230,8 +230,10 @@
                                     else if (view === "daily"){
                                         return formatProjects(dataset.extraInfo[index]);
                                     }
-                                    const extra = dataset.extraInfo[index];
-                                    return `${extra.length}(${extra})`;
+                                    // const extra = dataset.extraInfo[index];
+                                    // console.log(extra);
+                                    // return `${extra.length}(${extra})`;
+                                    return formatProjects(dataset.extraInfo[index]);
                                 },
                             }
                         },
