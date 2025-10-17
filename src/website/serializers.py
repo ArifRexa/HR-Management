@@ -2657,15 +2657,36 @@ class AdditionalPagesSerializer(serializers.ModelSerializer):
     faqs = AdditionalPageFAQSerializer(many=True, read_only=True)
     team_elements = TeamElementSerializer(many=True, read_only=True)
     related_blogs = AdditionalPageRelatedBlogsSerializer(many=True, read_only=True, source='additional_page_related_blogs.all')
+    table_of_contents = serializers.SerializerMethodField()
        
     class Meta:
         model = AdditionalPages
         fields = [
             'id', 'title', 'slug', 'description', 'created_at', 'updated_at',
             'hero_section', 'what_is', 'KeyThings', 'why_choose_us', 
-            'our_process', 'faqs', 'team_elements', 'related_blogs'
+            'our_process', 'faqs', 'team_elements', 'related_blogs', 'table_of_contents'
         ]
         ref_name = 'AdditionalPages'
+
+    def get_table_of_contents(self, obj):
+        toc = []
+        
+        # Get What Is section title
+        what_is = obj.what_is_next.first()
+        if what_is and what_is.section_title:
+            toc.append(what_is.section_title)
+        
+        # Get Key Things section title
+        key_things = obj.additional_page_key_things.first()
+        if key_things and key_things.section_title:
+            toc.append(key_things.section_title)
+        
+        # Get Why Choose Us section title
+        why_choose_us = obj.additional_page_why_choose_us.first()
+        if why_choose_us and why_choose_us.section_title:
+            toc.append(why_choose_us.section_title)
+        
+        return toc
     
     def get_hero_section(self, obj):
         try:
