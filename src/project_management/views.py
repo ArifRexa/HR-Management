@@ -535,9 +535,10 @@ class ProjectDetailView(RetrieveAPIView):
         ).prefetch_related(
             'projectkeypoint_set',
             'projectcontent_set',
+            'project_metadata',  # ✅ matches related_name
             'platforms',
             'categories_tags',
             'industries',
             'services',
-            'technology'
+            'technology',
         )
