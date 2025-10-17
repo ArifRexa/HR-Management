@@ -125,7 +125,7 @@
                 data: {
                     labels: data.labels,
                     datasets: [{
-                        label: currentType,
+                        label: data.label,
                         data: data.data,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
@@ -172,12 +172,6 @@
                             titleFont: { size: 18 },
                             footerFont: { size: 14 },
                             displayColors: false,
-                            callbacks: {
-                                title: function(context){
-                                    return `${context[0].label} (${context[0].raw})`;
-                                },
-                                label: function() { return null; },
-                            }
                         },
                         legend: {
                             labels: { font: { size: 14 } }

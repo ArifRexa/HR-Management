@@ -404,12 +404,14 @@ class GraphView(admin.ModelAdmin):
             chart = {
                 "weekly": {
                     "client_name": client_name,
+                    "label": "Weekly Hours",
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
                 },
                 "monthly": {
                     "client_name": client_name,
+                    "label": "Monthly Hours",
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
