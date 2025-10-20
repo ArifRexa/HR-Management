@@ -243,13 +243,17 @@
 
                                     const dataset = context[0].dataset;
                                     const index = context[0].dataIndex;
-                                    if (dataset.extraInfo.length === 0) {
-                                        return '';
-                                    }
-                                    else if (view === "daily"){
+                                    const extra = dataset.extraInfo[index];
+                                    // if (dataset.extraInfo.length === 0) {
+                                    //     return '';
+                                    // }
+                                    if (view === "daily"){
                                         return formatProjects(dataset.extraInfo[index]);
                                     }
-                                    const extra = dataset.extraInfo[index];
+                                    if(view === "monthly"){
+                                        console.log(extra.all_project_hour);
+                                        return formatProjects(sumProjects(extra.project_by_project_hour));
+                                    }
                                     let formated_data = [
                                         `${extra.all_project_hour.length}(${extra.all_project_hour})`,
                                     ];
