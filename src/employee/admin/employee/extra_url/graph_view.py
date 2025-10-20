@@ -206,31 +206,29 @@ class GraphView(admin.ModelAdmin):
         ).filter(
             **filters
         ).only(
-            "project_hour__date",
+            "created_at",
             "project_hour__project__title",
             "hours",
         ).order_by("project_hour__date")
 
         projects_hour_by_date = dict()
         for employee_hour in employee_hours:
-            date = employee_hour.project_hour.date.strftime("%b-%Y")
+            date = employee_hour.created_at.strftime("%b-%Y")
             item = projects_hour_by_date.get(date, [])
             if item:
                 item.append([employee_hour.project_hour.project.title, employee_hour.hours])
             else:
                 projects_hour_by_date[date] = [[employee_hour.project_hour.project.title, employee_hour.hours]]
-        
         for employee_monthly_hour in employee_monthly_hours:
             date = employee_monthly_hour.get("month")
-            chart["monthly"]["labels"].append(date.strftime("%d-%b-%Y"))
+            chart["monthly"]["labels"].append(date.strftime("%b-%Y"))
             chart["monthly"]["data"].append(employee_monthly_hour.get("monthly_hour"))
             chart["monthly"]["total_hour"] += employee_monthly_hour.get("monthly_hour")
-            year_month = employee_monthly_hour.get("month")
-            employee_hour_list = filtered_employee_hours.filter(
-                project_hour__date__month=year_month.month,
-                project_hour__date__year=year_month.year,
+            employee_hour_list = EmployeeProjectHour.objects.filter(
+                employee_id=filters.get("employee_id__exact"),
+                created_at__date__month=date.month,
+                created_at__date__year=date.year,
             ).values_list("hours", flat=True)
-            print(year_month.year, year_month.month, employee_hour_list)
             chart["monthly"]["per_day_count"].append(
                 {
                     "project_by_project_hour": projects_hour_by_date.get(date.strftime("%b-%Y"), []),
