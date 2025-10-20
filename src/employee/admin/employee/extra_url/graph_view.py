@@ -194,11 +194,10 @@ class GraphView(admin.ModelAdmin):
             **filters,
         )
         employee_monthly_hours = filtered_employee_hours.annotate(
-            month=TruncMonth("created_at__date"),
-            year=TruncYear("created_at__date"),
-        ).values("year", "month").annotate(
+            month=TruncMonth("project_hour__date"),
+        ).values("month").annotate(
             monthly_hour = Sum("hours")
-        ).order_by("year", "month")
+        ).order_by("month")
 
         employee_hours = EmployeeProjectHour.objects.select_related(
             "project_hour",
@@ -206,14 +205,14 @@ class GraphView(admin.ModelAdmin):
         ).filter(
             **filters
         ).only(
-            "created_at",
+            "project_hour__date",
             "project_hour__project__title",
             "hours",
-        ).order_by("created_at")
+        ).order_by("project_hour__date")
 
         projects_hour_by_date = dict()
         for employee_hour in employee_hours:
-            date = employee_hour.created_at.strftime("%b-%Y")
+            date = employee_hour.project_hour.date.strftime("%b-%Y")
             item = projects_hour_by_date.get(date, [])
             if item:
                 item.append([employee_hour.project_hour.project.title, employee_hour.hours])
@@ -226,16 +225,17 @@ class GraphView(admin.ModelAdmin):
             chart["monthly"]["total_hour"] += employee_monthly_hour.get("monthly_hour")
             employee_hour_list = EmployeeProjectHour.objects.filter(
                 employee_id=filters.get("employee_id__exact"),
-                created_at__date__month=date.month,
-                created_at__date__year=date.year,
-            ).values("created_at", "project_hour__project__title", "hours")
+                project_hour__date__month=date.month,
+                project_hour__date__year=date.year,
+            ).values('id', "project_hour__date", "project_hour__project__title", "hours")
             # print('======',list(employee_hour_list))
             chart["monthly"]["per_day_count"].append(
                 {
                     "project_by_project_hour": projects_hour_by_date.get(date.strftime("%b-%Y"), []),
                     "all_project_hour": list([
                         {
-                            "date": a.get("created_at").strftime("%d-%b-%Y"),
+                            'id': a.get('id'),
+                            "date": a.get("project_hour__date").strftime("%d-%b-%Y"),
                             "name": a.get("project_hour__project__title"),
                             "hour": a.get("hours"),
                         }
