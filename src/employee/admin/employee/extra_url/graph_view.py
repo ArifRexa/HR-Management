@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.core.exceptions import PermissionDenied
 from django.db.models import F, Sum
-from django.db.models.functions import TruncMonth
+from django.db.models.functions import TruncMonth, TruncYear
 from django.template.response import TemplateResponse
 
 from employee.admin.employee._forms import (
@@ -190,15 +190,15 @@ class GraphView(admin.ModelAdmin):
         filters['employee_id__exact'] = employee_id
         if request.GET.get('project_hour__date__gte') is None:
             filters["project_hour__date__gte"] = filters["project_hour__date__gte"] - relativedelta(months=6)
-        
         filtered_employee_hours = EmployeeProjectHour.objects.filter(
             **filters,
         )
         employee_monthly_hours = filtered_employee_hours.annotate(
-            month=TruncMonth("created_at__date")
-        ).values("month").annotate(
+            month=TruncMonth("created_at__date"),
+            year=TruncYear("created_at__date"),
+        ).values("year", "month").annotate(
             monthly_hour = Sum("hours")
-        ).order_by("month")
+        ).order_by("year", "month")
 
         employee_hours = EmployeeProjectHour.objects.select_related(
             "project_hour",
@@ -209,7 +209,7 @@ class GraphView(admin.ModelAdmin):
             "created_at",
             "project_hour__project__title",
             "hours",
-        ).order_by("project_hour__date")
+        ).order_by("created_at")
 
         projects_hour_by_date = dict()
         for employee_hour in employee_hours:
@@ -228,11 +228,19 @@ class GraphView(admin.ModelAdmin):
                 employee_id=filters.get("employee_id__exact"),
                 created_at__date__month=date.month,
                 created_at__date__year=date.year,
-            ).values_list("hours", flat=True)
+            ).values("created_at", "project_hour__project__title", "hours")
+            # print('======',list(employee_hour_list))
             chart["monthly"]["per_day_count"].append(
                 {
                     "project_by_project_hour": projects_hour_by_date.get(date.strftime("%b-%Y"), []),
-                    "all_project_hour": list(employee_hour_list),
+                    "all_project_hour": list([
+                        {
+                            "date": a.get("created_at").strftime("%d-%b-%Y"),
+                            "name": a.get("project_hour__project__title"),
+                            "hour": a.get("hours"),
+                        }
+                        for a in employee_hour_list
+                    ]),
                 }
             )
         
