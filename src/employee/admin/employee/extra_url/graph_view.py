@@ -609,6 +609,7 @@ class GraphView(admin.ModelAdmin):
             employee_projects[employee_id].append([entry["project__title"], entry["hours"]])
 
         chart = {
+            "label": "Daily Project Hours",
             "labels": [],
             "data": [],
             "projects_hour": [],
