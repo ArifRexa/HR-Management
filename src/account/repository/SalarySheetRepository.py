@@ -1044,6 +1044,7 @@ class SalarySheetRepository:
             employee=employee,
             month=current_month,
             year=current_year,
+            is_consider=False
         ).count()
         print("Late Count:", late_count)
         total_fine = 0.00

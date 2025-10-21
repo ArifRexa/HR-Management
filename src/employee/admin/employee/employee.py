@@ -780,7 +780,7 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
                         year=current_year,
                         total_late_attendance_fine=0.00,  # Ignored as per request
                         date=late_date,
-                        is_consider=True,
+                        is_consider=False,
                         entry_time=entry_time,
                     )
                     fine.save()
