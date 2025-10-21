@@ -9,6 +9,12 @@
             /* min-width: 100vw; */
             min-width: 100%;
         }
+        #hourChart{
+            width: 100% !important;
+        }
+        #calendarbox0{
+            top: 100px !important;
+        }
         #calendarbox1{
             left: 85% !important;
             top: 100px !important;
@@ -71,6 +77,9 @@
                 {{ filter_form.media }}
                 {{ filter_form }}
                 <button type="submit" class="default">Filter</button>
+                <button type="button" onclick="window.location.href = window.location.pathname;">
+                    Reset
+                </button>
             </form>
         </div>
     </div>
@@ -149,6 +158,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         datalabels: {
                             anchor: 'end',
@@ -194,6 +204,7 @@
                         
                         tooltip: {
                             enabled: true,
+                             position: 'nearest', 
                             bodyFont: {
                                 size: 16  // increase body font size
                             },
@@ -221,19 +232,33 @@
                                     function formatProjects(data) {
                                         return data.map(([name, value]) => `${name} : ${value}`);
                                     }
+                                    function sumProjects(data) {
+                                        const totals = {};
+                                        // sum values for each project
+                                        data.forEach(([project, value]) => {
+                                            totals[project] = (totals[project] || 0) + value;
+                                        });
+                                        return Object.entries(totals);
+                                    }
 
                                     const dataset = context[0].dataset;
                                     const index = context[0].dataIndex;
-                                    if (dataset.extraInfo.length === 0) {
-                                        return '';
-                                    }
-                                    else if (view === "daily"){
+                                    const extra = dataset.extraInfo[index];
+                                    // if (dataset.extraInfo.length === 0) {
+                                    //     return '';
+                                    // }
+                                    if (view === "daily"){
                                         return formatProjects(dataset.extraInfo[index]);
                                     }
-                                    // const extra = dataset.extraInfo[index];
-                                    // console.log(extra);
-                                    // return `${extra.length}(${extra})`;
-                                    return formatProjects(dataset.extraInfo[index]);
+                                    if(view === "monthly"){
+                                        console.log(extra.all_project_hour);
+                                        return formatProjects(sumProjects(extra.project_by_project_hour));
+                                    }
+                                    let formated_data = [
+                                        `${extra.all_project_hour.length}(${extra.all_project_hour})`,
+                                    ];
+                                    formated_data = formated_data.concat(formatProjects(sumProjects(extra.project_by_project_hour)));
+                                    return formated_data;
                                 },
                             }
                         },
