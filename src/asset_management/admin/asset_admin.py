@@ -758,6 +758,11 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
                 FixedAsset.objects.filter(category=obj.category).count() + 1
             )
             obj.asset_id = f"{obj.category.serial_short_form_prefix or obj.category.name.upper()}-{asset_number}"
+        else:
+            asset_id = obj.asset_id.split("-")
+            if len(asset_id) == 2:
+                prefix = obj.category.serial_short_form_prefix or obj.category.name.upper()
+                obj.asset_id = f"{prefix}-{asset_id[1]}"
         return super().save_model(request, obj, form, change)
 
     @admin.action(description="Mark selected as active/inactive")
