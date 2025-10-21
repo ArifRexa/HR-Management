@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='fixedasset',
             name='asset_id',
-            field=models.CharField(blank=True, help_text='Unique identifier for the asset', max_length=100, null=True, unique=True),
+            field=models.CharField(blank=True, help_text='Unique identifier for the asset', max_length=100, null=True),
         ),
     ]
