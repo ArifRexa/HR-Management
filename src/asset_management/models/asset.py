@@ -422,7 +422,11 @@ class FixedAsset(AuthorMixin, TimeStampMixin):
     )
     asset_id = models.CharField(
         max_length=100,
-        editable=False,
+        # editable=False,
+        unique=True,
+        help_text="Unique identifier for the asset",
+        null=True, 
+        blank=True,
     )
     vendor = models.ForeignKey(
         to=Vendor,
