@@ -43,7 +43,7 @@ def sum_employee_salary(employee_salary: QuerySet, target_column: str):
         salary_sheet__date__gte=financial_year.start_date,
         salary_sheet__date__lte=financial_year.end_date,
     ).aggregate(total=Sum(target_column))
-    return total["total"]
+    return total["total"] or 0
 
 
 @register.filter
