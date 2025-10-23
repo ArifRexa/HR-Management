@@ -526,10 +526,10 @@ class CPU(AuthorMixin, TimeStampMixin):
 
 
 class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
-    employee = models.ForeignKey(
+    employee = models.OneToOneField(
         to=Employee,
         on_delete=models.CASCADE,
-        related_name="employee_fixed_assets_employee",
+        # related_name="employee_fixed_assets_employee",
         blank=True,
     )
     table = models.ManyToManyField(

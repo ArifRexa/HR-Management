@@ -8,10 +8,9 @@ from django.http import HttpResponseRedirect
 from django.template.loader import get_template
 from django.urls import path
 from django.utils import timezone
-from django.utils.html import format_html, strip_tags
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from asset_management.models.asset import EmployeeFixedAsset
 from config.admin.utils import simple_request_filter
 from employee.admin.employee._actions import EmployeeActions
 from employee.admin.employee._inlines import EmployeeInline
@@ -47,7 +46,7 @@ from employee.models.employee_activity import (
 )
 from employee.models.employee_skill import EmployeeSkill
 from employee.models.employee_social import SocialMedia
-from project_management.models import EmployeeProjectHour, Project
+from project_management.models import Project
 from settings.models import FinancialYear
 from user_auth.models import UserLogs
 
@@ -56,7 +55,9 @@ from user_auth.models import UserLogs
 class SocialMediaAdmin(admin.ModelAdmin):
     def has_module_permission(self, request):
         return False
+ 
 
+from rangefilter.filters import NumericRangeFilter       
 
 @admin.register(Employee)
 class EmployeeAdmin(
@@ -75,6 +76,7 @@ class EmployeeAdmin(
     list_per_page = 20
     ordering = ["-active"]
     list_filter = [
+        ("salaryhistory__payable_salary", NumericRangeFilter),
         "active",
         "gender",
         "permanent_date",
@@ -131,11 +133,9 @@ class EmployeeAdmin(
     ]
 
     def lookup_allowed(self, lookup, value):
-        if lookup in ["employeeskill__skill__title__exact"]:
+        if lookup in ["employeeskill__skill__title__exact", "salaryhistory__payable_salary_min", "salaryhistory__payable_salary_max"]:
             return True
         return super().lookup_allowed(lookup, value)
-    
-    
 
     # def save_model(self, request, obj, form, change):
     #     print(obj.__dict__)
@@ -228,7 +228,7 @@ class EmployeeAdmin(
             app_label=app_label, model=model_name.lower()
         )
         return ct.model_class()
-    
+
     def get_search_results(self, request, queryset, search_term):
         query_params = request.GET
         qs, use_distinct = super().get_search_results(
@@ -245,7 +245,9 @@ class EmployeeAdmin(
                 field, flat=True
             )
 
-            queryset = Employee.objects.filter(active=True).exclude(pk__in=used_pks)
+            queryset = Employee.objects.filter(active=True).exclude(
+                pk__in=used_pks
+            )
 
             return queryset, use_distinct
 
@@ -615,7 +617,7 @@ class FAQAdmin(admin.ModelAdmin):
         return (
             super().get_queryset(request).filter(active=True).order_by("-rank")
         )
-        
+
     def has_module_permission(self, request):
         return False
 
@@ -685,16 +687,23 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     def get_form(self, request, obj, change, **kwargs):
         form = super().get_form(request, obj, change, **kwargs)
-        if request.user.is_superuser is True or request.user.employee.operation is True:
+        if (
+            request.user.is_superuser is True
+            or request.user.employee.operation is True
+        ):
             form.base_fields["note"].required = False
         return form
 
     def get_actions(self, request):
         """
-        remove the action 'consider_late_attendance_fine' if an user don't have permission to change lateattendancefine. 
+        remove the action 'consider_late_attendance_fine' if an user don't have permission to change lateattendancefine.
         """
         actions = super().get_actions(request)
-        if request.user.is_superuser is False and request.user.employee.operation is False and "consider_late_attendance_fine" in actions.keys():
+        if (
+            request.user.is_superuser is False
+            and request.user.employee.operation is False
+            and "consider_late_attendance_fine" in actions.keys()
+        ):
             del actions["consider_late_attendance_fine"]
         return actions
 
@@ -806,13 +815,10 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     @admin.action(description="Consider late attendance fine")
     def consider_late_attendance_fine(self, request, queryset):
-        queryset.filter(
-            is_request_for_consider=True
-        ).update(
+        queryset.filter(is_request_for_consider=True).update(
             is_consider=True,
             hr_feedback_given_by=request.user.employee,
         )
-
 
     @admin.display(description="Employee", ordering="employee__full_name")
     def get_employee(self, obj):
@@ -849,10 +855,19 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
 
     def get_readonly_fields(self, request, obj):
         base_readonly_fields = super().get_readonly_fields(request, obj)
-        readonly_fields = set(base_readonly_fields) | set(self.get_fields(request, obj))
-        if request.user.is_superuser is True or request.user.employee.operation is True:
+        readonly_fields = set(base_readonly_fields) | set(
+            self.get_fields(request, obj)
+        )
+        if (
+            request.user.is_superuser is True
+            or request.user.employee.operation is True
+        ):
             return base_readonly_fields
-        elif request.user.has_perm("employee.change_lateattendancefine") is True and obj is not None and obj.is_request_for_consider is False:
+        elif (
+            request.user.has_perm("employee.change_lateattendancefine") is True
+            and obj is not None
+            and obj.is_request_for_consider is False
+        ):
             readonly_fields.remove("note")
             readonly_fields.remove("is_request_for_consider")
         return readonly_fields
@@ -890,12 +905,14 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             request, extra_context=extra_context
         )
         # return super().changelist_view(request, extra_context=extra_context)
-    
+
     @admin.display(description="Employee Remarks")
     def get_short_note(self, obj):
         if obj.note is None:
             return None
-        template = get_template("admin/employee/late_attendance_fine_consider_note.html").render(
+        template = get_template(
+            "admin/employee/late_attendance_fine_consider_note.html"
+        ).render(
             context={
                 "note": obj.note,
                 "hr_note": obj.hr_note,
@@ -908,12 +925,16 @@ class LateAttendanceFineAdmin(admin.ModelAdmin):
             obj.year = obj.date.year
         if not obj.month:
             obj.month = obj.date.month
-        if request.user.is_superuser is True or request.user.employee.operation is True:
+        if (
+            request.user.is_superuser is True
+            or request.user.employee.operation is True
+        ):
             obj.hr_feedback_given_by = request.user.employee
         obj.save()
 
     class Media:
         css = {"all": ("employee/css/list.css",)}
+
 
 class EmployeeUnderTPMForm(forms.ModelForm):
     class Meta:
@@ -1328,7 +1349,7 @@ class UserLogsAdmin(admin.ModelAdmin):
     )
     ordering = ("-loging_time",)
     actions = ["logout_selected_users", "logout_all_users"]
-    
+
     def has_module_permission(self, request):
         return False
 

@@ -148,7 +148,7 @@ class AssetAdmin(admin.ModelAdmin):
         "is_available",
     )
     change_form_template = "admin/asset/asset_change_form.html"
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -418,10 +418,10 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
-    
+
     def has_module_permission(self, request):
         return False
-    
+
     @admin.display(description="Assigned Assets")
     def get_assets(self, obj):
         # print(dir(obj))
@@ -465,7 +465,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "update_status_pending",
         "update_status_in_progress",
     ]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -569,7 +569,7 @@ class AssetCategoryModelAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -582,7 +582,7 @@ class AssetBrandModelAdmin(admin.ModelAdmin):
     search_fields = [
         "name",
     ]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -593,7 +593,7 @@ class RAMSizeModelAdmin(admin.ModelAdmin):
     search_fields = [
         "ram_capacity",
     ]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -604,7 +604,7 @@ class MonitorSizeModelAdmin(admin.ModelAdmin):
     search_fields = [
         "display_size",
     ]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -613,7 +613,7 @@ class MonitorSizeModelAdmin(admin.ModelAdmin):
 class SSDorHDDSizeModelAdmin(admin.ModelAdmin):
     list_display = ["id", "storage_capacity"]
     search_fields = ["storage_capacity"]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -622,7 +622,7 @@ class SSDorHDDSizeModelAdmin(admin.ModelAdmin):
 class CasingBrandModelAdmin(admin.ModelAdmin):
     list_display = ["id", "name"]
     search_fields = ["name"]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -631,7 +631,7 @@ class CasingBrandModelAdmin(admin.ModelAdmin):
 class ProcessorDataModelAdmin(admin.ModelAdmin):
     list_display = ["id", "processor_info"]
     search_fields = ["processor_info"]
-    
+
     def has_module_permission(self, request):
         return False
 
@@ -674,7 +674,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "core__processor_info",
         "gpu",
         "other_specs",
-        "asset_id"
+        "asset_id",
     ]
 
     fields = [
@@ -728,15 +728,15 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         model_class = self.get_search_from_model(request)
         if not model_class:
             return queryset, use_distinct
-        
+
         field = request.GET.get("field_name")
         search_fields = {
             f"{field}__isnull": False,
         }
-        if model_class==CPU and field in ["ram1", "ram2"]:
-            used_id = model_class.objects.filter(Q(ram1__isnull=False)|Q(ram2__isnull=False)).values_list(
-            "ram1", "ram2"
-            )
+        if model_class == CPU and field in ["ram1", "ram2"]:
+            used_id = model_class.objects.filter(
+                Q(ram1__isnull=False) | Q(ram2__isnull=False)
+            ).values_list("ram1", "ram2")
             used_pks = []
             for ids in used_id:
                 if ids[0]:
@@ -761,7 +761,10 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         else:
             asset_id = obj.asset_id.split("-")
             if len(asset_id) == 2:
-                prefix = obj.category.serial_short_form_prefix or obj.category.name.upper()
+                prefix = (
+                    obj.category.serial_short_form_prefix
+                    or obj.category.name.upper()
+                )
                 obj.asset_id = f"{prefix}-{asset_id[1]}"
         return super().save_model(request, obj, form, change)
 
@@ -864,7 +867,7 @@ class CreatedByUserFilter(RelatedFieldListFilter):
         # users that appear in EmployeeFixedAsset.created_by
         qs = (
             User.objects.filter(
-                employee__employee_fixed_assets_employee__created_by__isnull=False
+                employee__employeefixedasset__created_by__isnull=False
             )
             .distinct()
             .order_by("first_name", "last_name")
@@ -882,7 +885,7 @@ class EmployeeWithAssetFilter(SimpleListFilter):
         # annotate every employee with number of fixed-assets
         employees = (
             Employee.objects.filter(active=True)
-            .annotate(asset_cnt=Count("employee_fixed_assets_employee"))
+            .annotate(asset_cnt=Count("employeefixedasset"))
             .order_by("full_name")
         )
         return [
@@ -1029,8 +1032,16 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         # 1.  grab the old data (empty QS when creating)
         old_obj = EmployeeFixedAsset.objects.filter(pk=obj.pk).first()
         old_values = {}  # field -> set(old assets)
-        for f in ('table','chair','monitor','keyboard','mouse',
-                'headphone','web_cam','cpu'):
+        for f in (
+            "table",
+            "chair",
+            "monitor",
+            "keyboard",
+            "mouse",
+            "headphone",
+            "web_cam",
+            "cpu",
+        ):
             old_values[f] = set(getattr(old_obj, f).all()) if old_obj else set()
 
         # 2.  save first so the M2M relations are committed
@@ -1038,22 +1049,29 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
 
         # 3.  compare and log
         field_to_name = {
-            'table':'Table','chair':'Chair','monitor':'Monitor',
-            'keyboard':'Keyboard','mouse':'Mouse','headphone':'Headphone',
-            'web_cam':'Webcam','cpu':'CPU'
+            "table": "Table",
+            "chair": "Chair",
+            "monitor": "Monitor",
+            "keyboard": "Keyboard",
+            "mouse": "Mouse",
+            "headphone": "Headphone",
+            "web_cam": "Webcam",
+            "cpu": "CPU",
         }
 
         for field, name in field_to_name.items():
-            new_set = set(form.cleaned_data[field])   # already a QS
-            added   = new_set - old_values[field]
+            new_set = set(form.cleaned_data[field])  # already a QS
+            added = new_set - old_values[field]
             removed = old_values[field] - new_set
 
             for asset in added:
-                self.log_assignment(obj.employee, asset, 'ASSIGN',
-                                    f'{name} added')
+                self.log_assignment(
+                    obj.employee, asset, "ASSIGN", f"{name} added"
+                )
             for asset in removed:
-                self.log_assignment(obj.employee, asset, 'RETURN',
-                                f'{name} removed')
+                self.log_assignment(
+                    obj.employee, asset, "RETURN", f"{name} removed"
+                )
 
     @admin.display(description="Created By")
     def get_created_by(self, obj):

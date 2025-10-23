@@ -87,6 +87,7 @@ INSTALLED_APPS = [
     "drf_yasg",
     "adminsortable",
     "news_letter",
+    "rangefilter",
 ] + API_APPS
 
 

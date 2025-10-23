@@ -97,3 +97,4 @@ drf-yasg[validation]
 django-admin-sortable==2.2.4
 pydyf==0.8.0
 pandas
+django-admin-rangefilter==0.13.3
