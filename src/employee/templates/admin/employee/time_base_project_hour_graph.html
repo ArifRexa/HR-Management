@@ -206,13 +206,13 @@
                                     const range       = labelToDateRange(label, currentView);
 
                                     /* 2. pick the employee id from the dataset */
-                                    const employee_id = context.chart.data.datasets[0].employee_id;
+                                    const project_id = context.chart.data.datasets[0].project_id;
 
                                     /* 3. build the new query string */
                                     const base = window.location.origin;
                                     console.log(base)
                                     const qs   = new URLSearchParams({
-                                        employee__id__exact: employee_id,
+                                        project__id__exact: project_id,
                                         created_at__date__gte: range.start,
                                         created_at__date__lte: range.end
                                     });
