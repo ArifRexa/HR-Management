@@ -40,8 +40,8 @@ from settings.models import Notice
 
 
 def formal_summery(request):
-    if not request.path == "/admin/":
-        return {}
+    # if not request.path == "/admin/":
+    #     return {}
     if not request.user.is_authenticated:
         return {}
 
@@ -300,11 +300,45 @@ def all_notices(request):
             start_date__lte=timezone.now(), end_date__gte=timezone.now()
         ).order_by("-rank", "-created_at")
     }
+    
+
+from django.db.models import Max
+
+
+def all_employees_last_slot(request):
+    """
+    Active employees + their latest slot choice (Half/Full/N/A).
+    MySQL 5.x compatible.
+    """
+    # 1. latest slot id per employee
+    # today = timezone.now().date()
+    latest_ids = (
+        EmployeeAvailableSlot.objects.values("employee")
+        .annotate(max_id=Max("id"))
+        .values_list("max_id", flat=True)
+    )
+
+    # 2. fetch only those rows
+    slots = {
+        s.employee_id: s.get_slot_display()  # 'Half Time' / 'Full Time' / 'N/A'
+        for s in EmployeeAvailableSlot.objects.filter(id__in=latest_ids)
+    }
+
+    # 3. attach to active employees
+    employees = Employee.objects.filter(active=True).order_by("full_name")
+    available_employee = []
+    for emp in employees:
+        slot = slots.get(emp.id, None)
+        if slot is not None and slot != "N/A":
+            emp.slot_label = slots.get(emp.id, "—")
+            available_employee.append(emp)
+
+    return {"all_employees_last_slot": available_employee}
 
 
 def get_announcement(request):
-    if not request.path == "/admin/":
-        return []
+    # if not request.path == "/admin/":
+    #     return []
     data = []
     now = timezone.now()
 
@@ -351,6 +385,15 @@ def get_announcement(request):
 
     # Announcements
     # data.extend(announcements)
+    
+    available_slot = all_employees_last_slot(request).get("all_employees_last_slot")
+    
+    data_available_slot = [employee.full_name for employee in available_slot]
+    if available_slot and data_available_slot:
+        data_available_slot = ", ".join(data_available_slot)
+        data.append(
+            f"Available Resources ({data_available_slot})"
+        )
 
     # Get Leaves
     leaves_today = (
@@ -671,35 +714,4 @@ def available_slot_form(request):
     }
 
 
-from django.db.models import Max
 
-
-def all_employees_last_slot(request):
-    """
-    Active employees + their latest slot choice (Half/Full/N/A).
-    MySQL 5.x compatible.
-    """
-    # 1. latest slot id per employee
-    today = timezone.now().date()
-    latest_ids = (
-        EmployeeAvailableSlot.objects.values("employee")
-        .annotate(max_id=Max("id"))
-        .values_list("max_id", flat=True)
-    )
-
-    # 2. fetch only those rows
-    slots = {
-        s.employee_id: s.get_slot_display()  # 'Half Time' / 'Full Time' / 'N/A'
-        for s in EmployeeAvailableSlot.objects.filter(id__in=latest_ids)
-    }
-
-    # 3. attach to active employees
-    employees = Employee.objects.filter(active=True).order_by("full_name")
-    available_employee = []
-    for emp in employees:
-        slot = slots.get(emp.id, None)
-        if slot is not None and slot != "N/A":
-            emp.slot_label = slots.get(emp.id, "—")
-            available_employee.append(emp)
-
-    return {"all_employees_last_slot": available_employee}
