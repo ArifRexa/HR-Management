@@ -40,8 +40,8 @@ from settings.models import Notice
 
 
 def formal_summery(request):
-    # if not request.path == "/admin/":
-    #     return {}
+    if not request.path == "/admin/":
+        return {}
     if not request.user.is_authenticated:
         return {}
 
@@ -145,7 +145,7 @@ def formal_summery(request):
         # "employee_projects": employee_projects,
         # "ord": order_by,
         "current_month_feedback_done": current_month_feedback_done,
-        "announcement": get_announcement(request=request),
+        "announcement": get_announcement(request=request).get("announcement", None),
         "birthday_today": get_managed_birthday_image(request),
         # "increments": employee_formal_summery.increments,
         # "permanents": permanents,
@@ -463,7 +463,10 @@ def get_announcement(request):
         )
         data = format_html(data)
 
-    return data if data else None
+    # return data if data else None
+    return {
+        "announcement": data if data else None
+    }
 
 
 def get_managed_birthday_image(request):
