@@ -250,7 +250,7 @@ class CandidateAdmin(admin.ModelAdmin):
     @admin.display(ordering="created_at")
     def contact_information(self, obj: Candidate):
         jobs = getattr(obj, "jobs", None)
-        candidate_job = jobs[-1] if jobs else None
+        candidate_job = obj.get_last_job()
         return format_html(
             f"{obj.full_name} <br>"
             f"{obj.email} <br>"
