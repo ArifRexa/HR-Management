@@ -100,34 +100,47 @@
         let currentType = 'bar';
 
         function labelToDateRange(label, view) {
-            const months = {
-                Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-                Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
-            };
+    /* 1. sanity check */
+    if (typeof label !== 'string') return null;
 
-            /* 1. parse the label -------------------------------------------------- */
-            const [, d, m, y] = label.match(/(\d{2})-(\w{3})-(\d{4})/);
-            const refDate = new Date(Date.UTC(y, months[m], d));   // label-day in UTC
-            let startDate, endDate;
-            console.log("reference ", refDate)
-            /* 2. pick the window -------------------------------------------------- */
-            if (view === 'daily') {
-                startDate = endDate = refDate;                       // same day
-            } else if (view === 'weekly') {
-                startDate = new Date(refDate);
-                startDate.setUTCDate(refDate.getUTCDate() - 6);     // 6 days before
-                endDate   = refDate;                                 // inclusive end
-            } else {                                               // monthly
-                startDate = new Date(Date.UTC(y, months[m], 1));     // 1st of month
-                endDate   = new Date(Date.UTC(y, months[m] + 1, 0)); // last day of month
-            }
-            console.log(startDate, endDate)
-            /* 3. format as YYYY-MM-DD --------------------------------------------- */
-            const pad = n => n.toString().padStart(2, '0');
-            const toStr = date => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
+    /* 2. try to parse --------------------------------------------------- */
+    const months = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
+                     Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
 
-            return { start: toStr(startDate), end: toStr(endDate) };
-        }
+    /* daily / weekly labels come as “DD-Mon-YYYY” */
+    let d, m, y;
+    if (label.length === 11) {                    // 01-Sep-2025
+        const mArr = label.match(/(\d{2})-(\w{3})-(\d{4})/);
+        if (!mArr) return null;
+        [, d, m, y] = mArr;
+    } else {                                      // Sep-2025
+        const mArr = label.match(/(\w{3})-(\d{4})/);
+        if (!mArr) return null;
+        [, m, y] = mArr;
+        d = 1;
+    }
+
+    /* 3. build the range (same as before) ------------------------------- */
+    const refDate = new Date(Date.UTC(y, months[m], d));
+    let startDate, endDate;
+
+    if (view === 'daily') {
+        startDate = endDate = refDate;
+    } else if (view === 'weekly') {
+        startDate = new Date(refDate);
+        startDate.setUTCDate(refDate.getUTCDate() - 6);
+        endDate   = refDate;
+    } else { // monthly
+        startDate = new Date(Date.UTC(y, months[m], 1));
+        endDate   = new Date(Date.UTC(y, months[m] + 1, 0));
+    }
+
+    const pad = n => n.toString().padStart(2, '0');
+    const toStr = date =>
+        `${date.getUTCFullYear()}-${pad(date.getUTCMonth()+1)}-${pad(date.getUTCDate())}`;
+
+    return { start: toStr(startDate), end: toStr(endDate) };
+}
 
         function getConfig(type, view) {
             return {
@@ -187,7 +200,9 @@
                             listeners: {
                                 click: function(context){
                                     /* 1. get the label and turn it into a date range */
+                                    console.log("click")
                                     const label       = context.chart.data.labels[context.dataIndex];
+                                    console.log("click", label)
                                     const range       = labelToDateRange(label, currentView);
 
                                     /* 2. pick the employee id from the dataset */
