@@ -100,29 +100,33 @@
         let currentType = 'bar';
 
         function labelToDateRange(label, view) {
-            /* 1. parse the displayed label (Mon-YYYY) */
             const months = {
-                Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
-                Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11
+                Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
             };
-            const [, m, y] = label.match(/(\w{3})-(\d{4})/);
-            const startDate = new Date(Date.UTC(y, months[m], 1));   // 1-st of the month
-            const startStr  = startDate.toISOString().slice(0,10);  // YYYY-MM-DD
 
-            /* 2. compute the end of the period */
-            let endDate, endStr;
-            if (view === 'weekly') {
-                endDate = new Date(startDate);
-                endDate.setDate(startDate.getDate() + 6);           // 7 days inclusive
-            } else if (view == "daily"){
-                endDate = startDate
+            /* 1. parse the label -------------------------------------------------- */
+            const [, d, m, y] = label.match(/(\d{2})-(\w{3})-(\d{4})/);
+            const refDate = new Date(Date.UTC(y, months[m], d));   // label-day in UTC
+            let startDate, endDate;
+            console.log("reference ", refDate)
+            /* 2. pick the window -------------------------------------------------- */
+            if (view === 'daily') {
+                startDate = endDate = refDate;                       // same day
+            } else if (view === 'weekly') {
+                startDate = new Date(refDate);
+                startDate.setUTCDate(refDate.getUTCDate() - 6);     // 6 days before
+                endDate   = refDate;                                 // inclusive end
+            } else {                                               // monthly
+                startDate = new Date(Date.UTC(y, months[m], 1));     // 1st of month
+                endDate   = new Date(Date.UTC(y, months[m] + 1, 0)); // last day of month
             }
-            else {  // monthly
-                endDate = new Date(Date.UTC(y, months[m] + 1, 0, 23, 59, 59)); // last second of the month
-            }
-            endStr = endDate.toISOString().slice(0,10);
+            console.log(startDate, endDate)
+            /* 3. format as YYYY-MM-DD --------------------------------------------- */
+            const pad = n => n.toString().padStart(2, '0');
+            const toStr = date => `${date.getUTCFullYear()}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())}`;
 
-            return { start: startStr, end: endStr };
+            return { start: toStr(startDate), end: toStr(endDate) };
         }
 
         function getConfig(type, view) {
@@ -179,17 +183,23 @@
                                 else return "red";
                             },
                             listeners: {
-                                click: function(context){
-                                    
-                                    const label = context.chart.data.labels[context.dataIndex];
-                                    const range = labelToDateRange(label, currentView);
+                                click: function(context) {
+                                    /* 1. get the label and turn it into a date range */
+                                    const label       = context.chart.data.labels[context.dataIndex];
+                                    const range       = labelToDateRange(label, currentView);
+
+                                    /* 2. pick the employee id from the dataset */
                                     const employee_id = context.chart.data.datasets[0].employee_id;
-                                    /* build the Django-admin query string */
-                                    const url =
-                                        `https://hr.mediusware.xyz/admin/project_management/dailyprojectupdate/` +
-                                        `?employee__id__exact=${employee_id}&created_at__date__gte=${range.start}&created_at__date__lte=${range.end}`;
-                                    
-                                    window.open(url, '_blank');
+
+                                    /* 3. build the new query string */
+                                    const base = window.location.origin;
+                                    console.log(base)
+                                    const qs   = new URLSearchParams({
+                                        employee__id__exact: employee_id,
+                                        created_at__date__gte: range.start,
+                                        created_at__date__lte: range.end
+                                    });
+                                    window.open(`${base}/admin/project_management/dailyprojectupdate/?${qs}`, '_blank');
                                 },
                                 enter: function(context) {
                                     // Change cursor to pointer when hovering over a datalabel
