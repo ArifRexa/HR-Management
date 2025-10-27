@@ -1736,7 +1736,7 @@ class ArchivePageBody(TimeStampMixin):
 
 
 
-
+# ======================================== Pricing Models ========================================
 class ServiceNameForPricing(TimeStampMixin):
     name = models.CharField(max_length=255)
 
@@ -1792,6 +1792,10 @@ class PricingFeaturesColumnsName(TimeStampMixin):
     )
     feature_name = models.CharField(max_length=255)
 
+    class Meta:
+        verbose_name = "Pricing Feature Row Name"
+        verbose_name_plural = "Pricing Feature Row Names"
+
 
 class PricingFeaturesColumnsContent(TimeStampMixin):
     column_name = models.ForeignKey(
@@ -1811,6 +1815,10 @@ class PricingFeaturesColumnsContent(TimeStampMixin):
 
     def __str__(self):
         return f"{self.header.title}: {self.value[:30]}"
+    
+    class Meta:
+        verbose_name = "Pricing Feature Row Content"
+        verbose_name_plural = "Pricing Feature Row Contents"
    
 
 class FeatureName(TimeStampMixin):

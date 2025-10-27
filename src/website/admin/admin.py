@@ -2443,7 +2443,7 @@ class ArchivePageAdmin(nested_admin.NestedModelAdmin):
     list_display = ("seo_title", "slug", "section_title", "section_description")
     inlines = [ArchivePageBodyInline]
 
-
+# ======================================= Pricing Dynamic Admin =====================================================
 class PricingTableHeaderInline(nested_admin.NestedStackedInline):
     model = PricingTableHeader
     extra = 1
@@ -2560,6 +2560,7 @@ class PricingFeaturesColumnsContentInline(nested_admin.NestedStackedInline):
     form = PricingFeaturesColumnsContentInlineForm
     extra = 1
     fields = ['header', 'value']  # Explicitly define field order
+    verbose_name = "Pricing Features Row Content"
 
 
 
@@ -2572,6 +2573,7 @@ class PricingFeaturesColumnsNameInline(nested_admin.NestedStackedInline):
     model = PricingFeaturesColumnsName
     extra = 0
     inlines = [PricingFeaturesColumnsContentInline, FeatureNameInline]
+    verbose_name = "Pricing Features Row Name"
 
 
 
