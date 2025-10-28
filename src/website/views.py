@@ -63,6 +63,7 @@ from website.models import (
     PageBanner,
     PlagiarismInfo,
     PostCredential,
+    PricingFeature,
     Service,
     Subscription,
     VideoTestimonial,
@@ -119,6 +120,7 @@ from website.serializers import (
     OurTechnologySerializer,
     PageBannerSerializer,
     PostCredentialSerializer,
+    PricingFeatureSerializer,
     ProjectDetailsSerializer,
     ProjectListSerializer,
     ProjectSerializer,
@@ -2291,5 +2293,36 @@ class HireDeveloperPageDetailView(RetrieveAPIView):
 
 
 
+# =============================== Pricing Views ==========================================
+
+class PricingFeatureListView(ListAPIView):
+    queryset = PricingFeature.objects.prefetch_related(
+        'features_columns_content__contents__header__ServiceNameForPricing',
+        'features_columns_content__feature_names__values',
+    )
+    serializer_class = PricingFeatureSerializer
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of all pricing features",
+        responses={200: PricingFeatureSerializer(many=True)},
+        tags=['Pricing']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
+class PricingFeatureDetailView(RetrieveAPIView):
+    queryset = PricingFeature.objects.prefetch_related(
+        'features_columns_content__contents__header__ServiceNameForPricing',
+        'features_columns_content__feature_names__values',
+    )
+    serializer_class = PricingFeatureSerializer
+    lookup_field = 'pk'
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a specific pricing feature by ID",
+        responses={200: PricingFeatureSerializer, 404: "Not found"},
+        tags=['Pricing']
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
