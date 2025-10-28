@@ -75,6 +75,7 @@ from website.models import (
     EmployeePerspective,
     EmployeeTestimonial,
     FAQHomeTitle,
+    FeatureName,
     Gallery,
     HistoryOfTech,
     HomeBanner,
@@ -100,6 +101,11 @@ from website.models import (
     OurProcessHome,
     PageBanner,
     PostCredential,
+    PricingFeature,
+    PricingFeaturesColumnsContent,
+    PricingFeaturesColumnsName,
+    PricingTableHeader,
+    PricingValue,
     ProjectMetadata,
     ProjectServiceSolutionTitle,
     ProjectsVideoTitle,
@@ -2946,3 +2952,54 @@ class HireDeveloperPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = HireDeveloperPage
         fields = '__all__'
+
+
+
+# =================================== Pricing Page Serializers ================================
+
+class PricingTableHeaderSerializer(serializers.ModelSerializer):
+    service_name = serializers.CharField(source='ServiceNameForPricing.name', read_only=True)
+
+    class Meta:
+        model = PricingTableHeader
+        fields = ['id', 'title', 'service_name']
+
+
+class PricingValueSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PricingValue
+        fields = ['id', 'plan_type', 'value_type', 'text_value']
+
+
+class FeatureNameSerializer(serializers.ModelSerializer):
+    values = PricingValueSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FeatureName
+        fields = ['id', 'name', 'values']
+
+
+class PricingFeaturesColumnsContentSerializer(serializers.ModelSerializer):
+    header = PricingTableHeaderSerializer(read_only=True)
+
+    class Meta:
+        model = PricingFeaturesColumnsContent
+        fields = ['id', 'header', 'value']
+
+
+class PricingFeaturesColumnsNameSerializer(serializers.ModelSerializer):
+    contents = PricingFeaturesColumnsContentSerializer(many=True, read_only=True)
+    feature_names = FeatureNameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PricingFeaturesColumnsName
+        fields = ['id', 'feature_name', 'contents', 'feature_names']
+
+
+class PricingFeatureSerializer(serializers.ModelSerializer):
+    service_name_name = serializers.CharField(source='service_name.name', read_only=True)
+    features_columns_content = PricingFeaturesColumnsNameSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = PricingFeature
+        fields = ['id', 'service_name', 'service_name_name', 'features_columns_content']
