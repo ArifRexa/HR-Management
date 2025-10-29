@@ -536,6 +536,60 @@ class BlogIndustryFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(industry_details__id__exact=self.value())
         return queryset
+    
+
+class BlogServiceFilter(admin.SimpleListFilter):
+    title = "Service"
+    parameter_name = "parent_services__id__exact"
+
+    def lookups(self, request, model_admin):
+        services = ServicePage.objects.filter(is_parent=True).annotate(
+            total_blog=Count("blogs_as_parent")
+        ).distinct()
+        
+        lookup_list = []
+        for service in services:
+            if service.total_blog == 0:
+                lookup_list.append((service.pk, service.title))
+            else:
+                lookup_list.append(
+                    (service.pk, f"{service.title} ({service.total_blog})")
+                )
+        return tuple(lookup_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(parent_services__id__exact=self.value())
+        return queryset
+
+
+
+class BlogTechnologyFilter(admin.SimpleListFilter):
+    title = "Technology"
+    parameter_name = "technology__id__exact"
+
+    def lookups(self, request, model_admin):
+        technologies = Technology.objects.annotate(
+            total_blog=Count("blog")  # Changed from "blogs" to "blog"
+        ).all()
+        
+        lookup_list = []
+        for tech in technologies:
+            if tech.total_blog == 0:
+                lookup_list.append((tech.pk, tech.name))
+            else:
+                lookup_list.append(
+                    (tech.pk, f"{tech.name} ({tech.total_blog})")
+                )
+        return tuple(lookup_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(technology__id__exact=self.value())
+        return queryset
+
+
+
 
 class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
     model = ServiceCategoryFAQ
@@ -1272,7 +1326,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "cta_title",
     )
     form = BlogForm
-    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter)
+    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter, BlogServiceFilter, BlogTechnologyFilter, "is_featured")
     list_per_page = 20
 
     class Media:
