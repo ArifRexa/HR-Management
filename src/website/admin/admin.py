@@ -2573,7 +2573,7 @@ class PricingFeaturesColumnsNameInline(nested_admin.NestedStackedInline):
     model = PricingFeaturesColumnsName
     extra = 0
     inlines = [PricingFeaturesColumnsContentInline, FeatureNameInline]
-    verbose_name = "Pricing Features Row Name"
+    verbose_name = "Pricing Parent Feature Name"
 
 
 

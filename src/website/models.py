@@ -1793,8 +1793,8 @@ class PricingFeaturesColumnsName(TimeStampMixin):
     feature_name = models.CharField(max_length=255)
 
     class Meta:
-        verbose_name = "Pricing Feature Row Name"
-        verbose_name_plural = "Pricing Feature Row Names"
+        verbose_name = "Pricing Parent Feature Name"
+        verbose_name_plural = "Pricing Parent Feature Name"
 
 
 class PricingFeaturesColumnsContent(TimeStampMixin):
@@ -1838,6 +1838,10 @@ class FeatureName(TimeStampMixin):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        verbose_name = "Sub Feature Name"
+        verbose_name_plural = "Sub Feature Name"
 
 class PricingValue(TimeStampMixin):
     TYPE_CHOICES = [
