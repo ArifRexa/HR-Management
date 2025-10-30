@@ -1732,3 +1732,143 @@ class ArchivePageBody(TimeStampMixin):
 
     def __str__(self):
         return self.seo_title or "Archive Page Body"
+    
+
+
+
+# ======================================== Pricing Models ========================================
+class ServiceNameForPricing(TimeStampMixin):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+class PricingTableHeader(TimeStampMixin):
+    ServiceNameForPricing = models.ForeignKey(
+        ServiceNameForPricing, 
+        on_delete=models.CASCADE,
+        related_name='pricing_table_headers',
+        null=True,
+        blank=True
+    )
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.title} - {self.ServiceNameForPricing.name}" 
+    
+
+class PricingTable(TimeStampMixin):
+    title = models.CharField(max_length=255)
+    starter_title = models.CharField(max_length=255, null=True, blank=True)
+    growth_title = models.CharField(max_length=255, null=True, blank=True)
+    pro_title = models.CharField(max_length=255, null=True, blank=True)
+    enterprise_title = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.title or "Pricing Table"
+    
+
+
+class PricingFeature(TimeStampMixin):
+    service_name = models.ForeignKey(
+        ServiceNameForPricing, 
+        on_delete=models.CASCADE,
+        related_name='pricing_features',
+        null=True,
+        blank=True
+    )
+    
+    # pricing_table = models.ForeignKey(
+    #     PricingTable, 
+    #     on_delete=models.CASCADE, 
+    #     related_name='features',
+    # )
+
+class PricingFeaturesColumnsName(TimeStampMixin):
+    pricing_feature = models.ForeignKey(
+        PricingFeature,
+        on_delete=models.CASCADE,
+        related_name='features_columns_content',
+    )
+    feature_name = models.CharField(max_length=255)
+
+    class Meta:
+        verbose_name = "Pricing Parent Feature Name"
+        verbose_name_plural = "Pricing Parent Feature Name"
+
+
+class PricingFeaturesColumnsContent(TimeStampMixin):
+    column_name = models.ForeignKey(
+        PricingFeaturesColumnsName,
+        on_delete=models.CASCADE,
+        related_name='contents'
+    )
+    header = models.ForeignKey(
+        PricingTableHeader,
+        on_delete=models.CASCADE,
+        verbose_name="Pricing Column",
+        help_text="Select the pricing column this content belongs to",
+        
+
+    )
+    value = models.TextField(blank=True, null=True, help_text="Cell content for this column")
+
+    def __str__(self):
+        return f"{self.header.title}: {self.value[:30]}"
+    
+    class Meta:
+        verbose_name = "Pricing Feature Row Content"
+        verbose_name_plural = "Pricing Feature Row Contents"
+   
+
+class FeatureName(TimeStampMixin):
+    # pricing_feature = models.ForeignKey(
+    #     PricingFeature,
+    #     on_delete=models.CASCADE,
+    #     related_name='names',
+    # )
+    pricing_features_columns_name = models.ForeignKey(
+        PricingFeaturesColumnsName,
+        on_delete=models.CASCADE,
+        related_name='feature_names',
+        null=True,
+        blank=True
+    )
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        verbose_name = "Sub Feature Name"
+        verbose_name_plural = "Sub Feature Name"
+
+class PricingValue(TimeStampMixin):
+    TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('boolean', 'True/False'),
+    ]
+    PLAN_CHOICES = [
+        ('starter', 'Starter'),
+        ('growth', 'Growth'),
+        ('pro', 'Pro'),
+        ('enterprise', 'Enterprise'),
+    ]
+
+    feature_name = models.ForeignKey(
+        'FeatureName',
+        on_delete=models.CASCADE,
+        related_name='values',
+        null=True, blank=True
+    )
+    plan_type = models.CharField(
+        max_length=20, choices=PLAN_CHOICES, null=True, blank=True
+    )
+    value_type = models.CharField(
+        max_length=10, choices=TYPE_CHOICES, null=True, blank=True,
+        help_text="Indicates whether the value is text or boolean"
+    )
+    text_value = models.CharField(
+        max_length=255, blank=True,
+        help_text="Enter text if value type is 'text'; otherwise write true/false or 1/0."
+    )

@@ -35,6 +35,8 @@ from website.views import (
     PageBannerListAPIView,
     PostCredentialCreateView,
     PreviewBlogRetrieveAPIView,
+    PricingFeatureDetailView,
+    PricingFeatureListView,
     ProjectTechnologyListAPIView,
     ProjectVideoListAPIView,
     ServeCategoryAPIView,
@@ -312,6 +314,10 @@ urlpatterns = [
     path('website/certifications-lists/', CertificationListView.as_view(), name='certification-list'),
     path('website/archive-page/<slug:slug>/', ArchivePageView.as_view(), name='archive-page'),
     path('website/hire-developer/', HireDeveloperPageDetailView.as_view(), name='hire-developer-detail'),
+
+    path('website/pricing-features/', PricingFeatureListView.as_view(), name='pricing-feature-list'),
+    path('website/pricing-features/<int:pk>/', PricingFeatureDetailView.as_view(), name='pricing-feature-detail'),
+
 
 ]
 

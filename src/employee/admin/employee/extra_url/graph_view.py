@@ -228,7 +228,6 @@ class GraphView(admin.ModelAdmin):
                 project_hour__date__month=date.month,
                 project_hour__date__year=date.year,
             ).values('id', "project_hour__date", "project_hour__project__title", "hours")
-            # print('======',list(employee_hour_list))
             chart["monthly"]["per_day_count"].append(
                 {
                     "project_by_project_hour": projects_hour_by_date.get(date.strftime("%b-%Y"), []),
@@ -295,12 +294,15 @@ class GraphView(admin.ModelAdmin):
         """
         for daily update
         """
-        # filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
-        # filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
-        filters.pop("project_hour__date__gte")
-        filters.pop("project_hour__date__lte")
-        filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
-        filters["created_at__date__lte"] = datetime.date.today()
+        
+        filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
+        filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
+        if request.GET.get('project_hour__date__gte') is None:
+            filters["created_at__date__gte"] = filters["created_at__date__gte"] + relativedelta(months=5)
+        # filters.pop("project_hour__date__gte")
+        # filters.pop("project_hour__date__lte")
+        # filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
+        # filters["created_at__date__lte"] = datetime.date.today()
 
         daily_employee_hours_filtered_queryset = DailyProjectUpdate.objects.filter(
             # status="approved",
@@ -349,7 +351,7 @@ class GraphView(admin.ModelAdmin):
             raise PermissionDenied("You do not have permission to access this feature.")
         
         current_date = datetime.date.today()
-        start_date = current_date - relativedelta(years=1)
+        start_date = current_date - relativedelta(months=6)
 
         initial_filter = {
             'date__gte': request.GET.get('date__gte', start_date),
@@ -428,7 +430,7 @@ class GraphView(admin.ModelAdmin):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
         current_date = datetime.date.today()
-        start_date = current_date - relativedelta(years=1)
+        start_date = current_date - relativedelta(months=6)
         initial_filter = {
             # "total_hour__gte" : request.GET.get("total_hour__gte"),
             # "total_hour__lte" : request.GET.get("total_hour__lte"),
@@ -449,7 +451,9 @@ class GraphView(admin.ModelAdmin):
     def _get_client_all_projects_dataset(self, client_id:int, filters:dict):
         projects = Project.objects.select_related("client").only("title", "client").filter(client_id=client_id)
         dataset = dict()
-        client_name = projects.first().client.name
+        client = projects.first().client
+        client_name = client.name
+        client_id = client.id
         date_filters = {
             "date__gte": filters.pop("date__gte")
         }
@@ -471,6 +475,7 @@ class GraphView(admin.ModelAdmin):
                 "weekly": {
                     "label": "Weekly Hours",
                     "client_name": client_name,
+                    "client_id": client_id,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
@@ -478,6 +483,7 @@ class GraphView(admin.ModelAdmin):
                 "monthly": {
                     "label": "Monthly Hours",
                     "client_name": client_name,
+                    "client_id": client_id,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
@@ -521,6 +527,7 @@ class GraphView(admin.ModelAdmin):
                     "weekly": {
                         "label": "Weekly Hours",
                         "client_name": client_name,
+                        "client_id": client_id,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
@@ -528,6 +535,7 @@ class GraphView(admin.ModelAdmin):
                     "monthly": {
                         "label": "Monthly Hours",
                         "client_name": client_name,
+                        "client_id": client_id,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
@@ -553,6 +561,7 @@ class GraphView(admin.ModelAdmin):
                     chart["monthly"]["total_hour"] += monthly_project_hour.get("total_hour")
                 dataset[project.title] = {
                     "name": project.title,
+                    "project_id": project.id,
                     **chart,
                 }
         return dataset

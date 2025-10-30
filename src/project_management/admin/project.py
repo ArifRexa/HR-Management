@@ -591,6 +591,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # ProjectPlatformImageInline,
         ProjectMetadataInline,
     )
+    
 
     list_filter = (
         "active",
@@ -598,6 +599,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         ServiceFilter,
         IndustryFilter,
         TechnologyFilter,
+        "is_special",
         # ChildServiceFilter,
     )
     list_per_page = 20

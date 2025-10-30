@@ -99,6 +99,7 @@
         let currentView = 'weekly';
         let currentType = 'bar';
 
+        setCalendarIfNoQueryParams(currentView);
         function labelToDateRange(label, view) {
     /* 1. sanity check */
     if (typeof label !== 'string') return null;
@@ -327,6 +328,52 @@
 
         let myChart = new Chart(ctx, getConfig(currentType, currentView));
 
+        function parseLocalDate(date_str) {
+            const parts = date_str.split("-");
+            const months = {
+                Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+                Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+            };
+
+            let day, monthAbbr, year;
+
+            if (parts.length === 3) {
+                // Format: "09-Oct-2025"
+                [day, monthAbbr, year] = parts;
+            } else if (parts.length === 2) {
+                // Format: "Oct-2025" → default to day 1
+                [monthAbbr, year] = parts;
+                day = 1;
+            } else {
+                throw new Error(`Invalid date format: ${date_str}`);
+            }
+
+            const monthIndex = months[monthAbbr];
+            if (monthIndex === undefined) {
+                throw new Error(`Invalid month abbreviation: ${monthAbbr}`);
+            }
+            const date = new Date(Number(year), monthIndex, Number(day));
+
+            // return YYYY-MM-DD in LOCAL time
+            const yyyy = date.getFullYear();
+            const mm = String(date.getMonth() + 1).padStart(2, "0");
+            const dd = String(date.getDate()).padStart(2, "0");
+            return `${yyyy}-${mm}-${dd}`;
+        }
+        
+        function setCalendarIfNoQueryParams(viewName) {
+            const url = new URL(window.location.href);
+            // check if there are any query parameters
+            if (![...url.searchParams.keys()].length) {
+                // find the calendar input by ID
+                const dateInput = document.getElementById("id_project_hour__date__gte");
+                if (dateInput) {
+                    const dates = chartData[viewName].labels;
+                    dateInput.value = parseLocalDate(dates[0]);
+                }
+            }
+        }
+
         function updateChart(view) {
             currentView = view;
             myChart.destroy();
@@ -342,6 +389,7 @@
 
             document.getElementById("chartTitle").innerText =
                 "{{ title }} (" + chartData[view].total_hour.toFixed(2) + ")";
+            setCalendarIfNoQueryParams(view);
         }
 
         function changeChartType(type) {

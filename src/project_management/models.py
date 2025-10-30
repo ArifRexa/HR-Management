@@ -1155,6 +1155,10 @@ class DailyProjectUpdate(TimeStampMixin, AuthorMixin):
                 "can_submit_previous_daily_project_update",
                 "Can Submit Previous Daily Project Update",
             ),
+            (
+                "can_filter_daily_project_update_by_client",
+                "Can filter daily project update by client",
+            ),
         ]
         verbose_name = "Daily Project Update"
         verbose_name_plural = "Daily Project Updates"

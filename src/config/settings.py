@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "account",
     "asset_management",
     "inventory_management",
+    "nested_admin",
     "website",
     "provident_fund",
     "haq_tower",
@@ -81,7 +82,6 @@ INSTALLED_APPS = [
     "storages",
     "user_auth",
     "channels",
-    "nested_admin",
     "smart_selects",
     "rest_framework_simplejwt",
     "drf_yasg",
@@ -272,6 +272,7 @@ Q_CLUSTER = {
 }
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5242880  # 5 MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
 TINYMCE_DEFAULT_CONFIG = {
     "theme": "silver",

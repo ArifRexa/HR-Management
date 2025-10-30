@@ -85,6 +85,7 @@ from website.models import (
     EngagementModelBanner,
     EventCalender,
     FAQHomeTitle,
+    FeatureName,
     Gallery,
     HistoryOfTech,
     HomeBanner,
@@ -107,6 +108,12 @@ from website.models import (
     PlagiarismInfo,
     PostCredential,
     PostPlatform,
+    PricingFeature,
+    PricingFeaturesColumnsContent,
+    PricingFeaturesColumnsName,
+    PricingTable,
+    PricingTableHeader,
+    PricingValue,
     ProjectClientReviewTitle,
     ProjectKeyFeatureTitle,
     ProjectResultsTitle,
@@ -121,6 +128,7 @@ from website.models import (
     ServiceContent,
     ServiceKeyword,
     ServiceMeatadata,
+    ServiceNameForPricing,
     ServiceProcess,
     ServiceTechnology,
     ServicesWeProvide,
@@ -528,6 +536,60 @@ class BlogIndustryFilter(admin.SimpleListFilter):
         if self.value():
             return queryset.filter(industry_details__id__exact=self.value())
         return queryset
+    
+
+class BlogServiceFilter(admin.SimpleListFilter):
+    title = "Service"
+    parameter_name = "parent_services__id__exact"
+
+    def lookups(self, request, model_admin):
+        services = ServicePage.objects.filter(is_parent=True).annotate(
+            total_blog=Count("blogs_as_parent")
+        ).distinct()
+        
+        lookup_list = []
+        for service in services:
+            if service.total_blog == 0:
+                lookup_list.append((service.pk, service.title))
+            else:
+                lookup_list.append(
+                    (service.pk, f"{service.title} ({service.total_blog})")
+                )
+        return tuple(lookup_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(parent_services__id__exact=self.value())
+        return queryset
+
+
+
+class BlogTechnologyFilter(admin.SimpleListFilter):
+    title = "Technology"
+    parameter_name = "technology__id__exact"
+
+    def lookups(self, request, model_admin):
+        technologies = Technology.objects.annotate(
+            total_blog=Count("blog")  # Changed from "blogs" to "blog"
+        ).all()
+        
+        lookup_list = []
+        for tech in technologies:
+            if tech.total_blog == 0:
+                lookup_list.append((tech.pk, tech.name))
+            else:
+                lookup_list.append(
+                    (tech.pk, f"{tech.name} ({tech.total_blog})")
+                )
+        return tuple(lookup_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(technology__id__exact=self.value())
+        return queryset
+
+
+
 
 class ServiceCategoryFAQInline(nested_admin.NestedTabularInline):
     model = ServiceCategoryFAQ
@@ -1264,7 +1326,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "cta_title",
     )
     form = BlogForm
-    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter)
+    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter, BlogServiceFilter, BlogTechnologyFilter, "is_featured")
     list_per_page = 20
 
     class Media:
@@ -2434,3 +2496,158 @@ class ArchivePageBodyInline(nested_admin.NestedStackedInline):
 class ArchivePageAdmin(nested_admin.NestedModelAdmin):
     list_display = ("seo_title", "slug", "section_title", "section_description")
     inlines = [ArchivePageBodyInline]
+
+# ======================================= Pricing Dynamic Admin =====================================================
+class PricingTableHeaderInline(nested_admin.NestedStackedInline):
+    model = PricingTableHeader
+    extra = 1
+
+
+@admin.register(ServiceNameForPricing)
+class ServiceNameForPricingAdmin(nested_admin.NestedModelAdmin):
+    list_display = ['name']
+    list_filter = ['name']
+    inlines = [PricingTableHeaderInline]
+
+
+
+
+class PricingValueInline(nested_admin.NestedStackedInline):
+    model = PricingValue
+    extra = 0
+    exclude = ['plan_type']
+
+
+
+
+class PricingFeaturesColumnsContentInlineForm(forms.ModelForm):
+    class Meta:
+        model = PricingFeaturesColumnsContent
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Start with an empty queryset
+        header_queryset = PricingTableHeader.objects.none()
+
+        # Case 1: If editing existing instance with header
+        if self.instance and self.instance.pk and self.instance.header_id:
+            # Keep the existing header and show others from same service
+            service = self.instance.header.ServiceNameForPricing
+            if service:
+                header_queryset = PricingTableHeader.objects.filter(
+                    ServiceNameForPricing=service
+                )
+            else:
+                header_queryset = PricingTableHeader.objects.filter(pk=self.instance.header_id)
+
+        # Case 2: If editing existing instance with column_name
+        elif self.instance and self.instance.pk and self.instance.column_name_id:
+            try:
+                column_name = self.instance.column_name
+                if column_name.pricing_feature_id:
+                    service = column_name.pricing_feature.service_name
+                    if service:
+                        header_queryset = PricingTableHeader.objects.filter(
+                            ServiceNameForPricing=service
+                        )
+            except Exception:
+                pass
+
+        # Case 3: New inline - try to get service from parent
+        else:
+            # Try to get column_name from form data (POST request)
+            if self.data:
+                # Get the prefix to find the column_name field
+                prefix = self.prefix
+                if prefix:
+                    # Extract parent's column_name from prefix
+                    # Prefix format: 'column_names-0-contents-0'
+                    parts = prefix.split('-contents-')
+                    if len(parts) > 0:
+                        parent_prefix = parts[0]
+                        column_name_key = f'{parent_prefix}-id'
+                        
+                        if column_name_key in self.data:
+                            try:
+                                column_name_id = self.data.get(column_name_key)
+                                if column_name_id:
+                                    column_name = PricingFeaturesColumnsName.objects.get(
+                                        pk=column_name_id
+                                    )
+                                    if column_name.pricing_feature_id:
+                                        service = column_name.pricing_feature.service_name
+                                        if service:
+                                            header_queryset = PricingTableHeader.objects.filter(
+                                                ServiceNameForPricing=service
+                                            )
+                            except (PricingFeaturesColumnsName.DoesNotExist, ValueError):
+                                pass
+
+            # Fallback: try initial data
+            if header_queryset.count() == 0 and 'column_name' in self.initial:
+                try:
+                    column_name = PricingFeaturesColumnsName.objects.get(
+                        pk=self.initial['column_name']
+                    )
+                    if column_name.pricing_feature_id:
+                        service = column_name.pricing_feature.service_name
+                        if service:
+                            header_queryset = PricingTableHeader.objects.filter(
+                                ServiceNameForPricing=service
+                            )
+                except (PricingFeaturesColumnsName.DoesNotExist, ValueError):
+                    pass
+
+        # Assign the queryset
+        self.fields['header'].queryset = header_queryset
+        
+        # If queryset is empty, show all headers (better UX than showing nothing)
+        if header_queryset.count() == 0:
+            self.fields['header'].queryset = PricingTableHeader.objects.all()
+
+
+
+class PricingFeaturesColumnsContentInline(nested_admin.NestedStackedInline):
+    model = PricingFeaturesColumnsContent
+    form = PricingFeaturesColumnsContentInlineForm
+    extra = 1
+    fields = ['header', 'value']  # Explicitly define field order
+    verbose_name = "Pricing Features Row Content"
+
+
+
+class FeatureNameInline(nested_admin.NestedStackedInline):
+    model = FeatureName
+    extra = 0
+    inlines = [PricingValueInline]
+
+class PricingFeaturesColumnsNameInline(nested_admin.NestedStackedInline):
+    model = PricingFeaturesColumnsName
+    extra = 0
+    inlines = [PricingFeaturesColumnsContentInline, FeatureNameInline]
+    verbose_name = "Pricing Parent Feature Name"
+
+
+
+@admin.register(PricingFeature)
+class PricingFeatureAdmin(nested_admin.NestedModelAdmin):
+    list_display = ['service_name']
+    list_filter = ['service_name']
+    inlines = [
+        PricingFeaturesColumnsNameInline, 
+        # FeatureNameInline
+    ]
+    change_form_template = 'admin/website/servecategory/change_form.html'
+
+
+
+@admin.register(PricingTable)
+class PricingTableAdmin(admin.ModelAdmin):
+    list_display = ['title']
+
+    def has_module_permission(self, request):
+        return False
+
+
