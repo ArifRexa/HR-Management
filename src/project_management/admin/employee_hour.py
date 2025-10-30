@@ -450,10 +450,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         ):
             if "employee" in filters:
                 filters.remove("employee")
-        # if request.user.has_perm(
-        #     "project_management.can_filter_daily_project_update_by_client"
-        # ) is False:
-        #    filters.remove("project__client")
+        if request.user.has_perm(
+            "project_management.can_filter_daily_project_update_by_client"
+        ) is False:
+           filters.remove("project__client")
         return filters
 
     def has_change_permission(self, request, obj=None):
