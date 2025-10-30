@@ -326,6 +326,29 @@
         }
 
         let myChart = new Chart(ctx, getConfig(currentType, currentView));
+        
+        function setCalendarIfNoQueryParams(viewName) {
+            const url = new URL(window.location.href);
+            // check if there are any query parameters
+            if (![...url.searchParams.keys()].length) {
+                // find the calendar input by ID
+                const dateInput = document.getElementById("id_project_hour__date__gte");
+                if (dateInput) {
+                    // set today's date in YYYY-MM-DD format
+                    const date = new Date()
+                    if(viewName === "daily"){
+                        date.setMonth(date.getMonth() - 1);
+                    }
+                    else if(viewName == "weekly"){
+                        date.setMonth(date.getMonth() - 6);
+                    }
+                    else{
+                        date.setFullYear(date.getFullYear() - 1);
+                    }
+                    dateInput.value = date.toISOString().split("T")[0];
+                }
+            }
+        }
 
         function updateChart(view) {
             currentView = view;
@@ -342,6 +365,7 @@
 
             document.getElementById("chartTitle").innerText =
                 "{{ title }} (" + chartData[view].total_hour.toFixed(2) + ")";
+            setCalendarIfNoQueryParams(view);
         }
 
         function changeChartType(type) {

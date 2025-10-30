@@ -228,7 +228,6 @@ class GraphView(admin.ModelAdmin):
                 project_hour__date__month=date.month,
                 project_hour__date__year=date.year,
             ).values('id', "project_hour__date", "project_hour__project__title", "hours")
-            # print('======',list(employee_hour_list))
             chart["monthly"]["per_day_count"].append(
                 {
                     "project_by_project_hour": projects_hour_by_date.get(date.strftime("%b-%Y"), []),
@@ -295,12 +294,15 @@ class GraphView(admin.ModelAdmin):
         """
         for daily update
         """
-        # filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
-        # filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
-        filters.pop("project_hour__date__gte")
-        filters.pop("project_hour__date__lte")
-        filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
-        filters["created_at__date__lte"] = datetime.date.today()
+        
+        filters["created_at__date__lte"] = filters.pop("project_hour__date__lte")
+        filters["created_at__date__gte"] = filters.pop("project_hour__date__gte")
+        if request.GET.get('project_hour__date__gte') is None:
+            filters["created_at__date__gte"] = filters["created_at__date__gte"] + relativedelta(months=5)
+        # filters.pop("project_hour__date__gte")
+        # filters.pop("project_hour__date__lte")
+        # filters["created_at__date__gte"] = datetime.date.today() - relativedelta(days=30)
+        # filters["created_at__date__lte"] = datetime.date.today()
 
         daily_employee_hours_filtered_queryset = DailyProjectUpdate.objects.filter(
             # status="approved",
