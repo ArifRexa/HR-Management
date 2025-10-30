@@ -185,6 +185,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         "employee",
         ProjectManagerFilter,
         ProjectLeadFilter,
+        "project__client",
     )
     search_fields = (
         "employee__full_name",
@@ -243,6 +244,7 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
     class Media:
         css = {"all": ("css/list.css", "css/daily-update.css")}
         js = ("js/list.js", "js/new_daily_update.js")
+
 
     def get_readonly_fields(self, request, obj=None):
 
@@ -448,6 +450,10 @@ class DailyProjectUpdateAdmin(admin.ModelAdmin):
         ):
             if "employee" in filters:
                 filters.remove("employee")
+        # if request.user.has_perm(
+        #     "project_management.can_filter_daily_project_update_by_client"
+        # ) is False:
+        #    filters.remove("project__client")
         return filters
 
     def has_change_permission(self, request, obj=None):
