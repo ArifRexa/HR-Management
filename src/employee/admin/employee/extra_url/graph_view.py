@@ -351,7 +351,7 @@ class GraphView(admin.ModelAdmin):
             raise PermissionDenied("You do not have permission to access this feature.")
         
         current_date = datetime.date.today()
-        start_date = current_date - relativedelta(years=1)
+        start_date = current_date - relativedelta(months=6)
 
         initial_filter = {
             'date__gte': request.GET.get('date__gte', start_date),
