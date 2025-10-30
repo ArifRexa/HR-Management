@@ -451,7 +451,9 @@ class GraphView(admin.ModelAdmin):
     def _get_client_all_projects_dataset(self, client_id:int, filters:dict):
         projects = Project.objects.select_related("client").only("title", "client").filter(client_id=client_id)
         dataset = dict()
-        client_name = projects.first().client.name
+        client = projects.first().client
+        client_name = client.name
+        client_id = client.id
         date_filters = {
             "date__gte": filters.pop("date__gte")
         }
@@ -473,6 +475,7 @@ class GraphView(admin.ModelAdmin):
                 "weekly": {
                     "label": "Weekly Hours",
                     "client_name": client_name,
+                    "client_id": client_id,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
@@ -480,6 +483,7 @@ class GraphView(admin.ModelAdmin):
                 "monthly": {
                     "label": "Monthly Hours",
                     "client_name": client_name,
+                    "client_id": client_id,
                     "labels": [],
                     "data": [],
                     "total_hour": 0,
@@ -523,6 +527,7 @@ class GraphView(admin.ModelAdmin):
                     "weekly": {
                         "label": "Weekly Hours",
                         "client_name": client_name,
+                        "client_id": client_id,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
@@ -530,6 +535,7 @@ class GraphView(admin.ModelAdmin):
                     "monthly": {
                         "label": "Monthly Hours",
                         "client_name": client_name,
+                        "client_id": client_id,
                         "labels": [],
                         "data": [],
                         "total_hour": 0,
@@ -555,6 +561,7 @@ class GraphView(admin.ModelAdmin):
                     chart["monthly"]["total_hour"] += monthly_project_hour.get("total_hour")
                 dataset[project.title] = {
                     "name": project.title,
+                    "project_id": project.id,
                     **chart,
                 }
         return dataset

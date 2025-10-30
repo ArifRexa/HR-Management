@@ -129,6 +129,48 @@
         let currentProject = projectData[default_selected_project] ? default_selected_project : projects_name.find(project_name => project_name !== default_selected_project);
         projectSelect.value = currentProject;
 
+        function labelToDateRange(label, view) {
+            /* 1. sanity check */
+            if (typeof label !== 'string') return null;
+
+            /* 2. try to parse --------------------------------------------------- */
+            const months = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,
+                            Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+
+            /* daily / weekly labels come as “DD-Mon-YYYY” */
+            let d, m, y;
+            if (label.length === 11) {                    // 01-Sep-2025
+                const mArr = label.match(/(\d{2})-(\w{3})-(\d{4})/);
+                if (!mArr) return null;
+                [, d, m, y] = mArr;
+            } else {                                      // Sep-2025
+                const mArr = label.match(/(\w{3})-(\d{4})/);
+                if (!mArr) return null;
+                [, m, y] = mArr;
+                d = 1;
+            }
+
+            /* 3. build the range (same as before) ------------------------------- */
+            const refDate = new Date(Date.UTC(y, months[m], d));
+            let startDate, endDate;
+
+            
+            if (view === 'weekly') {
+                startDate = new Date(refDate);
+                startDate.setUTCDate(refDate.getUTCDate() - 6);
+                endDate   = refDate;
+            } else { // monthly
+                startDate = new Date(Date.UTC(y, months[m], 1));
+                endDate   = new Date(Date.UTC(y, months[m] + 1, 0));
+            }
+
+            const pad = n => n.toString().padStart(2, '0');
+            const toStr = date =>
+                `${date.getUTCFullYear()}-${pad(date.getUTCMonth()+1)}-${pad(date.getUTCDate())}`;
+
+            return { start: toStr(startDate), end: toStr(endDate) };
+        }
+
         function getConfig(type, data) {
             return {
                 type: type,
@@ -137,6 +179,7 @@
                     datasets: [{
                         label: data.label,
                         data: data.data,
+                        client_id: data.client_id,
                         backgroundColor: [
                             'rgba(75, 192, 192, 0.2)',
                             'rgba(255, 99, 132, 0.2)',
@@ -175,6 +218,47 @@
                                 size: 16
                             },
                             color: "green",
+                            listeners: {
+                                click: function(context) {
+                                    /* 1. get the label and turn it into a date range */
+                                    const label = context.chart.data.labels[context.dataIndex];
+                                    const range = labelToDateRange(label, currentView);
+
+                                    const client_id = context.chart.data.datasets[0].client_id;
+                                    const base = window.location.origin;
+                                    if(default_selected_project === currentProject){
+                                        // for All projects
+                                        qs = new URLSearchParams(
+                                            {
+                                                project__client__id__exact: client_id,
+                                                created_at__date__gte: range.start,
+                                                created_at__date__lte: range.end
+                                            }
+                                        );
+                                    }else{
+                                        const project_id = projectData[currentProject]["project_id"]
+                                        qs = new URLSearchParams(
+                                            {
+                                                project__id__exact: project_id,
+                                                project__client__id__exact: client_id,
+                                                created_at__date__gte: range.start,
+                                                created_at__date__lte: range.end
+                                            }
+                                        );
+                                    }
+                                    
+                                    console.log(`${qs}`)
+                                    window.open(`${base}/admin/project_management/dailyprojectupdate/?${qs}`, '_blank');
+                                },
+                                enter: function(context) {
+                                    // Change cursor to pointer when hovering over a datalabel
+                                    context.chart.canvas.style.cursor = 'pointer';
+                                },
+                                leave: function(context) {
+                                    // Revert cursor to default when leaving a datalabel
+                                    context.chart.canvas.style.cursor = 'default';
+                                }
+                            }
                         },
                         tooltip: {
                             enabled: true,
