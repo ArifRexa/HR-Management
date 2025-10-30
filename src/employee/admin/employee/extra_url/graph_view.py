@@ -430,7 +430,7 @@ class GraphView(admin.ModelAdmin):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied("You do not have permission to access this feature.")
         current_date = datetime.date.today()
-        start_date = current_date - relativedelta(years=1)
+        start_date = current_date - relativedelta(months=6)
         initial_filter = {
             # "total_hour__gte" : request.GET.get("total_hour__gte"),
             # "total_hour__lte" : request.GET.get("total_hour__lte"),
