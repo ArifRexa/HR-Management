@@ -99,6 +99,7 @@
         let currentView = 'weekly';
         let currentType = 'bar';
 
+        setCalendarIfNoQueryParams(currentView);
         function labelToDateRange(label, view) {
     /* 1. sanity check */
     if (typeof label !== 'string') return null;
