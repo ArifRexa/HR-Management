@@ -1,10 +1,10 @@
-from html import escape
 import json
 from typing import Any, Union
 
 import nested_admin
 from django import forms
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -14,20 +14,14 @@ from django.db.models.query import QuerySet
 from django.forms.models import BaseInlineFormSet, model_to_dict
 from django.http.request import HttpRequest
 from django.template.loader import get_template
-from django.urls import reverse
 from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django_q.tasks import async_task
-from mptt.admin import MPTTModelAdmin
-from django.contrib.admin import SimpleListFilter
 
 # Register your models here.
 from employee.models.employee import Employee
-from project_management.models import ProjectHour
-from website.admin.industries_we_serve import ApplicationAreasInline, IndustryMetadataInline
-from website.admin.services import AdditionalServiceContentInline, ComparativeAnalysisInline, DevelopmentServiceProcessInline, DiscoverOurServiceInline, ServiceMetaDataInline
+from website.admin.industries_we_serve import IndustryMetadataInline
 from website.models import (
     CTA,
     FAQ,
@@ -37,23 +31,22 @@ from website.models import (
     AdditionalPageKeyThingsCards,
     AdditionalPageOurProcess,
     AdditionalPageRelatedBlogs,
-    AdditionalPageWhyChooseUs,
     AdditionalPages,
+    AdditionalPageWhyChooseUs,
     AllProjectsBanner,
     AllServicesTitle,
     ArchivePage,
     ArchivePageBody,
     Award,
     AwardCategory,
-    AwardYearGroup,
     Awards,
     AwardsBanner,
     AwardsTitle,
+    AwardYearGroup,
     BenefitsOfEmployment,
     BenefitsOfEmploymentTitle,
     Blog,
     BlogCategory,
-    BlogComment,
     BlogContext,
     BlogFAQ,
     BlogFAQSchema,
@@ -77,22 +70,19 @@ from website.models import (
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
     EcoSystem,
-    EcoSystemCardTags,
     EcoSystemCards,
-    EmployeePerspective,
+    EcoSystemCardTags,
     EmployeeTestimonial,
     EmployeeTestimonialTitle,
     EngagementModelBanner,
     EventCalender,
     FAQHomeTitle,
     FeatureName,
-    Gallery,
     HistoryOfTech,
     HomeBanner,
     Industry,
     IndustryTitle,
     IndustryWeServe,
-    Lead,
     Leadership,
     LeaderShipBanner,
     LeadershipSpeech,
@@ -105,7 +95,6 @@ from website.models import (
     OurJourney,
     OurJourneyTitle,
     PageBanner,
-    PlagiarismInfo,
     PostCredential,
     PostPlatform,
     PricingFeature,
@@ -130,15 +119,15 @@ from website.models import (
     ServiceMeatadata,
     ServiceNameForPricing,
     ServiceProcess,
-    ServiceTechnology,
     ServicesWeProvide,
     ServicesWeProvideCards,
+    ServiceTechnology,
     SpecialProjectsTitle,
     Tag,
     TeamElement,
     Technology,
-    TechnologyCTA,
     TechnologyCreatorsQuotes,
+    TechnologyCTA,
     TechnologyFAQ,
     TechnologyFAQSchema,
     TechnologyKeyThings,
@@ -162,8 +151,45 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.industries_we_serve import (
+    Benefits,
+    BenefitsQA,
+    CustomSolutions,
+    CustomSolutionsCards,
+    IndustryDetailsHeading,
+    IndustryDetailsHeadingCards,
+    IndustryDetailsHeroSection,
+    IndustryItemTags,
+    IndustryRelatedBlogs,
+    OurProcess,
+    ServeCategory,
+    ServeCategoryCTA,
+    ServeCategoryFAQSchema,
+    ServiceCategoryFAQ,
+    WhyChooseUs,
+    WhyChooseUsCards,
+    WhyChooseUsCardsDetails,
+)
+from website.models_v2.services import (
+    BestPracticesCards,
+    BestPracticesCardsDetails,
+    BestPracticesHeadings,
+    KeyThings,
+    KeyThingsQA,
+    MetaDescription,
+    ServiceFAQQuestion,
+    ServicePage,
+    ServicePageCTA,
+    ServicePageFAQSchema,
+    ServicesItemTags,
+    ServicesOurProcess,
+    ServicesRelatedBlogs,
+    ServicesWhyChooseUs,
+    ServicesWhyChooseUsCards,
+    ServicesWhyChooseUsCardsDetails,
+    SolutionsAndServices,
+    SolutionsAndServicesCards,
+)
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -439,30 +465,92 @@ class BlogForm(forms.ModelForm):
 
 
 
+
 class ActiveEmployeeFilter(admin.SimpleListFilter):
     title = "Author"
-    parameter_name = "created_by__employee__id__exact"
+    parameter_name = "author__id__exact"
 
     def lookups(self, request, model_admin):
+        # Get active employees who are assigned as author on at least one blog
         employees = (
-            Employee.objects.filter(active=True)
-            .annotate(total_blog=Count("user__website_blog_related"))
+            Employee.objects.filter(
+                active=True,
+                blogs__isnull=False  # 'blogs' is the related_name from Blog.author
+            )
+            .annotate(total_blog=Count("blogs"))
             .distinct()
         )
-        looksup_list = []
-        for employee in list(employees):
-            if employee.total_blog == 0:
-                looksup_list.append((employee.pk, employee.full_name))
-            else:
-                looksup_list.append(
-                    (employee.pk, f"{employee.full_name} ({employee.total_blog})")
-                )
-        return tuple(looksup_list)
+
+        lookups_list = [
+            (emp.pk, f"{emp.full_name} ({emp.total_blog})")
+            for emp in employees
+        ]
+        return tuple(lookups_list)
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(created_by__employee__id__exact=self.value())
+            return queryset.filter(author__id__exact=self.value())
         return queryset
+
+
+class CreatorEmployeeFilter(admin.SimpleListFilter):
+    title = "Creator"
+    parameter_name = "created_by__id__exact"
+
+    def lookups(self, request, model_admin):
+        # Get users who have created at least one blog
+        user_ids_with_blogs = (
+            Blog.objects.values_list('created_by_id', flat=True)
+            .distinct()
+        )
+
+        # Get active employees whose user is in that list
+        employees = (
+            Employee.objects.filter(
+                active=True,
+                user_id__in=user_ids_with_blogs
+            )
+            .annotate(
+                total_created=Count('user__website_blog_related')  # reverse relation from User to Blog
+            )
+            .distinct()
+        )
+
+        lookups_list = [
+            (emp.user_id, f"{emp.full_name} ({emp.total_created})")
+            for emp in employees
+        ]
+        return tuple(lookups_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(created_by__id__exact=self.value())
+        return queryset
+
+
+class CategoryFilter(admin.SimpleListFilter):
+    title = "Tags"
+    parameter_name = "category__id__exact"
+
+
+    def lookups(self, request, model_admin):
+        # Use 'categories' — the related_name from Blog.category
+        categories = (
+            Category.objects.filter(categories__isnull=False)
+            .annotate(blog_count=Count('categories'))
+            .distinct()
+            .order_by('name')  # or 'slug', etc.
+        )
+        return tuple(
+            (cat.id, f"{cat.name} ({cat.blog_count})")
+            for cat in categories
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(category__id__exact=self.value())
+        return queryset
+
 
 
 class BlogCategoryFilter(admin.SimpleListFilter):
@@ -1292,11 +1380,14 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_display = (
         "title",
         "author",
+        "created_by",
         "status",
-        "total_view",
+        # "total_view",
         "get_preview_link",
+        "updated_at",
         # "get_plagiarism_percentage",
     )
+
     readonly_fields = ("status",)
     exclude = ("content",)
 
@@ -1326,7 +1417,18 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "cta_title",
     )
     form = BlogForm
-    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter, BlogServiceFilter, BlogTechnologyFilter, "is_featured")
+    list_filter = (
+        BlogStatusFilter, 
+        "is_featured",
+        BlogServiceFilter, 
+        BlogIndustryFilter, 
+        BlogTechnologyFilter, 
+        ActiveEmployeeFilter, 
+        CreatorEmployeeFilter,
+        CategoryFilter,
+        )
+    
+    
     list_per_page = 20
 
     class Media:
@@ -1366,9 +1468,9 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     def get_updated_at(self, obj):
         return obj.updated_at.strftime("%d %b %Y")
 
-    @admin.display(description="Preview")
+    @admin.display(description="Link")
     def get_preview_link(self, obj):
-        url = f"https://www.mediusware.com/blog/{obj.slug}/?q=preview"
+        url = f"https://www.mediusware.com/blog/{obj.slug}"
         html_template = get_template("blog/col_preview_link.html")
         html_content = html_template.render({"url": url})
         return format_html(html_content)
