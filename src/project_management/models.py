@@ -644,11 +644,14 @@ class Project(TimeStampMixin, AuthorMixin):
         verbose_name="Is Highlighted?", default=False
     )
     is_team = models.BooleanField(verbose_name="Is Team?", default=False)
-    case_study_pdf = models.FileField(
-        help_text="Only Upload PDF File",
-        upload_to="case_study_pdf",
-        null=True,
-        blank=True,
+    # case_study_pdf = models.FileField(
+    #     help_text="Only Upload PDF File",
+    #     upload_to="case_study_pdf",
+    #     null=True,
+    #     blank=True,
+    # )
+    case_study_pdf_link = models.URLField(
+        null=True, blank=True, verbose_name="Case Study PDF Link"
     )
     # case_study_pdf = models.FileField(
     #     verbose_name="Case Study File (PDF)",

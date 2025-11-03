@@ -213,7 +213,7 @@ class CaseStudySubscriptionView(APIView):
 
             # Send email with PDF if available
             email_sent = False
-            if project.case_study_pdf:
+            if project.case_study_pdf_link:
                 try:
                     # Prepare email context
                     context = {
@@ -237,7 +237,7 @@ class CaseStudySubscriptionView(APIView):
                     msg.attach_alternative(html_content, "text/html")
                     
                     # Attach PDF
-                    msg.attach_file(project.case_study_pdf.path)
+                    msg.attach_file(project.case_study_pdf_link.path)
                     
                     # Send email
                     msg.send()
