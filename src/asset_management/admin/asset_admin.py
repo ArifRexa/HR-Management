@@ -741,7 +741,7 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
             for ids in used_id:
                 if ids[0]:
                     used_pks.append(ids[0])
-                elif ids[1]:
+                if ids[1]:
                     used_pks.append(ids[1])
         else:
             used_pks = model_class.objects.filter(**search_fields).values_list(
