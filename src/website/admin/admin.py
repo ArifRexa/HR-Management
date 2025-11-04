@@ -1420,11 +1420,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_filter = (
         BlogStatusFilter, 
         "is_featured",
+        ActiveEmployeeFilter, 
+        CreatorEmployeeFilter,
         BlogServiceFilter, 
         BlogIndustryFilter, 
         BlogTechnologyFilter, 
-        ActiveEmployeeFilter, 
-        CreatorEmployeeFilter,
         CategoryFilter,
         )
     
