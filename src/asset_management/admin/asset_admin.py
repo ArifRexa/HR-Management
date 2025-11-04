@@ -911,7 +911,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "get_mouse",
         "get_headphone",
         "get_webcam",
-        "extra",
+        "get_extra",
         "is_active",
         "get_created_by",
     ]
@@ -937,6 +937,7 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
         "mouse",
         "headphone",
         "web_cam",
+        "extra"
     ]
     list_filter = [
         "is_active",
@@ -963,6 +964,10 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     @admin.display(description="Chair")
     def get_chair(self, obj):
         return self._asset_card(obj.chair.all())
+    
+    @admin.display(description="Extra")
+    def get_extra(self, obj):
+        return self._asset_card(obj.extra.all())
 
     @admin.display(description="Keyboard")
     def get_keyboard(self, obj):
