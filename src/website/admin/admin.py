@@ -1380,7 +1380,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_display = (
         "title",
         "author",
-        "created_by",
+        "get_created_by",
         "status",
         # "total_view",
         "get_preview_link",
@@ -1474,6 +1474,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         html_template = get_template("blog/col_preview_link.html")
         html_content = html_template.render({"url": url})
         return format_html(html_content)
+    
+
+    @admin.display(description="Creator")
+    def get_created_by(self, obj):
+        return obj.created_by.employee.full_name
 
     @admin.action(description="Change Status To Approved")
     def approve_selected(self, request, queryset):
