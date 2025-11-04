@@ -694,9 +694,9 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         "other_specs",
         "asset_id",
     ]
-    # readonly_fields = [
-    #     "asset_id",
-    # ]
+    readonly_fields = [
+        "asset_id",
+    ]
     autocomplete_fields = [
         "brand",
     ]
