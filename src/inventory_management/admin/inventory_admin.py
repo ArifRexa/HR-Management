@@ -57,6 +57,7 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
     list_display = (
         "transaction_date",
         "inventory_item",
+        "get_initial_quantity",
         "quantity",
         "transaction_type",
         "colored_status",
@@ -69,11 +70,15 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
         "transaction_type",
     )
     search_fields = ("inventory_item",)
-    exclude = ("updated_by", "verification_code")
+    exclude = ("updated_by", "verification_code", "available_item")
     actions = ["mark_as_approved", "mark_as_pending"]
     date_hierarchy = "transaction_date"
     autocomplete_fields = ("inventory_item",)
     form = InventoryTransactionForm
+    
+    @admin.display(description="Initial Quantity")
+    def get_initial_quantity(self, obj):
+        return obj.available_item
 
     @admin.display(description="Created By")
     def get_created_by(self, obj):
@@ -97,21 +102,23 @@ class InventoryTransactionAdmin(admin.ModelAdmin):
 
     @transaction.atomic
     def save_model(self, request, obj, form, change):
+        item = InventoryItem.objects.get(id=obj.inventory_item.id)
+        obj.available_item = item.quantity
         if obj.transaction_type == "i" and obj.status == "approved":  # IN
-            item = InventoryItem.objects.get(id=obj.inventory_item.id)
+            
             item.quantity = item.quantity + obj.quantity
             item.save()
         elif obj.transaction_type == "o" and obj.status == "approved":  # OUT
-            item = InventoryItem.objects.get(id=obj.inventory_item.id)
+            # item = InventoryItem.objects.get(id=obj.inventory_item.id)
             item.quantity = item.quantity - obj.quantity
             item.save()
         if obj.id:
             if obj.transaction_type == "i" and obj.status == "pending":  # IN
-                item = InventoryItem.objects.get(id=obj.inventory_item.id)
+                # item = InventoryItem.objects.get(id=obj.inventory_item.id)
                 item.quantity = item.quantity - obj.quantity
                 item.save()
             elif obj.transaction_type == "o" and obj.status == "pending":  # OUT
-                item = InventoryItem.objects.get(id=obj.inventory_item.id)
+                # item = InventoryItem.objects.get(id=obj.inventory_item.id)
                 item.quantity = item.quantity + obj.quantity
                 item.save()
         super().save_model(request, obj, form, change)
