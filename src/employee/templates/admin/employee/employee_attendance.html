@@ -178,7 +178,7 @@
                         {% endwith %}
                         <br />
                         <br />
-                        <strong>Total Late: {{ employee.last_month_late_attendance }}</strong>
+                        <strong>Total Late: {{ employee.last_month_late_attendance }} ({{employee.last_month_late_attendance_consider}})</strong>
                     </td>
                     {% for date, data in date_data.items %}
                         {% if data and data.entry_time %}
