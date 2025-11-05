@@ -69,6 +69,7 @@ def set_default_exit_time(default_time):
                     activities[-1].end_time = start_time
                 activities[-1].is_updated_by_bot = True
                 activities[-1].save()
+    employee_onlines.update(active=False)
 
 
 def send_mail_to_employee(employee, pdf, html_body, subject, letter_type):
