@@ -130,6 +130,7 @@ class EmployeeAdmin(
         # "need_hr_at",
         "entry_pass_id",
         "monthly_expected_hours",
+        "author_bio",
     ]
 
     def lookup_allowed(self, lookup, value):
