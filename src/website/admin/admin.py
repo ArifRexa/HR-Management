@@ -1324,21 +1324,52 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
             )
 
 # =========================================== Blog Status Filter ===========================================
+# class BlogStatusFilter(SimpleListFilter):
+#     title = 'status'
+#     parameter_name = 'status'
+
+#     def lookups(self, request, model_admin):
+#         # Get the queryset that the user is allowed to see
+#         qs = model_admin.get_queryset(request)
+        
+#         # Get counts for each status
+#         status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+#         count_dict = {item['status']: item['count'] for item in status_counts}
+        
+#         # Create lookups with counts
+#         lookups = []
+#         for status_value, status_label in BlogStatus.choices:
+#             count = count_dict.get(status_value, 0)
+#             lookups.append((status_value, f"{status_label} ({count})"))
+#         return lookups
+
+#     def queryset(self, request, queryset):
+#         if self.value():
+#             return queryset.filter(status=self.value())
+#         return queryset
+
 class BlogStatusFilter(SimpleListFilter):
-    title = 'status'
+    title = 'Status'
     parameter_name = 'status'
 
     def lookups(self, request, model_admin):
-        # Get the queryset that the user is allowed to see
+        # Get the queryset the user is allowed to see
         qs = model_admin.get_queryset(request)
         
-        # Get counts for each status
-        status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+        # Get counts for each status (excluding 'published')
+        status_counts = (
+            qs.exclude(status=BlogStatus.PUBLISHED)
+            .values('status')
+            .annotate(count=Count('id'))
+            .order_by()
+        )
         count_dict = {item['status']: item['count'] for item in status_counts}
         
-        # Create lookups with counts
+        # Build lookups, skipping 'Published'
         lookups = []
         for status_value, status_label in BlogStatus.choices:
+            if status_value == BlogStatus.PUBLISHED:
+                continue  # skip "Published"
             count = count_dict.get(status_value, 0)
             lookups.append((status_value, f"{status_label} ({count})"))
         return lookups
