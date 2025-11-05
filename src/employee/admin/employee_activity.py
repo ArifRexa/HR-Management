@@ -258,7 +258,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 created_at__date__gte=last_x_date,
                 status="approved",
             )
-
+            total_late = 0
             for date in last_x_dates:
                 temp[date] = dict()
 
@@ -363,6 +363,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                             or start_time_timeobj.hour >= 12
                                         )
                                     )
+                            if is_late:
+                                total_late += 1
                             temp[date].update(
                                 {
                                     "entry_time": (
@@ -390,6 +392,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 }
                             )
                         break
+            emp.last_month_late_attendance = total_late
             date_datas.update({emp: temp})
         # print(date_datas)
         # for emp in emps:
