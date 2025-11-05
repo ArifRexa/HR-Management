@@ -32,6 +32,7 @@ class InventoryItemAdmin(admin.ModelAdmin):
     form = InventoryItemForm
     # autocomplete_fields = ("head",)
     list_filter = ("unit",)
+    ordering = ("quantity",)
 
     @admin.display(description="head", ordering="head.title")
     def get_head(self, obj):
