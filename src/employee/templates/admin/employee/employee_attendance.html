@@ -67,7 +67,8 @@
         
         <div class="col-md-10">
             <div class="text-center">
-                <h2 class="h2 fs-1 text-center">Employee Attendance</h2> <img src="{% static 'employee/hr_attendance_explaination.png' %}" >
+                <h2 class="h2 fs-1 text-center">Employee Attendance</h2> 
+                {% comment %} <img src="{% static 'employee/hr_attendance_explaination.png' %}" > {% endcomment %}
                 {% comment %} <div class="text-muted text-center">Bonus: Entry(1), Exit(1), 8 Hours(1), Prayer(1 or 2), Monthly Feedback Bonus(2)</div> {% endcomment %}
             </div>
         </div>
@@ -175,13 +176,14 @@
 <!--?                                </small>-->
                         {% endif %}
                         {% endwith %}
-
-                        <strong>{{ employee.last_four_month_project_hours }}</strong>
+                        <br />
+                        <br />
+                        <strong>Total Late: {{ employee.last_month_late_attendance }}</strong>
                     </td>
                     {% for date, data in date_data.items %}
                         {% if data and data.entry_time %}
                             <td title="{{employee.full_name}}&#10;{{date|date:"M d"}}" class="pb-0">
-                                <p class="text-center mb-1">
+                                {% comment %} <p class="text-center mb-1">
                                    
                                     <span>
                                         
@@ -210,7 +212,7 @@
 
                                     </span>
                                     
-                                </p>
+                                </p> {% endcomment %}
                                 <p class="text-center mb-1">
                                     {% comment %} <i class="fa-solid fa-right-from-bracket" style="color: #008631;"></i> {% endcomment %}
                                     <span {% if data.is_late %}class="text-danger fw-bold" style="color: white !important;background: red;padding: 2px;border-radius: 5px;" {% endif %}>

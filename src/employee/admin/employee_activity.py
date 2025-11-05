@@ -225,6 +225,14 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                         employeeattendance__date__year=last_month.year,
                         employeeattendance__date__month=last_month.month,
                     ),
+                ),
+                last_month_late_attendance=Count(
+                    "lateattendancefine",
+                    filter=Q(
+                        lateattendancefine__date__year=last_month.year,
+                        lateattendancefine__date__month=last_month.month,
+                    ),
+                    distinct=True,
                 )
             )
         )
@@ -378,11 +386,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     ),
                                     "employee_is_lead": emp.lead or emp.manager,
                                     "is_late": is_late,
+                                    # "total_late": emp.last_month_late_attendance or 0
                                 }
                             )
                         break
             date_datas.update({emp: temp})
-
+        # print(date_datas)
         # for emp in emps:
         #         if manager_date_and_hours.get(emp.id):
         #                 print(date_datas[emp])
