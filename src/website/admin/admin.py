@@ -15,6 +15,7 @@ from django.forms.models import BaseInlineFormSet, model_to_dict
 from django.http.request import HttpRequest
 from django.template.loader import get_template
 from django.utils import timezone
+from datetime import timedelta
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
@@ -1324,21 +1325,52 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
             )
 
 # =========================================== Blog Status Filter ===========================================
+# class BlogStatusFilter(SimpleListFilter):
+#     title = 'status'
+#     parameter_name = 'status'
+
+#     def lookups(self, request, model_admin):
+#         # Get the queryset that the user is allowed to see
+#         qs = model_admin.get_queryset(request)
+        
+#         # Get counts for each status
+#         status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+#         count_dict = {item['status']: item['count'] for item in status_counts}
+        
+#         # Create lookups with counts
+#         lookups = []
+#         for status_value, status_label in BlogStatus.choices:
+#             count = count_dict.get(status_value, 0)
+#             lookups.append((status_value, f"{status_label} ({count})"))
+#         return lookups
+
+#     def queryset(self, request, queryset):
+#         if self.value():
+#             return queryset.filter(status=self.value())
+#         return queryset
+
 class BlogStatusFilter(SimpleListFilter):
-    title = 'status'
+    title = 'Status'
     parameter_name = 'status'
 
     def lookups(self, request, model_admin):
-        # Get the queryset that the user is allowed to see
+        # Get the queryset the user is allowed to see
         qs = model_admin.get_queryset(request)
         
-        # Get counts for each status
-        status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+        # Get counts for each status (excluding 'published')
+        status_counts = (
+            qs.exclude(status=BlogStatus.PUBLISHED)
+            .values('status')
+            .annotate(count=Count('id'))
+            .order_by()
+        )
         count_dict = {item['status']: item['count'] for item in status_counts}
         
-        # Create lookups with counts
+        # Build lookups, skipping 'Published'
         lookups = []
         for status_value, status_label in BlogStatus.choices:
+            if status_value == BlogStatus.PUBLISHED:
+                continue  # skip "Published"
             count = count_dict.get(status_value, 0)
             lookups.append((status_value, f"{status_label} ({count})"))
         return lookups
@@ -1380,7 +1412,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_display = (
         "title",
         "author",
-        "created_by",
+        "get_created_by",
         "status",
         # "total_view",
         "get_preview_link",
@@ -1420,11 +1452,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_filter = (
         BlogStatusFilter, 
         "is_featured",
+        ActiveEmployeeFilter, 
+        CreatorEmployeeFilter,
         BlogServiceFilter, 
         BlogIndustryFilter, 
         BlogTechnologyFilter, 
-        ActiveEmployeeFilter, 
-        CreatorEmployeeFilter,
         CategoryFilter,
         )
     
@@ -1474,6 +1506,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         html_template = get_template("blog/col_preview_link.html")
         html_content = html_template.render({"url": url})
         return format_html(html_content)
+    
+
+    @admin.display(description="Creator")
+    def get_created_by(self, obj):
+        return obj.created_by.employee.full_name
 
     @admin.action(description="Change Status To Approved")
     def approve_selected(self, request, queryset):
@@ -2444,95 +2481,6 @@ class PublicImageAdmin(admin.ModelAdmin):
 #     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
 
 
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = ("full_name", "email", "form_type", "client_query", "project_details", "created_at")
-#     # readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
-
-
-
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "full_name",
-#         "email",
-#         "form_type",
-#         "client_query_truncated",
-#         "project_details_truncated",
-#         "created_at"
-#     )
-
-#     # Optional: Make fields read-only if needed
-#     # readonly_fields = [...]  # keep your existing if needed
-
-#     def client_query_truncated(self, obj):
-#         if not obj.client_query:
-#             return "-"
-#         truncated = Truncator(obj.client_query).words(5, html=True)  # or .chars(50)
-#         return format_html(
-#             '<span title="{}">{}</span>',
-#             obj.client_query,
-#             truncated
-#         )
-#     client_query_truncated.short_description = "Client Query"
-#     client_query_truncated.admin_order_field = "client_query"
-
-#     def project_details_truncated(self, obj):
-#         if not obj.project_details:
-#             return "-"
-#         truncated = Truncator(obj.project_details).words(5, html=True)
-#         return format_html(
-#             '<span title="{}">{}</span>',
-#             obj.project_details,
-#             truncated
-#         )
-#     project_details_truncated.short_description = "Project Details"
-#     project_details_truncated.admin_order_field = "project_details"
-
-
-
-
-# ===================== modal=====================
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "full_name",
-#         "email",
-#         "form_type",
-#         "client_query_truncated",
-#         "project_details_truncated",
-#         "created_at"
-#     )
-
-#     def client_query_truncated(self, obj):
-#         if not obj.client_query:
-#             return "-"
-#         truncated = Truncator(obj.client_query).words(5, html=True)
-#         return format_html(
-#             '<a href="#" class="popup-link" data-content="{}" data-title="Client Query">{}</a>',
-#             obj.client_query,
-#             truncated
-#         )
-#     client_query_truncated.short_description = "Client Query"
-#     client_query_truncated.admin_order_field = "client_query"
-
-#     def project_details_truncated(self, obj):
-#         if not obj.project_details:
-#             return "-"
-#         truncated = Truncator(obj.project_details).words(5, html=True)
-#         return format_html(
-#             '<a href="#" class="popup-link" data-content="{}" data-title="Project Details">{}</a>',
-#             obj.project_details,
-#             truncated
-#         )
-#     project_details_truncated.short_description = "Project Details"
-#     project_details_truncated.admin_order_field = "project_details"
-
-#     class Media:
-#         css = {
-#             'all': ('css/admin_popup.css',)
-#         }
-#         js = ('js/admin_popup.js',)
 
 @admin.register(ContactForm)
 class ContactFormAdmin(admin.ModelAdmin):
@@ -2549,6 +2497,38 @@ class ContactFormAdmin(admin.ModelAdmin):
     )
     
     list_filter = ("form_type", "action_by", "is_verified")
+
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        # ---- DELETE un‑verified entries older than 24 h ----------------
+        cutoff = timezone.now() - timedelta(hours=24)
+        print("*"*100)
+        print("Deleting un-verified ContactForm entries older than 24 hours...", cutoff)
+        ContactForm.objects.filter(
+            is_verified=False,
+            created_at__lt=cutoff
+        ).delete()
+        # -----------------------------------------------------------
+
+        # ---- Show only verified by default ----------------------------
+        if "is_verified__exact" not in request.GET:
+            qs = qs.filter(is_verified=True)
+        # -----------------------------------------------------------
+
+        return qs
+
+    # # Optional: Add a custom changelist view with toggle
+    def changelist_view(self, request, extra_context=None):
+        # Allow ?is_verified=false to show unverified
+        if 'is_verified__exact' not in request.GET:
+            if 'is_verified__exact' not in request.GET and 'is_verified__isnull' not in request.GET:
+                from django.http import HttpResponseRedirect
+                from django.urls import reverse
+                url = reverse('admin:website_contactform_changelist')
+                return HttpResponseRedirect(f"{url}?is_verified__exact=1")
+        return super().changelist_view(request, extra_context)
 
     def short_brief_truncated(self, obj):
         if not obj.short_brief:
