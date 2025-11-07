@@ -2476,10 +2476,6 @@ class PublicImageAdmin(admin.ModelAdmin):
     list_display = ["title", "image"]
 
 
-# @admin.register(PlagiarismInfo)
-# class PlagiarismInfoAdmin(admin.ModelAdmin):
-#     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
-
 
 
 @admin.register(ContactForm)
@@ -2542,17 +2538,6 @@ class ContactFormAdmin(admin.ModelAdmin):
     short_brief_truncated.short_description = "Short Brief"
     short_brief_truncated.admin_order_field = "short_brief"
 
-    # def project_details_truncated(self, obj):
-    #     if not obj.project_details:
-    #         return "-"
-    #     truncated = Truncator(obj.project_details).words(5, html=True)
-    #     return format_html(
-    #         '<span class="tooltip" data-tooltip="{}">{}</span>',
-    #         obj.project_details,
-    #         truncated
-    #     )
-    # project_details_truncated.short_description = "Project Details"
-    # project_details_truncated.admin_order_field = "project_details"
 
     class Media:
         css = {
