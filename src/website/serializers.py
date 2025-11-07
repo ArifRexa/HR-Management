@@ -1,6 +1,7 @@
 # from pyexpat import model
+from datetime import timedelta, timezone
 from rest_framework import serializers
-
+import re
 # from chat import models
 from employee.models import (
     Employee,
@@ -1548,10 +1549,72 @@ class ContactSerializer(serializers.ModelSerializer):
         model = Contact
         fields = "__all__"
 
+
+
+# class ContactFormSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = ContactForm
+#         fields = "__all__"
+
+#     def validate(self, data):
+#         form_type = data.get('form_type')
+#         full_name = data.get('full_name')
+#         email = data.get('email')
+#         service_require = data.get('service_require')
+#         short_brief = data.get('short_brief')
+
+#         # Common required fields
+#         if not full_name:
+#             raise serializers.ValidationError({"full_name": "This field is required."})
+#         if not email:
+#             raise serializers.ValidationError({"email": "This field is required."})
+
+#         # Conditional required fields based on form_type
+#         if form_type == 'discuss':
+#             if not service_require:
+#                 raise serializers.ValidationError({"service_require": "This field is required for Discuss Service form type."})
+#         elif form_type == 'general':
+#             if not short_brief:
+#                 raise serializers.ValidationError({"short_brief": "This field is required for General Inquiry form type."})
+
+#         return data
+
+
 class ContactFormSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContactForm
         fields = "__all__"
+
+    # List of free email domains to block (edit here directly)
+    FREE_EMAIL_DOMAINS = [
+        'gmail.com', 'yahoo.com', 'yahoo.in', 'yahoo.co.in',
+        'hotmail.com', 'outlook.com', 'live.com',
+        'icloud.com', 'protonmail.com', 'zoho.com',
+        'aol.com', 'mail.com', 'yandex.com',
+        'gmx.com', 'mail.ru', 'inbox.com',
+        # Add more as needed
+    ]
+
+    def validate_email(self, value):
+        email = value.strip().lower()
+
+        if '@' not in email:
+            raise serializers.ValidationError("Enter a valid email address.")
+
+        domain = email.split('@')[-1]
+
+        # Block free email providers
+        if domain in self.FREE_EMAIL_DOMAINS:
+            raise serializers.ValidationError(
+                "Please use your company email. "
+                "Personal emails like Gmail, Yahoo, Hotmail, etc. are not allowed."
+            )
+
+        # Ensure domain looks legitimate (has at least one dot after @)
+        if not re.match(r'^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]+)+$', domain):
+            raise serializers.ValidationError("Please enter a valid company email domain.")
+
+        return email
 
     def validate(self, data):
         form_type = data.get('form_type')
@@ -1560,21 +1623,39 @@ class ContactFormSerializer(serializers.ModelSerializer):
         service_require = data.get('service_require')
         short_brief = data.get('short_brief')
 
-        # Common required fields
         if not full_name:
             raise serializers.ValidationError({"full_name": "This field is required."})
         if not email:
             raise serializers.ValidationError({"email": "This field is required."})
 
-        # Conditional required fields based on form_type
         if form_type == 'discuss':
             if not service_require:
-                raise serializers.ValidationError({"service_require": "This field is required for Discuss Service form type."})
+                raise serializers.ValidationError({
+                    "service_require": "This field is required for Discuss Service form type."
+                })
         elif form_type == 'general':
             if not short_brief:
-                raise serializers.ValidationError({"short_brief": "This field is required for General Inquiry form type."})
+                raise serializers.ValidationError({
+                    "short_brief": "This field is required for General Inquiry form type."
+                })
+            
+        email = data.get('email')
+        if email:
+            import datetime
+            twelve_hours_ago = datetime.datetime.now() - timedelta(hours=12)
+            recent = ContactForm.objects.filter(
+                email=email,
+                created_at__gte=twelve_hours_ago
+            ).exists()
+
+            if recent:
+                raise serializers.ValidationError({
+                    "email": "You have already submitted a form in the last 12 hours. "
+                             "Please wait before submitting again."
+                })
 
         return data
+
 
 class InquirySerializer(serializers.ModelSerializer):
     class Meta:

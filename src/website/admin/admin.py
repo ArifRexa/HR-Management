@@ -15,6 +15,7 @@ from django.forms.models import BaseInlineFormSet, model_to_dict
 from django.http.request import HttpRequest
 from django.template.loader import get_template
 from django.utils import timezone
+from datetime import timedelta
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
@@ -2480,95 +2481,6 @@ class PublicImageAdmin(admin.ModelAdmin):
 #     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
 
 
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = ("full_name", "email", "form_type", "client_query", "project_details", "created_at")
-#     # readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
-
-
-
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "full_name",
-#         "email",
-#         "form_type",
-#         "client_query_truncated",
-#         "project_details_truncated",
-#         "created_at"
-#     )
-
-#     # Optional: Make fields read-only if needed
-#     # readonly_fields = [...]  # keep your existing if needed
-
-#     def client_query_truncated(self, obj):
-#         if not obj.client_query:
-#             return "-"
-#         truncated = Truncator(obj.client_query).words(5, html=True)  # or .chars(50)
-#         return format_html(
-#             '<span title="{}">{}</span>',
-#             obj.client_query,
-#             truncated
-#         )
-#     client_query_truncated.short_description = "Client Query"
-#     client_query_truncated.admin_order_field = "client_query"
-
-#     def project_details_truncated(self, obj):
-#         if not obj.project_details:
-#             return "-"
-#         truncated = Truncator(obj.project_details).words(5, html=True)
-#         return format_html(
-#             '<span title="{}">{}</span>',
-#             obj.project_details,
-#             truncated
-#         )
-#     project_details_truncated.short_description = "Project Details"
-#     project_details_truncated.admin_order_field = "project_details"
-
-
-
-
-# ===================== modal=====================
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "full_name",
-#         "email",
-#         "form_type",
-#         "client_query_truncated",
-#         "project_details_truncated",
-#         "created_at"
-#     )
-
-#     def client_query_truncated(self, obj):
-#         if not obj.client_query:
-#             return "-"
-#         truncated = Truncator(obj.client_query).words(5, html=True)
-#         return format_html(
-#             '<a href="#" class="popup-link" data-content="{}" data-title="Client Query">{}</a>',
-#             obj.client_query,
-#             truncated
-#         )
-#     client_query_truncated.short_description = "Client Query"
-#     client_query_truncated.admin_order_field = "client_query"
-
-#     def project_details_truncated(self, obj):
-#         if not obj.project_details:
-#             return "-"
-#         truncated = Truncator(obj.project_details).words(5, html=True)
-#         return format_html(
-#             '<a href="#" class="popup-link" data-content="{}" data-title="Project Details">{}</a>',
-#             obj.project_details,
-#             truncated
-#         )
-#     project_details_truncated.short_description = "Project Details"
-#     project_details_truncated.admin_order_field = "project_details"
-
-#     class Media:
-#         css = {
-#             'all': ('css/admin_popup.css',)
-#         }
-#         js = ('js/admin_popup.js',)
 
 @admin.register(ContactForm)
 class ContactFormAdmin(admin.ModelAdmin):
@@ -2585,6 +2497,38 @@ class ContactFormAdmin(admin.ModelAdmin):
     )
     
     list_filter = ("form_type", "action_by", "is_verified")
+
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        # ---- DELETE un‑verified entries older than 24 h ----------------
+        cutoff = timezone.now() - timedelta(hours=24)
+        print("*"*100)
+        print("Deleting un-verified ContactForm entries older than 24 hours...", cutoff)
+        ContactForm.objects.filter(
+            is_verified=False,
+            created_at__lt=cutoff
+        ).delete()
+        # -----------------------------------------------------------
+
+        # ---- Show only verified by default ----------------------------
+        if "is_verified__exact" not in request.GET:
+            qs = qs.filter(is_verified=True)
+        # -----------------------------------------------------------
+
+        return qs
+
+    # # Optional: Add a custom changelist view with toggle
+    def changelist_view(self, request, extra_context=None):
+        # Allow ?is_verified=false to show unverified
+        if 'is_verified__exact' not in request.GET:
+            if 'is_verified__exact' not in request.GET and 'is_verified__isnull' not in request.GET:
+                from django.http import HttpResponseRedirect
+                from django.urls import reverse
+                url = reverse('admin:website_contactform_changelist')
+                return HttpResponseRedirect(f"{url}?is_verified__exact=1")
+        return super().changelist_view(request, extra_context)
 
     def short_brief_truncated(self, obj):
         if not obj.short_brief:
