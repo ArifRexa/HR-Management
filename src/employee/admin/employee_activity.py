@@ -1,5 +1,6 @@
 import datetime
 import math
+import re
 from functools import update_wrapper
 
 from django.contrib import admin, messages
@@ -17,6 +18,8 @@ from django.utils.dateparse import parse_date
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
 from openpyxl import Workbook
+from openpyxl.styles import Alignment
+from openpyxl.writer.excel import save_virtual_workbook
 
 from config.settings import employee_ids as management_ids
 from employee.forms.prayer_info import EmployeePrayerInfoForm
@@ -28,24 +31,7 @@ from employee.models import (
     EmployeeSkill,
     PrayerInfo,
 )
-from employee.models.employee_activity import EmployeeProject, TrialEmployeeAttendance
-
-
-import re
-import math
-from django.contrib import admin
-from django.db.models import Count, Q
-from django.shortcuts import redirect
-from django.utils import timezone
-from django.template.response import TemplateResponse
-from openpyxl import Workbook
-from openpyxl.styles import Alignment
-from openpyxl.writer.excel import save_virtual_workbook
-import datetime
-import math
-
-
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from employee.models.employee_activity import EmployeeProject
 
 
 def sToTime(duration):
@@ -95,7 +81,9 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
 
     @admin.display(description="Status")
     def get_status(self, obj):
-        html_template = get_template("admin/employee_online/list/col_status.html")
+        html_template = get_template(
+            "admin/employee_online/list/col_status.html"
+        )
         html_content = html_template.render({"employee_online": obj})
         return format_html(html_content)
 
@@ -127,7 +115,9 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
         if "date" in request.GET and parse_date(request.GET.get("date")):
             target_date = parse_date(request.GET.get("date"))
 
-        employee_attendance = EmployeeAttendance.objects.filter(date=target_date).all()
+        employee_attendance = EmployeeAttendance.objects.filter(
+            date=target_date
+        ).all()
         graph_data = []
 
         for attendance in employee_attendance:
@@ -142,14 +132,18 @@ class EmployeeOnlineAdmin(admin.ModelAdmin):
                         int(employee_break.end_time.timestamp() * 1000)
                     )
                 else:
-                    breaks_timestamp.append((int(timezone.now().timestamp() * 1000)))
+                    breaks_timestamp.append(
+                        (int(timezone.now().timestamp() * 1000))
+                    )
 
             element.append(attendance.employee.full_name)
             element.append(breaks_timestamp)
 
             graph_data.append(element)
 
-        context = dict(self.admin_site.each_context(request), graph_data=graph_data)
+        context = dict(
+            self.admin_site.each_context(request), graph_data=graph_data
+        )
         return TemplateResponse(
             request, "admin/employee_online/graph.html", context=context
         )
@@ -166,7 +160,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     search_fields = ("employee__full_name", "date")
     autocomplete_fields = ("employee",)
 
-    def custom_changelist_view(self, request, *args, **kwargs) -> TemplateResponse:
+    def custom_changelist_view(
+        self, request, *args, **kwargs
+    ) -> TemplateResponse:
         if not request.user.has_perm("employee.view_employeeattendance"):
             return super().changelist_view(request, *args, **kwargs)
 
@@ -175,7 +171,9 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
 
         now = timezone.now()
         DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
-        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
+        DEFAULT_EXIT_TIME = now.replace(
+            hour=DEFAULT_EXIT_HOUR, minute=0, second=0
+        )
         day_range = 30
         if request.user.has_perm("employee.can_see_full_month_attendance"):
             day_range = 30
@@ -183,9 +181,12 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         last_x_dates = [
             (now - datetime.timedelta(i)).date()
             for i in range(day_range)
-            if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
+            if (now - datetime.timedelta(i)).date().strftime("%a")
+            not in ["Sat", "Sun"]
         ]
-        last_x_date: datetime._Date = (now - datetime.timedelta(day_range)).date()
+        last_x_date: datetime._Date = (
+            now - datetime.timedelta(day_range)
+        ).date()
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
 
         # # Filter employees based on user permissions
@@ -229,20 +230,20 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 last_month_late_attendance=Count(
                     "lateattendancefine",
                     filter=Q(
-                        lateattendancefine__date__year=last_month.year,
-                        lateattendancefine__date__month=last_month.month,
+                        lateattendancefine__date__gte=last_x_dates[-1],
+                        lateattendancefine__date__lte=last_x_dates[0],
                     ),
                     distinct=True,
                 ),
                 last_month_late_attendance_consider=Count(
                     "lateattendancefine",
                     filter=Q(
-                        lateattendancefine__date__year=last_month.year,
-                        lateattendancefine__date__month=last_month.month,
-                        lateattendancefine__is_consider=True
+                        lateattendancefine__date__gte=last_x_dates[-1],
+                        lateattendancefine__date__lte=last_x_dates[0],
+                        lateattendancefine__is_consider=True,
                     ),
                     distinct=True,
-                )
+                ),
             )
         )
 
@@ -279,9 +280,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 manager_date_and_hours[manager_id] = {}
 
                             if date not in manager_date_and_hours[manager_id]:
-                                manager_date_and_hours[manager_id][date] = edh.hours
+                                manager_date_and_hours[manager_id][date] = (
+                                    edh.hours
+                                )
                             else:
-                                manager_date_and_hours[manager_id][date] += edh.hours
+                                manager_date_and_hours[manager_id][date] += (
+                                    edh.hours
+                                )
 
                         if date not in temp:
                             temp[date] = {"accepted_hour": edh.hours}
@@ -306,7 +311,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 et = activities[i].end_time
                                 if (
                                     et
-                                    and et.date() == activities[i + 1].start_time.date()
+                                    and et.date()
+                                    == activities[i + 1].start_time.date()
                                 ):
                                     break_time += (
                                         activities[i + 1].start_time.timestamp()
@@ -337,7 +343,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                         and (
                                             (
                                                 start_time_timeobj.hour == 11
-                                                and start_time_timeobj.minute > 10
+                                                and start_time_timeobj.minute
+                                                > 10
                                             )
                                             or start_time_timeobj.hour >= 12
                                         )
@@ -346,7 +353,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                         and (
                                             (
                                                 start_time_timeobj.hour >= 11
-                                                and start_time_timeobj.minute > 10
+                                                and start_time_timeobj.minute
+                                                > 10
                                             )
                                             or start_time_timeobj.hour >= 12
                                         )
@@ -357,7 +365,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                         and (
                                             (
                                                 start_time_timeobj.hour == 11
-                                                and start_time_timeobj.minute > 30
+                                                and start_time_timeobj.minute
+                                                > 30
                                             )
                                             or start_time_timeobj.hour >= 12
                                         )
@@ -366,7 +375,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                         and (
                                             (
                                                 start_time_timeobj.hour >= 11
-                                                and start_time_timeobj.minute > 30
+                                                and start_time_timeobj.minute
+                                                > 30
                                             )
                                             or start_time_timeobj.hour >= 12
                                         )
@@ -376,21 +386,31 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     "entry_time": (
                                         start_time.time() if start_time else "-"
                                     ),
-                                    "exit_time": end_time.time() if end_time else "-",
+                                    "exit_time": end_time.time()
+                                    if end_time
+                                    else "-",
                                     "is_updated_by_bot": is_updated_by_bot,
                                     "break_time": break_time_s,
                                     "break_time_hour": math.floor(
                                         (break_time / (60 * 60)) % 24
                                     ),
-                                    "break_time_minute": math.floor(break_time / 60),
+                                    "break_time_minute": math.floor(
+                                        break_time / 60
+                                    ),
                                     "inside_time": inside_time_s,
                                     "inside_time_hour": math.floor(
                                         (inside_time / (60 * 60)) % 24
                                     ),
-                                    "inside_time_minute": math.floor(inside_time / 60),
-                                    "total_time": sToTime(inside_time + break_time),
+                                    "inside_time_minute": math.floor(
+                                        inside_time / 60
+                                    ),
+                                    "total_time": sToTime(
+                                        inside_time + break_time
+                                    ),
                                     "total_time_hour": math.floor(
-                                        (inside_time + break_time) / (60 * 60) % 24
+                                        (inside_time + break_time)
+                                        / (60 * 60)
+                                        % 24
                                     ),
                                     "employee_is_lead": emp.lead or emp.manager,
                                     "is_late": is_late,
@@ -412,9 +432,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             if manager_date_and_hours.get(emp.id):
                 # print(date_datas[emp])
                 for date in last_x_dates:
-                    accepted_hour = date_datas[emp][date].get("accepted_hour", 0)
+                    accepted_hour = date_datas[emp][date].get(
+                        "accepted_hour", 0
+                    )
 
-                    manager_hour = manager_date_and_hours.get(emp.id, {}).get(date, 0)
+                    manager_hour = manager_date_and_hours.get(emp.id, {}).get(
+                        date, 0
+                    )
 
                     date_datas[emp][date]["accepted_hour"] = accepted_hour
                     date_datas[emp][date]["manager_hour"] = manager_hour
@@ -430,7 +454,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 date_datas_sorted = sorted(
                     date_datas.items(),
                     key=lambda x: x[-1]
-                    .get(datetime.datetime.now().date(), datetime.datetime.now().date())
+                    .get(
+                        datetime.datetime.now().date(),
+                        datetime.datetime.now().date(),
+                    )
                     .get("entry_time", DEFAULT_EXIT_TIME.time()),
                 )
                 o = "-entry"
@@ -438,7 +465,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 date_datas_sorted = sorted(
                     date_datas.items(),
                     key=lambda x: x[-1]
-                    .get(datetime.datetime.now().date(), datetime.datetime.now().date())
+                    .get(
+                        datetime.datetime.now().date(),
+                        datetime.datetime.now().date(),
+                    )
                     .get("entry_time", DEFAULT_EXIT_TIME.time()),
                     reverse=True,
                 )
@@ -481,7 +511,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             return redirect("/")
         if request.method == "POST":
             prayerobj = PrayerInfo.objects.filter(
-                employee=request.user.employee, created_at__date=timezone.now().date()
+                employee=request.user.employee,
+                created_at__date=timezone.now().date(),
             ).last()
             form = EmployeePrayerInfoForm(request.POST, instance=prayerobj)
             if form.is_valid():
@@ -505,7 +536,11 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
         urls = super(EmployeeAttendanceAdmin, self).get_urls()
 
         employee_online_urls = [
-            path("", wrap(self.custom_changelist_view), name="%s_%s_changelist" % info),
+            path(
+                "",
+                wrap(self.custom_changelist_view),
+                name="%s_%s_changelist" % info,
+            ),
             path("", self.custom_changelist_view, name="employee_attendance"),
             path("waqtselect/", self.waqt_select, name="waqt_select"),
             path(
@@ -520,22 +555,24 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
     #     return False
 
     def generate_monthly_attendance_report_xlsx(self, request, *args, **kwargs):
-        from openpyxl.styles import Alignment
-        from openpyxl.writer.excel import save_virtual_workbook
-
         data = request.POST
         to_date = datetime.datetime.strptime(data.get("to_date"), "%Y-%m-%d")
-        from_date = datetime.datetime.strptime(data.get("from_date"), "%Y-%m-%d")
+        from_date = datetime.datetime.strptime(
+            data.get("from_date"), "%Y-%m-%d"
+        )
         now = to_date
         DEFAULT_EXIT_HOUR = 12 + 8  # 24 Hour time == 9 pm
-        DEFAULT_EXIT_TIME = now.replace(hour=DEFAULT_EXIT_HOUR, minute=0, second=0)
+        DEFAULT_EXIT_TIME = now.replace(
+            hour=DEFAULT_EXIT_HOUR, minute=0, second=0
+        )
         day_count = to_date - from_date
         day_range = day_count.days + 1
 
         last_x_dates = [
             (now - datetime.timedelta(i)).date()
             for i in range(day_range)
-            if (now - datetime.timedelta(i)).date().strftime("%a") not in ["Sat", "Sun"]
+            if (now - datetime.timedelta(i)).date().strftime("%a")
+            not in ["Sat", "Sun"]
         ]
         last_x_date = (now - datetime.timedelta(10)).date()
         last_month = (now.replace(day=1) - datetime.timedelta(days=1)).date()
@@ -591,9 +628,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 manager_date_and_hours[manager_id] = {}
 
                             if date not in manager_date_and_hours[manager_id]:
-                                manager_date_and_hours[manager_id][date] = edh.hours
+                                manager_date_and_hours[manager_id][date] = (
+                                    edh.hours
+                                )
                             else:
-                                manager_date_and_hours[manager_id][date] += edh.hours
+                                manager_date_and_hours[manager_id][date] += (
+                                    edh.hours
+                                )
 
                         if date not in temp:
                             temp[date] = {"accepted_hour": edh.hours}
@@ -618,7 +659,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                 et = activities[i].end_time
                                 if (
                                     et
-                                    and et.date() == activities[i + 1].start_time.date()
+                                    and et.date()
+                                    == activities[i + 1].start_time.date()
                                 ):
                                     break_time += (
                                         activities[i + 1].start_time.timestamp()
@@ -662,21 +704,31 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                                     "entry_time": (
                                         start_time.time() if start_time else "-"
                                     ),
-                                    "exit_time": end_time.time() if end_time else "-",
+                                    "exit_time": end_time.time()
+                                    if end_time
+                                    else "-",
                                     "is_updated_by_bot": is_updated_by_bot,
                                     "break_time": break_time_s,
                                     "break_time_hour": math.floor(
                                         (break_time / (60 * 60)) % 24
                                     ),
-                                    "break_time_minute": math.floor(break_time / 60),
+                                    "break_time_minute": math.floor(
+                                        break_time / 60
+                                    ),
                                     "inside_time": inside_time_s,
                                     "inside_time_hour": math.floor(
                                         (inside_time / (60 * 60)) % 24
                                     ),
-                                    "inside_time_minute": math.floor(inside_time / 60),
-                                    "total_time": sToTime(inside_time + break_time),
+                                    "inside_time_minute": math.floor(
+                                        inside_time / 60
+                                    ),
+                                    "total_time": sToTime(
+                                        inside_time + break_time
+                                    ),
                                     "total_time_hour": math.floor(
-                                        (inside_time + break_time) / (60 * 60) % 24
+                                        (inside_time + break_time)
+                                        / (60 * 60)
+                                        % 24
                                     ),
                                     "employee_is_lead": emp.lead or emp.manager,
                                     "is_late": is_late,
@@ -697,9 +749,13 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             if manager_date_and_hours.get(emp.id):
                 # print(date_datas[emp])
                 for date in last_x_dates:
-                    accepted_hour = date_datas[emp][date].get("accepted_hour", 0)
+                    accepted_hour = date_datas[emp][date].get(
+                        "accepted_hour", 0
+                    )
 
-                    manager_hour = manager_date_and_hours.get(emp.id, {}).get(date, 0)
+                    manager_hour = manager_date_and_hours.get(emp.id, {}).get(
+                        date, 0
+                    )
 
                     date_datas[emp][date]["accepted_hour"] = accepted_hour
                     date_datas[emp][date]["manager_hour"] = manager_hour
@@ -715,7 +771,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 date_datas_sorted = sorted(
                     date_datas.items(),
                     key=lambda x: x[-1]
-                    .get(datetime.datetime.now().date(), datetime.datetime.now().date())
+                    .get(
+                        datetime.datetime.now().date(),
+                        datetime.datetime.now().date(),
+                    )
                     .get("entry_time", DEFAULT_EXIT_TIME.time()),
                 )
                 o = "-entry"
@@ -723,7 +782,10 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 date_datas_sorted = sorted(
                     date_datas.items(),
                     key=lambda x: x[-1]
-                    .get(datetime.datetime.now().date(), datetime.datetime.now().date())
+                    .get(
+                        datetime.datetime.now().date(),
+                        datetime.datetime.now().date(),
+                    )
                     .get("entry_time", DEFAULT_EXIT_TIME.time()),
                     reverse=True,
                 )
@@ -770,7 +832,7 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
                 )
                 row_num += 1
 
-            attendance_sheet.merge_cells(f"A{first_row}:A{row_num-1}")
+            attendance_sheet.merge_cells(f"A{first_row}:A{row_num - 1}")
 
             # Center the text in the merged cell
             attendance_sheet[f"A{first_row}"].alignment = Alignment(
@@ -782,7 +844,8 @@ class EmployeeAttendanceAdmin(admin.ModelAdmin):
             attendance_sheet.column_dimensions[col].width = 20
         wb.remove(wb["Sheet"])
         response = HttpResponse(
-            content=save_virtual_workbook(wb), content_type="application/ms-excel"
+            content=save_virtual_workbook(wb),
+            content_type="application/ms-excel",
         )
         response["Content-Disposition"] = (
             "attachment; filename=Employee-Attendance.xlsx"
@@ -796,18 +859,8 @@ A trial employee attendance model is created to track the attendance of trial em
 
 
 from django.contrib import admin
-from django.db.models import Count, Q
-from django.http import HttpResponse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
-from django.utils import timezone
-from django.urls import path
-from openpyxl import Workbook
-from openpyxl.styles import Alignment
-from openpyxl.writer.excel import save_virtual_workbook
-import datetime
-import math
-
 
 # @admin.register(TrialEmployeeAttendance)
 # class TrialEmployeeAttendanceAdmin(admin.ModelAdmin):
