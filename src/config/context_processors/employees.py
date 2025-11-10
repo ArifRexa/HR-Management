@@ -336,6 +336,29 @@ def all_employees_last_slot(request):
     return {"all_employees_last_slot": available_employee}
 
 
+def all_employees_last_slot_announcement(request):
+    if request.path == "/admin/":
+        return {}
+    data = []
+    available_slot = all_employees_last_slot(request).get("all_employees_last_slot")
+    
+    data_available_slot = [employee.full_name for employee in available_slot]
+    if available_slot and data_available_slot:
+        data_available_slot = ", ".join(data_available_slot)
+        data.append(
+            f"Available Resources ({data_available_slot})"
+        )
+    if data:
+        initial = f'<span style="background-color:tomato;padding:0.4rem 0.8rem;border-radius:0.4rem;">ANNOUNCEMENTS</span> {"&nbsp;" * 8}🚨'
+        data = initial + f" {'&nbsp;' * 8}🚨".join(
+            [f'<span class="single_announcement">{d}</span>' for d in data]
+        )
+        data = format_html(data)
+    return {
+        "announcement": data if data else None
+    }
+
+
 def get_announcement(request):
     # if not request.path == "/admin/":
     #     return []
