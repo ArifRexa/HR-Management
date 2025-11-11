@@ -159,14 +159,14 @@
                 </tr>
                 </tfoot>
             </table>
-            <br>
+            
             {% if employeesalary.tax_loan_total or employeesalary.salary_loan_total or employeesalary.current_month_late_fee  %}
                 <p>Deducted on salary :
                     {{ employeesalary.net_salary|addition:employeesalary.project_bonus|addition:employeesalary.food_allowance|addition:employeesalary.festival_bonus|floatformat:2|intcomma|default:"0.00" }}
                     {{  employeesalary.salary_loan_total|addition:employeesalary.tax_loan_total|addition:employeesalary.current_month_late_fee }} = <b>{{ employeesalary.gross_salary|floatformat:2|default:"0.00" }} Taka</b>
                 </p>
-
                 <p><b>In Word : </b>{{ employeesalary.gross_salary|num_to_word|default:"Zero" }} Taka only</p>
+
             {% endif %}
             <table width="100%">
                 <tr>
