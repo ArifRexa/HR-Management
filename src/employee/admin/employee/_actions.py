@@ -1,14 +1,23 @@
 import os
 from io import BytesIO
 
-from employee.helper.pdf_generator import generate_employee_details_pdf
-from employee.tasks import email_send_to_employee
 import pdf2image
 import qrcode
 import requests
 from django.contrib import admin, messages
 from django.core.files import File
 from django.core.files.base import ContentFile
+from django.db.models import (
+    DecimalField,
+    ExpressionWrapper,
+    F,
+    FloatField,
+    OuterRef,
+    Subquery,
+    Sum,
+    Value,
+)
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse
 from django.template import loader
 from django.utils.text import slugify
@@ -17,8 +26,11 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 import config.settings
+from account.models import EmployeeSalary, Loan, TDSChallan
 from config.utils.pdf import PDF
+from employee.helper.pdf_generator import generate_employee_details_pdf
 from employee.models import Employee, EmployeeNOC, HRPolicy
+from employee.models.employee import LateAttendanceFine
 from settings.models import FinancialYear
 
 NOC_MAIL_DATA = """
@@ -53,7 +65,7 @@ NOC_PDF_DATA = """
 
 class EmployeeActions:
     actions = [
-        'download_employee_details',
+        "download_employee_details",
         "generate_noc_letter",
         "print_appointment_letter",
         "print_permanent_letter",
@@ -74,20 +86,27 @@ class EmployeeActions:
         "mail_noc_letter",
         "download_employee_info",
         "print_salary_pay_slip_all_months",
+        "employee_payslip_yearly",
     ]
 
     def download_employee_details(self, request, queryset):
         if queryset.count() != 1:
-            self.message_user(request, "Please select exactly one employee.", level='error')
+            self.message_user(
+                request, "Please select exactly one employee.", level="error"
+            )
             return
 
         employee = queryset.first()
         pdf_buffer = generate_employee_details_pdf(employee)
-        response = HttpResponse(pdf_buffer, content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="Employee_Details_{employee.full_name.replace(" ", "_")}.pdf"'
+        response = HttpResponse(pdf_buffer, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="Employee_Details_{employee.full_name.replace(" ", "_")}.pdf"'
+        )
         return response
 
-    download_employee_details.short_description = "Download Employee Details (PDF)"
+    download_employee_details.short_description = (
+        "Download Employee Details (PDF)"
+    )
 
     @admin.action(description="Print Salary Pay Slip (All months)")
     def print_salary_pay_slip_all_months(self, request, queryset):
@@ -111,7 +130,9 @@ class EmployeeActions:
             if not enoc.noc_pdf:
                 enoc.noc_body = html_body
                 names.append(obj.full_name)
-        messages.success(request, f"Successfully Generated NOC for {', '.join(names)}.")
+        messages.success(
+            request, f"Successfully Generated NOC for {', '.join(names)}."
+        )
 
     @admin.action(description="Print Appointment Letter")
     def print_appointment_letter(self, request, queryset):
@@ -163,9 +184,13 @@ class EmployeeActions:
             request, queryset=queryset, letter_type="ERL"
         ).render_to_pdf()
 
-    @admin.action(description="Print Salary Certificate (For Yearly Tax Return)")
+    @admin.action(
+        description="Print Salary Certificate (For Yearly Tax Return)"
+    )
     def print_tax_salary_certificate(self, request, queryset):
-        context = {"financial_year": FinancialYear.objects.filter(active=True).first()}
+        context = {
+            "financial_year": FinancialYear.objects.filter(active=True).first()
+        }
         return self.generate_pdf(
             request, queryset=queryset, letter_type="ESC", context=context
         ).render_to_pdf()
@@ -185,14 +210,16 @@ class EmployeeActions:
             employee.email: {
                 "generate_by_contact_number": employee.phone,
                 "generate_by_contact_email": employee.email,
-            }
+            },
         }
         return self.generate_pdf(
-            request, queryset=queryset, letter_type="ELMSC",
+            request,
+            queryset=queryset,
+            letter_type="ELMSC",
             extra_context={
                 **generate_by_employee_contact_info.get(employee.email),
                 "generate_by": request.user.employee,
-            }
+            },
         ).render_to_pdf()
 
     @admin.action(description="Print Salary Certificate (All months)")
@@ -214,32 +241,29 @@ class EmployeeActions:
 
     @admin.action(description="Print Experience Letter")
     def print_experience_letter(self, request, queryset):
-
         return self.generate_pdf(
             request, queryset=queryset, letter_type="EXPL"
         ).render_to_pdf()
-        
-        
+
     @admin.action(description="Mail Role Change Letter")
     def mail_role_change_letter(self, request, queryset):
         print(config.settings.STATIC_URL)
         promotion_policy_file = f"{config.settings.STATIC_URL}stationary/Employee-hierarchy-plan-for-mediusware-ltd.pdf"
-        
+
         for employee in queryset:
             html_context = loader.render_to_string(
-            "mails/role_update.html", context={"employee": employee}
-        )
+                "mails/role_update.html", context={"employee": employee}
+            )
             # email_send_to_employee(employee, promotion_policy_file, html_context, "Your Updated Role and Growth Path at Mediusware Ltd.")
             async_task(
-                    "employee.tasks.send_mail_to_employee",
-                    employee,
-                    promotion_policy_file,
-                    html_context,
-                    "Your Updated Role and Growth Path at Mediusware Ltd.",
-                    None
-                )
-            
-    
+                "employee.tasks.send_mail_to_employee",
+                employee,
+                promotion_policy_file,
+                html_context,
+                "Your Updated Role and Growth Path at Mediusware Ltd.",
+                None,
+            )
+
     @admin.action(description="Mail Promotion Letter")
     def mail_promotion_letter(self, request, queryset):
         promotion_policy_file = f"{config.settings.STATIC_URL}stationary/Employee-hierarchy-plan-for-mediusware-ltd.pdf"
@@ -254,10 +278,9 @@ class EmployeeActions:
                 promotion_policy_file,
                 html_context,
                 "Congratulations on Your Promotion at Mediusware Ltd.",
-                None
+                None,
             )
-        
-    
+
     @admin.action(description="Mail Appointment Letter")
     def mail_appointment_letter(self, request, queryset):
         hr_policy = (
@@ -337,7 +360,14 @@ class EmployeeActions:
         work_sheets = {}
         work_sheet = wb.create_sheet(title="Employee List")
         work_sheet.append(
-            ["Name", "Designation", "Phone", "Email", "Address", "Date Of Birth"]
+            [
+                "Name",
+                "Designation",
+                "Phone",
+                "Email",
+                "Address",
+                "Date Of Birth",
+            ]
         )
         for employee in Employee.objects.filter(active=True).all():
             work_sheet.append(
@@ -353,7 +383,8 @@ class EmployeeActions:
         work_sheets["employee"] = work_sheet
         wb.remove(wb["Sheet"])
         response = HttpResponse(
-            content=save_virtual_workbook(wb), content_type="application/ms-excel"
+            content=save_virtual_workbook(wb),
+            content_type="application/ms-excel",
         )
         response["Content-Disposition"] = "attachment; filename=Employees.xlsx"
         return response
@@ -387,7 +418,9 @@ class EmployeeActions:
                         file_obj = requests.get(pdf).content
                         file_name = pdf.split("/")[-1]
                         image_name = file_name[:-4] + ".jpg"
-                        enoc.noc_pdf.save(file_name, ContentFile(file_obj, file_name))
+                        enoc.noc_pdf.save(
+                            file_name, ContentFile(file_obj, file_name)
+                        )
                         image_file = pdf2image.convert_from_bytes(file_obj)[0]
                         image_io = BytesIO()
                         image_file.save(image_io, format="jpeg", quality=100)
@@ -400,10 +433,14 @@ class EmployeeActions:
                         with open(file=pdf, mode="rb") as file_obj:
                             file_name = os.path.basename(file_obj.name)
                             image_name = file_name[:-4] + ".jpg"
-                            enoc.noc_pdf.save(file_name, File(file_obj, file_name))
+                            enoc.noc_pdf.save(
+                                file_name, File(file_obj, file_name)
+                            )
                             image_file = pdf2image.convert_from_path(pdf)[0]
                             image_io = BytesIO()
-                            image_file.save(image_io, format="jpeg", quality=100)
+                            image_file.save(
+                                image_io, format="jpeg", quality=100
+                            )
                             enoc.noc_image.save(
                                 name=image_name,
                                 content=ContentFile(image_io.getvalue()),
@@ -426,9 +463,219 @@ class EmployeeActions:
             )
         self.message_user(request, "Mail sent successfully", messages.SUCCESS)
 
+    @admin.action(description="Employee Pay Slip (Yearly)")
+    def employee_payslip_yearly(self, request, queryset):
+        employee = queryset.first()
+        active_year = FinancialYear.objects.filter(active=True).first()
+        ay = active_year
+
+        # Subquery: sum of EMI for 'salary' loans overlapping the financial year, per employee
+        salary_loan_subq = (
+            Loan.objects.filter(
+                employee=OuterRef("employee"),
+                loan_type="salary",
+                # loan overlaps the financial year period
+                start_date__lte=ay.end_date,
+                end_date__gte=ay.start_date,
+            )
+            .values("employee")
+            .annotate(
+                total=Coalesce(
+                    Sum("emi"), Value(0), output_field=DecimalField()
+                )
+            )
+            .values("total")
+        )
+
+        # Subquery: sum of EMI for 'tds' loans overlapping the financial year, per employee
+        tds_loan_subq = (
+            Loan.objects.filter(
+                employee=OuterRef("employee"),
+                loan_type="tds",
+                start_date__lte=ay.end_date,
+                end_date__gte=ay.start_date,
+            )
+            .values("employee")
+            .annotate(
+                total=Coalesce(
+                    Sum("emi"), Value(0), output_field=DecimalField()
+                )
+            )
+            .values("total")
+        )
+
+        # Subquery: sum of late attendance fines recorded in LateAttendanceFine for that financial year
+        late_fine_subq = (
+            LateAttendanceFine.objects.filter(
+                employee=OuterRef("employee"),
+                # assuming LateAttendanceFine has a date field or month/year; adapt if different
+                year__in=[
+                    ay.start_date.year,
+                    ay.end_date.year,
+                ],  # fallback if late entries use year field
+            )
+            .values("employee")
+            .annotate(
+                total=Coalesce(
+                    Sum("total_late_attendance_fine"),
+                    Value(0),
+                    output_field=DecimalField(),
+                )
+            )
+            .values("total")
+        )
+
+        # Main aggregation over EmployeeSalary rows inside active financial year
+        qs = (
+            EmployeeSalary.objects.filter(
+                salary_sheet__date__gte=ay.start_date,
+                salary_sheet__date__lte=ay.end_date,
+            )
+            .values("employee")
+            .annotate(
+                # individual components (replace field names below with your actual fields if different)
+                basic_salary_sum=Coalesce(
+                    Sum("net_salary"), Value(0), output_field=DecimalField()
+                ),
+                house_allowance_sum=ExpressionWrapper(
+                    Coalesce(
+                        Sum("net_salary"),
+                        Value(0.0, output_field=FloatField()),
+                    )
+                    * Value(0.20, output_field=FloatField()),
+                    output_field=FloatField(),
+                ),
+                conveyance_sum=ExpressionWrapper(
+                    Coalesce(
+                        Sum("net_salary"),
+                        Value(0.0, output_field=FloatField()),
+                    )
+                    * Value(0.15, output_field=FloatField()),
+                    output_field=FloatField(),
+                ),
+                medical_allowance_sum=ExpressionWrapper(
+                    Coalesce(
+                        Sum("net_salary"),
+                        Value(0.0, output_field=FloatField()),
+                    )
+                    * Value(0.10, output_field=FloatField()),
+                    output_field=FloatField(),
+                ),
+                project_bonus_sum=Coalesce(
+                    Sum("project_bonus"), Value(0), output_field=DecimalField()
+                ),
+                festival_bonus_sum=Coalesce(
+                    Sum("festival_bonus"), Value(0), output_field=DecimalField()
+                ),
+                overtime_sum=Coalesce(
+                    Sum("overtime"), Value(0), output_field=DecimalField()
+                ),
+                leave_bonus_sum=Coalesce(
+                    Sum("leave_bonus"), Value(0), output_field=DecimalField()
+                ),
+                # # lunch_allowance_sum=Coalesce(Sum('food_allowance'), Value(0), output_field=DecimalField()),
+                food_allowance_sum=Coalesce(
+                    Sum("food_allowance"), Value(0), output_field=DecimalField()
+                ),
+                # device_allowance_sum=Coalesce(
+                #     Sum("device_allowance"),
+                #     Value(0),
+                #     output_field=DecimalField(),
+                # ),
+                # # gross related sums (if you store gross per month)
+                # gross_salary_sum=Coalesce(
+                #     Sum("gross_salary"), Value(0), output_field=DecimalField()
+                # ),
+                # # Loans / TDS via subqueries (negated to represent deduction amounts)
+                salary_advance_loans=ExpressionWrapper(
+                    -Coalesce(
+                        Subquery(salary_loan_subq, output_field=DecimalField()),
+                        Value(0),
+                    ),
+                    output_field=DecimalField(),
+                ),
+                tds=ExpressionWrapper(
+                    -Coalesce(
+                        Subquery(tds_loan_subq, output_field=DecimalField()),
+                        Value(0),
+                    ),
+                    output_field=DecimalField(),
+                ),
+                # late attendance fee (negated)
+                late_attendance_fee=ExpressionWrapper(
+                    -Coalesce(
+                        Subquery(late_fine_subq, output_field=DecimalField()),
+                        Value(0),
+                    ),
+                    output_field=DecimalField(),
+                ),
+            )
+            # compute derived totals using ExpressionWrapper (total earnings, total deduction, net salary)
+            .annotate(
+                total_earnings=ExpressionWrapper(
+                    F("basic_salary_sum")
+                    + F("house_allowance_sum")
+                    + F("conveyance_sum")
+                    + F("medical_allowance_sum")
+                    + F("project_bonus_sum")
+                    + F("festival_bonus_sum")
+                    + F("overtime_sum")
+                    + F("leave_bonus_sum")
+                    + F("food_allowance_sum"),
+                    # + F("device_allowance_sum"),
+                    output_field=DecimalField(),
+                )
+            )
+            .annotate(
+                total_deduction=ExpressionWrapper(
+                    Coalesce(F("salary_advance_loans"), Value(0))
+                    + Coalesce(F("tds"), Value(0))
+                    + Coalesce(F("late_attendance_fee"), Value(0)),
+                    output_field=DecimalField(),
+                )
+                # total_deduction=Value(0)
+            )
+            .annotate(
+                net_salary_after_deduction=ExpressionWrapper(
+                    Coalesce(
+                        F("total_earnings"),
+                        Value(0),
+                        output_field=DecimalField(),
+                    )
+                    + Coalesce(
+                        F("total_deduction"),
+                        Value(0),
+                        output_field=DecimalField(),
+                    ),
+                    output_field=DecimalField(),
+                )
+            )
+        )
+
+        # example: restrict to request.user.employee (if you want a single employee)
+        qs = qs.filter(employee=employee)
+
+        tds = TDSChallan.objects.filter(employee=employee, tds_year=active_year)
+        return self.generate_pdf(
+            request,
+            queryset,
+            letter_type="EYSPS",
+            context={
+                "qs": qs,
+                "tds": tds,
+                "employee": employee,
+                "fiscal_year": active_year,
+            },
+        ).render_to_pdf(download=False)
+
     # Download generated pdf ile
     def generate_pdf(
-        self, request, queryset, letter_type="EAL", context=None, extra_context={}
+        self,
+        request,
+        queryset,
+        letter_type="EAL",
+        context=None,
+        extra_context={},
     ):
         qr_root = f"{config.settings.MEDIA_ROOT}/noc_qr"
         # print('qr_root', qr_root)
@@ -447,7 +694,7 @@ class EmployeeActions:
                     qr = qrcode.make(url)
                     qr.save(qr_loc)
         pdf = PDF()
-        
+
         pdf.file_name = f"{self.create_file_name(queryset)}{letter_type}"
         pdf.template_path = self.get_letter_type(letter_type)
         pdf.context = {
@@ -480,5 +727,6 @@ class EmployeeActions:
             "EPRL": "letters/promotion_letter.html",
             "EXPL": "letters/experience_letter.html",
             "ESPS": "letters/payslip_all_months.html",
+            "EYSPS": "letters/payslip_yearly.html",
         }
         return switcher.get(letter_type, "")

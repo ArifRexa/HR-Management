@@ -391,9 +391,11 @@ class EmployeeAdmin(
             "employee.can_print_salary_certificate": [
                 "print_salary_certificate",
                 "print_salary_certificate_all_months",
+                "employee_payslip_yearly"
             ],
             "employee.can_print_salary_payslip": [
-                "print_salary_pay_slip_all_months"
+                "print_salary_pay_slip_all_months",
+                "employee_payslip_yearly"
             ],
             "employee.can_send_mail_to_employee": [
                 "mail_appointment_letter",

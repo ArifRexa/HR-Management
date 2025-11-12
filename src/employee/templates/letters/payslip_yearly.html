@@ -1,0 +1,232 @@
+{% extends 'letters/extra/base.html' %}
+{% load employee_helper %}
+{% load humanize %}
+{% load humanize_extra %}
+{% load employee_helper %}
+{% load salary_sheet_util %}
+
+{% block content %}
+
+
+
+
+    <style>
+        table.main-table{
+        margin-top: -100px;
+        }
+
+        table.main-table,
+        table.main-table th,
+        table.main-table td{border:1px solid #000;}
+        table.main-table th{padding:4px 2px;text-align:left;font-weight:bold;background:#f5f5f5;}
+        table.main-table td{padding:2px 4px;text-align:left;}
+
+    </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    {% with employee=employees.first  %}
+        
+    
+        
+
+        <div class="employee-details" style="page-break-after: always;">
+            <p>Ref: Mediusware Ltd./{{ latter_type }}/{{employee.employee_id}}</p>
+            <center><h2>To Whom It May Concern</h2></center>
+            
+            <table width="60%" cellpadding="2">
+                <tbody>
+                <tr>
+                    <td>Employee Name</td>
+                    <td>: {{employee.full_name}}</td>
+                </tr>
+                <tr>
+                    <td>Employee Id</td>
+                    <td>: {{employee.employee_id}}</td>
+                </tr>
+                <tr>
+                    <td>Designation</td>
+                    <td>: {{ employee.designation }}</td>
+                </tr>
+                <tr>
+                    <td>Tin No</td>
+                    <td>: {{ employee.tax_info }}</td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <table width="100%" border="1" cellpadding="5">
+                <tbody>
+                    <tr>
+                        <td>Specifies</td>
+                        <td>Fiscal Year Total (In BDT)</td>
+                    </tr>
+                    
+                    {% with data=context.qs.0 %}
+                        <tr>
+                            <td>Basic (55%)</td>
+                            <td>{{data.basic_salary_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>House Allowance (20%)</td>
+                            <td>{{data.house_allowance_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Conveyance (15%)</td>
+                            <td>{{data.conveyance_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Medical Allowance (10%)</td>
+                            <td>{{data.medical_allowance_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Project Bonus</td>
+                            <td>{{data.project_bonus_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Festival Bonus</td>
+                            <td>{{data.festival_bonus_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Overtime Bonus</td>
+                            <td>{{data.overtime_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Leave Bonus</td>
+                            <td>{{data.leave_bonus_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Launch Allowance</td>
+                            <td>{{data.food_allowance_sum | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Earning</td>
+                            <td>{{data.total_earnings | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Salary Advance Loan</td>
+                            <td>{{data.salary_advance_loans | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>TAX (Tax Deducted at Source)</td>
+                            <td>{{data.tds | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Late Attendance Fine</td>
+                            <td>{{data.late_attendance_fee | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Total Deduction</td>
+                            <td>{{data.total_deduction | floatformat:2}}</td>
+                        </tr>
+                        <tr>
+                            <td>Net Salary After Deduction</td>
+                            <td>{{data.net_salary_after_deduction | floatformat:2}}</td>
+                        </tr>
+
+                    {% endwith %}
+                        
+                </tbody>
+            </table>
+            <br> <br> <br> <br> <br> <br> <br> <br> <br>
+
+
+            <center><h2>Certificate of Deduction of Tax From Salary</h2></center>
+            <table class="main-table">
+                <thead>
+                    <tr>
+                    <th>SL No</th>
+                    <th>TDS Year</th>
+                    <th>TDS Month</th>
+                    <th>Challan Date</th>
+                    <th>Challan No.</th>
+                    <th>Challan Amount</th>
+                    <th>Claimed Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tds in context.tds %}
+                    {% if tds.tds_type == "group" %}
+                    <tr>
+                        <td style="width: 40px; text-align: center;">{{ forloop.counter }}</td>
+                        <td>{{ tds.tds_year.start_date.year }} - {{ tds.tds_year.end_date.year|slice:"-2:" }}</td>
+                        <td>{{ tds.tds_month|month_name|default:"-" }}</td>
+                        <td>{{ tds.date }}</td>
+                        <td style="width: 120px; text-align: center;">{{ tds.challan_no }}</td>
+                        <td>{{ tds.amount }}</td>
+                        <td>{% employee_monthly_tds employee tds.tds_month tds.tds_year.start_date.year %}</td>
+                    </tr>
+                    
+                    {% elif tds.tds_type == "individual" and employee == tds.individual_employee %}
+                    <tr>
+                        <td style="width: 40px; text-align: center;">{{ forloop.counter }}</td>
+                        <td>{{ tds.tds_year.start_date.year }} - {{ tds.tds_year.end_date.year|slice:"-2:" }}</td>
+                        <td>{{ tds.tds_month|month_name|default:"-" }}</td>
+                        <td>{{ tds.date }}</td>
+                        <td style="width: 120px; text-align: center;">{{ tds.challan_no }}</td>
+                        <td>{{ tds.amount }}</td>
+                        <td>{% employee_monthly_tds employee tds.tds_month tds.tds_year.start_date.year %}</td>
+                    </tr>
+                    
+                    
+                    {% endif %}
+                    
+                    {% endfor %}
+                    <tr class="total-row">
+                    <td colspan="6" style="text-align:right;"><strong>Total</strong></td>
+                    <td><strong>{% employee_total_tds context.fiscal_year context.employee %}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+    <div>
+      <p><strong>Taka In Words:</strong> {% employee_total_tds context.fiscal_year context.employee 'word' %} Only</p>
+    </div>
+    <div>
+      <p><strong>Mediusware TIN: 569616877784</strong> </p>
+    </div>
+
+
+
+
+            <br> <br>
+            
+            <table width="100%">
+                <tr>
+                    <td width="70%">For Mediusware Ltd</td>
+                </tr>
+                <tr>
+                    <td rowspan="1">
+                        <img src="{{ seal }}" height="80px" alt="">
+                    </td>
+                    <td></td>
+                </tr>
+            
+                <tr>
+                    <td>Md. Shahinur Rahman</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Managing Director</td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Mediusware Ltd.</td>
+                    <td></td>
+                </tr>
+            </table>
+
+        </div>
+
+        {% endwith %}
+{% endblock %}
