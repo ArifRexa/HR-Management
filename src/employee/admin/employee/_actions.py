@@ -666,7 +666,7 @@ class EmployeeActions:
                 "employee": employee,
                 "fiscal_year": active_year,
             },
-        ).render_to_pdf(download=False)
+        ).render_to_pdf(download=True)
 
     # Download generated pdf ile
     def generate_pdf(
