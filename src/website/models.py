@@ -1715,8 +1715,7 @@ class ArchivePage(TimeStampMixin):
     section_description = HTMLField(null=True, blank=True)
     slug = models.SlugField(null=True, blank=True)
     image = models.ImageField(upload_to="archive_page", null=True, blank=True)
-    def __str__(self):
-        return self.seo_title
+    
     
     class Meta:
         verbose_name = "All Page"

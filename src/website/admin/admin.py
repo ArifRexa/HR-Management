@@ -1,10 +1,10 @@
-from html import escape
 import json
 from typing import Any, Union
 
 import nested_admin
 from django import forms
 from django.contrib import admin
+from django.contrib.admin import SimpleListFilter
 from django.contrib.auth.admin import GroupAdmin as BaseGroupAdmin
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
@@ -14,20 +14,15 @@ from django.db.models.query import QuerySet
 from django.forms.models import BaseInlineFormSet, model_to_dict
 from django.http.request import HttpRequest
 from django.template.loader import get_template
-from django.urls import reverse
 from django.utils import timezone
+from datetime import timedelta
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django_q.tasks import async_task
-from mptt.admin import MPTTModelAdmin
-from django.contrib.admin import SimpleListFilter
 
 # Register your models here.
 from employee.models.employee import Employee
-from project_management.models import ProjectHour
-from website.admin.industries_we_serve import ApplicationAreasInline, IndustryMetadataInline
-from website.admin.services import AdditionalServiceContentInline, ComparativeAnalysisInline, DevelopmentServiceProcessInline, DiscoverOurServiceInline, ServiceMetaDataInline
+from website.admin.industries_we_serve import IndustryMetadataInline
 from website.models import (
     CTA,
     FAQ,
@@ -37,23 +32,22 @@ from website.models import (
     AdditionalPageKeyThingsCards,
     AdditionalPageOurProcess,
     AdditionalPageRelatedBlogs,
-    AdditionalPageWhyChooseUs,
     AdditionalPages,
+    AdditionalPageWhyChooseUs,
     AllProjectsBanner,
     AllServicesTitle,
     ArchivePage,
     ArchivePageBody,
     Award,
     AwardCategory,
-    AwardYearGroup,
     Awards,
     AwardsBanner,
     AwardsTitle,
+    AwardYearGroup,
     BenefitsOfEmployment,
     BenefitsOfEmploymentTitle,
     Blog,
     BlogCategory,
-    BlogComment,
     BlogContext,
     BlogFAQ,
     BlogFAQSchema,
@@ -77,22 +71,19 @@ from website.models import (
     DeliveryModelBanner,
     DevelopmentMethodologyBanner,
     EcoSystem,
-    EcoSystemCardTags,
     EcoSystemCards,
-    EmployeePerspective,
+    EcoSystemCardTags,
     EmployeeTestimonial,
     EmployeeTestimonialTitle,
     EngagementModelBanner,
     EventCalender,
     FAQHomeTitle,
     FeatureName,
-    Gallery,
     HistoryOfTech,
     HomeBanner,
     Industry,
     IndustryTitle,
     IndustryWeServe,
-    Lead,
     Leadership,
     LeaderShipBanner,
     LeadershipSpeech,
@@ -105,7 +96,6 @@ from website.models import (
     OurJourney,
     OurJourneyTitle,
     PageBanner,
-    PlagiarismInfo,
     PostCredential,
     PostPlatform,
     PricingFeature,
@@ -130,15 +120,15 @@ from website.models import (
     ServiceMeatadata,
     ServiceNameForPricing,
     ServiceProcess,
-    ServiceTechnology,
     ServicesWeProvide,
     ServicesWeProvideCards,
+    ServiceTechnology,
     SpecialProjectsTitle,
     Tag,
     TeamElement,
     Technology,
-    TechnologyCTA,
     TechnologyCreatorsQuotes,
+    TechnologyCTA,
     TechnologyFAQ,
     TechnologyFAQSchema,
     TechnologyKeyThings,
@@ -162,8 +152,45 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
 )
-from website.models_v2.industries_we_serve import Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
-from website.models_v2.services import BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, KeyThings, KeyThingsQA, MetaDescription, ServiceFAQQuestion, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
+from website.models_v2.industries_we_serve import (
+    Benefits,
+    BenefitsQA,
+    CustomSolutions,
+    CustomSolutionsCards,
+    IndustryDetailsHeading,
+    IndustryDetailsHeadingCards,
+    IndustryDetailsHeroSection,
+    IndustryItemTags,
+    IndustryRelatedBlogs,
+    OurProcess,
+    ServeCategory,
+    ServeCategoryCTA,
+    ServeCategoryFAQSchema,
+    ServiceCategoryFAQ,
+    WhyChooseUs,
+    WhyChooseUsCards,
+    WhyChooseUsCardsDetails,
+)
+from website.models_v2.services import (
+    BestPracticesCards,
+    BestPracticesCardsDetails,
+    BestPracticesHeadings,
+    KeyThings,
+    KeyThingsQA,
+    MetaDescription,
+    ServiceFAQQuestion,
+    ServicePage,
+    ServicePageCTA,
+    ServicePageFAQSchema,
+    ServicesItemTags,
+    ServicesOurProcess,
+    ServicesRelatedBlogs,
+    ServicesWhyChooseUs,
+    ServicesWhyChooseUsCards,
+    ServicesWhyChooseUsCardsDetails,
+    SolutionsAndServices,
+    SolutionsAndServicesCards,
+)
 from website.utils.plagiarism_checker import check_plagiarism
 
 
@@ -439,30 +466,92 @@ class BlogForm(forms.ModelForm):
 
 
 
+
 class ActiveEmployeeFilter(admin.SimpleListFilter):
     title = "Author"
-    parameter_name = "created_by__employee__id__exact"
+    parameter_name = "author__id__exact"
 
     def lookups(self, request, model_admin):
+        # Get active employees who are assigned as author on at least one blog
         employees = (
-            Employee.objects.filter(active=True)
-            .annotate(total_blog=Count("user__website_blog_related"))
+            Employee.objects.filter(
+                active=True,
+                blogs__isnull=False  # 'blogs' is the related_name from Blog.author
+            )
+            .annotate(total_blog=Count("blogs"))
             .distinct()
         )
-        looksup_list = []
-        for employee in list(employees):
-            if employee.total_blog == 0:
-                looksup_list.append((employee.pk, employee.full_name))
-            else:
-                looksup_list.append(
-                    (employee.pk, f"{employee.full_name} ({employee.total_blog})")
-                )
-        return tuple(looksup_list)
+
+        lookups_list = [
+            (emp.pk, f"{emp.full_name} ({emp.total_blog})")
+            for emp in employees
+        ]
+        return tuple(lookups_list)
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(created_by__employee__id__exact=self.value())
+            return queryset.filter(author__id__exact=self.value())
         return queryset
+
+
+class CreatorEmployeeFilter(admin.SimpleListFilter):
+    title = "Creator"
+    parameter_name = "created_by__id__exact"
+
+    def lookups(self, request, model_admin):
+        # Get users who have created at least one blog
+        user_ids_with_blogs = (
+            Blog.objects.values_list('created_by_id', flat=True)
+            .distinct()
+        )
+
+        # Get active employees whose user is in that list
+        employees = (
+            Employee.objects.filter(
+                active=True,
+                user_id__in=user_ids_with_blogs
+            )
+            .annotate(
+                total_created=Count('user__website_blog_related')  # reverse relation from User to Blog
+            )
+            .distinct()
+        )
+
+        lookups_list = [
+            (emp.user_id, f"{emp.full_name} ({emp.total_created})")
+            for emp in employees
+        ]
+        return tuple(lookups_list)
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(created_by__id__exact=self.value())
+        return queryset
+
+
+class CategoryFilter(admin.SimpleListFilter):
+    title = "Tags"
+    parameter_name = "category__id__exact"
+
+
+    def lookups(self, request, model_admin):
+        # Use 'categories' — the related_name from Blog.category
+        categories = (
+            Category.objects.filter(categories__isnull=False)
+            .annotate(blog_count=Count('categories'))
+            .distinct()
+            .order_by('name')  # or 'slug', etc.
+        )
+        return tuple(
+            (cat.id, f"{cat.name} ({cat.blog_count})")
+            for cat in categories
+        )
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(category__id__exact=self.value())
+        return queryset
+
 
 
 class BlogCategoryFilter(admin.SimpleListFilter):
@@ -1236,21 +1325,52 @@ class TechnologyAdmin(nested_admin.NestedModelAdmin):  # Changed to NestedModelA
             )
 
 # =========================================== Blog Status Filter ===========================================
+# class BlogStatusFilter(SimpleListFilter):
+#     title = 'status'
+#     parameter_name = 'status'
+
+#     def lookups(self, request, model_admin):
+#         # Get the queryset that the user is allowed to see
+#         qs = model_admin.get_queryset(request)
+        
+#         # Get counts for each status
+#         status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+#         count_dict = {item['status']: item['count'] for item in status_counts}
+        
+#         # Create lookups with counts
+#         lookups = []
+#         for status_value, status_label in BlogStatus.choices:
+#             count = count_dict.get(status_value, 0)
+#             lookups.append((status_value, f"{status_label} ({count})"))
+#         return lookups
+
+#     def queryset(self, request, queryset):
+#         if self.value():
+#             return queryset.filter(status=self.value())
+#         return queryset
+
 class BlogStatusFilter(SimpleListFilter):
-    title = 'status'
+    title = 'Status'
     parameter_name = 'status'
 
     def lookups(self, request, model_admin):
-        # Get the queryset that the user is allowed to see
+        # Get the queryset the user is allowed to see
         qs = model_admin.get_queryset(request)
         
-        # Get counts for each status
-        status_counts = qs.values('status').annotate(count=Count('id')).order_by()
+        # Get counts for each status (excluding 'published')
+        status_counts = (
+            qs.exclude(status=BlogStatus.PUBLISHED)
+            .values('status')
+            .annotate(count=Count('id'))
+            .order_by()
+        )
         count_dict = {item['status']: item['count'] for item in status_counts}
         
-        # Create lookups with counts
+        # Build lookups, skipping 'Published'
         lookups = []
         for status_value, status_label in BlogStatus.choices:
+            if status_value == BlogStatus.PUBLISHED:
+                continue  # skip "Published"
             count = count_dict.get(status_value, 0)
             lookups.append((status_value, f"{status_label} ({count})"))
         return lookups
@@ -1292,11 +1412,14 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     list_display = (
         "title",
         "author",
+        "get_created_by",
         "status",
-        "total_view",
+        # "total_view",
         "get_preview_link",
+        "updated_at",
         # "get_plagiarism_percentage",
     )
+
     readonly_fields = ("status",)
     exclude = ("content",)
 
@@ -1326,7 +1449,18 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "cta_title",
     )
     form = BlogForm
-    list_filter = (BlogStatusFilter, BlogIndustryFilter, ActiveEmployeeFilter, BlogServiceFilter, BlogTechnologyFilter, "is_featured")
+    list_filter = (
+        BlogStatusFilter, 
+        "is_featured",
+        ActiveEmployeeFilter, 
+        CreatorEmployeeFilter,
+        BlogServiceFilter, 
+        BlogIndustryFilter, 
+        BlogTechnologyFilter, 
+        CategoryFilter,
+        )
+    
+    
     list_per_page = 20
 
     class Media:
@@ -1366,12 +1500,17 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     def get_updated_at(self, obj):
         return obj.updated_at.strftime("%d %b %Y")
 
-    @admin.display(description="Preview")
+    @admin.display(description="Link")
     def get_preview_link(self, obj):
-        url = f"https://www.mediusware.com/blog/{obj.slug}/?q=preview"
+        url = f"https://www.mediusware.com/blog/{obj.slug}"
         html_template = get_template("blog/col_preview_link.html")
         html_content = html_template.render({"url": url})
         return format_html(html_content)
+    
+
+    @admin.display(description="Creator")
+    def get_created_by(self, obj):
+        return obj.created_by.employee.full_name
 
     @admin.action(description="Change Status To Approved")
     def approve_selected(self, request, queryset):
@@ -2337,100 +2476,7 @@ class PublicImageAdmin(admin.ModelAdmin):
     list_display = ["title", "image"]
 
 
-# @admin.register(PlagiarismInfo)
-# class PlagiarismInfoAdmin(admin.ModelAdmin):
-#     list_display = ["blog", "plagiarism_percentage", "scan_id", "export_id", "pdf_file"]
 
-
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = ("full_name", "email", "form_type", "client_query", "project_details", "created_at")
-#     # readonly_fields = ["full_name", "email", "form_type", "service_require", "project_details", "client_query", "attached_file", "created_at"]
-
-
-
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "full_name",
-#         "email",
-#         "form_type",
-#         "client_query_truncated",
-#         "project_details_truncated",
-#         "created_at"
-#     )
-
-#     # Optional: Make fields read-only if needed
-#     # readonly_fields = [...]  # keep your existing if needed
-
-#     def client_query_truncated(self, obj):
-#         if not obj.client_query:
-#             return "-"
-#         truncated = Truncator(obj.client_query).words(5, html=True)  # or .chars(50)
-#         return format_html(
-#             '<span title="{}">{}</span>',
-#             obj.client_query,
-#             truncated
-#         )
-#     client_query_truncated.short_description = "Client Query"
-#     client_query_truncated.admin_order_field = "client_query"
-
-#     def project_details_truncated(self, obj):
-#         if not obj.project_details:
-#             return "-"
-#         truncated = Truncator(obj.project_details).words(5, html=True)
-#         return format_html(
-#             '<span title="{}">{}</span>',
-#             obj.project_details,
-#             truncated
-#         )
-#     project_details_truncated.short_description = "Project Details"
-#     project_details_truncated.admin_order_field = "project_details"
-
-
-
-
-# ===================== modal=====================
-# @admin.register(ContactForm)
-# class ContactFormAdmin(admin.ModelAdmin):
-#     list_display = (
-#         "full_name",
-#         "email",
-#         "form_type",
-#         "client_query_truncated",
-#         "project_details_truncated",
-#         "created_at"
-#     )
-
-#     def client_query_truncated(self, obj):
-#         if not obj.client_query:
-#             return "-"
-#         truncated = Truncator(obj.client_query).words(5, html=True)
-#         return format_html(
-#             '<a href="#" class="popup-link" data-content="{}" data-title="Client Query">{}</a>',
-#             obj.client_query,
-#             truncated
-#         )
-#     client_query_truncated.short_description = "Client Query"
-#     client_query_truncated.admin_order_field = "client_query"
-
-#     def project_details_truncated(self, obj):
-#         if not obj.project_details:
-#             return "-"
-#         truncated = Truncator(obj.project_details).words(5, html=True)
-#         return format_html(
-#             '<a href="#" class="popup-link" data-content="{}" data-title="Project Details">{}</a>',
-#             obj.project_details,
-#             truncated
-#         )
-#     project_details_truncated.short_description = "Project Details"
-#     project_details_truncated.admin_order_field = "project_details"
-
-#     class Media:
-#         css = {
-#             'all': ('css/admin_popup.css',)
-#         }
-#         js = ('js/admin_popup.js',)
 
 @admin.register(ContactForm)
 class ContactFormAdmin(admin.ModelAdmin):
@@ -2448,6 +2494,38 @@ class ContactFormAdmin(admin.ModelAdmin):
     
     list_filter = ("form_type", "action_by", "is_verified")
 
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+
+        # ---- DELETE un‑verified entries older than 24 h ----------------
+        cutoff = timezone.now() - timedelta(hours=24)
+        print("*"*100)
+        print("Deleting un-verified ContactForm entries older than 24 hours...", cutoff)
+        ContactForm.objects.filter(
+            is_verified=False,
+            created_at__lt=cutoff
+        ).delete()
+        # -----------------------------------------------------------
+
+        # ---- Show only verified by default ----------------------------
+        if "is_verified__exact" not in request.GET:
+            qs = qs.filter(is_verified=True)
+        # -----------------------------------------------------------
+
+        return qs
+
+    # # Optional: Add a custom changelist view with toggle
+    def changelist_view(self, request, extra_context=None):
+        # Allow ?is_verified=false to show unverified
+        if 'is_verified__exact' not in request.GET:
+            if 'is_verified__exact' not in request.GET and 'is_verified__isnull' not in request.GET:
+                from django.http import HttpResponseRedirect
+                from django.urls import reverse
+                url = reverse('admin:website_contactform_changelist')
+                return HttpResponseRedirect(f"{url}?is_verified__exact=1")
+        return super().changelist_view(request, extra_context)
+
     def short_brief_truncated(self, obj):
         if not obj.short_brief:
             return "-"
@@ -2460,17 +2538,6 @@ class ContactFormAdmin(admin.ModelAdmin):
     short_brief_truncated.short_description = "Short Brief"
     short_brief_truncated.admin_order_field = "short_brief"
 
-    # def project_details_truncated(self, obj):
-    #     if not obj.project_details:
-    #         return "-"
-    #     truncated = Truncator(obj.project_details).words(5, html=True)
-    #     return format_html(
-    #         '<span class="tooltip" data-tooltip="{}">{}</span>',
-    #         obj.project_details,
-    #         truncated
-    #     )
-    # project_details_truncated.short_description = "Project Details"
-    # project_details_truncated.admin_order_field = "project_details"
 
     class Media:
         css = {

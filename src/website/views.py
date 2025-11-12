@@ -1192,7 +1192,7 @@ class ContactFormView(APIView):
                 try:
                     self.send_verification_email(contact, request)
                     return Response({
-                        "message": "Form submitted successfully. Please check your email to verify.",
+                        "message": "Form submitted successfully. Please check your email to verify within 12 hours. Unless you will not be able to get a reply from us.",
                         "data": serializer.data
                     }, status=status.HTTP_201_CREATED)
                 except Exception:

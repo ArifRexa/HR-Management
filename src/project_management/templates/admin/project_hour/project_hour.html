@@ -124,6 +124,24 @@
 </form></div>
 
 <script>
+
+    function update_total_hour(e){
+    console.log("input on change event")
+
+    const total_hour = document.getElementById('id_hours')
+
+    const child_hours = document.getElementsByClassName("field-hours")
+    let total = 0
+    for(var i=1; i<child_hours.length; i++){
+        if (child_hours[i].childNodes[1].value != ""){
+            total +=  parseInt(child_hours[i].childNodes[1].value)
+        }
+        
+    }
+    total_hour.value = total
+}
+
+
     function getThisWeekHour(e){
         project = document.querySelector('#id_project');
         phour_date = document.querySelector("#id_date");
@@ -144,6 +162,9 @@
                     hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
                     employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
                     date = document.querySelector(`#id_employeeprojecthour_set-${i}-date`);
+                    if (hour_input != null){
+                        hour_input.addEventListener("keyup", update_total_hour)
+                    }
                 console.log(hour[i].created_at,"Print the date ");
                 date.value = hour[i].created_at.substring(0, 10);
 

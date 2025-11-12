@@ -130,6 +130,7 @@ class EmployeeSalaryInline(admin.TabularInline):
             employee=obj.employee,
             month=obj.salary_sheet.date.month,
             year=obj.salary_sheet.date.year,
+            is_consider=False
         ).count()
 
         total_fine = 0.00

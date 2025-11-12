@@ -578,9 +578,11 @@ class EmployeeFixedAsset(AuthorMixin, TimeStampMixin):
         blank=True,
         verbose_name="Web Cam",
     )
-    extra = models.TextField(
+    extra = models.ManyToManyField(
+        to=FixedAsset,
+        limit_choices_to={"category__name__icontains": "Extra"},
+        related_name="employee_fixed_asset_extra",
         blank=True,
-        null=True,
     )
     is_active = models.BooleanField(default=True)
 

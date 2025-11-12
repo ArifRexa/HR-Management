@@ -73,6 +73,7 @@ class InventoryTransaction(TimeStampMixin, AuthorMixin):
                                 related_name="%(app_label)s_%(class)s_update_by")
     
     verification_code = models.CharField(max_length=50, null=True, blank=True)
+    available_item = models.PositiveIntegerField(default=0, help_text="Before this transaction")
     
     def save(self, *args, **kwargs):
         if not self.verification_code:
