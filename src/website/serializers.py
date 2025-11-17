@@ -1804,6 +1804,7 @@ class BlogSerializer(serializers.ModelSerializer):
         author = obj.author
         return f"{author}" if author else ""
     
+    
     def get_table_of_contents(self, obj):
         """
         Returns a list of all titles from this blog's contexts
