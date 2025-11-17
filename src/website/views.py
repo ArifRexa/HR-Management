@@ -1419,7 +1419,7 @@ class BlogListAPIView(ListAPIView):
     serializer_class = BlogSerializer
     filterset_class = BlogFilter
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['category__name']
+    search_fields = ['category__name','title', 'category__name', 'tag__name', 'author__full_name']
     pagination_class = BlogPagination
     
     @swagger_auto_schema(
