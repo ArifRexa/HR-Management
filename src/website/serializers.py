@@ -1763,6 +1763,11 @@ class BlogModeratorFeedbackSerializer(serializers.ModelSerializer):
 #         model = CTA
 #         fields = '__all__'
 
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Employee
+        fields = ['full_name', 'email', 'image']
+
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
     tag = TagSerializer(many=True, read_only=True)
@@ -1779,7 +1784,7 @@ class BlogSerializer(serializers.ModelSerializer):
     faq_schema = BlogFAQSchemaSerializer(read_only=True)
     moderator_feedbacks = BlogModeratorFeedbackSerializer(source='blogmoderatorfeedback_set', many=True, read_only=True)
     # ctas = CTASerializer(many=True, read_only=True)
-    author = serializers.SerializerMethodField()
+    author = AuthorSerializer()
     table_of_contents = serializers.SerializerMethodField()
 
 
