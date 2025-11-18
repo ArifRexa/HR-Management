@@ -2266,7 +2266,7 @@ class ServicePageChildrenSerializer(serializers.ModelSerializer):
     tags = ServicesItemTagsSerializer(many=True, read_only=True, source='service_item_tags')
     class Meta:
         model = ServicePage
-        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description', 'show_in_menu', 'tags']
+        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'icon', 'description', 'show_in_menu', 'tags']
         ref_name = 'ServicePageChild'
 
 
