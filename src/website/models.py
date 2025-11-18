@@ -1691,6 +1691,7 @@ class Awards(models.Model):
     is_featured = models.BooleanField(default=False)
     image = models.ImageField(upload_to='awards/', null=True, blank=True)
     image_url = models.URLField(max_length=500, verbose_name="Award URL", null=True, blank=True)
+    blog_url  = models.URLField(max_length=500, verbose_name="Blog URL", null=True, blank=True)
     description = models.TextField(blank=True, null=True)
     
     def __str__(self):
