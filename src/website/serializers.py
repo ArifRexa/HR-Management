@@ -1764,9 +1764,11 @@ class BlogModeratorFeedbackSerializer(serializers.ModelSerializer):
 #         fields = '__all__'
 
 class AuthorSerializer(serializers.ModelSerializer):
+    social_links = EmployeeSocialSerializer(source='employeesocial_set', many=True, read_only=True)
+
     class Meta:
         model = Employee
-        fields = ['full_name', 'email', 'image']
+        fields = ['id', 'slug', 'full_name', 'email', 'image', 'designation', 'author_bio', 'social_links']
 
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
