@@ -53,6 +53,27 @@
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
+        .highlight-box {
+            background-color: #f7f9fc;
+            border-left: 5px solid #372d9f;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .highlight-box-red {
+            background-color: #fff5f5;
+            border-left: 5px solid #dc3545;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .highlight-box-red p {
+            color: #721c24;
+        }
 
         .section-title {
             font-size: 18px;
@@ -109,6 +130,14 @@
                     {{ interview_datetime|date:"g:i" }} {% if hour|add:"0" >= 12 and hour|add:"0" <= 23 %}pm{% else %}am{% endif %}
 
                 {% endwith %}
+            </p>
+        </div>
+
+        <div class="highlight-box-red">
+            <p style="text-align: center; font-size: 18px; margin: 0;">Need to reschedule?</p>
+            <p style="text-align: center; font-size: 16px; font-weight: bold; color: #dc3545; margin: 10px 0;">
+                If you need to reschedule this interview, please contact us at:<br>
+                📧 hr@mediusware.com | 📱 +8801897661850-51
             </p>
         </div>
 
