@@ -149,7 +149,7 @@ from website.models import (
 from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
-
+from django.db import models as django_models
 
 
 class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
@@ -1770,7 +1770,12 @@ class AuthorSerializer(serializers.ModelSerializer):
         model = Employee
         fields = ['id', 'slug', 'full_name', 'email', 'image', 'designation', 'author_bio', 'social_links']
         ref_name = 'website_author'
+class BlogCardSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
 
+    class Meta:
+        model = Blog
+        fields = ['id', 'title', 'slug', 'image', 'created_at', 'read_time_minute', 'author']
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
     tag = TagSerializer(many=True, read_only=True)
@@ -1783,7 +1788,8 @@ class BlogSerializer(serializers.ModelSerializer):
     blog_faqs = BlogFAQSerializer(many=True, read_only=True)
     seo_essential = BlogSEOEssentialSerializers(source='blogseoessential_set', many=True, read_only=True)
     reference_blogs = ReferenceBlogsSerializer(source='reference_blog', many=True, read_only=True)
-    related_blogs = RelatedBlogsSerializer(source='relatedblogs_set', many=True, read_only=True)
+    # related_blogs = RelatedBlogsSerializer(source='relatedblogs_set', many=True, read_only=True)
+    related_blogs = serializers.SerializerMethodField()
     faq_schema = BlogFAQSchemaSerializer(read_only=True)
     moderator_feedbacks = BlogModeratorFeedbackSerializer(source='blogmoderatorfeedback_set', many=True, read_only=True)
     # ctas = CTASerializer(many=True, read_only=True)
@@ -1816,6 +1822,38 @@ class BlogSerializer(serializers.ModelSerializer):
         
         # Extract just titles titles from each context
         return [context.title for context in contexts]
+    
+
+    def get_related_blogs(self, obj):
+        """
+        Returns up to 10 blogs that share at least one parent_service or technology.
+        Excludes the current blog.
+        """
+        if not obj.pk:
+            return []
+
+        # Get related service and tech IDs
+        service_ids = list(obj.parent_services.values_list('id', flat=True))
+        tech_ids = list(obj.technology.values_list('id', flat=True))
+
+        if not service_ids and not tech_ids:
+            return []
+
+        # Find blogs sharing any service or tech
+        related_qs = Blog.objects.filter(
+            django_models.Q(parent_services__in=service_ids) |
+            django_models.Q(technology__in=tech_ids)
+        ).exclude(pk=obj.pk).distinct()
+
+        # Optional: Boost relevance by number of matches (more shared = higher priority)
+        related_qs = related_qs.annotate(
+            match_score=(
+                django_models.Count('parent_services', filter=django_models.Q(parent_services__in=service_ids)) +
+                django_models.Count('technology', filter=django_models.Q(technology__in=tech_ids))
+            )
+        ).order_by('-match_score', '-created_at')[:10]
+
+        return BlogCardSerializer(related_qs, many=True, context=self.context).data
     
 
 
