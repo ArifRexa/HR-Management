@@ -1769,6 +1769,7 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Employee
         fields = ['id', 'slug', 'full_name', 'email', 'image', 'designation', 'author_bio', 'social_links']
+        ref_name = 'website_author'
 
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
