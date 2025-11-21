@@ -1762,9 +1762,15 @@ class BlogModeratorFeedbackSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = CTA
 #         fields = '__all__'
+class AuthorDesignationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Designation
+        fields = ['title']
+        ref_name = 'website_authordesignation'
 
 class AuthorSerializer(serializers.ModelSerializer):
     social_links = EmployeeSocialSerializer(source='employeesocial_set', many=True, read_only=True)
+    designation = AuthorDesignationSerializer(read_only=True)
 
     class Meta:
         model = Employee
