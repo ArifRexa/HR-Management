@@ -634,6 +634,7 @@ class Project(TimeStampMixin, AuthorMixin):
         upload_to="project_thumbnails", null=True, blank=True
     )
     featured_video = models.URLField(null=True, blank=True)
+    short_video = models.URLField(null=True, blank=True, help_text="Short video for mediusware.com case study page")
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="projects")
     identifier = models.CharField(
