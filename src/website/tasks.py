@@ -52,7 +52,8 @@ def send_daily_contact_form_summary():
 
     # Query ContactForm entries from the last 24 hours
     new_contacts = ContactForm.objects.filter(
-        created_at__range=(start_time, end_time)
+        created_at__range=(start_time, end_time), 
+        is_verified=True
     ).order_by('-created_at')
 
     # If no new contacts, skip sending email

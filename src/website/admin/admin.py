@@ -1458,6 +1458,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         BlogIndustryFilter, 
         BlogTechnologyFilter, 
         CategoryFilter,
+        'created_at',
         )
     
     

@@ -149,7 +149,7 @@ from website.models import (
 from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
 from website.models_v2.services import AdditionalServiceContent, BestPracticesCards, BestPracticesCardsDetails, BestPracticesHeadings, ComparativeAnalysis, DevelopmentServiceProcess, DiscoverOurService, KeyThings, KeyThingsQA, MetaDescription, ServiceCriteria, ServiceFAQQuestion, ServiceMetaData, ServicePage, ServicePageCTA, ServicePageFAQSchema, ServicesItemTags, ServicesOurProcess, ServicesRelatedBlogs, ServicesWhyChooseUs, ServicesWhyChooseUsCards, ServicesWhyChooseUsCardsDetails, SolutionsAndServices, SolutionsAndServicesCards
-
+from django.db import models as django_models
 
 
 class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
@@ -1762,7 +1762,26 @@ class BlogModeratorFeedbackSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = CTA
 #         fields = '__all__'
+class AuthorDesignationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Designation
+        fields = ['title']
+        ref_name = 'website_authordesignation'
 
+class AuthorSerializer(serializers.ModelSerializer):
+    social_links = EmployeeSocialSerializer(source='employeesocial_set', many=True, read_only=True)
+    designation = AuthorDesignationSerializer(read_only=True)
+
+    class Meta:
+        model = Employee
+        fields = ['id', 'slug', 'full_name', 'email', 'image', 'designation', 'author_bio', 'social_links']
+        ref_name = 'website_author'
+class BlogCardSerializer(serializers.ModelSerializer):
+    author = AuthorSerializer(read_only=True)
+
+    class Meta:
+        model = Blog
+        fields = ['id', 'title', 'slug', 'image', 'created_at', 'read_time_minute', 'author']
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
     tag = TagSerializer(many=True, read_only=True)
@@ -1775,11 +1794,12 @@ class BlogSerializer(serializers.ModelSerializer):
     blog_faqs = BlogFAQSerializer(many=True, read_only=True)
     seo_essential = BlogSEOEssentialSerializers(source='blogseoessential_set', many=True, read_only=True)
     reference_blogs = ReferenceBlogsSerializer(source='reference_blog', many=True, read_only=True)
-    related_blogs = RelatedBlogsSerializer(source='relatedblogs_set', many=True, read_only=True)
+    # related_blogs = RelatedBlogsSerializer(source='relatedblogs_set', many=True, read_only=True)
+    related_blogs = serializers.SerializerMethodField()
     faq_schema = BlogFAQSchemaSerializer(read_only=True)
     moderator_feedbacks = BlogModeratorFeedbackSerializer(source='blogmoderatorfeedback_set', many=True, read_only=True)
     # ctas = CTASerializer(many=True, read_only=True)
-    author = serializers.SerializerMethodField()
+    author = AuthorSerializer()
     table_of_contents = serializers.SerializerMethodField()
 
 
@@ -1799,6 +1819,7 @@ class BlogSerializer(serializers.ModelSerializer):
         author = obj.author
         return f"{author}" if author else ""
     
+    
     def get_table_of_contents(self, obj):
         """
         Returns a list of all titles from this blog's contexts
@@ -1808,6 +1829,38 @@ class BlogSerializer(serializers.ModelSerializer):
         
         # Extract just titles titles from each context
         return [context.title for context in contexts]
+    
+
+    def get_related_blogs(self, obj):
+        """
+        Returns up to 10 blogs that share at least one parent_service or technology.
+        Excludes the current blog.
+        """
+        if not obj.pk:
+            return []
+
+        # Get related service and tech IDs
+        service_ids = list(obj.parent_services.values_list('id', flat=True))
+        tech_ids = list(obj.technology.values_list('id', flat=True))
+
+        if not service_ids and not tech_ids:
+            return []
+
+        # Find blogs sharing any service or tech
+        related_qs = Blog.objects.filter(
+            django_models.Q(parent_services__in=service_ids) |
+            django_models.Q(technology__in=tech_ids)
+        ).exclude(pk=obj.pk).distinct()
+
+        # Optional: Boost relevance by number of matches (more shared = higher priority)
+        related_qs = related_qs.annotate(
+            match_score=(
+                django_models.Count('parent_services', filter=django_models.Q(parent_services__in=service_ids)) +
+                django_models.Count('technology', filter=django_models.Q(technology__in=tech_ids))
+            )
+        ).order_by('-match_score', '-created_at')[:10]
+
+        return BlogCardSerializer(related_qs, many=True, context=self.context).data
     
 
 
@@ -2260,7 +2313,7 @@ class ServicePageChildrenSerializer(serializers.ModelSerializer):
     tags = ServicesItemTagsSerializer(many=True, read_only=True, source='service_item_tags')
     class Meta:
         model = ServicePage
-        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'description', 'show_in_menu', 'tags']
+        fields = ['id', 'title', 'secondary_title', 'h1_title', 'slug', 'sub_title', 'icon', 'description', 'show_in_menu', 'tags']
         ref_name = 'ServicePageChild'
 
 
@@ -3029,10 +3082,50 @@ class HireDeveloperPageSerializer(serializers.ModelSerializer):
     qualities = QualitiesSerializer(many=True, read_only=True)
     faqs = HireDeveloperFAQSerializer(many=True, read_only=True)
     meta_descriptions = HireDeveloperMetaDescriptionSerializer(many=True, read_only=True)
+    table_of_contents = serializers.SerializerMethodField()
 
     class Meta:
         model = HireDeveloperPage
         fields = '__all__'
+    
+    def get_table_of_contents(self, obj):
+        toc = []
+
+        # Helper to safely get section_title if it exists and is not empty
+        def add_title(title, label=None):
+            if title and title.strip():
+                toc.append(title.strip())
+
+        # 1. Delivery Module Intro
+        for item in obj.delivery_module_intros.all():
+            add_title(item.section_title)
+
+        # 2. Working Mechanism
+        for item in obj.working_mechanisms.all():
+            add_title(item.section_title)
+
+        # 3. Benefits
+        for item in obj.benefits.all():
+            add_title(item.section_title)
+
+        # 4. Hiring Comparison
+        for item in obj.hiring_comparisons.all():
+            add_title(item.section_title)
+
+        # 5. Comprehensive Guide
+        for item in obj.comprehensive_guides.all():
+            add_title(item.section_title)
+
+        # 6. Defining Developers
+        for item in obj.defining_developer_roles.all():
+            add_title(item.section_title)
+
+        # 7. Qualities
+        for item in obj.qualities.all():
+            add_title(item.section_title)
+
+
+        return toc
 
 
 

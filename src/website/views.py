@@ -1419,7 +1419,7 @@ class BlogListAPIView(ListAPIView):
     serializer_class = BlogSerializer
     filterset_class = BlogFilter
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    search_fields = ['category__name']
+    search_fields = ['category__name','title', 'category__name', 'tag__name', 'author__full_name']
     pagination_class = BlogPagination
     
     @swagger_auto_schema(
@@ -1658,8 +1658,54 @@ class BlogListByIDsAPIView(APIView):
 
 
 
+class EmployeeBlogsAPIView(ListAPIView):
+    serializer_class = BlogSerializer
+    pagination_class = BlogPagination
 
+    def get_queryset(self):
+        employee_id = self.kwargs.get('employee_id')
+        return Blog.objects.filter(author_id=employee_id).order_by('-created_at')
 
+    def list(self, request, *args, **kwargs):
+        employee_id = self.kwargs.get('employee_id')
+        get_object_or_404(Employee, id=employee_id)
+        return super().list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        tags=["Blogs"],
+        manual_parameters=[
+            openapi.Parameter(
+                'employee_id',
+                openapi.IN_PATH,
+                description="ID of the employee to filter blogs by author",
+                type=openapi.TYPE_INTEGER,
+                required=True
+            ),
+        ],
+        responses={
+            200: openapi.Response(
+                description="Paginated list of blogs by employee",
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'count': openapi.Schema(type=openapi.TYPE_INTEGER),
+                        'next': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'previous': openapi.Schema(type=openapi.TYPE_STRING, nullable=True),
+                        'results': openapi.Schema(
+                            type=openapi.TYPE_ARRAY,
+                            items=openapi.Schema(
+                                type=openapi.TYPE_OBJECT,
+                                ref='#/definitions/website_blog'
+                            )
+                        ),
+                    }
+                )
+            ),
+            404: 'Employee not found'
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
 
 
