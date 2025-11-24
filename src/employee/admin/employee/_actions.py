@@ -11,7 +11,6 @@ from django.db.models import (
     DecimalField,
     ExpressionWrapper,
     F,
-    FloatField,
     OuterRef,
     Subquery,
     Sum,
@@ -26,7 +25,12 @@ from openpyxl import Workbook
 from openpyxl.writer.excel import save_virtual_workbook
 
 import config.settings
-from account.models import EmployeeSalary, Loan, TDSChallan
+from account.models import (
+    EmployeeFestivalBonus,
+    EmployeeSalary,
+    Loan,
+    TDSChallan,
+)
 from config.utils.pdf import PDF
 from employee.helper.pdf_generator import generate_employee_details_pdf
 from employee.models import Employee, EmployeeNOC, HRPolicy
@@ -525,6 +529,21 @@ class EmployeeActions:
             .values("total")
         )
 
+        employee_festival_bonus = (
+            EmployeeFestivalBonus.objects.filter(
+                employee=OuterRef("employee"),
+                festival_bonus_sheet__date__gte=ay.start_date,
+                festival_bonus_sheet__date__lte=ay.end_date,
+            )
+            .values("employee")
+            .annotate(
+                total=Coalesce(
+                    Sum("amount"), Value(0), output_field=DecimalField()
+                )
+            )
+            .values("total")
+        )
+
         # Main aggregation over EmployeeSalary rows inside active financial year
         qs = (
             EmployeeSalary.objects.filter(
@@ -534,9 +553,13 @@ class EmployeeActions:
             .values("employee")
             .annotate(
                 # individual components (replace field names below with your actual fields if different)
-                basic_salary_sum=ExpressionWrapper(Coalesce(
-                    Sum("net_salary"), Value(0), output_field=DecimalField()
-                )* Value(0.55), output_field=DecimalField()),
+                basic_salary_sum=ExpressionWrapper(
+                    Coalesce(
+                        Sum("net_salary"), Value(0), output_field=DecimalField()
+                    )
+                    * Value(0.55),
+                    output_field=DecimalField(),
+                ),
                 house_allowance_sum=ExpressionWrapper(
                     Coalesce(
                         Sum("net_salary"),
@@ -564,8 +587,22 @@ class EmployeeActions:
                 project_bonus_sum=Coalesce(
                     Sum("project_bonus"), Value(0), output_field=DecimalField()
                 ),
-                festival_bonus_sum=Coalesce(
-                    Sum("festival_bonus"), Value(0), output_field=DecimalField()
+                festival_bonus_sum=ExpressionWrapper(
+                    Coalesce(
+                        Subquery(
+                            employee_festival_bonus, output_field=DecimalField()
+                        ),
+                        Value(0),
+                        output_field=DecimalField(),
+                    )
+                    + Coalesce(
+                        Subquery(
+                            employee_festival_bonus, output_field=DecimalField()
+                        ),
+                        Value(0),
+                        output_field=DecimalField(),
+                    ),
+                    output_field=DecimalField(),
                 ),
                 overtime_sum=Coalesce(
                     Sum("overtime"), Value(0), output_field=DecimalField()
