@@ -534,32 +534,32 @@ class EmployeeActions:
             .values("employee")
             .annotate(
                 # individual components (replace field names below with your actual fields if different)
-                basic_salary_sum=Coalesce(
+                basic_salary_sum=ExpressionWrapper(Coalesce(
                     Sum("net_salary"), Value(0), output_field=DecimalField()
-                ),
+                )* Value(0.55), output_field=DecimalField()),
                 house_allowance_sum=ExpressionWrapper(
                     Coalesce(
                         Sum("net_salary"),
-                        Value(0.0, output_field=FloatField()),
+                        Value(0.0, output_field=DecimalField()),
                     )
-                    * Value(0.20, output_field=FloatField()),
-                    output_field=FloatField(),
+                    * Value(0.20, output_field=DecimalField()),
+                    output_field=DecimalField(),
                 ),
                 conveyance_sum=ExpressionWrapper(
                     Coalesce(
                         Sum("net_salary"),
-                        Value(0.0, output_field=FloatField()),
+                        Value(0.0, output_field=DecimalField()),
                     )
-                    * Value(0.15, output_field=FloatField()),
-                    output_field=FloatField(),
+                    * Value(0.15, output_field=DecimalField()),
+                    output_field=DecimalField(),
                 ),
                 medical_allowance_sum=ExpressionWrapper(
                     Coalesce(
                         Sum("net_salary"),
-                        Value(0.0, output_field=FloatField()),
+                        Value(0.0, output_field=DecimalField()),
                     )
-                    * Value(0.10, output_field=FloatField()),
-                    output_field=FloatField(),
+                    * Value(0.10, output_field=DecimalField()),
+                    output_field=DecimalField(),
                 ),
                 project_bonus_sum=Coalesce(
                     Sum("project_bonus"), Value(0), output_field=DecimalField()
@@ -573,20 +573,11 @@ class EmployeeActions:
                 leave_bonus_sum=Coalesce(
                     Sum("leave_bonus"), Value(0), output_field=DecimalField()
                 ),
-                # # lunch_allowance_sum=Coalesce(Sum('food_allowance'), Value(0), output_field=DecimalField()),
+                # lunch_allowance_sum=Coalesce(Sum('food_allowance'), Value(0), output_field=DecimalField()),
                 food_allowance_sum=Coalesce(
                     Sum("food_allowance"), Value(0), output_field=DecimalField()
                 ),
-                # device_allowance_sum=Coalesce(
-                #     Sum("device_allowance"),
-                #     Value(0),
-                #     output_field=DecimalField(),
-                # ),
-                # # gross related sums (if you store gross per month)
-                # gross_salary_sum=Coalesce(
-                #     Sum("gross_salary"), Value(0), output_field=DecimalField()
-                # ),
-                # # Loans / TDS via subqueries (negated to represent deduction amounts)
+                # Loans / TDS via subqueries (negated to represent deduction amounts)
                 salary_advance_loans=ExpressionWrapper(
                     -Coalesce(
                         Subquery(salary_loan_subq, output_field=DecimalField()),
