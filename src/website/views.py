@@ -1712,11 +1712,9 @@ class EmployeeBlogsAPIView(ListAPIView):
 
 class BlogsWithoutAuthorAPIView(ListAPIView):
     serializer_class = BlogSerializer
-    pagination_class = BlogPagination  # Reuse your existing pagination
-    print("#"*100)
+    pagination_class = BlogPagination 
 
     def get_queryset(self):
-        print("*"*100)
         # Return blogs where author is NULL
         return Blog.objects.filter(author__isnull=True).order_by('-created_at')
     
