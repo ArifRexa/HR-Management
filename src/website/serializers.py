@@ -3082,10 +3082,50 @@ class HireDeveloperPageSerializer(serializers.ModelSerializer):
     qualities = QualitiesSerializer(many=True, read_only=True)
     faqs = HireDeveloperFAQSerializer(many=True, read_only=True)
     meta_descriptions = HireDeveloperMetaDescriptionSerializer(many=True, read_only=True)
+    table_of_contents = serializers.SerializerMethodField()
 
     class Meta:
         model = HireDeveloperPage
         fields = '__all__'
+    
+    def get_table_of_contents(self, obj):
+        toc = []
+
+        # Helper to safely get section_title if it exists and is not empty
+        def add_title(title, label=None):
+            if title and title.strip():
+                toc.append(title.strip())
+
+        # 1. Delivery Module Intro
+        for item in obj.delivery_module_intros.all():
+            add_title(item.section_title)
+
+        # 2. Working Mechanism
+        for item in obj.working_mechanisms.all():
+            add_title(item.section_title)
+
+        # 3. Benefits
+        for item in obj.benefits.all():
+            add_title(item.section_title)
+
+        # 4. Hiring Comparison
+        for item in obj.hiring_comparisons.all():
+            add_title(item.section_title)
+
+        # 5. Comprehensive Guide
+        for item in obj.comprehensive_guides.all():
+            add_title(item.section_title)
+
+        # 6. Defining Developers
+        for item in obj.defining_developer_roles.all():
+            add_title(item.section_title)
+
+        # 7. Qualities
+        for item in obj.qualities.all():
+            add_title(item.section_title)
+
+
+        return toc
 
 
 
