@@ -594,13 +594,6 @@ class EmployeeActions:
                         ),
                         Value(0),
                         output_field=DecimalField(),
-                    )
-                    + Coalesce(
-                        Subquery(
-                            employee_festival_bonus, output_field=DecimalField()
-                        ),
-                        Value(0),
-                        output_field=DecimalField(),
                     ),
                     output_field=DecimalField(),
                 ),
