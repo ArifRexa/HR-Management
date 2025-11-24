@@ -3091,43 +3091,46 @@ class HireDeveloperPageSerializer(serializers.ModelSerializer):
     def get_table_of_contents(self, obj):
         toc = []
 
-        # Helper to safely get section_title if it exists and is not empty
-        def add_title(title, label=None):
-            if title and title.strip():
-                toc.append(title.strip())
+        def add_section_title(section_title, secondary_title=None):
+            if not section_title or not section_title.strip():
+                return  # Skip if no main title
+            
+            main = section_title.strip()
+            if secondary_title and secondary_title.strip():
+                combined = f"{main}. {secondary_title.strip()}"
+                toc.append(combined)
+            else:
+                toc.append(main)
 
         # 1. Delivery Module Intro
         for item in obj.delivery_module_intros.all():
-            add_title(item.section_title)
+            add_section_title(item.section_title, item.secondary_title)
 
         # 2. Working Mechanism
         for item in obj.working_mechanisms.all():
-            add_title(item.section_title)
+            add_section_title(item.section_title, item.secondary_title)
 
         # 3. Benefits
         for item in obj.benefits.all():
-            add_title(item.section_title)
+            add_section_title(item.section_title, item.secondary_title)
 
         # 4. Hiring Comparison
         for item in obj.hiring_comparisons.all():
-            add_title(item.section_title)
+            add_section_title(item.section_title, item.secondary_title)
 
         # 5. Comprehensive Guide
         for item in obj.comprehensive_guides.all():
-            add_title(item.section_title)
+            add_section_title(item.section_title, item.secondary_title)
 
         # 6. Defining Developers
         for item in obj.defining_developer_roles.all():
-            add_title(item.section_title)
+            add_section_title(item.section_title, item.secondary_title)
 
         # 7. Qualities
         for item in obj.qualities.all():
-            add_title(item.section_title)
-
+            add_section_title(item.section_title, item.secondary_title)
 
         return toc
-
-
 
 # =================================== Pricing Page Serializers ================================
 
