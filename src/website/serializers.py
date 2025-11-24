@@ -3097,7 +3097,7 @@ class HireDeveloperPageSerializer(serializers.ModelSerializer):
             
             main = section_title.strip()
             if secondary_title and secondary_title.strip():
-                combined = f"{main}. {secondary_title.strip()}"
+                combined = f"{main} {secondary_title.strip()}"
                 toc.append(combined)
             else:
                 toc.append(main)
