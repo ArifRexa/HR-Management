@@ -1710,6 +1710,35 @@ class EmployeeBlogsAPIView(ListAPIView):
 
 
 
+class BlogsWithoutAuthorAPIView(ListAPIView):
+    serializer_class = BlogSerializer
+    pagination_class = BlogPagination  # Reuse your existing pagination
+    print("#"*100)
+
+    def get_queryset(self):
+        print("*"*100)
+        # Return blogs where author is NULL
+        return Blog.objects.filter(author__isnull=True).order_by('-created_at')
+    
+    @swagger_auto_schema(
+        tags=["Blogs"],
+        responses={
+            200: openapi.Schema(
+                type=openapi.TYPE_ARRAY,
+                items=openapi.Items(
+                    type=openapi.TYPE_OBJECT,
+                    ref='#/definitions/website_blog'
+                )
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+
+
+
 class ServiceListAPIView(ListAPIView):
     queryset = ServicePage.objects.filter(is_parent=True)
     serializer_class = ServicePageSerializer
