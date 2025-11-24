@@ -648,6 +648,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         "thumbnail",
         "case_study_pdf_link",
         "featured_video",
+        "short_video",
         # "tags",
         # "identifier",
         # "is_highlighted",
