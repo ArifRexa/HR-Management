@@ -1782,6 +1782,13 @@ class BlogCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
         fields = ['id', 'title', 'slug', 'image', 'created_at', 'read_time_minute', 'author']
+
+
+class FeaturedBlogCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = ['id', 'title', 'slug', 'image']
+
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
     tag = TagSerializer(many=True, read_only=True)
@@ -1801,6 +1808,8 @@ class BlogSerializer(serializers.ModelSerializer):
     # ctas = CTASerializer(many=True, read_only=True)
     author = AuthorSerializer()
     table_of_contents = serializers.SerializerMethodField()
+    featured_blogs = serializers.SerializerMethodField()
+    
 
 
     class Meta:
@@ -1811,7 +1820,7 @@ class BlogSerializer(serializers.ModelSerializer):
             'is_featured', 'schema_type', 'main_body_schema', 'hightlighted_text', 'cta_title', 'status',
             'total_view', 'created_at', 'updated_at', 'approved_at', 'read_time_minute',
             'author', 'blog_contexts', 'blog_faqs', 'seo_essential',
-            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'table_of_contents'
+            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'table_of_contents', 'featured_blogs'
         ]
         ref_name = 'website_blog'
 
@@ -1861,6 +1870,17 @@ class BlogSerializer(serializers.ModelSerializer):
         ).order_by('-match_score', '-created_at')[:10]
 
         return BlogCardSerializer(related_qs, many=True, context=self.context).data
+    
+
+    def get_featured_blogs(self, obj):
+        """
+        Returns up to 5 random featured blogs (excluding the current blog).
+        """
+        featured = Blog.objects.filter(
+            is_featured=True
+        ).exclude(pk=obj.pk).order_by('?')[:5]
+
+        return FeaturedBlogCardSerializer(featured, many=True, context=self.context).data
     
 
 
