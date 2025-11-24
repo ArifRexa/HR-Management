@@ -488,7 +488,7 @@ class EmployeeActions:
                     Sum("emi"), Value(0), output_field=DecimalField()
                 )
             )
-            .values("total")
+            .values("total")[:1]
         )
 
         # Subquery: sum of EMI for 'tds' loans overlapping the financial year, per employee
@@ -505,7 +505,7 @@ class EmployeeActions:
                     Sum("emi"), Value(0), output_field=DecimalField()
                 )
             )
-            .values("total")
+            .values("total")[:1]
         )
 
         # Subquery: sum of late attendance fines recorded in LateAttendanceFine for that financial year
@@ -526,7 +526,7 @@ class EmployeeActions:
                     output_field=DecimalField(),
                 )
             )
-            .values("total")
+            .values("total")[:1]
         )
 
         employee_festival_bonus = (
@@ -541,7 +541,7 @@ class EmployeeActions:
                     Sum("amount"), Value(0), output_field=DecimalField()
                 )
             )
-            .values("total")
+            .values("total")[:1]
         )
 
         # Main aggregation over EmployeeSalary rows inside active financial year
