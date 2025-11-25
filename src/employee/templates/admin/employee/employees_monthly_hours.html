@@ -103,7 +103,7 @@
                         <option value="">-- All Skills --</option>
                         {% for skill in skills %}
                             <option value="{{ skill.id }}" {% if skill.id|stringformat:"s" == selected_skill %}selected{% endif %}>
-                                {{ skill.skill.title }}
+                                {{ skill.title }}
                             </option>
                         {% endfor %}
                     </select>

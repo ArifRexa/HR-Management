@@ -16,7 +16,7 @@ from employee.admin.employee._forms import (
     FilterForm,
 )
 from employee.models import Employee
-from employee.models.employee_skill import EmployeeSkill
+from employee.models.employee_skill import EmployeeSkill, Skill
 from project_management.models import (
     DailyProjectUpdate,
     EmployeeProjectHour,
@@ -942,9 +942,8 @@ class GraphView(admin.ModelAdmin):
             hours_filters=hours_filters,
             skill_filters=skill_filters,  # NEW
         )
-        active_skill_ids = EmployeeSkill.objects.values_list('skill_id', flat=True).distinct()
         
-        skills = EmployeeSkill.objects.filter(id__in=active_skill_ids).order_by('skill')
+        skills = skills = Skill.objects.all().order_by('title')
 
         context = dict(
             self.admin_site.each_context(request),
@@ -955,7 +954,7 @@ class GraphView(admin.ModelAdmin):
             selected_month_name=datetime(year, month, 1).strftime("%B %Y"),
             skills=skills,
             selected_skill=skill_filter,
-            selected_skill_name=EmployeeSkill.objects.filter(id=skill_filter).first().skill if skill_filter else None,
+            selected_skill_name=Skill.objects.filter(id=skill_filter).first().title if skill_filter else None,
         )
 
         return TemplateResponse(
