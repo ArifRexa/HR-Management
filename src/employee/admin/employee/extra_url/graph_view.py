@@ -942,8 +942,9 @@ class GraphView(admin.ModelAdmin):
             hours_filters=hours_filters,
             skill_filters=skill_filters,  # NEW
         )
+        active_skill_ids = EmployeeSkill.objects.values_list('skill_id', flat=True).distinct()
         
-        skills = EmployeeSkill.objects.all().order_by('skill')
+        skills = EmployeeSkill.objects.filter(id__in=active_skill_ids).order_by('skill')
 
         context = dict(
             self.admin_site.each_context(request),
