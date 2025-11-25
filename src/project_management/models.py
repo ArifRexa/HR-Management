@@ -1747,3 +1747,33 @@ class ProjectEstimation(TimeStampMixin, AuthorMixin):
 
     def __str__(self):
         return f"{self.project.title} Estimation"
+
+
+
+
+class ProjectsCommunication(TimeStampMixin, AuthorMixin):
+    PROJECT_ROLE_CHOICES = [
+        ('N/A', 'N/A'),
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+    ]
+
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name='daily_priorities'
+    )
+    date = models.DateField(db_index=True)
+    
+    client = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
+    tpm = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
+    ba = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
+    lead = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
+
+    class Meta:
+        unique_together = ('project', 'date')
+        ordering = ['-date']
+
+    def __str__(self):
+        return f"{self.project} - {self.date} ({self.client}/{self.tpm}/{self.ba}/{self.lead})"
