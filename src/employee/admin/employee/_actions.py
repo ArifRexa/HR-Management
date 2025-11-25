@@ -474,6 +474,20 @@ class EmployeeActions:
         ay = active_year
 
         # Subquery: sum of EMI for 'salary' loans overlapping the financial year, per employee
+        # loans = (
+        #     Loan.objects.filter(
+        #         employee=self.employee,
+        #         start_date__lte=ay.end_date,
+        #         end_date__gte=ay.start_date,
+        #         loan_type="salary",
+        #     )
+        #     .annotate(
+        #         total=Coalesce(
+        #             Sum("emi"), Value(0), output_field=DecimalField()
+        #         )
+        #     )
+        #     .values("total")[:1]
+        # )
         salary_loan_subq = (
             Loan.objects.filter(
                 employee=OuterRef("employee"),
@@ -481,9 +495,7 @@ class EmployeeActions:
                 # loan overlaps the financial year period
                 start_date__lte=ay.end_date,
                 end_date__gte=ay.start_date,
-            )
-            .values("employee")
-            .annotate(
+            ).annotate(
                 total=Coalesce(
                     Sum("emi"), Value(0), output_field=DecimalField()
                 )
