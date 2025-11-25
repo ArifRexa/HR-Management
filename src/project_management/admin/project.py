@@ -1,5 +1,6 @@
 from datetime import date, datetime, timedelta
 
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render
 
 import nested_admin
@@ -782,74 +783,400 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
 
 
 
+# @admin.register(ProjectsCommunication)
+# class ProjectsCommunicationAdmin(admin.ModelAdmin):
+#     change_list_template = "admin/project_management/communication_matrix.html"
+
+#     def get_urls(self):
+#         urls = super().get_urls()
+#         custom_urls = [
+#             path('matrix/', self.admin_site.admin_view(self.matrix_view), name='projectscommunication_matrix'),
+#         ]
+#         return custom_urls + urls
+
+#     def changelist_view(self, request, extra_context=None):
+#         # Redirect the default list view → our beautiful matrix
+#         return self.matrix_view(request)
+
+#     def matrix_view(self, request):
+#         today = date.today()
+        
+#         # TODAY FIRST → 29 days ago (left to right: newest → oldest)
+#         dates = [today - timedelta(days=i) for i in range(0, 30)]
+
+#         projects = Project.objects.filter(active=True).select_related('client').order_by('title')
+
+#         # Build lookup dictionary
+#         data_lookup = {}
+#         for project in projects:
+#             for d in dates:
+#                 data_lookup[(project.id, d.strftime('%Y-%m-%d'))] = None
+
+#         # Fill real data
+#         entries = ProjectsCommunication.objects.filter(
+#             project__in=projects,
+#             date__range=[dates[0], dates[-1]]
+#         )
+#         for entry in entries:
+#             data_lookup[(entry.project_id, entry.date.strftime('%Y-%m-%d'))] = entry
+
+#         # === SAVE ON POST ===
+
+#         # if request.method == "POST":
+#         #     project_id = request.POST["project_id"]
+#         #     date_str = request.POST["date"]
+#         #     project = Project.objects.get(id=project_id)
+
+#         #     # Only update the field that was actually sent
+#         #     field_name = None
+#         #     field_value = None
+#         #     if 'client' in request.POST:
+#         #         field_name, field_value = 'client', request.POST['client']
+#         #     elif 'tpm' in request.POST:
+#         #         field_name, field_value = 'tpm', request.POST['tpm']
+#         #     elif 'ba' in request.POST:
+#         #         field_name, field_value = 'ba', request.POST['ba']
+#         #     elif 'lead' in request.POST:
+#         #         field_name, field_value = 'lead', request.POST['lead']
+
+#         #     if field_name:
+#         #         ProjectsCommunication.objects.update_or_create(
+#         #             project=project,
+#         #             date=date_str,
+#         #             defaults={field_name: field_value}
+#         #         )   
+
+#         # === SAVE ON POST ===
+#         if request.method == "POST":
+#             project_id = request.POST["project_id"]
+#             date_str = request.POST["date"]
+#             project = Project.objects.get(id=project_id)
+
+#             field_name = None
+#             field_value = None
+#             if 'client' in request.POST:
+#                 field_name, field_value = 'client', request.POST['client']
+#             elif 'tpm' in request.POST:
+#                 field_name, field_value = 'tpm', request.POST['tpm']
+#             elif 'ba' in request.POST:
+#                 field_name, field_value = 'ba', request.POST['ba']
+#             elif 'lead' in request.POST:
+#                 field_name, field_value = 'lead', request.POST['lead']
+
+#             if field_name:
+#                 ProjectsCommunication.objects.update_or_create(
+#                     project=project,
+#                     date=date_str,
+#                     defaults={field_name: field_value}
+#                 )
+
+#             # CRITICAL: If HTMX request → return empty response (no reload)
+#             if request.headers.get('HX-Request'):
+#                 from django.http import HttpResponse
+#                 return HttpResponse("")  # ← This makes HTMX happy!
+
+#             # If normal POST (not HTMX), reload page
+#             from django.http import HttpResponseRedirect
+#             return HttpResponseRedirect(request.get_full_path())
+
+
+
+
+
+
+#         context = {
+#             'title': 'Communication Priority Matrix – Last 30 Days',
+#             'dates': dates,
+#             'projects': projects,
+#             'data_lookup': data_lookup,
+#             'today': date.today(),   # ← ADD THIS LINE
+#             'opts': self.model._meta,
+#         }
+#         return render(request, self.change_list_template, context)
+
+#     # Hide default add/change/delete buttons
+#     def has_add_permission(self, request): return False
+#     def has_change_permission(self, request, obj=None): return False
+#     def has_delete_permission(self, request, obj=None): return False
+
+
+
+
+# # project_management/admin.py
+# @admin.register(ProjectsCommunication)
+# class ProjectsCommunicationAdmin(admin.ModelAdmin):
+#     change_list_template = "admin/project_management/communication_matrix.html"
+
+#     def get_urls(self):
+#         urls = super().get_urls()
+#         custom_urls = [
+#             path('matrix/', self.admin_site.admin_view(self.matrix_view), name='communication_matrix'),
+#         ]
+#         return custom_urls + urls
+
+#     def changelist_view(self, request, extra_context=None):
+#         return self.matrix_view(request)
+
+#     def matrix_view(self, request):
+#         today = date.today()
+#         dates = [today - timedelta(days=i) for i in range(0, 30)]
+
+#         projects = Project.objects.filter(active=True).select_related('client').order_by('title')
+
+#         # Build lookup dict
+#         data_lookup = {}
+#         for project in projects:
+#             for d in dates:
+#                 data_lookup[(project.id, d.strftime('%Y-%m-%d'))] = None
+
+#         entries = ProjectsCommunication.objects.filter(
+#             project__in=projects,
+#             date__range=[dates[0], dates[-1]]
+#         )
+#         for entry in entries:
+#             data_lookup[(entry.project_id, entry.date.strftime('%Y-%m-%d'))] = entry
+
+#         # Handle POST
+
+#         if request.method == "POST":
+#             project_id = request.POST["project_id"]
+#             date_str = request.POST["date"]
+#             project = Project.objects.get(id=project_id)
+
+#             # Convert string -> datetime.date
+#             from datetime import datetime
+#             try:
+#                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+#             except ValueError:
+#                 return HttpResponseBadRequest("Invalid date")
+
+#             field_name = field_value = None
+#             for field in ['client', 'tpm', 'ba', 'lead']:
+#                 if field in request.POST:
+#                     field_name = field
+#                     field_value = request.POST[field]
+#                     break
+
+#             if field_name:
+#                 ProjectsCommunication.objects.update_or_create(
+#                     project=project,
+#                     date=date_obj,   # <-- FIXED
+#                     defaults={field_name: field_value}
+#                 )
+
+#             if request.headers.get('HX-Request'):
+#                 return HttpResponse("")
+
+#             return HttpResponseRedirect(request.get_full_path())
+
+
+
+#         context = {
+#             'title': 'Communication Priority Matrix – Last 30 Days',
+#             'dates': dates,
+#             'projects': projects,
+#             'data_lookup': data_lookup,
+#             'today': today,
+#             'opts': self.model._meta,
+#         }
+#         return render(request, self.change_list_template, context)
+
+#     def has_add_permission(self, request): return False
+#     def has_change_permission(self, request, obj=None): return False
+#     def has_delete_permission(self, request, obj=None): return False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# @admin.register(ProjectsCommunication)
+# class ProjectsCommunicationAdmin(admin.ModelAdmin):
+#     change_list_template = "admin/project_management/communication_matrix.html"
+
+#     # def get_urls(self):
+#     #     urls = super().get_urls()
+#     #     custom_urls = [
+#     #         path('matrix/', self.admin_site.admin_view(self.matrix_view), name='communication_matrix'),
+#     #     ]
+#     #     return custom_urls + urls
+
+#     def changelist_view(self, request, extra_context=None):
+#         return self.matrix_view(request)
+
+#     def matrix_view(self, request):
+#         print("matrix_view called")
+#         print("*"*100)
+#         today = date.today()
+#         dates = [today - timedelta(days=i) for i in range(0, 30)]
+
+#         projects = Project.objects.filter(active=True).select_related('client').order_by('title')
+
+#         # Build lookup dict WITH STRING KEY (IMPORTANT FIX)
+#         data_lookup = {}
+
+#         for project in projects:
+#             for d in dates:
+#                 date_str = d.strftime('%Y-%m-%d')
+#                 key = f"{project.id}-{date_str}"
+#                 data_lookup[key] = None
+
+#         # Load saved entries
+#         entries = ProjectsCommunication.objects.filter(
+#             project__in=projects,
+#             date__range=[dates[-1], dates[0]]
+#         )
+
+#         for entry in entries:
+#             key = f"{entry.project_id}-{entry.date.strftime('%Y-%m-%d')}"
+#             data_lookup[key] = entry
+
+#         # Handle POST
+#         if request.method == "POST":
+#             print("POST")
+#             project_id = request.POST.get("project_id")
+#             date_str = request.POST.get("date")
+
+
+#             project = Project.objects.get(id=project_id)
+
+#             from datetime import datetime
+#             try:
+#                 date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+#             except ValueError:
+#                 return HttpResponseBadRequest("Invalid date")
+
+#             # Determine which field was updated
+#             field_name = None
+#             field_value = None
+
+#             for f in ["client", "tpm", "ba", "lead"]:
+#                 if f in request.POST:
+#                     field_name = f
+#                     field_value = request.POST[f]
+#                     break
+
+#             if field_name:
+#                 ProjectsCommunication.objects.update_or_create(
+#                     project=project,
+#                     date=date_obj,
+#                     defaults={field_name: field_value}
+#                 )
+
+#             # HTMX request → return empty response
+#             if request.headers.get("HX-Request"):
+#                 return HttpResponse("")
+
+#             return HttpResponseRedirect(request.get_full_path())
+
+#         # Render template
+#         context = {
+#             "title": "Communication Priority Matrix – Last 30 Days",
+#             "dates": dates,
+#             "projects": projects,
+#             "data_lookup": data_lookup,
+#             "today": today,
+#             "opts": self.model._meta,
+#         }
+
+#         return render(request, self.change_list_template, context)
+
+#     def has_add_permission(self, request): return False
+#     def has_change_permission(self, request, obj=None): return False
+#     def has_delete_permission(self, request, obj=None): return False
+
+
+
+
 @admin.register(ProjectsCommunication)
 class ProjectsCommunicationAdmin(admin.ModelAdmin):
     change_list_template = "admin/project_management/communication_matrix.html"
-
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('matrix/', self.admin_site.admin_view(self.matrix_view), name='projectscommunication_matrix'),
-        ]
-        return custom_urls + urls
+    list_display = ()   # <-- REQUIRED FIX !!!
 
     def changelist_view(self, request, extra_context=None):
-        # Redirect the default list view → our beautiful matrix
         return self.matrix_view(request)
 
     def matrix_view(self, request):
         today = date.today()
-        
-        # TODAY FIRST → 29 days ago (left to right: newest → oldest)
         dates = [today - timedelta(days=i) for i in range(0, 30)]
 
         projects = Project.objects.filter(active=True).select_related('client').order_by('title')
 
-        # Build lookup dictionary
+        # Build lookup dict WITH STRING KEY
         data_lookup = {}
         for project in projects:
             for d in dates:
-                data_lookup[(project.id, d.strftime('%Y-%m-%d'))] = None
+                date_str = d.strftime('%Y-%m-%d')
+                key = f"{project.id}-{date_str}"
+                data_lookup[key] = None
 
-        # Fill real data
+        # Load saved entries
         entries = ProjectsCommunication.objects.filter(
             project__in=projects,
-            date__range=[dates[0], dates[-1]]
+            date__range=[dates[-1], dates[0]]
         )
         for entry in entries:
-            data_lookup[(entry.project_id, entry.date.strftime('%Y-%m-%d'))] = entry
+            key = f"{entry.project_id}-{entry.date.strftime('%Y-%m-%d')}"
+            data_lookup[key] = entry
 
-        # === SAVE ON POST ===
+        # Handle POST
         if request.method == "POST":
-            project_id = request.POST["project_id"]
-            date_str = request.POST["date"]
+            project_id = request.POST.get("project_id")
+            date_str = request.POST.get("date")
+
             project = Project.objects.get(id=project_id)
 
-            ProjectsCommunication.objects.update_or_create(
-                project=project,
-                date=date_str,
-                defaults={
-                    'client': request.POST.get('client', 'N/A'),
-                    'tpm':    request.POST.get('tpm', 'N/A'),
-                    'ba':     request.POST.get('ba', 'N/A'),
-                    'lead':   request.POST.get('lead', 'N/A'),
-                    'author': request.user,
-                }
-            )
+            from datetime import datetime
+            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+            field_name = None
+            field_value = None
+
+            for f in ["client", "tpm", "ba", "lead"]:
+                if f in request.POST:
+                    field_name = f
+                    field_value = request.POST[f]
+                    break
+
+            if field_name:
+                ProjectsCommunication.objects.update_or_create(
+                    project=project,
+                    date=date_obj,
+                    defaults={field_name: field_value}
+                )
+
+            if request.headers.get("HX-Request"):
+                return HttpResponse("")
+
+            return HttpResponseRedirect(request.get_full_path())
 
         context = {
-            'title': 'Communication Priority Matrix – Last 30 Days',
-            'dates': dates,
-            'projects': projects,
-            'data_lookup': data_lookup,
-            'opts': self.model._meta,
+            "title": "Communication Priority Matrix – Last 30 Days",
+            "dates": dates,
+            "projects": projects,
+            "data_lookup": data_lookup,
+            "today": today,
+            "opts": self.model._meta,
         }
+
         return render(request, self.change_list_template, context)
 
-    # Hide default add/change/delete buttons
     def has_add_permission(self, request): return False
     def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
+
+
+
+
+
 
 
 
