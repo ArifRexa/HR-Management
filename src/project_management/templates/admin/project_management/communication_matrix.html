@@ -1,0 +1,104 @@
+<!-- templates/admin/project_management/communication_matrix.html -->
+{% extends "admin/base_site.html" %}
+{% load admin_extras %}
+
+{% block content %}
+<div class="module" style="padding:20px;">
+    
+    <div style="overflow-x:auto; border:1px solid #ddd; border-radius:8px;">
+        <table style="min-width:3600px; border-collapse:collapse; font-size:13px; background:white;">
+            <thead style="background:#f8f9fa; position:sticky; top:0; z-index:10;">
+                <tr>
+                    <th style="position:sticky; left:0; background:#e9ecef; z-index:11; width:320px; text-align:left; padding:15px; border-bottom:2px solid #ddd;">
+                        Project (Client)
+                    </th>
+                    <!-- {% for d in dates %}
+                    <th style="text-align:center; padding:12px; min-width:105px; border-bottom:2px solid #ddd;">
+                        <div style="font-weight:600;">{{ d|date:"M d" }}</div>
+                        <small style="color:#666;">{{ d|date:"D" }}</small>
+                    </th>
+                    {% endfor %} -->
+                    {% for d in dates %}
+                        <th style="text-align:center; padding:12px; min-width:105px; border-bottom:2px solid #ddd;{% if d == today %} background:#fff8e1 !important; font-weight:700;{% endif %}" {% if d == today %}class="today-header"{% endif %}>
+                            <div style="font-weight:600;">{{ d|date:"M d" }}{% if d == today %} ← TODAY{% endif %}</div>
+                            <small style="color:#666;">{{ d|date:"D" }}</small>
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="position:sticky; left:0; background:#fdfdfd; z-index:9; padding:15px; font-weight:600; border-right:1px solid #eee;">
+                        {{ project.title }}
+                        <div style="font-size:12px; color:#555; margin-top:5px;">
+                            {{ project.client.name|default:"No Client" }}
+                        </div>
+                    </td>
+
+                    {% for d in dates %}
+                        {% with date_str=d|date:"Y-m-d" %}
+                        {% with key=project.id|add:":"|add:date_str %}
+                        {% with entry=data_lookup|dict_get:key %}
+
+                        <td style="text-align:center; padding:8px; vertical-align:top; background:#fff;">
+                            <form method="post" style="display:inline-block;">
+                                {% csrf_token %}
+                                <input type="hidden" name="project_id" value="{{ project.id }}">
+                                <input type="hidden" name="date" value="{{ date_str }}">
+
+                                <div style="display:grid; grid-template-columns:60px 50px; gap:4px 6px; font-size:10px; align-items:center;">
+                                    <!-- Labels + Dropdowns -->
+                                    <div style="font-weight:600; color:#444; text-align:right;">Client</div>
+                                    <select name="client" onchange="this.form.submit()" style="padding:3px; font-size:10px; border-radius:4px; width:100%;">
+                                        <option value="N/A"   {% if entry and entry.client == "N/A" %}selected{% endif %}   style="background:#f8f9fa">N/A</option>
+                                        <option value="Low"    {% if entry and entry.client == "Low" %}selected{% endif %}    style="background:#ccffcc">Low</option>
+                                        <option value="Medium" {% if entry and entry.client == "Medium" %}selected{% endif %} style="background:#ffebcc">Medium</option>
+                                        <option value="High"   {% if entry and entry.client == "High" %}selected{% endif %}   style="background:#ffb3b3">High</option>
+                                    </select>
+
+                                    <div style="font-weight:600; color:#444; text-align:right;">TPM</div>
+                                    <select name="tpm" onchange="this.form.submit()" style="padding:3px; font-size:10px; border-radius:4px; width:100%;">
+                                        <option value="N/A"   {% if entry and entry.tpm == "N/A" %}selected{% endif %}   style="background:#f8f9fa">N/A</option>
+                                        <option value="Low"    {% if entry and entry.tpm == "Low" %}selected{% endif %}    style="background:#ccffcc">Low</option>
+                                        <option value="Medium" {% if entry and entry.tpm == "Medium" %}selected{% endif %} style="background:#ffebcc">Medium</option>
+                                        <option value="High"   {% if entry and entry.tpm == "High" %}selected{% endif %}   style="background:#ffb3b3">High</option>
+                                    </select>
+
+                                    <div style="font-weight:600; color:#444; text-align:right;">BA</div>
+                                    <select name="ba" onchange="this.form.submit()" style="padding:3px; font-size:10px; border-radius:4px; width:100%;">
+                                        <option value="N/A"   {% if entry and entry.ba == "N/A" %}selected{% endif %}   style="background:#f8f9fa">N/A</option>
+                                        <option value="Low"    {% if entry and entry.ba == "Low" %}selected{% endif %}    style="background:#ccffcc">Low</option>
+                                        <option value="Medium" {% if entry and entry.ba == "Medium" %}selected{% endif %} style="background:#ffebcc">Medium</option>
+                                        <option value="High"   {% if entry and entry.ba == "High" %}selected{% endif %}   style="background:#ffb3b3">High</option>
+                                    </select>
+
+                                    <div style="font-weight:600; color:#444; text-align:right;">Lead</div>
+                                    <select name="lead" onchange="this.form.submit()" style="padding:3px; font-size:10px; border-radius:4px; width:100%;">
+                                        <option value="N/A"   {% if entry and entry.lead == "N/A" %}selected{% endif %}   style="background:#f8f9fa">N/A</option>
+                                        <option value="Low"    {% if entry and entry.lead == "Low" %}selected{% endif %}    style="background:#ccffcc">Low</option>
+                                        <option value="Medium" {% if entry and entry.lead == "Medium" %}selected{% endif %} style="background:#ffebcc">Medium</option>
+                                        <option value="High"   {% if entry and entry.lead == "High" %}selected{% endif %}   style="background:#ffb3b3">High</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </td>   
+
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Auto reload after save -->
+    {% if request.method == "POST" %}
+    <script>
+        setTimeout(() => location.reload(), 300);
+    </script>
+    {% endif %}
+</div>
+{% endblock %}

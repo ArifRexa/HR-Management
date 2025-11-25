@@ -1,4 +1,6 @@
-from datetime import datetime
+from datetime import date, datetime, timedelta
+
+from django.shortcuts import render
 
 import nested_admin
 from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
@@ -6,7 +8,7 @@ from dateutil.relativedelta import relativedelta
 from django import forms
 from django.contrib import admin
 from django.template.loader import get_template
-from django.urls import reverse
+from django.urls import path, reverse
 from django.utils.html import format_html
 
 from project_management.models import (
@@ -31,6 +33,7 @@ from project_management.models import (
     ProjectServiceSolution,
     ProjectTechnology,
     ProjectToken,
+    ProjectsCommunication,
     Tag,
     Teams,
     Technology,
@@ -775,6 +778,80 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
 
         formatted_dates = "<br/>".join(str(date) for date in client_date)
         return format_html(formatted_dates)
+
+
+
+
+@admin.register(ProjectsCommunication)
+class ProjectsCommunicationAdmin(admin.ModelAdmin):
+    change_list_template = "admin/project_management/communication_matrix.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('matrix/', self.admin_site.admin_view(self.matrix_view), name='projectscommunication_matrix'),
+        ]
+        return custom_urls + urls
+
+    def changelist_view(self, request, extra_context=None):
+        # Redirect the default list view → our beautiful matrix
+        return self.matrix_view(request)
+
+    def matrix_view(self, request):
+        today = date.today()
+        
+        # TODAY FIRST → 29 days ago (left to right: newest → oldest)
+        dates = [today - timedelta(days=i) for i in range(0, 30)]
+
+        projects = Project.objects.filter(active=True).select_related('client').order_by('title')
+
+        # Build lookup dictionary
+        data_lookup = {}
+        for project in projects:
+            for d in dates:
+                data_lookup[(project.id, d.strftime('%Y-%m-%d'))] = None
+
+        # Fill real data
+        entries = ProjectsCommunication.objects.filter(
+            project__in=projects,
+            date__range=[dates[0], dates[-1]]
+        )
+        for entry in entries:
+            data_lookup[(entry.project_id, entry.date.strftime('%Y-%m-%d'))] = entry
+
+        # === SAVE ON POST ===
+        if request.method == "POST":
+            project_id = request.POST["project_id"]
+            date_str = request.POST["date"]
+            project = Project.objects.get(id=project_id)
+
+            ProjectsCommunication.objects.update_or_create(
+                project=project,
+                date=date_str,
+                defaults={
+                    'client': request.POST.get('client', 'N/A'),
+                    'tpm':    request.POST.get('tpm', 'N/A'),
+                    'ba':     request.POST.get('ba', 'N/A'),
+                    'lead':   request.POST.get('lead', 'N/A'),
+                    'author': request.user,
+                }
+            )
+
+        context = {
+            'title': 'Communication Priority Matrix – Last 30 Days',
+            'dates': dates,
+            'projects': projects,
+            'data_lookup': data_lookup,
+            'opts': self.model._meta,
+        }
+        return render(request, self.change_list_template, context)
+
+    # Hide default add/change/delete buttons
+    def has_add_permission(self, request): return False
+    def has_change_permission(self, request, obj=None): return False
+    def has_delete_permission(self, request, obj=None): return False
+
+
 
 
 @admin.register(ProjectNeed)
