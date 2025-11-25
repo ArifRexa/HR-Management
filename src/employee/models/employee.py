@@ -4,6 +4,7 @@ import datetime
 from datetime import date as dt_date, time, datetime, timedelta
 from pyexpat import model
 from re import sub
+import re
 from tabnanny import verbose
 from django.utils import timezone
 from django.template.loader import render_to_string
@@ -186,6 +187,8 @@ class Employee(TimeStampMixin, AuthorMixin):
     @property
     def employee_projects(self):
         from employee.models.employee_activity import EmployeeProject
+        if not  EmployeeProject.objects.filter(employee_id=self.id).exists():
+            return []
 
         return (
             EmployeeProject.objects.filter(employee_id=self.id)
