@@ -43,7 +43,7 @@
         font-weight: bold;
         position: sticky;
         left: 0;
-        z-index: 1;
+        /* z-index: 1; */
     }
     
     .project-info {
@@ -132,6 +132,7 @@
                             {% endcomment %}
                             <div class="container-flex">
                                 {% get_project_date_key project.id date as key %}
+                                {% if date == today %}
                                 <form method="post" style="display: inline-block; margin-right: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
@@ -191,6 +192,47 @@
                                         </select>
                                     </div>
                                 </form>
+                                {% else %}
+                                <div class="dropdown-container" style="display: inline-block; margin-right: 5px;">
+                                    <span class="role-label">Client</span>
+                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}priority-high{% endif %}">
+                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'N/A' %}selected{% endif %}>N/A</option>
+                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}selected{% endif %}>High</option>
+                                    </select>
+                                </div>
+
+                                <div class="dropdown-container" style="display: inline-block; margin-right: 5px;">
+                                    <span class="role-label">TPM</span>
+                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}priority-high{% endif %}">
+                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}selected{% endif %}>N/A</option>
+                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}selected{% endif %}>High</option>
+                                    </select>
+                                </div>
+
+                                <div class="dropdown-container" style="display: inline-block; margin-right: 5px;">
+                                    <span class="role-label">BA</span>
+                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}priority-high{% endif %}">
+                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}selected{% endif %}>N/A</option>
+                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}selected{% endif %}>High</option>
+                                    </select>
+                                </div>
+
+                                <div class="dropdown-container" style="display: inline-block;">
+                                    <span class="role-label">Lead</span>
+                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}priority-high{% endif %}">
+                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}selected{% endif %}>N/A</option>
+                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}selected{% endif %}>Low</option>
+                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}selected{% endif %}>Medium</option>
+                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}selected{% endif %}>High</option>
+                                    </select>
+                                </div>
+                                {% endif %}
                             </div>
                         </td>
                     {% endfor %}
