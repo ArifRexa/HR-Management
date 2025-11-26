@@ -252,6 +252,20 @@
         border: 1px solid #00ff00;
         color: #000;
     }
+
+    /* Hover effect for radio buttons in editable cells only */
+    .editable-cell .radio-option {
+        transition: transform 0.2s ease;
+    }
+
+    .editable-cell .radio-option:hover,
+    .editable-cell .radio-na-selected,
+    .editable-cell .radio-low-selected,
+    .editable-cell .radio-medium-selected,
+    .editable-cell .radio-high-selected {
+        transform: scale(1.2);
+        z-index: 2;
+    }
 </style>
 {% endblock %}
 
