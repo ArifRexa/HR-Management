@@ -61,7 +61,7 @@
         font-weight: bold;
         position: sticky;
         left: 0;
-        z-index: 1;
+        z-index: 10000;
     }
     
     .project-info {
@@ -123,7 +123,7 @@
     .radio-container {
         display: flex;
         flex-direction: row;
-        gap: 2px;
+        gap: 3px;
         flex-wrap: nowrap;
     }
 
@@ -273,6 +273,8 @@
 {% endblock %}
 
 {% block content %}
+<h1 style="text-align: center; font-size: 40px; font-weight: bold; color: #000;">Project Communication</h1>
+<p style="text-align: center; font-size: 14px; color: #666;">Meeting (M) - Client (C) - TPM (T) - BA (B) - Lead (L)</p>
 <div class="module" style="padding:20px;">
     <!-- Saved Flash -->
     <div id="saved-flash">Saved</div>
@@ -283,7 +285,11 @@
             <tr>
                 <th class="project-header" style="min-width: 200px; z-index: 5001;">Project / Client</th>
                 {% for date in dates %}
-                    <th class="date-header">{{ date|date:"M d" }}</th>
+                    {% if date == today %}
+                        <th class="date-header">{{ date|date:"M d" }} (Today)</th>
+                    {% else %}
+                        <th class="date-header" style="min-width: 20px;">{{ date|date:"M d" }}</th>
+                    {% endif %}
                 {% endfor %}
             </tr>
         </thead>
@@ -305,7 +311,7 @@
                             <div class="container-flex">
                                 {% get_project_date_key project.id date as key %}
                                 {% if date == today %}
-                                <form method="post" style="display: inline-block; margin-right: 5px;">
+                                <form method="post" style="display: inline-block; margin-right: 5px; margin-bottom: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
@@ -330,7 +336,7 @@
                                     </div>
                                 </form>
 
-                                <form method="post" style="display: inline-block; margin-right: 5px;">
+                                <form method="post" style="display: inline-block; margin-right: 5px; margin-bottom: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
@@ -355,7 +361,7 @@
                                     </div>
                                 </form>
 
-                                <form method="post" style="display: inline-block; margin-right: 5px;">
+                                <form method="post" style="display: inline-block; margin-right: 5px; margin-bottom: 5px;">
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
