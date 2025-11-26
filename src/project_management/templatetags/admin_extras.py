@@ -3,21 +3,26 @@ from django import template
 register = template.Library()
 
 @register.filter
-def dict_get(d, key):
+def get_item(dictionary, key):
     """
-    Allows template to access dict keys stored as tuples: (project_id, 'YYYY-MM-DD')
-    key arrives as: "projectid-YYYY-MM-DD"
+    Get an item from a dictionary using a variable key
     """
-    if "-" in key:
-        project_id, date_str = key.split("-", 1)
-        try:
-            project_id = int(project_id)
-        except:
-            pass
-        return d.get((project_id, date_str))
-    return d.get(key)
-
+    if isinstance(dictionary, dict):
+        return dictionary.get(key)
+    return None
 
 @register.filter
-def getattr(obj, attr):
-    return getattr(obj, attr, 'N/A') if obj else 'N/A'
+def get_attr(obj, attr):
+    """
+    Get an attribute from an object dynamically
+    """
+    if obj and hasattr(obj, attr):
+        return getattr(obj, attr)
+    return None
+
+@register.simple_tag
+def get_project_date_key(project_id, date):
+    """
+    Create a key in the format 'project_id_date' for lookup
+    """
+    return f"{project_id}_{date.strftime('%Y-%m-%d')}"

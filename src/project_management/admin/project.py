@@ -1110,12 +1110,12 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
 
         projects = Project.objects.filter(active=True).select_related('client').order_by('title')
 
-        # Build lookup dict WITH STRING KEY
+        # Build lookup dict with project-date combination as key
         data_lookup = {}
         for project in projects:
             for d in dates:
                 date_str = d.strftime('%Y-%m-%d')
-                key = f"{project.id}-{date_str}"
+                key = f"{project.id}_{date_str}"
                 data_lookup[key] = None
 
         # Load saved entries
@@ -1124,33 +1124,38 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
             date__range=[dates[-1], dates[0]]
         )
         for entry in entries:
-            key = f"{entry.project_id}-{entry.date.strftime('%Y-%m-%d')}"
+            key = f"{entry.project.id}_{entry.date.strftime('%Y-%m-%d')}"
             data_lookup[key] = entry
+        print(entries.count())
+        
+        print("Data Lookup Keys:", list(data_lookup.keys()).__len__())  # Debugging line
 
-        # Handle POST
+        # Handle POST - each dropdown sends its own field update
         if request.method == "POST":
             project_id = request.POST.get("project_id")
             date_str = request.POST.get("date")
 
-            project = Project.objects.get(id=project_id)
+            # Get the specific field and value that was changed
+            changed_field = None
+            changed_value = None
 
-            from datetime import datetime
-            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
-
-            field_name = None
-            field_value = None
-
-            for f in ["client", "tpm", "ba", "lead"]:
-                if f in request.POST:
-                    field_name = f
-                    field_value = request.POST[f]
+            for field in ["client", "tpm", "ba", "lead"]:
+                if field in request.POST:
+                    changed_field = field
+                    changed_value = request.POST[field]
                     break
 
-            if field_name:
+            if changed_field and changed_value is not None:
+                project = Project.objects.get(id=project_id)
+
+                from datetime import datetime
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+
+                # Update only the specific field that was changed
                 ProjectsCommunication.objects.update_or_create(
                     project=project,
                     date=date_obj,
-                    defaults={field_name: field_value}
+                    defaults={changed_field: changed_value}
                 )
 
             if request.headers.get("HX-Request"):
@@ -1165,6 +1170,7 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
             "data_lookup": data_lookup,
             "today": today,
             "opts": self.model._meta,
+            "entries": entries,
         }
 
         return render(request, self.change_list_template, context)
