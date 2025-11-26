@@ -53,7 +53,9 @@
     }
 
     .radio-container {
-        display: flex; flex-direction: row; gap: 3px;
+        display: flex; 
+        flex-direction: row; 
+        /* gap: 3px; */
         flex-wrap: wrap; justify-content: center;
     }
     .radio-option { width: 18px; height: 18px; border-radius: 50%; position: relative; cursor: pointer; margin: 0 2px; }
@@ -69,6 +71,16 @@
     .radio-medium-selected { border: 2px solid #333 !important; }
     .radio-high, .radio-high-selected, .date-label-high { background-color: #00ff15; border: 1px solid #00ff00; }
     .radio-high-selected { border: 2px solid #333 !important; }
+
+    /* Selected radio buttons in forms */
+    .radio-option input[type="radio"]:checked + label {
+        border: 2px solid #333 !important;
+    }
+
+    /* For the forms that use divs instead of labels */
+    .radio-option input[type="radio"]:checked + div {
+        border: 2px solid #333 !important;
+    }
 
     .date-label { display: inline-block; width: 18px; height: 18px; border-radius: 50%; border: 1px solid #ccc; }
 
@@ -307,22 +319,25 @@
                                                         <input type="hidden" name="project_id" value="{{ project.id }}">
                                                         <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                                         <input type="hidden" name="field" value="client">
-                                                        <div class="radio-container">
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="client" value="N/A" id="client_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="client" value="Low" id="client_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="client" value="Medium" id="client_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="client" value="High" id="client_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                        <div style="display: flex; align-items: center;">
+                                                            <span class="role-label" style="display: inline-block; min-width: 20px;">C:</span>
+                                                            <div class="radio-container">
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="client" value="N/A" id="client_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="client" value="Low" id="client_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="client" value="Medium" id="client_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="client" value="High" id="client_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'client' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </form>
@@ -333,22 +348,25 @@
                                                         <input type="hidden" name="project_id" value="{{ project.id }}">
                                                         <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                                         <input type="hidden" name="field" value="tpm">
-                                                        <div class="radio-container">
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="tpm" value="N/A" id="tpm_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="tpm" value="Low" id="tpm_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="tpm" value="Medium" id="tpm_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="tpm" value="High" id="tpm_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                        <div style="display: flex; align-items: center;">
+                                                            <span class="role-label" style="display: inline-block; min-width: 20px;">T:</span>
+                                                            <div class="radio-container">
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="tpm" value="N/A" id="tpm_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="tpm" value="Low" id="tpm_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="tpm" value="Medium" id="tpm_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="tpm" value="High" id="tpm_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'tpm' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </form>
@@ -359,22 +377,25 @@
                                                         <input type="hidden" name="project_id" value="{{ project.id }}">
                                                         <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                                         <input type="hidden" name="field" value="ba">
-                                                        <div class="radio-container">
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="ba" value="N/A" id="ba_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="ba" value="Low" id="ba_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="ba" value="Medium" id="ba_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="ba" value="High" id="ba_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                        <div style="display: flex; align-items: center;">
+                                                            <span class="role-label" style="display: inline-block; min-width: 20px;">B:</span>
+                                                            <div class="radio-container">
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="ba" value="N/A" id="ba_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="ba" value="Low" id="ba_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="ba" value="Medium" id="ba_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="ba" value="High" id="ba_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'ba' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </form>
@@ -385,22 +406,25 @@
                                                         <input type="hidden" name="project_id" value="{{ project.id }}">
                                                         <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                                         <input type="hidden" name="field" value="lead">
-                                                        <div class="radio-container">
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="lead" value="N/A" id="lead_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="lead" value="Low" id="lead_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="lead" value="Medium" id="lead_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
-                                                            </div>
-                                                            <div class="radio-option" style="display: inline-block; margin-right: 2px;">
-                                                                <input type="radio" name="lead" value="High" id="lead_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
-                                                                <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                        <div style="display: flex; align-items: center;">
+                                                            <span class="role-label" style="display: inline-block; min-width: 20px;">L:</span>
+                                                            <div class="radio-container">
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="lead" value="N/A" id="lead_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="lead" value="Low" id="lead_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="lead" value="Medium" id="lead_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
+                                                                </div>
+                                                                <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                    <input type="radio" name="lead" value="High" id="lead_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                    <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </form>
