@@ -117,10 +117,10 @@
                         Filter by Lead:
                     </label>
                     <select id="id_lead" name="lead" style="padding: 6px; border-radius: 4px; border: 1px solid #417690; width: 200px;">
-                        <option value="">-- All Employees --</option>
+                        <option value="">-- All Leads --</option>
                         {% for lead in leads %}
                             <option value="{{ lead.id }}" {% if lead.id|stringformat:"s" == selected_lead %}selected{% endif %}>
-                                {{ lead.full_name }} (Lead)
+                                {{ lead.full_name }}
                             </option>
                         {% endfor %}
                     </select>

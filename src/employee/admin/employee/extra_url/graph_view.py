@@ -885,7 +885,7 @@ class GraphView(admin.ModelAdmin):
 
     def get_lead_choices(self):
         """Get all employees with lead=True"""
-        return Employee.objects.filter(lead=True).order_by("full_name")
+        return Employee.objects.filter(lead=True, active=True).order_by("full_name")
 
     def all_employee_monthly_graph_view(self, request, *args, **kwargs):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
@@ -1023,7 +1023,7 @@ class GraphView(admin.ModelAdmin):
 
         # Filter by the lead's projects
         base_queryset = DailyProjectUpdate.objects.filter(
-            **date_filters, manager__id=lead_id
+            **date_filters, manager__id=lead_id, status="approved"
         )
         if skill_filters:
             base_queryset = base_queryset.filter(**skill_filters)
@@ -1092,7 +1092,7 @@ class GraphView(admin.ModelAdmin):
     ):
         """Get employee hours data for a given date range (single month)"""
         # Get total hours per employee
-        queryset = DailyProjectUpdate.objects.filter(**date_filters)
+        queryset = DailyProjectUpdate.objects.filter(**date_filters, status="approved")
 
         # NEW: Apply skill filter if provided
         if skill_filters:
@@ -1108,12 +1108,12 @@ class GraphView(admin.ModelAdmin):
         )
 
         # Get project breakdown per employee
-        project_queryset = DailyProjectUpdate.objects.filter(**date_filters)
+        # project_queryset = DailyProjectUpdate.objects.filter(**date_filters)
         if skill_filters:
-            project_queryset = project_queryset.filter(**skill_filters)
+            queryset = queryset.filter(**skill_filters)
 
         project_hours = (
-            project_queryset.select_related("employee", "project")
+            queryset.select_related("employee", "project")
             .values("employee", "project__title")
             .annotate(hours=Sum("hours"))
             .order_by("employee", "project__title")
