@@ -153,7 +153,7 @@ class GraphView(admin.ModelAdmin):
         @param kwargs:
         @return:
         """
-        current_date = date().today()
+        current_date = datetime.now().today()
         start_date = current_date - relativedelta(months=6)
         if request.user.has_perm(
             "employee.view_employeeundertpm"
