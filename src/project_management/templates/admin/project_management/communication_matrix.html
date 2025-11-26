@@ -17,12 +17,26 @@
         font-size: 14px;
     }
     
-    th, td {
+    th {
         border: 1px solid #ddd;
-        padding: 10px;
+        padding: 5px;
         text-align: center;
         vertical-align: middle;
-        min-width: 150px;
+        min-width: 60px;
+        z-index: 5000;
+    }
+
+    td {
+        border: 1px solid #ddd;
+        padding: 5px;
+        vertical-align: middle;
+        min-width: 60px;
+        text-align: left;
+    }
+
+    /* For editable cells (today) */
+    .editable-cell {
+        min-width: 100px;
     }
     
     th {
@@ -30,6 +44,10 @@
         font-weight: bold;
         position: sticky;
         top: 0;
+    }
+
+    td {
+        text-align: start;
     }
     
     .date-header {
@@ -43,7 +61,7 @@
         font-weight: bold;
         position: sticky;
         left: 0;
-        /* z-index: 1; */
+        z-index: 1;
     }
     
     .project-info {
@@ -85,17 +103,153 @@
     }
 
     .priority-low {
-        background-color: #ffcccc !important;  /* Light red */
+        background-color: #ff0000 !important;  /* Light red */
         color: #000;
     }
 
     .priority-medium {
-        background-color: #ffffcc !important;  /* Light yellow */
+        background-color: #ffff00 !important;  /* Light yellow */
         color: #000;
     }
 
     .priority-high {
-        background-color: #ccffcc !important;  /* Light green */
+        background-color: #00ff00 !important;  /* Light green */
+        color: #000;
+    }
+
+    .radio-container {
+        display: flex;
+        flex-direction: row;
+        gap: 2px;
+        flex-wrap: nowrap;
+    }
+
+    .radio-option {
+        display: flex;
+        align-items: center;
+    }
+
+    .radio-option input[type="radio"] {
+        display: none; /* Hide the actual radio button */
+    }
+
+    .radio-option label {
+        padding: 3px 6px;
+        margin: 0;
+        cursor: pointer;
+        border-radius: 3px;
+        font-size: 11px;
+        text-align: center;
+        min-width: 20px;
+    }
+
+    /* N/A state - white background */
+    .radio-na {
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+    }
+
+    .radio-na-selected {
+        background-color: #ffffff;
+        border: 2px solid #333;
+    }
+
+    /* Low state - red background */
+    .radio-low {
+        background-color: #ff0000;
+        border: 1px solid #ccc;
+    }
+
+    .radio-low-selected {
+        background-color: #ff0000;
+        border: 2px solid #333;
+    }
+
+    /* Medium state - yellow background */
+    .radio-medium {
+        background-color: #ffff00;
+        border: 1px solid #ccc;
+    }
+
+    .radio-medium-selected {
+        background-color: #ffff00;
+        border: 2px solid #333;
+    }
+
+    /* High state - red background (as requested) */
+    .radio-high {
+        background-color: #00ff15;
+        border: 1px solid #00ff00;
+    }
+
+    .radio-high-selected {
+        background-color: #00ff15;
+        border: 2px solid #333;
+    }
+
+    /* Circular radio button style */
+    .radio-option {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: inline-block;
+        margin: 0 2px;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .radio-option input[type="radio"] {
+        opacity: 0;
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    /* Disabled state */
+    .radio-option input[type="radio"]:disabled {
+        cursor: not-allowed;
+    }
+
+    .radio-option input[type="radio"]:disabled ~ * {
+        opacity: 0.6;
+    }
+
+    /* Style for non-editable date labels */
+    .date-label {
+        display: inline-block;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        font-size: 11px;
+        /* text-align: center; */
+        line-height: 18px;
+    }
+
+    .date-label-na {
+        background-color: #ffffff;
+        border: 1px solid #ccc;
+        color: #000;
+    }
+
+    .date-label-low {
+        background-color: #ff0000;
+        border: 1px solid #ccc;
+        color: #fff;
+    }
+
+    .date-label-medium {
+        background-color: #ffff00;
+        border: 1px solid #ccc;
+        color: #000;
+    }
+
+    .date-label-high {
+        background-color: #00ff15;
+        border: 1px solid #00ff00;
         color: #000;
     }
 </style>
@@ -106,10 +260,11 @@
     <!-- Saved Flash -->
     <div id="saved-flash">Saved</div>
 
-    <table>
+    <div style="max-height: 70vh; overflow-y: auto; position: relative;">
+        <table style="margin-bottom: 20px;">
         <thead>
             <tr>
-                <th class="project-header" style="min-width: 200px;">Project / Client</th>
+                <th class="project-header" style="min-width: 200px; z-index: 5001;">Project / Client</th>
                 {% for date in dates %}
                     <th class="date-header">{{ date|date:"M d" }}</th>
                 {% endfor %}
@@ -126,7 +281,7 @@
                     </td>
                     
                     {% for date in dates %}
-                        <td>
+                        <td class="{% if date == today %}editable-cell{% endif %}">
                             {% comment %}
                             Each cell contains 4 dropdowns for Client, TPM, BA, Lead priorities
                             {% endcomment %}
@@ -137,14 +292,24 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-                                    <div class="dropdown-container">
-                                        <span class="role-label">Client</span>
-                                        <select name="client" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
-                                            <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'N/A' %}selected{% endif %}>N/A</option>
-                                            <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}selected{% endif %}>Low</option>
-                                            <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}selected{% endif %}>Medium</option>
-                                            <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}selected{% endif %}>High</option>
-                                        </select>
+                                    <div class="radio-container">
+                                        <span class="role-label">C:</span>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'N/A' %}radio-na-selected{% else %}radio-na{% endif %}">
+                                            <input type="radio" name="client" value="N/A" id="client_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="client_na_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}radio-low-selected{% else %}radio-low{% endif %}">
+                                            <input type="radio" name="client" value="Low" id="client_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="client_low_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}radio-medium-selected{% else %}radio-medium{% endif %}">
+                                            <input type="radio" name="client" value="Medium" id="client_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="client_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}radio-high-selected{% else %}radio-high{% endif %}">
+                                            <input type="radio" name="client" value="High" id="client_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="client_high_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
                                     </div>
                                 </form>
 
@@ -152,14 +317,24 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-                                    <div class="dropdown-container">
-                                        <span class="role-label">TPM</span>
-                                        <select name="tpm" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
-                                            <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}selected{% endif %}>N/A</option>
-                                            <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}selected{% endif %}>Low</option>
-                                            <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}selected{% endif %}>Medium</option>
-                                            <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}selected{% endif %}>High</option>
-                                        </select>
+                                    <div class="radio-container">
+                                        <span class="role-label">T:</span>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}radio-na-selected{% else %}radio-na{% endif %}">
+                                            <input type="radio" name="tpm" value="N/A" id="tpm_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="tpm_na_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}radio-low-selected{% else %}radio-low{% endif %}">
+                                            <input type="radio" name="tpm" value="Low" id="tpm_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="tpm_low_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}radio-medium-selected{% else %}radio-medium{% endif %}">
+                                            <input type="radio" name="tpm" value="Medium" id="tpm_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="tpm_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}radio-high-selected{% else %}radio-high{% endif %}">
+                                            <input type="radio" name="tpm" value="High" id="tpm_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="tpm_high_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
                                     </div>
                                 </form>
 
@@ -167,14 +342,24 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-                                    <div class="dropdown-container">
-                                        <span class="role-label">BA</span>
-                                        <select name="ba" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
-                                            <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}selected{% endif %}>N/A</option>
-                                            <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}selected{% endif %}>Low</option>
-                                            <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}selected{% endif %}>Medium</option>
-                                            <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}selected{% endif %}>High</option>
-                                        </select>
+                                    <div class="radio-container">
+                                        <span class="role-label">B:</span>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}radio-na-selected{% else %}radio-na{% endif %}">
+                                            <input type="radio" name="ba" value="N/A" id="ba_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="ba_na_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}radio-low-selected{% else %}radio-low{% endif %}">
+                                            <input type="radio" name="ba" value="Low" id="ba_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="ba_low_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}radio-medium-selected{% else %}radio-medium{% endif %}">
+                                            <input type="radio" name="ba" value="Medium" id="ba_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="ba_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}radio-high-selected{% else %}radio-high{% endif %}">
+                                            <input type="radio" name="ba" value="High" id="ba_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="ba_high_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
                                     </div>
                                 </form>
 
@@ -182,55 +367,68 @@
                                     {% csrf_token %}
                                     <input type="hidden" name="project_id" value="{{ project.id }}">
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
-                                    <div class="dropdown-container">
-                                        <span class="role-label">Lead</span>
-                                        <select name="lead" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
-                                            <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}selected{% endif %}>N/A</option>
-                                            <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}selected{% endif %}>Low</option>
-                                            <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}selected{% endif %}>Medium</option>
-                                            <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}selected{% endif %}>High</option>
-                                        </select>
+                                    <div class="radio-container">
+                                        <span class="role-label">L:</span>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}radio-na-selected{% else %}radio-na{% endif %}">
+                                            <input type="radio" name="lead" value="N/A" id="lead_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="lead_na_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}radio-low-selected{% else %}radio-low{% endif %}">
+                                            <input type="radio" name="lead" value="Low" id="lead_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="lead_low_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}radio-medium-selected{% else %}radio-medium{% endif %}">
+                                            <input type="radio" name="lead" value="Medium" id="lead_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="lead_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
+                                        <div class="radio-option {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}radio-high-selected{% else %}radio-high{% endif %}">
+                                            <input type="radio" name="lead" value="High" id="lead_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                            <label for="lead_high_{{ project.id }}_{{ date|date:'Y-m-d' }}"></label>
+                                        </div>
                                     </div>
                                 </form>
                                 {% else %}
-                                <div class="dropdown-container" style="display: inline-block; margin-right: 5px;">
-                                    <span class="role-label">Client</span>
-                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}priority-high{% endif %}">
-                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'N/A' %}selected{% endif %}>N/A</option>
-                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'High' %}selected{% endif %}>High</option>
-                                    </select>
-                                </div>
-
-                                <div class="dropdown-container" style="display: inline-block; margin-right: 5px;">
-                                    <span class="role-label">TPM</span>
-                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}priority-high{% endif %}">
-                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}selected{% endif %}>N/A</option>
-                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'High' %}selected{% endif %}>High</option>
-                                    </select>
-                                </div>
-
-                                <div class="dropdown-container" style="display: inline-block; margin-right: 5px;">
-                                    <span class="role-label">BA</span>
-                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}priority-high{% endif %}">
-                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}selected{% endif %}>N/A</option>
-                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'High' %}selected{% endif %}>High</option>
-                                    </select>
-                                </div>
-
-                                <div class="dropdown-container" style="display: inline-block;">
-                                    <span class="role-label">Lead</span>
-                                    <select disabled class="priority-select {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}priority-low{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}priority-medium{% elif data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}priority-high{% endif %}">
-                                        <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}selected{% endif %}>N/A</option>
-                                        <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}selected{% endif %}>Low</option>
-                                        <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}selected{% endif %}>Medium</option>
-                                        <option value="High" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'High' %}selected{% endif %}>High</option>
-                                    </select>
+                                <div class="radio-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">C:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with client_val=data_lookup|get_item:key|get_attr:'client'|default:'N/A' %}
+                                                <div class="date-label {% if client_val == 'N/A' %}date-label-na{% elif client_val == 'Low' %}date-label-low{% elif client_val == 'Medium' %}date-label-medium{% elif client_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">T:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with tpm_val=data_lookup|get_item:key|get_attr:'tpm'|default:'N/A' %}
+                                                <div class="date-label {% if tpm_val == 'N/A' %}date-label-na{% elif tpm_val == 'Low' %}date-label-low{% elif tpm_val == 'Medium' %}date-label-medium{% elif tpm_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">B:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with ba_val=data_lookup|get_item:key|get_attr:'ba'|default:'N/A' %}
+                                                <div class="date-label {% if ba_val == 'N/A' %}date-label-na{% elif ba_val == 'Low' %}date-label-low{% elif ba_val == 'Medium' %}date-label-medium{% elif ba_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">L:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with lead_val=data_lookup|get_item:key|get_attr:'lead'|default:'N/A' %}
+                                                <div class="date-label {% if lead_val == 'N/A' %}date-label-na{% elif lead_val == 'Low' %}date-label-low{% elif lead_val == 'Medium' %}date-label-medium{% elif lead_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 {% endif %}
                             </div>
@@ -239,7 +437,9 @@
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
+        </table>
+        </div>
+    </div>
 </div>
 
 <script>
