@@ -304,25 +304,33 @@
 
         // Function to change month (for dropdown)
         function changeMonth(monthValue) {
+            const url = new URL(window.location.href);
             if (monthValue) {
-                const url = new URL(window.location.href);
                 url.searchParams.set('month', monthValue);
-                window.location.href = url.toString();
+            } else{
+                url.searchParams.delete('month');
             }
+            window.location.href = url.toString();
         }
         function changeSkill(skill) {
+            const url = new URL(window.location.href);
             if (skill) {
-                const url = new URL(window.location.href);
                 url.searchParams.set('skill', skill);
-                window.location.href = url.toString();
+            } else {
+                url.searchParams.delete('skill');
             }
+            window.location.href = url.toString();
         }
         function changeLead(lead) {
+            const url = new URL(window.location.href);
             if (lead) {
-                const url = new URL(window.location.href);
                 url.searchParams.set('lead', lead);
-                window.location.href = url.toString();
+                
+            } else{
+                url.searchParams.delete('lead');
+                
             }
+            window.location.href = url.toString();
         }
         monthInput.addEventListener("change", (e)=>{
             changeMonth(e.target.value);
