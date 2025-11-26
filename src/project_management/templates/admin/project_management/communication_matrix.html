@@ -17,12 +17,25 @@
         font-size: 14px;
     }
     
-    th, td {
+    th {
         border: 1px solid #ddd;
-        padding: 10px;
+        padding: 5px;
         text-align: center;
         vertical-align: middle;
-        min-width: 150px;
+        min-width: 60px;
+    }
+
+    td {
+        border: 1px solid #ddd;
+        padding: 5px;
+        vertical-align: middle;
+        min-width: 60px;
+        text-align: left;
+    }
+
+    /* For editable cells (today) */
+    .editable-cell {
+        min-width: 100px;
     }
     
     th {
@@ -30,6 +43,10 @@
         font-weight: bold;
         position: sticky;
         top: 0;
+    }
+
+    td {
+        text-align: start;
     }
     
     .date-header {
@@ -207,7 +224,7 @@
         height: 18px;
         border-radius: 50%;
         font-size: 11px;
-        text-align: center;
+        /* text-align: center; */
         line-height: 18px;
     }
 
@@ -262,7 +279,7 @@
                     </td>
                     
                     {% for date in dates %}
-                        <td>
+                        <td class="{% if date == today %}editable-cell{% endif %}">
                             {% comment %}
                             Each cell contains 4 dropdowns for Client, TPM, BA, Lead priorities
                             {% endcomment %}
@@ -369,7 +386,7 @@
                                     </div>
                                 </form>
                                 {% else %}
-                                <div class="radio-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                <div class="radio-container" style="display: flex; flex-direction: column; align-items: flex-start;">
                                     <div style="display: flex; align-items: center; margin: 2px 0;">
                                         <span class="role-label" style="margin-right: 5px;">C:</span>
                                         {% if data_lookup|get_item:key|default_if_none:None %}
