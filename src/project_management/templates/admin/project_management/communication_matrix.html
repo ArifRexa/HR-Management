@@ -79,6 +79,25 @@
         color: #666;
         margin-top: 3px;
     }
+
+    select.priority-select {
+        transition: background-color 0.3s ease;
+    }
+
+    .priority-low {
+        background-color: #ffcccc !important;  /* Light red */
+        color: #000;
+    }
+
+    .priority-medium {
+        background-color: #ffffcc !important;  /* Light yellow */
+        color: #000;
+    }
+
+    .priority-high {
+        background-color: #ccffcc !important;  /* Light green */
+        color: #000;
+    }
 </style>
 {% endblock %}
 
@@ -119,7 +138,7 @@
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                     <div class="dropdown-container">
                                         <span class="role-label">Client</span>
-                                        <select name="client" hx-post hx-trigger="change" hx-swap="outerHTML">
+                                        <select name="client" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
                                             <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'N/A' %}selected{% endif %}>N/A</option>
                                             <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Low' %}selected{% endif %}>Low</option>
                                             <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'client' == 'Medium' %}selected{% endif %}>Medium</option>
@@ -134,7 +153,7 @@
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                     <div class="dropdown-container">
                                         <span class="role-label">TPM</span>
-                                        <select name="tpm" hx-post hx-trigger="change" hx-swap="outerHTML">
+                                        <select name="tpm" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
                                             <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'N/A' %}selected{% endif %}>N/A</option>
                                             <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Low' %}selected{% endif %}>Low</option>
                                             <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'tpm' == 'Medium' %}selected{% endif %}>Medium</option>
@@ -149,7 +168,7 @@
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                     <div class="dropdown-container">
                                         <span class="role-label">BA</span>
-                                        <select name="ba" hx-post hx-trigger="change" hx-swap="outerHTML">
+                                        <select name="ba" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
                                             <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'N/A' %}selected{% endif %}>N/A</option>
                                             <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Low' %}selected{% endif %}>Low</option>
                                             <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'ba' == 'Medium' %}selected{% endif %}>Medium</option>
@@ -164,7 +183,7 @@
                                     <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
                                     <div class="dropdown-container">
                                         <span class="role-label">Lead</span>
-                                        <select name="lead" hx-post hx-trigger="change" hx-swap="outerHTML">
+                                        <select name="lead" hx-post hx-trigger="change" hx-swap="outerHTML" class="priority-select" onchange="updateSelectColor(this)">
                                             <option value="N/A" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}selected{% endif %}>N/A</option>
                                             <option value="Low" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Low' %}selected{% endif %}>Low</option>
                                             <option value="Medium" {% if data_lookup|get_item:key|default_if_none:None and data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}selected{% endif %}>Medium</option>
@@ -182,15 +201,38 @@
 </div>
 
 <script>
+// Function to update select color based on selected value
+function updateSelectColor(selectElement) {
+    // Remove existing priority classes
+    selectElement.classList.remove('priority-low', 'priority-medium', 'priority-high');
+
+    // Add appropriate class based on selected value
+    if (selectElement.value === 'Low') {
+        selectElement.classList.add('priority-low');
+    } else if (selectElement.value === 'Medium') {
+        selectElement.classList.add('priority-medium');
+    } else if (selectElement.value === 'High') {
+        selectElement.classList.add('priority-high');
+    }
+}
+
+// Apply colors to all selects on page load
+document.addEventListener('DOMContentLoaded', function() {
+    const prioritySelects = document.querySelectorAll('.priority-select');
+    prioritySelects.forEach(function(select) {
+        updateSelectColor(select);
+    });
+});
+
 document.body.addEventListener('htmx:afterRequest', function(evt) {
     if (evt.detail.successful) {
         const flash = document.getElementById('saved-flash');
         flash.style.opacity = '1';
-        setTimeout(() => flash.style.opacity = '0', 500);
+        setTimeout(() => flash.style.opacity = '0', 10);
         // Add auto reload after successful update
         setTimeout(function() {
             window.location.reload();
-        }, 1500); // 1.5 second delay to show the success message before reload
+        }, 100); // 1.5 second delay to show the success message before reload
     }
 });
 </script>
