@@ -369,48 +369,47 @@
                                     </div>
                                 </form>
                                 {% else %}
-                                <div class="radio-container" style="display: inline-block; margin-right: 5px;">
-                                    <span class="role-label">C:</span>
-                                    {% if data_lookup|get_item:key|default_if_none:None %}
-                                        {% with client_val=data_lookup|get_item:key|get_attr:'client'|default:'N/A' %}
-                                            <div class="date-label {% if client_val == 'N/A' %}date-label-na{% elif client_val == 'Low' %}date-label-low{% elif client_val == 'Medium' %}date-label-medium{% elif client_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
-                                        {% endwith %}
-                                    {% else %}
-                                        <div class="date-label date-label-na">&nbsp;</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="radio-container" style="display: inline-block; margin-right: 5px;">
-                                    <span class="role-label">T:</span>
-                                    {% if data_lookup|get_item:key|default_if_none:None %}
-                                        {% with tpm_val=data_lookup|get_item:key|get_attr:'tpm'|default:'N/A' %}
-                                            <div class="date-label {% if tpm_val == 'N/A' %}date-label-na{% elif tpm_val == 'Low' %}date-label-low{% elif tpm_val == 'Medium' %}date-label-medium{% elif tpm_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
-                                        {% endwith %}
-                                    {% else %}
-                                        <div class="date-label date-label-na">&nbsp;</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="radio-container" style="display: inline-block; margin-right: 5px;">
-                                    <span class="role-label">B:</span>
-                                    {% if data_lookup|get_item:key|default_if_none:None %}
-                                        {% with ba_val=data_lookup|get_item:key|get_attr:'ba'|default:'N/A' %}
-                                            <div class="date-label {% if ba_val == 'N/A' %}date-label-na{% elif ba_val == 'Low' %}date-label-low{% elif ba_val == 'Medium' %}date-label-medium{% elif ba_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
-                                        {% endwith %}
-                                    {% else %}
-                                        <div class="date-label date-label-na">&nbsp;</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="radio-container" style="display: inline-block;">
-                                    <span class="role-label">L:</span>
-                                    {% if data_lookup|get_item:key|default_if_none:None %}
-                                        {% with lead_val=data_lookup|get_item:key|get_attr:'lead'|default:'N/A' %}
-                                            <div class="date-label {% if lead_val == 'N/A' %}date-label-na{% elif lead_val == 'Low' %}date-label-low{% elif lead_val == 'Medium' %}date-label-medium{% elif lead_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
-                                        {% endwith %}
-                                    {% else %}
-                                        <div class="date-label date-label-na">&nbsp;</div>
-                                    {% endif %}
+                                <div class="radio-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">C:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with client_val=data_lookup|get_item:key|get_attr:'client'|default:'N/A' %}
+                                                <div class="date-label {% if client_val == 'N/A' %}date-label-na{% elif client_val == 'Low' %}date-label-low{% elif client_val == 'Medium' %}date-label-medium{% elif client_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">T:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with tpm_val=data_lookup|get_item:key|get_attr:'tpm'|default:'N/A' %}
+                                                <div class="date-label {% if tpm_val == 'N/A' %}date-label-na{% elif tpm_val == 'Low' %}date-label-low{% elif tpm_val == 'Medium' %}date-label-medium{% elif tpm_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">B:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with ba_val=data_lookup|get_item:key|get_attr:'ba'|default:'N/A' %}
+                                                <div class="date-label {% if ba_val == 'N/A' %}date-label-na{% elif ba_val == 'Low' %}date-label-low{% elif ba_val == 'Medium' %}date-label-medium{% elif ba_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
+                                    <div style="display: flex; align-items: center; margin: 2px 0;">
+                                        <span class="role-label" style="margin-right: 5px;">L:</span>
+                                        {% if data_lookup|get_item:key|default_if_none:None %}
+                                            {% with lead_val=data_lookup|get_item:key|get_attr:'lead'|default:'N/A' %}
+                                                <div class="date-label {% if lead_val == 'N/A' %}date-label-na{% elif lead_val == 'Low' %}date-label-low{% elif lead_val == 'Medium' %}date-label-medium{% elif lead_val == 'High' %}date-label-high{% endif %}">&nbsp;</div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <div class="date-label date-label-na">&nbsp;</div>
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 {% endif %}
                             </div>
