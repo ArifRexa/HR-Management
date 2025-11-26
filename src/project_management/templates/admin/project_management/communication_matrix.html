@@ -36,6 +36,22 @@
     .client-name { font-size: 12px; color: #666; margin-top: 10px; text-align: center; }
     .role-label { display: block; font-size: 10px; color: #666; margin-bottom: 3px; }
 
+    /* 1. Force sticky on TH */
+    .project-header-th {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 15000 !important;
+        background: #f9f9f9 !important;
+    }
+
+    /* 2. Force sticky on every project TD */
+    .project-header-td {
+        position: sticky !important;
+        left: 0 !important;
+        z-index: 14000 !important;
+        background: #f9f9f9 !important;
+    }
+
     .radio-container {
         display: flex; flex-direction: row; gap: 3px;
         flex-wrap: wrap; justify-content: center;
@@ -84,7 +100,7 @@
         <table style="margin-bottom: 20px;">
             <thead>
                 <tr>
-                    <th class="project-header" style="min-width: 200px; z-index: 5001;">Project / Client</th>
+                    <th class="project-header project-header-th">Project / Client</th>
                     {% for date in dates %}
                         {% if date == today %}
                             <th class="date-header">{{ date|date:"M d" }} (Today)</th>
