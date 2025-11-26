@@ -16,7 +16,8 @@ from employee.admin.employee._forms import (
     FilterForm,
 )
 from employee.models import Employee
-from employee.models.employee_skill import EmployeeSkill, Skill
+from employee.models.employee_activity import EmployeeProject
+from employee.models.employee_skill import Skill
 from project_management.models import (
     DailyProjectUpdate,
     EmployeeProjectHour,
@@ -882,6 +883,10 @@ class GraphView(admin.ModelAdmin):
             chart["total_hour"] += daily_employee_hour["total_hour"]
         return chart
 
+    def get_lead_choices(self):
+        """Get all employees with lead=True"""
+        return Employee.objects.filter(lead=True).order_by("full_name")
+
     def all_employee_monthly_graph_view(self, request, *args, **kwargs):
         if request.user.has_perm("employee.view_employeeundertpm") is False:
             raise PermissionDenied(
@@ -890,6 +895,7 @@ class GraphView(admin.ModelAdmin):
 
         # Get selected month (e.g., "2024-03")
         selected_month = request.GET.get("month")
+        lead_filter = request.GET.get("lead")
 
         # Default to current month if not provided
         if not selected_month:
@@ -909,12 +915,12 @@ class GraphView(admin.ModelAdmin):
         end_date = date(year, month, 1) + relativedelta(
             day=31
         )  # Last day of month
-        
+
         # NEW: Skill filter
-        skill_filter = request.GET.get('skill')
+        skill_filter = request.GET.get("skill")
         skill_filters = {}
         if skill_filter:
-            skill_filters['employee__employeeskill__skill_id'] = skill_filter
+            skill_filters["employee__employeeskill__skill_id"] = skill_filter
 
         # Prepare date filters
         date_filters = {
@@ -934,17 +940,42 @@ class GraphView(admin.ModelAdmin):
         if hours_filters:
             initial_data.update(hours_filters)
 
+        if lead_filter:
+            initial_data["lead"] = lead_filter
+
         date_filter_form = DailyUpdateDateFilterForm(initial=initial_data)
 
-        # Get chart data
-        chart_data = self._all_employee_monthly_graph_data(
-            date_filters=date_filters,
-            hours_filters=hours_filters,
-            skill_filters=skill_filters,  # NEW
-        )
-        
-        skills = skills = Skill.objects.all().order_by('title')
+        if lead_filter:
+            # Get projects for the selected lead
+            lead = Employee.objects.filter(id=lead_filter, lead=True).first()
+            project_ids = []
+            if lead:
+                # Get all project IDs associated with this lead
+                employee_project = EmployeeProject.objects.filter(
+                    employee=lead
+                ).first()
+                if employee_project:
+                    project_ids = list(
+                        employee_project.project.values_list("id", flat=True)
+                    )
 
+            chart_data = self._lead_employee_monthly_graph_data(
+                date_filters=date_filters,
+                hours_filters=hours_filters,
+                # project_ids=project_ids,
+                skill_filters=skill_filters,
+                lead_id=lead_filter,
+            )
+        else:
+            # Use original function for regular employee filtering
+            chart_data = self._all_employee_monthly_graph_data(
+                date_filters=date_filters,
+                hours_filters=hours_filters,
+                skill_filters=skill_filters,
+            )
+
+        skills = skills = Skill.objects.all().order_by("title")
+        leads = self.get_lead_choices()
         context = dict(
             self.admin_site.each_context(request),
             chart=chart_data,
@@ -954,12 +985,95 @@ class GraphView(admin.ModelAdmin):
             selected_month_name=datetime(year, month, 1).strftime("%B %Y"),
             skills=skills,
             selected_skill=skill_filter,
-            selected_skill_name=Skill.objects.filter(id=skill_filter).first().title if skill_filter else None,
+            selected_skill_name=Skill.objects.filter(id=skill_filter)
+            .first()
+            .title
+            if skill_filter
+            else None,
+            leads=leads,
+            selected_lead=lead_filter,
+            selected_lead_name=Employee.objects.filter(id=lead_filter)
+            .first()
+            .full_name
+            if lead_filter
+            else None,
         )
 
         return TemplateResponse(
             request, "admin/employee/employees_monthly_hours.html", context
         )
+
+    def _lead_employee_monthly_graph_data(
+        self, date_filters, hours_filters, skill_filters, lead_id
+    ):
+        """
+        NEW FUNCTION: Filter by lead's projects instead of individual employee
+        Shows all team members' hours on the lead's projects
+        """
+        # if not project_ids:
+        #     # Return empty chart if no projects
+        #     return {
+        #         "label": "Lead's Project Hours",
+        #         "labels": [],
+        #         "data": [],
+        #         "projects_hour": [],
+        #         "employees_id": [],
+        #         "total_hour": 0,
+        #     }
+
+        # Filter by the lead's projects
+        base_queryset = DailyProjectUpdate.objects.filter(
+            **date_filters, manager__id=lead_id
+        )
+        if skill_filters:
+            base_queryset = base_queryset.filter(**skill_filters)
+            
+        # Get total hours per employee across all lead's projects
+        employee_hours = (
+            base_queryset.select_related("manager")
+            .values("manager", "manager__full_name")
+            .annotate(total_hour=Sum("hours"))
+            .filter(**hours_filters)
+            .order_by("total_hour")
+        )
+
+        # Get project breakdown per employee
+        project_hours = (
+            base_queryset.select_related("employee", "manager", "project")
+            .values("project", "project__title", "manager", "manager__full_name")
+            .annotate(hours=Sum("hours"))
+            .order_by("employee", "project__title")
+        )
+
+        # Build project lookup
+        employee_projects = {}
+        for proj in project_hours:
+            emp_id = proj["manager"]
+            if emp_id not in employee_projects:
+                employee_projects[emp_id] = []
+            employee_projects[emp_id].append(
+                [proj["project__title"], proj["hours"]]
+            )
+
+        # Build chart data (same structure as original)
+        chart = {
+            "label": "Lead's Project Hours",
+            "labels": [],
+            "data": [],
+            "projects_hour": [],
+            "employees_id": [],
+            "total_hour": 0,
+        }
+
+        for emp in employee_hours:
+            emp_id = emp["manager"]
+            chart["labels"].append(emp["manager__full_name"])
+            chart["data"].append(emp["total_hour"])
+            chart["employees_id"].append(emp_id)
+            chart["projects_hour"].append(employee_projects.get(emp_id, []))
+            chart["total_hour"] += emp["total_hour"]
+
+        return chart
 
     def get_month_choices(self):
         """Generate all months for current year (Jan-Dec)"""
@@ -973,15 +1087,17 @@ class GraphView(admin.ModelAdmin):
 
         return choices
 
-    def _all_employee_monthly_graph_data(self, date_filters, hours_filters, skill_filters):
+    def _all_employee_monthly_graph_data(
+        self, date_filters, hours_filters, skill_filters
+    ):
         """Get employee hours data for a given date range (single month)"""
         # Get total hours per employee
         queryset = DailyProjectUpdate.objects.filter(**date_filters)
-        
+
         # NEW: Apply skill filter if provided
         if skill_filters:
             queryset = queryset.filter(**skill_filters)
-        
+
         # Continue with aggregation
         employee_hours = (
             queryset.select_related("employee")
@@ -995,7 +1111,7 @@ class GraphView(admin.ModelAdmin):
         project_queryset = DailyProjectUpdate.objects.filter(**date_filters)
         if skill_filters:
             project_queryset = project_queryset.filter(**skill_filters)
-        
+
         project_hours = (
             project_queryset.select_related("employee", "project")
             .values("employee", "project__title")

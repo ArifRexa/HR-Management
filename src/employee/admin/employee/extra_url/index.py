@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path
 
 from employee.admin.employee.extra_url.formal_view import FormalView
+
 from employee.admin.employee.extra_url.graph_view import GraphView
 from employee.admin.employee.extra_url.sms_view import SMSView
 

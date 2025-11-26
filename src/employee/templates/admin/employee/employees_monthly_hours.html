@@ -83,7 +83,7 @@
                 
                 <!-- Month filter dropdown -->
                 <div style="margin-bottom: 10px;">
-                    <label for="id_month" style="display: inline-block; width: 100px; font-weight: bold;">
+                    <label for="id_month" style="display: inline-block; font-weight: bold;">
                         Month:
                     </label>
                     <select id="id_month" name="month" style="padding: 6px; border-radius: 4px; border: 1px solid #417690; width: 200px;">
@@ -96,7 +96,7 @@
                 </div>
                 <!-- NEW: Skill filter dropdown -->
                 <div style="margin-bottom: 10px;">
-                    <label for="id_skill" style="display: inline-block; width: 100px; font-weight: bold;">
+                    <label for="id_skill" style="display: inline-block; font-weight: bold;">
                         Filter by Skill:
                     </label>
                     <select id="id_skill" name="skill" style="padding: 6px; border-radius: 4px; border: 1px solid #417690; width: 200px;">
@@ -108,14 +108,28 @@
                         {% endfor %}
                     </select>
                 </div>
+
+                <div style="margin-bottom: 10px;">
+                    <label for="id_lead" style="display: inline-block; font-weight: bold;">
+                        Filter by Lead:
+                    </label>
+                    <select id="id_lead" name="lead" style="padding: 6px; border-radius: 4px; border: 1px solid #417690; width: 200px;">
+                        <option value="">-- All Employees --</option>
+                        {% for lead in leads %}
+                            <option value="{{ lead.id }}" {% if lead.id|stringformat:"s" == selected_lead %}selected{% endif %}>
+                                {{ lead.full_name }} (Lead)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
                 
                 <!-- Hour range filters -->
                 <div style="margin-bottom: 10px;">
                     {% if date_filter_form.total_hour__gte %}
-                        <label for="id_total_hour__gte" style="display: inline-block; width: 100px;">Min Hours:</label>
+                        <label for="id_total_hour__gte" style="display: inline-block;">Min Hours:</label>
                         {{ date_filter_form.total_hour__gte }}
                         <span style="margin: 0 10px;">-</span>
-                        <label for="id_total_hour__lte" style="display: inline-block; width: 100px;">Max Hours:</label>
+                        <label for="id_total_hour__lte" style="display: inline-block;">Max Hours:</label>
                         {{ date_filter_form.total_hour__lte }}
                     {% endif %}
                 </div>
@@ -300,11 +314,21 @@
                 window.location.href = url.toString();
             }
         }
+        function changeLead(lead) {
+            if (lead) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('lead', lead);
+                window.location.href = url.toString();
+            }
+        }
         monthInput.addEventListener("change", (e)=>{
             changeMonth(e.target.value);
         })
         document.querySelector("#id_skill").addEventListener("change", (e)=>{
             changeSkill(e.target.value)
+        })
+        document.querySelector("#id_lead").addEventListener("change", (e)=>{
+            changeLead(e.target.value)
         })
         // Highlight Filter button if URL has query parameters
         document.addEventListener("DOMContentLoaded", function() {
