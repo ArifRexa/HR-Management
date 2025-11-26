@@ -29,6 +29,7 @@
             transition: background 0.15s;
             cursor: pointer;
             margin-right: 6px;
+            width: 74px;
         }
         button.active {
             background: #417690; /* Original default style for selected button */
@@ -51,13 +52,9 @@
 
     {% block content_title %}{% endblock %}
     <div style="display: flex; justify-content: space-evenly;">
-        <div>
-            <h1>Monthly Project Hours</h1>
-        </div>
-    </div>
-
-    <div style="display: flex; justify-content: space-around; align-items: center;">
-        <div>
+        <div style="text-align: center;">
+            <h1 style="font-weight: bold;">Monthly Project Hours</h1>
+            <div style="margin-top: -10px;">
             <!-- Show selected month in title -->
             <h1 id="chartTitle">
                 {% if selected_month %}
@@ -66,22 +63,13 @@
                 Total Hours: {{ chart.total_hour|floatformat:2 }} ({{ chart.employees_id|length }})
             </h1>
         </div>
-
-        <div>
-            <!-- Month navigation dropdown (if available) -->
-            {% if available_months %}
-            <select id="monthSelector" onchange="changeMonth(this.value)" style="padding: 6px; border-radius: 4px; border: 1px solid #417690;">
-                {% for month in available_months %}
-                    <option value="{{ month|date:'Y-m' }}" {% if month == selected_month %}selected{% endif %}>
-                        {{ month|date:"F Y" }}
-                    </option>
-                {% endfor %}
-            </select>
-            {% endif %}
         </div>
+    </div>
+
+    <div style="display: flex; justify-content: space-around; align-items: center;">
 
         <div>
-            <form action="" method="get" style="display: flex;">
+            <form action="" method="get" style="display: flex; gap: 5px">
                 {{ date_filter_form.media }}
                 
                 <!-- Month filter dropdown -->
@@ -127,20 +115,24 @@
                 </div>
                 
                 <!-- Hour range filters -->
-                <div style="margin-bottom: 10px;">
-                    {% if date_filter_form.total_hour__gte %}
-                        <label for="id_total_hour__gte" style="display: inline-block;">Min Hours:</label>
-                        {{ date_filter_form.total_hour__gte }}
-                        <span style="margin: 0 10px;">-</span>
-                        <label for="id_total_hour__lte" style="display: inline-block;">Max Hours:</label>
-                        {{ date_filter_form.total_hour__lte }}
-                    {% endif %}
+                <div style="margin-bottom: 10px; display: flex; flex-direction: column;">
+                    <div>
+
+                        {% if date_filter_form.total_hour__gte %}
+                            
+                            {{ date_filter_form.total_hour__gte }}
+    
+                            {{ date_filter_form.total_hour__lte }}
+                        {% endif %}
+                    </div>
+                    <div style="display: flex;">
+
+                        <button type="submit" class="default" id="filter-button-id">Filter</button>
+                        <button type="button" onclick="window.location.href = window.location.pathname;">
+                            Reset
+                        </button>
+                    </div>
                 </div>
-                
-                <button type="submit" class="default" id="filter-button-id">Filter</button>
-                <button type="button" onclick="window.location.href = window.location.pathname;">
-                    Reset
-                </button>
             </form>
         </div>
     </div>
