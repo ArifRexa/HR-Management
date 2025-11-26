@@ -186,7 +186,11 @@ document.body.addEventListener('htmx:afterRequest', function(evt) {
     if (evt.detail.successful) {
         const flash = document.getElementById('saved-flash');
         flash.style.opacity = '1';
-        setTimeout(() => flash.style.opacity = '0', 1200);
+        setTimeout(() => flash.style.opacity = '0', 500);
+        // Add auto reload after successful update
+        setTimeout(function() {
+            window.location.reload();
+        }, 1500); // 1.5 second delay to show the success message before reload
     }
 });
 </script>
