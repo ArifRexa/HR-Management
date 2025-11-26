@@ -1164,7 +1164,8 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
             return HttpResponseRedirect(request.get_full_path())
 
         context = {
-            "title": "Communication Priority Matrix – Last 30 Days",
+            # "title": "Project Communication",
+            # 'subtitle': 'Update communication priorities for projects over the last 30 days.',
             "dates": dates,
             "projects": projects,
             "data_lookup": data_lookup,
