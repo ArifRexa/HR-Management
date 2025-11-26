@@ -23,6 +23,7 @@
         text-align: center;
         vertical-align: middle;
         min-width: 60px;
+        z-index: 5000;
     }
 
     td {
@@ -60,7 +61,7 @@
         font-weight: bold;
         position: sticky;
         left: 0;
-        /* z-index: 1; */
+        z-index: 1;
     }
     
     .project-info {
@@ -259,10 +260,11 @@
     <!-- Saved Flash -->
     <div id="saved-flash">Saved</div>
 
-    <table>
+    <div style="max-height: 70vh; overflow-y: auto; position: relative;">
+        <table style="margin-bottom: 20px;">
         <thead>
             <tr>
-                <th class="project-header" style="min-width: 200px;">Project / Client</th>
+                <th class="project-header" style="min-width: 200px; z-index: 5001;">Project / Client</th>
                 {% for date in dates %}
                     <th class="date-header">{{ date|date:"M d" }}</th>
                 {% endfor %}
@@ -435,7 +437,9 @@
                 </tr>
             {% endfor %}
         </tbody>
-    </table>
+        </table>
+        </div>
+    </div>
 </div>
 
 <script>
