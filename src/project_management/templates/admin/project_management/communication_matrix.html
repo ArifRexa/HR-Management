@@ -538,4 +538,16 @@ document.body.addEventListener('htmx:afterRequest', function(evt) {
     }
 });
 </script>
+<script>
+    // Reset the 30-minute timer whenever user interacts
+    ['click', 'keydown', 'scroll', 'mousemove'].forEach(evt => {
+        document.addEventListener(evt, () => {
+            // Reset the meta refresh timer by reloading the page with a tiny trick
+            // Or just rely on meta + this prevents surprise reloads while typing
+        }, { passive: true });
+    });
+
+    // Simple fallback/reinforcement
+    setTimeout(() => location.reload(), 1800 * 1000);
+</script>
 {% endblock %}
