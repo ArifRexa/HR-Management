@@ -738,6 +738,10 @@ def available_slot_form(request):
 
 
 def employee_fixed_asset(request):
+    if not request.user.is_authenticated:
+        return {
+            "employee_fixed_asset": None,
+        }
     employee_fixed_asset = EmployeeFixedAsset.objects.filter(
         employee=request.user.employee
     ).first()
