@@ -115,8 +115,8 @@
                 </div>
                 
                 <!-- Hour range filters -->
-                <div style="margin-bottom: 10px; display: flex; flex-direction: column;">
-                    <div>
+                <div>
+                    
 
                         {% if date_filter_form.total_hour__gte %}
                             
@@ -124,14 +124,14 @@
     
                             {{ date_filter_form.total_hour__lte }}
                         {% endif %}
-                    </div>
-                    <div style="display: flex;">
+                    
+                    
 
                         <button type="submit" class="default" id="filter-button-id">Filter</button>
                         <button type="button" onclick="window.location.href = window.location.pathname;">
                             Reset
                         </button>
-                    </div>
+                    
                 </div>
             </form>
         </div>
