@@ -858,12 +858,19 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
             "today": today,
             "opts": self.model._meta,
             "entries": entries,
+            "can_change": request.user.has_perm('project_management.change_projectscommunication'),
+            "can_view_only": not request.user.has_perm('project_management.change_projectscommunication') and request.user.has_perm('project_management.view_projectscommunication'),
         }
 
         return render(request, self.change_list_template, context)
 
+    def has_change_permission(self, request, obj=None):
+        return request.user.has_perm('project_management.change_projectscommunication')
+
+    def has_view_permission(self, request, obj=None):
+        return request.user.has_perm('project_management.view_projectscommunication') or request.user.has_perm('project_management.change_projectscommunication')
+
     def has_add_permission(self, request): return False
-    def has_change_permission(self, request, obj=None): return False
     def has_delete_permission(self, request, obj=None): return False
 
 
