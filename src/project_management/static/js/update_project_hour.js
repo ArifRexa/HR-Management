@@ -19,6 +19,7 @@ function updateProjectHour(project_hour_id=null){
    xhttp.onload = function() {
     const data = JSON.parse(this.responseText);
     hour = data.weekly_hour;
+    console.log("hour data", hour)
     for(var i=0; i<hour.length; i++){
         hour_input = document.querySelector(`#id_employeeprojecthour_set-${i}-hours`);
         employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
