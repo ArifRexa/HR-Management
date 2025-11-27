@@ -127,6 +127,7 @@ TEMPLATES = [
                 "django.template.context_processors.static",
                 "config.context_processors.employees.formal_summery",
                 "config.context_processors.employees.all_employees_last_slot_announcement",
+                "config.context_processors.employees.employee_fixed_asset",
                 "config.context_processors.employees.employee_status_form",
                 "config.context_processors.employees.employee_project_form",
                 "config.context_processors.employees.employee_need_help_form",

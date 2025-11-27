@@ -118,6 +118,10 @@
     background-color: #fff;
 }
 
+.modal-backdrop{
+    display: none !important;
+}
+
 .notice-board-header {
     position: sticky;
     top: 0;
@@ -187,7 +191,214 @@
 {#{% endif %}#}
 
 
+<!-- Modal -->
+<div class="modal fade" id="assetModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog" style="
+    position: absolute;
+    right: 0;
+    top: 185px;
+    width: 27rem;
+">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" style="text-align: center; width: 100%; color: black;">Asset</h5>
+                <!-- Close button with BOTH data attribute AND onclick -->
+                <button type="button" class="btn-close" data-bs-dismiss="modal" onclick="closeAssetModal()"></button>
+            </div>
+            <div class="modal-body">
+                {% if employee_fixed_asset %}
+<div class="table-responsive">
+    <style>
+        /* Optional: Add custom styling for the header */
+        .asset-table thead {
+            background-color: transparent;
+            border-bottom: 2px solid #ddd;
+        }
+        .asset-table thead th {
+            font-weight: 600;
+            border: 1px solid #ddd;
+            background-color: #f8f9fa;
+            color: #333;
+            text-align: center;
+        }
+        .asset-table td {
+            border: 1px solid #ddd;
+        }
+    </style>
+    <table class="table table-bordered table-hover asset-table">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Category</th>
+                <th style="width: 20%;">Asset ID</th>
+                <th style="width: 65%;">Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Tables -->
+            {% for asset in employee_fixed_asset.table.all %}
+            <tr>
+                <td><span class="badge bg-secondary">Table</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
 
+            <!-- Chairs -->
+            {% for asset in employee_fixed_asset.chair.all %}
+            <tr>
+                <td><span class="badge bg-secondary">Chair</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Monitors -->
+            {% for asset in employee_fixed_asset.monitor.all %}
+            <tr>
+                <td><span class="badge bg-info">Monitor</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.display_size %}<small class="d-block"><strong>Display Size:</strong> {{ asset.display_size }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Keyboards -->
+            {% for asset in employee_fixed_asset.keyboard.all %}
+            <tr>
+                <td><span class="badge bg-dark">Keyboard</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Mice -->
+            {% for asset in employee_fixed_asset.mouse.all %}
+            <tr>
+                <td><span class="badge bg-dark">Mouse</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Headphones -->
+            {% for asset in employee_fixed_asset.headphone.all %}
+            <tr>
+                <td><span class="badge bg-warning">Headphone</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.headphone_feature %}<small class="d-block"><strong>Feature:</strong> {{ asset.headphone_feature }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Webcams -->
+            {% for asset in employee_fixed_asset.web_cam.all %}
+            <tr>
+                <td><span class="badge bg-light text-dark">Webcam</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- Extra Items -->
+            {% for asset in employee_fixed_asset.extra.all %}
+            <tr>
+                <td><span class="badge bg-muted">Extra</span></td>
+                <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
+                    {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- CPUs -->
+            {% for cpu in employee_fixed_asset.cpu.all %}
+            <tr>
+                <td><span class="badge bg-primary">CPU</span></td>
+                <td><code>{{ cpu.asset_id|default:"N/A" }}</code></td>
+                <td>
+                    <small class="d-block"><strong>CPU Asset ID:</strong> {{ cpu.asset_id|default:"N/A" }}</small>
+                    {% if cpu.casing %}<small class="d-block"><strong>Casing:</strong> {{ cpu.casing.name }}</small>{% endif %}
+                    {% if cpu.processor %}
+                    <small class="d-block"><strong>Processor:</strong> {{ cpu.processor.brand.name }} {{ cpu.processor.core }}</small>
+                    {% endif %}
+                    {% if cpu.ram1 %}
+                    <small class="d-block"><strong>RAM1:</strong> {{ cpu.ram1.ram_size }}</small>
+                    {% if cpu.ram1.serial %}<small class="d-block"><strong>RAM1 Serial:</strong> {{ cpu.ram1.serial }}</small>{% endif %}
+                    {% endif %}
+                    {% if cpu.ram2 %}
+                    <small class="d-block"><strong>RAM2:</strong> {{ cpu.ram2.ram_size }}</small>
+                    {% if cpu.ram2.serial %}<small class="d-block"><strong>RAM2 Serial:</strong> {{ cpu.ram2.serial }}</small>{% endif %}
+                    {% endif %}
+                    {% if cpu.ssd %}
+                    <small class="d-block"><strong>SSD:</strong> {{ cpu.ssd.storage_size }}</small>
+                    {% if cpu.ssd.serial %}<small class="d-block"><strong>SSD Serial:</strong> {{ cpu.ssd.serial }}</small>{% endif %}
+                    {% endif %}
+                    {% if cpu.hdd %}
+                    <small class="d-block"><strong>HDD:</strong> {{ cpu.hdd.storage_size }}</small>
+                    {% if cpu.hdd.serial %}<small class="d-block"><strong>HDD Serial:</strong> {{ cpu.hdd.serial }}</small>{% endif %}
+                    {% endif %}
+                    {% if cpu.gpu %}
+                    <small class="d-block"><strong>GPU:</strong> {{ cpu.gpu.brand.name }}</small>
+                    {% if cpu.gpu.serial %}<small class="d-block"><strong>GPU Serial:</strong> {{ cpu.gpu.serial }}</small>{% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+            <!-- If no assets -->
+            {% if not employee_fixed_asset.table.exists and not employee_fixed_asset.chair.exists and not employee_fixed_asset.monitor.exists and not employee_fixed_asset.keyboard.exists and not employee_fixed_asset.mouse.exists and not employee_fixed_asset.headphone.exists and not employee_fixed_asset.web_cam.exists and not employee_fixed_asset.extra.exists and not employee_fixed_asset.cpu.exists %}
+            <tr>
+                <td colspan="3" class="text-center text-muted">No assets assigned to this employee</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">No fixed asset record found for this employee.</div>
+{% endif %}
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -254,6 +465,15 @@
             <div class="actions d-flex flex-wrap justify-content-center justify-content-lg-end gap-3 align-items-center">
 
                 <!-- Project Form -->
+                <span style="margin-right: -15px;">
+
+                    {% if request.user.employee.is_online %}
+                        🟢
+                    {% else %}
+                        🔴
+                    {% endif %}
+                </span>
+                    
                 <div class="action-item">{% include 'admin/form/employee_project_form.html' %}</div>
                 <div class="d-flex flex-wrap justify-content-center justify-content-lg-end gap-1 align-items-center">
                     <!-- Slot Form -->
@@ -261,13 +481,38 @@
                 
 
                     <!-- Status Form -->
-                    <div class="action-item">{% include 'admin/form/employee_status_form.html' %}</div>
+                    
 
                     <a href="{% url 'admin:time_hour_graph' request.user.employee.id %}" target="_blank"
                         class="btn btn-graph d-flex align-items-center justify-content-center gap-2 text-light">
-                        <i class="bi bi-graph-up-arrow"></i> View Graph 📈
+                        <i class="bi bi-graph-up-arrow"></i>Graph 📈
                     </a>
+                    <button class="btn btn-graph" data-bs-toggle="modal" data-bs-target="#assetModal">
+    Asset
+</button>
                 </div>
+
+
+               <!-- Trigger Button -->
+
+
+
+
+<script>
+function closeAssetModal() {
+    const modalEl = document.getElementById('assetModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) {
+        modal.hide();
+    }
+    
+    // Emergency cleanup
+    setTimeout(() => {
+        document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+        document.body.classList.remove('modal-open');
+    }, 100);
+}
+</script>
 
             </div>
             {% endif %}
@@ -918,6 +1163,7 @@
         }
     </script>
     <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    <script src="https://unpkg.com/micromodal/dist/micromodal.min.js"></script>
 
     <script>
         document.body.addEventListener("htmx:request", function(event) {

@@ -6,9 +6,9 @@
             {% csrf_token %}
             <div class="d-flex align-items-center">
             {% for field in employee_project_form.visible_fields %}
-                <label for="" class="me-2">{{ field.label }}</label>
+                
                 <select name="" id="id_project_s" style="max-width: 13rem;">
-                    <option value>-----</option>
+                    <option value>Select Project</option>
                     {% for option in field %}
                         {{ option }}
                     {% endfor %}
@@ -48,9 +48,8 @@
         <div id="projectForm" class="m-1">
             {% csrf_token %}
             <div class="d-flex align-items-center">
-            <span class="me-2">Project</span>
             <div id="id_project_s" style="width: 10rem; border: 1px solid black; padding-left:8px; border-radius:8px" hx-get="{% url 'employee_project_form' request.user.employee.id %}" hx-trigger="click" hx-target="#projectForm">
-                    <span>-----</span>
+                    <span style="text-align: center; display: block;">Select Project</span>
     
                     
             </div>

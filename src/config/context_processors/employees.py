@@ -3,7 +3,6 @@ from datetime import date, datetime, time, timedelta
 from django import forms
 from django.contrib.auth.models import AnonymousUser
 from django.db.models import (
-    OuterRef,
     Prefetch,
     Q,
     Sum,
@@ -11,6 +10,7 @@ from django.db.models import (
 from django.utils import timezone
 from django.utils.html import format_html
 
+from asset_management.models.asset import EmployeeFixedAsset
 from config.settings import employee_ids as management_ids
 from employee.admin.employee.extra_url.formal_view import EmployeeNearbySummery
 from employee.forms.employee_need_help import EmployeeNeedHelpForm
@@ -23,7 +23,6 @@ from employee.models import (
     Employee,
     EmployeeNeedHelp,
     EmployeeOnline,
-    EmployeeSkill,
     FavouriteMenu,
     Leave,
 )
@@ -145,7 +144,9 @@ def formal_summery(request):
         # "employee_projects": employee_projects,
         # "ord": order_by,
         "current_month_feedback_done": current_month_feedback_done,
-        "announcement": get_announcement(request=request).get("announcement", None),
+        "announcement": get_announcement(request=request).get(
+            "announcement", None
+        ),
         "birthday_today": get_managed_birthday_image(request),
         # "increments": employee_formal_summery.increments,
         # "permanents": permanents,
@@ -300,7 +301,7 @@ def all_notices(request):
             start_date__lte=timezone.now(), end_date__gte=timezone.now()
         ).order_by("-rank", "-created_at")
     }
-    
+
 
 from django.db.models import Max
 
@@ -340,23 +341,21 @@ def all_employees_last_slot_announcement(request):
     if request.path == "/admin/":
         return {}
     data = []
-    available_slot = all_employees_last_slot(request).get("all_employees_last_slot")
-    
+    available_slot = all_employees_last_slot(request).get(
+        "all_employees_last_slot"
+    )
+
     data_available_slot = [employee.full_name for employee in available_slot]
     if available_slot and data_available_slot:
         data_available_slot = ", ".join(data_available_slot)
-        data.append(
-            f"Available Resources ({data_available_slot})"
-        )
+        data.append(f"Available Resources ({data_available_slot})")
     if data:
         initial = f'<span style="background-color:tomato;padding:0.4rem 0.8rem;border-radius:0.4rem;">ANNOUNCEMENTS</span> {"&nbsp;" * 8}🚨'
         data = initial + f" {'&nbsp;' * 8}🚨".join(
             [f'<span class="single_announcement">{d}</span>' for d in data]
         )
         data = format_html(data)
-    return {
-        "announcement": data if data else None
-    }
+    return {"announcement": data if data else None}
 
 
 def get_announcement(request):
@@ -408,15 +407,15 @@ def get_announcement(request):
 
     # Announcements
     # data.extend(announcements)
-    
-    available_slot = all_employees_last_slot(request).get("all_employees_last_slot")
-    
+
+    available_slot = all_employees_last_slot(request).get(
+        "all_employees_last_slot"
+    )
+
     data_available_slot = [employee.full_name for employee in available_slot]
     if available_slot and data_available_slot:
         data_available_slot = ", ".join(data_available_slot)
-        data.append(
-            f"Available Resources ({data_available_slot})"
-        )
+        data.append(f"Available Resources ({data_available_slot})")
 
     # Get Leaves
     leaves_today = (
@@ -487,9 +486,7 @@ def get_announcement(request):
         data = format_html(data)
 
     # return data if data else None
-    return {
-        "announcement": data if data else None
-    }
+    return {"announcement": data if data else None}
 
 
 def get_managed_birthday_image(request):
@@ -740,4 +737,10 @@ def available_slot_form(request):
     }
 
 
-
+def employee_fixed_asset(request):
+    employee_fixed_asset = EmployeeFixedAsset.objects.filter(
+        employee=request.user.employee
+    ).first()
+    return {
+        "employee_fixed_asset": employee_fixed_asset,
+    }

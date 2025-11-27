@@ -29,7 +29,7 @@
 }
 </style>
 
-<div style="margin-right: 10px;display: flex;flex-direction: row;align-items: center;" title="Set your available slot for today.">
+<div style="display: flex;flex-direction: row;align-items: center;" title="Set your available slot for today.">
     <select name="slot" id="slot"
         hx-post="{% url 'save_available_slot' %}"
         hx-target="this"
