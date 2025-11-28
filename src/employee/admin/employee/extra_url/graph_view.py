@@ -1011,7 +1011,7 @@ class GraphView(admin.ModelAdmin):
         # Build complete filters
         filters = {**date_filters, "manager__id": lead_id, "status": "approved"}
 
-        if skill_filters:
+        if skill_filters and skill_filters.get("skill"):
             filters.update(skill_filters)
 
         # Get total hours for the lead
@@ -1252,8 +1252,8 @@ class GraphView(admin.ModelAdmin):
             if request.GET.get(key)
         }
 
-        if hours_filters:
-            filters.update(hours_filters)
+        # if hours_filters:
+        #     filters.update(hours_filters)
 
         # Get total hours per employee
         base_queryset = EmployeeProjectHour.objects.filter(**filters)
@@ -1262,6 +1262,7 @@ class GraphView(admin.ModelAdmin):
             base_queryset.select_related("employee")
             .values("employee", "employee__full_name")
             .annotate(total_hour=Sum("hours"))
+            .filter(**hours_filters)
             .order_by("total_hour")
         )
 

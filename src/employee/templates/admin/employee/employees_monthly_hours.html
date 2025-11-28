@@ -297,6 +297,7 @@
         // Function to change month (for dropdown)
         function changeMonth(monthValue) {
             const url = new URL(window.location.href);
+            console.log("search params", url.searchParams)
             if (monthValue) {
                 url.searchParams.set('month', monthValue);
             } else{
@@ -315,6 +316,7 @@
         }
         function changeLead(lead) {
             const url = new URL(window.location.href);
+            console.log("search params", url.searchParams.get("total_hour__gte"))
             if (lead) {
                 url.searchParams.set('lead', lead);
                 
@@ -341,7 +343,5 @@
                 filterButton.classList.add('active');
             }
         });
-
-        MicroModel.init()
     </script>
 {% endblock %}
