@@ -244,7 +244,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
-                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    
+                    {% if asset.brand %}
+                        
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name}}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
                 </td>
@@ -258,7 +262,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
-                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    
+                    {% if asset.brand %}
+                        
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name }}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
                 </td>
@@ -272,7 +280,15 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
-                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    
+                    {% if asset.brand %}
+                        
+                    
+                    {% if asset.brand %}
+                        
+                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name }}</small>
+                    {% endif %}
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.display_size %}<small class="d-block"><strong>Display Size:</strong> {{ asset.display_size }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
@@ -287,7 +303,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
-                    <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    
+                    {% if asset.brand %}
+                        
+                        <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name }}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
                 </td>
@@ -301,7 +321,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    
+                    {% if asset.brand %}
+                        
                     <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
                 </td>
@@ -315,7 +339,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    
+                    {% if asset.brand %}
+                        
                     <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.headphone_feature %}<small class="d-block"><strong>Feature:</strong> {{ asset.headphone_feature }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
@@ -330,7 +358,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    
+                    {% if asset.brand %}
+                        
                     <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
                 </td>
@@ -344,7 +376,11 @@
                 <td><code>{{ asset.asset_id|default:"N/A" }}</code></td>
                 <td>
                     <small class="d-block"><strong>Asset ID:</strong> {{ asset.asset_id|default:"N/A" }}</small>
+                    
+                    {% if asset.brand %}
+                        
                     <small class="d-block"><strong>Brand:</strong> {{ asset.brand.name|default:"Unknown" }}</small>
+                    {% endif %}
                     {% if asset.serial %}<small class="d-block"><strong>Serial:</strong> {{ asset.serial }}</small>{% endif %}
                     {% if asset.other_specs %}<small class="d-block"><strong>Other Specs:</strong> {{ asset.other_specs }}</small>{% endif %}
                 </td>

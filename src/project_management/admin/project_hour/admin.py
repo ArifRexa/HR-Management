@@ -52,7 +52,8 @@ class EmployeeHourInlineForm(forms.ModelForm):
                 )
             project_hour = super().save(False)
             project_hour.daily_update_id = daily_update
-            return project_hour.save()
+            project_hour.save()
+            return project_hour
         return super().save(commit)
 
 
