@@ -1532,6 +1532,7 @@ class LeadershipSerializer(serializers.ModelSerializer):
 
 class EmployeeTestimonialSerializer(serializers.ModelSerializer):
     employee_name = serializers.CharField(source="employee.full_name")
+    designation = serializers.CharField(source="employee.designation.title")
 
     class Meta:
         model = EmployeeTestimonial
