@@ -34,7 +34,9 @@ function updateProjectHour(project_hour_id=null){
             hour_input.addEventListener("keyup", update_total_hour)
         }
         // hour_input.value = hour[i].hours;
-        daily_update = hour.filter(item=>item.id==parseInt(daily_update_id_input.value))[0]
+        daily_update = hour.filter(item=>item.id==parseInt(daily_update_id_input.value))
+        if (daily_update_id_input.value){
+            daily_update = hour.filter(item=>item.id==parseInt(daily_update_id_input.value))[0]
         console.log("daily update", daily_update)
         if (daily_update.updates_json){
             let v = ""
@@ -45,6 +47,19 @@ function updateProjectHour(project_hour_id=null){
         }else{
             
             update_input.value = daily_update.update
+        }
+        }else{
+
+            if (hour[i].updates_json){
+                let v = ""
+                for(var j=0; j<hour[i].updates_json.length; j++){
+                    v += hour[i].updates_json[j][0]
+                }
+                update_input.value = v;
+            }else{
+                
+                update_input.value = hour[i].update
+            }
         }
         // let update_data = hours[i].update;
         // update_input.value = update_data[0][0];
