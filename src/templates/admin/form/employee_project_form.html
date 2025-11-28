@@ -1,5 +1,18 @@
 {% if user.employee.project_eligibility and employee_project_form%}
 
+<style>
+    #projectSubmit{
+        border-radius: 2rem;
+    background: linear-gradient(135deg, #417690, #264b5d);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.3rem 0.8rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s, box-shadow 0.2s;
+    }
+</style>
+
     {% if show_form %}
 
         <form action="{% url 'change-employee-project' %}" method="post" id="projectForm" class="m-1">
@@ -16,7 +29,7 @@
                 {{ field }}
             {% endfor %}
             <div class="text-lg-center">
-                <input id="projectSubmit" type="submit" value="Submit" class="btn btn-sm ms-2 py-1 my-1 my-xl-0 px-sm-2">
+                <input id="projectSubmit" type="submit" value="Submit" class="btn-graph btn btn-sm ms-2 my-1 my-xl-0">
             </div>
             </div> 
         </form>
