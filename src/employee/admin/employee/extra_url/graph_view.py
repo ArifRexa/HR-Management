@@ -1,5 +1,6 @@
 import calendar
-from datetime import date, datetime
+from datetime import date, datetime, time
+
 
 from dateutil.relativedelta import relativedelta
 from django.contrib import admin
@@ -794,7 +795,7 @@ class GraphView(admin.ModelAdmin):
         if request.GET.get("created_at__date"):
             current_date = request.GET.get("created_at__date")
         else:
-            current_date_time = datetime.datetime.now()
+            current_date_time = datetime.now()
             current_date = current_date_time.date()
             weekday = current_date.weekday()
             if weekday in (5, 6):
@@ -802,7 +803,7 @@ class GraphView(admin.ModelAdmin):
                 current_date = current_date - relativedelta(
                     days=1 if weekday == 5 else 2
                 )
-            elif current_date_time.time() < datetime.time(
+            elif current_date_time.time() < time(
                 21, 0, 0
             ):  # define 9 PM, time(21, 0, 0)
                 # get the last working date if current_time is less then 9 PM
