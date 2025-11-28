@@ -25,6 +25,8 @@ function updateProjectHour(project_hour_id=null){
         employee_select = document.querySelector(`#id_employeeprojecthour_set-${i}-employee`);
         update_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update`);
         update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-update_id`);
+        daily_update_id_input = document.querySelector(`#id_employeeprojecthour_set-${i}-daily_update_id`);
+        console.log("update-id", daily_update_id_input)
         update_id_input.value = hour[i].id;
         date = document.querySelector(`#id_employeeprojecthour_set-${i}-date`);
         date.value = hour[i].created_at.substring(0, 10);
@@ -32,15 +34,17 @@ function updateProjectHour(project_hour_id=null){
             hour_input.addEventListener("keyup", update_total_hour)
         }
         // hour_input.value = hour[i].hours;
-        if (hour[i].updates_json){
+        daily_update = hour.filter(item=>item.id==parseInt(daily_update_id_input.value))[0]
+        console.log("daily update", daily_update)
+        if (daily_update.updates_json){
             let v = ""
-            for(var j=0; j<hour[i].updates_json.length; j++){
-                v += hour[i].updates_json[j][0]
+            for(var j=0; j<daily_update.updates_json.length; j++){
+                v += daily_update.updates_json[j][0]
             }
             update_input.value = v;
         }else{
             
-            update_input.value = hour[i].update
+            update_input.value = daily_update.update
         }
         // let update_data = hours[i].update;
         // update_input.value = update_data[0][0];

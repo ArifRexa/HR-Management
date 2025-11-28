@@ -32,7 +32,9 @@ class EmployeeHourInlineForm(forms.ModelForm):
 
     class Meta:
         model = EmployeeProjectHour
-        fields = ("date", "hours", "employee")
+        fields = ("date", "hours", "employee", "daily_update_id")
+
+        widgets = {"daily_update_id": forms.HiddenInput()}
 
     def save(self, commit):
         update_id = self.cleaned_data.get("update_id")
@@ -48,6 +50,9 @@ class EmployeeHourInlineForm(forms.ModelForm):
                 daily_update.history.create(
                     hours=hours,
                 )
+            project_hour = super().save(False)
+            project_hour.daily_update_id = daily_update
+            return project_hour.save()
         return super().save(commit)
 
 

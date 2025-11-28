@@ -381,7 +381,7 @@ class Client(TimeStampMixin, AuthorMixin):
             ("can_mark_as_inactive", "Can mark clients as inactive"),
             ("can_export_to_excel", "Can export clients to Excel"),
             ("can_export_to_pdf", "Can export clients to PDF"),
-            ("can_see_all_field", "Can See All Field")
+            ("can_see_all_field", "Can See All Field"),
         ]
 
     def save(self, *args, **kwargs):
@@ -392,8 +392,7 @@ class Client(TimeStampMixin, AuthorMixin):
             if old_instance and old_instance.hourly_rate != self.hourly_rate:
                 # Close any existing open history record
                 ClientHistory.objects.filter(
-                    client=self,
-                    end_date__isnull=True
+                    client=self, end_date__isnull=True
                 ).update(end_date=timezone.now().date())
 
                 # Create new history record
@@ -405,11 +404,6 @@ class Client(TimeStampMixin, AuthorMixin):
                 )
 
         super().save(*args, **kwargs)
-    
-
-
-
-
 
 
 class ClientHistory(models.Model):
@@ -443,9 +437,6 @@ class ClientHistory(models.Model):
         verbose_name = "Client Hourly Rate History"
         verbose_name_plural = "Client Hourly Rate Histories"
         ordering = ["-starting_date"]
-
-
-
 
 
 class ClientExperience(Client):
@@ -595,7 +586,9 @@ class Project(TimeStampMixin, AuthorMixin):
     child_services = models.ManyToManyField(
         ServicePage,
         related_name="child_projects",
-        limit_choices_to={"is_parent": False},  # Only non-parent services (children)
+        limit_choices_to={
+            "is_parent": False
+        },  # Only non-parent services (children)
         verbose_name="Child Services",
         blank=True,
     )
@@ -634,7 +627,11 @@ class Project(TimeStampMixin, AuthorMixin):
         upload_to="project_thumbnails", null=True, blank=True
     )
     featured_video = models.URLField(null=True, blank=True)
-    short_video = models.URLField(null=True, blank=True, help_text="Short video for mediusware.com case study page")
+    short_video = models.URLField(
+        null=True,
+        blank=True,
+        help_text="Short video for mediusware.com case study page",
+    )
     show_in_website = models.BooleanField(default=False)
     tags = models.ManyToManyField(Tag, related_name="projects")
     identifier = models.CharField(
@@ -1065,6 +1062,12 @@ class EmployeeProjectHour(TimeStampMixin, AuthorMixin):
         limit_choices_to={"active": True, "project_eligibility": True},
     )
     # update_data = models.TextField(blank=True, null=True, verbose_name="Update")
+    daily_update_id = models.ForeignKey(
+        "project_management.DailyProjectUpdate",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     class Meta:
         permissions = [
@@ -1749,31 +1752,35 @@ class ProjectEstimation(TimeStampMixin, AuthorMixin):
         return f"{self.project.title} Estimation"
 
 
-
-
 class ProjectsCommunication(TimeStampMixin, AuthorMixin):
     PROJECT_ROLE_CHOICES = [
-        ('N/A', 'N/A'),
-        ('Low', 'Low'),
-        ('Medium', 'Medium'),
-        ('High', 'High'),
+        ("N/A", "N/A"),
+        ("Low", "Low"),
+        ("Medium", "Medium"),
+        ("High", "High"),
     ]
 
     project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        related_name='daily_priorities'
+        Project, on_delete=models.CASCADE, related_name="daily_priorities"
     )
     date = models.DateField(db_index=True)
-    
-    client = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
-    tpm = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
-    ba = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
-    lead = models.CharField(max_length=10, choices=PROJECT_ROLE_CHOICES, default='N/A')
+
+    client = models.CharField(
+        max_length=10, choices=PROJECT_ROLE_CHOICES, default="N/A"
+    )
+    tpm = models.CharField(
+        max_length=10, choices=PROJECT_ROLE_CHOICES, default="N/A"
+    )
+    ba = models.CharField(
+        max_length=10, choices=PROJECT_ROLE_CHOICES, default="N/A"
+    )
+    lead = models.CharField(
+        max_length=10, choices=PROJECT_ROLE_CHOICES, default="N/A"
+    )
 
     class Meta:
-        unique_together = ('project', 'date')
-        ordering = ['-date']
+        unique_together = ("project", "date")
+        ordering = ["-date"]
 
     def __str__(self):
         return f"{self.project} - {self.date} ({self.client}/{self.tpm}/{self.ba}/{self.lead})"
