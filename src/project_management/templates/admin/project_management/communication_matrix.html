@@ -1,7 +1,16 @@
 {% extends "admin/base_site.html" %}
 {% load admin_extras %}
 
+{% block title %}
+    Project Communication
+{% endblock %}
+
+
+
+
 {% block extrahead %}
+{{ super.extrahead }}
+<link rel="icon" href="https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/Logo_MW.png">
 <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 <style>
     #saved-flash {
@@ -20,10 +29,10 @@
     }
     .table-scroll-wrapper table { min-width: 1800px; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
-    th, td { border: 1px solid #ddd; padding: 5px; vertical-align: middle; min-width: 60px; }
-    th { background-color: #f2f2f2; font-weight: bold; position: sticky; top: 0; z-index: 5000; }
-    td { text-align: left; }
+    .table-scroll-wrapper table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .table-scroll-wrapper table th, td { border: 1px solid #ddd; padding: 5px; vertical-align: middle; min-width: 60px; }
+    .table-scroll-wrapper table th { background-color: #f2f2f2; font-weight: bold; position: sticky; top: 0; z-index: 5000; }
+    .table-scroll-wrapper table td { text-align: left; }
 
     .editable-cell { min-width: 100px !important; }          /* ← your original today width */
     .date-header { background-color: #e7e7e7; min-width: 120px; }

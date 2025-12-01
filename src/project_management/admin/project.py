@@ -2,7 +2,7 @@ from datetime import date, datetime, timedelta
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.shortcuts import render
-
+from django.template.response import TemplateResponse
 import nested_admin
 from adminsortable.admin import NonSortableParentAdmin, SortableStackedInline
 from dateutil.relativedelta import relativedelta
@@ -793,13 +793,14 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
     def matrix_view(self, request):
         today = date.today()
         dates = [today - timedelta(days=i) for i in range(0, 30)]
+        actual_date = list(filter(lambda x: x.strftime("%a") not in ["Sat", "Sun"], dates))
 
         projects = Project.objects.filter(active=True).select_related('client').order_by('title')
 
         # Build lookup dict with project-date combination as key
         data_lookup = {}
         for project in projects:
-            for d in dates:
+            for d in actual_date:
                 date_str = d.strftime('%Y-%m-%d')
                 key = f"{project.id}_{date_str}"
                 data_lookup[key] = None
@@ -848,11 +849,12 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
                 return HttpResponse("")
 
             return HttpResponseRedirect(request.get_full_path())
-
+        a = dict(self.admin_site.each_context(request),)
         context = {
             # "title": "Project Communication",
             # 'subtitle': 'Update communication priorities for projects over the last 30 days.',
-            "dates": dates,
+            
+            "dates": actual_date,
             "projects": projects,
             "data_lookup": data_lookup,
             "today": today,
@@ -861,8 +863,9 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
             "can_change": request.user.has_perm('project_management.change_projectscommunication'),
             "can_view_only": not request.user.has_perm('project_management.change_projectscommunication') and request.user.has_perm('project_management.view_projectscommunication'),
         }
+        context.update(a)
 
-        return render(request, self.change_list_template, context)
+        return TemplateResponse(request, self.change_list_template, context)
 
     def has_change_permission(self, request, obj=None):
         return request.user.has_perm('project_management.change_projectscommunication')
