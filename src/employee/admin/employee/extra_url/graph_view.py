@@ -494,7 +494,7 @@ class GraphView(admin.ModelAdmin):
                 "You do not have permission to access this feature."
             )
 
-        current_date = date().today()
+        current_date = datetime.now().today()
         start_date = current_date - relativedelta(months=6)
 
         initial_filter = {
