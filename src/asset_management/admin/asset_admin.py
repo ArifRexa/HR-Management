@@ -443,21 +443,69 @@ class EmployeeAssetAdmin(admin.ModelAdmin):
 class AssetRequestNoteInline(admin.TabularInline):
     model = AssetRequestNote
     extra = 1
+    
+
+class CreatedByFilter(admin.SimpleListFilter):
+    # Display title in the admin sidebar
+    title = 'Requested User'
+    
+    # URL parameter name (e.g., ?created_by=123)
+    parameter_name = 'created_by'
+
+    def lookups(self, request, model_admin):
+        # Returns list of tuples (value, display_label)
+        # User = get_user_model()
+        # Get all users who have created records in this model
+        creators = model_admin.model.objects.values_list(
+            'created_by', 'created_by__username'
+        ).distinct().order_by('created_by__username')
+        
+        return [(c[0], c[1]) for c in creators if c[0]]
+
+    def queryset(self, request, queryset):
+        # Apply the filter to the queryset
+        if self.value():
+            return queryset.filter(created_by=self.value())
+        return queryset
+
+
+class CategoryByFilter(admin.SimpleListFilter):
+    # Display title in the admin sidebar
+    title = 'Category'
+    
+    # URL parameter name (e.g., ?created_by=123)
+    parameter_name = 'category'
+
+    def lookups(self, request, model_admin):
+        # Returns list of tuples (value, display_label)
+        # User = get_user_model()
+        # Get all users who have created records in this model
+        creators = model_admin.model.objects.values_list(
+            'category__id', 'category__title'
+        ).distinct().order_by('category__title')
+        
+        return [(c[0], c[1]) for c in creators if c[0]]
+
+    def queryset(self, request, queryset):
+        # Apply the filter to the queryset
+        if self.value():
+            return queryset.filter(created_by=self.value())
+        return queryset
 
 
 @admin.register(AssetRequest)
 class AssetRequestAdmin(admin.ModelAdmin):
     inlines = (AssetRequestNoteInline,)
     list_display = (
+        "created_at",
+        "requested_by",
         "category",
-        "quantity",
         "get_notes",
         "get_priority",
-        "requested_by",
         "requested_date",
         "get_status",
     )
-    list_filter = ("category", "priority", "status")
+    list_filter = ("status", "priority", CreatedByFilter, "category")
     autocomplete_fields = ("category",)
     change_list_template = "admin/asset/asset_request.html"
     actions = [
@@ -465,11 +513,14 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "update_status_pending",
         "update_status_in_progress",
     ]
+    exclude = ("quantity",)
 
-    def has_module_permission(self, request):
-        return False
+    # def has_module_permission(self, request):
+    #     return False
 
     def save_model(self, request, obj, form, change):
+        if obj:
+            obj.quantity = 0
         if change:
             if obj.status == AssetRequestStatus.DONE:
                 obj.approved_at = timezone.now()
@@ -486,14 +537,23 @@ class AssetRequestAdmin(admin.ModelAdmin):
         extra_context["has_pending_request"] = pending_info["pending_count"] > 0
         extra_context["pending_count"] = pending_info["pending_count"]
         return super().changelist_view(request, extra_context)
+    
+    def get_readonly_fields(self, request, obj = ...):
+        if not request.user.employee.operation and not request.user.is_superuser:
+            return ["status"]
+        return super().get_readonly_fields(request, obj)
 
     def get_queryset(self, request):
-        return (
+        qs = (
             super()
             .get_queryset(request)
             .select_related("category")
             .prefetch_related("asset_request_notes")
         )
+        if not request.user.employee.operation and not request.user.is_superuser:
+            qs = qs.filter(created_by=request.user)
+        
+        return qs
 
     class Media:
         css = {"all": ("css/list.css",)}
