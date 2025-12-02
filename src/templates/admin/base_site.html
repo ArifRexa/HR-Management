@@ -65,6 +65,10 @@
     document.addEventListener('DOMContentLoaded', function() {
 
 
+        document.getElementById('main').classList.remove('shifted');
+
+
+
 
         let link = Array.from(document.querySelectorAll('a')).find(a => a.textContent.trim() === "Weekly Project Hours");
         if (link) {
