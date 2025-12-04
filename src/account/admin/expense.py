@@ -452,7 +452,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     #     html = f'<a href="{url}" target="_blank">📄</a>'
 
     #     return format_html(html)
-    @admin.display(description="File", ordering="expanseattachment__count")
+    @admin.display(description="File", ordering="expanseattachment")
     def get_attachments(self, obj):
         attachments = getattr(obj, "expense_attachment", [])
         if not attachments:
@@ -488,7 +488,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         return format_html("<br>".join(lines))
     
     
-    @admin.display(description="INV.T", ordering="expanseattachment__inventory_ids__count")
+    @admin.display(description="INV.T", ordering="expanseattachment__inventory_ids")
     def get_inventory_ids(self, obj):
         attachments = getattr(obj, "expense_attachment", [])
         if not attachments:
