@@ -310,6 +310,7 @@ class ExpenseAdmin(admin.ModelAdmin):
         "get_amount",
         "get_notes",
         "get_attachments",
+        "get_inventory_ids",
         "get_add_to_balance_sheet",
         "get_approved",
         "get_authorized",
@@ -451,7 +452,7 @@ class ExpenseAdmin(admin.ModelAdmin):
     #     html = f'<a href="{url}" target="_blank">📄</a>'
 
     #     return format_html(html)
-    @admin.display(description="Attachments", ordering="expanseattachment__count")
+    @admin.display(description="File", ordering="expanseattachment__count")
     def get_attachments(self, obj):
         attachments = getattr(obj, "expense_attachment", [])
         if not attachments:
@@ -460,6 +461,42 @@ class ExpenseAdmin(admin.ModelAdmin):
         # Base URL for the attachment list view
         url = reverse("account:expense_attachment", kwargs={"id": obj.id})
         lines = [f'<a href="{url}" target="_blank">📄</a> <br>']  # Keep the file icon
+
+        # # Process inventory IDs from each attachment
+        # for attachment in attachments:
+        #     inv_ids_str = attachment.inventory_ids
+        #     if not inv_ids_str:
+        #         continue
+
+        #     # Split and clean IDs
+        #     inv_ids = [id.strip() for id in inv_ids_str.split(",") if id.strip()]
+        #     for inv_id in inv_ids:
+        #         try:
+        #             # Try to find the InventoryTransaction by verification_code
+        #             inv_transaction = InventoryTransaction.objects.get(
+        #                 verification_code=inv_id, transaction_type="i"
+        #             )
+        #             link = (
+        #                 f'<a href="/admin/inventory_management/inventorytransaction/'
+        #                 f'{inv_transaction.pk}/change/" '
+        #                 f'target="_blank" style="font-size:11px;">{inv_id}</a>'
+        #             )
+        #         except InventoryTransaction.DoesNotExist:
+        #             link = f'<span style="font-size:11px; color:#999;">{inv_id} (invalid)</span>'
+        #         lines.append(link)
+
+        return format_html("<br>".join(lines))
+    
+    
+    @admin.display(description="INV.T", ordering="expanseattachment__inventory_ids__count")
+    def get_inventory_ids(self, obj):
+        attachments = getattr(obj, "expense_attachment", [])
+        if not attachments:
+            return "-"
+
+        # Base URL for the attachment list view
+        # url = reverse("account:expense_attachment", kwargs={"id": obj.id})
+        lines = []  # Keep the file icon
 
         # Process inventory IDs from each attachment
         for attachment in attachments:
