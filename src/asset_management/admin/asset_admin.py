@@ -457,8 +457,8 @@ class CreatedByFilter(admin.SimpleListFilter):
         # User = get_user_model()
         # Get all users who have created records in this model
         creators = model_admin.model.objects.values_list(
-            'created_by', 'created_by__username'
-        ).distinct().order_by('created_by__username')
+            'created_by', 'created_by__employee__full_name'
+        ).distinct().order_by('created_by__employee__full_name')
         
         return [(c[0], c[1]) for c in creators if c[0]]
 
@@ -517,7 +517,18 @@ class AssetRequestAdmin(admin.ModelAdmin):
 
     # def has_module_permission(self, request):
     #     return False
+    
+    def get_list_filter(self, request):
+        if not request.user.employee.operation and not request.user.is_superuser:
+            return ("status", "priority", "category")
+        return super().get_list_filter(request)
 
+    def get_actions(self, request):
+        if not request.user.employee.operation and not request.user.is_superuser:
+            return []
+        return super().get_actions(request)
+    
+    
     def save_model(self, request, obj, form, change):
         if obj:
             obj.quantity = 0
@@ -603,7 +614,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
         description="Requested By", ordering="created_by__employee__full_name"
     )
     def requested_by(self, obj):
-        return obj.created_by.employee.full_name
+        return obj.created_by.employee.full_name + " md borhan uddin md borhan uddin"
 
     @admin.display(description="Notes")
     def get_notes(self, obj):

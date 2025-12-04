@@ -236,8 +236,8 @@ class PriorityChoices(models.TextChoices):
 
 class AssetRequestStatus(models.TextChoices):
     PENDING = "pending", "Pending"
-    DONE = "done", "Done"
     IN_PROGRESS = "in_progress", "In Progress"
+    DONE = "done", "Done"
 
 
 class AssetRequest(AuthorMixin, TimeStampMixin):
@@ -256,6 +256,10 @@ class AssetRequest(AuthorMixin, TimeStampMixin):
         default=AssetRequestStatus.PENDING,
     )
     approved_at = models.DateField(null=True, editable=False)
+    
+    class Meta:
+        verbose_name = "Request/Issues"
+        verbose_name_plural = "Request/Issues"
 
 
 class AssetRequestNote(AuthorMixin, TimeStampMixin):
