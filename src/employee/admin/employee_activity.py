@@ -1724,6 +1724,9 @@ class EmployeeSkillAdmin(admin.ModelAdmin):
     search_fields = ("employee__name", "skill__title")
     list_filter = ("skill",)
     ordering = ("employee", "skill")
+    
+    def has_module_permission(self, request):
+        return False
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)

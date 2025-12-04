@@ -857,9 +857,8 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
 @admin.register(CPU)
 class CPUModelAdmin(admin.ModelAdmin):
     list_display = [
-        "id",
-        "casing",
         "asset_id",
+        "casing",
         "processor",
         "ram1",
         "ram2",
@@ -969,6 +968,39 @@ class EmployeeWithAssetFilter(SimpleListFilter):
         if self.value():
             return queryset.filter(employee_id=self.value())
         return queryset
+    
+    
+class FilterByBrand(SimpleListFilter):
+    title = "Brand"
+    parameter_name = "brand"
+
+    def lookups(self, request, model_admin):
+        # annotate every employee with number of fixed-assets
+        brands = (
+            AssetBrand.objects.values_list("id", "name")
+        )
+        return [
+            (bar[0], bar[1])
+            for bar in brands
+        ]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            q_obj = (
+            Q(table__brand=value) |
+            Q(chair__brand=value) |
+            Q(monitor__brand=value) |
+            Q(keyboard__brand=value) |
+            Q(mouse__brand=value) |
+            Q(headphone__brand=value) |
+            Q(web_cam__brand=value) |
+            Q(extra__brand=value) |
+            Q(cpu__processor__brand=value)
+        )
+            return queryset.filter(q_obj)
+        return queryset
+    
 
 
 @admin.register(EmployeeFixedAsset)
@@ -1013,7 +1045,10 @@ class EmployeeFixedAssetModelAdmin(admin.ModelAdmin):
     ]
     list_filter = [
         "is_active",
-        ("created_by", CreatedByUserFilter),
+        # ("created_by", CreatedByUserFilter),
+        "headphone__headphone_feature",
+        "cpu__processor__core",
+        FilterByBrand,
         EmployeeWithAssetFilter,
     ]
     actions = [
