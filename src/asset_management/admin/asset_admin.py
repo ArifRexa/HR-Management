@@ -501,9 +501,9 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "requested_by",
         "category",
         "get_notes",
+        "get_status",
         "get_priority",
         "requested_date",
-        "get_status",
     )
     list_filter = ("status", "priority", CreatedByFilter, "category")
     autocomplete_fields = ("category",)
@@ -514,6 +514,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
         "update_status_in_progress",
     ]
     exclude = ("quantity",)
+    date_hierarchy = "created_at"
 
     # def has_module_permission(self, request):
     #     return False
@@ -614,7 +615,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
         description="Requested By", ordering="created_by__employee__full_name"
     )
     def requested_by(self, obj):
-        return obj.created_by.employee.full_name + " md borhan uddin md borhan uddin"
+        return obj.created_by.employee.full_name
 
     @admin.display(description="Notes")
     def get_notes(self, obj):
