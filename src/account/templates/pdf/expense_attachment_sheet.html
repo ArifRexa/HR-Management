@@ -2,11 +2,18 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <link rel="icon" href="https://mw-hr.sgp1.digitaloceanspaces.com/media/public_image/Logo_MW.png">
     <title>Expense Attachments</title>
+    <style>
+        .page-break {
+            page-break-after: always;
+        }
+
+    </style>
 </head>
 <body>
     {% for item in attachments %}
-        <div class="attachment-box">
+        <div class="attachment-box page-break">
             <div class="amount-header">{{item.expense_date}} - {{ item.expense_group }} - {{ item.amount_header }}</div>
             {% if item.is_image %}
                 <img src="{{ item.file_url }}" alt="Attachment">
@@ -18,9 +25,6 @@
                 </div>
             {% endif %}
         </div>
-        {% if not forloop.last %}
-            <div class="page-break"></div>
-        {% endif %}
     {% endfor %}
 </body>
 </html>
