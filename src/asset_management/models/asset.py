@@ -260,6 +260,9 @@ class AssetRequest(AuthorMixin, TimeStampMixin):
     class Meta:
         verbose_name = "Request/Issues"
         verbose_name_plural = "Request/Issues"
+        permissions = [
+            ("can_view_all_request", "Can view all request"),
+        ]
 
 
 class AssetRequestNote(AuthorMixin, TimeStampMixin):

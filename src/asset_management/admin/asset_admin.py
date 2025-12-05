@@ -562,7 +562,7 @@ class AssetRequestAdmin(admin.ModelAdmin):
             .select_related("category")
             .prefetch_related("asset_request_notes")
         )
-        if not request.user.employee.operation and not request.user.is_superuser:
+        if not request.user.employee.operation and not request.user.is_superuser and not request.user.has_perm("asset_management.can_view_all_request"):
             qs = qs.filter(created_by=request.user)
         
         return qs

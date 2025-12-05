@@ -395,8 +395,8 @@ class ExpenseAdmin(admin.ModelAdmin):
         display_note = []
         for attachment in obj.expense_attachment:
             if attachment.note:
-                display_note.append(f"<strong>{attachment.amount}:</strong> {attachment.note}")
-        html_text = "<br/>".join(display_note)
+                display_note.append(f"<strong>{attachment.amount} ||</strong> {attachment.note}")
+        html_text = "<br/> <br/>".join(display_note)
         try:
             return format_html(html_text)
         except Exception:
