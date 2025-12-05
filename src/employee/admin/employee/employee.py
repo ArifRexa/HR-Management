@@ -31,12 +31,14 @@ from employee.models.employee import (
     EmployeeFAQView,
     EmployeeLunch,
     EmployeeNOC,
+    EmployeeSnack,
     EmployeeUnderTPM,
     # Inbox,
     LateAttendanceFine,
     # LessHour,
     # MeetingSummary,
     Observation,
+    SnackNote,
     # TPMComplain,
     # generate_employee_profile_pdf,
 )
@@ -1871,3 +1873,38 @@ class EmployeeAvailableSlotAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         return qs
+
+class SnackNoteInline(admin.TabularInline):
+    model = SnackNote
+    extra = 1
+    fields = ['note']
+    
+
+@admin.register(EmployeeSnack)
+class EmployeeSnackAdmin(admin.ModelAdmin):
+    list_display = ['date', 'number_of_snacks', 'get_notes']
+    inlines = [SnackNoteInline]
+    date_hierarchy = 'date'
+    ordering = ['-date']
+    
+    class Media:
+        css = {"all": ("css/list.css", "css/daily-update.css")}
+        js = ("js/list.js", "js/new_daily_update.js")
+    
+    
+    @admin.display(description="Notes")
+    def get_notes(self, obj):
+        # Determine the note to display
+        display_note = obj.snack_note_employee_snack.first().note if obj.snack_note_employee_snack.exists() else "-"
+
+        # Pass it to template
+        html_template = get_template("admin/employee/list/snack_notes.html")
+        html_content = html_template.render({
+            "obj": obj,
+            "display_note": display_note,  # Add this
+        })
+
+        try:
+            return format_html(html_content)
+        except Exception:
+            return "-"

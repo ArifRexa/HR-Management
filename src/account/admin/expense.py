@@ -364,27 +364,41 @@ class ExpenseAdmin(admin.ModelAdmin):
     #         data = "-"
 
     #     return data
+    # @admin.display(description="Notes")
+    # def get_notes(self, obj):
+    #     # Determine the note to display
+    #     display_note = obj.note
+    #     if not display_note:
+    #         for attachment in obj.expense_attachment:
+    #             if attachment.note:
+    #                 display_note = attachment.note
+    #                 break
+    #     if not display_note:
+    #         display_note = "-"
+
+    #     # Pass it to template
+    #     html_template = get_template("admin/expense/list/col_note.html")
+    #     html_content = html_template.render({
+    #         "obj": obj,
+    #         "display_note": display_note,  # Add this
+    #     })
+
+    #     try:
+    #         return format_html(html_content)
+    #     except Exception:
+    #         return "-"
+    
+    
     @admin.display(description="Notes")
     def get_notes(self, obj):
         # Determine the note to display
-        display_note = obj.note
-        if not display_note:
-            for attachment in obj.expense_attachment:
-                if attachment.note:
-                    display_note = attachment.note
-                    break
-        if not display_note:
-            display_note = "-"
-
-        # Pass it to template
-        html_template = get_template("admin/expense/list/col_note.html")
-        html_content = html_template.render({
-            "obj": obj,
-            "display_note": display_note,  # Add this
-        })
-
+        display_note = []
+        for attachment in obj.expense_attachment:
+            if attachment.note:
+                display_note.append(f"<strong>{attachment.amount}:</strong> {attachment.note}")
+        html_text = "<br/>".join(display_note)
         try:
-            return format_html(html_content)
+            return format_html(html_text)
         except Exception:
             return "-"
 

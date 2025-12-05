@@ -23,6 +23,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.text import slugify
 from django.utils.timesince import timesince
+from numpy import number
 from tinymce.models import HTMLField
 from weasyprint import HTML
 from config.model.AuthorMixin import AuthorMixin
@@ -1069,3 +1070,32 @@ class MeetingSummary(TimeStampMixin, AuthorMixin):
         related_name="meeting_summary_inbox",
     )
     summary = models.TextField(null=True, blank=True)
+
+
+
+    
+    
+
+class EmployeeSnack(TimeStampMixin, AuthorMixin):
+    date = models.DateField(default=timezone.now, blank=True)
+    number_of_snacks = models.PositiveSmallIntegerField(default=0, verbose_name="Number")
+
+
+
+    def __str__(self):
+        return f"snacks for {self.date}"
+    
+
+
+class SnackNote(TimeStampMixin, AuthorMixin):
+    note = models.TextField(null=True, blank=True)
+    employee_snack = models.ForeignKey(
+        EmployeeSnack,
+        on_delete=models.CASCADE,
+        related_name="snack_note_employee_snack",
+    )
+    
+
+    
+    def __str__(self):
+        return self.created_by.employee.full_name

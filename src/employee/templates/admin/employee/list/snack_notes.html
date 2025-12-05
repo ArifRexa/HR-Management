@@ -1,0 +1,20 @@
+<div class="popover-wrapper">
+
+    <!-- Column text -->
+    <div class="popover-title">
+        {{ display_note }}
+    </div>
+
+    <!-- Popover message (full details) -->
+    <div class="popover-message" style="width: 450px;">
+        
+        {% for attachment in obj.snack_note_employee_snack.all %}
+            {% if attachment.note %}
+               <p><strong>Create By:</strong> {{attachment.created_by.employee.full_name}}</p>
+                <p><strong>Note:</strong> {{ attachment.note }}</p>
+                <hr>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+</div>
