@@ -152,10 +152,11 @@
                                             {% with tpm_value=data_lookup|get_item:key|get_attr:'tpm'|default_if_none:None %}
                                             {% with ba_value=data_lookup|get_item:key|get_attr:'ba'|default_if_none:None %}
                                             {% with lead_value=data_lookup|get_item:key|get_attr:'lead'|default_if_none:None %}
+                                            {% with design_lead_value=data_lookup|get_item:key|get_attr:'design_lead'|default_if_none:None %}
                                             <!-- Roles display -->
                                             <div class="roles-container" style="display: flex; flex-direction: column; gap: 3px;">
                                                 <!-- Show colored indicators only when values are set -->
-                                                {% if client_value or tpm_value or ba_value or lead_value %}
+                                                {% if client_value or tpm_value or ba_value or lead_value or design_lead_value %}
                                                     <div class="role-indicators" id="role-indicators-{{ project.id }}-{{ date|date:'Y-m-d' }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
                                                         {% if client_value %}
                                                         <div style="display: flex; align-items: center;">
@@ -193,6 +194,17 @@
                                                             <div class="selected-status-indicator" style="display: inline-block; width: 18px; height: 18px; border-radius: 50%; margin-right: 5px;
                                                                 {% with lead_val=data_lookup|get_item:key|get_attr:'lead' %}
                                                                     {% if lead_val == 'N/A' %}background-color: #ffffff; border: 1px solid #ccc;{% elif lead_val == 'Low' %}background-color: #ff0000; border: 1px solid #ccc;{% elif lead_val == 'Medium' %}background-color: #ffff00; border: 1px solid #ccc;{% elif lead_val == 'High' %}background-color: #00ff15; border: 1px solid #00ff00;{% endif %}
+                                                                {% endwith %}">
+                                                            </div>
+                                                        </div>
+                                                        {% endif %}
+                                                        {% if design_lead_value %}
+                                                        <div style="display: flex; align-items: center;">
+                                                            <span class="role-label" style="display: inline-block; min-width: 20px;">D:</span>
+                                                            <div class="selected-status-indicator" style="display: inline-block; width: 18px; height: 18px; border-radius: 50%; margin-right: 5px;
+                                                                {% with design_lead_val=data_lookup|get_item:key|get_attr:'design_lead' %}
+                                                                
+                                                                    {% if design_lead_val == 'N/A' %}background-color: #ffffff; border: 1px solid #ccc;{% elif design_lead_val == 'Low' %}background-color: #ff0000; border: 1px solid #ccc;{% elif design_lead_val == 'Medium' %}background-color: #ffff00; border: 1px solid #ccc;{% elif design_lead_val == 'High' %}background-color: #00ff15; border: 1px solid #00ff00;{% endif %}
                                                                 {% endwith %}">
                                                             </div>
                                                         </div>
@@ -316,6 +328,34 @@
                                                                 </div>
                                                             </div>
                                                         </form>
+                                                        <!-- DL: Design Lead -->
+                                                        <form method="post" style="display: inline-block;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="project_id" value="{{ project.id }}">
+                                                            <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+                                                            <input type="hidden" name="field" value="design_lead">
+                                                            <div style="display: flex; align-items: center;">
+                                                                <span class="role-label" style="display: inline-block; min-width: 20px;">D:</span>
+                                                                <div class="radio-container">
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="N/A" id="design_lead_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                                                    </div>
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="Low" id="design_lead_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
+                                                                    </div>
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="Medium" id="design_lead_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
+                                                                    </div>
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="High" id="design_lead_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'lead' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </form>
                                                     </div>
                                                 {% endif %}
 
@@ -411,7 +451,7 @@
                                                         </form>
 
                                                         <!-- L: Lead -->
-                                                        <form method="post" style="display: inline-block;">
+                                                        <form method="post" style="display: inline-block; margin-right: 5px; margin-bottom: 5px;">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="project_id" value="{{ project.id }}">
                                                             <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
@@ -438,11 +478,40 @@
                                                                 </div>
                                                             </div>
                                                         </form>
+                                                        <!-- DL: Design Lead -->
+                                                        <form method="post" style="display: inline-block;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="project_id" value="{{ project.id }}">
+                                                            <input type="hidden" name="date" value="{{ date|date:'Y-m-d' }}">
+                                                            <input type="hidden" name="field" value="design_lead">
+                                                            <div style="display: flex; align-items: center;">
+                                                                <span class="role-label" style="display: inline-block; min-width: 20px;">D:</span>
+                                                                <div class="radio-container">
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="N/A" id="design_lead_na_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'design_lead' == 'N/A' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffffff; border: 1px solid #ccc;"></div>
+                                                                    </div>
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="Low" id="design_lead_low_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'design_lead' == 'Low' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ff0000; border: 1px solid #ccc;"></div>
+                                                                    </div>
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="Medium" id="design_lead_medium_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'design_lead' == 'Medium' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #ffff00; border: 1px solid #ccc;"></div>
+                                                                    </div>
+                                                                    <div class="radio-option" style="display: inline-block; margin-right: 2px;">
+                                                                        <input type="radio" name="design_lead" value="High" id="design_lead_high_{{ project.id }}_{{ date|date:'Y-m-d' }}" {% if data_lookup|get_item:key|get_attr:'design_lead' == 'High' %}checked{% endif %} hx-post hx-trigger="change" hx-swap="outerHTML">
+                                                                        <div style="width: 18px; height: 18px; border-radius: 50%; background-color: #00ff15; border: 1px solid #00ff00;"></div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </form>
                                                         
                                                     </div>
                                                     <button type="button" class="edit-btn" onclick="toggleCellEdit('{{ project.id }}', '{{ date|date:'Y-m-d' }}')" style="font-size: 10px; padding: 2px 5px; width: 40px; margin-top: 3px;">Edit</button>
                                                 {% endif %}
                                             </div>
+                                            {% endwith %}
                                             {% endwith %}
                                             {% endwith %}
                                             {% endwith %}

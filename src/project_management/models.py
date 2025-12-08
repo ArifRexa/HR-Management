@@ -1785,6 +1785,9 @@ class ProjectsCommunication(TimeStampMixin, AuthorMixin):
     lead = models.CharField(
         max_length=10, choices=PROJECT_ROLE_CHOICES, default="N/A"
     )
+    design_lead = models.CharField(
+        max_length=10, choices=PROJECT_ROLE_CHOICES, default="N/A"
+    )
 
     class Meta:
         unique_together = ("project", "date")

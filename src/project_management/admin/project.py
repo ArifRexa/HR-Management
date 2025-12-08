@@ -826,7 +826,7 @@ class ProjectsCommunicationAdmin(admin.ModelAdmin):
             changed_field = None
             changed_value = None
 
-            for field in ["client", "tpm", "ba", "lead"]:
+            for field in ["client", "tpm", "ba", "lead", "design_lead"]:
                 if field in request.POST:
                     changed_field = field
                     changed_value = request.POST[field]
