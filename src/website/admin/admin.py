@@ -1416,6 +1416,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         "status",
         # "total_view",
         "get_preview_link",
+        "get_ins_link",
         "updated_at",
         # "get_plagiarism_percentage",
     )
@@ -1441,6 +1442,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         # "tag",
         # "short_description",
         "is_featured",
+        "ins_link",
         # "content",
         # "read_time_minute",
         "schema_type", 
@@ -1505,6 +1507,15 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     def get_preview_link(self, obj):
         url = f"https://www.mediusware.com/blog/{obj.slug}"
         html_template = get_template("blog/col_preview_link.html")
+        html_content = html_template.render({"url": url})
+        return format_html(html_content)
+    
+    @admin.display(description="INS Link")
+    def get_ins_link(self, obj):
+        if not obj.ins_link:
+            return "-"  # or return empty string, or a disabled icon
+        url = obj.ins_link
+        html_template = get_template("blog/col_preview_link.html")  # Reuse same template
         html_content = html_template.render({"url": url})
         return format_html(html_content)
     
