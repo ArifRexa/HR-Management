@@ -1728,7 +1728,10 @@ class ProjectEstimation(TimeStampMixin, AuthorMixin):
         related_name="project_estimations",
     )
     date = models.DateField(
-        default=timezone.now, help_text="Estimation Activate Date"
+        default=timezone.now, help_text="Estimation Activate Date", verbose_name="Start Date"
+    )
+    end_date = models.DateField(
+        null=True, blank=True, help_text="Estimation End Date", verbose_name="End Date"
     )
     estimation = models.FileField(upload_to="uploads/project_estimation/%y/%m")
     hours = models.PositiveIntegerField(
@@ -1739,9 +1742,14 @@ class ProjectEstimation(TimeStampMixin, AuthorMixin):
 
     @property
     def total_hours_used(self):
-        total = ProjectHour.objects.filter(
-            project=self.project, date__gte=self.date, hour_type="project"
-        ).aggregate(total_hours=Sum("hours"))
+        if self.end_date:
+            total = ProjectHour.objects.filter(
+                project=self.project, date__gte=self.date, hour_type="project", date__lte=self.end_date
+            ).aggregate(total_hours=Sum("hours"))
+        else:
+            total = ProjectHour.objects.filter(
+                project=self.project, date__gte=self.date, hour_type="project"
+            ).aggregate(total_hours=Sum("hours"))
         return total["total_hours"] if total["total_hours"] else 0
 
     class Meta:

@@ -980,6 +980,7 @@ class ProjectEstimationAdmin(admin.ModelAdmin):
     list_display = (
         "project",
         "date",
+        "end_date",
         "get_estivate_hours",
         "get_used_hours",
         "get_extra_used_hours",
