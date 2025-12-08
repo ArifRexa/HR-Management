@@ -30,7 +30,7 @@
     .table-scroll-wrapper table { min-width: 1800px; }
 
     .table-scroll-wrapper table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    .table-scroll-wrapper table th, td { border: 1px solid #ddd; padding: 5px; vertical-align: middle; min-width: 60px; }
+    #communication-matrix table th, #communication-matrix td { border: 1px solid #ddd; padding: 5px; vertical-align: middle; min-width: 60px; }
     .table-scroll-wrapper table th { background-color: #f2f2f2; font-weight: bold; position: sticky; top: 0; z-index: 5000; }
     .table-scroll-wrapper table td { text-align: left; }
 
@@ -118,7 +118,7 @@
 
     <!-- ONLY CHANGE: this wrapper removes browser scrollbar -->
     <div class="table-scroll-wrapper">
-        <table style="margin-bottom: 20px;">
+        <table style="margin-bottom: 20px;" id="communication-matrix">
             <thead>
                 <tr>
                     <th class="project-header project-header-th">Project / Client</th>
@@ -156,7 +156,7 @@
                                             <div class="roles-container" style="display: flex; flex-direction: column; gap: 3px;">
                                                 <!-- Show colored indicators only when values are set -->
                                                 {% if client_value or tpm_value or ba_value or lead_value %}
-                                                    <div class="role-indicators" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
+                                                    <div class="role-indicators" id="role-indicators-{{ project.id }}-{{ date|date:'Y-m-d' }}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px;">
                                                         {% if client_value %}
                                                         <div style="display: flex; align-items: center;">
                                                             <span class="role-label" style="display: inline-block; min-width: 20px;">C:</span>
@@ -321,8 +321,8 @@
 
                                                 <!-- Edit button for all roles -->
                                                 {% if client_value or tpm_value or ba_value or lead_value %}
-                                                    <button type="button" class="edit-btn" onclick="toggleCellEdit('{{ project.id }}', '{{ date|date:'Y-m-d' }}')" style="font-size: 10px; padding: 2px 5px; width: 40px; margin-top: 3px;">Edit</button>
-                                                    <div id="edit-form-{{ project.id }}-{{ date|date:'Y-m-d' }}" style="display: none; margin-top: 5px; padding: 5px; border: 1px solid #ddd; background: #f9f9f9;">
+                                                    
+                                                    <div id="edit-form-{{ project.id }}-{{ date|date:'Y-m-d' }}" style="display: none; margin-top: 5px; padding: 5px;">
                                                         <!-- All edit forms will be added here -->
                                                         <form method="post" style="display: inline-block; margin-right: 5px; margin-bottom: 5px;">
                                                             {% csrf_token %}
@@ -438,7 +438,9 @@
                                                                 </div>
                                                             </div>
                                                         </form>
+                                                        
                                                     </div>
+                                                    <button type="button" class="edit-btn" onclick="toggleCellEdit('{{ project.id }}', '{{ date|date:'Y-m-d' }}')" style="font-size: 10px; padding: 2px 5px; width: 40px; margin-top: 3px;">Edit</button>
                                                 {% endif %}
                                             </div>
                                             {% endwith %}
@@ -529,12 +531,16 @@
 <script>
 function toggleCellEdit(projectId, date) {
     const formId = `edit-form-${projectId}-${date}`;
+    const roleIndicatorId = `role-indicators-${projectId}-${date}`;
     const formElement = document.getElementById(formId);
+    const roleIndicatorsElement = document.getElementById(roleIndicatorId);
 
     if (formElement.style.display === 'none' || formElement.style.display === '') {
         formElement.style.display = 'block';
+        roleIndicatorsElement.style.display = 'none';
     } else {
         formElement.style.display = 'none';
+        roleIndicatorsElement.style.display = 'flex';
     }
 }
 
