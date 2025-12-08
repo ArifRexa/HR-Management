@@ -663,6 +663,7 @@ class Blog(AuthorMixin, TimeStampMixin):
         choices=BlogStatus.choices,
         verbose_name="Current Status",
     )
+    ins_link = models.URLField(null=True, blank=True, verbose_name="Inspiration Link")
     # is_posted = models.BooleanField(default=False)
     approved_at = models.DateTimeField(null=True, editable=False, blank=True)
     schema_type = models.CharField(max_length=20, choices=BlogSchemaType.choices, default=BlogSchemaType.ARTICLE, verbose_name="Schema Type")
