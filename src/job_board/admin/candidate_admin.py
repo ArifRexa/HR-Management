@@ -261,10 +261,10 @@ class CandidateAdmin(admin.ModelAdmin):
 
     @admin.display(ordering="created_at")
     def assessment(self, obj):
-        # job = obj.jobs[0] if hasattr(obj, "jobs") and obj.jobs else None
-        job = obj.get_last_job()
+        job = obj.jobs[0] if hasattr(obj, "jobs") and obj.jobs else None
+        # job = obj.get_last_job()
         if job:
-            assessments = job.assessments  # already prefetched CandidateAssessment
+            assessments = job.candidate_assessment.all()  # already prefetched CandidateAssessment
             html = get_template("admin/candidate/list/col_assessment.html").render(
                 {
                     "candidate_job": job,
