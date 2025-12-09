@@ -10,7 +10,8 @@ from job_board.mobile_sms.candidate import CandidateSMS
 from job_board.mobile_sms.exam import ExamSMS
 from job_board.models.candidate import Candidate
 from job_board.models.candidate_email import CandidateEmail
-
+from django.utils import timezone
+from django.template import loader
 
 def candidates_have_to_reapply():
     candidates_without_jobs = Candidate.objects.filter(candidatejob__isnull=True)[:30]
@@ -474,3 +475,94 @@ def check_email_status():
         "successful_emails": successful_emails,
         "failed_emails": failed_emails,
     }
+
+
+
+
+
+def reminder_job_interview():
+    """
+    Send a soft reminder email to candidates who have an interview scheduled today.
+    Runs in the morning (e.g., via cron at 8 AM).
+    """
+    today = timezone.now().date()
+    now = timezone.now()
+
+    # Find candidates with interview scheduled TODAY and status is scheduled/rescheduled
+    candidates = Candidate.objects.filter(
+        schedule_datetime__date=today,
+        application_status__in=['scheduled', 'rescheduled'],
+        status='active'
+    )
+
+    for candidate in candidates:
+        # Optional: Skip if schedule time has already passed (e.g., late reminder)
+        if candidate.schedule_datetime and candidate.schedule_datetime < now:
+            continue
+
+        html_body = loader.render_to_string(
+            "mail/interview_reminder.html",
+            {
+                "candidate": candidate,
+                "interview_datetime": candidate.schedule_datetime,
+            }
+        )
+
+        email = EmailMultiAlternatives(
+            subject=f"Interview Reminder: {candidate.full_name}",
+            body="",
+            from_email='"Mediusware-HR" <hr@mediusware.com>',
+            to=[candidate.email],
+        )
+        email.attach_alternative(html_body, "text/html")
+        try:
+            email.send()
+            print(f"[Bot] Sent interview reminder to {candidate.email}")
+        except Exception as e:
+            print(f"[Bot] Failed to send interview reminder to {candidate.email}: {e}")
+
+
+def missed_interview_alert():
+    """
+    Send an alert email to candidates who were scheduled for an interview today
+    but did NOT attend (i.e., application_status is not 'attended').
+    Should run after business hours (e.g., 8 PM or midnight).
+    """
+    today = timezone.now().date()
+
+    # Candidates scheduled TODAY
+    scheduled_candidates = Candidate.objects.filter(
+        schedule_datetime__date=today,
+        status='active'
+    )
+
+    # Exclude those who attended or progressed (attended, offered, hired, etc.)
+    non_attended = scheduled_candidates.exclude(
+        application_status__in=['attended', 'offered', 'hired', 'trial']
+    )
+
+    for candidate in non_attended:
+        # Optional: Only alert if original status was scheduled/rescheduled
+        if candidate.application_status not in ['scheduled', 'rescheduled']:
+            continue
+
+        html_body = loader.render_to_string(
+            "mail/missed_interview.html",
+            {
+                "candidate": candidate,
+                "scheduled_time": candidate.schedule_datetime,
+            }
+        )
+
+        email = EmailMultiAlternatives(
+            subject=f"Missed Interview: {candidate.full_name}",
+            body="",
+            from_email='"Mediusware-HR" <hr@mediusware.com>',
+            to=[candidate.email],
+        )
+        email.attach_alternative(html_body, "text/html")
+        try:
+            email.send()
+            print(f"[Bot] Sent missed interview alert to {candidate.email}")
+        except Exception as e:
+            print(f"[Bot] Failed to send missed interview alert to {candidate.email}: {e}")
