@@ -243,7 +243,7 @@ class CandidateAdmin(admin.ModelAdmin):
     @admin.display(ordering="candidatejob__expected_salary")
     def expected_salary(self, obj: Candidate):
         jobs = getattr(obj, "jobs", None)
-        candidate_job = jobs[-1] if jobs else None
+        candidate_job = jobs[0] if jobs else None
         if candidate_job is not None:
             return candidate_job.expected_salary
 
@@ -313,7 +313,7 @@ class CandidateAdmin(admin.ModelAdmin):
     @admin.display()
     def note(self, obj: Candidate):
         jobs = getattr(obj, "jobs", None)
-        candidate_job = jobs[-1] if jobs else None
+        candidate_job = jobs[0] if jobs else None
         if candidate_job:
             return format_html(
                 linebreaks(
