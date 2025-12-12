@@ -18,6 +18,7 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
+from asset_management.admin.admin_filters import ActiveStatusFilter
 from asset_management.models import (
     CPU,
     Addition,
@@ -772,7 +773,14 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
     autocomplete_fields = [
         "brand",
     ]
-    list_filter = ["is_active", "category", "brand", "vendor", "created_by"]
+    list_filter = [
+        # "is_active",
+        ActiveStatusFilter,
+        "category",
+        "brand",
+        "vendor",
+        "created_by"
+    ]
     actions = [
         "make_active_inactive",
     ]
