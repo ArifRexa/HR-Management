@@ -1,6 +1,8 @@
 from django.contrib.admin import SimpleListFilter
 from django.db import models
 
+from asset_management.models import HeadPhoneFeature, ProcessorData
+
 
 class ActiveStatusFilter(SimpleListFilter):
     title = "is active"
@@ -100,7 +102,7 @@ from django.utils.html import format_html
 
 
 class CategoryCountFilter(SimpleListFilter):
-    title = "By Category"
+    title = "Category"
     parameter_name = "category"
 
     def lookups(self, request, model_admin):
@@ -155,5 +157,126 @@ class CategoryCountFilter(SimpleListFilter):
         if value:
             return queryset.filter(category_id=value)
         return queryset
+
+
+
+
+
+
+class HeadphoneFeatureFilter(SimpleListFilter):
+    title = "Headphone Feature"
+    parameter_name = "headphone_feature"
+
+    def lookups(self, request, model_admin):
+        return [("__dummy__", "Loading...")]
+
+    def choices(self, changelist):
+        qs = changelist.queryset
+        counts = dict(
+            qs.filter(headphone_feature__isnull=False)
+            .values_list("headphone_feature_id")
+            .annotate(cnt=models.Count("headphone_feature_id"))
+        )
+
+        yield {
+            "selected": self.value() is None,
+            "query_string": changelist.get_query_string(remove=[self.parameter_name]),
+            "display": "All",
+        }
+
+        for obj in HeadPhoneFeature.objects.all().order_by("feature"):
+            count = counts.get(obj.id, 0)
+            yield {
+                "selected": str(obj.id) == self.value(),
+                "query_string": changelist.get_query_string({self.parameter_name: str(obj.id)}),
+                "display": format_html("{} ({})", obj.feature, count),
+            }
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(headphone_feature_id=self.value())
+        return queryset
+
+
+
+
+class CoreProcessorFilter(SimpleListFilter):
+    title = "Core"
+    parameter_name = "core"
+
+    def lookups(self, request, model_admin):
+        # Dummy to force visibility
+        return [("__dummy__", "Loading...")]
+
+    def choices(self, changelist):
+        qs = changelist.queryset
+        counts = dict(
+            qs.filter(core__isnull=False)
+            .values_list("core_id")
+            .annotate(cnt=models.Count("core_id"))
+        )
+
+        yield {
+            "selected": self.value() is None,
+            "query_string": changelist.get_query_string(remove=[self.parameter_name]),
+            "display": "All",
+        }
+
+        # Use 'processor_info' as label (adjust if field name differs)
+        for obj in ProcessorData.objects.all().order_by("processor_info"):
+            count = counts.get(obj.id, 0)
+            yield {
+                "selected": str(obj.id) == self.value(),
+                "query_string": changelist.get_query_string({self.parameter_name: str(obj.id)}),
+                "display": format_html("{} ({})", obj.processor_info, count),
+            }
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(core_id=self.value())
+        return queryset
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

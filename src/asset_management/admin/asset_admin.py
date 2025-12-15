@@ -18,7 +18,8 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
-from asset_management.admin.admin_filters import ActiveStatusFilter, CategoryCountFilter
+from asset_management.admin.admin_filters import ActiveStatusFilter, CategoryCountFilter, HeadphoneFeatureFilter, \
+    CoreProcessorFilter
 from asset_management.models import (
     CPU,
     Addition,
@@ -778,9 +779,11 @@ class FixedAssetModelAdmin(admin.ModelAdmin):
         ActiveStatusFilter,
         # "category",
         CategoryCountFilter,
+        CoreProcessorFilter,
+        HeadphoneFeatureFilter,
         "brand",
         "vendor",
-        "created_by"
+        # "created_by"
     ]
     actions = [
         "make_active_inactive",
