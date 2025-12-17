@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Subscription</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 0;">
+    <table align="center" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 30px auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+        <tr>
+            <td style="padding: 30px 30px 20px; text-align: center; background-color: #f5f7fa;">
+                <h2 style="color: #333; margin: 0; font-size: 24px;">Confirm Your Subscription</h2>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px 30px; color: #555; font-size: 16px; line-height: 1.6;">
+                <p>Hi there,</p>
+                <p>Thank you for subscribing to our newsletter! To ensure you start receiving updates, please confirm your subscription by clicking the button below.</p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{{ verify_url }}" 
+                       style="display: inline-block; padding: 12px 30px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                        Verify My Subscription
+                    </a>
+                </div>
+
+                <p>If you didn’t sign up for our newsletter, you can safely ignore this email.</p>
+
+                <p style="font-size: 14px; color: #888; margin-top: 30px;">
+                    This link will only work once and is valid for your email: <strong>{{ email }}</strong>
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 20px 30px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee;">
+                <p>© {{ current_year }} Your Company Name. All rights reserved.<br>
+                123 Business Ave, City, Country</p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

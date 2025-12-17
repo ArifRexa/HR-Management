@@ -1,5 +1,6 @@
 # src/news_letter/views.py
 from django.shortcuts import get_object_or_404
+from django.urls import reverse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,6 +11,32 @@ from news_letter.serializers import CaseStudySubscriptionSerializer, SubscriberS
 from project_management.models import Project
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+from django.utils import timezone
+
+
+
+
+
+class VerifySubscriberView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @swagger_auto_schema(
+        operation_summary="Verify a subscriber via token",
+        operation_description="Marks the subscriber as verified using a one-time token.",
+        responses={200: "Email verified successfully", 404: "Invalid token"},
+        tags=["Newsletter - Subscribers"]
+    )
+    def get(self, request, token):
+        subscriber = get_object_or_404(Subscriber, verification_token=token)
+        if subscriber.is_verified:
+            return Response({"message": "Already verified."}, status=status.HTTP_200_OK)
+
+        subscriber.is_verified = True
+        subscriber.save(update_fields=['is_verified'])
+        return Response({"message": "Email verified successfully!"}, status=status.HTTP_200_OK)
+
+
 
 class SubscriberListView(APIView):
     @swagger_auto_schema(
@@ -29,12 +56,130 @@ class SubscriberListView(APIView):
         responses={201: SubscriberSerializer, 400: "Validation error (e.g., duplicate email)"},
         tags=["Newsletter - Subscribers"]
     )
+
     def post(self, request):
-        serializer = SubscriberSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        email = request.data.get('email', '').strip().lower()
+        
+        if not email:
+            return Response({"email": "This field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Normalize email (optional but recommended)
+        try:
+            subscriber = Subscriber.objects.get(email=email)
+            
+            if subscriber.is_verified:
+                # Case 1: Already verified
+                serializer = SubscriberSerializer(subscriber)
+                return Response(
+                    {
+                        "message": "You're already subscribed and verified! Thank you for your interest.",
+                        "subscriber": serializer.data
+                    },
+                    status=status.HTTP_200_OK
+                )
+            else:
+                # Case 2: Exists but not verified → resend email
+                # (Optionally update verification_token to prevent old link abuse)
+                from uuid import uuid4
+                subscriber.verification_token = uuid4()
+                subscriber.save(update_fields=['verification_token'])
+
+        except Subscriber.DoesNotExist:
+            # Case 3: New subscriber
+            serializer = SubscriberSerializer(data=request.data)
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            subscriber = serializer.save(is_subscribed=True, is_verified=False)
+
+        # For both Case 2 & 3: Send verification email
+        verify_url = request.build_absolute_uri(
+            reverse('verify-subscriber', kwargs={'token': str(subscriber.verification_token)})
+        )
+
+        html_content = render_to_string(
+            "emails/verify_subscription_email.html",
+            {
+                "verify_url": verify_url,
+                "email": subscriber.email,
+                "current_year": timezone.now().year,
+            }
+        )
+
+        subject = "Verify Your Newsletter Subscription"
+        from_email = '"Mediusware-HR" <hr@mediusware.com>'
+        to_email = [subscriber.email]
+
+        email = EmailMultiAlternatives(
+            subject=subject,
+            body="Please verify your subscription by clicking the link in the HTML version of this email.",
+            from_email=from_email,
+            to=to_email,
+        )
+        email.attach_alternative(html_content, "text/html")
+
+        try:
+            email.send()
+        except Exception as e:
+            print(f"Failed to send verification email to {subscriber.email}: {str(e)}")
+            # Optionally return 500, but usually we still return 201/200 to avoid leaking email validity
+
+        # Return consistent response for new and unverified (to avoid email enumeration)
+        return Response(
+            {
+                "message": "Verification email sent! Please check your inbox to confirm your subscription.",
+                "email": subscriber.email
+            },
+            status=status.HTTP_200_OK if hasattr(subscriber, 'id') and not subscriber.is_verified else status.HTTP_201_CREATED
+        )
+
+
+
+    # def post(self, request):
+    #     serializer = SubscriberSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         subscriber = serializer.save(is_subscribed=True, is_verified=False)
+
+    #         # Build verification URL
+    #         verify_url = request.build_absolute_uri(
+    #             reverse('verify-subscriber', kwargs={'token': str(subscriber.verification_token)})
+    #         )
+
+    #         # Render HTML email
+    #         html_content = render_to_string(
+    #             "emails/verify_subscription_email.html",
+    #             {
+    #                 "verify_url": verify_url,
+    #                 "email": subscriber.email,
+    #                 "current_year": timezone.now().year,
+    #             }
+    #         )
+
+    #         # Create and send email
+    #         subject = "Verify Your Newsletter Subscription"
+    #         from_email = '"Mediusware-HR" <hr@mediusware.com>'
+    #         to_email = [subscriber.email]
+
+    #         email = EmailMultiAlternatives(
+    #             subject=subject,
+    #             body="Please verify your subscription by clicking the link in the HTML version of this email.",
+    #             from_email=from_email,
+    #             to=to_email,
+    #         )
+    #         email.attach_alternative(html_content, "text/html")
+
+    #         try:
+    #             email.send()
+    #         except Exception as e:
+    #             # Optional: log the error (e.g., using logging module)
+    #             print(f"Failed to send verification email to {subscriber.email}: {str(e)}")
+
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
 
 
 class SubscriberDetailView(APIView):
