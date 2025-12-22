@@ -192,7 +192,10 @@ from website.models_v2.services import (
     SolutionsAndServicesCards,
 )
 from website.utils.plagiarism_checker import check_plagiarism
-
+from urllib.parse import urlparse
+from django.contrib import admin
+from django.db.models import Count, Q
+from collections import defaultdict
 
 class ServiceKeywordInline(nested_admin.NestedTabularInline):
     model = ServiceKeyword
@@ -1382,7 +1385,78 @@ class BlogStatusFilter(SimpleListFilter):
 
 
 
-from urllib.parse import urlparse
+def extract_domain(url):
+    """Extract lowercase domain from URL, e.g., 'https://www.biresdev.com/path' → 'biresdev.com'"""
+    if not url or not isinstance(url, str):
+        return None
+    # Add scheme if missing
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+    try:
+        netloc = urlparse(url).netloc.lower()
+        if netloc.startswith('www.'):
+            netloc = netloc[4:]
+        return netloc or None
+    except Exception:
+        return None
+
+
+
+
+
+# class InspirationLinkDomainFilter(admin.SimpleListFilter):
+#     title = "Inspiration Link (Domain)"
+#     parameter_name = "ins_link_domain"
+
+#     def lookups(self, request, model_admin):
+#         # Fetch all non-empty ins_link values
+#         urls = (
+#             Blog.objects.exclude(ins_link__isnull=True)
+#             .exclude(ins_link__exact="")
+#             .values_list("ins_link", flat=True)
+#             .distinct()
+#         )
+
+#         # Map each URL to a (value, label) pair
+#         lookup_pairs = []
+#         seen_labels = set()  # Avoid duplicate labels (e.g., two URLs from same domain)
+
+#         for url in urls:
+#             if not url.strip():
+#                 continue
+#             # Ensure URL has scheme for urlparse
+#             if not url.startswith(("http://", "https://")):
+#                 test_url = "https://" + url
+#             else:
+#                 test_url = url
+
+#             try:
+#                 domain = urlparse(test_url).netloc.lower()
+#                 if not domain:
+#                     continue
+#                 if domain.startswith("www."):
+#                     domain = domain[4:]
+#                 main_part = domain.split(".")[0]
+#                 label = main_part.capitalize()
+#                 # Use full URL as the lookup value (to filter precisely)
+#                 # But show the clean label
+#                 if label not in seen_labels:
+#                     lookup_pairs.append((url, label))
+#                     seen_labels.add(label)
+#             except Exception:
+#                 continue
+
+#         # Sort alphabetically by label
+#         lookup_pairs.sort(key=lambda x: x[1])
+#         return lookup_pairs
+
+#     def queryset(self, request, queryset):
+#         if self.value():
+#             return queryset.filter(ins_link=self.value())
+#         return queryset
+
+
+
 
 class InspirationLinkDomainFilter(admin.SimpleListFilter):
     title = "Inspiration Link (Domain)"
@@ -1394,46 +1468,57 @@ class InspirationLinkDomainFilter(admin.SimpleListFilter):
             Blog.objects.exclude(ins_link__isnull=True)
             .exclude(ins_link__exact="")
             .values_list("ins_link", flat=True)
-            .distinct()
         )
 
-        # Map each URL to a (value, label) pair
-        lookup_pairs = []
-        seen_labels = set()  # Avoid duplicate labels (e.g., two URLs from same domain)
+        # Group by normalized domain and count
+        domain_counts = defaultdict(int)
+        domain_to_sample_url = {}
 
         for url in urls:
-            if not url.strip():
+            domain = extract_domain(url)
+            if not domain:
                 continue
-            # Ensure URL has scheme for urlparse
-            if not url.startswith(("http://", "https://")):
-                test_url = "https://" + url
-            else:
-                test_url = url
+            # Store one sample URL per domain (for filtering logic later)
+            if domain not in domain_to_sample_url:
+                domain_to_sample_url[domain] = url
+            domain_counts[domain] += 1
 
-            try:
-                domain = urlparse(test_url).netloc.lower()
-                if not domain:
-                    continue
-                if domain.startswith("www."):
-                    domain = domain[4:]
-                main_part = domain.split(".")[0]
-                label = main_part.capitalize()
-                # Use full URL as the lookup value (to filter precisely)
-                # But show the clean label
-                if label not in seen_labels:
-                    lookup_pairs.append((url, label))
-                    seen_labels.add(label)
-            except Exception:
-                continue
-
-        # Sort alphabetically by label
-        lookup_pairs.sort(key=lambda x: x[1])
-        return lookup_pairs
+        # Generate (lookup_value=domain, label="Domain (count)") pairs
+        lookups = []
+        for domain, count in sorted(domain_counts.items()):
+            label = f"{domain.split('.')[0].capitalize()} ({count})"
+            lookups.append((domain, label))
+        return lookups
 
     def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(ins_link=self.value())
-        return queryset
+        domain = self.value()
+        if not domain:
+            return queryset
+
+        # Filter blogs where ins_link belongs to this domain
+        # We'll match any URL that, when normalized, equals `domain`
+        # Since we can't use Python functions in DB query, use regex or contains logic
+
+        # Build patterns to match domain in URL
+        patterns = [
+            f"https://{domain}/",
+            f"https://{domain}",
+            f"http://{domain}/",
+            f"http://{domain}",
+            f"https://www.{domain}/",
+            f"https://www.{domain}",
+            f"http://www.{domain}/",
+            f"http://www.{domain}",
+            f"{domain}/",
+            f"{domain}",  # risky, but covers "biresdev.com" without protocol
+        ]
+
+        # Build Q objects
+        q = Q()
+        for pattern in patterns:
+            q |= Q(ins_link__istartswith=pattern)
+
+        return queryset.filter(q)
 
 
 
