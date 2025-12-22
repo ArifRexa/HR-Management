@@ -1381,6 +1381,63 @@ class BlogStatusFilter(SimpleListFilter):
         return queryset
 
 
+
+from urllib.parse import urlparse
+
+class InspirationLinkDomainFilter(admin.SimpleListFilter):
+    title = "Inspiration Link (Domain)"
+    parameter_name = "ins_link_domain"
+
+    def lookups(self, request, model_admin):
+        # Fetch all non-empty ins_link values
+        urls = (
+            Blog.objects.exclude(ins_link__isnull=True)
+            .exclude(ins_link__exact="")
+            .values_list("ins_link", flat=True)
+            .distinct()
+        )
+
+        # Map each URL to a (value, label) pair
+        lookup_pairs = []
+        seen_labels = set()  # Avoid duplicate labels (e.g., two URLs from same domain)
+
+        for url in urls:
+            if not url.strip():
+                continue
+            # Ensure URL has scheme for urlparse
+            if not url.startswith(("http://", "https://")):
+                test_url = "https://" + url
+            else:
+                test_url = url
+
+            try:
+                domain = urlparse(test_url).netloc.lower()
+                if not domain:
+                    continue
+                if domain.startswith("www."):
+                    domain = domain[4:]
+                main_part = domain.split(".")[0]
+                label = main_part.capitalize()
+                # Use full URL as the lookup value (to filter precisely)
+                # But show the clean label
+                if label not in seen_labels:
+                    lookup_pairs.append((url, label))
+                    seen_labels.add(label)
+            except Exception:
+                continue
+
+        # Sort alphabetically by label
+        lookup_pairs.sort(key=lambda x: x[1])
+        return lookup_pairs
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(ins_link=self.value())
+        return queryset
+
+
+
+
 @admin.register(Blog)
 class BlogAdmin(nested_admin.NestedModelAdmin):
     prepopulated_fields = {"slug": ("title",)}
@@ -1460,6 +1517,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         BlogIndustryFilter, 
         BlogTechnologyFilter, 
         CategoryFilter,
+        InspirationLinkDomainFilter,
         'created_at',
         )
     
