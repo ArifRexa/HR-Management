@@ -32,7 +32,7 @@ class BeginningOfWorkingInline(nested_admin.NestedStackedInline):
 class IndustryWeServeHomePageInline(nested_admin.NestedStackedInline):
     model = IndustryWeServeHomePage
     extra = 0
-    fields = ("seo_title", "section_title", "secondary_title", "section_description")
+    fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
     verbose_name = "Industry We Serve"
     verbose_name_plural = "Industries We Serve"
 

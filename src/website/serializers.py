@@ -167,7 +167,7 @@ class BeginningOfWorkingSerializer(serializers.ModelSerializer):
 class IndustryWeServeHomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = IndustryWeServeHomePage
-        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+        fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
 
 
 class TechStackSerializer(serializers.ModelSerializer):
