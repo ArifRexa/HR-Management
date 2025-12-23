@@ -173,7 +173,7 @@ class IndustryWeServeHomePageSerializer(serializers.ModelSerializer):
 class TechStackSerializer(serializers.ModelSerializer):
     class Meta:
         model = TechStack
-        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+        fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
 
 
 class TestimonialsHomePageSerializer(serializers.ModelSerializer):
