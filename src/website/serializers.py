@@ -161,7 +161,7 @@ class HomePageAnimateTitleSerializer(serializers.ModelSerializer):
 class BeginningOfWorkingSerializer(serializers.ModelSerializer):
     class Meta:
         model = BeginningOfWorking
-        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+        fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
 
 
 class IndustryWeServeHomePageSerializer(serializers.ModelSerializer):

@@ -23,9 +23,10 @@ class HomePageHeroAnimatedTitleInline(nested_admin.NestedStackedInline):
 class BeginningOfWorkingInline(nested_admin.NestedStackedInline):
     model = BeginningOfWorking
     extra = 0
-    fields = ("seo_title", "section_title", "secondary_title", "section_description")
+    fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
     verbose_name = "Services We Provide"
     verbose_name_plural = "Services We Provide"
+
 
 
 class IndustryWeServeHomePageInline(nested_admin.NestedStackedInline):
