@@ -56,7 +56,7 @@ class TestimonialsHomePageInline(nested_admin.NestedStackedInline):
 class AwardsHomePageInline(nested_admin.NestedStackedInline):
     model = AwardsHomePage
     extra = 0
-    fields = ("seo_title", "section_title", "secondary_title", "section_description")
+    fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
     verbose_name = "Award Section"
     verbose_name_plural = "Award Sections"
 
@@ -64,7 +64,7 @@ class AwardsHomePageInline(nested_admin.NestedStackedInline):
 class BlogsAndArticlesHomePageInline(nested_admin.NestedStackedInline):
     model = BlogsAndArticlesHomePage
     extra = 0
-    fields = ("seo_title", "section_title", "secondary_title", "section_description")
+    fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
     verbose_name = "Blog & Article Section"
     verbose_name_plural = "Blog & Article Sections"
 

@@ -185,13 +185,13 @@ class TestimonialsHomePageSerializer(serializers.ModelSerializer):
 class AwardsHomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = AwardsHomePage
-        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+        fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
 
 
 class BlogsAndArticlesHomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BlogsAndArticlesHomePage
-        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+        fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
 
 
 class CaseStudyHomePageSerializer(serializers.ModelSerializer):
