@@ -126,6 +126,8 @@ class CaseStudyHomePage(models.Model):
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
     section_description = models.TextField(null=True, blank=True)
+    cta_button_text = models.CharField(max_length=100, null=True, blank=True)
+    cta_button_url = models.CharField(max_length=200, null=True, blank=True)
 
     verbose_name = "Case Studies"
     verbose_name_plural = "Case Studies"

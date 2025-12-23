@@ -72,7 +72,7 @@ class BlogsAndArticlesHomePageInline(nested_admin.NestedStackedInline):
 class CaseStudyHomePageInline(nested_admin.NestedStackedInline):
     model = CaseStudyHomePage
     extra = 0
-    fields = ("seo_title", "section_title", "secondary_title", "section_description")
+    fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
     verbose_name = "Case Study Section"
     verbose_name_plural = "Case Study Sections"
 

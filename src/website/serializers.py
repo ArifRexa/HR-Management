@@ -197,7 +197,7 @@ class BlogsAndArticlesHomePageSerializer(serializers.ModelSerializer):
 class CaseStudyHomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CaseStudyHomePage
-        fields = ("seo_title", "section_title", "secondary_title", "section_description")
+        fields = ("seo_title", "section_title", "secondary_title", "section_description", "cta_button_text", "cta_button_url")
 
 
 class OurProcessHomeSerializer(serializers.ModelSerializer):
