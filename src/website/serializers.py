@@ -63,6 +63,7 @@ from website.models import (
     BlogStatus,
     BlogTag,
     BlogTitle,
+    BlogViewLog,
     BlogsAndArticlesHomePage,
     Brand,
     CaseStudyHomePage,
@@ -1885,6 +1886,27 @@ class BlogSerializer(serializers.ModelSerializer):
     
 
 
+
+
+
+class BlogViewLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BlogViewLog
+        fields = ['ip_address', 'country', 'blog_slug']
+        extra_kwargs = {
+            'ip_address': {'required': True},
+            'country': {'required': False, 'allow_blank': True},
+        }
+        ref_name = 'website_blogviewlog'
+
+    # Custom field to accept slug during input
+    blog_slug = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Blog.objects.filter(status="approved"),
+        write_only=True,
+        source='blog'
+    )
+    
 
 
 # ============================== Industry Details ==================================
