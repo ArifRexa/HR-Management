@@ -41,6 +41,7 @@ from website.models import (
     Blog,
     BlogComment,
     BlogStatus,
+    BlogViewLog,
     Brand,
     Category,
     Certification,
@@ -87,6 +88,7 @@ from website.serializers import (
     BlogListSerializer,
     BlogSerializer,
     BlogSitemapSerializer,
+    BlogViewLogSerializer,
     BrandSerializer,
     CategoryListSerializer,
     CertificationSerializer,
@@ -1656,6 +1658,102 @@ class BlogListByIDsAPIView(APIView):
             raise NotFound("One or more blogs not found")
         except ValueError:
             raise NotFound("Invalid blog IDs provided")
+
+
+
+# class BlogViewLogAPIView(APIView):
+#     """
+#     Log a blog view with IP address, blog slug, and optional country.
+#     """
+
+#     @swagger_auto_schema(
+#         tags=["Blogs"],
+#         request_body=openapi.Schema(
+#             type=openapi.TYPE_OBJECT,
+#             required=['ip_address', 'blog_slug'],
+#             properties={
+#                 'ip_address': openapi.Schema(
+#                     type=openapi.TYPE_STRING,
+#                     example="192.0.2.1",
+#                     description="Client IP address as string (IPv4 or IPv6)"
+#                 ),
+#                 'blog_slug': openapi.Schema(
+#                     type=openapi.TYPE_STRING,
+#                     example="introduction-to-django",
+#                     description="Slug of the approved blog"
+#                 ),
+#                 'country': openapi.Schema(
+#                     type=openapi.TYPE_STRING,
+#                     example="United States",
+#                     description="Optional country name"
+#                 ),
+#             }
+#         ),
+#         responses={
+#             201: openapi.Response(
+#                 description="View logged successfully",
+#                 schema=openapi.Schema(
+#                     type=openapi.TYPE_OBJECT,
+#                     properties={
+#                         'status': openapi.Schema(type=openapi.TYPE_STRING, example="logged")
+#                     }
+#                 )
+#             ),
+#             400: "Bad Request (e.g., invalid IP, blog not found, or missing fields)",
+#         }
+#     )
+#     def post(self, request, *args, **kwargs):
+#         serializer = BlogViewLogSerializer(data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response({"status": "logged"}, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class BlogViewLogAPIView(APIView):
+    """
+    Log a blog view. Duplicate (IP + blog + country) is ignored.
+    """
+
+    @swagger_auto_schema(
+        tags=["Blogs"],
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['ip_address', 'blog_slug'],
+            properties={
+                'ip_address': openapi.Schema(type=openapi.TYPE_STRING, example="192.0.2.1"),
+                'blog_slug': openapi.Schema(type=openapi.TYPE_STRING, example="my-post"),
+                'country': openapi.Schema(type=openapi.TYPE_STRING, example="Canada", default=""),
+            }
+        ),
+        responses={
+            201: openapi.Response(description="New view logged", examples={"application/json": {"status": "logged"}}),
+            200: openapi.Response(description="Duplicate — already logged", examples={"application/json": {"status": "already logged"}}),
+            400: "Invalid data (e.g., blog not found, invalid IP)",
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = BlogViewLogSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract validated data
+        blog = serializer.validated_data['blog']
+        ip_address = serializer.validated_data['ip_address']
+        country = serializer.validated_data.get('country', '') or ''
+
+        # Use get_or_create to avoid duplicates
+        obj, created = BlogViewLog.objects.get_or_create(
+            blog=blog,
+            ip_address=ip_address,
+            country=country
+        )
+
+        if created:
+            return Response({"status": "logged"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"status": "already logged"}, status=status.HTTP_200_OK)
+
+
 
 
 
