@@ -696,9 +696,9 @@ class Blog(AuthorMixin, TimeStampMixin):
     def clean(self):
         if self.is_featured:
             featured_blogs_count = Blog.objects.filter(is_featured=True).count()
-            if featured_blogs_count >= 3:
+            if featured_blogs_count >= 10:
                 raise ValidationError(
-                    "Only up to 3 blogs can be featured.You have already added more than 3"
+                    "Only up to 10 blogs can be featured.You have already added more than 10"
                 )
         
         # if self.child_services.exists():
