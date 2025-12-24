@@ -760,6 +760,26 @@ class Blog(AuthorMixin, TimeStampMixin):
         return pdf_base64
 
 
+
+
+class BlogViewLog(models.Model):
+    blog = models.ForeignKey('Blog', on_delete=models.CASCADE, related_name="view_logs")
+    ip_address = models.CharField(max_length=50, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('blog', 'ip_address', 'country')
+        verbose_name = "Blog View Log"
+        verbose_name_plural = "Blog View Logs"
+
+    # def __str__(self):
+    #     return f"{self.blog.slug} — {self.ip_address}"
+
+
+
+
+
 class BlogSEOEssential(TimeStampMixin, AuthorMixin):
     title = models.CharField(max_length=255, verbose_name="Meta Title")
     description = models.TextField(verbose_name="Meta Description")

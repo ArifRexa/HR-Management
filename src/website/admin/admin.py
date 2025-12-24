@@ -58,6 +58,7 @@ from website.models import (
     BlogStatus,
     BlogTag,
     BlogTitle,
+    BlogViewLog,
     Brand,
     Career,
     CareerBanner,
@@ -2095,6 +2096,62 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
             )
 
     
+
+class BlogViewLogBlogFilter(admin.SimpleListFilter):
+    title = 'blog'
+    parameter_name = 'blog'
+
+    def lookups(self, request, model_admin):
+        # Annotate each blog with how many view logs it has
+        blogs_with_counts = (
+            Blog.objects.filter(view_logs__isnull=False)
+            .annotate(log_count=Count('view_logs'))
+            .order_by('title')
+        )
+        return [(blog.id, f"{blog.title} ({blog.log_count})") for blog in blogs_with_counts]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(blog__id=self.value())
+        return queryset
+    
+
+
+class BlogViewLogCountryFilter(admin.SimpleListFilter):
+    title = 'country'
+    parameter_name = 'country'
+
+    def lookups(self, request, model_admin):
+        # Get non-empty country values and count them
+        country_counts = (
+            BlogViewLog.objects
+            .exclude(country__isnull=True)
+            .exclude(country="")
+            .values('country')
+            .annotate(count=Count('id'))
+            .order_by('country')
+        )
+        # Format as (value, "Label (count)")
+        return [
+            (item['country'], f"{item['country']} ({item['count']})")
+            for item in country_counts
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(country=self.value())
+        return queryset
+
+
+@admin.register(BlogViewLog)
+class BlogViewLogAdmin(admin.ModelAdmin):
+    list_display = ["blog", "ip_address", "country", "created_at"]
+    list_filter = [
+        BlogViewLogBlogFilter, 
+        BlogViewLogCountryFilter,
+        "created_at"
+    ]
+    search_fields = ["ip_address", "country"]
 
 
 # @admin.register(BlogComment)
