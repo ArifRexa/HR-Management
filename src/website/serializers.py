@@ -1811,6 +1811,7 @@ class BlogSerializer(serializers.ModelSerializer):
     author = AuthorSerializer()
     table_of_contents = serializers.SerializerMethodField()
     featured_blogs = serializers.SerializerMethodField()
+    view_count = serializers.IntegerField(read_only=True)
     
 
 
@@ -1822,7 +1823,7 @@ class BlogSerializer(serializers.ModelSerializer):
             'is_featured', 'schema_type', 'main_body_schema', 'hightlighted_text', 'cta_title', 'status',
             'total_view', 'created_at', 'updated_at', 'approved_at', 'read_time_minute',
             'author', 'blog_contexts', 'blog_faqs', 'seo_essential',
-            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'table_of_contents', 'featured_blogs'
+            'reference_blogs', 'related_blogs', 'faq_schema', 'moderator_feedbacks', 'table_of_contents', 'featured_blogs', 'view_count'
         ]
         ref_name = 'website_blog'
 
@@ -1906,7 +1907,7 @@ class BlogViewLogSerializer(serializers.ModelSerializer):
         write_only=True,
         source='blog'
     )
-    
+
 
 
 # ============================== Industry Details ==================================

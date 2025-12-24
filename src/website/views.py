@@ -1424,6 +1424,14 @@ class BlogListAPIView(ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['category__name','title', 'category__name', 'tag__name', 'author__full_name']
     pagination_class = BlogPagination
+
+    def get_queryset(self):
+        return (
+            Blog.objects
+            .filter(status="approved")
+            .annotate(view_count=Count('view_logs'))  # ← THIS IS KEY
+            .order_by('-created_at')
+        )
     
     @swagger_auto_schema(
         tags=["Blogs"],
