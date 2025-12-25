@@ -46,6 +46,7 @@ from website.models import (
     AwardYearGroup,
     BenefitsOfEmployment,
     BenefitsOfEmploymentTitle,
+    BenifitsTop3Percent,
     Blog,
     BlogCategory,
     BlogContext,
@@ -2179,10 +2180,23 @@ class YourSuccessTop3PercentInline(nested_admin.NestedStackedInline):
 
 
 
+class BenifitsTop3PercentInline(nested_admin.NestedStackedInline):
+    model = BenifitsTop3Percent
+    extra = 0
+    max_num = 1
+    verbose_name = "Top 3 Percent Benefit"
+    verbose_name_plural = "Top 3 Percent Benefit"
+
+
+
+
+
+
 @admin.register(Top3Percent)
 class Top3PercentAdmin(nested_admin.NestedModelAdmin):
     inlines = [
-        YourSuccessTop3PercentInline
+        YourSuccessTop3PercentInline,
+        BenifitsTop3PercentInline,
     
     
     
