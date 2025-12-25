@@ -24,6 +24,7 @@ class LeaveMixin(models.Model):
         ("half_day_non_paid", "Half Day Non Paid"),
         ("emergency_leave", "Emergency Leave"),
         ("system_generated", "System Generated"),
+        ("home_office", "Home Office"),
     )
     LEAVE_STATUS = (
         ("pending", "⏳ Pending"),
