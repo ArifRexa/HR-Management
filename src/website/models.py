@@ -1300,6 +1300,8 @@ class YourSuccessTop3Percent(models.Model):
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
     section_description = HTMLField(null=True, blank=True)
+    cta_button_text = models.CharField(max_length=255, null=True, blank=True)
+    cta_button_link = models.URLField(null=True, blank=True)
 
 
 class YourSuccessTop3PercentCards(models.Model):
@@ -1320,6 +1322,8 @@ class BenifitsTop3Percent(models.Model):
     section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
     section_description = HTMLField(null=True, blank=True)
+    cta_button_text = models.CharField(max_length=255, null=True, blank=True)
+    cta_button_link = models.URLField(null=True, blank=True)
 
 
 class BenifitsTop3PercentCards(models.Model):
