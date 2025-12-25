@@ -153,6 +153,7 @@ from website.models import (
     WhyUsTitle,
     WhyWeAreBanner,
     WomenEmpowermentBanner,
+    YourSuccessTop3Percent,
 )
 from website.models_v2.industries_we_serve import (
     Benefits,
@@ -2165,16 +2166,21 @@ class BlogViewLogAdmin(admin.ModelAdmin):
 
 
 
-
+class YourSuccessTop3PercentInline(nested_admin.NestedStackedInline):
+    model = YourSuccessTop3Percent
+    extra = 0
+    max_num = 1
 
 
 
 @admin.register(Top3Percent)
-class Top3PercentAdmin(admin.ModelAdmin):
-    pass
-    # list_display = ["name", "email", "blog", "achieved_at"]
-    # search_fields = ["name", "email", "blog__title"]
-    # list_filter = ["achieved_at"]
+class Top3PercentAdmin(nested_admin.NestedModelAdmin):
+    inlines = [
+        YourSuccessTop3PercentInline
+    
+    
+    
+    ]
 
 
 

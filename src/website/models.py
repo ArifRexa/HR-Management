@@ -1292,13 +1292,14 @@ class Top3Percent(TimeStampMixin):
     section_description = HTMLField(null=True, blank=True)
 
 
-# class YourSuccessTop3Percent(models.Model):
-#     top_3_percent = models.ForeignKey(
-#         Top3Percent, on_delete=models.CASCADE, related_name="success_points"
-#     )
-#     seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
-#     section_title = models.CharField(max_length=255, null=True, blank=True)
-#     section_description = HTMLField(null=True, blank=True)
+class YourSuccessTop3Percent(models.Model):
+    top_3_percent = models.ForeignKey(
+        Top3Percent, on_delete=models.CASCADE, related_name="success_points"
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
 
 
 
