@@ -1302,6 +1302,16 @@ class YourSuccessTop3Percent(models.Model):
     section_description = HTMLField(null=True, blank=True)
 
 
+class YourSuccessTop3PercentCards(models.Model):
+    success_point = models.ForeignKey(
+        YourSuccessTop3Percent,
+        on_delete=models.CASCADE,
+        related_name="success_cards",
+    )
+    card_title = models.CharField(max_length=255)
+    card_description = HTMLField(null=True, blank=True)
+
+
 
 
 

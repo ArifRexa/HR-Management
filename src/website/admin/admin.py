@@ -154,6 +154,7 @@ from website.models import (
     WhyWeAreBanner,
     WomenEmpowermentBanner,
     YourSuccessTop3Percent,
+    YourSuccessTop3PercentCards,
 )
 from website.models_v2.industries_we_serve import (
     Benefits,
@@ -2163,13 +2164,18 @@ class BlogViewLogAdmin(admin.ModelAdmin):
 
 
 
-
+class YourSuccessTop3PercentCardsInline(nested_admin.NestedStackedInline):
+    model = YourSuccessTop3PercentCards
+    extra = 1
+    verbose_name = "Top 3 Percent Card"
+    verbose_name_plural = "Top 3 Percent Card"
 
 
 class YourSuccessTop3PercentInline(nested_admin.NestedStackedInline):
     model = YourSuccessTop3Percent
     extra = 0
     max_num = 1
+    inlines = [YourSuccessTop3PercentCardsInline]
 
 
 
