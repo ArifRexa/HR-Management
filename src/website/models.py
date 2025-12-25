@@ -1348,6 +1348,23 @@ class NeedMoreDevTop3Percent(models.Model):
     cta_button_link = models.URLField(null=True, blank=True)
 
 
+class NeedMoreDevTop3PercentCards(models.Model):
+    need_more_dev_point = models.ForeignKey(
+        NeedMoreDevTop3Percent,
+        on_delete=models.CASCADE,
+        related_name="need_more_dev_top3percent_cards",
+    )
+    leader = models.ForeignKey(
+        Employee,
+        on_delete=models.CASCADE,
+        related_name="leader_speeches",
+        limit_choices_to={"active": True},
+        null=True, blank=True,
+    )
+    card_title = models.CharField(max_length=255)
+    card_description = HTMLField(null=True, blank=True)
+
+
 
 class EventCalenderStatus(models.TextChoices):
     PENDING = "Pending", "Pending"
