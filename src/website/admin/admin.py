@@ -1,6 +1,8 @@
 import json
 from typing import Any, Union
 
+from django.urls import reverse
+
 import nested_admin
 from django import forms
 from django.contrib import admin
@@ -1650,7 +1652,10 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
     @admin.display(description="Visitors", ordering="visitor_count")
     def get_visitors_count(self, obj):
-        return obj.visitor_count
+        count = obj.visitor_count
+        # Generate the URL to BlogViewLog changelist filtered by this blog
+        url = reverse("admin:website_blogviewlog_changelist") + f"?blog__id__exact={obj.id}"
+        return format_html('<a href="{}" target="_blank">{}</a>', url, count)
 
     @admin.display(description="Created At")
     def get_created_at(self, obj):
