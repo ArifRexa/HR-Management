@@ -47,6 +47,7 @@ from website.models import (
     BenefitsOfEmployment,
     BenefitsOfEmploymentTitle,
     BenifitsTop3Percent,
+    BenifitsTop3PercentCards,
     Blog,
     BlogCategory,
     BlogContext,
@@ -2178,12 +2179,17 @@ class YourSuccessTop3PercentInline(nested_admin.NestedStackedInline):
     max_num = 1
     inlines = [YourSuccessTop3PercentCardsInline]
 
-
+class BenifitsTop3PercentCardsInline(nested_admin.NestedStackedInline):
+    model = BenifitsTop3PercentCards
+    extra = 1
+    verbose_name = "Top 3 Percent Benefit Card"
+    verbose_name_plural = "Top 3 Percent Benefit Cards"
 
 class BenifitsTop3PercentInline(nested_admin.NestedStackedInline):
     model = BenifitsTop3Percent
     extra = 0
     max_num = 1
+    inlines = [BenifitsTop3PercentCardsInline]
     verbose_name = "Top 3 Percent Benefit"
     verbose_name_plural = "Top 3 Percent Benefit"
 

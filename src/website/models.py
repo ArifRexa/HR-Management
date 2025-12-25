@@ -1322,7 +1322,15 @@ class BenifitsTop3Percent(models.Model):
     section_description = HTMLField(null=True, blank=True)
 
 
-
+class BenifitsTop3PercentCards(models.Model):
+    benifits_point = models.ForeignKey(
+        BenifitsTop3Percent,
+        on_delete=models.CASCADE,
+        related_name="benifits_top3percent_cards",
+    )
+    icon = models.ImageField(upload_to="benifits_top3percent/")
+    card_title = models.CharField(max_length=255)
+    card_description = HTMLField(null=True, blank=True)
 
 
 
