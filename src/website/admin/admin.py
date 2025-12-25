@@ -145,6 +145,7 @@ from website.models import (
     TechnologyWhyChooseUsCards,
     TechnologyWhyChooseUsCardsDetails,
     TextualTestimonialTitle,
+    Top3Percent,
     VideoTestimonial,
     VideoTestimonialTitle,
     WebsiteTitle,
@@ -2158,6 +2159,33 @@ class BlogViewLogAdmin(admin.ModelAdmin):
 # class BlogCommentModelAdmin(MPTTModelAdmin):
 #     mptt_level_indent = 20
 #     list_display = ["id", "name"]
+
+
+
+
+
+
+
+
+
+
+@admin.register(Top3Percent)
+class Top3PercentAdmin(admin.ModelAdmin):
+    pass
+    # list_display = ["name", "email", "blog", "achieved_at"]
+    # search_fields = ["name", "email", "blog__title"]
+    # list_filter = ["achieved_at"]
+
+
+
+
+
+
+
+
+
+
+
 
 
 
