@@ -93,6 +93,7 @@ from website.models import (
     LifeAtMediusware,
     LifeAtMediuswareTitle,
     ModelTitle,
+    NeedMoreDevTop3Percent,
     OfficeLocation,
     OurAchievement,
     OurGrowth,
@@ -2194,6 +2195,14 @@ class BenifitsTop3PercentInline(nested_admin.NestedStackedInline):
     verbose_name_plural = "Top 3 Percent Benefit"
 
 
+class NeedMoreDevTop3PercentInline(nested_admin.NestedStackedInline):
+    model = NeedMoreDevTop3Percent
+    extra = 0
+    max_num = 1
+    verbose_name = "Need More Developers"
+    verbose_name_plural = "Need More Developers"
+
+
 
 
 
@@ -2203,6 +2212,7 @@ class Top3PercentAdmin(nested_admin.NestedModelAdmin):
     inlines = [
         YourSuccessTop3PercentInline,
         BenifitsTop3PercentInline,
+        NeedMoreDevTop3PercentInline,
     
     
     

@@ -1337,7 +1337,15 @@ class BenifitsTop3PercentCards(models.Model):
     card_description = HTMLField(null=True, blank=True)
 
 
-
+class NeedMoreDevTop3Percent(models.Model):
+    top_3_percent = models.ForeignKey(
+        Top3Percent, on_delete=models.CASCADE, related_name="need_more_dev_points"
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True, verbose_name="SEO Title")
+    section_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+    cta_button_text = models.CharField(max_length=255, null=True, blank=True)
+    cta_button_link = models.URLField(null=True, blank=True)
 
 
 
