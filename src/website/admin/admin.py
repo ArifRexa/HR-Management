@@ -1467,7 +1467,7 @@ def extract_domain(url):
 
 
 class InspirationLinkDomainFilter(admin.SimpleListFilter):
-    title = "Inspiration Link (Domain)"
+    title = "Ins Domain"
     parameter_name = "ins_link_domain"
 
     def lookups(self, request, model_admin):
@@ -1561,6 +1561,7 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
     autocomplete_fields = ["industry_details", "category", "tag", "parent_services", "technology"]  # Updated to industry_details
     list_display = (
         "title",
+        "get_visitors_count",
         "author",
         "get_created_by",
         "status",
@@ -1645,6 +1646,11 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
         if lookup in ["created_by__employee__id__exact"]:
             return True
         return super().lookup_allowed(lookup, value)
+
+
+    @admin.display(description="Visitors", ordering="visitor_count")
+    def get_visitors_count(self, obj):
+        return obj.visitor_count
 
     @admin.display(description="Created At")
     def get_created_at(self, obj):
@@ -1821,13 +1827,29 @@ class BlogAdmin(nested_admin.NestedModelAdmin):
 
         return actions
 
+    # def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
+    #     querySet = super().get_queryset(request)
+    #     user = request.user
+    #     if user.has_perm("website.can_view_all"):
+    #         return querySet
+    #     else:
+    #         return querySet.filter(created_by=user)
+
+
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
-        querySet = super().get_queryset(request)
-        user = request.user
-        if user.has_perm("website.can_view_all"):
-            return querySet
-        else:
-            return querySet.filter(created_by=user)
+        qs = super().get_queryset(request)
+        # Apply permission filter first
+        if not request.user.has_perm("website.can_view_all"):
+            qs = qs.filter(created_by=request.user)
+        # Annotate visitor count from BlogViewLog
+        qs = qs.annotate(visitor_count=Count('view_logs'))
+        return qs
+
+
+
+
+
+
 
     # def get_form(self, request, obj=None, **kwargs):
     #     kwargs['form'] = BlogForm
