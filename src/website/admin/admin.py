@@ -84,6 +84,7 @@ from website.models import (
     EventCalender,
     FAQHomeTitle,
     FeatureName,
+    FlexibilityTop3Percent,
     HistoryOfTech,
     HomeBanner,
     Industry,
@@ -2242,6 +2243,14 @@ class NeedMoreDevTop3PercentInline(nested_admin.NestedStackedInline):
     verbose_name_plural = "Need More Developers"
 
 
+class FlexibilityTop3PercentInline(nested_admin.NestedStackedInline):
+    model = FlexibilityTop3Percent
+    extra = 0
+    max_num = 1
+    verbose_name = "Flexibility"
+    verbose_name_plural = "Flexibility"
+
+
 
 
 
@@ -2252,6 +2261,7 @@ class Top3PercentAdmin(nested_admin.NestedModelAdmin):
         YourSuccessTop3PercentInline,
         BenifitsTop3PercentInline,
         NeedMoreDevTop3PercentInline,
+        FlexibilityTop3PercentInline,
     
     
     
