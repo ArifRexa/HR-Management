@@ -67,6 +67,7 @@ from website.models import (
     PricingFeature,
     Service,
     Subscription,
+    Top3Percent,
     VideoTestimonial,
     WebsiteTitle,
 )
@@ -143,6 +144,7 @@ from website.serializers import (
     TechnologyListSerializer,
     TechnologySerializer,
     TechnologySiteMapSerializer,
+    Top3PercentSerializer,
     VideoTestimonialSerializer,
     WebsiteTitleSerializer,
 )
@@ -221,7 +223,42 @@ class HomePageApiView(APIView):
 
 
 
+class Top3PercentApiView(APIView):
+    @swagger_auto_schema(
+        tags=["Top 3 Percent"],
+        operation_description="Retrieve all content related to the Top 3 Percent page, including success stories, benefits, developer needs, and flexibility sections with their nested cards.",
+        responses={
+            200: openapi.Response(
+                description="Top 3 Percent data retrieved successfully",
+                schema=Top3PercentSerializer(),
+            ),
+            404: "Top 3 Percent content not found",
+            500: "Internal server error",
+        },
+    )
+    def get(self, request, *args, **kwargs):
+        try:
+            top3 = Top3Percent.objects.prefetch_related(
+                'success_points__success_cards',
+                'benifits_points__benifits_top3percent_cards',
+                'need_more_dev_points__need_more_dev_top3percent_cards__leader',
+                'flexibility_points__flexibility_top3percent_cards',
+            ).first()
 
+            if not top3:
+                return Response(
+                    {"error": "Top 3 Percent content not found."}, 
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            serializer = Top3PercentSerializer(top3, context={'request': request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 
 
