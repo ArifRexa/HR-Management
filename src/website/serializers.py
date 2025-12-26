@@ -51,6 +51,8 @@ from website.models import (
     AwardsTitle,
     BeginningOfWorking,
     BenefitsOfEmployment,
+    BenifitsTop3Percent,
+    BenifitsTop3PercentCards,
     Blog,
     BlogCategory,
     BlogComment,
@@ -78,6 +80,8 @@ from website.models import (
     EmployeeTestimonial,
     FAQHomeTitle,
     FeatureName,
+    FlexibilityTop3Percent,
+    FlexibilityTop3PercentCards,
     Gallery,
     HistoryOfTech,
     HomeBanner,
@@ -95,6 +99,8 @@ from website.models import (
     LifeAtMediusware,
     LifeAtMediuswareTitle,
     ModelTitle,
+    NeedMoreDevTop3Percent,
+    NeedMoreDevTop3PercentCards,
     OfficeLocation,
     OurAchievement,
     OurGrowth,
@@ -141,11 +147,14 @@ from website.models import (
     TechnologyWhyChooseUsCardsDetails,
     TestimonialsHomePage,
     TextualTestimonialTitle,
+    Top3Percent,
     VideoTestimonial,
     VideoTestimonialTitle,
     WebsiteTitle,
     WhatIs,
     WhyUsTitle,
+    YourSuccessTop3Percent,
+    YourSuccessTop3PercentCards,
 )
 from website.models_v2.hire_resources import BenifitCards, Benifits, ComprehensiveGuide, ComprehensiveGuideSectionQnA, ComprehensiveGuideSections, DefiningDeveloperCards, DefiningDevelopers, DeliveryModuleIntro, HireDeveloperFAQ, HireDeveloperMetaDescription, HireDeveloperPage, HireDevelopersOurProcess, HiringComparison, HiringFreeLancer, HiringThroughMediusware, Qualities, QualityCards, WorkingMechanism, WorkingMechanismCards
 from website.models_v2.industries_we_serve import ApplicationAreas, Benefits, BenefitsQA, CustomSolutions, CustomSolutionsCards, IndustryDetailsHeading, IndustryDetailsHeadingCards, IndustryDetailsHeroSection, IndustryItemTags, IndustryRelatedBlogs, IndustryServe, OurProcess, ServeCategory, ServeCategoryCTA, ServeCategoryFAQSchema, ServiceCategoryFAQ, WhyChooseUs, WhyChooseUsCards, WhyChooseUsCardsDetails
@@ -2778,6 +2787,111 @@ class TechnologyDetailSerializer(serializers.ModelSerializer):
         model = Technology
         fields = '__all__'
         ref_name = 'TechnologyDetailSerializer'
+
+
+# ====================================== Top 3 Percent Serializers =======================================
+
+# Optional: Serialize Employee if needed (e.g., in NeedMoreDev cards)
+# class EmployeeSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Employee
+#         fields = ['id', 'name', 'email', 'image']  # adjust based on actual fields
+
+
+class YourSuccessTop3PercentCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = YourSuccessTop3PercentCards
+        fields = ['id', 'card_title', 'card_description']
+
+
+class YourSuccessTop3PercentSerializer(serializers.ModelSerializer):
+    success_cards = YourSuccessTop3PercentCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = YourSuccessTop3Percent
+        fields = [
+            'id', 'seo_title', 'section_title', 'secondary_title',
+            'section_description', 'cta_button_text', 'cta_button_link',
+            'success_cards'
+        ]
+
+
+class BenifitsTop3PercentCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BenifitsTop3PercentCards
+        fields = ['id', 'icon', 'card_title', 'card_description']
+
+
+class BenifitsTop3PercentSerializer(serializers.ModelSerializer):
+    benifits_top3percent_cards = BenifitsTop3PercentCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = BenifitsTop3Percent
+        fields = [
+            'id', 'seo_title', 'section_title', 'secondary_title',
+            'section_description', 'cta_button_text', 'cta_button_link',
+            'benifits_top3percent_cards'
+        ]
+
+
+class NeedMoreDevTop3PercentCardsSerializer(serializers.ModelSerializer):
+    leader = EmployeeSerializer(read_only=True)
+
+    class Meta:
+        model = NeedMoreDevTop3PercentCards
+        fields = ['id', 'leader', 'card_title', 'card_description']
+
+
+class NeedMoreDevTop3PercentSerializer(serializers.ModelSerializer):
+    need_more_dev_top3percent_cards = NeedMoreDevTop3PercentCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = NeedMoreDevTop3Percent
+        fields = [
+            'id', 'seo_title', 'section_title',
+            'section_description', 'cta_button_text', 'cta_button_link',
+            'need_more_dev_top3percent_cards'
+        ]
+
+
+class FlexibilityTop3PercentCardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FlexibilityTop3PercentCards
+        fields = [
+            'id', 'card_title', 'card_description',
+            'section_title', 'section_description', 'section_gif'
+        ]
+
+
+class FlexibilityTop3PercentSerializer(serializers.ModelSerializer):
+    flexibility_top3percent_cards = FlexibilityTop3PercentCardsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = FlexibilityTop3Percent
+        fields = [
+            'id', 'seo_title', 'section_title',
+            'section_description', 'cta_button_text', 'cta_button_link',
+            'flexibility_top3percent_cards'
+        ]
+
+
+class Top3PercentSerializer(serializers.ModelSerializer):
+    success_points = YourSuccessTop3PercentSerializer(many=True, read_only=True)
+    benifits_points = BenifitsTop3PercentSerializer(many=True, read_only=True)
+    need_more_dev_points = NeedMoreDevTop3PercentSerializer(many=True, read_only=True)
+    flexibility_points = FlexibilityTop3PercentSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Top3Percent
+        fields = [
+            'id', 'seo_title', 'section_title', 'section_description',
+            'success_points',
+            'benifits_points',
+            'need_more_dev_points',
+            'flexibility_points',
+        ]
+
+
 
 
 
