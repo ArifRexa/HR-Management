@@ -1376,7 +1376,17 @@ class FlexibilityTop3Percent(models.Model):
     cta_button_link = models.URLField(null=True, blank=True)
 
 
-
+class FlexibilityTop3PercentCards(models.Model):
+    flexibility_point = models.ForeignKey(
+        FlexibilityTop3Percent,
+        on_delete=models.CASCADE,
+        related_name="flexibility_top3percent_cards",
+    )
+    card_title = models.CharField(max_length=255)
+    card_description = HTMLField(null=True, blank=True)
+    section_title = HTMLField(null=True, blank=True)
+    section_description = HTMLField(null=True, blank=True)
+    section_gif = models.ImageField(upload_to="flexibility_top3percent/", null=True, blank=True)
 
 
 

@@ -85,6 +85,7 @@ from website.models import (
     FAQHomeTitle,
     FeatureName,
     FlexibilityTop3Percent,
+    FlexibilityTop3PercentCards,
     HistoryOfTech,
     HomeBanner,
     Industry,
@@ -2198,7 +2199,7 @@ class BlogViewLogAdmin(admin.ModelAdmin):
 
 class YourSuccessTop3PercentCardsInline(nested_admin.NestedStackedInline):
     model = YourSuccessTop3PercentCards
-    extra = 1
+    extra = 0
     verbose_name = "Top 3 Percent Card"
     verbose_name_plural = "Top 3 Percent Card"
 
@@ -2211,7 +2212,7 @@ class YourSuccessTop3PercentInline(nested_admin.NestedStackedInline):
 
 class BenifitsTop3PercentCardsInline(nested_admin.NestedStackedInline):
     model = BenifitsTop3PercentCards
-    extra = 1
+    extra = 0
     verbose_name = "Top 3 Percent Benefit Card"
     verbose_name_plural = "Top 3 Percent Benefit Cards"
 
@@ -2228,7 +2229,7 @@ class BenifitsTop3PercentInline(nested_admin.NestedStackedInline):
 
 class NeedMoreDevTop3PercentCardsInline(nested_admin.NestedStackedInline):
     model = NeedMoreDevTop3PercentCards
-    extra = 1
+    extra = 0
     verbose_name = "Need More Developers Card"
     verbose_name_plural = "Need More Developers Cards"
 
@@ -2243,12 +2244,20 @@ class NeedMoreDevTop3PercentInline(nested_admin.NestedStackedInline):
     verbose_name_plural = "Need More Developers"
 
 
+class FlexibilityTop3PercentCardsInline(nested_admin.NestedStackedInline):
+    model = FlexibilityTop3PercentCards
+    extra = 0
+    verbose_name = "Flexibility Card"
+    verbose_name_plural = "Flexibility Cards"
+
+
 class FlexibilityTop3PercentInline(nested_admin.NestedStackedInline):
     model = FlexibilityTop3Percent
     extra = 0
     max_num = 1
     verbose_name = "Flexibility"
     verbose_name_plural = "Flexibility"
+    inlines = [FlexibilityTop3PercentCardsInline]
 
 
 
@@ -2262,10 +2271,8 @@ class Top3PercentAdmin(nested_admin.NestedModelAdmin):
         BenifitsTop3PercentInline,
         NeedMoreDevTop3PercentInline,
         FlexibilityTop3PercentInline,
-    
-    
-    
     ]
+    list_display = ["section_title"]
 
 
 
