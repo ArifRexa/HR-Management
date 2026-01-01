@@ -107,19 +107,23 @@ class TechnologySerializer(serializers.ModelSerializer):
 
 class ProjectListSerializer(serializers.ModelSerializer):
     """Lightweight serializer for project list"""
-    client_name = serializers.CharField(source='client.name', read_only=True)
-    client_image = serializers.ImageField(source='client.image', read_only=True)
+    # client_name = serializers.CharField(source='client.name', read_only=True)
+    # client_image = serializers.ImageField(source='client.image', read_only=True)
     industries = IndustrySerializer(many=True, read_only=True)
     services = ServiceSerializer(many=True, read_only=True)
     technology = TechnologySerializer(many=True, read_only=True)
     
     class Meta:
         model = Project
+        # fields = [
+        #     'id', 'title', 'slug', 'description', 'client_name', 
+        #     'client_image', 'client_review', 'client_designation', 'featured_image', 'short_video', 'thumbnail', 'live_link', 'project_logo',
+        #     'industries', 'services', 'technology',
+        #     'active', 'show_in_website', 'is_special', 'created_at', 'updated_at'
+        # ]
         fields = [
-            'id', 'title', 'slug', 'description', 'client_name', 
-            'client_image', 'client_review', 'client_designation', 'featured_image', 'short_video', 'thumbnail', 'live_link', 'project_logo',
-            'industries', 'services', 'technology',
-            'active', 'show_in_website', 'is_special', 'created_at', 'updated_at'
+            'id', 'title', 'slug', 'short_video', 'thumbnail', 'live_link', 
+            'project_logo', 'industries', 'services', 'technology'
         ]
         
         ref_name = 'ProjectListReadOnly'
