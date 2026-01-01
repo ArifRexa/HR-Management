@@ -792,6 +792,40 @@ class Project(TimeStampMixin, AuthorMixin):
         )
 
 
+
+
+class ProjectExecutiveSummary(TimeStampMixin):    
+    project = models.ForeignKey(
+        Project,
+        on_delete=models.CASCADE,
+        related_name="executive_summaries",
+        null=True,
+    )
+    seo_title = models.CharField(max_length=255, null=True, blank=True)
+    seo_description = models.TextField(null=True, blank=True)
+    section_title = models.CharField(max_length=255)
+    secondary_title = models.CharField(max_length=255, null=True, blank=True)
+    section_description = HTMLField()
+
+
+
+class ProjectExecutiveSummaryCards(TimeStampMixin):
+    executive_summary = models.ForeignKey(
+        ProjectExecutiveSummary,
+        on_delete=models.CASCADE,
+        related_name="summary_cards",
+        null=True,
+    )
+    title = models.CharField(max_length=255)
+    description = HTMLField()
+
+
+
+
+
+
+
+
 class ProjectResultStatistic(TimeStampMixin):
     project = models.ForeignKey(
         Project,

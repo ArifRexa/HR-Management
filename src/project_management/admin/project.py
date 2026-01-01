@@ -21,6 +21,8 @@ from project_management.models import (
     ProjectContent,
     ProjectDocument,
     ProjectEstimation,
+    ProjectExecutiveSummary,
+    ProjectExecutiveSummaryCards,
     ProjectIndustry,
     ProjectKeyFeature,
     ProjectKeyPoint,
@@ -560,6 +562,21 @@ class ProjectAdminForm(forms.ModelForm):
     #         # No parent services selected yet, show none
     #         self.fields['child_services'].queryset = ServicePage.objects.none()
 
+
+class ProjectExecutiveSummaryCardsInline(nested_admin.NestedStackedInline):
+    model = ProjectExecutiveSummaryCards
+    extra = 1
+    
+
+
+class ProjectExecutiveSummaryInline(nested_admin.NestedStackedInline):
+    model = ProjectExecutiveSummary
+    extra = 0
+    max_num = 1
+    inlines = [ProjectExecutiveSummaryCardsInline]
+
+
+
 @admin.register(Project)
 class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
     form = ProjectAdminForm
@@ -594,6 +611,7 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
         # ProjectDocumentAdmin,
         # ProjectPlatformImageInline,
         ProjectMetadataInline,
+        ProjectExecutiveSummaryInline,
     )
     
 
@@ -779,6 +797,14 @@ class ProjectAdmin(nested_admin.NestedModelAdmin, NonSortableParentAdmin):
 
         formatted_dates = "<br/>".join(str(date) for date in client_date)
         return format_html(formatted_dates)
+
+
+
+
+
+
+
+
 
 
 
