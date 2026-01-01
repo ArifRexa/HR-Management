@@ -803,9 +803,9 @@ class ProjectExecutiveSummary(TimeStampMixin):
     )
     seo_title = models.CharField(max_length=255, null=True, blank=True)
     seo_description = models.TextField(null=True, blank=True)
-    section_title = models.CharField(max_length=255)
+    section_title = models.CharField(max_length=255, null=True, blank=True)
     secondary_title = models.CharField(max_length=255, null=True, blank=True)
-    section_description = HTMLField()
+    section_description = HTMLField(null=True, blank=True)
 
 
 
@@ -816,8 +816,9 @@ class ProjectExecutiveSummaryCards(TimeStampMixin):
         related_name="summary_cards",
         null=True,
     )
-    title = models.CharField(max_length=255)
-    description = HTMLField()
+    title = models.CharField(max_length=255, null=True, blank=True)
+    short_description = models.TextField(null=True, blank=True)
+    description = HTMLField(null=True, blank=True)
 
 
 

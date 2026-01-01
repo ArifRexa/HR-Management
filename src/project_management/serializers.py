@@ -5,7 +5,7 @@ from website.models import ProjectKeyword, ProjectMetadata
 from website.models_v2.industries_we_serve import ServeCategory
 from website.models_v2.services import ServicePage
 from .models import (
-    Project, ProjectKeyPoint, ProjectContent
+    Project, ProjectExecutiveSummary, ProjectExecutiveSummaryCards, ProjectKeyPoint, ProjectContent
 )
 
 class ProjectKeywordSerializer(serializers.ModelSerializer):
@@ -34,10 +34,35 @@ class ProjectContentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         ref_name = 'ProjectContentReadOnly'
 
+
+
+class ProjectExecutiveSummaryCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectExecutiveSummaryCards
+        fields = '__all__'
+        ref_name = 'ProjectExecutiveSummaryCardReadOnly'
+
+class ProjectExecutiveSummarySerializer(serializers.ModelSerializer):
+    summary_cards = ProjectExecutiveSummaryCardSerializer(
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = ProjectExecutiveSummary
+        fields = '__all__'
+        ref_name = 'ProjectExecutiveSummaryReadOnly'
+
+
+
 class ProjectDetailSerializer(serializers.ModelSerializer):
     key_points = ProjectKeyPointSerializer(many=True, source='projectkeypoint_set', read_only=True)
     contents = ProjectContentSerializer(many=True, source='projectcontent_set', read_only=True)
     metadata = ProjectMetadataSerializer(source='project_metadata', many=True, read_only=True)  # ✅
+    executive_summaries = ProjectExecutiveSummarySerializer(
+        many=True,
+        read_only=True
+    )
     
     class Meta:
         model = Project
