@@ -635,7 +635,7 @@ class SalarySheetRepository:
             and employee.permanent_date != None
         ):
             one_day_salary = (
-                self.__employee_current_salary.payable_salary / total_month_day[1]
+                self.__employee_current_salary.payable_salary / 30 #total_month_day[1]
             )
             # payable_medical_leave = employee.leave_available_leaveincash(
             #     "medical_leave", salary_sheet.date
