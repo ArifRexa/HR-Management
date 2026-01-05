@@ -311,7 +311,7 @@ urlpatterns = [
         ProjectIdentifierListAPIView.as_view(),
         name='project-identifier-list',
     ),
-    path("projects/special/", SpecialProjectListAPIView.as_view(), name="special-project-list"),
+    path("website/projects/special/", SpecialProjectListAPIView.as_view(), name="special-project-list"),
     path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
 
     path('website/services-list/', ServicePageListView.as_view(), name='service-list'),
