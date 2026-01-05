@@ -125,6 +125,7 @@ from website.serializers import (
     PostCredentialSerializer,
     PricingFeatureSerializer,
     ProjectDetailsSerializer,
+    ProjectIdentifierSerializer,
     ProjectListSerializer,
     ProjectSerializer,
     ProjectSitemapSerializer,
@@ -343,6 +344,32 @@ class ProjectList(ListAPIView):
         response = super().list(request, *args, **kwargs)
         response["Access-Control-Allow-Origin"] = "*"
         return response
+
+
+
+
+
+class ProjectIdentifierListAPIView(ListAPIView):
+    serializer_class = ProjectIdentifierSerializer
+    pagination_class = None  # intentional (small payload)
+
+    @swagger_auto_schema(
+        tags=["Case Study"],
+        responses={200: ProjectIdentifierSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return (
+            Project.objects
+            .only('id', 'slug', 'project_logo')
+            .filter(show_in_website=True)
+            .order_by('title')
+        )
+
+
+
 
 
 class ProjectSitemapView(ListAPIView):

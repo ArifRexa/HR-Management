@@ -1505,6 +1505,20 @@ class ClientReviewSerializer(serializers.ModelSerializer):
         if obj.country is None:
             return None
         return obj.country.name
+    
+
+class ProjectIdentifierSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = [
+            'id',
+            'slug',
+            'project_logo',
+        ]
+        ref_name = 'ProjectIdentifierReadOnly'
+
+
+
 
 
 class LeaderSerializer(serializers.ModelSerializer):
