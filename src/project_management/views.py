@@ -11,7 +11,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 
 from project_management.models import DailyProjectUpdate, Project, ProjectHour
-from project_management.serializers import ProjectDetailSerializer, ProjectListSerializer
+from project_management.serializers import ProjectDetailSerializer, ProjectListSerializer, SpecialProjectSerializer
 from project_management.utils.auto_client_weekly_report import ClientWeeklyUpdate
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from drf_yasg.utils import swagger_auto_schema
@@ -499,6 +499,45 @@ class ProjectListView(ListAPIView):
     #     return Project.objects.select_related('client').prefetch_related(
     #         'platforms', 'categories_tags', 'industries', 'services', 'technology'
     #     ).filter(show_in_website=True)
+
+
+
+
+class SpecialProjectListAPIView(ListAPIView):
+    serializer_class = SpecialProjectSerializer
+
+    @swagger_auto_schema(
+        tags=["Case Study"],
+        operation_description="Retrieve a list of special projects",
+        responses={
+            200: SpecialProjectSerializer(many=True),
+            401: "Unauthorized"
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return (
+            Project.objects.filter(
+                is_special=True,
+                active=True,
+                show_in_website=True
+            )
+            .prefetch_related(
+                "services",
+                "technology",
+                "industries",
+            )
+            .order_by("title")
+        )
+
+
+
+
+
+
+
     
 
 class ProjectDetailView(RetrieveAPIView):
