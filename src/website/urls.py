@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.urlpatterns import format_suffix_patterns
 from job_board.views.apis.job_preference_request import JobPreferenceRequestAPIView
 from rest_framework.routers import DefaultRouter
-from project_management.views import ProjectDetailView, ProjectListView
+from project_management.views import ProjectDetailView, ProjectListView, SpecialProjectListAPIView
 from website.models import LifeAtMediusware
 from website.views import (
     AdditionalPageSlugDetailView,
@@ -300,6 +300,11 @@ urlpatterns = [
     path('website/industry-for-home/', IndustryMainListView.as_view(), name='serve-category-home'),
     path('website/industry-details/<slug:identifier>/', ServeCategoryAPIView.as_view(), name='serve-category-detail'),
     path('website/projects/', ProjectListView.as_view(), name='project-list'),
+    path(
+        "projects/special/",
+        SpecialProjectListAPIView.as_view(),
+        name="special-project-list",
+    ),
     path('website/projects/<slug:slug>/', ProjectDetailView.as_view(), name='project-detail-by-slug'),
 
     path('website/services-list/', ServicePageListView.as_view(), name='service-list'),

@@ -128,7 +128,26 @@ class ProjectListSerializer(serializers.ModelSerializer):
         ref_name = 'ProjectListReadOnly'
 
 
+class SpecialProjectSerializer(serializers.ModelSerializer):
+    services = serializers.StringRelatedField(many=True)
+    technology = serializers.StringRelatedField(many=True)
+    industries = serializers.StringRelatedField(many=True)
 
+    class Meta:
+        model = Project
+        fields = [
+            "id",
+            "slug",
+            "title",
+            "description",        # Sub Title
+            "short_video",
+            "thumbnail",
+            "project_logo",
+            "services",
+            "technology",
+            "industries",
+        ]
+        ref_name = "SpecialProjectReadOnly"
 
 
 
