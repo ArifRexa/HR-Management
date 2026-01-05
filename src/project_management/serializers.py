@@ -116,7 +116,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
-            'id', 'title', 'slug', 'short_video', 'thumbnail', 'live_link', 
+            'id', 'title', 'description', 'slug', 'short_video', 'thumbnail', 'live_link', 
             'project_logo', 'industries', 'services', 'technology'
         ]
         # fields = [
@@ -129,9 +129,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 
 class SpecialProjectSerializer(serializers.ModelSerializer):
-    services = serializers.StringRelatedField(many=True)
-    technology = serializers.StringRelatedField(many=True)
-    industries = serializers.StringRelatedField(many=True)
+    industries = IndustrySerializer(many=True, read_only=True)
+    services = ServiceSerializer(many=True, read_only=True)
+    technology = TechnologySerializer(many=True, read_only=True)
 
     class Meta:
         model = Project
