@@ -150,6 +150,23 @@ class SpecialProjectSerializer(serializers.ModelSerializer):
         ref_name = "SpecialProjectReadOnly"
 
 
+class ProjectClientReviewSerializer(serializers.ModelSerializer):
+    client_name = serializers.CharField(source='client.name', read_only=True)
+    client_image = serializers.ImageField(source='client.image', read_only=True)
+
+    class Meta:
+        model = Project
+        fields = [
+            'id',
+            'title',
+            'slug',
+            'client_name',
+            'client_designation',
+            'client_image',
+            'client_review',
+            'is_special',
+        ]
+        ref_name = 'ProjectClientReviewReadOnly'
 
 
 

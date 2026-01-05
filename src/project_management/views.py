@@ -11,7 +11,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml import OxmlElement
 
 from project_management.models import DailyProjectUpdate, Project, ProjectHour
-from project_management.serializers import ProjectDetailSerializer, ProjectListSerializer, SpecialProjectSerializer
+from project_management.serializers import ProjectClientReviewSerializer, ProjectDetailSerializer, ProjectListSerializer, SpecialProjectSerializer
 from project_management.utils.auto_client_weekly_report import ClientWeeklyUpdate
 from rest_framework.generics import RetrieveAPIView, ListAPIView
 from drf_yasg.utils import swagger_auto_schema
@@ -534,6 +534,49 @@ class SpecialProjectListAPIView(ListAPIView):
 
 
 
+
+
+
+
+class ProjectClientReviewListAPIView(ListAPIView):
+    serializer_class = ProjectClientReviewSerializer
+    filter_backends = [DjangoFilterBackend]
+
+    @swagger_auto_schema(
+        tags=["Case Study"],
+        manual_parameters=[
+            openapi.Parameter(
+                'is_special',
+                openapi.IN_QUERY,
+                description="Filter only special projects' client reviews (true/false)",
+                type=openapi.TYPE_BOOLEAN
+            ),
+        ],
+        responses={200: ProjectClientReviewSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    def get_queryset(self):
+        queryset = (
+            Project.objects.select_related('client')
+            .filter(
+                show_in_website=True,
+                client_review__isnull=False
+            )
+            .exclude(client_review="")
+            .order_by('-created_at')
+        )
+
+        is_special = self.request.query_params.get('is_special')
+
+        if is_special is not None:
+            if is_special.lower() == 'true':
+                queryset = queryset.filter(is_special=True)
+            elif is_special.lower() == 'false':
+                queryset = queryset.filter(is_special=False)
+
+        return queryset
 
 
 
