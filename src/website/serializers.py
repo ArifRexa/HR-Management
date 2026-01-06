@@ -1910,6 +1910,27 @@ class BlogSerializer(serializers.ModelSerializer):
     
 
 
+class BlogListSerializer(serializers.ModelSerializer):
+    table_of_contents = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Blog
+        fields = [
+            'id',
+            'slug',
+            'title',
+            'image',
+            'table_of_contents',
+        ]
+        ref_name = 'BlogTOCReadOnly'
+
+    def get_table_of_contents(self, obj):
+        """
+        Return all blog context titles as table of contents
+        """
+        # Using prefetched data if available
+        contexts = obj.blog_contexts.all()
+        return [context.title for context in contexts]
 
 
 

@@ -1483,7 +1483,7 @@ class BlogFilter(django_filters.FilterSet):
 class BlogListAPIView(ListAPIView):
     queryset = Blog.objects.filter(status="approved").order_by('-created_at')
     # queryset = Blog.objects.all().order_by('-created_at')
-    serializer_class = BlogSerializer
+    serializer_class = BlogListSerializer
     filterset_class = BlogFilter
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['category__name','title', 'category__name', 'tag__name', 'author__full_name']
