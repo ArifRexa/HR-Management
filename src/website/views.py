@@ -1882,7 +1882,7 @@ class EmployeeBlogsAPIView(ListAPIView):
 
 
 class BlogsWithoutAuthorAPIView(ListAPIView):
-    serializer_class = BlogSerializer
+    serializer_class = BlogListSerializer
     pagination_class = BlogPagination 
 
     def get_queryset(self):
