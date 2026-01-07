@@ -1802,17 +1802,19 @@ class AuthorSerializer(serializers.ModelSerializer):
         fields = ['id', 'slug', 'full_name', 'email', 'image', 'designation', 'author_bio', 'social_links']
         ref_name = 'website_author'
 class BlogCardSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(read_only=True)
+    # author = AuthorSerializer(read_only=True)
 
     class Meta:
         model = Blog
-        fields = ['id', 'title', 'slug', 'image', 'created_at', 'read_time_minute', 'author']
+        # fields = ['id', 'title', 'slug', 'image', 'created_at', 'read_time_minute', 'author']
+        fields = ['id', 'title', 'slug']
 
 
 class FeaturedBlogCardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
-        fields = ['id', 'title', 'slug', 'image']
+        # fields = ['id', 'title', 'slug', 'image']
+        fields = ['id', 'title', 'slug']
 
 class BlogSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True, read_only=True)
