@@ -129,11 +129,13 @@ from website.serializers import (
     ProjectListSerializer,
     ProjectSerializer,
     ProjectSitemapSerializer,
+    ServeCategoryListSerializer,
     ServeCategoryMainSerializer,
     ServeCategorySerializer,
     ServiceDetailsSerializer,
     ServicePageCardTitlesSerializer,
     ServicePageDetailSerializer,
+    ServicePageListSerializer,
     ServicePageSerializer,
     ServiceSerializer,
     SimpleServeCategorySerializer,
@@ -1638,12 +1640,12 @@ class BlogListAPIView(ListAPIView):
         # Include all parent services if services=true
         if request.GET.get('services') == 'true':
             services = ServicePage.objects.filter(is_parent=True)
-            response_data['services'] = ServicePageSerializer(services, many=True).data
+            response_data['services'] = ServicePageListSerializer(services, many=True).data
         
         # Include all industry details if industry=true
         if request.GET.get('industry') == 'true':
             industries = ServeCategory.objects.all()
-            response_data['industry'] = ServeCategorySerializer(industries, many=True).data
+            response_data['industry'] = ServeCategoryListSerializer(industries, many=True).data
         
         # Include all technologies if technology=true
         from website.models import Technology
