@@ -1716,6 +1716,12 @@ class ServicePageSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'slug', 'is_parent', 'h1_title', 'sub_title', 'description']
         ref_name = 'website_servicepage'
 
+class ServicePageListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServicePage
+        fields = ['id', 'title', 'slug']
+        ref_name = 'website_servicepage'
+
 class ServeCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ServeCategory
@@ -2206,6 +2212,22 @@ class ServeCategorySerializer(serializers.ModelSerializer):
             pass
         
         return toc
+
+
+
+
+
+
+
+class ServeCategoryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ServeCategory
+        fields = ['id', 'title', 'slug']
+        ref_name = 'IndustriesWeServeServeCategory'
+
+
+
+
 
 
 class IndustryItemTagSerializer(serializers.ModelSerializer):
